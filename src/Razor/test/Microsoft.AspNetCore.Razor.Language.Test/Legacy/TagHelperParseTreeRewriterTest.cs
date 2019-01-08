@@ -1874,5 +1874,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             RunParseTreeRewriterTest("<div>@{</div>}");
         }
+
+        [Fact]
+        public void HandlesNonTagHelperStartAndEndVoidTags_Correctly()
+        {
+            RunParseTreeRewriterTest("<input>Foo</input>");
+        }
     }
 }
