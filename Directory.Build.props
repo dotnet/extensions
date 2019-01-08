@@ -69,14 +69,10 @@
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
-    <Reference Include="Microsoft.NET.Test.Sdk" />
     <Reference Include="Moq" />
-    <Reference Include="xunit" />
     <Reference Include="xunit.analyzers" />
-    <Reference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
-  <Import Project="eng\Versions.props" />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
