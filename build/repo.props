@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="..\eng\Versions.props" />
   <Import Project="..\eng\Dependencies.props" />
 
   <PropertyGroup>
