@@ -479,7 +479,7 @@ namespace Microsoft.Extensions.Configuration.Test
 
             // Assert
             Assert.Equal("MemVal1", memVal1);
-            Assert.Equal(null, memVal2);
+            Assert.Null(memVal2);
         }
 
         [Fact]
