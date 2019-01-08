@@ -43,7 +43,7 @@ namespace Microsoft.Extensions.Configuration
         /// <returns></returns>
         public static string GetDefaultConnectionString(this IConfiguration configuration)
         {
-            return configuration?.GetConnectionString("DefaultConnection");
+            return configuration.GetConnectionString("DefaultConnection");
         }
 
         /// <summary>
