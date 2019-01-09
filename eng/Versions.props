@@ -3,7 +3,7 @@
   <PropertyGroup>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-build-20190105.1</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftDotNetBuildTasksFeedVersion>2.2.0-beta.18607.6</MicrosoftDotNetBuildTasksFeedVersion>
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27204-02</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27308-3</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.18604.2</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.18604.2</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview.18604.2</SystemDataSqlClientPackageVersion>
