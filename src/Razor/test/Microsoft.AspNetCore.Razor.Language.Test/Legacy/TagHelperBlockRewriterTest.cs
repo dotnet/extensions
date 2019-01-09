@@ -223,6 +223,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void AllowsCompatibleTagStructures8()
+        {
+            // Arrange
+            var descriptors = GetTagStructureCompatibilityDescriptors(TagStructure.WithoutEndTag, TagStructure.Unspecified);
+
+            // Act & Assert
+            EvaluateData(descriptors, "<input></input>");
+        }
+
+        [Fact]
         public void CreatesErrorForMalformedTagHelpersWithAttributes1()
         {
             RunParseTreeRewriterTest("<p class='", "strong", "p");
