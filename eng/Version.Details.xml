@@ -45,10 +45,6 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>3780052026bd1fe2e18469b216f20786b4ca20aa</Sha>
     </Dependency>
-    <Dependency Name="System.Threading.Tasks.Extensions" Version="4.6.0-preview.18604.2">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>000000</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview-27308-3">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>2f528e5f158aa41789f7967cf8e8b868a8173d95</Sha>
