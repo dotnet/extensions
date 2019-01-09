@@ -49,7 +49,6 @@
     <VersionMetadata Condition=" '$(DotNetProductBuildId)' != '' ">pb-$(DotNetProductBuildId)</VersionMetadata>
     <VersionSuffix Condition=" '$(VersionMetadata)' != '' ">$(VersionSuffix)+$(VersionMetadata)</VersionSuffix>
     <ExperimentalVersionSuffix>$(VersionSuffix)</ExperimentalVersionSuffix>
-
     <InformationalVersion>$(VersionPrefix)-$(VersionSuffix)</InformationalVersion>
 
     <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->

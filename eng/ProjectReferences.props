@@ -56,5 +56,8 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Analyzer.Testing" ProjectPath="$(RepositoryRoot)src\TestingUtils\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Testing" ProjectPath="$(RepositoryRoot)src\TestingUtils\Microsoft.AspNetCore.Testing\src\Microsoft.AspNetCore.Testing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.WebEncoders" ProjectPath="$(RepositoryRoot)src\WebEncoders\src\Microsoft.Extensions.WebEncoders.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepositoryRoot)src\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.JSInterop.JS" ProjectPath="$(RepositoryRoot)src\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.csproj" />
+    <ProjectReferenceProvider Include="Mono.WebAssembly.Interop" ProjectPath="$(RepositoryRoot)src\JSInterop\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj" />
   </ItemGroup>
 </Project>
