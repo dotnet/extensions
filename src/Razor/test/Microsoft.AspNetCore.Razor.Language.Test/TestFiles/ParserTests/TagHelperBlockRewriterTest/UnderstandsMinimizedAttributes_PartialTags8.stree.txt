@@ -1,6 +1,6 @@
 RazorDocument - [0..89)::89 - [<input bound-required-int unbound-required bound-required-string<p bound-int bound-string]
     MarkupBlock - [0..89)::89
-        MarkupTagHelperElement - [0..89)::89 - input[StartTagAndEndTag] - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
+        MarkupTagHelperElement - [0..64)::64 - input[StartTagAndEndTag] - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
             MarkupTagHelperStartTag - [0..64)::64
                 MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
@@ -20,18 +20,18 @@ RazorDocument - [0..89)::89 - [<input bound-required-int unbound-required bound-
                         Whitespace;[ ];
                     MarkupTextLiteral - [43..64)::21 - [bound-required-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound-required-string];
-            MarkupTagHelperElement - [64..89)::25 - p[StartTagAndEndTag] - PTagHelper
-                MarkupTagHelperStartTag - [64..89)::25
-                    MarkupTextLiteral - [64..66)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[p];
-                    MarkupMinimizedTagHelperAttribute - [66..76)::10 - bound-int - Minimized - Bound - [ bound-int]
-                        MarkupTextLiteral - [66..67)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            Whitespace;[ ];
-                        MarkupTextLiteral - [67..76)::9 - [bound-int] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            Text;[bound-int];
-                    MarkupMinimizedTagHelperAttribute - [76..89)::13 - bound-string - Minimized - Bound - [ bound-string]
-                        MarkupTextLiteral - [76..77)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            Whitespace;[ ];
-                        MarkupTextLiteral - [77..89)::12 - [bound-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            Text;[bound-string];
+        MarkupTagHelperElement - [64..89)::25 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [64..89)::25
+                MarkupTextLiteral - [64..66)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupMinimizedTagHelperAttribute - [66..76)::10 - bound-int - Minimized - Bound - [ bound-int]
+                    MarkupTextLiteral - [66..67)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [67..76)::9 - [bound-int] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound-int];
+                MarkupMinimizedTagHelperAttribute - [76..89)::13 - bound-string - Minimized - Bound - [ bound-string]
+                    MarkupTextLiteral - [76..77)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [77..89)::12 - [bound-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound-string];

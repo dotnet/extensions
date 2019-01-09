@@ -128,6 +128,18 @@ Foo</div>
         }
 
         [Fact]
+        public void Handles_SpecialCasesVoidTags_WithNoEndTags()
+        {
+            // Arrange
+            var content = @"
+<head><meta><!meta></head>
+";
+
+            // Act & Assert
+            ParseDocumentTest(content);
+        }
+
+        [Fact]
         public void Handles_IncompleteTags()
         {
             // Arrange

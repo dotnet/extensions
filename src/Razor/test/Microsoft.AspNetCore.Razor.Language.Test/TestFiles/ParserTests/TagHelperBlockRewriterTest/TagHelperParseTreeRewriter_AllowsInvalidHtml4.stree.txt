@@ -1,6 +1,6 @@
 RazorDocument - [0..12)::12 - [<input <p />]
     MarkupBlock - [0..12)::12
-        MarkupElement - [0..12)::12
+        MarkupElement - [0..7)::7
             MarkupStartTag - [0..7)::7 - [<input ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[input];
@@ -8,14 +8,14 @@ RazorDocument - [0..12)::12 - [<input <p />]
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
                 CloseAngle;[<Missing>];
-            MarkupTagHelperElement - [7..12)::5 - p[SelfClosing] - ptaghelper
-                MarkupTagHelperStartTag - [7..12)::5
-                    MarkupTextLiteral - [7..9)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[p];
-                    MarkupMiscAttributeContent - [9..10)::1
-                        MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            Whitespace;[ ];
-                    MarkupTextLiteral - [10..12)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        ForwardSlash;[/];
-                        CloseAngle;[>];
+        MarkupTagHelperElement - [7..12)::5 - p[SelfClosing] - ptaghelper
+            MarkupTagHelperStartTag - [7..12)::5
+                MarkupTextLiteral - [7..9)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupMiscAttributeContent - [9..10)::1
+                    MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [10..12)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    ForwardSlash;[/];
+                    CloseAngle;[>];
