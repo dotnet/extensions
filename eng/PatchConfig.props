@@ -4,5 +4,9 @@
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.2' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 
 </Project>
