@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
 {
     internal class TestDocumentSnapshot : DefaultDocumentSnapshot
     {
+        private RazorCodeDocument _codeDocument;
+
         public static TestDocumentSnapshot Create(string filePath) => Create(filePath, string.Empty);
 
         public static TestDocumentSnapshot Create(string filePath, VersionStamp version) => Create(filePath, string.Empty, version);
@@ -53,7 +55,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
 
         public override bool TryGetGeneratedOutput(out RazorCodeDocument result)
         {
-            throw new NotImplementedException();
+            if (_codeDocument == null)
+            {
+                throw new InvalidOperationException("You must call " + nameof(With) + " to set the code document for this document snapshot.");
+            }
+
+            result = _codeDocument;
+            return true;
+        }
+
+        public TestDocumentSnapshot With(RazorCodeDocument codeDocument)
+        {
+            if (codeDocument == null)
+            {
+                throw new ArgumentNullException(nameof(codeDocument));
+            }
+
+            _codeDocument = codeDocument;
+            return this;
         }
     }
 }

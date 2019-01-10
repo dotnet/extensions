@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentVersionCache _documentVersionCache;
+        private readonly IEnumerable<DocumentProcessedListener> _documentProcessedListeners;
         private readonly ILanguageServer _router;
         private readonly ILogger _logger;
         private readonly Dictionary<string, DocumentSnapshot> _work;
@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public BackgroundDocumentGenerator(
             ForegroundDispatcher foregroundDispatcher,
             DocumentVersionCache documentVersionCache,
+            IEnumerable<DocumentProcessedListener> documentProcessedListeners,
             ILanguageServer router,
             ILoggerFactory loggerFactory)
         {
@@ -39,6 +40,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (documentVersionCache == null)
             {
                 throw new ArgumentNullException(nameof(documentVersionCache));
+            }
+
+            if (documentProcessedListeners == null)
+            {
+                throw new ArgumentNullException(nameof(documentProcessedListeners));
             }
 
             if (router == null)
@@ -53,6 +59,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentVersionCache = documentVersionCache;
+            _documentProcessedListeners = documentProcessedListeners;
             _router = router;
             _logger = loggerFactory.CreateLogger<BackgroundDocumentGenerator>();
             _work = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
@@ -66,6 +73,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _foregroundDispatcher = foregroundDispatcher;
             _logger = loggerFactory.CreateLogger<BackgroundDocumentGenerator>();
             _work = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
+            _documentProcessedListeners = Enumerable.Empty<DocumentProcessedListener>();
         }
 
         public bool HasPendingNotifications
@@ -108,6 +116,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _projectManager = projectManager;
 
             _projectManager.Changed += ProjectSnapshotManager_Changed;
+
+            foreach (var documentProcessedListener in _documentProcessedListeners)
+            {
+                documentProcessedListener.Initialize(_projectManager);
+            }
         }
 
         private void OnStartingBackgroundWork()
@@ -208,7 +221,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 OnCompletingBackgroundWork();
 
                 await Task.Factory.StartNew(
-                    () => ReportUnsynchronizableContent(work),
+                    () =>
+                    {
+                        ReportUnsynchronizableContent(work);
+                        NotifyDocumentsProcessed(work);
+                    },
                     CancellationToken.None,
                     TaskCreationOptions.None,
                     _foregroundDispatcher.ForegroundScheduler);
@@ -236,6 +253,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 _timer?.Dispose();
                 _timer = null;
+            }
+        }
+
+        private void NotifyDocumentsProcessed(KeyValuePair<string, DocumentSnapshot>[] work)
+        {
+            for (var i = 0; i < work.Length; i++)
+            {
+                foreach (var documentProcessedTrigger in _documentProcessedListeners)
+                {
+                    documentProcessedTrigger.DocumentProcessed(work[i].Value);
+                }
             }
         }
 
