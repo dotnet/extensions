@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpAutoCompleteTest : CsHtmlCodeParserTestBase
+    public class CSharpAutoCompleteTest : CodeParserTestBase
     {
         [Fact]
         public void FunctionsDirectiveAutoCompleteAtEOF()

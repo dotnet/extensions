@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpErrorTest : CsHtmlCodeParserTestBase
+    public class CSharpErrorTest : CodeParserTestBase
     {
         [Fact]
         public void HandlesQuotesAfterTransition()
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void TerminatesNormalCSharpStringsAtEOLIfEndQuoteMissing()
         {
-            SingleSpanBlockTest("if(foo) {" + Environment.NewLine
+            ParseBlockTest("if(foo) {" + Environment.NewLine
                               + "    var p = \"foo bar baz" + Environment.NewLine
                               + ";" + Environment.NewLine
                               + "}");
@@ -302,13 +302,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void TerminatesNormalStringAtEndOfFile()
         {
-            SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah");
+            ParseBlockTest("if(foo) { var foo = \"blah blah blah blah blah");
         }
 
         [Fact]
         public void TerminatesVerbatimStringAtEndOfFile()
         {
-            SingleSpanBlockTest("if(foo) { var foo = @\"blah " + Environment.NewLine
+            ParseBlockTest("if(foo) { var foo = @\"blah " + Environment.NewLine
                               + "blah; " + Environment.NewLine
                               + "<p>Foo</p>" + Environment.NewLine
                               + "blah " + Environment.NewLine
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void RunUnterminatedSimpleKeywordBlock(string keyword)
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 keyword + " (foo) { var foo = bar; if(foo != null) { bar(); } ");
         }
     }

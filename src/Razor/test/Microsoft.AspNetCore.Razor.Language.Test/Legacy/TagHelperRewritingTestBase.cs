@@ -1,13 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class TagHelperRewritingTestBase : CsHtmlMarkupParserTestBase
+    public class TagHelperRewritingTestBase : MarkupParserTestBase
     {
         internal void RunParseTreeRewriterTest(string documentContent, params string[] tagNames)
         {
@@ -38,11 +36,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             RazorParserFeatureFlags featureFlags = null)
         {
             var syntaxTree = ParseDocument(documentContent, featureFlags: featureFlags);
-            var errorSink = new ErrorSink();
 
             var rewrittenTree = TagHelperParseTreeRewriter.Rewrite(syntaxTree, tagHelperPrefix, descriptors);
 
-            BaselineTest(rewrittenTree, verifySyntaxTree: false);
+            BaselineTest(rewrittenTree);
         }
     }
 }

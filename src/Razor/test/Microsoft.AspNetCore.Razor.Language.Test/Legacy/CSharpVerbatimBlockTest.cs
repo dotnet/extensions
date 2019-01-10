@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpVerbatimBlockTest : CsHtmlCodeParserTestBase
+    public class CSharpVerbatimBlockTest : CodeParserTestBase
     {
         private const string TestExtraKeyword = "model";
 

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpWhitespaceHandlingTest : CsHtmlMarkupParserTestBase
+    public class CSharpWhitespaceHandlingTest : MarkupParserTestBase
     {
         [Fact]
         public void StmtBlockDoesNotAcceptTrailingNewlineIfTheyAreSignificantToAncestor()

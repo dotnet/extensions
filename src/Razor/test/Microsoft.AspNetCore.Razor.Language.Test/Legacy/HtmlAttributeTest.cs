@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class HtmlAttributeTest : CsHtmlMarkupParserTestBase
+    public class HtmlAttributeTest : MarkupParserTestBase
     {
         [Fact]
         public void SymbolBoundAttributes_BeforeEqualWhitespace1()

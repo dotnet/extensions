@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class WhiteSpaceRewriterTest : CsHtmlMarkupParserTestBase
+    public class WhiteSpaceRewriterTest : MarkupParserTestBase
     {
         [Fact]
         public void Moves_Whitespace_Preceeding_ExpressionBlock_To_Parent_Block()

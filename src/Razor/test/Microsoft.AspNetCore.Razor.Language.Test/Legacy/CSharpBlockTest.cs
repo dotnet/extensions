@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpBlockTest : CsHtmlCodeParserTestBase
+    public class CSharpBlockTest : CodeParserTestBase
     {
         [Fact]
         public void NestedCodeBlockWithCSharpAt()
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void BalancingBracketsIgnoresStringLiteralCharactersAndBrackets()
         {
             // BalancingBracketsIgnoresStringLiteralCharactersAndBracketsInsideSingleLineComments
-            SingleSpanBlockTest(@"if(foo) {
+            ParseBlockTest(@"if(foo) {
     // bar } "" baz '
     zoop();
 }");
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void BalancingBracketsIgnoresStringLiteralCharactersAndBracketsInsideBlockComments()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 @"if(foo) {
     /* bar } "" */ ' baz } '
     zoop();
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void SkipsExprThenBalancesBracesIfFirstIdentifierIsForKeyword()
         {
             // ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsForKeyword
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "for(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void SkipsExprThenBalancesBracesIfFirstIdentifierIsForeachKeyword()
         {
             // ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsForeachKeyword
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "foreach(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void SkipsExprThenBalancesBracesIfFirstIdentifierIsWhileKeyword()
         {
             // ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsWhileKeyword
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "while(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
@@ -74,14 +74,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void SkipsExprThenBalancesIfFirstIdentifierIsUsingFollowedByParen()
         {
             // ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsUsingKeywordFollowedByParen
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "using(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
         [Fact]
         public void SupportsUsingsNestedWithinOtherBlocks()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "if(foo) { using(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); } }");
         }
 
@@ -89,14 +89,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void SkipsExprThenBalancesBracesIfFirstIdentifierIsIfKeywordWithNoElseBranches()
         {
             // ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsIfKeywordWithNoElseBranches
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "if(int i = 0; i < 10; new Foo { Bar = \"baz\" }) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
         [Fact]
         public void AllowsEmptyBlockStatement()
         {
-            SingleSpanBlockTest("if(false) { }");
+            ParseBlockTest("if(false) { }");
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void SupportsBlockCommentBetweenIfAndElseClause()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "if(foo) { bar(); } /* Foo */ /* Bar */ else { baz(); }");
         }
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void SupportsBlockCommentBetweenElseIfAndElseClause()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "if(foo) { bar(); } else if(bar) { baz(); } /* Foo */ /* Bar */ else { biz(); }");
         }
 
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void SupportsBlockCommentBetweenIfAndElseIfClause()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "if(foo) { bar(); } /* Foo */ /* Bar */ else if(bar) { baz(); }");
         }
 
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void SupportsLineCommentBetweenIfAndElseClause()
         {
-            SingleSpanBlockTest(@"if(foo) { bar(); }
+            ParseBlockTest(@"if(foo) { bar(); }
 // Foo
 // Bar
 else { baz(); }");
@@ -158,7 +158,7 @@ else { baz(); }");
         [Fact]
         public void SupportsLineCommentBetweenElseIfAndElseClause()
         {
-            SingleSpanBlockTest(@"if(foo) { bar(); } else if(bar) { baz(); }
+            ParseBlockTest(@"if(foo) { bar(); } else if(bar) { baz(); }
 // Foo
 // Bar
 else { biz(); }");
@@ -167,7 +167,7 @@ else { biz(); }");
         [Fact]
         public void SupportsLineCommentBetweenIfAndElseIfClause()
         {
-            SingleSpanBlockTest(@"if(foo) { bar(); }
+            ParseBlockTest(@"if(foo) { bar(); }
 // Foo
 // Bar
 else if(bar) { baz(); }");
@@ -184,7 +184,7 @@ else if(bar) { baz(); }");
 }";
             const string document = ifStatement + elseIfBranch;
 
-            SingleSpanBlockTest(document);
+            ParseBlockTest(document);
         }
 
         [Fact]
@@ -197,7 +197,7 @@ else if(bar) { baz(); }");
     Debug.WriteLine(@""bar } baz"");
 }";
             const string document = ifStatement + elseIfBranch + elseIfBranch + elseIfBranch + elseIfBranch;
-            SingleSpanBlockTest(document);
+            ParseBlockTest(document);
         }
 
         [Fact]
@@ -212,7 +212,7 @@ else if(bar) { baz(); }");
             const string elseBranch = @" else { Debug.WriteLine(@""bar } baz""); }";
             const string document = ifStatement + elseIfBranch + elseIfBranch + elseBranch;
 
-            SingleSpanBlockTest(document);
+            ParseBlockTest(document);
         }
 
         [Fact]
@@ -237,7 +237,7 @@ else if(bar) { baz(); }");
     Debug.WriteLine(@""foo } bar"");
 }";
 
-            SingleSpanBlockTest(document);
+            ParseBlockTest(document);
         }
 
         [Fact]
@@ -251,52 +251,52 @@ else if(bar) { baz(); }");
             const string elseIfBranch = @" else if { foo(); }";
             const string document = ifBranch + elseIfBranch;
 
-            SingleSpanBlockTest(document);
+            ParseBlockTest(document);
         }
 
         [Fact]
         public void CorrectlyParsesDoWhileBlock()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "do { var foo = bar; } while(foo != bar);");
         }
 
         [Fact]
         public void CorrectlyParsesDoWhileBlockMissingSemicolon()
         {
-            SingleSpanBlockTest("do { var foo = bar; } while(foo != bar)");
+            ParseBlockTest("do { var foo = bar; } while(foo != bar)");
         }
 
         [Fact]
         public void CorrectlyParsesDoWhileBlockMissingWhileCondition()
         {
-            SingleSpanBlockTest("do { var foo = bar; } while");
+            ParseBlockTest("do { var foo = bar; } while");
         }
 
         [Fact]
         public void CorrectlyParsesDoWhileBlockMissingWhileConditionWithSemicolon()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "do { var foo = bar; } while;");
         }
 
         [Fact]
         public void CorrectlyParsesDoWhileBlockMissingWhileClauseEntirely()
         {
-            SingleSpanBlockTest("do { var foo = bar; } narf;");
+            ParseBlockTest("do { var foo = bar; } narf;");
         }
 
         [Fact]
         public void SupportsBlockCommentBetweenDoAndWhileClause()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "do { var foo = bar; } /* Foo */ /* Bar */ while(true);");
         }
 
         [Fact]
         public void SupportsLineCommentBetweenDoAndWhileClause()
         {
-            SingleSpanBlockTest(@"do { var foo = bar; }
+            ParseBlockTest(@"do { var foo = bar; }
 // Foo
 // Bar
 while(true);");
@@ -319,7 +319,7 @@ while(true);");
         public void SkipsExprThenBalancesBracesIfFirstIdentifierIsSwitchKeyword()
         {
             // ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsSwitchKeyword
-            SingleSpanBlockTest(@"switch(foo) {
+            ParseBlockTest(@"switch(foo) {
     case 0:
         break;
     case 1:
@@ -337,7 +337,7 @@ while(true);");
         public void ThenBalancesBracesIfFirstIdentifierIsLockKeyword()
         {
             // ParseBlockSkipsParenthesisedExpressionAndThenBalancesBracesIfFirstIdentifierIsLockKeyword
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "lock(foo) { Debug.WriteLine(@\"foo } bar\"); }");
         }
 
@@ -384,34 +384,34 @@ while(true);");
         [Fact]
         public void TerminatesUsingKeywordAtEOFAndOutputsFileCodeBlock()
         {
-            SingleSpanBlockTest("using                    ");
+            ParseBlockTest("using                    ");
         }
 
         [Fact]
         public void TerminatesSingleLineCommentAtEndOfFile()
         {
             const string document = "foreach(var f in Foo) { // foo bar baz";
-            SingleSpanBlockTest(document);
+            ParseBlockTest(document);
         }
 
         [Fact]
         public void TerminatesBlockCommentAtEndOfFile()
         {
             const string document = "foreach(var f in Foo) { /* foo bar baz";
-            SingleSpanBlockTest(document);
+            ParseBlockTest(document);
         }
 
         [Fact]
         public void TerminatesSingleSlashAtEndOfFile()
         {
             const string document = "foreach(var f in Foo) { / foo bar baz";
-            SingleSpanBlockTest(document);
+            ParseBlockTest(document);
         }
 
         [Fact]
         public void SupportsBlockCommentBetweenTryAndFinallyClause()
         {
-            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ finally { baz(); }");
+            ParseBlockTest("try { bar(); } /* Foo */ /* Bar */ finally { baz(); }");
         }
 
         [Fact]
@@ -423,7 +423,7 @@ while(true);");
         [Fact]
         public void SupportsBlockCommentBetweenCatchAndFinallyClause()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "try { bar(); } catch(bar) { baz(); } /* Foo */ /* Bar */ finally { biz(); }");
         }
 
@@ -437,7 +437,7 @@ while(true);");
         [Fact]
         public void SupportsBlockCommentBetweenTryAndCatchClause()
         {
-            SingleSpanBlockTest("try { bar(); } /* Foo */ /* Bar */ catch(bar) { baz(); }");
+            ParseBlockTest("try { bar(); } /* Foo */ /* Bar */ catch(bar) { baz(); }");
         }
 
         [Fact]
@@ -449,7 +449,7 @@ while(true);");
         [Fact]
         public void SupportsLineCommentBetweenTryAndFinallyClause()
         {
-            SingleSpanBlockTest(@"try { bar(); }
+            ParseBlockTest(@"try { bar(); }
 // Foo
 // Bar
 finally { baz(); }");
@@ -458,7 +458,7 @@ finally { baz(); }");
         [Fact]
         public void SupportsLineCommentBetweenCatchAndFinallyClause()
         {
-            SingleSpanBlockTest(@"try { bar(); } catch(bar) { baz(); }
+            ParseBlockTest(@"try { bar(); } catch(bar) { baz(); }
 // Foo
 // Bar
 finally { biz(); }");
@@ -467,7 +467,7 @@ finally { biz(); }");
         [Fact]
         public void SupportsLineCommentBetweenTryAndCatchClause()
         {
-            SingleSpanBlockTest(@"try { bar(); }
+            ParseBlockTest(@"try { bar(); }
 // Foo
 // Bar
 catch(bar) { baz(); }");
@@ -476,7 +476,7 @@ catch(bar) { baz(); }");
         [Fact]
         public void SupportsTryStatementWithNoAdditionalClauses()
         {
-            SingleSpanBlockTest("try { var foo = new { } }");
+            ParseBlockTest("try { var foo = new { } }");
         }
 
         [Fact]
@@ -491,7 +491,7 @@ catch(bar) { baz(); }");
         [Fact]
         public void SupportsTryStatementWithOneCatchClause()
         {
-            SingleSpanBlockTest("try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }");
+            ParseBlockTest("try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }");
         }
 
         [Fact]
@@ -506,7 +506,7 @@ catch(bar) { baz(); }");
         [Fact]
         public void SupportsTryStatementWithMultipleCatchClause()
         {
-            SingleSpanBlockTest(
+            ParseBlockTest(
                 "try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) " +
                 "{ var foo = new { } } catch(Foo Bar Baz) { var foo = new { } }");
         }
@@ -514,7 +514,7 @@ catch(bar) { baz(); }");
         [Fact]
         public void SupportsExceptionLessCatchClauses()
         {
-            SingleSpanBlockTest("try { var foo = new { } } catch { var foo = new { } }");
+            ParseBlockTest("try { var foo = new { } } catch { var foo = new { } }");
         }
 
         [Fact]
@@ -530,7 +530,7 @@ catch(bar) { baz(); }");
         [Fact]
         public void SupportsTryStatementWithFinallyClause()
         {
-            SingleSpanBlockTest("try { var foo = new { } } finally { var foo = new { } }");
+            ParseBlockTest("try { var foo = new { } } finally { var foo = new { } }");
         }
 
         [Fact]
@@ -546,14 +546,14 @@ catch(bar) { baz(); }");
         public void StopsParsingCatchClausesAfterFinallyBlock()
         {
             var content = "try { var foo = new { } } finally { var foo = new { } }";
-            SingleSpanBlockTest(content + " catch(Foo Bar Baz) { }");
+            ParseBlockTest(content + " catch(Foo Bar Baz) { }");
         }
 
         [Fact]
         public void DoesNotAllowMultipleFinallyBlocks()
         {
             var content = "try { var foo = new { } } finally { var foo = new { } }";
-            SingleSpanBlockTest(content + " finally { }");
+            ParseBlockTest(content + " finally { }");
         }
 
         [Fact]

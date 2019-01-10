@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class HtmlBlockTest : CsHtmlMarkupParserTestBase
+    public class HtmlBlockTest : MarkupParserTestBase
     {
         [Fact]
         public void HandlesUnbalancedTripleDashHTMLComments()
