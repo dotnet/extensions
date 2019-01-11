@@ -40,10 +40,8 @@
         OutputDocumentation=@(DocumentationProjectOutputGroupOutput);
 
         <!-- Include the assembly and symbols from the tasks project -->
-        TaskAssemblyNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.dll;
-        TaskSymbolNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.pdb;
-        TaskAssemblyNet461=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.dll;
-        TaskSymbolNet461=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.pdb;
+        TaskAssemblyNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll;
+        TaskSymbolNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb;
       </NuspecProperties>
     </PropertyGroup>
   </Target>

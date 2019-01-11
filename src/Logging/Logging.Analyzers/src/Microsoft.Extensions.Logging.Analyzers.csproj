@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Analyzer package for Microsoft.Extensions.Logging.</Description>
@@ -14,10 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Logging.Abstractions\src\Internal\LogValuesFormatter.cs" />
+    <Compile Include="..\..\Logging.Abstractions\src\LogValuesFormatter.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
     <PackageReference Update="NETStandard.Library" PrivateAssets="All" />
   </ItemGroup>

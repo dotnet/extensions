@@ -3,7 +3,7 @@
   <Import Project="$(RepositoryRoot)src\Logging\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</RootNamespace>
   </PropertyGroup>
 

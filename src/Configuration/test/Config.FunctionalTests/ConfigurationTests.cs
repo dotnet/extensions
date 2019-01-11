@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Configuration.Xml;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -85,6 +86,36 @@ CommonKey3:CommonKey4=IniValue6";
             _iniFile = Path.GetRandomFileName();
             _xmlFile = Path.GetRandomFileName();
             _jsonFile = Path.GetRandomFileName();
+        }
+
+        [Fact]
+        public void ThrowsOnFileNotFoundWhenNotIgnored()
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddJsonFile(c =>
+            {
+                c.Path = Path.Combine(_fileSystem.RootPath, _jsonFile);
+            });
+
+            Assert.Throws<FileNotFoundException>(() => configurationBuilder.Build());
+        }
+        
+        [Fact]
+        public void CanHandleExceptionIfFileNotFound()
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddJsonFile(c =>
+            {
+                c.Path = Path.Combine(_fileSystem.RootPath, _jsonFile);
+                c.OnLoadException = e =>
+                {
+                    e.Ignore = true;
+                    var exception = e.Exception as FileNotFoundException;
+                    Assert.NotNull(exception);
+                };
+            });
+
+            configurationBuilder.Build();
         }
 
         [Fact]
@@ -864,6 +895,35 @@ IniKey1=IniValue2");
             Assert.NotNull(providers.Single(p => p is JsonConfigurationProvider));
             Assert.NotNull(providers.Single(p => p is XmlConfigurationProvider));
             Assert.NotNull(providers.Single(p => p is IniConfigurationProvider));
+        }
+
+        [Fact]
+        public async Task TouchingFileWillReloadForUserSecrets()
+        {
+            string userSecretsId = "Test";
+            var userSecretsPath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
+            var userSecretsFolder = Path.GetDirectoryName(userSecretsPath);
+
+            _fileSystem.CreateFolder(userSecretsFolder);
+            _fileSystem.WriteFile(userSecretsPath, @"{""UserSecretKey1"": ""UserSecretValue1""}");
+
+            var config = CreateBuilder()
+                .AddUserSecrets(userSecretsId, reloadOnChange: true)
+                .Build();
+
+            Assert.Equal("UserSecretValue1", config["UserSecretKey1"]);
+
+            var token = config.GetReloadToken();
+
+            // Update file
+            _fileSystem.WriteFile(userSecretsPath, @"{""UserSecretKey1"": ""UserSecretValue2""}");
+
+            await WaitForChange(
+                () => config["UserSecretKey1"] == "UserSecretValue2",
+                "Reload failed after create-delete-create.");
+
+            Assert.Equal("UserSecretValue2", config["UserSecretKey1"]);
+            Assert.True(token.HasChanged);
         }
 
         public void Dispose()

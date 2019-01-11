@@ -4,8 +4,7 @@
     <PackageOutputPath Condition="'$(IsProductComponent)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
     <PackageOutputPath Condition="'$(IsProductComponent)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
 
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
-    <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <!-- Properties which should be set after the project has been evaluated -->

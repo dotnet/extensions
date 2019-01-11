@@ -1,9 +1,9 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
-    <MajorVersion>2</MajorVersion>
-    <MinorVersion>2</MinorVersion>
-    <PatchVersion>2</PatchVersion>
-    <PreReleaseLabel>servicing</PreReleaseLabel>
+    <MajorVersion>3</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>0</PatchVersion>
+    <PreReleaseLabel>preview</PreReleaseLabel>
     <OfficialBuildId Condition="'$(OfficialBuildId)' == ''">$(BUILD_BUILDNUMBER)</OfficialBuildId>
   </PropertyGroup>
 
@@ -21,15 +21,14 @@
     <_BuildNumberShortDate>$([MSBuild]::Add($([MSBuild]::Add($([MSBuild]::Multiply($(_BuildNumberYY), 1000)), $([MSBuild]::Multiply($(_BuildNumberMM), 50)))), $(_BuildNumberDD)))</_BuildNumberShortDate>
 
     <VersionSuffixBuildOfTheDay>$([System.Convert]::ToInt32($(_BuildNumberR)))</VersionSuffixBuildOfTheDay>
-    <VersionSuffixBuildOfTheDayPadded>$(VersionSuffixBuildOfTheDay.PadLeft($([System.Convert]::ToInt32(2)), '0'))</VersionSuffixBuildOfTheDayPadded>
 
-    <_BuildNumberSuffix>$(_BuildNumberShortDate)-$(VersionSuffixBuildOfTheDayPadded)</_BuildNumberSuffix>
+    <_BuildNumberSuffix>$(_BuildNumberShortDate).$(VersionSuffixBuildOfTheDay)</_BuildNumberSuffix>
   </PropertyGroup>
 
   <PropertyGroup>
-    <_BuildNumberSuffix Condition=" '$(_BuildNumberSuffix)' == '' ">t000</_BuildNumberSuffix>
+    <_BuildNumberSuffix Condition=" '$(_BuildNumberSuffix)' == '' ">0</_BuildNumberSuffix>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <VersionSuffix>$(PreReleaseLabel)-$(_BuildNumberSuffix)</VersionSuffix>
+    <VersionSuffix>$(PreReleaseLabel).$(_BuildNumberSuffix)</VersionSuffix>
 
     <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
 
@@ -50,7 +49,6 @@
     <VersionMetadata Condition=" '$(DotNetProductBuildId)' != '' ">pb-$(DotNetProductBuildId)</VersionMetadata>
     <VersionSuffix Condition=" '$(VersionMetadata)' != '' ">$(VersionSuffix)+$(VersionMetadata)</VersionSuffix>
     <ExperimentalVersionSuffix>$(VersionSuffix)</ExperimentalVersionSuffix>
-
     <InformationalVersion>$(VersionPrefix)-$(VersionSuffix)</InformationalVersion>
 
     <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->
