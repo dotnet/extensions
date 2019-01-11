@@ -14,20 +14,19 @@ import { createTestVSCodeApi } from './Mocks/TestVSCodeApi';
 
 describe('ReportIssueDataCollector', () => {
 
-    it('start always logs the starting of data collection', async () => {
+    it('construction always logs the starting of data collection', async () => {
         // Arrange
         const api = createTestVSCodeApi();
         const razorOutputChannel = api.getRazorOutputChannel();
         const eventEmitterFactory = new TestEventEmitterFactory();
         const logger = new RazorLogger(api, eventEmitterFactory, Trace.Off);
         const eventEmitter = eventEmitterFactory.create<vscode.TextDocument>();
-        const dataCollector = new ReportIssueDataCollector(eventEmitter.event, logger);
 
         // Act
-        dataCollector.start();
+        const dataCollector = new ReportIssueDataCollector(eventEmitter.event, logger);
 
         // Assert
-        const lastLog = razorOutputChannel[razorOutputChannel.length - 1].trim();
+        const lastLog = razorOutputChannel[razorOutputChannel.length - 1];
         assert.ok(lastLog.indexOf('Starting') > 0);
     });
 
@@ -39,28 +38,26 @@ describe('ReportIssueDataCollector', () => {
         const logger = new RazorLogger(api, eventEmitterFactory, Trace.Off);
         const eventEmitter = eventEmitterFactory.create<vscode.TextDocument>();
         const dataCollector = new ReportIssueDataCollector(eventEmitter.event, logger);
-        dataCollector.start();
 
         // Act
         dataCollector.stop();
 
         // Assert
-        const lastLog = razorOutputChannel[razorOutputChannel.length - 1].trim();
+        const lastLog = razorOutputChannel[razorOutputChannel.length - 1];
         assert.ok(lastLog.indexOf('Stopping') > 0);
     });
 
-    it('start->stop->collect captures the last focused Razor document', async () => {
+    it('construction->stop->collect captures the last focused Razor document', async () => {
         // Arrange
         const api = createTestVSCodeApi();
         const eventEmitterFactory = new TestEventEmitterFactory();
         const logger = new RazorLogger(api, eventEmitterFactory, Trace.Off);
         const eventEmitter = eventEmitterFactory.create<vscode.TextDocument>();
-        const dataCollector = new ReportIssueDataCollector(eventEmitter.event, logger);
         const firstTextDocument = new TestTextDocument('empty', api.Uri.parse('C:/something.cshtml'));
         const expectedTextDocument = new TestTextDocument('empty', api.Uri.parse('C:/something2.cshtml'));
 
         // Act
-        dataCollector.start();
+        const dataCollector = new ReportIssueDataCollector(eventEmitter.event, logger);
         eventEmitter.fire(firstTextDocument);
         eventEmitter.fire(expectedTextDocument);
         dataCollector.stop();
@@ -70,21 +67,20 @@ describe('ReportIssueDataCollector', () => {
         assert.equal(collectionResult.document, expectedTextDocument);
     });
 
-    it('start->stop->collect captures logs between start and stop', async () => {
+    it('construction->stop->collect captures logs between construction and stop', async () => {
         // Arrange
         const api = createTestVSCodeApi();
         const eventEmitterFactory = new TestEventEmitterFactory();
         const logger = new RazorLogger(api, eventEmitterFactory, Trace.Off);
         const eventEmitter = eventEmitterFactory.create<vscode.TextDocument>();
-        const dataCollector = new ReportIssueDataCollector(eventEmitter.event, logger);
         const expectedLogContent = 'Expected Log Content';
         const unexpectedLogContent = 'SHOULDNOTEXIST';
-        logger.logAlways(unexpectedLogContent);
 
         // Act
-        dataCollector.start();
+        const dataCollector = new ReportIssueDataCollector(eventEmitter.event, logger);
         logger.logAlways(expectedLogContent);
         dataCollector.stop();
+        logger.logAlways(unexpectedLogContent);
         const collectionResult = dataCollector.collect();
 
         // Assert

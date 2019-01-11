@@ -17,9 +17,7 @@ export class ReportIssueDataCollector {
     constructor(
         private readonly razorFileFocusChange: vscode.Event<vscode.TextDocument>,
         private readonly logger: RazorLogger) {
-    }
 
-    public start() {
         this.focusRegistration = this.razorFileFocusChange((razorDocument) => this.lastFocusedRazorDocument = razorDocument);
         this.logRegistration = this.logger.onLog(message => this.logMessages.push(message));
 

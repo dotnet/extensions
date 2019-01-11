@@ -71,9 +71,12 @@ export class ReportIssuePanel {
                     vscode.window.showInformationMessage('Razor issue copied to clipboard');
                     return;
                 case 'startIssue':
+                    if (this.dataCollector) {
+                        this.dataCollector.stop();
+                        this.dataCollector = undefined;
+                    }
                     this.issueContent = undefined;
                     this.dataCollector = this.dataCollectorFactory.create();
-                    this.dataCollector.start();
                     vscode.window.showInformationMessage('Razor issue data colletion started. Reproduce the issue then press "Stop"');
                     return;
                 case 'stopIssue':

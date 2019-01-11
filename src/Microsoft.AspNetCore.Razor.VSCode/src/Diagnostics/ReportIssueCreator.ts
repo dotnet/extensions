@@ -35,7 +35,12 @@ export class ReportIssueCreator {
         }
 
         const razorExtensionVersion = this.getExtensionVersion();
-        const dotnetInfo = await this.getDotnetInfo();
+        let dotnetInfo = '';
+        try {
+            dotnetInfo = await this.getDotnetInfo();
+        } catch (error) {
+            dotnetInfo = `A valid dotnet installation could not be found: ${error}`;
+        }
         const extensionTable = this.generateExtensionTable();
         return `## Is this a Bug or Feature request?:
 Bug
@@ -190,20 +195,8 @@ Unable to resolve VSCode's version of Html`;
         const extensions: Array<vscode.Extension<any>> = this.vscodeApi.extensions.all
             .filter(extension => extension.packageJSON.isBuiltin === false);
 
-        return extensions.sort(this.sortExtensions);
-    }
-
-    // Protected for testing
-    protected sortExtensions(a: vscode.Extension<any>, b: vscode.Extension<any>): number {
-        const aName = a.packageJSON.name.toLowerCase();
-        const bName = b.packageJSON.name.toLowerCase();
-        if (aName < bName) {
-            return -1;
-        }
-        if (aName > bName) {
-            return 1;
-        }
-        return 0;
+        return extensions.sort((a, b) =>
+            a.packageJSON.name.toLowerCase().localeCompare(b.packageJSON.name.toLowerCase()));
     }
 
     // Protected for testing
@@ -213,31 +206,31 @@ Unable to resolve VSCode's version of Html`;
             return 'none';
         }
 
-        const tableHeader = `|Extension|Author|Version|\n|---|---|---|`;
+        const tableHeader = `|Extension|Author|Version|${os.EOL}|---|---|---|`;
         const table = extensions.map(
             (e) => `|${e.packageJSON.name}|${e.packageJSON.publisher}|${e.packageJSON.version}|`).join(os.EOL);
 
         const extensionTable = `
-${tableHeader}\n${table};
+${tableHeader}${os.EOL}${table};
 `;
 
         return extensionTable;
     }
 
     private getDotnetInfo(): Promise<string> {
-        return new Promise<string>((resolve) => {
+        return new Promise<string>((resolve, reject) => {
             try {
                 cp.exec('dotnet --info', { cwd: process.cwd(), maxBuffer: 500 * 1024 }, (error, stdout, stderr) => {
                     if (error) {
-                        throw error;
+                        reject(error);
                     } else if (stderr && stderr.length > 0) {
-                        throw new Error(stderr);
+                        reject(error);
                     } else {
                         resolve(stdout);
                     }
                 });
             } catch (error) {
-                resolve(`A valid dotnet installation could not be found: ${error}`);
+                reject(error);
             }
         });
     }

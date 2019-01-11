@@ -187,42 +187,6 @@ describe('ReportIssueCreator', () => {
         assert.deepEqual(extensions, [omniSharpExtension, razorClientExtension]);
     });
 
-    it('sortExtensions OmniSharp is before Razor', async () => {
-        // Arrange
-        const api = createTestVSCodeApi();
-        const issueCreator = getReportIssueCreator(api);
-
-        // Act
-        const value = issueCreator.sortExtensions(omniSharpExtension, razorClientExtension);
-
-        // Assert
-        assert.equal(-1, value);
-    });
-
-    it('sortExtensions Razor is after OmniSharp', async () => {
-        // Arrange
-        const api = createTestVSCodeApi();
-        const issueCreator = getReportIssueCreator(api);
-
-        // Act
-        const value = issueCreator.sortExtensions(razorClientExtension, omniSharpExtension);
-
-        // Assert
-        assert.equal(1, value);
-    });
-
-    it('sortExtensions OmniSharp is identical to OmniSharp', async () => {
-        // Arrange
-        const api = createTestVSCodeApi();
-        const issueCreator = getReportIssueCreator(api);
-
-        // Act
-        const value = issueCreator.sortExtensions(omniSharpExtension, omniSharpExtension);
-
-        // Assert
-        assert.equal(0, value);
-    });
-
     it('generateExtensionTable returns all non-builtin extensions in string format', async () => {
         // Arrange
         const api = createTestVSCodeApi();
@@ -279,10 +243,6 @@ class TestReportIssueCreator extends ReportIssueCreator {
 
     public getInstalledExtensions() {
         return super.getInstalledExtensions();
-    }
-
-    public sortExtensions(a: vscode.Extension<any>, b: vscode.Extension<any>): number {
-        return super.sortExtensions(a, b);
     }
 
     public generateExtensionTable() {
