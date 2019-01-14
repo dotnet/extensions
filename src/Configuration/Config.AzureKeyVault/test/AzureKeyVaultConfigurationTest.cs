@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Extensions.Configuration.Test;
@@ -199,7 +200,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                         tcs.SetResult(null);
                     }
 
-                    await tcs.Task;
+                    await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                     return new SecretBundle() { Value = "Value" + shortId, Id = id };
                 });
 
