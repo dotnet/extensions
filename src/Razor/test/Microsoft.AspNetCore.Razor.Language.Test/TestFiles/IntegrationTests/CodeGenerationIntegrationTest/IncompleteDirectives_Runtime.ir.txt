@@ -4,8 +4,8 @@ Document -
         RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_Runtime -  - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
-                    IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                HtmlContent - (85:1,0 [2] IncompleteDirectives.cshtml)
+                    IntermediateToken - (85:1,0 [2] IncompleteDirectives.cshtml) - Html - \n
                 MalformedDirective - (100:2,13 [2] IncompleteDirectives.cshtml) - addTagHelper
                     DirectiveToken - (100:2,13 [2] IncompleteDirectives.cshtml) - 
                 MalformedDirective - (116:3,14 [2] IncompleteDirectives.cshtml) - addTagHelper

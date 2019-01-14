@@ -9,8 +9,7 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
-                HtmlContent - (36:0,36 [17] RazorComments.cshtml)
-                    IntermediateToken - (36:0,36 [2] RazorComments.cshtml) - Html - \n
+                HtmlContent - (38:1,0 [15] RazorComments.cshtml)
                     IntermediateToken - (38:1,0 [2] RazorComments.cshtml) - Html - <p
                     IntermediateToken - (40:1,2 [1] RazorComments.cshtml) - Html - >
                     IntermediateToken - (41:1,3 [12] RazorComments.cshtml) - Html - This should 

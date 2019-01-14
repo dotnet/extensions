@@ -8,7 +8,7 @@ RazorDocument - [0..130)::130 - [@* There are two directives beneath this *@LF@c
             RazorCommentLiteral;[ There are two directives beneath this ];
             RazorCommentStar;[*];
             RazorCommentTransition;[@];
-        MarkupTextLiteral - [43..45)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        MarkupEphemeralTextLiteral - [43..45)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         CSharpCodeBlock - [45..89)::44
             RazorDirective - [45..89)::44 - Directive:{custom;SingleLine;FileScopedSinglyOccurring}
