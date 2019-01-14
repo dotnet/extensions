@@ -3,7 +3,7 @@ RazorDocument - [0..26)::26 - [LF  @addTagHelper "*, Foo"]
         MarkupTextLiteral - [0..2)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         CSharpCodeBlock - [2..26)::24
-            CSharpStatementLiteral - [2..4)::2 - [  ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+            CSharpEphemeralTextLiteral - [2..4)::2 - [  ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                 Whitespace;[  ];
             RazorDirective - [4..26)::22
                 CSharpTransition - [4..5)::1 - Gen<None> - SpanEditHandler;Accepts:None

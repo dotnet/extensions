@@ -3,7 +3,7 @@ RazorDocument - [0..46)::46 - [LF  @custom System.Text.Encoding.ASCIIEncoding]
         MarkupTextLiteral - [0..2)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         CSharpCodeBlock - [2..46)::44
-            CSharpStatementLiteral - [2..4)::2 - [  ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+            CSharpEphemeralTextLiteral - [2..4)::2 - [  ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                 Whitespace;[  ];
             RazorDirective - [4..46)::42 - Directive:{custom;SingleLine;Unrestricted}
                 CSharpTransition - [4..5)::1 - Gen<None> - SpanEditHandler;Accepts:None
