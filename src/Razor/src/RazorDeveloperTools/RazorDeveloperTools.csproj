@@ -16,6 +16,8 @@
 
     <!-- Don't automatically include dependencies -->
     <IncludePackageReferencesInVSIXContainer>false</IncludePackageReferencesInVSIXContainer>
+
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <!-- Misc other content -->

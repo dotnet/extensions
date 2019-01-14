@@ -16,6 +16,8 @@
 
     <!-- Don't automatically include dependencies -->
     <IncludePackageReferencesInVSIXContainer>false</IncludePackageReferencesInVSIXContainer>
+
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
     <!-- Include Razor SDK design time assets in the VSIX -->

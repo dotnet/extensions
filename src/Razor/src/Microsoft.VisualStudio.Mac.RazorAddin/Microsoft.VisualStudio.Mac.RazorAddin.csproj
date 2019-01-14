@@ -5,6 +5,7 @@
     <TargetFramework>net472</TargetFramework>
     <IsMPackProject>true</IsMPackProject>
     <AddinName>Microsoft.VisualStudio.Mac.RazorAddin</AddinName>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
