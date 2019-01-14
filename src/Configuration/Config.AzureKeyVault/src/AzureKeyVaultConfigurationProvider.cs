@@ -1,10 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.KeyVault.Models;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
@@ -52,16 +54,21 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             var secrets = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
             do
             {
+                var tasks = new List<Task<KeyValuePair<string, string>>>();
                 foreach (var secretItem in secrets)
                 {
-                    if (!_manager.Load(secretItem) || (secretItem.Attributes?.Enabled != true))
+                    if (!_manager.Load(secretItem) || secretItem.Attributes?.Enabled != true)
                     {
                         continue;
                     }
+                    tasks.Add(LoadSecretValue(secretItem));
+                }
 
-                    var value = await _client.GetSecretAsync(secretItem.Id).ConfigureAwait(false);
-                    var key = _manager.GetKey(value);
-                    data.Add(key, value.Value);
+                await Task.WhenAll(tasks);
+
+                foreach (var task in tasks)
+                {
+                    data.Add(task.Result.Key, task.Result.Value);
                 }
 
                 secrets = secrets.NextPageLink != null ?
@@ -70,6 +77,13 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             } while (secrets != null);
 
             Data = data;
+        }
+
+        private async Task<KeyValuePair<string, string>> LoadSecretValue(SecretItem secretItem)
+        {
+            var value = await _client.GetSecretAsync(secretItem.Id).ConfigureAwait(false);
+            var key = _manager.GetKey(value);
+            return new KeyValuePair<string, string>(key, value.Value);
         }
     }
 }
