@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("body", bindingResult.ParentTagName);
             Assert.Equal(expectedAttributes, bindingResult.Attributes);
             Assert.Equal("th:", bindingResult.TagHelperPrefix);
-            Assert.Equal(divTagHelper.TagMatchingRules, bindingResult.GetBoundRules(divTagHelper), TagMatchingRuleDescriptorComparer.CaseSensitive);
+            Assert.Equal(divTagHelper.TagMatchingRules, bindingResult.Mappings[divTagHelper], TagMatchingRuleDescriptorComparer.CaseSensitive);
         }
 
         public static TheoryData RequiredParentData
@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             var boundDescriptor = Assert.Single(binding.Descriptors);
             Assert.Same(multiRuleDescriptor, boundDescriptor);
-            var boundRules = binding.GetBoundRules(boundDescriptor);
+            var boundRules = binding.Mappings[boundDescriptor];
             var boundRule = Assert.Single(boundRules);
             Assert.Equal("div", boundRule.TagName);
         }
@@ -515,10 +515,88 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             var boundDescriptor = Assert.Single(bindingResult.Descriptors);
             Assert.Same(divDescriptor, boundDescriptor);
-            var boundRules = bindingResult.GetBoundRules(boundDescriptor);
+            var boundRules = bindingResult.Mappings[boundDescriptor];
             var boundRule = Assert.Single(boundRules);
             Assert.Equal("div", boundRule.TagName);
             Assert.Equal("p", boundRule.ParentTag);
+        }
+
+        [Fact]
+        public void GetBinding_IsAttributeMatch_SingleAttributeMatch()
+        {
+            // Arrange
+            var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
+                .AddMetadata(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString)
+                .Build();
+
+            var descriptors = new[] { divDescriptor, };
+            var tagHelperBinder = new TagHelperBinder("", descriptors);
+
+            // Act
+            var bindingResult = tagHelperBinder.GetBinding(
+                tagName: "div",
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
+                parentTagName: "p",
+                parentIsTagHelper: false);
+
+            // Assert
+            Assert.True(bindingResult.IsAttributeMatch);
+        }
+
+        [Fact]
+        public void GetBinding_IsAttributeMatch_MultipleAttributeMatches()
+        {
+            // Arrange
+            var divDescriptor1 = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
+                .AddMetadata(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString)
+                .Build();
+
+            var divDescriptor2 = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
+                .AddMetadata(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString)
+                .Build();
+
+            var descriptors = new[] { divDescriptor1, divDescriptor2, };
+            var tagHelperBinder = new TagHelperBinder("", descriptors);
+
+            // Act
+            var bindingResult = tagHelperBinder.GetBinding(
+                tagName: "div",
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
+                parentTagName: "p",
+                parentIsTagHelper: false);
+
+            // Assert
+            Assert.True(bindingResult.IsAttributeMatch);
+        }
+
+        [Fact]
+        public void GetBinding_IsAttributeMatch_MixedAttributeMatches()
+        {
+            // Arrange
+            var divDescriptor1 = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
+                .AddMetadata(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString)
+                .Build();
+
+            var divDescriptor2 = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
+                .Build();
+
+            var descriptors = new[] { divDescriptor1, divDescriptor2, };
+            var tagHelperBinder = new TagHelperBinder("", descriptors);
+
+            // Act
+            var bindingResult = tagHelperBinder.GetBinding(
+                tagName: "div",
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
+                parentTagName: "p",
+                parentIsTagHelper: false);
+
+            // Assert
+            Assert.False(bindingResult.IsAttributeMatch);
         }
     }
 }

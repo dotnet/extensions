@@ -78,7 +78,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Assert
             var descriptor = Assert.Single(binding.Descriptors);
             Assert.Equal(documentDescriptors[0], descriptor, TagHelperDescriptorComparer.CaseSensitive);
-            var boundRule = Assert.Single(binding.GetBoundRules(descriptor));
+            var boundRule = Assert.Single(binding.Mappings[descriptor]);
             Assert.Equal(documentDescriptors[0].TagMatchingRules.First(), boundRule, TagMatchingRuleDescriptorComparer.CaseSensitive);
         }
 

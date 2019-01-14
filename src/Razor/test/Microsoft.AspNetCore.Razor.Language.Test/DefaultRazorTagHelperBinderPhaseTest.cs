@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var formTagHelper = Assert.Single(tagHelperNodes);
             Assert.Equal("form", formTagHelper.TagHelperInfo.TagName);
-            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.GetBoundRules(descriptor).Count());
+            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.Mappings[descriptor].Count());
         }
 
         [Fact]
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var formTagHelper = Assert.Single(tagHelperNodes);
             Assert.Equal("form", formTagHelper.TagHelperInfo.TagName);
-            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.GetBoundRules(descriptor).Count());
+            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.Mappings[descriptor].Count());
         }
 
         [Fact]
