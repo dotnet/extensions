@@ -24,7 +24,7 @@ variables:
     _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber) 
       /p:ManifestBuildBranch=$(Build.SourceBranchName)
       /p:ManifestBuildNumber=$(Build.BuildNumber)
-      /p:VisualStudioDropName=Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)
+      /p:VisualStudioDropName=Products/AspNet/AspNetCore-Tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
 
  
 resources:
