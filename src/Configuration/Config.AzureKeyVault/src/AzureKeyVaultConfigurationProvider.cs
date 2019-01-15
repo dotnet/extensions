@@ -52,23 +52,24 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var secrets = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
+            var tasks = new List<Task<SecretBundle>>(secrets.Count());
             do
             {
-                var tasks = new List<Task<KeyValuePair<string, string>>>();
+                tasks.Clear();
+
                 foreach (var secretItem in secrets)
                 {
-                    if (!_manager.Load(secretItem) || secretItem.Attributes?.Enabled != true)
+                    if (_manager.Load(secretItem) && secretItem.Attributes?.Enabled == true)
                     {
-                        continue;
+                        tasks.Add(_client.GetSecretAsync(secretItem.Id));
                     }
-                    tasks.Add(LoadSecretValue(secretItem));
                 }
 
-                await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 foreach (var task in tasks)
                 {
-                    data.Add(task.Result.Key, task.Result.Value);
+                    data.Add(_manager.GetKey(task.Result), task.Result.Value);
                 }
 
                 secrets = secrets.NextPageLink != null ?
@@ -77,13 +78,6 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             } while (secrets != null);
 
             Data = data;
-        }
-
-        private async Task<KeyValuePair<string, string>> LoadSecretValue(SecretItem secretItem)
-        {
-            var value = await _client.GetSecretAsync(secretItem.Id).ConfigureAwait(false);
-            var key = _manager.GetKey(value);
-            return new KeyValuePair<string, string>(key, value.Value);
         }
     }
 }
