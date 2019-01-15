@@ -1,32 +1,9 @@
 variables:
-  Build.Repository.Clean: true
-  _TeamName: AspNetCore
-  _DotNetPublishToBlobFeed : false
-  _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
-  _PublishArgs: '/p:PublishToSymbolServer=false /p:PublishToAzure=false'
+- name: Build.Repository.Clean
+  value: true
+- name: _TeamName
+  value: AspNetCore
 
-  _TimeoutInMinutes: 120 #increase timeout since BAR publishing might wait a long time
-  
-  # Variables for public PR builds
-  ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'github')) }}:
-    _HelixType: build/product
-    _HelixSource: pr/aspnet/AspNetCore-Tooling/$(Build.SourceBranch)
-    # These are needed to suppress a warning in the cibuild invocation since AzDO leaves the `$(_SignArgs)` in place and it fails to resolve.
-    _SignArgs: ''
-    _OfficialBuildIdArgs: ''
-
-  # Variables for internal Official builds
-  ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
-    _HelixType: build/product
-    _HelixSource: official/aspnet/AspNetCore-Tooling/$(Build.SourceBranch)
-    _SignType: real
-    _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-    _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber) 
-      /p:ManifestBuildBranch=$(Build.SourceBranchName)
-      /p:ManifestBuildNumber=$(Build.BuildNumber)
-      /p:VisualStudioDropName=Products/AspNet/AspNetCore-Tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
-
- 
 resources:
   containers:
   - container: LinuxContainer
@@ -40,165 +17,128 @@ trigger:
 pr:
 - "*"
 
-# Three phases for each of the three OSes we want to run on
-phases:
-- template: /eng/common/templates/phases/base.yml
+# Three jobs for each of the three OSes we want to run on
+jobs:
+- template: /eng/common/templates/jobs/jobs.yml
   parameters:
-    name: Windows
-    timeoutInMinutes: $(_TimeoutInMinutes)
+    enablePublishBuildArtifacts: true
+    enablePublishTestResults: true
     enableTelemetry: true
+    helixRepo: aspnet/AspNetCore-Tooling
+    helixType: build.product/
+    timeoutInMinutes: 120 # increase timeout since BAR publishing might wait a long time
     # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
-    ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
+    ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
       enableMicrobuild: true
-    queue:
-      # agent pool can't be read from a user-defined variable (Azure DevOps limitation)
-      ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'github')) }}:
-        name: dotnet-external-temp
-      ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
-        name: dotnet-internal-temp
-      matrix:
-        debug:
-          _BuildConfig: Debug
-        release:
-          _BuildConfig: Release
-          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
-            _DotNetPublishToBlobFeed: true
-            _PublishArgs: /p:PublishToSymbolServer=true
-              /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-              /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-              /p:PublishToAzure=true
-              /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-              /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-              /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-    steps:
-    - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
-      - task: AzureKeyVault@1
+      enablePublishBuildAssets: true
+
+    jobs:
+    - job: Windows
+      pool:
+        # agent pool can't be read from a user-defined variable (Azure DevOps limitation)
+        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+          name: dotnet-external-temp
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          name: dotnet-internal-temp
+      strategy:
+        matrix:
+          debug:
+            _BuildConfig: Debug
+          release:
+            _BuildConfig: Release
+            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              _DotNetPublishToBlobFeed: true
+              _PublishArgs: /p:PublishToSymbolServer=true
+                /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+                /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+                /p:PublishToAzure=true
+                /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+                /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+      variables:
+      - _DotNetPublishToBlobFeed : false
+      - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+      - _PublishArgs: '/p:PublishToSymbolServer=false /p:PublishToAzure=false'
+      - _BuildArgs: ''
+      - _OfficialBuildIdArgs: ''
+      
+      # Variables for internal Official builds
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - _SignType: real
+        - _BuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+            /p:OfficialBuildId=$(Build.BuildNumber) 
+            /p:ManifestBuildBranch=$(Build.SourceBranchName)
+            /p:ManifestBuildNumber=$(Build.BuildNumber)
+            /p:VisualStudioDropName=Products/AspNet/AspNetCore-Tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
+
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - group: DotNet-Blob-Feed
+        - group: DotNet-Symbol-Server-Pats
+      steps:
+      - script: eng\common\cibuild.cmd 
+          -configuration $(_BuildConfig)
+          -prepareMachine
+          $(_BuildArgs)
+          $(_PublishArgs)
+        name: Build
+        displayName: Build
+        condition: succeeded()
+      - task: PublishBuildArtifacts@1
+        displayName: Publish VSIX Artifacts
         inputs:
-          azureSubscription: 'DotNet-Engineering-Services_KeyVault'
-          KeyVaultName: EngKeyVault
-          SecretsFilter: 'dotnetfeed-storage-access-key-1,microsoft-symbol-server-pat,symweb-symbol-server-pat'
-    - script: eng\common\cibuild.cmd 
-        -configuration $(_BuildConfig)
-        -prepareMachine
-        $(_SignArgs)
-        $(_OfficialBuildIdArgs)
-        $(_PublishArgs)
-      name: Build
-      displayName: Build
-      condition: succeeded()
-    - task: PublishTestResults@2
-      displayName: Publish xUnit Test Results
-      condition: always()
-      continueOnError: true
-      inputs:
-        testRunner: xunit
-        testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml' 
-    - task: PublishBuildArtifacts@1
-      displayName: Publish VSIX Artifacts
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-        PublishLocation: Container
-        ArtifactName: VSIX_$(Agent.Os)_$(Agent.JobName)
-      continueOnError: true
-      condition: eq(variables['_BuildConfig'], 'Release')
-    - task: PublishBuildArtifacts@1
-      displayName: Publish VS for Mac Artifacts
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/MPack/$(_BuildConfig)'
-        PublishLocation: Container
-        ArtifactName: MPack_$(Agent.Os)_$(Agent.JobName)
-      continueOnError: true
-      condition: eq(variables['_BuildConfig'], 'Release')
-    - task: PublishBuildArtifacts@1
-      displayName: Publish package artifacts
-      inputs:
-        PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
-        PublishLocation: Container
-        ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
-      continueOnError: true
-      condition: eq(variables['_BuildConfig'], 'Release')
-    - task: PublishBuildArtifacts@1
-      displayName: Publish Logs
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
-        PublishLocation: Container
-        ArtifactName: Logs_$(Agent.Os)_$(Agent.JobName)
-      continueOnError: true
-      condition: always()
-    variables:
-      _HelixBuildConfig: $(_BuildConfig)
+          PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+          PublishLocation: Container
+          ArtifactName: VSIX_$(Agent.Os)_$(Agent.JobName)
+        continueOnError: true
+        condition: eq(variables['_BuildConfig'], 'Release')
+      - task: PublishBuildArtifacts@1
+        displayName: Publish VS for Mac Artifacts
+        inputs:
+          PathtoPublish: '$(Build.SourcesDirectory)/artifacts/MPack/$(_BuildConfig)'
+          PublishLocation: Container
+          ArtifactName: MPack_$(Agent.Os)_$(Agent.JobName)
+        continueOnError: true
+        condition: eq(variables['_BuildConfig'], 'Release')
+      - task: PublishBuildArtifacts@1
+        displayName: Publish package artifacts
+        inputs:
+          PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
+          PublishLocation: Container
+          ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
+        continueOnError: true
+        condition: eq(variables['_BuildConfig'], 'Release')
 
-- template: /eng/common/templates/phases/base.yml
-  parameters:
-    name: macOS
-    timeoutInMinutes: $(_TimeoutInMinutes)
-    enableTelemetry: true
-    queue:
-      name: Hosted macOS
-      matrix:
-        debug:
-          _BuildConfig: Debug
-        release:
-          _BuildConfig: Release
-    steps:
-    - script: eng/common/cibuild.sh
-        --configuration $(_BuildConfig)
-        --prepareMachine
-      name: Build
-      displayName: Build
-      condition: succeeded()
-    - task: PublishTestResults@2
-      displayName: Publish xUnit Test Results
-      condition: always()
-      continueOnError: true
-      inputs:
-        testRunner: xunit
-        testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
-    - task: PublishBuildArtifacts@1
-      displayName: Publish Logs
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
-        PublishLocation: Container
-        ArtifactName: Logs_$(Agent.Os)_$(Agent.JobName)
-      continueOnError: true
-      condition: always()
-    variables:
-      _HelixBuildConfig: $(_BuildConfig)
+    - job: macOS
+      pool:
+        name: Hosted macOS
+      strategy:
+        matrix:
+          debug:
+            _BuildConfig: Debug
+          release:
+            _BuildConfig: Release
+      steps:
+      - script: eng/common/cibuild.sh
+          --configuration $(_BuildConfig)
+          --prepareMachine
+        name: Build
+        displayName: Build
+        condition: succeeded()
 
-- template: /eng/common/templates/phases/base.yml
-  parameters:
-    name: Linux
-    timeoutInMinutes: $(_TimeoutInMinutes)
-    enableTelemetry: true
-    queue:
-      name: Hosted Ubuntu 1604
-      container: LinuxContainer
-      matrix:
-        debug:
-          _BuildConfig: Debug
-        release:
-          _BuildConfig: Release
-    steps:
-    - script: eng/common/cibuild.sh
-        --configuration $(_BuildConfig)
-        --prepareMachine
-      name: Build
-      displayName: Build
-      condition: succeeded()
-    - task: PublishTestResults@2
-      displayName: Publish xUnit Test Results
-      condition: always()
-      continueOnError: true
-      inputs:
-        testRunner: xunit
-        testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
-    - task: PublishBuildArtifacts@1
-      displayName: Publish Logs
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
-        PublishLocation: Container
-        ArtifactName: Logs_$(Agent.Os)_$(Agent.JobName)
-      continueOnError: true
-      condition: always()
-    variables:
-      _HelixBuildConfig: $(_BuildConfig)
+    - job: Linux
+      pool:
+        name: Hosted Ubuntu 1604
+        container: LinuxContainer
+      strategy:
+        matrix:
+          debug:
+            _BuildConfig: Debug
+          release:
+            _BuildConfig: Release
+      steps:
+      - script: eng/common/cibuild.sh
+          --configuration $(_BuildConfig)
+          --prepareMachine
+        name: Build
+        displayName: Build
+        condition: succeeded()
