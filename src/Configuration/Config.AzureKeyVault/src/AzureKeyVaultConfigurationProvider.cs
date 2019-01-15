@@ -1,10 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.KeyVault.Models;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
@@ -50,18 +52,24 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var secrets = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
+            var tasks = new List<Task<SecretBundle>>(secrets.Count());
             do
             {
+                tasks.Clear();
+
                 foreach (var secretItem in secrets)
                 {
-                    if (!_manager.Load(secretItem) || (secretItem.Attributes?.Enabled != true))
+                    if (_manager.Load(secretItem) && secretItem.Attributes?.Enabled == true)
                     {
-                        continue;
+                        tasks.Add(_client.GetSecretAsync(secretItem.Id));
                     }
+                }
 
-                    var value = await _client.GetSecretAsync(secretItem.Id).ConfigureAwait(false);
-                    var key = _manager.GetKey(value);
-                    data.Add(key, value.Value);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+
+                foreach (var task in tasks)
+                {
+                    data.Add(_manager.GetKey(task.Result), task.Result.Value);
                 }
 
                 secrets = secrets.NextPageLink != null ?

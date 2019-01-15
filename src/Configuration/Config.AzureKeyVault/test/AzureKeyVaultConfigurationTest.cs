@@ -5,7 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Extensions.Configuration.Test;
@@ -168,6 +170,50 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             client.VerifyAll();
 
             Assert.Equal("Value1", provider.Get("Section:Secret1"));
+        }
+
+        [Fact]
+        public async Task LoadsSecretsInParallel()
+        {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var expectedCount = 2;
+
+            var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);
+            var secret1Id = GetSecretId("Secret1");
+            var secret2Id = GetSecretId("Secret2");
+
+            client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
+            {
+                Value = new[]
+                {
+                    new SecretItem { Id = secret1Id, Attributes = new SecretAttributes { Enabled = true } },
+                    new SecretItem { Id = secret2Id, Attributes = new SecretAttributes { Enabled = true } }
+                }
+            });
+
+
+            client.Setup(c => c.GetSecretAsync(It.IsAny<string>()))
+                .Returns(async (string id) => {
+                    var shortId = id.Substring(id.LastIndexOf('/') + 1);
+                    if (Interlocked.Decrement(ref expectedCount) == 0)
+                    {
+                        tcs.SetResult(null);
+                    }
+
+                    await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+                    return new SecretBundle() { Value = "Value" + shortId, Id = id };
+                });
+
+            // Act
+            var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager());
+            provider.Load();
+            await tcs.Task;
+
+            // Assert
+            client.VerifyAll();
+
+            Assert.Equal("ValueSecret1", provider.Get("Secret1"));
+            Assert.Equal("ValueSecret2", provider.Get("Secret2"));
         }
 
         [Fact]
