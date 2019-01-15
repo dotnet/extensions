@@ -3,7 +3,9 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
@@ -16,13 +18,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         private readonly IServiceProvider _services;
         private readonly TextBufferProjectService _projectService;
-
+        private readonly ProjectWorkspaceStateGenerator _workspaceStateGenerator;
         private ProjectSnapshotManagerBase _projectManager;
 
         [ImportingConstructor]
         public VsSolutionUpdatesProjectSnapshotChangeTrigger(
             [Import(typeof(SVsServiceProvider))] IServiceProvider services,
-            TextBufferProjectService projectService)
+            TextBufferProjectService projectService,
+            ProjectWorkspaceStateGenerator workspaceStateGenerator)
         {
             if (services == null)
             {
@@ -34,8 +37,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 throw new ArgumentNullException(nameof(projectService));
             }
 
+            if (workspaceStateGenerator == null)
+            {
+                throw new ArgumentNullException(nameof(workspaceStateGenerator));
+            }
+
             _services = services;
             _projectService = projectService;
+            _workspaceStateGenerator = workspaceStateGenerator;
         }
 
         public override void Initialize(ProjectSnapshotManagerBase projectManager)
@@ -86,15 +95,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public int UpdateProjectCfg_Done(IVsHierarchy pHierProj, IVsCfg pCfgProj, IVsCfg pCfgSln, uint dwAction, int fSuccess, int fCancel)
         {
             var projectPath = _projectService.GetProjectPath(pHierProj);
-            var project = _projectManager.GetLoadedProject(projectPath);
-            if (project != null && project.WorkspaceProject != null)
+            var projectSnapshot = _projectManager.GetLoadedProject(projectPath);
+            if (projectSnapshot != null)
             {
-                var workspaceProject = _projectManager.Workspace.CurrentSolution.GetProject(project.WorkspaceProject.Id);
+                var workspaceProject = _projectManager.Workspace.CurrentSolution.Projects.FirstOrDefault(
+                    wp => FilePathComparer.Instance.Equals(wp.FilePath, projectSnapshot.FilePath));
                 if (workspaceProject != null)
                 {
                     // Trigger a tag helper update by forcing the project manager to see the workspace Project
                     // from the current solution.
-                    _projectManager.WorkspaceProjectChanged(workspaceProject);
+                    _workspaceStateGenerator.Update(workspaceProject, projectSnapshot);
                 }
             }
 

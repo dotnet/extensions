@@ -10,22 +10,13 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    // The implementation of project snapshot manager abstracts over the Roslyn Project (WorkspaceProject)
-    // and information from the host's underlying project system (HostProject), to provide a unified and
-    // immutable view of the underlying project systems.
+    // The implementation of project snapshot manager abstracts the host's underlying project system (HostProject), 
+    // to provide a immutable view of the underlying project systems.
     //
     // The HostProject support all of the configuration that the Razor SDK exposes via the project system
     // (language version, extensions, named configuration).
     //
-    // The WorkspaceProject is needed to support our use of Roslyn Compilations for Tag Helpers and other
-    // C# based constructs.
-    //
-    // The implementation will create a ProjectSnapshot for each HostProject. Put another way, when we
-    // see a WorkspaceProject get created, we only care if we already have a HostProject for the same
-    // filepath.
-    //
-    // Our underlying HostProject infrastructure currently does not handle multiple TFMs (project with
-    // $(TargetFrameworks), so we just bind to the first WorkspaceProject we see for each HostProject.
+    // The implementation will create a ProjectSnapshot for each HostProject.
     internal class DefaultProjectSnapshotManager : ProjectSnapshotManagerBase
     {
         public override event EventHandler<ProjectChangeEventArgs> Changed;
@@ -385,7 +376,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public override void HostProjectAdded(HostProject hostProject)
+        public override void ProjectAdded(HostProject hostProject)
         {
             if (hostProject == null)
             {
@@ -400,11 +391,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 return;
             }
 
-            // It's possible that Workspace has already created a project for this, but it's not deterministic
-            // So if possible find a WorkspaceProject.
-            var workspaceProject = GetWorkspaceProject(hostProject.FilePath);
-
-            var state = ProjectState.Create(Workspace.Services, hostProject, workspaceProject);
+            var state = ProjectState.Create(Workspace.Services, hostProject);
             var entry = new Entry(state);
             _projects[hostProject.FilePath] = entry;
 
@@ -412,7 +399,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             NotifyListeners(new ProjectChangeEventArgs(null, entry.GetSnapshot(), ProjectChangeKind.ProjectAdded));
         }
 
-        public override void HostProjectChanged(HostProject hostProject)
+        public override void ProjectConfigurationChanged(HostProject hostProject)
         {
             if (hostProject == null)
             {
@@ -436,7 +423,36 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public override void HostProjectRemoved(HostProject hostProject)
+        public override void ProjectWorkspaceStateChanged(string projectFilePath, ProjectWorkspaceState projectWorkspaceState)
+        {
+            if (projectFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(projectFilePath));
+            }
+
+            if (projectWorkspaceState == null)
+            {
+                throw new ArgumentNullException(nameof(projectWorkspaceState));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+
+            if (_projects.TryGetValue(projectFilePath, out var entry))
+            {
+                var state = entry.State.WithProjectWorkspaceState(projectWorkspaceState);
+
+                // HostProject updates can no-op.
+                if (!object.ReferenceEquals(state, entry.State))
+                {
+                    var oldSnapshot = entry.GetSnapshot();
+                    entry = new Entry(state);
+                    _projects[projectFilePath] = entry;
+                    NotifyListeners(new ProjectChangeEventArgs(oldSnapshot, entry.GetSnapshot(), ProjectChangeKind.ProjectChanged));
+                }
+            }
+        }
+
+        public override void ProjectRemoved(HostProject hostProject)
         {
             if (hostProject == null)
             {
@@ -451,123 +467,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 var oldSnapshot = entry.GetSnapshot();
                 _projects.Remove(hostProject.FilePath);
                 NotifyListeners(new ProjectChangeEventArgs(oldSnapshot, null, ProjectChangeKind.ProjectRemoved));
-            }
-        }
-
-        public override void WorkspaceProjectAdded(Project workspaceProject)
-        {
-            if (workspaceProject == null)
-            {
-                throw new ArgumentNullException(nameof(workspaceProject));
-            }
-
-            _foregroundDispatcher.AssertForegroundThread();
-
-            if (!IsSupportedWorkspaceProject(workspaceProject))
-            {
-                return;
-            }
-
-            // The WorkspaceProject initialization never triggers a "Project Add" from out point of view, we
-            // only care if the new WorkspaceProject matches an existing HostProject.
-            if (_projects.TryGetValue(workspaceProject.FilePath, out var entry))
-            {
-                // If this is a multi-targeting project then we are only interested in a single workspace project. If we already
-                // found one in the past just ignore this one.
-                if (entry.State.WorkspaceProject == null)
-                {
-                    var state = entry.State.WithWorkspaceProject(workspaceProject);
-
-                    var oldSnapshot = entry.GetSnapshot();
-                    entry = new Entry(state);
-                    _projects[workspaceProject.FilePath] = entry;
-                    NotifyListeners(new ProjectChangeEventArgs(oldSnapshot, entry.GetSnapshot(), ProjectChangeKind.ProjectChanged));
-                }
-            }
-        }
-
-        public override void WorkspaceProjectChanged(Project workspaceProject)
-        {
-            if (workspaceProject == null)
-            {
-                throw new ArgumentNullException(nameof(workspaceProject));
-            }
-
-            _foregroundDispatcher.AssertForegroundThread();
-
-            if (!IsSupportedWorkspaceProject(workspaceProject))
-            {
-                return;
-            }
-
-            // We also need to check the projectId here. If this is a multi-targeting project then we are only interested
-            // in a single workspace project. Just use the one that showed up first.
-            if (_projects.TryGetValue(workspaceProject.FilePath, out var entry) &&
-                (entry.State.WorkspaceProject == null || entry.State.WorkspaceProject.Id == workspaceProject.Id) &&
-                (entry.State.WorkspaceProject == null || entry.State.WorkspaceProject.Version.GetNewerVersion(workspaceProject.Version) == workspaceProject.Version))
-            {
-                var state = entry.State.WithWorkspaceProject(workspaceProject);
-
-                // WorkspaceProject updates can no-op. This can be the case if a build is triggered, but we've
-                // already seen the update.
-                if (!object.ReferenceEquals(state, entry.State))
-                {
-                    var oldSnapshot = entry.GetSnapshot();
-                    entry = new Entry(state);
-                    _projects[workspaceProject.FilePath] = entry;
-                    NotifyListeners(new ProjectChangeEventArgs(oldSnapshot, entry.GetSnapshot(), ProjectChangeKind.ProjectChanged));
-                }
-            }
-        }
-
-        public override void WorkspaceProjectRemoved(Project workspaceProject)
-        {
-            if (workspaceProject == null)
-            {
-                throw new ArgumentNullException(nameof(workspaceProject));
-            }
-
-            _foregroundDispatcher.AssertForegroundThread();
-
-            if (!IsSupportedWorkspaceProject(workspaceProject))
-            {
-                return;
-            }
-
-            if (_projects.TryGetValue(workspaceProject.FilePath, out var entry))
-            {
-                // We also need to check the projectId here. If this is a multi-targeting project then we are only interested
-                // in a single workspace project. Make sure the WorkspaceProject we're using is the one that's being removed.
-                if (entry.State.WorkspaceProject?.Id != workspaceProject.Id)
-                {
-                    return;
-                }
-
-                ProjectState state;
-
-                // So if the WorkspaceProject got removed, we should double check to make sure that there aren't others
-                // hanging around. This could happen if a project is multi-targeting and one of the TFMs is removed.
-                var otherWorkspaceProject = GetWorkspaceProject(workspaceProject.FilePath);
-                if (otherWorkspaceProject != null && otherWorkspaceProject.Id != workspaceProject.Id)
-                {
-                    // OK there's another WorkspaceProject, use that.
-                    state = entry.State.WithWorkspaceProject(otherWorkspaceProject);
-
-                    var oldSnapshot = entry.GetSnapshot();
-                    entry = new Entry(state);
-                    _projects[otherWorkspaceProject.FilePath] = entry;
-                    NotifyListeners(new ProjectChangeEventArgs(oldSnapshot, entry.GetSnapshot(), ProjectChangeKind.ProjectChanged));
-                }
-                else
-                {
-                    // Notify listeners of a change because we've removed computed state.
-                    state = entry.State.WithWorkspaceProject(null);
-
-                    var oldSnapshot = entry.GetSnapshot();
-                    entry = new Entry(state);
-                    _projects[workspaceProject.FilePath] = entry;
-                    NotifyListeners(new ProjectChangeEventArgs(oldSnapshot, entry.GetSnapshot(), ProjectChangeKind.ProjectChanged));
-                }
             }
         }
 
@@ -600,41 +499,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var snapshot = hostProject?.FilePath == null ? null : GetLoadedProject(hostProject.FilePath);
             _errorReporter.ReportError(exception, snapshot);
-        }
-
-        public override void ReportError(Exception exception, Project workspaceProject)
-        {
-            if (exception == null)
-            {
-                throw new ArgumentNullException(nameof(exception));
-            }
-
-            _errorReporter.ReportError(exception, workspaceProject);
-        }
-
-        // We're only interested in CSharp projects that have a FilePath. We rely on the FilePath to
-        // unify the Workspace Project with our HostProject concept.
-        private bool IsSupportedWorkspaceProject(Project workspaceProject) => workspaceProject.Language == LanguageNames.CSharp && workspaceProject.FilePath != null;
-
-        private Project GetWorkspaceProject(string filePath)
-        {
-            var solution = Workspace.CurrentSolution;
-            if (solution == null)
-            {
-                return null;
-            }
-
-            foreach (var workspaceProject in solution.Projects)
-            {
-                if (IsSupportedWorkspaceProject(workspaceProject) &&
-                    FilePathComparer.Instance.Equals(filePath, workspaceProject.FilePath))
-                {
-                    // We don't try to handle mulitple TFMs anwhere in Razor, just take the first WorkspaceProject that is a match. 
-                    return workspaceProject;
-                }
-            }
-
-            return null;
         }
 
         // virtual so it can be overridden in tests

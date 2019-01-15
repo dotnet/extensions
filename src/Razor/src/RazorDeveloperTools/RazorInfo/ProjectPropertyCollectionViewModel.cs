@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
@@ -19,7 +20,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             Properties.Add(new ProjectPropertyItemViewModel("Language Version", _project.Configuration?.LanguageVersion.ToString()));
             Properties.Add(new ProjectPropertyItemViewModel("Configuration", FormatConfiguration(_project)));
             Properties.Add(new ProjectPropertyItemViewModel("Extensions", FormatExtensions(_project)));
-            Properties.Add(new ProjectPropertyItemViewModel("Workspace Project", _project.WorkspaceProject?.Name));
+            Properties.Add(new ProjectPropertyItemViewModel("Project", Path.GetFileName(_project.FilePath)));
         }
 
         public ObservableCollection<ProjectPropertyItemViewModel> Properties { get; }

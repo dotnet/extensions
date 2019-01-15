@@ -20,15 +20,9 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         public DefaultProjectSnapshotProjectEngineFactoryTest()
         {
-            Project project = null;
+            Workspace = TestWorkspace.Create();
 
-            Workspace = TestWorkspace.Create(workspace =>
-            {
-                var info = ProjectInfo.Create(ProjectId.CreateNewId("Test"), VersionStamp.Default, "Test", "Test", LanguageNames.CSharp, filePath: "/TestPath/SomePath/Test.csproj");
-                project = workspace.CurrentSolution.AddProject(info).GetProject(info.Id);
-            });
-
-            WorkspaceProject = project;
+            ProjectWorkspaceState = ProjectWorkspaceState.Default;
 
             HostProject_For_1_0 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_0);
             HostProject_For_1_1 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_1);
@@ -46,12 +40,12 @@ namespace Microsoft.CodeAnalysis.Razor
                 "/TestPath/SomePath/Test.csproj",
                 new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Blazor-0.1", Array.Empty<RazorExtension>()));
 
-            Snapshot_For_1_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_0, WorkspaceProject));
-            Snapshot_For_1_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_1, WorkspaceProject));
-            Snapshot_For_2_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_2_0, WorkspaceProject));
-            Snapshot_For_2_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_2_1, WorkspaceProject));
-            Snapshot_For_3_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_3_0, WorkspaceProject));
-            Snapshot_For_UnknownConfiguration = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_UnknownConfiguration, WorkspaceProject));
+            Snapshot_For_1_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_0, ProjectWorkspaceState));
+            Snapshot_For_1_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_1, ProjectWorkspaceState));
+            Snapshot_For_2_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_2_0, ProjectWorkspaceState));
+            Snapshot_For_2_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_2_1, ProjectWorkspaceState));
+            Snapshot_For_3_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_3_0, ProjectWorkspaceState));
+            Snapshot_For_UnknownConfiguration = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_UnknownConfiguration, ProjectWorkspaceState));
 
             CustomFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
             {
@@ -103,7 +97,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private ProjectSnapshot Snapshot_For_UnknownConfiguration { get; }
         
-        private Project WorkspaceProject { get; }
+        private ProjectWorkspaceState ProjectWorkspaceState { get; }
 
         private Workspace Workspace { get; }
 

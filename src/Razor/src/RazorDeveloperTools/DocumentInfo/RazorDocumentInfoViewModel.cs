@@ -25,21 +25,6 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
 
         public bool IsSupportedDocument => _documentTracker.IsSupportedProject;
 
-        public Project Project
-        {
-            get
-            {
-                if (Workspace != null && ProjectId != null)
-                {
-                    return Workspace.CurrentSolution.GetProject(ProjectId);
-                }
-
-                return null;
-            }
-        }
-
-        public ProjectId ProjectId => _documentTracker.Project?.Id;
-
         public Workspace Workspace => _documentTracker.Workspace;
     }
 }

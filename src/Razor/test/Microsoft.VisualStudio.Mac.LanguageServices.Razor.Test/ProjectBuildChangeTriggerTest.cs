@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
+using Microsoft.VisualStudio.Editor.Razor.Test;
 using MonoDevelop.Projects;
 using Moq;
 using Xunit;
@@ -30,14 +31,6 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
                     "SomeProject",
                     LanguageNames.CSharp,
                     filePath: SomeProject.FilePath));
-
-                SomeOtherWorkspaceProject = w.AddProject(ProjectInfo.Create(
-                    ProjectId.CreateNewId(),
-                    VersionStamp.Create(),
-                    "SomeOtherProject",
-                    "SomeOtherProject",
-                    LanguageNames.CSharp,
-                    filePath: SomeOtherProject.FilePath));
             });
         }
 
@@ -47,97 +40,83 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 
         private Project SomeWorkspaceProject { get; set; }
 
-        private Project SomeOtherWorkspaceProject { get; set; }
-
         private Workspace Workspace { get; }
 
         [ForegroundFact]
-        public void ProjectOperations_EndBuild_Invokes_WorkspaceProjectChanged()
+        public void ProjectOperations_EndBuild_EnqueuesProjectStateUpdate()
         {
             // Arrange
             var expectedProjectPath = SomeProject.FilePath;
             var projectService = CreateProjectService(expectedProjectPath);
 
             var args = new BuildEventArgs(monitor: null, success: true);
-
-            var projectSnapshots = new[]
-            {
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject, SomeWorkspaceProject)),
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
-            };
+            var projectSnapshot = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject));
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
                 .Setup(p => p.GetLoadedProject(SomeProject.FilePath))
-                .Returns(projectSnapshots[0]);
-            projectManager
-                .Setup(p => p.WorkspaceProjectChanged(It.IsAny<Project>()))
-                .Callback<Project>(c => Assert.Equal(expectedProjectPath, c.FilePath));
-
-            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService, projectManager.Object);
+                .Returns(projectSnapshot);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService, workspaceStateGenerator, projectManager.Object);
 
             // Act
             trigger.ProjectOperations_EndBuild(null, args);
 
             // Assert
-            projectManager.VerifyAll();
+            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(SomeWorkspaceProject, update.workspaceProject);
         }
 
         [ForegroundFact]
         public void ProjectOperations_EndBuild_ProjectWithoutWorkspaceProject_Noops()
         {
             // Arrange
-            var projectService = CreateProjectService(SomeProject.FilePath);
+            var expectedPath = "Path/To/Project.csproj";
+            var projectService = CreateProjectService(expectedPath);
 
             var args = new BuildEventArgs(monitor: null, success: true);
-            var projectSnapshots = new[]
-            {
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject, null)),
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
-            };
+            var projectSnapshot = new DefaultProjectSnapshot(
+                ProjectState.Create(
+                    Workspace.Services,
+                    new HostProject(expectedPath, RazorConfiguration.Default)));
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
-                .Setup(p => p.GetLoadedProject(SomeProject.FilePath))
-                .Returns(projectSnapshots[0]);
-            projectManager
-                .Setup(p => p.WorkspaceProjectChanged(It.IsAny<Project>()))
-                .Throws<InvalidOperationException>();
+                .Setup(p => p.GetLoadedProject(expectedPath))
+                .Returns(projectSnapshot);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService, workspaceStateGenerator, projectManager.Object);
 
-            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService, projectManager.Object);
-
-            // Act & Assert
+            // Act
             trigger.ProjectOperations_EndBuild(null, args);
+
+            // Assert
+            Assert.Empty(workspaceStateGenerator.UpdateQueue);
         }
 
         [ForegroundFact]
         public void ProjectOperations_EndBuild_UntrackedProject_Noops()
         {
             // Arrange
-            var projectService = CreateProjectService("Path/To/Project");
+            var projectService = CreateProjectService(SomeProject.FilePath);
 
             var args = new BuildEventArgs(monitor: null, success: true);
-            var projectSnapshots = new[]
-            {
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject, null)),
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
-            };
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
                 .Setup(p => p.GetLoadedProject(SomeProject.FilePath))
-                .Returns(projectSnapshots[0]);
-            projectManager
-                .Setup(p => p.WorkspaceProjectChanged(It.IsAny<Project>()))
-                .Throws<InvalidOperationException>();
+                .Returns<ProjectSnapshot>(null);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService, workspaceStateGenerator, projectManager.Object);
 
-            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService, projectManager.Object);
-
-            // Act & Assert
+            // Act
             trigger.ProjectOperations_EndBuild(null, args);
+
+            // Assert
+            Assert.Empty(workspaceStateGenerator.UpdateQueue);
         }
 
         [ForegroundFact]
@@ -149,10 +128,14 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             projectService.Setup(p => p.IsSupportedProject(null)).Throws<InvalidOperationException>();
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Throws<InvalidOperationException>();
-            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService.Object, projectManager.Object);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService.Object, workspaceStateGenerator, projectManager.Object);
 
-            // Act & Assert
+            // Act
             trigger.ProjectOperations_EndBuild(null, args);
+
+            // Assert
+            Assert.Empty(workspaceStateGenerator.UpdateQueue);
         }
 
         [ForegroundFact]
@@ -164,10 +147,14 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             projectService.Setup(p => p.IsSupportedProject(null)).Returns(false);
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Throws<InvalidOperationException>();
-            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService.Object, projectManager.Object);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService.Object, workspaceStateGenerator, projectManager.Object);
 
-            // Act & Assert
+            // Act
             trigger.ProjectOperations_EndBuild(null, args);
+
+            // Assert
+            Assert.Empty(workspaceStateGenerator.UpdateQueue);
         }
 
         private static TextBufferProjectService CreateProjectService(string projectPath)

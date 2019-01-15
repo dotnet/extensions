@@ -18,16 +18,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0);
             HostProjectWithConfigurationChange = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
-
-            var projectId = ProjectId.CreateNewId("Test");
-            var solution = Workspace.CurrentSolution.AddProject(ProjectInfo.Create(
-                projectId,
-                VersionStamp.Default,
-                "Test",
-                "Test",
-                LanguageNames.CSharp,
-                TestProjectData.SomeProject.FilePath));
-            WorkspaceProject = solution.GetProject(projectId);
+            ProjectWorkspaceState = new ProjectWorkspaceState(new[]
+            {
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
+            });
 
             SomeTagHelpers = new List<TagHelperDescriptor>
             {
@@ -50,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private HostProject HostProjectWithConfigurationChange { get; }
 
-        private Project WorkspaceProject { get; }
+        private ProjectWorkspaceState ProjectWorkspaceState { get; }
 
         private TestTagHelperResolver TagHelperResolver { get; }
 
@@ -70,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectSnapshot_CachesDocumentSnapshots()
         {
             // Arrange
-            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+            var state = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState)
                 .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader)
                 .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader)
                 .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader);
@@ -91,7 +85,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void IsImportDocument_NonImportDocument_ReturnsFalse()
         {
             // Arrange
-            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+            var state = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState)
                 .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader);
             var snapshot = new DefaultProjectSnapshot(state);
 
@@ -108,7 +102,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void IsImportDocument_ImportDocument_ReturnsTrue()
         {
             // Arrange
-            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+            var state = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState)
                 .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader)
                 .WithAddedHostDocument(TestProjectData.SomeProjectImportFile, DocumentState.EmptyLoader);
             var snapshot = new DefaultProjectSnapshot(state);
@@ -126,7 +120,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void GetRelatedDocuments_NonImportDocument_ReturnsEmpty()
         {
             // Arrange
-            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+            var state = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState)
                 .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader);
             var snapshot = new DefaultProjectSnapshot(state);
 
@@ -143,7 +137,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void GetRelatedDocuments_ImportDocument_ReturnsRelated()
         {
             // Arrange
-            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+            var state = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState)
                 .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader)
                 .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader)
                 .WithAddedHostDocument(TestProjectData.SomeProjectImportFile, DocumentState.EmptyLoader);

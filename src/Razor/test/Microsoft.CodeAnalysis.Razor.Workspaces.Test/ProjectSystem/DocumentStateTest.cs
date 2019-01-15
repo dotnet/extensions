@@ -19,16 +19,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             
             HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0);
             HostProjectWithConfigurationChange = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
-
-            var projectId = ProjectId.CreateNewId("Test");
-            var solution = Workspace.CurrentSolution.AddProject(ProjectInfo.Create(
-                projectId,
-                VersionStamp.Default,
-                "Test",
-                "Test",
-                LanguageNames.CSharp,
-                TestProjectData.SomeProject.FilePath));
-            WorkspaceProject = solution.GetProject(projectId);
+            ProjectWorkspaceState = new ProjectWorkspaceState(new[]
+            {
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
+            });
 
             SomeTagHelpers = new List<TagHelperDescriptor>();
             SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
@@ -45,7 +39,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private HostProject HostProjectWithConfigurationChange { get; }
 
-        private Project WorkspaceProject { get; }
+        private ProjectWorkspaceState ProjectWorkspaceState { get; }
 
         private TestTagHelperResolver TagHelperResolver { get; }
 
@@ -164,14 +158,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
-        public void DocumentState_WithWorkspaceProjectChange_CachesSnapshotText()
+        public void DocumentState_WithProjectWorkspaceStateChange_CachesSnapshotText()
         {
             // Arrange
             var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader)
                 .WithText(Text, VersionStamp.Create());
 
             // Act
-            var state = original.WithWorkspaceProjectChange();
+            var state = original.WithProjectWorkspaceStateChange();
 
             // Assert
             Assert.True(state.TryGetText(out _));
@@ -179,7 +173,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
-        public async Task DocumentState_WithWorkspaceProjectChange_CachesLoadedText()
+        public async Task DocumentState_WithProjectWorkspaceStateChange_CachesLoadedText()
         {
             // Arrange
             var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader)
@@ -188,7 +182,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await original.GetTextAsync();
 
             // Act
-            var state = original.WithWorkspaceProjectChange();
+            var state = original.WithProjectWorkspaceStateChange();
 
             // Assert
             Assert.True(state.TryGetText(out _));

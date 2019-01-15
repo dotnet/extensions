@@ -8,7 +8,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal sealed class ProjectSnapshotHandle
     {
-        public ProjectSnapshotHandle(string filePath, RazorConfiguration configuration, ProjectId workspaceProjectId)
+        public ProjectSnapshotHandle(
+            string filePath, 
+            RazorConfiguration configuration)
         {
             if (filePath == null)
             {
@@ -17,13 +19,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             FilePath = filePath;
             Configuration = configuration;
-            WorkspaceProjectId = workspaceProjectId;
         }
 
         public RazorConfiguration Configuration { get; }
 
         public string FilePath { get; }
-
-        public ProjectId WorkspaceProjectId { get; }
     }
 }

@@ -67,42 +67,25 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         private Workspace Workspace { get; }
 
         [Fact]
-        public async Task GetTagHelpersAsync_WithNonInitializedProject_Noops()
-        {
-            // Arrange
-            ProjectManager.HostProjectAdded(HostProject_For_2_0);
-
-            var project = ProjectManager.GetLoadedProject("Test.csproj");
-
-            var resolver = new TestTagHelperResolver(EngineFactory, ErrorReporter, Workspace);
-
-            var result = await resolver.GetTagHelpersAsync(project);
-
-            // Assert
-            Assert.Same(TagHelperResolutionResult.Empty, result);
-        }
-
-        [Fact]
         public async Task GetTagHelpersAsync_WithSerializableCustomFactory_GoesOutOfProcess()
         {
             // Arrange
-            ProjectManager.HostProjectAdded(HostProject_For_2_0);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.ProjectAdded(HostProject_For_2_0);
 
-            var project = ProjectManager.GetLoadedProject("Test.csproj");
+            var projectSnapshot = ProjectManager.GetLoadedProject("Test.csproj");
 
             var resolver = new TestTagHelperResolver(EngineFactory, ErrorReporter, Workspace)
             {
                 OnResolveOutOfProcess = (f, p) =>
                 {
                     Assert.Same(CustomFactories[0].Value, f);
-                    Assert.Same(project, p);
+                    Assert.Same(projectSnapshot, p);
 
                     return Task.FromResult(TagHelperResolutionResult.Empty);
                 },
             };
 
-            var result = await resolver.GetTagHelpersAsync(project);
+            var result = await resolver.GetTagHelpersAsync(WorkspaceProject, projectSnapshot);
 
             // Assert
             Assert.Same(TagHelperResolutionResult.Empty, result);
@@ -112,22 +95,21 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public async Task GetTagHelpersAsync_WithNonSerializableCustomFactory_StaysInProcess()
         {
             // Arrange
-            ProjectManager.HostProjectAdded(HostProject_For_NonSerializableConfiguration);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.ProjectAdded(HostProject_For_NonSerializableConfiguration);
 
-            var project = ProjectManager.GetLoadedProject("Test.csproj");
+            var projectSnapshot = ProjectManager.GetLoadedProject("Test.csproj");
 
             var resolver = new TestTagHelperResolver(EngineFactory, ErrorReporter, Workspace)
             {
                 OnResolveInProcess = (p) =>
                 {
-                    Assert.Same(project, p);
+                    Assert.Same(projectSnapshot, p);
 
                     return Task.FromResult(TagHelperResolutionResult.Empty);
                 },
             };
 
-            var result = await resolver.GetTagHelpersAsync(project);
+            var result = await resolver.GetTagHelpersAsync(WorkspaceProject, projectSnapshot);
 
             // Assert
             Assert.Same(TagHelperResolutionResult.Empty, result);
@@ -145,16 +127,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             public Func<ProjectSnapshot, Task<TagHelperResolutionResult>> OnResolveInProcess { get; set; }
 
-            protected override Task<TagHelperResolutionResult> ResolveTagHelpersOutOfProcessAsync(IProjectEngineFactory factory, ProjectSnapshot project)
+            protected override Task<TagHelperResolutionResult> ResolveTagHelpersOutOfProcessAsync(IProjectEngineFactory factory, Project workspaceProject, ProjectSnapshot projectSnapshot)
             {
                 Assert.NotNull(OnResolveOutOfProcess);
-                return OnResolveOutOfProcess(factory, project);
+                return OnResolveOutOfProcess(factory, projectSnapshot);
             }
 
-            protected override Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(ProjectSnapshot project)
+            protected override Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(Project project, ProjectSnapshot projectSnapshot)
             {
                 Assert.NotNull(OnResolveInProcess);
-                return OnResolveInProcess(project);
+                return OnResolveInProcess(projectSnapshot);
             }
         }
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager

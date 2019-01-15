@@ -43,12 +43,9 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
             try
             {
-                if (!_project.TryGetTagHelpers(out var tagHelpers))
-                {
-                    ProgressVisibility = Visibility.Visible;
-                    tagHelpers = await _project.GetTagHelpersAsync();
-                    await Task.Delay(250); // Force a delay for the UI
-                }
+                var tagHelpers = _project.TagHelpers;
+                ProgressVisibility = Visibility.Visible;
+                await Task.Delay(250); // Force a delay for the UI
 
                 foreach (var tagHelper in tagHelpers)
                 {

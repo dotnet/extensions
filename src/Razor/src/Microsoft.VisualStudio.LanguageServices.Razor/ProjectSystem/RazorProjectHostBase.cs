@@ -178,16 +178,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
             else if (_current == null && project != null)
             {
-                projectManager.HostProjectAdded(project);
+                projectManager.ProjectAdded(project);
             }
             else if (_current != null && project == null)
             {
                 Debug.Assert(_currentDocuments.Count == 0);
-                projectManager.HostProjectRemoved(_current);
+                projectManager.ProjectRemoved(_current);
             }
             else
             {
-                projectManager.HostProjectChanged(project);
+                projectManager.ProjectConfigurationChanged(project);
             }
 
             _current = project;

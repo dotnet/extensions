@@ -27,28 +27,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             HostProject1 = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
             HostProject2 = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
 
-            var projectId1 = ProjectId.CreateNewId("Test1");
-            var projectId2 = ProjectId.CreateNewId("Test2");
-
-            var solution = Workspace.CurrentSolution
-                .AddProject(ProjectInfo.Create(
-                    projectId1,
-                    VersionStamp.Default,
-                    "Test1",
-                    "Test1",
-                    LanguageNames.CSharp,
-                    TestProjectData.SomeProject.FilePath))
-                .AddProject(ProjectInfo.Create(
-                    projectId2,
-                    VersionStamp.Default,
-                    "Test2",
-                    "Test2",
-                    LanguageNames.CSharp,
-                    TestProjectData.AnotherProject.FilePath)); ;
-
-            WorkspaceProject1 = solution.GetProject(projectId1);
-            WorkspaceProject2 = solution.GetProject(projectId2);
-
             DynamicFileInfoProvider = new RazorDynamicFileInfoProvider(new DefaultDocumentServiceProviderFactory());
         }
 
@@ -57,10 +35,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private HostProject HostProject1 { get; }
 
         private HostProject HostProject2 { get; }
-
-        private Project WorkspaceProject1 { get; }
-
-        private Project WorkspaceProject2 { get; }
 
         private RazorDynamicFileInfoProvider DynamicFileInfoProvider { get; }
 
@@ -74,10 +48,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
-            projectManager.HostProjectAdded(HostProject1);
-            projectManager.HostProjectAdded(HostProject2);
-            projectManager.WorkspaceProjectAdded(WorkspaceProject1);
-            projectManager.WorkspaceProjectAdded(WorkspaceProject2);
+            projectManager.ProjectAdded(HostProject1);
+            projectManager.ProjectAdded(HostProject2);
             projectManager.DocumentAdded(HostProject1, Documents[0], null);
             projectManager.DocumentAdded(HostProject1, Documents[1], null);
 
@@ -115,10 +87,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
-            projectManager.HostProjectAdded(HostProject1);
-            projectManager.HostProjectAdded(HostProject2);
-            projectManager.WorkspaceProjectAdded(WorkspaceProject1);
-            projectManager.WorkspaceProjectAdded(WorkspaceProject2);
+            projectManager.ProjectAdded(HostProject1);
+            projectManager.ProjectAdded(HostProject2);
             projectManager.DocumentAdded(HostProject1, Documents[0], null);
             projectManager.DocumentAdded(HostProject1, Documents[1], null);
 

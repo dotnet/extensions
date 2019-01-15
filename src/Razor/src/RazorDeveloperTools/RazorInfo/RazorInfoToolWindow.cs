@@ -37,11 +37,12 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
             var componentModel = (IComponentModel)GetService(typeof(SComponentModel));
             _workspace = componentModel.GetService<VisualStudioWorkspace>();
+            var workspaceStateGenerator = componentModel.GetService<ProjectWorkspaceStateGenerator>();
 
             _projectManager = _workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<ProjectSnapshotManager>();
             _projectManager.Changed += ProjectManager_Changed;
 
-            DataContext = new RazorInfoViewModel(_workspace, _projectManager, OnException);
+            DataContext = new RazorInfoViewModel(_workspace, _projectManager, workspaceStateGenerator, OnException);
             
             foreach (var project in _projectManager.Projects)
             {

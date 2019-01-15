@@ -19,16 +19,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0);
             HostProjectWithConfigurationChange = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
 
-            var projectId = ProjectId.CreateNewId("Test");
-            var solution = Workspace.CurrentSolution.AddProject(ProjectInfo.Create(
-                projectId,
-                VersionStamp.Default,
-                "Test",
-                "Test",
-                LanguageNames.CSharp,
-                TestProjectData.SomeProject.FilePath));
-            WorkspaceProject = solution.GetProject(projectId);
-
             SomeTagHelpers = new List<TagHelperDescriptor>();
             SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
 
@@ -43,8 +33,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private HostProject HostProject { get; }
 
         private HostProject HostProjectWithConfigurationChange { get; }
-
-        private Project WorkspaceProject { get; }
 
         private TestTagHelperResolver TagHelperResolver { get; } = new TestTagHelperResolver();
 
@@ -82,7 +70,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Same(originalOutput, actualOutput);
             Assert.Equal(originalInputVersion, actualInputVersion);
             Assert.Equal(originalOutputVersion, actualOutputVersion);
-            Assert.Equal(await state.GetComputedStateVersionAsync(new DefaultProjectSnapshot(state)), actualOutputVersion);
+            Assert.NotEqual(state.ProjectWorkspaceStateVersion, actualOutputVersion);
+            Assert.NotEqual(state.ConfigurationVersion, actualOutputVersion);
         }
 
         [Fact]
@@ -181,29 +170,31 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
-        public async Task WorkspaceProjectChange_CachesOutput()
+        public async Task ProjectWorkspaceStateChange_CachesOutput_EvenWhenNewerProjectWorkspaceState()
         {
             // Arrange
             var original =
                 ProjectState.Create(Workspace.Services, HostProject)
-                .WithAddedHostDocument(HostDocument, DocumentState.EmptyLoader);
+                .WithAddedHostDocument(HostDocument, DocumentState.EmptyLoader)
+                .WithProjectWorkspaceState(ProjectWorkspaceState.Default);
 
             var (originalOutput, originalInputVersion, originalOutputVersion) = await GetOutputAsync(original, HostDocument);
+            var changed = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>());
 
             // Act
-            var state = original.WithWorkspaceProject(WorkspaceProject.WithAssemblyName("Test2"));
+            var state = original.WithProjectWorkspaceState(changed);
 
             // Assert
             var (actualOutput, actualInputVersion, actualOutputVersion) = await GetOutputAsync(state, HostDocument);
             Assert.Same(originalOutput, actualOutput);
             Assert.Equal(originalInputVersion, actualInputVersion);
             Assert.Equal(originalOutputVersion, actualOutputVersion);
-            Assert.Equal(await state.GetComputedStateVersionAsync(new DefaultProjectSnapshot(state)), actualInputVersion);
+            Assert.Equal(state.ProjectWorkspaceStateVersion, actualInputVersion);
         }
 
         // The generated code's text doesn't change as a result, so the output version does not change
         [Fact]
-        public async Task WorkspaceProjectChange_WithTagHelperChange_DoesNotCacheOutput()
+        public async Task ProjectWorkspaceStateChange_WithTagHelperChange_DoesNotCacheOutput()
         {
             // Arrange
             var original =
@@ -211,18 +202,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 .WithAddedHostDocument(HostDocument, DocumentState.EmptyLoader);
 
             var (originalOutput, originalInputVersion, originalOutputVersion) = await GetOutputAsync(original, HostDocument);
-
-            TagHelperResolver.TagHelpers = SomeTagHelpers;
+            var changed = new ProjectWorkspaceState(SomeTagHelpers);
 
             // Act
-            var state = original.WithWorkspaceProject(WorkspaceProject.WithAssemblyName("Test2"));
+            var state = original.WithProjectWorkspaceState(changed);
 
             // Assert
             var (actualOutput, actualInputVersion, actualOutputVersion) = await GetOutputAsync(state, HostDocument);
             Assert.NotSame(originalOutput, actualOutput);
             Assert.NotEqual(originalInputVersion, actualInputVersion);
             Assert.Equal(originalOutputVersion, actualOutputVersion);
-            Assert.Equal(await state.GetComputedStateVersionAsync(new DefaultProjectSnapshot(state)), actualInputVersion);
+            Assert.Equal(state.ProjectWorkspaceStateVersion, actualInputVersion);
         }
 
         [Fact]
@@ -243,7 +233,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.NotSame(originalOutput, actualOutput);
             Assert.NotEqual(originalInputVersion, actualInputVersion);
             Assert.NotEqual(originalOutputVersion, actualOutputVersion);
-            Assert.Equal(await state.GetComputedStateVersionAsync(new DefaultProjectSnapshot(state)), actualInputVersion);
+            Assert.NotEqual(state.ProjectWorkspaceStateVersion, actualInputVersion);
         }
 
         private static Task<(RazorCodeDocument, VersionStamp, VersionStamp)> GetOutputAsync(ProjectState project, HostDocument hostDocument)

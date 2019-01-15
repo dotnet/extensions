@@ -44,14 +44,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             _defaultResolver = new DefaultTagHelperResolver();
         }
 
-        public override async Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshot project, CancellationToken cancellationToken = default)
+        public override async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project workspaceProject, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken = default)
         {
-            if (project == null)
+            if (workspaceProject == null)
             {
-                throw new ArgumentNullException(nameof(project));
+                throw new ArgumentNullException(nameof(workspaceProject));
             }
 
-            if (project.Configuration == null || project.WorkspaceProject == null)
+            if (projectSnapshot == null)
+            {
+                throw new ArgumentNullException(nameof(projectSnapshot));
+            }
+
+            if (projectSnapshot.Configuration == null)
             {
                 return TagHelperResolutionResult.Empty;
             }
@@ -63,20 +68,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // 3. Use fallback factory in process
             //
             // Calling into RazorTemplateEngineFactoryService.Create will accomplish #2 and #3 in one step.
-            var factory = _factory.FindSerializableFactory(project);
+            var factory = _factory.FindSerializableFactory(projectSnapshot);
 
             try
             {
                 TagHelperResolutionResult result = null;
                 if (factory != null)
                 {
-                    result = await ResolveTagHelpersOutOfProcessAsync(factory, project).ConfigureAwait(false);
+                    result = await ResolveTagHelpersOutOfProcessAsync(factory, workspaceProject, projectSnapshot).ConfigureAwait(false);
                 }
 
                 if (result == null)
                 {
                     // Was unable to get tag helpers OOP, fallback to default behavior.
-                    result = await ResolveTagHelpersInProcessAsync(project).ConfigureAwait(false);
+                    result = await ResolveTagHelpersInProcessAsync(workspaceProject, projectSnapshot).ConfigureAwait(false);
                 }
 
                 return result;
@@ -91,7 +96,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
         }
 
-        protected virtual async Task<TagHelperResolutionResult> ResolveTagHelpersOutOfProcessAsync(IProjectEngineFactory factory, ProjectSnapshot project)
+        protected virtual async Task<TagHelperResolutionResult> ResolveTagHelpersOutOfProcessAsync(IProjectEngineFactory factory, Project workspaceProject, ProjectSnapshot projectSnapshot)
         {
             // We're being overly defensive here because the OOP host can return null for the client/session/operation
             // when it's disconnected (user stops the process).
@@ -102,13 +107,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 var client = await RazorLanguageServiceClientFactory.CreateAsync(_workspace, CancellationToken.None).ConfigureAwait(false);
                 if (client != null)
                 {
-                    using (var session = await client.CreateSessionAsync(project.WorkspaceProject.Solution).ConfigureAwait(false))
+                    using (var session = await client.CreateSessionAsync(workspaceProject.Solution).ConfigureAwait(false))
                     {
                         if (session != null)
                         {
                             var args = new object[]
                             {
-                                Serialize(project),
+                                Serialize(projectSnapshot),
                                 factory == null ? null : factory.GetType().AssemblyQualifiedName,
                             };
 
@@ -123,15 +128,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 // We silence exceptions from the OOP host because we don't want to bring down VS for an OOP failure.
                 // We will retry all failures in process anyway, so if there's a real problem that isn't unique to OOP
                 // then it will report a crash in VS.
-                _errorReporter.ReportError(ex, project);
+                _errorReporter.ReportError(ex, projectSnapshot);
             }
 
             return null;
         }
 
-        protected virtual Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(ProjectSnapshot project)
+        protected virtual Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(Project project, ProjectSnapshot projectSnapshot)
         {
-            return _defaultResolver.GetTagHelpersAsync(project);
+            return _defaultResolver.GetTagHelpersAsync(project, projectSnapshot);
         }
 
         private static JObject Serialize(ProjectSnapshot snapshot)
