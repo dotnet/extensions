@@ -2,26 +2,7 @@
   <!-- Called when generating a VSIX manifest -->
   <Target Name="_SetManifestProperties" BeforeTargets="GenerateVisualStudioInsertionManifests">
 
-    <!-- 
-      We expect these to be set by the build arguments in the official build. Populating them here with reasonable defaults
-      so we can inspect the behavior during local builds.
-    -->
     <PropertyGroup>
-      <ManifestTeamProject Condition="'$(ManifestTeamProject)' == ''">AspNet</ManifestTeamProject>
-      <ManifestRepositoryName Condition="'$(ManifestRepositoryName)' == ''">AspNetCore-Tooling</ManifestRepositoryName>
-      <ManifestBuildBranch Condition="'$(ManifestBuildBranch)' == ''">local_build</ManifestBuildBranch>
-      <ManifestBuildNumber Condition="'$(ManifestBuildNumber)' == ''">4242424242</ManifestBuildNumber>
-
-      <!-- 
-        The %3B is not a mistake, it's an escaped semicolon.
-
-        The final manifest URL needs to look like:
-          https://vsdrop.corp.microsoft.com/file/v1/Products/AspNet/AspNetCore-Tooling/master/20180909.1;Microsoft.VisualStudio.RazorExtension.vsix
-
-        We are responsible for providing the semicolon for some reason. 
-      -->
-      <ManifestPublishUrl Condition="'$(ManifestPublishUrl)' == ''">https://vsdrop.corp.microsoft.com/file/v1/Products/$(ManifestTeamProject)/$(ManifestRepositoryName)/$(ManifestBuildBranch)/$(ManifestBuildNumber)%3B</ManifestPublishUrl>
-
       <!-- 
         The build-in VSIX manifest support will compute its own version before calling this target.
         Replace it with our versioning scheme.
@@ -36,12 +17,5 @@
       <VsixVersion Condition="'$(OfficialBuildId)' == ''">$(VsixVersion).42424242.42</VsixVersion>
     </PropertyGroup>
 
-    <ItemGroup>
-      <_Args Include="ManifestTeamProject=$(ManifestTeamProject)" />
-      <_Args Include="ManifestRepositoryName=$(ManifestRepositoryName)" />
-      <_Args Include="ManifestBuildBranch=$(ManifestBuildBranch)" />
-      <_Args Include="ManifestBuildNumber=$(ManifestBuildNumber)" />
-      <_Args Include="ManifestPublishUrl=$(ManifestPublishUrl)" />
-    </ItemGroup>
   </Target>
 </Project>
