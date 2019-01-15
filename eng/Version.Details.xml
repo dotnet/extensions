@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Win32.Registry" Version="4.6.0-preview.19064.4">
+    <Dependency Name="Microsoft.Win32.Registry" Version="4.6.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview.19064.4">
+    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview.19064.4">
+    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview.19064.4">
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview.19064.4">
+    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview.19064.4">
+    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.Metadata" Version="1.7.0-preview.19064.4">
+    <Dependency Name="System.Reflection.Metadata" Version="1.7.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview.19064.4">
+    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Cng" Version="4.6.0-preview.19064.4">
+    <Dependency Name="System.Security.Cryptography.Cng" Version="4.6.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Xml" Version="4.6.0-preview.19064.4">
+    <Dependency Name="System.Security.Cryptography.Xml" Version="4.6.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview.19064.4">
+    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview.19065.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>60f871b05ac8db8de316dc9ed5e7647808011225</Sha>
+      <Sha>0fc82e2e9d4875a7a6dd24b97a3303fd859fd1ee</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview-27314-6">
       <Uri>https://github.com/dotnet/core-setup</Uri>
