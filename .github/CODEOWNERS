@@ -5,6 +5,8 @@
 /eng/ @natemcmaster
 /src/Caching/ @tratcher
 /src/Configuration/ @tratcher
+/src/DependencyInjection/ @pakrym
 /src/Hosting/ @tratcher
+/src/Logging/ @pakrym
 /src/Primitives/ @tratcher
 /src/Shared/src/HostFactoryResolver/ @tratcher
