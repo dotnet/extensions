@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Analyzers.Async
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class AsyncMethodAnalyzer : DiagnosticAnalyzer
     {
+        private static readonly AsyncAnalysisData Store = new AsyncAnalysisData();
+
         public AsyncMethodAnalyzer()
         {
             SupportedDiagnostics = ImmutableArray.Create(new[]
@@ -25,11 +27,9 @@ namespace Microsoft.DotNet.Analyzers.Async
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
-
-            context.RegisterCompilationStartAction(analysisContext => {
-                var store = new AsyncAnalysisData();
-
-                analysisContext.RegisterSyntaxNodeAction(syntaxContext => AnalyzeInvocation(syntaxContext, store), SyntaxKind.InvocationExpression, SyntaxKind.SimpleMemberAccessExpression);
+            context.RegisterCompilationStartAction(analysisContext =>
+            {
+                analysisContext.RegisterSyntaxNodeAction(syntaxContext => AnalyzeInvocation(syntaxContext, Store), SyntaxKind.InvocationExpression, SyntaxKind.SimpleMemberAccessExpression);
             });
         }
 
