@@ -13,6 +13,7 @@
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <PackageTags>analyzers;async</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
