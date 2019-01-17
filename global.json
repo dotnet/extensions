@@ -7,7 +7,7 @@
   },
   "msbuild-sdks": {
     "Internal.AspNetCore.Sdk": "3.0.0-build-20190105.1",
-    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19060.8",
-    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.19060.8"
+    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19066.1",
+    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.19066.1"
   }
 }
