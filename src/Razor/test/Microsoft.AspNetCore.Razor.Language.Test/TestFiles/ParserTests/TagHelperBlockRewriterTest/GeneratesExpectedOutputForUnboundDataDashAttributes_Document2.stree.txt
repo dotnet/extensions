@@ -1,10 +1,9 @@
 RazorDocument - [0..31)::31 - [<input data-required='value' />]
     MarkupBlock - [0..31)::31
         MarkupTagHelperElement - [0..31)::31 - input[SelfClosing] - inputtaghelper
-            MarkupTagHelperStartTag - [0..31)::31
-                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[input];
+            MarkupTagHelperStartTag - [0..31)::31 - [<input data-required='value' />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
                 MarkupTagHelperAttribute - [6..28)::22 - data-required - SingleQuotes - Unbound - [ data-required='value']
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -21,6 +20,5 @@ RazorDocument - [0..31)::31 - [<input data-required='value' />]
                 MarkupMiscAttributeContent - [28..29)::1
                     MarkupTextLiteral - [28..29)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [29..31)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

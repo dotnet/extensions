@@ -1,12 +1,10 @@
 RazorDocument - [0..35)::35 - [<p><!--Hello-->asdf<!--World--></p>]
     MarkupBlock - [0..35)::35
         MarkupTagHelperElement - [0..35)::35 - p[StartTagAndEndTag] - PTagHelper
-            MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
-                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupTagHelperStartTag - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
             MarkupCommentBlock - [3..15)::12
                 MarkupTextLiteral - [3..7)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
                     OpenAngle;[<];
@@ -29,9 +27,8 @@ RazorDocument - [0..35)::35 - [<p><!--Hello-->asdf<!--World--></p>]
                 MarkupTextLiteral - [28..31)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
                     DoubleHyphen;[--];
                     CloseAngle;[>];
-            MarkupTagHelperEndTag - [31..35)::4
-                MarkupTextLiteral - [31..35)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [31..35)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

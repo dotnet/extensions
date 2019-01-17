@@ -1,10 +1,9 @@
 RazorDocument - [0..17)::17 - [<p class="btn" />]
     MarkupBlock - [0..17)::17
         MarkupTagHelperElement - [0..17)::17 - p[SelfClosing] - pTagHelper
-            MarkupTagHelperStartTag - [0..17)::17
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..17)::17 - [<p class="btn" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupTagHelperAttribute - [2..14)::12 - class - DoubleQuotes - Unbound - [ class="btn"]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -22,6 +21,5 @@ RazorDocument - [0..17)::17 - [<p class="btn" />]
                 MarkupMiscAttributeContent - [14..15)::1
                     MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [15..17)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

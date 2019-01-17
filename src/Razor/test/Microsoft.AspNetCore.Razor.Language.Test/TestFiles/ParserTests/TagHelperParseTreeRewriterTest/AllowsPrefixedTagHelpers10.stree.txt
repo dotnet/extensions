@@ -1,10 +1,9 @@
 RazorDocument - [0..47)::47 - [<th:myth class="btn">words and spaces</th:myth>]
     MarkupBlock - [0..47)::47
         MarkupTagHelperElement - [0..47)::47 - th:myth[StartTagAndEndTag] - mythTagHelper
-            MarkupTagHelperStartTag - [0..21)::21
-                MarkupTextLiteral - [0..8)::8 - [<th:myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[th:myth];
+            MarkupTagHelperStartTag - [0..21)::21 - [<th:myth class="btn">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[th:myth];
                 MarkupTagHelperAttribute - [8..20)::12 - class - DoubleQuotes - Unbound - [ class="btn"]
                     MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -19,17 +18,15 @@ RazorDocument - [0..47)::47 - [<th:myth class="btn">words and spaces</th:myth>]
                                 Text;[btn];
                     MarkupTextLiteral - [19..20)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTextLiteral - [21..37)::16 - [words and spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[words];
                 Whitespace;[ ];
                 Text;[and];
                 Whitespace;[ ];
                 Text;[spaces];
-            MarkupTagHelperEndTag - [37..47)::10
-                MarkupTextLiteral - [37..47)::10 - [</th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[th:myth];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [37..47)::10 - [</th:myth>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[th:myth];
+                CloseAngle;[>];

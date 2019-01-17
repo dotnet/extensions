@@ -1,10 +1,9 @@
 RazorDocument - [0..101)::101 - [<p    bound-int class='@DateTime.Now + 1'   bound-string class='@DateTime.Now + 1'  bound-string></p>]
     MarkupBlock - [0..101)::101
         MarkupTagHelperElement - [0..101)::101 - p[StartTagAndEndTag] - PTagHelper
-            MarkupTagHelperStartTag - [0..97)::97
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..97)::97 - [<p    bound-int class='@DateTime.Now + 1'   bound-string class='@DateTime.Now + 1'  bound-string>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupMinimizedTagHelperAttribute - [2..15)::13 - bound-int - Minimized - Bound - [    bound-int]
                     MarkupTextLiteral - [2..6)::4 - [    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[    ];
@@ -86,11 +85,9 @@ RazorDocument - [0..101)::101 - [<p    bound-int class='@DateTime.Now + 1'   bou
                         Whitespace;[  ];
                     MarkupTextLiteral - [84..96)::12 - [bound-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound-string];
-                MarkupTextLiteral - [96..97)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupTagHelperEndTag - [97..101)::4
-                MarkupTextLiteral - [97..101)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+                CloseAngle;[>];
+            MarkupTagHelperEndTag - [97..101)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

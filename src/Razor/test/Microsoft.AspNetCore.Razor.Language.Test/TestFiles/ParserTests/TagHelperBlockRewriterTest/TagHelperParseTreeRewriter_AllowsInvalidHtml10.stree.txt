@@ -1,12 +1,10 @@
 RazorDocument - [0..42)::42 - [<p>< @DateTime.Now ></ @DateTime.Now ></p>]
     MarkupBlock - [0..42)::42
         MarkupTagHelperElement - [0..42)::42 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
-                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupTagHelperStartTag - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
             MarkupElement - [3..20)::17
                 MarkupStartTag - [3..20)::17 - [< @DateTime.Now >] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
@@ -49,9 +47,8 @@ RazorDocument - [0..42)::42 - [<p>< @DateTime.Now ></ @DateTime.Now ></p>]
             MarkupTextLiteral - [36..38)::2 - [ >] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Whitespace;[ ];
                 CloseAngle;[>];
-            MarkupTagHelperEndTag - [38..42)::4
-                MarkupTextLiteral - [38..42)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [38..42)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

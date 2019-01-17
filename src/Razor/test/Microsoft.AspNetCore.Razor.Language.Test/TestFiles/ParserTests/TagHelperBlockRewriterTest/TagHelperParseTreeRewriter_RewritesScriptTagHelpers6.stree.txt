@@ -1,20 +1,17 @@
 RazorDocument - [0..67)::67 - [<p>Hello <script class="foo" style="color:red;"></script> World</p>]
     MarkupBlock - [0..67)::67
         MarkupTagHelperElement - [0..67)::67 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
-                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupTagHelperStartTag - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
             MarkupTextLiteral - [3..9)::6 - [Hello ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
                 Whitespace;[ ];
             MarkupTagHelperElement - [9..57)::48 - script[StartTagAndEndTag] - scripttaghelper
-                MarkupTagHelperStartTag - [9..48)::39
-                    MarkupTextLiteral - [9..16)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[script];
+                MarkupTagHelperStartTag - [9..48)::39 - [<script class="foo" style="color:red;">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[script];
                     MarkupTagHelperAttribute - [16..28)::12 - class - DoubleQuotes - Unbound - [ class="foo"]
                         MarkupTextLiteral - [16..17)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Whitespace;[ ];
@@ -43,20 +40,17 @@ RazorDocument - [0..67)::67 - [<p>Hello <script class="foo" style="color:red;"><
                                     Text;[color:red;];
                         MarkupTextLiteral - [46..47)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
-                    MarkupTextLiteral - [47..48)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
-                MarkupTagHelperEndTag - [48..57)::9
-                    MarkupTextLiteral - [48..57)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        ForwardSlash;[/];
-                        Text;[script];
-                        CloseAngle;[>];
+                    CloseAngle;[>];
+                MarkupTagHelperEndTag - [48..57)::9 - [</script>]
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[script];
+                    CloseAngle;[>];
             MarkupTextLiteral - [57..63)::6 - [ World] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Whitespace;[ ];
                 Text;[World];
-            MarkupTagHelperEndTag - [63..67)::4
-                MarkupTextLiteral - [63..67)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [63..67)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

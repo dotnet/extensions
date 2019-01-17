@@ -1,10 +1,9 @@
 RazorDocument - [0..37)::37 - [<person name="Time: @DateTime.Now" />]
     MarkupBlock - [0..37)::37
         MarkupTagHelperElement - [0..37)::37 - person[SelfClosing] - PersonTagHelper
-            MarkupTagHelperStartTag - [0..37)::37
-                MarkupTextLiteral - [0..7)::7 - [<person] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[person];
+            MarkupTagHelperStartTag - [0..37)::37 - [<person name="Time: @DateTime.Now" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[person];
                 MarkupTagHelperAttribute - [7..34)::27 - name - DoubleQuotes - Bound - [ name="Time: @DateTime.Now"]
                     MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -34,6 +33,5 @@ RazorDocument - [0..37)::37 - [<person name="Time: @DateTime.Now" />]
                 MarkupMiscAttributeContent - [34..35)::1
                     MarkupTextLiteral - [34..35)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [35..37)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

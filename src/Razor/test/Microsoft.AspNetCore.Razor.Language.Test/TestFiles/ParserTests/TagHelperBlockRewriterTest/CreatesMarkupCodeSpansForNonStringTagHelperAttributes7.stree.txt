@@ -1,10 +1,9 @@
 RazorDocument - [0..88)::88 - [<person age="1 + @value + 2" birthday='(bool)@Bag["val"] ? @@DateTime : @DateTime.Now'/>]
     MarkupBlock - [0..88)::88
         MarkupTagHelperElement - [0..88)::88 - person[SelfClosing] - PersonTagHelper
-            MarkupTagHelperStartTag - [0..88)::88
-                MarkupTextLiteral - [0..7)::7 - [<person] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[person];
+            MarkupTagHelperStartTag - [0..88)::88 - [<person age="1 + @value + 2" birthday='(bool)@Bag["val"] ? @@DateTime : @DateTime.Now'/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[person];
                 MarkupTagHelperAttribute - [7..28)::21 - age - DoubleQuotes - Bound - [ age="1 + @value + 2"]
                     MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -96,6 +95,5 @@ RazorDocument - [0..88)::88 - [<person age="1 + @value + 2" birthday='(bool)@Bag
                                                 Identifier;[Now];
                     MarkupTextLiteral - [85..86)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [86..88)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

@@ -1,10 +1,9 @@
 RazorDocument - [0..122)::122 - [<p class="@DateTime.Now" style='@DateTime.Now'>Hello World <strong class="@DateTime.Now">inside of strong tag</strong></p>]
     MarkupBlock - [0..122)::122
         MarkupTagHelperElement - [0..122)::122 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..47)::47
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..47)::47 - [<p class="@DateTime.Now" style='@DateTime.Now'>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupTagHelperAttribute - [2..24)::22 - class - DoubleQuotes - Unbound - [ class="@DateTime.Now"]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -51,8 +50,7 @@ RazorDocument - [0..122)::122 - [<p class="@DateTime.Now" style='@DateTime.Now'>
                                                     Identifier;[Now];
                     MarkupTextLiteral - [45..46)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [46..47)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTextLiteral - [47..59)::12 - [Hello World ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
                 Whitespace;[ ];
@@ -99,9 +97,8 @@ RazorDocument - [0..122)::122 - [<p class="@DateTime.Now" style='@DateTime.Now'>
                     ForwardSlash;[/];
                     Text;[strong];
                     CloseAngle;[>];
-            MarkupTagHelperEndTag - [118..122)::4
-                MarkupTextLiteral - [118..122)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [118..122)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

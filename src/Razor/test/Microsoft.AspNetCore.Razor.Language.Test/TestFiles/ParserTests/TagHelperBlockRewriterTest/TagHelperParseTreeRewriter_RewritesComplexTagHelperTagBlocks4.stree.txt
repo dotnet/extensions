@@ -1,12 +1,10 @@
 RazorDocument - [0..77)::77 - [<p>Hello World @do { var foo = bar; <p>Foo</p> foo++; } while (foo<bar>);</p>]
     MarkupBlock - [0..77)::77
         MarkupTagHelperElement - [0..77)::77 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
-                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupTagHelperStartTag - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
             MarkupTextLiteral - [3..15)::12 - [Hello World ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
                 Whitespace;[ ];
@@ -32,20 +30,17 @@ RazorDocument - [0..77)::77 - [<p>Hello World @do { var foo = bar; <p>Foo</p> fo
                     MarkupTextLiteral - [35..36)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
                     MarkupTagHelperElement - [36..46)::10 - p[StartTagAndEndTag] - ptaghelper
-                        MarkupTagHelperStartTag - [36..39)::3
-                            MarkupTextLiteral - [36..38)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                OpenAngle;[<];
-                                Text;[p];
-                            MarkupTextLiteral - [38..39)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                CloseAngle;[>];
+                        MarkupTagHelperStartTag - [36..39)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[p];
+                            CloseAngle;[>];
                         MarkupTextLiteral - [39..42)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Text;[Foo];
-                        MarkupTagHelperEndTag - [42..46)::4
-                            MarkupTextLiteral - [42..46)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                OpenAngle;[<];
-                                ForwardSlash;[/];
-                                Text;[p];
-                                CloseAngle;[>];
+                        MarkupTagHelperEndTag - [42..46)::4 - [</p>]
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[p];
+                            CloseAngle;[>];
                     MarkupTextLiteral - [46..47)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
                         Whitespace;[ ];
                 CSharpStatementLiteral - [47..73)::26 - [foo++; } while (foo<bar>);] - Gen<Stmt> - SpanEditHandler;Accepts:None
@@ -64,9 +59,8 @@ RazorDocument - [0..77)::77 - [<p>Hello World @do { var foo = bar; <p>Foo</p> fo
                     GreaterThan;[>];
                     RightParenthesis;[)];
                     Semicolon;[;];
-            MarkupTagHelperEndTag - [73..77)::4
-                MarkupTextLiteral - [73..77)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [73..77)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

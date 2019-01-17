@@ -1,10 +1,9 @@
 RazorDocument - [0..89)::89 - [<input bound-required-int unbound-required bound-required-string<p bound-int bound-string]
     MarkupBlock - [0..89)::89
         MarkupTagHelperElement - [0..64)::64 - input[StartTagAndEndTag] - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
-            MarkupTagHelperStartTag - [0..64)::64
-                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[input];
+            MarkupTagHelperStartTag - [0..64)::64 - [<input bound-required-int unbound-required bound-required-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
                 MarkupMinimizedTagHelperAttribute - [6..25)::19 - bound-required-int - Minimized - Bound - [ bound-required-int]
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -20,11 +19,11 @@ RazorDocument - [0..89)::89 - [<input bound-required-int unbound-required bound-
                         Whitespace;[ ];
                     MarkupTextLiteral - [43..64)::21 - [bound-required-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound-required-string];
+                CloseAngle;[<Missing>];
         MarkupTagHelperElement - [64..89)::25 - p[StartTagAndEndTag] - PTagHelper
-            MarkupTagHelperStartTag - [64..89)::25
-                MarkupTextLiteral - [64..66)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [64..89)::25 - [<p bound-int bound-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupMinimizedTagHelperAttribute - [66..76)::10 - bound-int - Minimized - Bound - [ bound-int]
                     MarkupTextLiteral - [66..67)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -35,3 +34,4 @@ RazorDocument - [0..89)::89 - [<input bound-required-int unbound-required bound-
                         Whitespace;[ ];
                     MarkupTextLiteral - [77..89)::12 - [bound-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound-string];
+                CloseAngle;[<Missing>];

@@ -1,12 +1,10 @@
 RazorDocument - [0..75)::75 - [<script>Hel<strong>lo</strong></script> <script><span>World</span></script>]
     MarkupBlock - [0..75)::75
         MarkupTagHelperElement - [0..39)::39 - script[StartTagAndEndTag] - scripttaghelper
-            MarkupTagHelperStartTag - [0..8)::8
-                MarkupTextLiteral - [0..7)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[script];
-                MarkupTextLiteral - [7..8)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupTagHelperStartTag - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
             MarkupTextLiteral - [8..30)::22 - [Hel<strong>lo</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hel];
                 OpenAngle;[<];
@@ -17,21 +15,18 @@ RazorDocument - [0..75)::75 - [<script>Hel<strong>lo</strong></script> <script><
                 ForwardSlash;[/];
                 Text;[strong];
                 CloseAngle;[>];
-            MarkupTagHelperEndTag - [30..39)::9
-                MarkupTextLiteral - [30..39)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[script];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [30..39)::9 - [</script>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];
         MarkupTextLiteral - [39..40)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Whitespace;[ ];
         MarkupTagHelperElement - [40..75)::35 - script[StartTagAndEndTag] - scripttaghelper
-            MarkupTagHelperStartTag - [40..48)::8
-                MarkupTextLiteral - [40..47)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[script];
-                MarkupTextLiteral - [47..48)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupTagHelperStartTag - [40..48)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
             MarkupTextLiteral - [48..66)::18 - [<span>World</span>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[span];
@@ -41,9 +36,8 @@ RazorDocument - [0..75)::75 - [<script>Hel<strong>lo</strong></script> <script><
                 ForwardSlash;[/];
                 Text;[span];
                 CloseAngle;[>];
-            MarkupTagHelperEndTag - [66..75)::9
-                MarkupTextLiteral - [66..75)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[script];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [66..75)::9 - [</script>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

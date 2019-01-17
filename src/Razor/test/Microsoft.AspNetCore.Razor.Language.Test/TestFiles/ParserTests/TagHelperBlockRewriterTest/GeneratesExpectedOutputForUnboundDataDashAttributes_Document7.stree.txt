@@ -1,10 +1,9 @@
 RazorDocument - [0..60)::60 - [<input data-required='@DateTime.Now middle @DateTime.Now' />]
     MarkupBlock - [0..60)::60
         MarkupTagHelperElement - [0..60)::60 - input[SelfClosing] - inputtaghelper
-            MarkupTagHelperStartTag - [0..60)::60
-                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[input];
+            MarkupTagHelperStartTag - [0..60)::60 - [<input data-required='@DateTime.Now middle @DateTime.Now' />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
                 MarkupTagHelperAttribute - [6..57)::51 - data-required - SingleQuotes - Unbound - [ data-required='@DateTime.Now middle @DateTime.Now']
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -43,6 +42,5 @@ RazorDocument - [0..60)::60 - [<input data-required='@DateTime.Now middle @DateT
                 MarkupMiscAttributeContent - [57..58)::1
                     MarkupTextLiteral - [57..58)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [58..60)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

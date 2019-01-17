@@ -1,10 +1,9 @@
 RazorDocument - [0..31)::31 - [<p class="btn bar="foo"<strong>]
     MarkupBlock - [0..31)::31
         MarkupTagHelperElement - [0..31)::31 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..23)::23
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..23)::23 - [<p class="btn bar="foo"] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupTagHelperAttribute - [2..19)::17 - class - DoubleQuotes - Unbound - [ class="btn bar="]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -29,10 +28,9 @@ RazorDocument - [0..31)::31 - [<p class="btn bar="foo"<strong>]
                     MarkupTextLiteral - [19..23)::4 - [foo"] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[foo];
                         DoubleQuote;["];
+                CloseAngle;[<Missing>];
             MarkupTagHelperElement - [23..31)::8 - strong[StartTagAndEndTag] - strongtaghelper
-                MarkupTagHelperStartTag - [23..31)::8
-                    MarkupTextLiteral - [23..30)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[strong];
-                    MarkupTextLiteral - [30..31)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
+                MarkupTagHelperStartTag - [23..31)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];

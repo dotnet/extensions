@@ -12,18 +12,16 @@ RazorDocument - [0..26)::26 - [@{<input int-dictionary/>}]
                     CSharpCodeBlock - [2..25)::23
                         MarkupBlock - [2..25)::23
                             MarkupTagHelperElement - [2..25)::23 - input[SelfClosing] - InputTagHelper3
-                                MarkupTagHelperStartTag - [2..25)::23
-                                    MarkupTextLiteral - [2..8)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        Text;[input];
+                                MarkupTagHelperStartTag - [2..25)::23 - [<input int-dictionary/>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[input];
                                     MarkupMinimizedTagHelperAttribute - [8..23)::15 - int-dictionary - Minimized - Bound - [ int-dictionary]
                                         MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
                                         MarkupTextLiteral - [9..23)::14 - [int-dictionary] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[int-dictionary];
-                                    MarkupTextLiteral - [23..25)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        ForwardSlash;[/];
-                                        CloseAngle;[>];
+                                    ForwardSlash;[/];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [25..25)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [25..26)::1 - Gen<None> - SpanEditHandler;Accepts:None

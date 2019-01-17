@@ -12,10 +12,9 @@ RazorDocument - [0..70)::70 - [@{<input bound-required-int unbound-required boun
                     CSharpCodeBlock - [2..69)::67
                         MarkupBlock - [2..69)::67
                             MarkupTagHelperElement - [2..69)::67 - input[SelfClosing] - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
-                                MarkupTagHelperStartTag - [2..69)::67
-                                    MarkupTextLiteral - [2..8)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        Text;[input];
+                                MarkupTagHelperStartTag - [2..69)::67 - [<input bound-required-int unbound-required bound-required-string />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[input];
                                     MarkupMinimizedTagHelperAttribute - [8..27)::19 - bound-required-int - Minimized - Bound - [ bound-required-int]
                                         MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
@@ -34,9 +33,8 @@ RazorDocument - [0..70)::70 - [@{<input bound-required-int unbound-required boun
                                     MarkupMiscAttributeContent - [66..67)::1
                                         MarkupTextLiteral - [66..67)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
-                                    MarkupTextLiteral - [67..69)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        ForwardSlash;[/];
-                                        CloseAngle;[>];
+                                    ForwardSlash;[/];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [69..69)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [69..70)::1 - Gen<None> - SpanEditHandler;Accepts:None

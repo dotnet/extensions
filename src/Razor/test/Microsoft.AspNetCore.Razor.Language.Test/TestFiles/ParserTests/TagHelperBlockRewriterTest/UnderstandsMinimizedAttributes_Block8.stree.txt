@@ -12,10 +12,9 @@ RazorDocument - [0..24)::24 - [@{<input int-prefix- />}]
                     CSharpCodeBlock - [2..23)::21
                         MarkupBlock - [2..23)::21
                             MarkupTagHelperElement - [2..23)::21 - input[SelfClosing] - InputTagHelper3
-                                MarkupTagHelperStartTag - [2..23)::21
-                                    MarkupTextLiteral - [2..8)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        Text;[input];
+                                MarkupTagHelperStartTag - [2..23)::21 - [<input int-prefix- />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[input];
                                     MarkupMinimizedTagHelperAttribute - [8..20)::12 - int-prefix- - Minimized - Bound - [ int-prefix-]
                                         MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
@@ -24,9 +23,8 @@ RazorDocument - [0..24)::24 - [@{<input int-prefix- />}]
                                     MarkupMiscAttributeContent - [20..21)::1
                                         MarkupTextLiteral - [20..21)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
-                                    MarkupTextLiteral - [21..23)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        ForwardSlash;[/];
-                                        CloseAngle;[>];
+                                    ForwardSlash;[/];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [23..23)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [23..24)::1 - Gen<None> - SpanEditHandler;Accepts:None

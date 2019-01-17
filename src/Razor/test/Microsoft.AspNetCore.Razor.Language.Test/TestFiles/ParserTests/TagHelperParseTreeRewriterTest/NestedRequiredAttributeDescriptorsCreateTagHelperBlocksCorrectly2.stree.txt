@@ -1,10 +1,9 @@
 RazorDocument - [0..48)::48 - [<strong catchAll="hi"><strong></strong></strong>]
     MarkupBlock - [0..48)::48
         MarkupTagHelperElement - [0..48)::48 - strong[StartTagAndEndTag] - catchAllTagHelper
-            MarkupTagHelperStartTag - [0..22)::22
-                MarkupTextLiteral - [0..7)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[strong];
+            MarkupTagHelperStartTag - [0..22)::22 - [<strong catchAll="hi">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[strong];
                 MarkupTagHelperAttribute - [7..21)::14 - catchAll - DoubleQuotes - Unbound - [ catchAll="hi"]
                     MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -19,8 +18,7 @@ RazorDocument - [0..48)::48 - [<strong catchAll="hi"><strong></strong></strong>]
                                 Text;[hi];
                     MarkupTextLiteral - [20..21)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [21..22)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupElement - [22..39)::17
                 MarkupStartTag - [22..30)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
@@ -31,9 +29,8 @@ RazorDocument - [0..48)::48 - [<strong catchAll="hi"><strong></strong></strong>]
                     ForwardSlash;[/];
                     Text;[strong];
                     CloseAngle;[>];
-            MarkupTagHelperEndTag - [39..48)::9
-                MarkupTextLiteral - [39..48)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[strong];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [39..48)::9 - [</strong>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[strong];
+                CloseAngle;[>];

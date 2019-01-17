@@ -1,10 +1,9 @@
 RazorDocument - [0..41)::41 - [<script class="foo" style="color:red;" />]
     MarkupBlock - [0..41)::41
         MarkupTagHelperElement - [0..41)::41 - script[SelfClosing] - scripttaghelper
-            MarkupTagHelperStartTag - [0..41)::41
-                MarkupTextLiteral - [0..7)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[script];
+            MarkupTagHelperStartTag - [0..41)::41 - [<script class="foo" style="color:red;" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
                 MarkupTagHelperAttribute - [7..19)::12 - class - DoubleQuotes - Unbound - [ class="foo"]
                     MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -36,6 +35,5 @@ RazorDocument - [0..41)::41 - [<script class="foo" style="color:red;" />]
                 MarkupMiscAttributeContent - [38..39)::1
                     MarkupTextLiteral - [38..39)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [39..41)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

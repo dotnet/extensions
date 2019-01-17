@@ -12,10 +12,9 @@ RazorDocument - [0..30)::30 - [@{<input string-dictionary />}]
                     CSharpCodeBlock - [2..29)::27
                         MarkupBlock - [2..29)::27
                             MarkupTagHelperElement - [2..29)::27 - input[SelfClosing] - InputTagHelper3
-                                MarkupTagHelperStartTag - [2..29)::27
-                                    MarkupTextLiteral - [2..8)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        Text;[input];
+                                MarkupTagHelperStartTag - [2..29)::27 - [<input string-dictionary />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[input];
                                     MarkupMinimizedTagHelperAttribute - [8..26)::18 - string-dictionary - Minimized - Bound - [ string-dictionary]
                                         MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
@@ -24,9 +23,8 @@ RazorDocument - [0..30)::30 - [@{<input string-dictionary />}]
                                     MarkupMiscAttributeContent - [26..27)::1
                                         MarkupTextLiteral - [26..27)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
-                                    MarkupTextLiteral - [27..29)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        ForwardSlash;[/];
-                                        CloseAngle;[>];
+                                    ForwardSlash;[/];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [29..29)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [29..30)::1 - Gen<None> - SpanEditHandler;Accepts:None

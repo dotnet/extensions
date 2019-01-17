@@ -1,10 +1,9 @@
 RazorDocument - [0..43)::43 - [<input string-prefix-value='some string' />]
     MarkupBlock - [0..43)::43
         MarkupTagHelperElement - [0..43)::43 - input[SelfClosing] - InputTagHelper3
-            MarkupTagHelperStartTag - [0..43)::43
-                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[input];
+            MarkupTagHelperStartTag - [0..43)::43 - [<input string-prefix-value='some string' />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
                 MarkupTagHelperAttribute - [6..40)::34 - string-prefix-value - SingleQuotes - Bound - [ string-prefix-value='some string']
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -24,6 +23,5 @@ RazorDocument - [0..43)::43 - [<input string-prefix-value='some string' />]
                 MarkupMiscAttributeContent - [40..41)::1
                     MarkupTextLiteral - [40..41)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [41..43)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

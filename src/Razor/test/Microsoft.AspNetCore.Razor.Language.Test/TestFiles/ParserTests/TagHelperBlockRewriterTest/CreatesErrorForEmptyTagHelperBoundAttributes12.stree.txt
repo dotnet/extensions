@@ -1,10 +1,9 @@
 RazorDocument - [0..32)::32 - [<myth BOUND= nAMe='john'></myth>]
     MarkupBlock - [0..32)::32
         MarkupTagHelperElement - [0..32)::32 - myth[StartTagAndEndTag] - mythTagHelper
-            MarkupTagHelperStartTag - [0..25)::25
-                MarkupTextLiteral - [0..5)::5 - [<myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[myth];
+            MarkupTagHelperStartTag - [0..25)::25 - [<myth BOUND= nAMe='john'>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[myth];
                 MarkupTagHelperAttribute - [5..12)::7 - BOUND - DoubleQuotes - Bound - [ BOUND=]
                     MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -26,11 +25,9 @@ RazorDocument - [0..32)::32 - [<myth BOUND= nAMe='john'></myth>]
                             Text;[john];
                     MarkupTextLiteral - [23..24)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [24..25)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupTagHelperEndTag - [25..32)::7
-                MarkupTextLiteral - [25..32)::7 - [</myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[myth];
-                    CloseAngle;[>];
+                CloseAngle;[>];
+            MarkupTagHelperEndTag - [25..32)::7 - [</myth>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[myth];
+                CloseAngle;[>];

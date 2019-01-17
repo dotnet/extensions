@@ -1,10 +1,9 @@
 RazorDocument - [0..55)::55 - [<button bound (click)='doSomething()'>Click Me</button>]
     MarkupBlock - [0..55)::55
         MarkupTagHelperElement - [0..55)::55 - button[StartTagAndEndTag] - CatchAllTagHelper
-            MarkupTagHelperStartTag - [0..38)::38
-                MarkupTextLiteral - [0..7)::7 - [<button] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[button];
+            MarkupTagHelperStartTag - [0..38)::38 - [<button bound (click)='doSomething()'>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[button];
                 MarkupMinimizedTagHelperAttribute - [7..13)::6 - bound - Minimized - Unbound - [ bound]
                     MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -23,15 +22,13 @@ RazorDocument - [0..55)::55 - [<button bound (click)='doSomething()'>Click Me</b
                             Text;[doSomething()];
                     MarkupTextLiteral - [36..37)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [37..38)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTextLiteral - [38..46)::8 - [Click Me] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Click];
                 Whitespace;[ ];
                 Text;[Me];
-            MarkupTagHelperEndTag - [46..55)::9
-                MarkupTextLiteral - [46..55)::9 - [</button>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[button];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [46..55)::9 - [</button>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[button];
+                CloseAngle;[>];

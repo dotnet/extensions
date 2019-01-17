@@ -23,13 +23,11 @@ RazorDocument - [0..19)::19 - [< class="foo" <p />]
                         Whitespace;[ ];
                 CloseAngle;[<Missing>];
         MarkupTagHelperElement - [14..19)::5 - p[SelfClosing] - ptaghelper
-            MarkupTagHelperStartTag - [14..19)::5
-                MarkupTextLiteral - [14..16)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [14..19)::5 - [<p />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupMiscAttributeContent - [16..17)::1
                     MarkupTextLiteral - [16..17)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [17..19)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

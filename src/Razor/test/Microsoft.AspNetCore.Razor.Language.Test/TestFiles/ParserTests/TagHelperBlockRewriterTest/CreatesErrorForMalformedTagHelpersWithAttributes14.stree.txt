@@ -1,10 +1,9 @@
 RazorDocument - [0..27)::27 - [<p @DateTime.Now="btn"></p>]
     MarkupBlock - [0..27)::27
         MarkupTagHelperElement - [0..27)::27 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..23)::23
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..23)::23 - [<p @DateTime.Now="btn">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupMiscAttributeContent - [2..22)::20
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -23,11 +22,9 @@ RazorDocument - [0..27)::27 - [<p @DateTime.Now="btn"></p>]
                         DoubleQuote;["];
                         Text;[btn];
                         DoubleQuote;["];
-                MarkupTextLiteral - [22..23)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupTagHelperEndTag - [23..27)::4
-                MarkupTextLiteral - [23..27)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+                CloseAngle;[>];
+            MarkupTagHelperEndTag - [23..27)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

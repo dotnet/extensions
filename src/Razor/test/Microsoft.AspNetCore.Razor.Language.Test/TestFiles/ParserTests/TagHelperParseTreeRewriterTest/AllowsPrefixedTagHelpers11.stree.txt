@@ -1,10 +1,9 @@
 RazorDocument - [0..34)::34 - [<th:myth2 bound="@DateTime.Now" />]
     MarkupBlock - [0..34)::34
         MarkupTagHelperElement - [0..34)::34 - th:myth2[SelfClosing] - mythTagHelper2
-            MarkupTagHelperStartTag - [0..34)::34
-                MarkupTextLiteral - [0..9)::9 - [<th:myth2] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[th:myth2];
+            MarkupTagHelperStartTag - [0..34)::34 - [<th:myth2 bound="@DateTime.Now" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[th:myth2];
                 MarkupTagHelperAttribute - [9..31)::22 - bound - DoubleQuotes - Bound - [ bound="@DateTime.Now"]
                     MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -30,6 +29,5 @@ RazorDocument - [0..34)::34 - [<th:myth2 bound="@DateTime.Now" />]
                 MarkupMiscAttributeContent - [31..32)::1
                     MarkupTextLiteral - [31..32)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [32..34)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

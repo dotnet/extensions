@@ -1,10 +1,9 @@
 RazorDocument - [0..71)::71 - [<div style="@DateTime.Now" class="@DateTime.Now">words and spaces</div>]
     MarkupBlock - [0..71)::71
         MarkupTagHelperElement - [0..71)::71 - div[StartTagAndEndTag] - divTagHelper
-            MarkupTagHelperStartTag - [0..49)::49
-                MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[div];
+            MarkupTagHelperStartTag - [0..49)::49 - [<div style="@DateTime.Now" class="@DateTime.Now">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
                 MarkupTagHelperAttribute - [4..26)::22 - style - DoubleQuotes - Unbound - [ style="@DateTime.Now"]
                     MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -51,17 +50,15 @@ RazorDocument - [0..71)::71 - [<div style="@DateTime.Now" class="@DateTime.Now">
                                                     Identifier;[Now];
                     MarkupTextLiteral - [47..48)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [48..49)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTextLiteral - [49..65)::16 - [words and spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[words];
                 Whitespace;[ ];
                 Text;[and];
                 Whitespace;[ ];
                 Text;[spaces];
-            MarkupTagHelperEndTag - [65..71)::6
-                MarkupTextLiteral - [65..71)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[div];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [65..71)::6 - [</div>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];

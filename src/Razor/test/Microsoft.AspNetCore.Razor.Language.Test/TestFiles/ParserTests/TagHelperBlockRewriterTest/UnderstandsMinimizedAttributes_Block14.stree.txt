@@ -12,10 +12,9 @@ RazorDocument - [0..32)::32 - [@{<input int-prefix-value='3'/>}]
                     CSharpCodeBlock - [2..31)::29
                         MarkupBlock - [2..31)::29
                             MarkupTagHelperElement - [2..31)::29 - input[SelfClosing] - InputTagHelper3
-                                MarkupTagHelperStartTag - [2..31)::29
-                                    MarkupTextLiteral - [2..8)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        Text;[input];
+                                MarkupTagHelperStartTag - [2..31)::29 - [<input int-prefix-value='3'/>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[input];
                                     MarkupTagHelperAttribute - [8..29)::21 - int-prefix-value - SingleQuotes - Bound - [ int-prefix-value='3']
                                         MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
@@ -29,9 +28,8 @@ RazorDocument - [0..32)::32 - [@{<input int-prefix-value='3'/>}]
                                                 Text;[3];
                                         MarkupTextLiteral - [28..29)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
-                                    MarkupTextLiteral - [29..31)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        ForwardSlash;[/];
-                                        CloseAngle;[>];
+                                    ForwardSlash;[/];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [31..31)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [31..32)::1 - Gen<None> - SpanEditHandler;Accepts:None

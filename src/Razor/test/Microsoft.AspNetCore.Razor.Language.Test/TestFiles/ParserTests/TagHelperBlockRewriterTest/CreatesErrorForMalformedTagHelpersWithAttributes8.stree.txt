@@ -1,10 +1,9 @@
 RazorDocument - [0..18)::18 - [<p foo bar<strong>]
     MarkupBlock - [0..18)::18
         MarkupTagHelperElement - [0..18)::18 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..10)::10
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..10)::10 - [<p foo bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupMinimizedTagHelperAttribute - [2..6)::4 - foo - Minimized - Unbound - [ foo]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -15,10 +14,9 @@ RazorDocument - [0..18)::18 - [<p foo bar<strong>]
                         Whitespace;[ ];
                     MarkupTextLiteral - [7..10)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bar];
+                CloseAngle;[<Missing>];
             MarkupTagHelperElement - [10..18)::8 - strong[StartTagAndEndTag] - strongtaghelper
-                MarkupTagHelperStartTag - [10..18)::8
-                    MarkupTextLiteral - [10..17)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[strong];
-                    MarkupTextLiteral - [17..18)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
+                MarkupTagHelperStartTag - [10..18)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
