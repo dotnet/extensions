@@ -1,10 +1,9 @@
 RazorDocument - [0..69)::69 - [<p class=foo dynamic=@DateTime.Now style=color@@:red;>Hello World</p>]
     MarkupBlock - [0..69)::69
         MarkupTagHelperElement - [0..69)::69 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..54)::54
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..54)::54 - [<p class=foo dynamic=@DateTime.Now style=color@@:red;>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupTagHelperAttribute - [2..12)::10 - class - DoubleQuotes - Unbound - [ class=foo]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -52,15 +51,13 @@ RazorDocument - [0..69)::69 - [<p class=foo dynamic=@DateTime.Now style=color@@:
                         MarkupLiteralAttributeValue - [48..53)::5 - [:red;]
                             MarkupTextLiteral - [48..53)::5 - [:red;] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[:red;];
-                MarkupTextLiteral - [53..54)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTextLiteral - [54..65)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
                 Whitespace;[ ];
                 Text;[World];
-            MarkupTagHelperEndTag - [65..69)::4
-                MarkupTextLiteral - [65..69)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [65..69)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

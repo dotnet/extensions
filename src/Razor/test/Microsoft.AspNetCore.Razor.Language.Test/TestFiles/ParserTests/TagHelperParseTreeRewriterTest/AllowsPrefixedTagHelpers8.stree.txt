@@ -1,10 +1,9 @@
 RazorDocument - [0..23)::23 - [<th:myth class="btn" />]
     MarkupBlock - [0..23)::23
         MarkupTagHelperElement - [0..23)::23 - th:myth[SelfClosing] - mythTagHelper
-            MarkupTagHelperStartTag - [0..23)::23
-                MarkupTextLiteral - [0..8)::8 - [<th:myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[th:myth];
+            MarkupTagHelperStartTag - [0..23)::23 - [<th:myth class="btn" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[th:myth];
                 MarkupTagHelperAttribute - [8..20)::12 - class - DoubleQuotes - Unbound - [ class="btn"]
                     MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -22,6 +21,5 @@ RazorDocument - [0..23)::23 - [<th:myth class="btn" />]
                 MarkupMiscAttributeContent - [20..21)::1
                     MarkupTextLiteral - [20..21)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [21..23)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

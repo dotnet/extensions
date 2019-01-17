@@ -1,10 +1,9 @@
 RazorDocument - [0..82)::82 - [<input pre-attribute data-required='prefix @DateTime.Now suffix' post-attribute />]
     MarkupBlock - [0..82)::82
         MarkupTagHelperElement - [0..82)::82 - input[SelfClosing] - inputtaghelper
-            MarkupTagHelperStartTag - [0..82)::82
-                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[input];
+            MarkupTagHelperStartTag - [0..82)::82 - [<input pre-attribute data-required='prefix @DateTime.Now suffix' post-attribute />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
                 MarkupMinimizedTagHelperAttribute - [6..20)::14 - pre-attribute - Minimized - Unbound - [ pre-attribute]
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -45,6 +44,5 @@ RazorDocument - [0..82)::82 - [<input pre-attribute data-required='prefix @DateT
                 MarkupMiscAttributeContent - [79..80)::1
                     MarkupTextLiteral - [79..80)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [80..82)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

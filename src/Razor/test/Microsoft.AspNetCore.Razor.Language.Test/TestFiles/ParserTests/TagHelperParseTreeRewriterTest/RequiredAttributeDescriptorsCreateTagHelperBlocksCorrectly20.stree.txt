@@ -1,10 +1,9 @@
 RazorDocument - [0..41)::41 - [<div style="@DateTime.Now" class="btn" />]
     MarkupBlock - [0..41)::41
         MarkupTagHelperElement - [0..41)::41 - div[SelfClosing] - divTagHelper
-            MarkupTagHelperStartTag - [0..41)::41
-                MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[div];
+            MarkupTagHelperStartTag - [0..41)::41 - [<div style="@DateTime.Now" class="btn" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
                 MarkupTagHelperAttribute - [4..26)::22 - style - DoubleQuotes - Unbound - [ style="@DateTime.Now"]
                     MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -45,6 +44,5 @@ RazorDocument - [0..41)::41 - [<div style="@DateTime.Now" class="btn" />]
                 MarkupMiscAttributeContent - [38..39)::1
                     MarkupTextLiteral - [38..39)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [39..41)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

@@ -1,10 +1,9 @@
 RazorDocument - [0..164)::164 - [<p class="@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);" style='@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);'>Hello World</p>]
     MarkupBlock - [0..164)::164
         MarkupTagHelperElement - [0..164)::164 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..149)::149
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..149)::149 - [<p class="@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);" style='@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);'>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupTagHelperAttribute - [2..75)::73 - class - DoubleQuotes - Unbound - [ class="@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);"]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -125,15 +124,13 @@ RazorDocument - [0..164)::164 - [<p class="@do { var foo = bar; <text>Foo</text>
                                         Semicolon;[;];
                     MarkupTextLiteral - [147..148)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [148..149)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTextLiteral - [149..160)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
                 Whitespace;[ ];
                 Text;[World];
-            MarkupTagHelperEndTag - [160..164)::4
-                MarkupTextLiteral - [160..164)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [160..164)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

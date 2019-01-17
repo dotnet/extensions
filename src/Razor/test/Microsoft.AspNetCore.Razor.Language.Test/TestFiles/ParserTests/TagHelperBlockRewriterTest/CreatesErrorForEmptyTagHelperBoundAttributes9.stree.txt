@@ -1,10 +1,9 @@
 RazorDocument - [0..46)::46 - [<myth bound='true' name='john' bound= name= />]
     MarkupBlock - [0..46)::46
         MarkupTagHelperElement - [0..46)::46 - myth[SelfClosing] - mythTagHelper
-            MarkupTagHelperStartTag - [0..46)::46
-                MarkupTextLiteral - [0..5)::5 - [<myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[myth];
+            MarkupTagHelperStartTag - [0..46)::46 - [<myth bound='true' name='john' bound= name= />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[myth];
                 MarkupTagHelperAttribute - [5..18)::13 - bound - SingleQuotes - Bound - [ bound='true']
                     MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -50,6 +49,5 @@ RazorDocument - [0..46)::46 - [<myth bound='true' name='john' bound= name= />]
                 MarkupMiscAttributeContent - [43..44)::1
                     MarkupTextLiteral - [43..44)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [44..46)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

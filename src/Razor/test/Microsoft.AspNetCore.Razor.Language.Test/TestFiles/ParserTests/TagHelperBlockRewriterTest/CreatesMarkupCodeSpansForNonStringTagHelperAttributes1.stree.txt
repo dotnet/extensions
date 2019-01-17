@@ -1,10 +1,9 @@
 RazorDocument - [0..19)::19 - [<person age="12" />]
     MarkupBlock - [0..19)::19
         MarkupTagHelperElement - [0..19)::19 - person[SelfClosing] - PersonTagHelper
-            MarkupTagHelperStartTag - [0..19)::19
-                MarkupTextLiteral - [0..7)::7 - [<person] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[person];
+            MarkupTagHelperStartTag - [0..19)::19 - [<person age="12" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[person];
                 MarkupTagHelperAttribute - [7..16)::9 - age - DoubleQuotes - Bound - [ age="12"]
                     MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -21,6 +20,5 @@ RazorDocument - [0..19)::19 - [<person age="12" />]
                 MarkupMiscAttributeContent - [16..17)::1
                     MarkupTextLiteral - [16..17)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [17..19)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

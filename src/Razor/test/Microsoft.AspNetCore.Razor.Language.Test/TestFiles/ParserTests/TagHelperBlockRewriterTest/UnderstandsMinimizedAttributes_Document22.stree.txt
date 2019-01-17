@@ -1,10 +1,9 @@
 RazorDocument - [0..38)::38 - [<input class='btn' unbound-required />]
     MarkupBlock - [0..38)::38
         MarkupTagHelperElement - [0..38)::38 - input[SelfClosing] - InputTagHelper1 - InputTagHelper3
-            MarkupTagHelperStartTag - [0..38)::38
-                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[input];
+            MarkupTagHelperStartTag - [0..38)::38 - [<input class='btn' unbound-required />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
                 MarkupTagHelperAttribute - [6..18)::12 - class - SingleQuotes - Unbound - [ class='btn']
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -27,6 +26,5 @@ RazorDocument - [0..38)::38 - [<input class='btn' unbound-required />]
                 MarkupMiscAttributeContent - [35..36)::1
                     MarkupTextLiteral - [35..36)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [36..38)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

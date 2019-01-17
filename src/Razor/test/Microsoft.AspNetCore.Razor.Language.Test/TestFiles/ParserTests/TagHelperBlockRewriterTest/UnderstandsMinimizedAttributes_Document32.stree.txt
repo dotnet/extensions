@@ -1,10 +1,9 @@
 RazorDocument - [0..126)::126 - [<input    bound-required-int class='@DateTime.Now + 1'   bound-required-string class='@DateTime.Now + 1'  unbound-required  />]
     MarkupBlock - [0..126)::126
         MarkupTagHelperElement - [0..126)::126 - input[SelfClosing] - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
-            MarkupTagHelperStartTag - [0..126)::126
-                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[input];
+            MarkupTagHelperStartTag - [0..126)::126 - [<input    bound-required-int class='@DateTime.Now + 1'   bound-required-string class='@DateTime.Now + 1'  unbound-required  />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
                 MarkupMinimizedTagHelperAttribute - [6..28)::22 - bound-required-int - Minimized - Bound - [    bound-required-int]
                     MarkupTextLiteral - [6..10)::4 - [    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[    ];
@@ -89,6 +88,5 @@ RazorDocument - [0..126)::126 - [<input    bound-required-int class='@DateTime.N
                 MarkupMiscAttributeContent - [122..124)::2
                     MarkupTextLiteral - [122..124)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[  ];
-                MarkupTextLiteral - [124..126)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

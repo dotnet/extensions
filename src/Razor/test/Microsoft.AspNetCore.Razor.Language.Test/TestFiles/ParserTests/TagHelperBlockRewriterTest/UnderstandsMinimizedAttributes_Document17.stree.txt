@@ -1,10 +1,9 @@
 RazorDocument - [0..30)::30 - [<p bound-int bound-string></p>]
     MarkupBlock - [0..30)::30
         MarkupTagHelperElement - [0..30)::30 - p[StartTagAndEndTag] - PTagHelper
-            MarkupTagHelperStartTag - [0..26)::26
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..26)::26 - [<p bound-int bound-string>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupMinimizedTagHelperAttribute - [2..12)::10 - bound-int - Minimized - Bound - [ bound-int]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -15,11 +14,9 @@ RazorDocument - [0..30)::30 - [<p bound-int bound-string></p>]
                         Whitespace;[ ];
                     MarkupTextLiteral - [13..25)::12 - [bound-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound-string];
-                MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupTagHelperEndTag - [26..30)::4
-                MarkupTextLiteral - [26..30)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+                CloseAngle;[>];
+            MarkupTagHelperEndTag - [26..30)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

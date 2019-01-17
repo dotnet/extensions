@@ -1,10 +1,9 @@
 RazorDocument - [0..24)::24 - [<strong catchAll="hi" />]
     MarkupBlock - [0..24)::24
         MarkupTagHelperElement - [0..24)::24 - strong[SelfClosing] - catchAllTagHelper
-            MarkupTagHelperStartTag - [0..24)::24
-                MarkupTextLiteral - [0..7)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[strong];
+            MarkupTagHelperStartTag - [0..24)::24 - [<strong catchAll="hi" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[strong];
                 MarkupTagHelperAttribute - [7..21)::14 - catchAll - DoubleQuotes - Unbound - [ catchAll="hi"]
                     MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -22,6 +21,5 @@ RazorDocument - [0..24)::24 - [<strong catchAll="hi" />]
                 MarkupMiscAttributeContent - [21..22)::1
                     MarkupTextLiteral - [21..22)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [22..24)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

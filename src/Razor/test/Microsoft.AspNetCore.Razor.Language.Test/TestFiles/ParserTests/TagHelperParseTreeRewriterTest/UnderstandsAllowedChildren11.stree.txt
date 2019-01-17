@@ -1,12 +1,10 @@
 RazorDocument - [0..69)::69 - [<p><custom>Title:<br><em>A Very Cool</em></custom><br />Something</p>]
     MarkupBlock - [0..69)::69
         MarkupTagHelperElement - [0..69)::69 - p[StartTagAndEndTag] - PTagHelper
-            MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
-                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupTagHelperStartTag - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
             MarkupElement - [3..50)::47
                 MarkupStartTag - [3..11)::8 - [<custom>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
@@ -15,12 +13,10 @@ RazorDocument - [0..69)::69 - [<p><custom>Title:<br><em>A Very Cool</em></custom
                 MarkupTextLiteral - [11..17)::6 - [Title:] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Text;[Title:];
                 MarkupTagHelperElement - [17..21)::4 - br[StartTagOnly] - BRTagHelper
-                    MarkupTagHelperStartTag - [17..21)::4
-                        MarkupTextLiteral - [17..20)::3 - [<br] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            OpenAngle;[<];
-                            Text;[br];
-                        MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            CloseAngle;[>];
+                    MarkupTagHelperStartTag - [17..21)::4 - [<br>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[br];
+                        CloseAngle;[>];
                 MarkupElement - [21..41)::20
                     MarkupStartTag - [21..25)::4 - [<em>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
@@ -43,21 +39,18 @@ RazorDocument - [0..69)::69 - [<p><custom>Title:<br><em>A Very Cool</em></custom
                     Text;[custom];
                     CloseAngle;[>];
             MarkupTagHelperElement - [50..56)::6 - br[SelfClosing] - BRTagHelper
-                MarkupTagHelperStartTag - [50..56)::6
-                    MarkupTextLiteral - [50..53)::3 - [<br] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[br];
+                MarkupTagHelperStartTag - [50..56)::6 - [<br />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[br];
                     MarkupMiscAttributeContent - [53..54)::1
                         MarkupTextLiteral - [53..54)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Whitespace;[ ];
-                    MarkupTextLiteral - [54..56)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        ForwardSlash;[/];
-                        CloseAngle;[>];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];
             MarkupTextLiteral - [56..65)::9 - [Something] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Something];
-            MarkupTagHelperEndTag - [65..69)::4
-                MarkupTextLiteral - [65..69)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [65..69)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

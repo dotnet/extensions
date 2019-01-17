@@ -6,22 +6,18 @@ RazorDocument - [0..33)::33 - [<div><p>Hello <strong>World</div>]
                 Text;[div];
                 CloseAngle;[>];
             MarkupTagHelperElement - [5..27)::22 - p[StartTagAndEndTag] - ptaghelper
-                MarkupTagHelperStartTag - [5..8)::3
-                    MarkupTextLiteral - [5..7)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[p];
-                    MarkupTextLiteral - [7..8)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
+                MarkupTagHelperStartTag - [5..8)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
                 MarkupTextLiteral - [8..14)::6 - [Hello ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Text;[Hello];
                     Whitespace;[ ];
                 MarkupTagHelperElement - [14..27)::13 - strong[StartTagAndEndTag] - strongtaghelper
-                    MarkupTagHelperStartTag - [14..22)::8
-                        MarkupTextLiteral - [14..21)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            OpenAngle;[<];
-                            Text;[strong];
-                        MarkupTextLiteral - [21..22)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            CloseAngle;[>];
+                    MarkupTagHelperStartTag - [14..22)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[strong];
+                        CloseAngle;[>];
                     MarkupTextLiteral - [22..27)::5 - [World] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[World];
             MarkupEndTag - [27..33)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any

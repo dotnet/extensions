@@ -12,23 +12,20 @@ RazorDocument - [0..20)::20 - [@{<p bound-int></p>}]
                     CSharpCodeBlock - [2..19)::17
                         MarkupBlock - [2..19)::17
                             MarkupTagHelperElement - [2..19)::17 - p[StartTagAndEndTag] - PTagHelper
-                                MarkupTagHelperStartTag - [2..15)::13
-                                    MarkupTextLiteral - [2..4)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        Text;[p];
+                                MarkupTagHelperStartTag - [2..15)::13 - [<p bound-int>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[p];
                                     MarkupMinimizedTagHelperAttribute - [4..14)::10 - bound-int - Minimized - Bound - [ bound-int]
                                         MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
                                         MarkupTextLiteral - [5..14)::9 - [bound-int] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[bound-int];
-                                    MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
-                                MarkupTagHelperEndTag - [15..19)::4
-                                    MarkupTextLiteral - [15..19)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[p];
-                                        CloseAngle;[>];
+                                    CloseAngle;[>];
+                                MarkupTagHelperEndTag - [15..19)::4 - [</p>]
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[p];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [19..19)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [19..20)::1 - Gen<None> - SpanEditHandler;Accepts:None

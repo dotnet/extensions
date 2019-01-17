@@ -1,10 +1,9 @@
 RazorDocument - [0..14)::14 - [<p class="btn"]
     MarkupBlock - [0..14)::14
         MarkupTagHelperElement - [0..14)::14 - p[StartTagAndEndTag] - pTagHelper
-            MarkupTagHelperStartTag - [0..14)::14
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..14)::14 - [<p class="btn"] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupTagHelperAttribute - [2..14)::12 - class - DoubleQuotes - Unbound - [ class="btn"]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -19,3 +18,4 @@ RazorDocument - [0..14)::14 - [<p class="btn"]
                                 Text;[btn];
                     MarkupTextLiteral - [13..14)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
+                CloseAngle;[<Missing>];

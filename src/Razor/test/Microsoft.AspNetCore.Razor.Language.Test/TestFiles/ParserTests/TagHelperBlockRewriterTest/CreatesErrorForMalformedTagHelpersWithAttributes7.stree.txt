@@ -1,10 +1,9 @@
 RazorDocument - [0..20)::20 - [<p bar="false' ></p>]
     MarkupBlock - [0..20)::20
         MarkupTagHelperElement - [0..20)::20 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..20)::20
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..20)::20 - [<p bar="false' ></p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupTagHelperAttribute - [2..20)::18 - bar - DoubleQuotes - Unbound - [ bar="false' ></p>]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -27,3 +26,4 @@ RazorDocument - [0..20)::20 - [<p bar="false' ></p>]
                                 ForwardSlash;[/];
                                 Text;[p];
                                 CloseAngle;[>];
+                CloseAngle;[<Missing>];

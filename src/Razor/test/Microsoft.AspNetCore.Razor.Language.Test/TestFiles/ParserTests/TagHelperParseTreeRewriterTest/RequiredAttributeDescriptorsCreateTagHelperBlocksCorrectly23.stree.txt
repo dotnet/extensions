@@ -1,10 +1,9 @@
 RazorDocument - [0..63)::63 - [<div style="" class="btn">words<strong>and</strong>spaces</div>]
     MarkupBlock - [0..63)::63
         MarkupTagHelperElement - [0..63)::63 - div[StartTagAndEndTag] - divTagHelper
-            MarkupTagHelperStartTag - [0..26)::26
-                MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[div];
+            MarkupTagHelperStartTag - [0..26)::26 - [<div style="" class="btn">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
                 MarkupTagHelperAttribute - [4..13)::9 - style - DoubleQuotes - Unbound - [ style=""]
                     MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -31,8 +30,7 @@ RazorDocument - [0..63)::63 - [<div style="" class="btn">words<strong>and</stron
                                 Text;[btn];
                     MarkupTextLiteral - [24..25)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTextLiteral - [26..31)::5 - [words] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[words];
             MarkupElement - [31..51)::20
@@ -49,9 +47,8 @@ RazorDocument - [0..63)::63 - [<div style="" class="btn">words<strong>and</stron
                     CloseAngle;[>];
             MarkupTextLiteral - [51..57)::6 - [spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[spaces];
-            MarkupTagHelperEndTag - [57..63)::6
-                MarkupTextLiteral - [57..63)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[div];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [57..63)::6 - [</div>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];

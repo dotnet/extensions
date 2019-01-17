@@ -1,10 +1,9 @@
 RazorDocument - [0..99)::99 - [<p class="foo" style="color:red;">Hello World <strong class="foo">inside of strong tag</strong></p>]
     MarkupBlock - [0..99)::99
         MarkupTagHelperElement - [0..99)::99 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..34)::34
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..34)::34 - [<p class="foo" style="color:red;">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupTagHelperAttribute - [2..14)::12 - class - DoubleQuotes - Unbound - [ class="foo"]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -33,8 +32,7 @@ RazorDocument - [0..99)::99 - [<p class="foo" style="color:red;">Hello World <st
                                 Text;[color:red;];
                     MarkupTextLiteral - [32..33)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [33..34)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTextLiteral - [34..46)::12 - [Hello World ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
                 Whitespace;[ ];
@@ -72,9 +70,8 @@ RazorDocument - [0..99)::99 - [<p class="foo" style="color:red;">Hello World <st
                     ForwardSlash;[/];
                     Text;[strong];
                     CloseAngle;[>];
-            MarkupTagHelperEndTag - [95..99)::4
-                MarkupTextLiteral - [95..99)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [95..99)::4 - [</p>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

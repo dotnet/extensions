@@ -1,10 +1,9 @@
 RazorDocument - [0..37)::37 - [<input boundbool boundbooldict-key />]
     MarkupBlock - [0..37)::37
         MarkupTagHelperElement - [0..37)::37 - input[SelfClosing] - InputTagHelper
-            MarkupTagHelperStartTag - [0..37)::37
-                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[input];
+            MarkupTagHelperStartTag - [0..37)::37 - [<input boundbool boundbooldict-key />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
                 MarkupMinimizedTagHelperAttribute - [6..16)::10 - boundbool - Minimized - Bound - [ boundbool]
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -18,6 +17,5 @@ RazorDocument - [0..37)::37 - [<input boundbool boundbooldict-key />]
                 MarkupMiscAttributeContent - [34..35)::1
                     MarkupTextLiteral - [34..35)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [35..37)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

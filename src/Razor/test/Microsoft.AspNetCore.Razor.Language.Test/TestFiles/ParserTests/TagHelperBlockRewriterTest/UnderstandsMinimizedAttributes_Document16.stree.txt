@@ -1,10 +1,9 @@
 RazorDocument - [0..48)::48 - [<input unbound-required bound-required-string />]
     MarkupBlock - [0..48)::48
         MarkupTagHelperElement - [0..48)::48 - input[SelfClosing] - InputTagHelper1 - InputTagHelper3
-            MarkupTagHelperStartTag - [0..48)::48
-                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[input];
+            MarkupTagHelperStartTag - [0..48)::48 - [<input unbound-required bound-required-string />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
                 MarkupMinimizedTagHelperAttribute - [6..23)::17 - unbound-required - Minimized - Unbound - [ unbound-required]
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -18,6 +17,5 @@ RazorDocument - [0..48)::48 - [<input unbound-required bound-required-string />]
                 MarkupMiscAttributeContent - [45..46)::1
                     MarkupTextLiteral - [45..46)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [46..48)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

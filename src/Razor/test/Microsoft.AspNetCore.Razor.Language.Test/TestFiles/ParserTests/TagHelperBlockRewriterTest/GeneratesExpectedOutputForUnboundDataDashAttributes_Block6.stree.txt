@@ -12,10 +12,9 @@ RazorDocument - [0..85)::85 - [@{<input pre-attribute data-required='prefix @Dat
                     CSharpCodeBlock - [2..84)::82
                         MarkupBlock - [2..84)::82
                             MarkupTagHelperElement - [2..84)::82 - input[SelfClosing] - inputtaghelper
-                                MarkupTagHelperStartTag - [2..84)::82
-                                    MarkupTextLiteral - [2..8)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        Text;[input];
+                                MarkupTagHelperStartTag - [2..84)::82 - [<input pre-attribute data-required='prefix @DateTime.Now suffix' post-attribute />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[input];
                                     MarkupMinimizedTagHelperAttribute - [8..22)::14 - pre-attribute - Minimized - Unbound - [ pre-attribute]
                                         MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
@@ -56,9 +55,8 @@ RazorDocument - [0..85)::85 - [@{<input pre-attribute data-required='prefix @Dat
                                     MarkupMiscAttributeContent - [81..82)::1
                                         MarkupTextLiteral - [81..82)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
-                                    MarkupTextLiteral - [82..84)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        ForwardSlash;[/];
-                                        CloseAngle;[>];
+                                    ForwardSlash;[/];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [84..84)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [84..85)::1 - Gen<None> - SpanEditHandler;Accepts:None

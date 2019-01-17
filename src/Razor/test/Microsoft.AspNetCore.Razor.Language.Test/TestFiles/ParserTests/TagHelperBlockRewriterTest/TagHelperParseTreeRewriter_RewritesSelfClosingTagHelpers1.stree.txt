@@ -1,10 +1,9 @@
 RazorDocument - [0..36)::36 - [<p class="foo" style="color:red;" />]
     MarkupBlock - [0..36)::36
         MarkupTagHelperElement - [0..36)::36 - p[SelfClosing] - ptaghelper
-            MarkupTagHelperStartTag - [0..36)::36
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
+            MarkupTagHelperStartTag - [0..36)::36 - [<p class="foo" style="color:red;" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
                 MarkupTagHelperAttribute - [2..14)::12 - class - DoubleQuotes - Unbound - [ class="foo"]
                     MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -36,6 +35,5 @@ RazorDocument - [0..36)::36 - [<p class="foo" style="color:red;" />]
                 MarkupMiscAttributeContent - [33..34)::1
                     MarkupTextLiteral - [33..34)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [34..36)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

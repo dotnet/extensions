@@ -1,10 +1,9 @@
 RazorDocument - [0..32)::32 - [<ul bound [(item)]='items'></ul>]
     MarkupBlock - [0..32)::32
         MarkupTagHelperElement - [0..32)::32 - ul[StartTagAndEndTag] - CatchAllTagHelper
-            MarkupTagHelperStartTag - [0..27)::27
-                MarkupTextLiteral - [0..3)::3 - [<ul] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[ul];
+            MarkupTagHelperStartTag - [0..27)::27 - [<ul bound [(item)]='items'>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[ul];
                 MarkupMinimizedTagHelperAttribute - [3..9)::6 - bound - Minimized - Unbound - [ bound]
                     MarkupTextLiteral - [3..4)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -25,11 +24,9 @@ RazorDocument - [0..32)::32 - [<ul bound [(item)]='items'></ul>]
                             Text;[items];
                     MarkupTextLiteral - [25..26)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [26..27)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupTagHelperEndTag - [27..32)::5
-                MarkupTextLiteral - [27..32)::5 - [</ul>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[ul];
-                    CloseAngle;[>];
+                CloseAngle;[>];
+            MarkupTagHelperEndTag - [27..32)::5 - [</ul>]
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[ul];
+                CloseAngle;[>];

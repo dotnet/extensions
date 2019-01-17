@@ -1,19 +1,15 @@
 RazorDocument - [0..39)::39 - [<p><strong></!strong><!p></strong></!p>]
     MarkupBlock - [0..39)::39
         MarkupTagHelperElement - [0..39)::39 - p[StartTagAndEndTag] - ptaghelper
-            MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[p];
-                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupTagHelperStartTag - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
             MarkupTagHelperElement - [3..34)::31 - strong[StartTagAndEndTag] - strongtaghelper
-                MarkupTagHelperStartTag - [3..11)::8
-                    MarkupTextLiteral - [3..10)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[strong];
-                    MarkupTextLiteral - [10..11)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
+                MarkupTagHelperStartTag - [3..11)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
                 MarkupElement - [11..21)::10
                     MarkupEndTag - [11..21)::10 - [</!strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
@@ -27,12 +23,11 @@ RazorDocument - [0..39)::39 - [<p><strong></!strong><!p></strong></!p>]
                         Bang;[!];
                         Text;[p];
                         CloseAngle;[>];
-                MarkupTagHelperEndTag - [25..34)::9
-                    MarkupTextLiteral - [25..34)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        ForwardSlash;[/];
-                        Text;[strong];
-                        CloseAngle;[>];
+                MarkupTagHelperEndTag - [25..34)::9 - [</strong>]
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
             MarkupElement - [34..39)::5
                 MarkupEndTag - [34..39)::5 - [</!p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
