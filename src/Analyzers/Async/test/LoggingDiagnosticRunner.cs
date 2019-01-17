@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Microsoft.Extensions.Logging.Analyzer
+namespace Microsoft.Dotnet.Analyzers.Async.Tests
 {
     public class LoggingDiagnosticRunner : DiagnosticAnalyzerRunner
     {

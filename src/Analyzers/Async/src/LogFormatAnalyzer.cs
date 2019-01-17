@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Microsoft.Extensions.Logging.Analyzers
+namespace Microsoft.Dotnet.Analyzers.Async
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class AsyncMethodAnalyzer : DiagnosticAnalyzer
@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Logging.Analyzers
         {
             SupportedDiagnostics = ImmutableArray.Create(new[]
             {
-                Descriptors.MEL0001SynchronouslyBlockingMethod
+                Descriptors.ASYNC0001SynchronouslyBlockingMethod
             });
         }
 
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.Logging.Analyzers
             var originalType = symbolInfo.Symbol.ContainingType.ConstructedFrom.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
             if (store.Contains(originalType, symbolInfo.Symbol.Name))
             {
-                syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.MEL0001SynchronouslyBlockingMethod, syntaxContext.Node.GetLocation()));
+                syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.ASYNC0001SynchronouslyBlockingMethod, syntaxContext.Node.GetLocation()));
             }
         }
     }

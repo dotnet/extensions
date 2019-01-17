@@ -3,12 +3,16 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.Extensions.Logging.Analyzers
+namespace Microsoft.Dotnet.Analyzers.Async
 {
     internal class Descriptors
     {
-        public static DiagnosticDescriptor MEL0001SynchronouslyBlockingMethod = new DiagnosticDescriptor(
-            "ASYNC0001", "Synchronously blocking method should not be used in async context",
-            "Synchronously blocking method should not be used in async context", "Usage", DiagnosticSeverity.Info, true);
+        public static DiagnosticDescriptor ASYNC0001SynchronouslyBlockingMethod = new DiagnosticDescriptor(
+            id: "ASYNC0001",
+            title: "Synchronously blocking method should not be used in async context",
+            messageFormat: "Synchronously blocking method should not be used in async context",
+            category: "Usage",
+            defaultSeverity: DiagnosticSeverity.Info,
+            isEnabledByDefault: true);
     }
 }

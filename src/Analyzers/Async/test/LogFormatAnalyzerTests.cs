@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging.Analyzers;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Analyzer
+namespace Microsoft.Dotnet.Analyzers.Async.Tests
 {
     public class FormatStringAnalyzerTests
     {
