@@ -8,7 +8,7 @@ namespace Microsoft.Dotnet.Analyzers.Async.Tests
 {
     public class FormatStringAnalyzerTests
     {
-        private LoggingDiagnosticRunner Runner = new LoggingDiagnosticRunner(new AsyncMethodAnalyzer());
+        private AsyncDiagnosticRunner Runner = new AsyncDiagnosticRunner(new AsyncMethodAnalyzer());
 
         [Theory]
         [InlineData("task.GetAwaiter().GetResult()")]

@@ -69,6 +69,8 @@ namespace Microsoft.Dotnet.Analyzers.Async
                     return;
             }
 
+            // Format type name separately to handle closed generic types correctly
+            // For example for Task<int> we would like to look for System.Threading.Tasks.Task<TResult> key
             var originalType = symbolInfo.Symbol.ContainingType.ConstructedFrom.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
             if (store.Contains(originalType, symbolInfo.Symbol.Name))
             {

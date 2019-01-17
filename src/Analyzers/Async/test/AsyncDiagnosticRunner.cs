@@ -8,9 +8,9 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.Dotnet.Analyzers.Async.Tests
 {
-    public class LoggingDiagnosticRunner : DiagnosticAnalyzerRunner
+    public class AsyncDiagnosticRunner : DiagnosticAnalyzerRunner
     {
-        public LoggingDiagnosticRunner(DiagnosticAnalyzer analyzer)
+        public AsyncDiagnosticRunner(DiagnosticAnalyzer analyzer)
         {
             Analyzer = analyzer;
         }
