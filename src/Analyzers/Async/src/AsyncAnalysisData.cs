@@ -11,24 +11,24 @@ namespace Microsoft.Extensions.Logging.Analyzers
 {
     public class AsyncAnalysisData
     {
-        private readonly Dictionary<string, bool> _methods;
+        private readonly HashSet<string> _methods;
 
         public AsyncAnalysisData()
         {
-            _methods = new Dictionary<string, bool>();
+            _methods = new HashSet<string>();
 
             using (var reader = new StreamReader(GetType().GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.Dotnet.Analyzers.Async.AsyncAnalyzer.csv")))
             {
                 while (!reader.EndOfStream)
                 {
-                    _methods[reader.ReadLine()] = true;
+                    _methods.Add(reader.ReadLine());
                 }
             }
         }
 
         public bool Contains(string type, string member)
         {
-            return _methods.ContainsKey(type + "." + member);
+            return _methods.Contains(type + "." + member);
         }
     }
 }
