@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Analyzers.Async
         {
             _methods = new HashSet<string>(StringComparer.Ordinal);
 
-            using (var reader = new StreamReader(GetType().GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.Dotnet.Analyzers.Async.AsyncAnalyzer.csv")))
+            using (var reader = new StreamReader(GetType().GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.DotNet.Analyzers.Async.AsyncAnalyzer.csv")))
             {
                 while (!reader.EndOfStream)
                 {
