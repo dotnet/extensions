@@ -15,10 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="AsyncAnalyzer.csv" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="AsyncAnalyzer.csv" />
   </ItemGroup>
 
@@ -26,7 +22,6 @@
     <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
-    <PackageReference Update="NETStandard.Library" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

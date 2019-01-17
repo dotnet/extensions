@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.Dotnet.Analyzers.Async
+namespace Microsoft.DotNet.Analyzers.Async
 {
     public class AsyncAnalysisData
     {
@@ -13,7 +14,7 @@ namespace Microsoft.Dotnet.Analyzers.Async
 
         public AsyncAnalysisData()
         {
-            _methods = new HashSet<string>();
+            _methods = new HashSet<string>(StringComparer.Ordinal);
 
             using (var reader = new StreamReader(GetType().GetTypeInfo().Assembly.GetManifestResourceStream("Microsoft.Dotnet.Analyzers.Async.AsyncAnalyzer.csv")))
             {

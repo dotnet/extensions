@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Microsoft.Dotnet.Analyzers.Async
+namespace Microsoft.DotNet.Analyzers.Async
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class AsyncMethodAnalyzer : DiagnosticAnalyzer
@@ -42,22 +42,18 @@ namespace Microsoft.Dotnet.Analyzers.Async
             }
 
             SymbolInfo symbolInfo;
-            switch (syntaxContext.Node.Kind())
+            switch (syntaxContext.Node)
             {
-                case SyntaxKind.InvocationExpression:
-                    var invocation = (InvocationExpressionSyntax)syntaxContext.Node;
-
-                    symbolInfo = ModelExtensions.GetSymbolInfo(syntaxContext.SemanticModel, invocation, syntaxContext.CancellationToken);
+                case InvocationExpressionSyntax invocation:
+                    symbolInfo = syntaxContext.SemanticModel.GetSymbolInfo(invocation, syntaxContext.CancellationToken);
                     if (symbolInfo.Symbol?.Kind != SymbolKind.Method)
                     {
                         return;
                     }
 
                     break;
-                case SyntaxKind.SimpleMemberAccessExpression:
-                    var memberAccess = (MemberAccessExpressionSyntax)syntaxContext.Node;
-
-                    symbolInfo = ModelExtensions.GetSymbolInfo(syntaxContext.SemanticModel, memberAccess, syntaxContext.CancellationToken);
+                case MemberAccessExpressionSyntax memberAccess:
+                    symbolInfo = syntaxContext.SemanticModel.GetSymbolInfo(memberAccess, syntaxContext.CancellationToken);
                     if (symbolInfo.Symbol?.Kind != SymbolKind.Property)
                     {
                         return;

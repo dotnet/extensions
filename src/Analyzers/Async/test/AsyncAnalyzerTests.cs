@@ -4,9 +4,9 @@
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace Microsoft.Dotnet.Analyzers.Async.Tests
+namespace Microsoft.DotNet.Analyzers.Async.Tests
 {
-    public class FormatStringAnalyzerTests
+    public class AsyncAnalyzerTests
     {
         private AsyncDiagnosticRunner Runner = new AsyncDiagnosticRunner(new AsyncMethodAnalyzer());
 

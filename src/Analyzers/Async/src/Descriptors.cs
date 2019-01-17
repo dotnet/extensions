@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.Dotnet.Analyzers.Async
+namespace Microsoft.DotNet.Analyzers.Async
 {
     internal class Descriptors
     {
@@ -12,7 +12,7 @@ namespace Microsoft.Dotnet.Analyzers.Async
             title: "Synchronously blocking method should not be used in async context",
             messageFormat: "Synchronously blocking method should not be used in async context",
             category: "Usage",
-            defaultSeverity: DiagnosticSeverity.Info,
+            defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
     }
 }
