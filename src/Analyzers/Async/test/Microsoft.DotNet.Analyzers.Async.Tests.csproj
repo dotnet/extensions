@@ -11,7 +11,7 @@
     <Reference Include="Microsoft.CodeAnalysis.Common" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
-    <Reference Include="Microsoft.Dotnet.Analyzers.Async" />
+    <Reference Include="Microsoft.DotNet.Analyzers.Async" />
   </ItemGroup>
 
   <ItemGroup>
