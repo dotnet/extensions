@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Analyzer package for async best practices.</Description>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
+    <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
+    <VerifyVersion>false</VerifyVersion>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <EnableApiCheck>false</EnableApiCheck>
+    <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="AsyncAnalyzer.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="AsyncAnalyzer.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+    <PackageReference Update="NETStandard.Library" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
