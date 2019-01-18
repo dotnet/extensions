@@ -1,23 +1,27 @@
-CSharpCodeBlock - [0..8)::8 - [{LF    @]
-    CSharpStatement - [0..8)::8
-        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
-            Transition;[<Missing>];
-        CSharpStatementBody - [0..8)::8
-            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                LeftBrace;[{];
-            CSharpCodeBlock - [1..8)::7
-                CSharpStatementLiteral - [1..7)::6 - [LF    ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL
-                    NewLine;[LF];
-                    Whitespace;[    ];
-                CSharpCodeBlock - [7..8)::1
-                    CSharpImplicitExpression - [7..8)::1
-                        CSharpTransition - [7..8)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                            Transition;[@];
-                        CSharpImplicitExpressionBody - [8..8)::0
-                            CSharpCodeBlock - [8..8)::0
-                                CSharpExpressionLiteral - [8..8)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14
-                                    Marker;[];
-                CSharpStatementLiteral - [8..8)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
-                    Marker;[];
-            RazorMetaCode - [8..8)::0 - Gen<None> - SpanEditHandler;Accepts:Any
-                RightBrace;[<Missing>];
+RazorDocument - [0..9)::9 - [@{LF    @]
+    MarkupBlock - [0..9)::9
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..9)::9
+            CSharpStatement - [0..9)::9
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..9)::8
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..9)::7
+                        CSharpStatementLiteral - [2..8)::6 - [LF    ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL
+                            NewLine;[LF];
+                            Whitespace;[    ];
+                        CSharpCodeBlock - [8..9)::1
+                            CSharpImplicitExpression - [8..9)::1
+                                CSharpTransition - [8..9)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [9..9)::0
+                                    CSharpCodeBlock - [9..9)::0
+                                        CSharpExpressionLiteral - [9..9)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14
+                                            Marker;[];
+                        CSharpStatementLiteral - [9..9)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            Marker;[];
+                    RazorMetaCode - [9..9)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                        RightBrace;[<Missing>];

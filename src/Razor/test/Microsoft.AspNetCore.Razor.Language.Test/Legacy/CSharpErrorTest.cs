@@ -12,53 +12,52 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void HandlesQuotesAfterTransition()
         {
-            ParseBlockTest("@\"", expectedParseLength: 1);
+            ParseDocumentTest("@\"");
         }
 
         [Fact]
         public void WithHelperDirectiveProducesError()
         {
-            ParseBlockTest("@helper fooHelper { }", expectedParseLength: 7);
+            ParseDocumentTest("@helper fooHelper { }");
         }
 
         [Fact]
         public void WithNestedCodeBlockProducesError()
         {
-            ParseBlockTest("@if { @{} }");
+            ParseDocumentTest("@if { @{} }");
         }
 
         [Fact]
         public void CapturesWhitespaceToEOLInInvalidUsingStmtAndTreatsAsFileCode()
         {
             // ParseBlockCapturesWhitespaceToEndOfLineInInvalidUsingStatementAndTreatsAsFileCode
-            ParseBlockTest(
-                "using          " + Environment.NewLine + Environment.NewLine,
-                expectedParseLength: 17);
+            ParseDocumentTest(
+                "@using          " + Environment.NewLine + Environment.NewLine);
         }
 
         [Fact]
         public void MethodOutputsOpenCurlyAsCodeSpanIfEofFoundAfterOpenCurlyBrace()
         {
-            ParseBlockTest("{");
+            ParseDocumentTest("@{");
         }
 
         [Fact]
         public void MethodOutputsZeroLengthCodeSpanIfStatementBlockEmpty()
         {
-            ParseBlockTest("{}");
+            ParseDocumentTest("@{}");
         }
 
         [Fact]
         public void MethodProducesErrorIfNewlineFollowsTransition()
         {
-            ParseBlockTest("@" + Environment.NewLine, expectedParseLength: 1);
+            ParseDocumentTest("@" + Environment.NewLine);
         }
 
         [Fact]
         public void MethodProducesErrorIfWhitespaceBetweenTransitionAndBlockStartInEmbeddedExpr()
         {
             // ParseBlockMethodProducesErrorIfWhitespaceBetweenTransitionAndBlockStartInEmbeddedExpression
-            ParseBlockTest("{" + Environment.NewLine
+            ParseDocumentTest("@{" + Environment.NewLine
                          + "    @   {}" + Environment.NewLine
                          + "}");
         }
@@ -66,21 +65,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void MethodProducesErrorIfEOFAfterTransitionInEmbeddedExpression()
         {
-            ParseBlockTest("{" + Environment.NewLine
+            ParseDocumentTest("@{" + Environment.NewLine
                          + "    @");
         }
 
         [Fact]
         public void MethodParsesNothingIfFirstCharacterIsNotIdentifierStartOrParenOrBrace()
         {
-            ParseBlockTest("@!!!", expectedParseLength: 1);
+            ParseDocumentTest("@!!!");
         }
 
         [Fact]
         public void ShouldReportErrorAndTerminateAtEOFIfIfParenInExplicitExprUnclosed()
         {
             // ParseBlockShouldReportErrorAndTerminateAtEOFIfIfParenInExplicitExpressionUnclosed
-            ParseBlockTest("(foo bar" + Environment.NewLine
+            ParseDocumentTest("@(foo bar" + Environment.NewLine
                          + "baz");
         }
 
@@ -88,18 +87,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ShouldReportErrorAndTerminateAtMarkupIfIfParenInExplicitExprUnclosed()
         {
             // ParseBlockShouldReportErrorAndTerminateAtMarkupIfIfParenInExplicitExpressionUnclosed
-            ParseBlockTest("(foo bar" + Environment.NewLine
+            ParseDocumentTest("@(foo bar" + Environment.NewLine
                          + "<html>" + Environment.NewLine
                          + "baz" + Environment.NewLine
-                         + "</html",
-                         expectedParseLength: 10);
+                         + "</html");
         }
 
         [Fact]
         public void CorrectlyHandlesInCorrectTransitionsIfImplicitExpressionParensUnclosed()
         {
-            ParseBlockTest("Href(" + Environment.NewLine
-                         + "<h1>@Html.Foo(Bar);</h1>" + Environment.NewLine, expectedParseLength: 7);
+            ParseDocumentTest("@Href(" + Environment.NewLine
+                         + "<h1>@Html.Foo(Bar);</h1>" + Environment.NewLine);
         }
 
         [Fact]
@@ -107,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ShouldReportErrorAndTerminateAtEOFIfParenInImplicitExprUnclosed()
         {
             // ParseBlockShouldReportErrorAndTerminateAtEOFIfParenInImplicitExpressionUnclosed
-            ParseBlockTest("Foo(Bar(Baz)" + Environment.NewLine
+            ParseDocumentTest("@Foo(Bar(Baz)" + Environment.NewLine
                             + "Biz" + Environment.NewLine
                             + "Boz");
         }
@@ -117,12 +115,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ShouldReportErrorAndTerminateAtMarkupIfParenInImplicitExpressionUnclosed()
         {
             // ParseBlockShouldReportErrorAndTerminateAtMarkupIfParenInImplicitExpressionUnclosed
-            ParseBlockTest("Foo(Bar(Baz)" + Environment.NewLine
+            ParseDocumentTest("@Foo(Bar(Baz)" + Environment.NewLine
                             + "Biz" + Environment.NewLine
                             + "<html>" + Environment.NewLine
                             + "Boz" + Environment.NewLine
-                            + "</html>",
-                            expectedParseLength: 19);
+                            + "</html>");
         }
 
         [Fact]
@@ -130,7 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ShouldReportErrorAndTerminateAtEOFIfBracketInImplicitExpressionUnclosed()
         {
             // ParseBlockShouldReportErrorAndTerminateAtEOFIfBracketInImplicitExpressionUnclosed
-            ParseBlockTest("Foo[Bar[Baz]" + Environment.NewLine
+            ParseDocumentTest("@Foo[Bar[Baz]" + Environment.NewLine
                          + "Biz" + Environment.NewLine
                          + "Boz");
         }
@@ -140,168 +137,163 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ShouldReportErrorAndTerminateAtMarkupIfBracketInImplicitExprUnclosed()
         {
             // ParseBlockShouldReportErrorAndTerminateAtMarkupIfBracketInImplicitExpressionUnclosed
-            ParseBlockTest("Foo[Bar[Baz]" + Environment.NewLine
+            ParseDocumentTest("@Foo[Bar[Baz]" + Environment.NewLine
                          + "Biz" + Environment.NewLine
                          + "<b>" + Environment.NewLine
                          + "Boz" + Environment.NewLine
-                         + "</b>",
-                         expectedParseLength: 19);
+                         + "</b>");
         }
 
         // Simple EOF handling errors:
         [Fact]
         public void ReportsErrorIfExplicitCodeBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("{ var foo = bar; if(foo != null) { bar(); } ");
+            ParseDocumentTest("@{ var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ReportsErrorIfClassBlockUnterminatedAtEOF()
         {
-            ParseBlockTest(
-                "functions { var foo = bar; if(foo != null) { bar(); } ",
+            ParseDocumentTest(
+                "@functions { var foo = bar; if(foo != null) { bar(); } ",
                 new[] { FunctionsDirective.Directive });
         }
 
         [Fact]
         public void ReportsErrorIfIfBlockUnterminatedAtEOF()
         {
-            RunUnterminatedSimpleKeywordBlock("if");
+            RunUnterminatedSimpleKeywordBlock("@if");
         }
 
         [Fact]
         public void ReportsErrorIfElseBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("if(foo) { baz(); } else { var foo = bar; if(foo != null) { bar(); } ");
+            ParseDocumentTest("@if(foo) { baz(); } else { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ReportsErrorIfElseIfBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("if(foo) { baz(); } else if { var foo = bar; if(foo != null) { bar(); } ");
+            ParseDocumentTest("@if(foo) { baz(); } else if { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ReportsErrorIfDoBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("do { var foo = bar; if(foo != null) { bar(); } ");
+            ParseDocumentTest("@do { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ReportsErrorIfTryBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("try { var foo = bar; if(foo != null) { bar(); } ");
+            ParseDocumentTest("@try { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ReportsErrorIfCatchBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("try { baz(); } catch(Foo) { var foo = bar; if(foo != null) { bar(); } ");
+            ParseDocumentTest("@try { baz(); } catch(Foo) { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ReportsErrorIfFinallyBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("try { baz(); } finally { var foo = bar; if(foo != null) { bar(); } ");
+            ParseDocumentTest("@try { baz(); } finally { var foo = bar; if(foo != null) { bar(); } ");
         }
 
         [Fact]
         public void ReportsErrorIfForBlockUnterminatedAtEOF()
         {
-            RunUnterminatedSimpleKeywordBlock("for");
+            RunUnterminatedSimpleKeywordBlock("@for");
         }
 
         [Fact]
         public void ReportsErrorIfForeachBlockUnterminatedAtEOF()
         {
-            RunUnterminatedSimpleKeywordBlock("foreach");
+            RunUnterminatedSimpleKeywordBlock("@foreach");
         }
 
         [Fact]
         public void ReportsErrorIfWhileBlockUnterminatedAtEOF()
         {
-            RunUnterminatedSimpleKeywordBlock("while");
+            RunUnterminatedSimpleKeywordBlock("@while");
         }
 
         [Fact]
         public void ReportsErrorIfSwitchBlockUnterminatedAtEOF()
         {
-            RunUnterminatedSimpleKeywordBlock("switch");
+            RunUnterminatedSimpleKeywordBlock("@switch");
         }
 
         [Fact]
         public void ReportsErrorIfLockBlockUnterminatedAtEOF()
         {
-            RunUnterminatedSimpleKeywordBlock("lock");
+            RunUnterminatedSimpleKeywordBlock("@lock");
         }
 
         [Fact]
         public void ReportsErrorIfUsingBlockUnterminatedAtEOF()
         {
-            RunUnterminatedSimpleKeywordBlock("using");
+            RunUnterminatedSimpleKeywordBlock("@using");
         }
 
         [Fact]
         public void RequiresControlFlowStatementsToHaveBraces()
         {
-            ParseBlockTest("if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else <p>Boz</p>");
+            ParseDocumentTest("@if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else <p>Boz</p>");
         }
 
         [Fact]
         public void IncludesUnexpectedCharacterInSingleStatementControlFlowStatementError()
         {
-            ParseBlockTest("if(foo)) { var bar = foo; }");
+            ParseDocumentTest("@if(foo)) { var bar = foo; }");
         }
 
         [Fact]
         public void OutputsErrorIfAtSignFollowedByLessThanSignAtStatementStart()
         {
-            ParseBlockTest("if(foo) { @<p>Bar</p> }");
+            ParseDocumentTest("@if(foo) { @<p>Bar</p> }");
         }
 
         [Fact]
         public void TerminatesIfBlockAtEOLWhenRecoveringFromMissingCloseParen()
         {
-            ParseBlockTest("if(foo bar" + Environment.NewLine
-                         + "baz",
-                         expectedParseLength: 12);
+            ParseDocumentTest("@if(foo bar" + Environment.NewLine
+                         + "baz");
         }
 
         [Fact]
         public void TerminatesForeachBlockAtEOLWhenRecoveringFromMissingCloseParen()
         {
-            ParseBlockTest("foreach(foo bar" + Environment.NewLine
-                         + "baz",
-                         expectedParseLength: 17);
+            ParseDocumentTest("@foreach(foo bar" + Environment.NewLine
+                         + "baz");
         }
 
         [Fact]
         public void TerminatesWhileClauseInDoStmtAtEOLWhenRecoveringFromMissingCloseParen()
         {
-            ParseBlockTest("do { } while(foo bar" + Environment.NewLine
-                         + "baz",
-                         expectedParseLength: 22);
+            ParseDocumentTest("@do { } while(foo bar" + Environment.NewLine
+                         + "baz");
         }
 
         [Fact]
         public void TerminatesUsingBlockAtEOLWhenRecoveringFromMissingCloseParen()
         {
-            ParseBlockTest("using(foo bar" + Environment.NewLine
-                         + "baz",
-                         expectedParseLength: 15);
+            ParseDocumentTest("@using(foo bar" + Environment.NewLine
+                         + "baz");
         }
 
         [Fact]
         public void ResumesIfStatementAfterOpenParen()
         {
-            ParseBlockTest("if(" + Environment.NewLine
+            ParseDocumentTest("@if(" + Environment.NewLine
                          + "else { <p>Foo</p> }");
         }
 
         [Fact]
         public void TerminatesNormalCSharpStringsAtEOLIfEndQuoteMissing()
         {
-            ParseBlockTest("if(foo) {" + Environment.NewLine
+            ParseDocumentTest("@if(foo) {" + Environment.NewLine
                               + "    var p = \"foo bar baz" + Environment.NewLine
                               + ";" + Environment.NewLine
                               + "}");
@@ -310,13 +302,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void TerminatesNormalStringAtEndOfFile()
         {
-            ParseBlockTest("if(foo) { var foo = \"blah blah blah blah blah");
+            ParseDocumentTest("@if(foo) { var foo = \"blah blah blah blah blah");
         }
 
         [Fact]
         public void TerminatesVerbatimStringAtEndOfFile()
         {
-            ParseBlockTest("if(foo) { var foo = @\"blah " + Environment.NewLine
+            ParseDocumentTest("@if(foo) { var foo = @\"blah " + Environment.NewLine
                               + "blah; " + Environment.NewLine
                               + "<p>Foo</p>" + Environment.NewLine
                               + "blah " + Environment.NewLine
@@ -326,7 +318,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void CorrectlyParsesMarkupIncorrectyAssumedToBeWithinAStatement()
         {
-            ParseBlockTest("if(foo) {" + Environment.NewLine
+            ParseDocumentTest("@if(foo) {" + Environment.NewLine
                          + "    var foo = \"foo bar baz" + Environment.NewLine
                          + "    <p>Foo is @foo</p>" + Environment.NewLine
                          + "}");
@@ -335,18 +327,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void CorrectlyParsesAtSignInDelimitedBlock()
         {
-            ParseBlockTest("(Request[\"description\"] ?? @photo.Description)");
+            ParseDocumentTest("@(Request[\"description\"] ?? @photo.Description)");
         }
 
         [Fact]
         public void CorrectlyRecoversFromMissingCloseParenInExpressionWithinCode()
         {
-            ParseBlockTest(@"{string.Format(<html></html>}");
+            ParseDocumentTest("@{string.Format(<html></html>}");
         }
 
         private void RunUnterminatedSimpleKeywordBlock(string keyword)
         {
-            ParseBlockTest(
+            ParseDocumentTest(
                 keyword + " (foo) { var foo = bar; if(foo != null) { bar(); } ");
         }
     }

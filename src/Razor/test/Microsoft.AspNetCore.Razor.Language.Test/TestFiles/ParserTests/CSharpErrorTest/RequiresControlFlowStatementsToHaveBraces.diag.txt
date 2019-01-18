@@ -1,4 +1,4 @@
-(1,9): Error RZ1008: Expected a "{" but found a "<".  Block statements must be enclosed in "{" and "}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
+(1,10): Error RZ1008: Expected a "{" but found a "<".  Block statements must be enclosed in "{" and "}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
 
 @if(isLoggedIn)
     <p>Hello, @user</p>
@@ -8,7 +8,7 @@ Instead, wrap the contents of the block in "{}":
 @if(isLoggedIn) {
     <p>Hello, @user</p>
 }
-(1,33): Error RZ1008: Expected a "{" but found a "<".  Block statements must be enclosed in "{" and "}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
+(1,34): Error RZ1008: Expected a "{" but found a "<".  Block statements must be enclosed in "{" and "}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
 
 @if(isLoggedIn)
     <p>Hello, @user</p>
@@ -18,7 +18,7 @@ Instead, wrap the contents of the block in "{}":
 @if(isLoggedIn) {
     <p>Hello, @user</p>
 }
-(1,49): Error RZ1008: Expected a "{" but found a "<".  Block statements must be enclosed in "{" and "}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
+(1,50): Error RZ1008: Expected a "{" but found a "<".  Block statements must be enclosed in "{" and "}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
 
 @if(isLoggedIn)
     <p>Hello, @user</p>

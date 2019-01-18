@@ -1,22 +1,26 @@
-CSharpCodeBlock - [0..27)::27 - [if(foo)) { var bar = foo; }]
-    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
-        Transition;[<Missing>];
-    CSharpStatementLiteral - [0..27)::27 - [if(foo)) { var bar = foo; }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
-        Keyword;[if];
-        LeftParenthesis;[(];
-        Identifier;[foo];
-        RightParenthesis;[)];
-        RightParenthesis;[)];
-        Whitespace;[ ];
-        LeftBrace;[{];
-        Whitespace;[ ];
-        Identifier;[var];
-        Whitespace;[ ];
-        Identifier;[bar];
-        Whitespace;[ ];
-        Assign;[=];
-        Whitespace;[ ];
-        Identifier;[foo];
-        Semicolon;[;];
-        Whitespace;[ ];
-        RightBrace;[}];
+RazorDocument - [0..28)::28 - [@if(foo)) { var bar = foo; }]
+    MarkupBlock - [0..28)::28
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..28)::28
+            CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Transition;[@];
+            CSharpStatementLiteral - [1..28)::27 - [if(foo)) { var bar = foo; }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                Keyword;[if];
+                LeftParenthesis;[(];
+                Identifier;[foo];
+                RightParenthesis;[)];
+                RightParenthesis;[)];
+                Whitespace;[ ];
+                LeftBrace;[{];
+                Whitespace;[ ];
+                Identifier;[var];
+                Whitespace;[ ];
+                Identifier;[bar];
+                Whitespace;[ ];
+                Assign;[=];
+                Whitespace;[ ];
+                Identifier;[foo];
+                Semicolon;[;];
+                Whitespace;[ ];
+                RightBrace;[}];
