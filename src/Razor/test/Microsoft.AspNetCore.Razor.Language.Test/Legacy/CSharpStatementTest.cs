@@ -127,7 +127,7 @@ C();
         [Fact]
         public void ExceptionFilter_IncompleteTryWhen()
         {
-            ParseBlockTest("@try { someMethod(); } when");
+            ParseBlockTest("@try { someMethod(); } when", expectedParseLength: 22);
         }
 
         [Fact]
@@ -187,7 +187,7 @@ C();
         [Fact]
         public void StaticUsing_Complete_Spaced()
         {
-            ParseBlockTest("@using   static   global::System.Console  ");
+            ParseBlockTest("@using   static   global::System.Console  ", expectedParseLength: 40);
         }
 
         [Fact]
@@ -217,7 +217,7 @@ C();
         [Fact]
         public void NonBlockKeywordTreatedAsImplicitExpression()
         {
-            ParseBlockTest("@is foo");
+            ParseBlockTest("@is foo", expectedParseLength: 3);
         }
     }
 }

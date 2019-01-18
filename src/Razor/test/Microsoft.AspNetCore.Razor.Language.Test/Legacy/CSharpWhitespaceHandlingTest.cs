@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void StmtBlockDoesNotAcceptTrailingNewlineIfTheyAreSignificantToAncestor()
         {
-            ParseBlockTest("@: @if (true) { }" + Environment.NewLine + "}");
+            ParseBlockTest("@: @if (true) { }" + Environment.NewLine + "}", expectedParseLength: 19);
         }
     }
 }

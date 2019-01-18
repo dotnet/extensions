@@ -38,7 +38,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // TODO: Fix at a later date, HTML should be a tag block: https://github.com/aspnet/Razor/issues/101
             ParseBlockTest("@:<li>Foo @Bar Baz" + Environment.NewLine
-                         + "bork");
+                         + "bork",
+                         expectedParseLength: 20);
         }
 
         [Fact]

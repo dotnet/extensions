@@ -159,7 +159,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             ParseBlockTest("if(foo) { @:Bar" + Environment.NewLine
-                         + "} zoop");
+                         + "} zoop",
+                         expectedParseLength: 18);
         }
 
         [Fact]
@@ -184,7 +185,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             ParseBlockTest("{ if(foo) { @:Bar" + Environment.NewLine
-                         + "} } zoop");
+                         + "} } zoop",
+                         expectedParseLength: 22);
         }
 
         [Fact]

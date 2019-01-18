@@ -50,7 +50,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ReadsToEndOfLineIfFirstCharacterAfterTransitionIsColon()
         {
             ParseBlockTest("@:<li>Foo Bar Baz" + Environment.NewLine
-                         + "bork");
+                         + "bork",
+                         expectedParseLength: 19);
         }
 
         [Fact]
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void StopsAtMatchingCloseTagToStartTag()
         {
-            ParseBlockTest("<a><b></b></a><c></c>");
+            ParseBlockTest("<a><b></b></a><c></c>", expectedParseLength: 14);
         }
 
         [Fact]
@@ -181,7 +182,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void TreatsMalformedTagsAsContent()
         {
-            ParseBlockTest("<foo></!-- bar --></foo>");
+            ParseBlockTest("<foo></!-- bar --></foo>", expectedParseLength: 18);
         }
 
 
@@ -237,13 +238,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void AcceptsTextTagAsOuterTagButDoesNotRender()
         {
-            ParseBlockTest("<text>Foo Bar <foo> Baz</text> zoop");
+            ParseBlockTest("<text>Foo Bar <foo> Baz</text> zoop", expectedParseLength: 30);
         }
 
         [Fact]
         public void RendersLiteralTextTagIfDoubled()
         {
-            ParseBlockTest("<text><text>Foo Bar <foo> Baz</text></text> zoop");
+            ParseBlockTest("<text><text>Foo Bar <foo> Baz</text></text> zoop", expectedParseLength: 43);
         }
 
         [Fact]

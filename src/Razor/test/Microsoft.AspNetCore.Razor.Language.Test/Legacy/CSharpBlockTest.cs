@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void TerminatesParenBalancingAtEOF()
         {
-            ImplicitExpressionTest("Html.En(code()");
+            ParseBlockTest("@Html.En(code()");
         }
 
         [Fact]
@@ -227,7 +227,7 @@ else if(bar) { baz(); }");
             const string elseBranch = @" else { Debug.WriteLine(@""bar } baz""); }";
             const string document = ifStatement + elseIfBranch + elseBranch + elseIfBranch;
 
-            ParseBlockTest(document);
+            ParseBlockTest(document, expectedParseLength: 220);
         }
 
         [Fact]
@@ -283,7 +283,7 @@ else if(bar) { baz(); }");
         [Fact]
         public void CorrectlyParsesDoWhileBlockMissingWhileClauseEntirely()
         {
-            ParseBlockTest("do { var foo = bar; } narf;");
+            ParseBlockTest("do { var foo = bar; } narf;", expectedParseLength: 21);
         }
 
         [Fact]
@@ -365,7 +365,7 @@ while(true);");
         [Fact]
         public void DoesntCaptureWhitespaceAfterUsing()
         {
-            ParseBlockTest("using Foo   ");
+            ParseBlockTest("using Foo   ", expectedParseLength: 9);
         }
 
         [Fact]
@@ -546,14 +546,14 @@ catch(bar) { baz(); }");
         public void StopsParsingCatchClausesAfterFinallyBlock()
         {
             var content = "try { var foo = new { } } finally { var foo = new { } }";
-            ParseBlockTest(content + " catch(Foo Bar Baz) { }");
+            ParseBlockTest(content + " catch(Foo Bar Baz) { }", expectedParseLength: content.Length);
         }
 
         [Fact]
         public void DoesNotAllowMultipleFinallyBlocks()
         {
             var content = "try { var foo = new { } } finally { var foo = new { } }";
-            ParseBlockTest(content + " finally { }");
+            ParseBlockTest(content + " finally { }", expectedParseLength: content.Length);
         }
 
         [Fact]

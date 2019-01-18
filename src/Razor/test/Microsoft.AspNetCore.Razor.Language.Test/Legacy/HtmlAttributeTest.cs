@@ -222,9 +222,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ConditionalAttributesAreEnabledForDataAttributesWithExperimentalFlag()
         {
-            ParseBlockTest(
-                RazorLanguageVersion.Experimental,
-                "<span data-foo='@foo'></span>");
+            ParseBlockTest(RazorLanguageVersion.Experimental, "<span data-foo='@foo'></span>", directives: null, designTime: false);
         }
 
         [Fact]

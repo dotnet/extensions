@@ -12,13 +12,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void HandlesQuotesAfterTransition()
         {
-            ParseBlockTest("@\"");
+            ParseBlockTest("@\"", expectedParseLength: 1);
         }
 
         [Fact]
         public void WithHelperDirectiveProducesError()
         {
-            ParseBlockTest("@helper fooHelper { }");
+            ParseBlockTest("@helper fooHelper { }", expectedParseLength: 7);
         }
 
         [Fact]
@@ -31,8 +31,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void CapturesWhitespaceToEOLInInvalidUsingStmtAndTreatsAsFileCode()
         {
             // ParseBlockCapturesWhitespaceToEndOfLineInInvalidUsingStatementAndTreatsAsFileCode
-            ParseBlockTest("using          " + Environment.NewLine
-                         + Environment.NewLine);
+            ParseBlockTest(
+                "using          " + Environment.NewLine + Environment.NewLine,
+                expectedParseLength: 17);
         }
 
         [Fact]
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void MethodProducesErrorIfNewlineFollowsTransition()
         {
-            ParseBlockTest("@" + Environment.NewLine);
+            ParseBlockTest("@" + Environment.NewLine, expectedParseLength: 1);
         }
 
         [Fact]
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void MethodParsesNothingIfFirstCharacterIsNotIdentifierStartOrParenOrBrace()
         {
-            ParseBlockTest("@!!!");
+            ParseBlockTest("@!!!", expectedParseLength: 1);
         }
 
         [Fact]
@@ -90,14 +91,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("(foo bar" + Environment.NewLine
                          + "<html>" + Environment.NewLine
                          + "baz" + Environment.NewLine
-                         + "</html");
+                         + "</html",
+                         expectedParseLength: 10);
         }
 
         [Fact]
         public void CorrectlyHandlesInCorrectTransitionsIfImplicitExpressionParensUnclosed()
         {
             ParseBlockTest("Href(" + Environment.NewLine
-                         + "<h1>@Html.Foo(Bar);</h1>" + Environment.NewLine);
+                         + "<h1>@Html.Foo(Bar);</h1>" + Environment.NewLine, expectedParseLength: 7);
         }
 
         [Fact]
@@ -119,7 +121,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             + "Biz" + Environment.NewLine
                             + "<html>" + Environment.NewLine
                             + "Boz" + Environment.NewLine
-                            + "</html>");
+                            + "</html>",
+                            expectedParseLength: 19);
         }
 
         [Fact]
@@ -141,7 +144,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                          + "Biz" + Environment.NewLine
                          + "<b>" + Environment.NewLine
                          + "Boz" + Environment.NewLine
-                         + "</b>");
+                         + "</b>",
+                         expectedParseLength: 19);
         }
 
         // Simple EOF handling errors:
@@ -259,28 +263,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TerminatesIfBlockAtEOLWhenRecoveringFromMissingCloseParen()
         {
             ParseBlockTest("if(foo bar" + Environment.NewLine
-                         + "baz");
+                         + "baz",
+                         expectedParseLength: 12);
         }
 
         [Fact]
         public void TerminatesForeachBlockAtEOLWhenRecoveringFromMissingCloseParen()
         {
             ParseBlockTest("foreach(foo bar" + Environment.NewLine
-                         + "baz");
+                         + "baz",
+                         expectedParseLength: 17);
         }
 
         [Fact]
         public void TerminatesWhileClauseInDoStmtAtEOLWhenRecoveringFromMissingCloseParen()
         {
             ParseBlockTest("do { } while(foo bar" + Environment.NewLine
-                         + "baz");
+                         + "baz",
+                         expectedParseLength: 22);
         }
 
         [Fact]
         public void TerminatesUsingBlockAtEOLWhenRecoveringFromMissingCloseParen()
         {
             ParseBlockTest("using(foo bar" + Environment.NewLine
-                         + "baz");
+                         + "baz",
+                         expectedParseLength: 15);
         }
 
         [Fact]

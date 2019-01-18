@@ -28,14 +28,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ThrowsExceptionIfBlockDoesNotStartWithTag()
         {
-            ParseBlockTest("foo bar <baz>");
+            ParseBlockTest("foo bar <baz>", expectedParseLength: 0);
         }
 
         [Fact]
         public void StartingWithEndTagErrorsThenOutputsMarkupSegmentAndEndsBlock()
         {
             // ParseBlockStartingWithEndTagProducesRazorErrorThenOutputsMarkupSegmentAndEndsBlock
-            ParseBlockTest("</foo> bar baz");
+            ParseBlockTest("</foo> bar baz", expectedParseLength: 7);
         }
 
         [Fact]

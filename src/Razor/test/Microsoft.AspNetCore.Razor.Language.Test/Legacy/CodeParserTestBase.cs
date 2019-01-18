@@ -20,10 +20,5 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             return ParseCodeBlock(version, document, directives, designTime);
         }
-
-        internal void ImplicitExpressionTest(string input)
-        {
-            ParseBlockTest(SyntaxConstants.TransitionString + input);
-        }
     }
 }

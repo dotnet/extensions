@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockIgnoresSingleSlashAtStart()
         {
-            ParseBlockTest("@/ foo");
+            ParseBlockTest("@/ foo", expectedParseLength: 1);
         }
 
         [Fact]
