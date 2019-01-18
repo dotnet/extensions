@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void EmptyTagNestsLikeNormalTag()
         {
-            ParseBlockTest("<p></> Bar", expectedParseLength: 7);
+            ParseDocumentTest("@{<p></> Bar}");
         }
 
         [Fact]
@@ -39,43 +39,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // This can happen in situations where a user is in VS' HTML editor and they're modifying
             // the contents of an HTML tag.
-            ParseBlockTest("<></> Bar", expectedParseLength: 2);
+            ParseDocumentTest("@{<></> Bar}");
         }
 
         [Fact]
         public void CommentTag()
         {
-            ParseBlockTest("<!--Foo--> Bar", expectedParseLength: 11);
+            ParseDocumentTest("@{<!--Foo--> Bar}");
         }
 
         [Fact]
         public void DocTypeTag()
         {
-            ParseBlockTest("<!DOCTYPE html> foo", expectedParseLength: 16);
+            ParseDocumentTest("@{<!DOCTYPE html> foo}");
         }
 
         [Fact]
         public void ProcessingInstructionTag()
         {
-            ParseBlockTest("<?xml version=\"1.0\" ?> foo", expectedParseLength: 23);
+            ParseDocumentTest("@{<?xml version=\"1.0\" ?> foo}");
         }
 
         [Fact]
         public void ElementTags()
         {
-            ParseBlockTest("<p>Foo</p> Bar", expectedParseLength: 11);
+            ParseDocumentTest("@{<p>Foo</p> Bar}");
         }
 
         [Fact]
         public void TextTags()
         {
-            ParseBlockTest("<text>Foo</text>}", expectedParseLength: 16);
+            ParseDocumentTest("@{<text>Foo</text>}");
         }
 
         [Fact]
         public void CDataTag()
         {
-            ParseBlockTest("<![CDATA[Foo]]> Bar", expectedParseLength: 16);
+            ParseDocumentTest("@{<![CDATA[Foo]]> Bar}");
         }
 
         [Fact]
