@@ -10,13 +10,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ReservedWord()
         {
-            ParseBlockTest("namespace");
+            ParseDocumentTest("@namespace");
         }
 
         [Fact]
         private void ReservedWordIsCaseSensitive()
         {
-            ParseBlockTest("NameSpace");
+            ParseDocumentTest("@NameSpace");
         }
     }
 }

@@ -10,37 +10,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void NestedSimpleStatement()
         {
-            ParseBlockTest("@while(true) { foo(); }");
+            ParseDocumentTest("@while(true) { foo(); }");
         }
 
         [Fact]
         public void NestedKeywordStatement()
         {
-            ParseBlockTest("@while(true) { for(int i = 0; i < 10; i++) { foo(); } }");
+            ParseDocumentTest("@while(true) { for(int i = 0; i < 10; i++) { foo(); } }");
         }
 
         [Fact]
         public void NestedCodeBlock()
         {
-            ParseBlockTest("@while(true) { { { { foo(); } } } }");
+            ParseDocumentTest("@while(true) { { { { foo(); } } } }");
         }
 
         [Fact]
         public void NestedImplicitExpression()
         {
-            ParseBlockTest("@while(true) { @foo }");
+            ParseDocumentTest("@while(true) { @foo }");
         }
 
         [Fact]
         public void NestedExplicitExpression()
         {
-            ParseBlockTest("@while(true) { @(foo) }");
+            ParseDocumentTest("@while(true) { @(foo) }");
         }
 
         [Fact]
         public void NestedMarkupBlock()
         {
-            ParseBlockTest("@while(true) { <p>Hello</p> }");
+            ParseDocumentTest("@while(true) { <p>Hello</p> }");
         }
     }
 }

@@ -19,85 +19,85 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ForStatement()
         {
-            ParseBlockTest("@for(int i = 0; i++; i < length) { foo(); }");
+            ParseDocumentTest("@for(int i = 0; i++; i < length) { foo(); }");
         }
 
         [Fact]
         public void ForEachStatement()
         {
-            ParseBlockTest("@foreach(var foo in bar) { foo(); }");
+            ParseDocumentTest("@foreach(var foo in bar) { foo(); }");
         }
 
         [Fact]
         public void WhileStatement()
         {
-            ParseBlockTest("@while(true) { foo(); }");
+            ParseDocumentTest("@while(true) { foo(); }");
         }
 
         [Fact]
         public void SwitchStatement()
         {
-            ParseBlockTest("@switch(foo) { foo(); }");
+            ParseDocumentTest("@switch(foo) { foo(); }");
         }
 
         [Fact]
         public void LockStatement()
         {
-            ParseBlockTest("@lock(baz) { foo(); }");
+            ParseDocumentTest("@lock(baz) { foo(); }");
         }
 
         [Fact]
         public void IfStatement()
         {
-            ParseBlockTest("@if(true) { foo(); }");
+            ParseDocumentTest("@if(true) { foo(); }");
         }
 
         [Fact]
         public void ElseIfClause()
         {
-            ParseBlockTest("@if(true) { foo(); } else if(false) { foo(); } else if(!false) { foo(); }");
+            ParseDocumentTest("@if(true) { foo(); } else if(false) { foo(); } else if(!false) { foo(); }");
         }
 
         [Fact]
         public void ElseClause()
         {
-            ParseBlockTest("@if(true) { foo(); } else { foo(); }");
+            ParseDocumentTest("@if(true) { foo(); } else { foo(); }");
         }
 
         [Fact]
         public void TryStatement()
         {
-            ParseBlockTest("@try { foo(); }");
+            ParseDocumentTest("@try { foo(); }");
         }
 
         [Fact]
         public void CatchClause()
         {
-            ParseBlockTest("@try { foo(); } catch(IOException ioex) { handleIO(); } catch(Exception ex) { handleOther(); }");
+            ParseDocumentTest("@try { foo(); } catch(IOException ioex) { handleIO(); } catch(Exception ex) { handleOther(); }");
         }
 
         [Fact]
         public void ExceptionFilter_TryCatchWhenComplete_SingleLine()
         {
-            ParseBlockTest("@try { someMethod(); } catch(Exception) when (true) { handleIO(); }");
+            ParseDocumentTest("@try { someMethod(); } catch(Exception) when (true) { handleIO(); }");
         }
 
         [Fact]
         public void ExceptionFilter_TryCatchWhenFinallyComplete_SingleLine()
         {
-            ParseBlockTest("@try { A(); } catch(Exception) when (true) { B(); } finally { C(); }");
+            ParseDocumentTest("@try { A(); } catch(Exception) when (true) { B(); } finally { C(); }");
         }
 
         [Fact]
         public void ExceptionFilter_TryCatchWhenCatchWhenComplete_SingleLine()
         {
-            ParseBlockTest("@try { A(); } catch(Exception) when (true) { B(); } catch(IOException) when (false) { C(); }");
+            ParseDocumentTest("@try { A(); } catch(Exception) when (true) { B(); } catch(IOException) when (false) { C(); }");
         }
 
         [Fact]
         public void ExceptionFilter_MultiLine()
         {
-            ParseBlockTest(
+            ParseDocumentTest(
 @"@try
 {
 A();
@@ -115,109 +115,109 @@ C();
         [Fact]
         public void ExceptionFilter_NestedTryCatchWhen()
         {
-            ParseBlockTest("@{try { someMethod(); } catch(Exception) when (true) { handleIO(); }}");
+            ParseDocumentTest("@{try { someMethod(); } catch(Exception) when (true) { handleIO(); }}");
         }
 
         [Fact]
         public void ExceptionFilter_IncompleteTryCatchWhen()
         {
-            ParseBlockTest("@try { someMethod(); } catch(Exception) when");
+            ParseDocumentTest("@try { someMethod(); } catch(Exception) when");
         }
 
         [Fact]
         public void ExceptionFilter_IncompleteTryWhen()
         {
-            ParseBlockTest("@try { someMethod(); } when", expectedParseLength: 22);
+            ParseDocumentTest("@try { someMethod(); } when");
         }
 
         [Fact]
         public void ExceptionFilter_IncompleteTryCatchNoBodyWhen()
         {
-            ParseBlockTest("@try { someMethod(); } catch(Exception) when { anotherMethod(); }");
+            ParseDocumentTest("@try { someMethod(); } catch(Exception) when { anotherMethod(); }");
         }
 
         [Fact]
         public void ExceptionFilter_IncompleteTryCatchWhenNoBodies()
         {
-            ParseBlockTest("@try { someMethod(); } catch(Exception) when (true)");
+            ParseDocumentTest("@try { someMethod(); } catch(Exception) when (true)");
         }
 
         [Fact]
         public void ExceptionFilterError_TryCatchWhen_InCompleteCondition()
         {
-            ParseBlockTest("@try { someMethod(); } catch(Exception) when (");
+            ParseDocumentTest("@try { someMethod(); } catch(Exception) when (");
         }
 
         [Fact]
         public void ExceptionFilterError_TryCatchWhen_InCompleteBody()
         {
-            ParseBlockTest("@try { someMethod(); } catch(Exception) when (true) {");
+            ParseDocumentTest("@try { someMethod(); } catch(Exception) when (true) {");
         }
 
         [Fact]
         public void FinallyClause()
         {
-            ParseBlockTest("@try { foo(); } finally { Dispose(); }");
+            ParseDocumentTest("@try { foo(); } finally { Dispose(); }");
         }
 
         [Fact]
         public void StaticUsing_NoUsing()
         {
-            ParseBlockTest("@using static");
+            ParseDocumentTest("@using static");
         }
 
         [Fact]
         public void StaticUsing_SingleIdentifier()
         {
-            ParseBlockTest("@using static System");
+            ParseDocumentTest("@using static System");
         }
 
         [Fact]
         public void StaticUsing_MultipleIdentifiers()
         {
-            ParseBlockTest("@using static System.Console");
+            ParseDocumentTest("@using static System.Console");
         }
 
         [Fact]
         public void StaticUsing_GlobalPrefix()
         {
-            ParseBlockTest("@using static global::System.Console");
+            ParseDocumentTest("@using static global::System.Console");
         }
 
         [Fact]
         public void StaticUsing_Complete_Spaced()
         {
-            ParseBlockTest("@using   static   global::System.Console  ", expectedParseLength: 40);
+            ParseDocumentTest("@using   static   global::System.Console  ");
         }
 
         [Fact]
         public void UsingStatement()
         {
-            ParseBlockTest("@using(var foo = new Foo()) { foo.Bar(); }");
+            ParseDocumentTest("@using(var foo = new Foo()) { foo.Bar(); }");
         }
 
         [Fact]
         public void UsingTypeAlias()
         {
-            ParseBlockTest("@using StringDictionary = System.Collections.Generic.Dictionary<string, string>");
+            ParseDocumentTest("@using StringDictionary = System.Collections.Generic.Dictionary<string, string>");
         }
 
         [Fact]
         public void UsingNamespaceImport()
         {
-            ParseBlockTest("@using System.Text.Encoding.ASCIIEncoding");
+            ParseDocumentTest("@using System.Text.Encoding.ASCIIEncoding");
         }
 
         [Fact]
         public void DoStatement()
         {
-            ParseBlockTest("@do { foo(); } while(true);");
+            ParseDocumentTest("@do { foo(); } while(true);");
         }
 
         [Fact]
         public void NonBlockKeywordTreatedAsImplicitExpression()
         {
-            ParseBlockTest("@is foo", expectedParseLength: 3);
+            ParseDocumentTest("@is foo");
         }
     }
 }
