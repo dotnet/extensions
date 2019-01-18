@@ -54,6 +54,7 @@
     <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview-181106-14</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>3.0.0-preview-181106-14</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview-27113-06</MicrosoftExtensionsDependencyModelPackageVersion>
