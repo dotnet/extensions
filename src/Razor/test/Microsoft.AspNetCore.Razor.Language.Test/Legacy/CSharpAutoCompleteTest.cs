@@ -14,40 +14,40 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void FunctionsDirectiveAutoCompleteAtEOF()
         {
             // Arrange, Act & Assert
-            ParseBlockTest("@functions{", new[] { FunctionsDirective.Directive });
+            ParseDocumentTest("@functions{", new[] { FunctionsDirective.Directive });
         }
 
         [Fact]
         public void SectionDirectiveAutoCompleteAtEOF()
         {
             // Arrange, Act & Assert
-            ParseBlockTest("@section Header {", new[] { SectionDirective.Directive });
+            ParseDocumentTest("@section Header {", new[] { SectionDirective.Directive });
         }
 
         [Fact]
         public void VerbatimBlockAutoCompleteAtEOF()
         {
-            ParseBlockTest("@{");
+            ParseDocumentTest("@{");
         }
 
         [Fact]
         public void FunctionsDirectiveAutoCompleteAtStartOfFile()
         {
             // Arrange, Act & Assert
-            ParseBlockTest("@functions{" + Environment.NewLine + "foo", new[] { FunctionsDirective.Directive });
+            ParseDocumentTest("@functions{" + Environment.NewLine + "foo", new[] { FunctionsDirective.Directive });
         }
 
         [Fact]
         public void SectionDirectiveAutoCompleteAtStartOfFile()
         {
             // Arrange, Act & Assert
-            ParseBlockTest("@section Header {" + Environment.NewLine + "<p>Foo</p>", new[] { SectionDirective.Directive });
+            ParseDocumentTest("@section Header {" + Environment.NewLine + "<p>Foo</p>", new[] { SectionDirective.Directive });
         }
 
         [Fact]
         public void VerbatimBlockAutoCompleteAtStartOfFile()
         {
-            ParseBlockTest("@{" + Environment.NewLine + "<p></p>");
+            ParseDocumentTest("@{" + Environment.NewLine + "<p></p>");
         }
     }
 }

@@ -11,38 +11,38 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ShouldOutputZeroLengthCodeSpanIfExplicitExpressionIsEmpty()
         {
-            ParseBlockTest("@()");
+            ParseDocumentTest("@()");
         }
 
         [Fact]
         public void ShouldOutputZeroLengthCodeSpanIfEOFOccursAfterStartOfExplicitExpr()
         {
             // ParseBlockShouldOutputZeroLengthCodeSpanIfEOFOccursAfterStartOfExplicitExpression
-            ParseBlockTest("@(");
+            ParseDocumentTest("@(");
         }
 
         [Fact]
         public void ShouldAcceptEscapedQuoteInNonVerbatimStrings()
         {
-            ParseBlockTest("@(\"\\\"\")");
+            ParseDocumentTest("@(\"\\\"\")");
         }
 
         [Fact]
         public void ShouldAcceptEscapedQuoteInVerbatimStrings()
         {
-            ParseBlockTest("@(@\"\"\"\")");
+            ParseDocumentTest("@(@\"\"\"\")");
         }
 
         [Fact]
         public void ShouldAcceptMultipleRepeatedEscapedQuoteInVerbatimStrings()
         {
-            ParseBlockTest("@(@\"\"\"\"\"\")");
+            ParseDocumentTest("@(@\"\"\"\"\"\")");
         }
 
         [Fact]
         public void ShouldAcceptMultiLineVerbatimStrings()
         {
-            ParseBlockTest(@"@(@""" + Environment.NewLine
+            ParseDocumentTest(@"@(@""" + Environment.NewLine
                          + @"Foo" + Environment.NewLine
                          + @"Bar" + Environment.NewLine
                          + @"Baz" + Environment.NewLine
@@ -52,25 +52,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ShouldAcceptMultipleEscapedQuotesInNonVerbatimStrings()
         {
-            ParseBlockTest("@(\"\\\"hello, world\\\"\")");
+            ParseDocumentTest("@(\"\\\"hello, world\\\"\")");
         }
 
         [Fact]
         public void ShouldAcceptMultipleEscapedQuotesInVerbatimStrings()
         {
-            ParseBlockTest("@(@\"\"\"hello, world\"\"\")");
+            ParseDocumentTest("@(@\"\"\"hello, world\"\"\")");
         }
 
         [Fact]
         public void ShouldAcceptConsecutiveEscapedQuotesInNonVerbatimStrings()
         {
-            ParseBlockTest("@(\"\\\"\\\"\")");
+            ParseDocumentTest("@(\"\\\"\\\"\")");
         }
 
         [Fact]
         public void ShouldAcceptConsecutiveEscapedQuotesInVerbatimStrings()
         {
-            ParseBlockTest("@(@\"\"\"\"\"\")");
+            ParseDocumentTest("@(@\"\"\"\"\"\")");
         }
     }
 }

@@ -11,364 +11,364 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket1()
         {
             // Act & Assert
-            ParseBlockTest("@val??[", expectedParseLength: 4);
+            ParseDocumentTest("@val??[");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket2()
         {
             // Act & Assert
-            ParseBlockTest("@val??[0", expectedParseLength: 4);
+            ParseDocumentTest("@val??[0");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket3()
         {
             // Act & Assert
-            ParseBlockTest("@val?[");
+            ParseDocumentTest("@val?[");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket4()
         {
             // Act & Assert
-            ParseBlockTest("@val?(", expectedParseLength: 4);
+            ParseDocumentTest("@val?(");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket5()
         {
             // Act & Assert
-            ParseBlockTest("@val?[more");
+            ParseDocumentTest("@val?[more");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket6()
         {
             // Act & Assert
-            ParseBlockTest("@val?[0]");
+            ParseDocumentTest("@val?[0]");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket7()
         {
             // Act & Assert
-            ParseBlockTest("@val?[<p>", expectedParseLength: 6);
+            ParseDocumentTest("@val?[<p>");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket8()
         {
             // Act & Assert
-            ParseBlockTest("@val?[more.<p>", expectedParseLength: 11);
+            ParseDocumentTest("@val?[more.<p>");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket9()
         {
             // Act & Assert
-            ParseBlockTest("@val??[more<p>", expectedParseLength: 4);
+            ParseDocumentTest("@val??[more<p>");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket10()
         {
             // Act & Assert
-            ParseBlockTest("@val?[-1]?", expectedParseLength: 9);
+            ParseDocumentTest("@val?[-1]?");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket11()
         {
             // Act & Assert
-            ParseBlockTest("@val?[abc]?[def");
+            ParseDocumentTest("@val?[abc]?[def");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket12()
         {
             // Act & Assert
-            ParseBlockTest("@val?[abc]?[2]");
+            ParseDocumentTest("@val?[abc]?[2]");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket13()
         {
             // Act & Assert
-            ParseBlockTest("@val?[abc]?.more?[def]");
+            ParseDocumentTest("@val?[abc]?.more?[def]");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket14()
         {
             // Act & Assert
-            ParseBlockTest("@val?[abc]?.more?.abc");
+            ParseDocumentTest("@val?[abc]?.more?.abc");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket15()
         {
             // Act & Assert
-            ParseBlockTest("@val?[null ?? true]");
+            ParseDocumentTest("@val?[null ?? true]");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket16()
         {
             // Act & Assert
-            ParseBlockTest("@val?[abc?.gef?[-1]]");
+            ParseDocumentTest("@val?[abc?.gef?[-1]]");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot1()
         {
             // Act & Assert
-            ParseBlockTest("@val?", expectedParseLength: 4);
+            ParseDocumentTest("@val?");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot2()
         {
             // Act & Assert
-            ParseBlockTest("@val??", expectedParseLength: 4);
+            ParseDocumentTest("@val??");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot3()
         {
             // Act & Assert
-            ParseBlockTest("@val??more", expectedParseLength: 4);
+            ParseDocumentTest("@val??more");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot4()
         {
             // Act & Assert
-            ParseBlockTest("@val?!", expectedParseLength: 4);
+            ParseDocumentTest("@val?!");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot5()
         {
             // Act & Assert
-            ParseBlockTest("@val?.");
+            ParseDocumentTest("@val?.");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot6()
         {
             // Act & Assert
-            ParseBlockTest("@val??.", expectedParseLength: 4);
+            ParseDocumentTest("@val??.");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot7()
         {
             // Act & Assert
-            ParseBlockTest("@val?.(abc)", expectedParseLength: 6);
+            ParseDocumentTest("@val?.(abc)");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot8()
         {
             // Act & Assert
-            ParseBlockTest("@val?.<p>", expectedParseLength: 6);
+            ParseDocumentTest("@val?.<p>");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot9()
         {
             // Act & Assert
-            ParseBlockTest("@val?.more");
+            ParseDocumentTest("@val?.more");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot10()
         {
             // Act & Assert
-            ParseBlockTest("@val?.more<p>", expectedParseLength: 10);
+            ParseDocumentTest("@val?.more<p>");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot11()
         {
             // Act & Assert
-            ParseBlockTest("@val??.more<p>", expectedParseLength: 4);
+            ParseDocumentTest("@val??.more<p>");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot12()
         {
             // Act & Assert
-            ParseBlockTest("@val?.more(false)?.<p>", expectedParseLength: 19);
+            ParseDocumentTest("@val?.more(false)?.<p>");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot13()
         {
             // Act & Assert
-            ParseBlockTest("@val?.more(false)?.abc");
+            ParseDocumentTest("@val?.more(false)?.abc");
         }
 
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Dot14()
         {
             // Act & Assert
-            ParseBlockTest("@val?.more(null ?? true)?.abc");
+            ParseDocumentTest("@val?.more(null ?? true)?.abc");
         }
 
         [Fact]
         public void NestedImplicitExpression()
         {
-            ParseBlockTest("if (true) { @foo }");
+            ParseDocumentTest("if (true) { @foo }");
         }
 
         [Fact]
         public void AcceptsNonEnglishCharactersThatAreValidIdentifiers()
         {
-            ParseBlockTest("@हळूँजद॔.", expectedParseLength: 8);
+            ParseDocumentTest("@हळूँजद॔.");
         }
 
         [Fact]
         public void OutputsZeroLengthCodeSpanIfInvalidCharacterFollowsTransition()
         {
-            ParseBlockTest("@/", expectedParseLength: 1);
+            ParseDocumentTest("@/");
         }
 
         [Fact]
         public void OutputsZeroLengthCodeSpanIfEOFOccursAfterTransition()
         {
-            ParseBlockTest("@");
+            ParseDocumentTest("@");
         }
 
         [Fact]
         public void SupportsSlashesWithinComplexImplicitExpressions()
         {
-            ParseBlockTest("@DataGridColumn.Template(\"Years of Service\", e => (int)Math.Round((DateTime.Now - dt).TotalDays / 365))");
+            ParseDocumentTest("@DataGridColumn.Template(\"Years of Service\", e => (int)Math.Round((DateTime.Now - dt).TotalDays / 365))");
         }
 
         [Fact]
         public void ParsesSingleIdentifierAsImplicitExpression()
         {
-            ParseBlockTest("@foo");
+            ParseDocumentTest("@foo");
         }
 
         [Fact]
         public void DoesNotAcceptSemicolonIfExpressionTerminatedByWhitespace()
         {
-            ParseBlockTest("@foo ;", expectedParseLength: 4);
+            ParseDocumentTest("@foo ;");
         }
 
         [Fact]
         public void IgnoresSemicolonAtEndOfSimpleImplicitExpression()
         {
-            ParseBlockTest("@foo;", expectedParseLength: 4);
+            ParseDocumentTest("@foo;");
         }
 
         [Fact]
         public void ParsesDottedIdentifiersAsImplicitExpression()
         {
-            ParseBlockTest("@foo.bar.baz");
+            ParseDocumentTest("@foo.bar.baz");
         }
 
         [Fact]
         public void IgnoresSemicolonAtEndOfDottedIdentifiers()
         {
-            ParseBlockTest("@foo.bar.baz;", expectedParseLength: 12);
+            ParseDocumentTest("@foo.bar.baz;");
         }
 
         [Fact]
         public void DoesNotIncludeDotAtEOFInImplicitExpression()
         {
-            ParseBlockTest("@foo.bar.", expectedParseLength: 8);
+            ParseDocumentTest("@foo.bar.");
         }
 
         [Fact]
         public void DoesNotIncludeDotFollowedByInvalidIdentifierCharInImplicitExpr1()
         {
             // ParseBlockMethodDoesNotIncludeDotFollowedByInvalidIdentifierCharacterInImplicitExpression1
-            ParseBlockTest("@foo.bar.0", expectedParseLength: 8);
+            ParseDocumentTest("@foo.bar.0");
         }
 
         [Fact]
         public void DoesNotIncludeDotFollowedByInvalidIdentifierCharInImplicitExpr2()
         {
             // ParseBlockMethodDoesNotIncludeDotFollowedByInvalidIdentifierCharacterInImplicitExpression2
-            ParseBlockTest("@foo.bar.</p>", expectedParseLength: 8);
+            ParseDocumentTest("@foo.bar.</p>");
         }
 
         [Fact]
         public void DoesNotIncludeSemicolonAfterDot()
         {
-            ParseBlockTest("@foo.bar.;", expectedParseLength: 8);
+            ParseDocumentTest("@foo.bar.;");
         }
 
         [Fact]
         public void TerminatesAfterIdentifierUnlessFollowedByDotOrParenInImplicitExpr()
         {
             // ParseBlockMethodTerminatesAfterIdentifierUnlessFollowedByDotOrParenInImplicitExpression
-            ParseBlockTest("@foo.bar</p>", expectedParseLength: 8);
+            ParseDocumentTest("@foo.bar</p>");
         }
 
         [Fact]
         public void ProperlyParsesParenthesesAndBalancesThemInImplicitExpression()
         {
-            ParseBlockTest(@"@foo().bar(""bi\""z"", 4)(""chained method; call"").baz(@""bo""""z"", '\'', () => { return 4; }, (4+5+new { foo = bar[4] }))");
+            ParseDocumentTest(@"@foo().bar(""bi\""z"", 4)(""chained method; call"").baz(@""bo""""z"", '\'', () => { return 4; }, (4+5+new { foo = bar[4] }))");
         }
 
         [Fact]
         public void ProperlyParsesBracketsAndBalancesThemInImplicitExpression()
         {
-            ParseBlockTest(@"@foo.bar[4 * (8 + 7)][""fo\""o""].baz");
+            ParseDocumentTest(@"@foo.bar[4 * (8 + 7)][""fo\""o""].baz");
         }
 
         [Fact]
         public void TerminatesImplicitExpressionAtHtmlEndTag()
         {
-            ParseBlockTest("@foo().bar.baz</p>zoop", expectedParseLength: 14);
+            ParseDocumentTest("@foo().bar.baz</p>zoop");
         }
 
         [Fact]
         public void TerminatesImplicitExpressionAtHtmlStartTag()
         {
-            ParseBlockTest("@foo().bar.baz<p>zoop", expectedParseLength: 14);
+            ParseDocumentTest("@foo().bar.baz<p>zoop");
         }
 
         [Fact]
         public void TerminatesImplicitExprBeforeDotIfDotNotFollowedByIdentifierStartChar()
         {
             // ParseBlockTerminatesImplicitExpressionBeforeDotIfDotNotFollowedByIdentifierStartCharacter
-            ParseBlockTest("@foo().bar.baz.42", expectedParseLength: 14);
+            ParseDocumentTest("@foo().bar.baz.42");
         }
 
         [Fact]
         public void StopsBalancingParenthesesAtEOF()
         {
-            ParseBlockTest("@foo(()");
+            ParseDocumentTest("@foo(()");
         }
 
         [Fact]
         public void TerminatesImplicitExpressionIfCloseParenFollowedByAnyWhiteSpace()
         {
-            ParseBlockTest("@foo.bar() (baz)", expectedParseLength: 10);
+            ParseDocumentTest("@foo.bar() (baz)");
         }
 
         [Fact]
         public void TerminatesImplicitExpressionIfIdentifierFollowedByAnyWhiteSpace()
         {
-            ParseBlockTest("@foo .bar() (baz)", expectedParseLength: 4);
+            ParseDocumentTest("@foo .bar() (baz)");
         }
 
         [Fact]
         public void TerminatesImplicitExpressionAtLastValidPointIfDotFollowedByWhitespace()
         {
-            ParseBlockTest("@foo. bar() (baz)", expectedParseLength: 4);
+            ParseDocumentTest("@foo. bar() (baz)");
         }
 
         [Fact]
         public void OutputExpressionIfModuleTokenNotFollowedByBrace()
         {
-            ParseBlockTest("@module.foo()");
+            ParseDocumentTest("@module.foo()");
         }
     }
 }
