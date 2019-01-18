@@ -13,37 +13,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void VerbatimBlock()
         {
-            ParseBlockTest("@{ foo(); }");
+            ParseDocumentTest("@{ foo(); }");
         }
 
         [Fact]
         public void InnerImplicitExprWithOnlySingleAtOutputsZeroLengthCodeSpan()
         {
-            ParseBlockTest("{@}");
+            ParseDocumentTest("@{@}");
         }
 
         [Fact]
         public void InnerImplicitExprDoesNotAcceptDotAfterAt()
         {
-            ParseBlockTest("{@.}");
+            ParseDocumentTest("@{@.}");
         }
 
         [Fact]
         public void InnerImplicitExprWithOnlySingleAtAcceptsSingleSpaceOrNewlineAtDesignTime()
         {
-            ParseBlockTest("{" + Environment.NewLine + "    @" + Environment.NewLine + "}", designTime: true);
+            ParseDocumentTest("@{" + Environment.NewLine + "    @" + Environment.NewLine + "}", designTime: true);
         }
 
         [Fact]
         public void InnerImplicitExprDoesNotAcceptTrailingNewlineInRunTimeMode()
         {
-            ParseBlockTest("{@foo." + Environment.NewLine + "}");
+            ParseDocumentTest("@{@foo." + Environment.NewLine + "}");
         }
 
         [Fact]
         public void InnerImplicitExprAcceptsTrailingNewlineInDesignTimeMode()
         {
-            ParseBlockTest("{@foo." + Environment.NewLine + "}", designTime: true);
+            ParseDocumentTest("@{@foo." + Environment.NewLine + "}", designTime: true);
         }
     }
 }

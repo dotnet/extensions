@@ -11,82 +11,82 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void HandlesSingleLineTemplate()
         {
-            ParseBlockTest("{ var foo = @: bar" + Environment.NewLine + "; }");
+            ParseDocumentTest("@{ var foo = @: bar" + Environment.NewLine + "; }");
         }
 
         [Fact]
         public void HandlesSingleLineImmediatelyFollowingStatementChar()
         {
-            ParseBlockTest("{i@: bar" + Environment.NewLine + "}");
+            ParseDocumentTest("@{i@: bar" + Environment.NewLine + "}");
         }
 
         [Fact]
         public void HandlesSimpleTemplateInExplicitExpressionParens()
         {
-            ParseBlockTest("(Html.Repeat(10, @<p>Foo #@item</p>))");
+            ParseDocumentTest("@(Html.Repeat(10, @<p>Foo #@item</p>))");
         }
 
         [Fact]
         public void HandlesSimpleTemplateInImplicitExpressionParens()
         {
-            ParseBlockTest("Html.Repeat(10, @<p>Foo #@item</p>)");
+            ParseDocumentTest("@Html.Repeat(10, @<p>Foo #@item</p>)");
         }
 
         [Fact]
         public void HandlesTwoTemplatesInImplicitExpressionParens()
         {
-            ParseBlockTest("Html.Repeat(10, @<p>Foo #@item</p>, @<p>Foo #@item</p>)");
+            ParseDocumentTest("@Html.Repeat(10, @<p>Foo #@item</p>, @<p>Foo #@item</p>)");
         }
 
         [Fact]
         public void ProducesErrorButCorrectlyParsesNestedTemplateInImplicitExprParens()
         {
             // ParseBlockProducesErrorButCorrectlyParsesNestedTemplateInImplicitExpressionParens
-            ParseBlockTest("Html.Repeat(10, @<p>Foo #@Html.Repeat(10, @<p>@item</p>)</p>)");
+            ParseDocumentTest("@Html.Repeat(10, @<p>Foo #@Html.Repeat(10, @<p>@item</p>)</p>)");
         }
 
         [Fact]
         public void HandlesSimpleTemplateInStatementWithinCodeBlock()
         {
-            ParseBlockTest("foreach(foo in Bar) { Html.ExecuteTemplate(foo, @<p>Foo #@item</p>); }");
+            ParseDocumentTest("@foreach(foo in Bar) { Html.ExecuteTemplate(foo, @<p>Foo #@item</p>); }");
         }
 
         [Fact]
         public void HandlesTwoTemplatesInStatementWithinCodeBlock()
         {
-            ParseBlockTest("foreach(foo in Bar) { Html.ExecuteTemplate(foo, @<p>Foo #@item</p>, @<p>Foo #@item</p>); }");
+            ParseDocumentTest("@foreach(foo in Bar) { Html.ExecuteTemplate(foo, @<p>Foo #@item</p>, @<p>Foo #@item</p>); }");
         }
 
         [Fact]
         public void ProducesErrorButCorrectlyParsesNestedTemplateInStmtWithinCodeBlock()
         {
             // ParseBlockProducesErrorButCorrectlyParsesNestedTemplateInStatementWithinCodeBlock
-            ParseBlockTest("foreach(foo in Bar) { Html.ExecuteTemplate(foo, @<p>Foo #@Html.Repeat(10, @<p>@item</p>)</p>); }");
+            ParseDocumentTest("@foreach(foo in Bar) { Html.ExecuteTemplate(foo, @<p>Foo #@Html.Repeat(10, @<p>@item</p>)</p>); }");
         }
 
         [Fact]
         public void HandlesSimpleTemplateInStatementWithinStatementBlock()
         {
-            ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo, @<p>Foo #@item</p>); }");
+            ParseDocumentTest("@{ var foo = bar; Html.ExecuteTemplate(foo, @<p>Foo #@item</p>); }");
         }
 
         [Fact]
         public void HandlessTwoTemplatesInStatementWithinStatementBlock()
         {
-            ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo, @<p>Foo #@item</p>, @<p>Foo #@item</p>); }");
+            ParseDocumentTest("@{ var foo = bar; Html.ExecuteTemplate(foo, @<p>Foo #@item</p>, @<p>Foo #@item</p>); }");
         }
 
         [Fact]
         public void ProducesErrorButCorrectlyParsesNestedTemplateInStmtWithinStmtBlock()
         {
             // ParseBlockProducesErrorButCorrectlyParsesNestedTemplateInStatementWithinStatementBlock
-            ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo, @<p>Foo #@Html.Repeat(10, @<p>@item</p>)</p>); }");
+            ParseDocumentTest("@{ var foo = bar; Html.ExecuteTemplate(foo, @<p>Foo #@Html.Repeat(10, @<p>@item</p>)</p>); }");
         }
 
         [Fact]
         public void _WithDoubleTransition_DoesNotThrow()
         {
-            ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo, @<p foo='@@'>Foo #@item</p>); }");
+            ParseDocumentTest("@{ var foo = bar; Html.ExecuteTemplate(foo, @<p foo='@@'>Foo #@item</p>); }");
         }
     }
 }
