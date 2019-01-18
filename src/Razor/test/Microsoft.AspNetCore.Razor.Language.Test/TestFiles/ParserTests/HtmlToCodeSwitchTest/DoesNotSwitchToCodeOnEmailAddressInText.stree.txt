@@ -1,4 +1,4 @@
-RazorDocument - [0..34)::34 - [@{<foo><?xml foo @bar baz?></foo>}]
+RazorDocument - [0..34)::34 - [@{<foo>anurse@microsoft.com</foo>}]
     MarkupBlock - [0..34)::34
         MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Marker;[];
@@ -16,26 +16,8 @@ RazorDocument - [0..34)::34 - [@{<foo><?xml foo @bar baz?></foo>}]
                                     OpenAngle;[<];
                                     Text;[foo];
                                     CloseAngle;[>];
-                                MarkupTextLiteral - [7..17)::10 - [<?xml foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
-                                    QuestionMark;[?];
-                                    Text;[xml];
-                                    Whitespace;[ ];
-                                    Text;[foo];
-                                    Whitespace;[ ];
-                                CSharpCodeBlock - [17..21)::4
-                                    CSharpImplicitExpression - [17..21)::4
-                                        CSharpTransition - [17..18)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                            Transition;[@];
-                                        CSharpImplicitExpressionBody - [18..21)::3
-                                            CSharpCodeBlock - [18..21)::3
-                                                CSharpExpressionLiteral - [18..21)::3 - [bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
-                                                    Identifier;[bar];
-                                MarkupTextLiteral - [21..27)::6 - [ baz?>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                    Whitespace;[ ];
-                                    Text;[baz];
-                                    QuestionMark;[?];
-                                    CloseAngle;[>];
+                                MarkupTextLiteral - [7..27)::20 - [anurse@microsoft.com] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Text;[anurse@microsoft.com];
                                 MarkupEndTag - [27..33)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     ForwardSlash;[/];

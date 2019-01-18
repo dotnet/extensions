@@ -12,84 +12,83 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void SwitchesWhenCharacterBeforeSwapIsNonAlphanumeric()
         {
-            ParseBlockTest("<p>foo#@i</p>");
+            ParseDocumentTest("@{<p>foo#@i</p>}");
         }
 
         [Fact]
         public void SwitchesToCodeWhenSwapCharacterEncounteredMidTag()
         {
-            ParseBlockTest("<foo @bar />");
+            ParseDocumentTest("@{<foo @bar />}");
         }
 
         [Fact]
         public void SwitchesToCodeWhenSwapCharacterEncounteredInAttributeValue()
         {
-            ParseBlockTest("<foo bar=\"@baz\" />");
+            ParseDocumentTest("@{<foo bar=\"@baz\" />}");
         }
 
         [Fact]
         public void SwitchesToCodeWhenSwapCharacterEncounteredInTagContent()
         {
-            ParseBlockTest("<foo>@bar<baz>@boz</baz></foo>");
+            ParseDocumentTest("@{<foo>@bar<baz>@boz</baz></foo>}");
         }
 
         [Fact]
         public void ParsesCodeWithinSingleLineMarkup()
         {
             // TODO: Fix at a later date, HTML should be a tag block: https://github.com/aspnet/Razor/issues/101
-            ParseBlockTest("@:<li>Foo @Bar Baz" + Environment.NewLine
-                         + "bork",
-                         expectedParseLength: 20);
+            ParseDocumentTest("@{@:<li>Foo @Bar Baz" + Environment.NewLine
+                         + "bork}");
         }
 
         [Fact]
         public void SupportsCodeWithinComment()
         {
-            ParseBlockTest("<foo><!-- @foo --></foo>");
+            ParseDocumentTest("@{<foo><!-- @foo --></foo>}");
         }
 
         [Fact]
         public void SupportsCodeWithinSGMLDeclaration()
         {
-            ParseBlockTest("<foo><!DOCTYPE foo @bar baz></foo>");
+            ParseDocumentTest("@{<foo><!DOCTYPE foo @bar baz></foo>}");
         }
 
         [Fact]
         public void SupportsCodeWithinCDataDeclaration()
         {
-            ParseBlockTest("<foo><![CDATA[ foo @bar baz]]></foo>");
+            ParseDocumentTest("@{<foo><![CDATA[ foo @bar baz]]></foo>}");
         }
 
         [Fact]
         public void SupportsCodeWithinXMLProcessingInstruction()
         {
-            ParseBlockTest("<foo><?xml foo @bar baz?></foo>");
+            ParseDocumentTest("@{<foo><?xml foo @bar baz?></foo>}");
         }
 
         [Fact]
-        public void ParseBlockDoesNotSwitchToCodeOnEmailAddressInText()
+        public void DoesNotSwitchToCodeOnEmailAddressInText()
         {
-            ParseBlockTest("<foo>anurse@microsoft.com</foo>");
+            ParseDocumentTest("@{<foo>anurse@microsoft.com</foo>}");
         }
 
         [Fact]
         public void DoesNotSwitchToCodeOnEmailAddressInAttribute()
         {
-            ParseBlockTest("<a href=\"mailto:anurse@microsoft.com\">Email me</a>");
+            ParseDocumentTest("@{<a href=\"mailto:anurse@microsoft.com\">Email me</a>}");
         }
 
         [Fact]
-        public void GivesWhitespacePreceedingAtToCodeIfThereIsNoMarkupOnThatLine()
+        public void GivesWhitespacePreceedingToCodeIfThereIsNoMarkupOnThatLine()
         {
-            ParseBlockTest("   <ul>" + Environment.NewLine
+            ParseDocumentTest("@{   <ul>" + Environment.NewLine
                          + "    @foreach(var p in Products) {" + Environment.NewLine
                          + "        <li>Product: @p.Name</li>" + Environment.NewLine
                          + "    }" + Environment.NewLine
-                         + "    </ul>");
+                         + "    </ul>}");
         }
 
         [Fact]
-        public void ParseDocumentGivesWhitespacePreceedingAtToCodeIfThereIsNoMarkupOnThatLine()
+        public void ParseDocumentGivesWhitespacePreceedingToCodeIfThereIsNoMarkupOnThatLine()
         {
             ParseDocumentTest("   <ul>" + Environment.NewLine
                             + "    @foreach(var p in Products) {" + Environment.NewLine
@@ -99,27 +98,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void SectionContextGivesWhitespacePreceedingAtToCodeIfThereIsNoMarkupOnThatLine()
+        public void SectionContextGivesWhitespacePreceedingToCodeIfThereIsNoMarkupOnThatLine()
         {
-            var sectionDescriptor = SectionDirective.Directive;
-            ParseDocumentTest("@section foo {" + Environment.NewLine
+            ParseDocumentTest("@{@section foo {" + Environment.NewLine
                             + "    <ul>" + Environment.NewLine
                             + "        @foreach(var p in Products) {" + Environment.NewLine
                             + "            <li>Product: @p.Name</li>" + Environment.NewLine
                             + "        }" + Environment.NewLine
                             + "    </ul>" + Environment.NewLine
-                            + "}",
+                            + "}}",
                 new[] { SectionDirective.Directive, });
         }
 
         [Fact]
         public void CSharpCodeParserDoesNotAcceptLeadingOrTrailingWhitespaceInDesignMode()
         {
-            ParseBlockTest("   <ul>" + Environment.NewLine
+            ParseDocumentTest("@{   <ul>" + Environment.NewLine
                          + "    @foreach(var p in Products) {" + Environment.NewLine
                          + "        <li>Product: @p.Name</li>" + Environment.NewLine
                          + "    }" + Environment.NewLine
-                         + "    </ul>",
+                         + "    </ul>}",
                 designTime: true);
         }
 
@@ -127,13 +125,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void TreatsTwoAtSignsAsEscapeSequence()
         {
-            ParseBlockTest("<foo>@@bar</foo>");
+            ParseDocumentTest("@{<foo>@@bar</foo>}");
         }
 
         [Fact]
         public void TreatsPairsOfAtSignsAsEscapeSequence()
         {
-            ParseBlockTest("<foo>@@@@@bar</foo>");
+            ParseDocumentTest("@{<foo>@@@@@bar</foo>}");
         }
 
         [Fact]
