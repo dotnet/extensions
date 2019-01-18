@@ -16,6 +16,15 @@
       <VsixVersion Condition="'$(OfficialBuildId)' != ''">$(VsixVersion).$(OfficialBuildId)</VsixVersion>
       <VsixVersion Condition="'$(OfficialBuildId)' == ''">$(VsixVersion).42424242.42</VsixVersion>
     </PropertyGroup>
+  </Target>
 
+  <Target Name="_EnsureVSIXWasGenerated" AfterTargets="GenerateVisualStudioInsertionManifests" Condition="'$(OS)'=='WINDOWS_NT'">
+    <PropertyGroup>
+      <VSSetupDir>$(ArtifactsDir)VSSetup\</VSSetupDir>
+      <RazorExtensionVSIXName>Microsoft.VisualStudio.RazorExtension.vsix</RazorExtensionVSIXName>
+    </PropertyGroup>
+    <Error 
+      Text="$(RazorExtensionVSIXName) was not generated."
+      Condition="!Exists('$(VSSetupDir)$(Configuration)\$(RazorExtensionVSIXName)')" />
   </Target>
 </Project>
