@@ -5,7 +5,7 @@ RazorDocument - [0..42)::42 - [<p>< @DateTime.Now ></ @DateTime.Now ></p>]
                 OpenAngle;[<];
                 Text;[p];
                 CloseAngle;[>];
-            MarkupElement - [3..20)::17
+            MarkupElement - [3..23)::20
                 MarkupStartTag - [3..20)::17 - [< @DateTime.Now >] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[<Missing>];
@@ -25,7 +25,6 @@ RazorDocument - [0..42)::42 - [<p>< @DateTime.Now ></ @DateTime.Now ></p>]
                         MarkupTextLiteral - [18..19)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Whitespace;[ ];
                     CloseAngle;[>];
-            MarkupElement - [20..23)::3
                 MarkupEndTag - [20..23)::3 - [</ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     ForwardSlash;[/];
