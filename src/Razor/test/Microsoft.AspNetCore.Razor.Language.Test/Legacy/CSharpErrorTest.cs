@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void CapturesWhitespaceToEOLInInvalidUsingStmtAndTreatsAsFileCode()
         {
             // ParseBlockCapturesWhitespaceToEndOfLineInInvalidUsingStatementAndTreatsAsFileCode
-            ParseBlockTest("using          " + Environment.NewLine
+            ParseDocumentTest("@using          " + Environment.NewLine
                          + Environment.NewLine);
         }
 
