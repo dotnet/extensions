@@ -118,6 +118,28 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Determines whether a service of type <typeparamref name="T"/> has been registered with the <see cref="IServiceProvider"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of service to check.</typeparam>
+        /// <param name="provider">The <see cref="IServiceProvider"/> to check.</param>
+        /// <returns><c>true</c> if the service has been registered, <c>false</c> otherwise.</returns>
+        public static bool IsRegistered<T>(this IServiceProvider provider)
+        {
+            return provider.IsRegistered(typeof(T));
+        }
+
+        /// <summary>
+        /// Determines whether a service of type <paramref name="serviceType"/> has been registered with the <see cref="IServiceProvider"/>.
+        /// </summary>
+        /// <param name="provider">The <see cref="IServiceProvider"/> to check.</param>
+        /// <param name="serviceType">An object that specifies the type of service to check.</param>
+        /// <returns><c>true</c> if the service has been registered, <c>false</c> otherwise.</returns>
+        public static bool IsRegistered(this IServiceProvider provider, Type serviceType)
+        {
+            return provider.TryGetService(serviceType, out _);
+        }
+
+        /// <summary>
         /// Tries to get the service of type <typeparamref name="T"/> from the <see cref="IServiceProvider"/>.
         /// </summary>
         /// <typeparam name="T">The type of service object to get.</typeparam>
