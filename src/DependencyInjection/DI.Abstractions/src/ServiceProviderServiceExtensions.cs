@@ -118,6 +118,48 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Tries to get the service of type <typeparamref name="T"/> from the <see cref="IServiceProvider"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of service object to get.</typeparam>
+        /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
+        /// <param name="service">The retrieved instance of the requested service.</param>
+        /// <returns><c>true</c> if the service was retrieved, <c>false</c> otherwise.</returns>
+        public static bool TryGetService<T>(this IServiceProvider provider, out T service)
+        {
+            if (provider.TryGetService(typeof(T), out var instance))
+            {
+                service = (T)instance;
+                return true;
+            }
+
+            service = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the service of type <paramref name="serviceType"/> from the <see cref="IServiceProvider"/>.
+        /// </summary>
+        /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
+        /// <param name="serviceType">An object that specifies the type of service object to get.</param>
+        /// <param name="service">The retrieved instance of the requested service.</param>
+        /// <returns><c>true</c> if the service was retrieved, <c>false</c> otherwise.</returns>
+        public static bool TryGetService(this IServiceProvider provider, Type serviceType, out object service)
+        {
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            service = provider.GetService(serviceType);
+            return service is object;
+        }
+
+        /// <summary>
         /// Creates a new <see cref="IServiceScope"/> that can be used to resolve scoped services.
         /// </summary>
         /// <param name="provider">The <see cref="IServiceProvider"/> to create the scope from.</param>
