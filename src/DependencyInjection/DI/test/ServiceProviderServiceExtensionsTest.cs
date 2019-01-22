@@ -214,6 +214,60 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.IsType<List<IFoo>>(services);
         }
 
+        [Fact]
+        public void TryGetService_Returns_True_WhenServiceHasBeenRegistered()
+        {
+            // Arrange
+            var serviceProvider = CreateTestServiceProvider(1);
+
+            // Act
+            var success = serviceProvider.TryGetService<IFoo>(out var service);
+
+            // Assert
+            Assert.True(success);
+            Assert.IsType<Foo1>(service);
+        }
+
+        [Fact]
+        public void TryGetService_Returns_False_WhenServiceHasNotBeenRegistered()
+        {
+            // Arrange
+            var serviceProvider = CreateTestServiceProvider(0);
+
+            // Act
+            var success = serviceProvider.TryGetService<IBar>(out var service);
+
+            // Assert
+            Assert.False(success);
+            Assert.Null(service);
+        }
+
+        [Fact]
+        public void IsRegistered_Returns_True_WhenServiceHasBeenRegistered()
+        {
+            // Arrange
+            var serviceProvider = CreateTestServiceProvider(1);
+
+            // Act
+            var isRegistered = serviceProvider.IsRegistered<IFoo>();
+
+            // Assert
+            Assert.True(isRegistered);
+        }
+
+        [Fact]
+        public void IsRegistered_Returns_False_WhenServiceHasNotBeenRegistered()
+        {
+            // Arrange
+            var serviceProvider = CreateTestServiceProvider(0);
+
+            // Act
+            var isRegistered = serviceProvider.IsRegistered<IBar>();
+
+            // Assert
+            Assert.False(isRegistered);
+        }
+
         private static IServiceProvider CreateTestServiceProvider(int count)
         {
             var serviceCollection = new ServiceCollection();
