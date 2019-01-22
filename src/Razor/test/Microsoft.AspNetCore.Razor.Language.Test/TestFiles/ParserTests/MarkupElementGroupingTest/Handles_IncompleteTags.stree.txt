@@ -26,7 +26,7 @@ RazorDocument - [0..27)::27 - [LF<<div>>Foo</</div><   >LF]
                 ForwardSlash;[/];
                 Text;[div];
                 CloseAngle;[>];
-        MarkupElement - [20..25)::5
+        MarkupElement - [20..27)::7
             MarkupStartTag - [20..25)::5 - [<   >] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[<Missing>];
@@ -34,5 +34,5 @@ RazorDocument - [0..27)::27 - [LF<<div>>Foo</</div><   >LF]
                     MarkupTextLiteral - [21..24)::3 - [   ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[   ];
                 CloseAngle;[>];
-        MarkupTextLiteral - [25..27)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
-            NewLine;[LF];
+            MarkupTextLiteral - [25..27)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];

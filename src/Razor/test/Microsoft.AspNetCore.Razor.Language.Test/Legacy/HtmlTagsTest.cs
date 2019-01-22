@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // This can happen in situations where a user is in VS' HTML editor and they're modifying
             // the contents of an HTML tag.
-            ParseBlockTest("<></> Bar");
+            ParseDocumentTest("@{<></> Bar}");
         }
 
         [Fact]
