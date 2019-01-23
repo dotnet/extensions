@@ -10,51 +10,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void AllowsInvalidTagNamesAsLongAsParserCanIdentifyEndTag()
         {
-            ParseBlockTest("<1-foo+bar>foo</1-foo+bar>");
+            ParseDocumentTest("@{<1-foo+bar>foo</1-foo+bar>}");
         }
 
         [Fact]
-        public void ThrowsErrorIfStartTextTagContainsTextAfterName()
+        public void ErrorIfStartTextTagContainsTextAfterName()
         {
-            ParseBlockTest("<text foo bar></text>");
+            ParseDocumentTest("@{<text foo bar></text>}");
         }
 
         [Fact]
-        public void ThrowsErrorIfEndTextTagContainsTextAfterName()
+        public void ErrorIfEndTextTagContainsTextAfterName()
         {
-            ParseBlockTest("<text></text foo bar>");
-        }
-
-        [Fact]
-        public void ThrowsExceptionIfBlockDoesNotStartWithTag()
-        {
-            ParseBlockTest("foo bar <baz>", expectedParseLength: 0);
+            ParseDocumentTest("@{<text></text foo bar>}");
         }
 
         [Fact]
         public void StartingWithEndTagErrorsThenOutputsMarkupSegmentAndEndsBlock()
         {
-            // ParseBlockStartingWithEndTagProducesRazorErrorThenOutputsMarkupSegmentAndEndsBlock
-            ParseBlockTest("</foo> bar baz", expectedParseLength: 7);
+            ParseDocumentTest("@{</foo> bar baz}");
         }
 
         [Fact]
-        public void WithUnclosedTopLevelTagThrowsOnOutermostUnclosedTag()
+        public void WithUnclosedTopLevelTagErrorsOnOutermostUnclosedTag()
         {
-            // ParseBlockWithUnclosedTopLevelTagThrowsMissingEndTagParserExceptionOnOutermostUnclosedTag
-            ParseBlockTest("<p><foo></bar>");
+            ParseDocumentTest("@{<p><foo></bar>}");
         }
 
         [Fact]
-        public void WithUnclosedTagAtEOFThrowsMissingEndTagException()
+        public void WithUnclosedTagAtEOFErrorsOnMissingEndTag()
         {
-            ParseBlockTest("<foo>blah blah blah blah blah");
+            ParseDocumentTest("@{<foo>blah blah blah blah blah");
         }
 
         [Fact]
-        public void WithUnfinishedTagAtEOFThrowsIncompleteTagException()
+        public void WithUnfinishedTagAtEOFErrorsWithIncompleteTag()
         {
-            ParseBlockTest("<foo bar=baz");
+            ParseDocumentTest("@{<foo bar=baz");
         }
     }
 }
