@@ -15,7 +15,13 @@ namespace Microsoft.VisualStudio.Text
     {
         private readonly List<ITextSnapshotLine> _lines;
 
-        public StringTextSnapshot(string content)
+        public static readonly StringTextSnapshot Empty = new StringTextSnapshot(string.Empty);
+
+        public StringTextSnapshot(string content) : this(content, versionNumber: 0)
+        {
+        }
+
+        public StringTextSnapshot(string content, int versionNumber)
         {
             Content = content;
             _lines = new List<ITextSnapshotLine>();
@@ -39,6 +45,8 @@ namespace Microsoft.VisualStudio.Text
                 _lines.Add(new SnapshotLine(lineText, start, this));
 
                 start = nextLineStartIndex;
+
+                Version = new TextVersion(versionNumber);
             }
         }
 
@@ -46,7 +54,7 @@ namespace Microsoft.VisualStudio.Text
 
         public char this[int position] => Content[position];
 
-        public ITextVersion Version { get; } = new TextVersion();
+        public ITextVersion Version { get; }
 
         public int Length => Content.Length;
 
@@ -120,15 +128,20 @@ namespace Microsoft.VisualStudio.Text
 
         private class TextVersion : ITextVersion
         {
+            public TextVersion(int versionNumber)
+            {
+                VersionNumber = versionNumber;
+            }
+
             public INormalizedTextChangeCollection Changes { get; } = new TextChangeCollection();
+
+            public int VersionNumber { get; }
 
             public ITextVersion Next => throw new NotImplementedException();
 
             public int Length => throw new NotImplementedException();
 
             public ITextBuffer TextBuffer => throw new NotImplementedException();
-
-            public int VersionNumber => throw new NotImplementedException();
 
             public int ReiteratedVersionNumber => throw new NotImplementedException();
 

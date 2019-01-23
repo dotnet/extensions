@@ -70,35 +70,41 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             _foregroundDispatcher.AssertBackgroundThread();
 
-            var codeDocument = await _parser.GetLatestCodeDocumentAsync();
-            var syntaxTree = codeDocument?.GetSyntaxTree();
-            var location = new SourceSpan(applicableSpan.Start.Position, applicableSpan.Length);
-            var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);
-
-            var completionItems = new List<CompletionItem>();
-            foreach (var razorCompletionItem in razorCompletionItems)
+            try
             {
-                if (razorCompletionItem.Kind != RazorCompletionItemKind.Directive)
-                {
-                    // Don't support any other types of completion kinds other than directives.
-                    continue;
-                }
+                var syntaxTree = await _parser.GetLatestSyntaxTreeAsync(triggerLocation.Snapshot, token);
+                var location = new SourceSpan(triggerLocation.Position, 0);
+                var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);
 
-                var completionItem = new CompletionItem(
-                    displayText: razorCompletionItem.DisplayText,
-                    filterText: razorCompletionItem.DisplayText,
-                    insertText: razorCompletionItem.InsertText,
-                    source: this,
-                    icon: DirectiveImageGlyph,
-                    filters: DirectiveCompletionFilters,
-                    suffix: string.Empty,
-                    sortText: razorCompletionItem.DisplayText,
-                    attributeIcons: ImmutableArray<ImageElement>.Empty);
-                completionItem.Properties.AddProperty(DescriptionKey, razorCompletionItem.Description);
-                completionItems.Add(completionItem);
+                var completionItems = new List<CompletionItem>();
+                foreach (var razorCompletionItem in razorCompletionItems)
+                {
+                    if (razorCompletionItem.Kind != RazorCompletionItemKind.Directive)
+                    {
+                        // Don't support any other types of completion kinds other than directives.
+                        continue;
+                    }
+
+                    var completionItem = new CompletionItem(
+                        displayText: razorCompletionItem.DisplayText,
+                        filterText: razorCompletionItem.DisplayText,
+                        insertText: razorCompletionItem.InsertText,
+                        source: this,
+                        icon: DirectiveImageGlyph,
+                        filters: DirectiveCompletionFilters,
+                        suffix: string.Empty,
+                        sortText: razorCompletionItem.DisplayText,
+                        attributeIcons: ImmutableArray<ImageElement>.Empty);
+                    completionItem.Properties.AddProperty(DescriptionKey, razorCompletionItem.Description);
+                    completionItems.Add(completionItem);
+                }
+                var context = new CompletionContext(completionItems.ToImmutableArray());
+                return context;
             }
-            var context = new CompletionContext(completionItems.ToImmutableArray());
-            return context;
+            catch (OperationCanceledException)
+            {
+                return CompletionContext.Empty;
+            }
         }
 
         public Task<object> GetDescriptionAsync(IAsyncCompletionSession session, CompletionItem item, CancellationToken token)

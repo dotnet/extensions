@@ -31,17 +31,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal RazorSyntaxTreePartialParser _partialParser;
 
         private readonly object IdleLock = new object();
-        private readonly object GetCodeDocumentLock = new object();
+        private readonly object UpdateStateLock = new object();
         private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly VisualStudioDocumentTracker _documentTracker;
         private readonly ForegroundDispatcher _dispatcher;
         private readonly ProjectSnapshotProjectEngineFactory _projectEngineFactory;
         private readonly ErrorReporter _errorReporter;
-        private TaskCompletionSource<RazorCodeDocument> _codeDocumentTaskCompletionSource;
+        private readonly List<SyntaxTreeRequest> _syntaxTreeRequests;
         private RazorProjectEngine _projectEngine;
         private RazorCodeDocument _codeDocument;
         private ITextSnapshot _snapshot;
         private bool _disposed;
+        private ITextSnapshot _latestParsedSnapshot;
 
         // For testing only
         internal DefaultVisualStudioRazorParser(RazorCodeDocument codeDocument)
@@ -86,6 +87,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _errorReporter = errorReporter;
             _completionBroker = completionBroker;
             _documentTracker = documentTracker;
+            _syntaxTreeRequests = new List<SyntaxTreeRequest>();
 
             _documentTracker.ContextChanged += DocumentTracker_ContextChanged;
         }
@@ -106,24 +108,38 @@ namespace Microsoft.VisualStudio.Editor.Razor
         // Used in unit tests to ensure we can block background idle work.
         internal ManualResetEventSlim BlockBackgroundIdleWork { get; set; }
 
-        public override Task<RazorCodeDocument> GetLatestCodeDocumentAsync()
+        public override Task<RazorSyntaxTree> GetLatestSyntaxTreeAsync(ITextSnapshot atOrNewerSnapshot, CancellationToken cancellationToken = default)
         {
-            lock (GetCodeDocumentLock)
+            if (atOrNewerSnapshot == null)
             {
-                if (_disposed || !HasPendingChanges)
+                throw new ArgumentNullException(nameof(atOrNewerSnapshot));
+            }
+
+            lock (UpdateStateLock)
+            {
+                if (_disposed ||
+                    (_latestParsedSnapshot != null && atOrNewerSnapshot.Version.VersionNumber <= _latestParsedSnapshot.Version.VersionNumber))
                 {
-                    // No pending changes, code document is already latest.
-                    return Task.FromResult(CodeDocument);
+                    return Task.FromResult(CodeDocument?.GetSyntaxTree());
                 }
 
-                // In the process of parsing changes.
-
-                if (_codeDocumentTaskCompletionSource == null)
+                SyntaxTreeRequest request = null;
+                for (var i = _syntaxTreeRequests.Count - 1; i >= 0; i--)
                 {
-                    _codeDocumentTaskCompletionSource = new TaskCompletionSource<RazorCodeDocument>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    if (_syntaxTreeRequests[i].Snapshot == atOrNewerSnapshot)
+                    {
+                        request = _syntaxTreeRequests[i];
+                        break;
+                    }
                 }
 
-                return _codeDocumentTaskCompletionSource.Task;
+                if (request == null)
+                {
+                    request = new SyntaxTreeRequest(atOrNewerSnapshot, cancellationToken);
+                    _syntaxTreeRequests.Add(request);
+                }
+
+                return request.Task;
             }
         }
 
@@ -151,10 +167,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             StopIdleTimer();
 
-            lock (GetCodeDocumentLock)
+            lock (UpdateStateLock)
             {
                 _disposed = true;
-                _codeDocumentTaskCompletionSource?.SetResult(CodeDocument);
+                foreach (var request in _syntaxTreeRequests)
+                {
+                    request.Cancel();
+                }
             }
         }
 
@@ -277,21 +296,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 StopIdleTimer();
             }
 
+            var snapshot = args.After;
             if (!args.TextChangeOccurred(out var changeInformation))
             {
+                // Ensure we get a parse for latest snapshot.
+                QueueChange(null, snapshot);
                 return;
             }
 
             var change = new SourceChange(changeInformation.firstChange.OldPosition, changeInformation.oldText.Length, changeInformation.newText);
-            var snapshot = args.After;
             var result = PartialParseResultInternal.Rejected;
-
+            RazorSyntaxTree partialParseSyntaxTree = null;
             using (_parser.SynchronizeMainThreadState())
             {
                 // Check if we can partial-parse
                 if (_partialParser != null && _parser.IsIdle)
                 {
-                    result = _partialParser.Parse(change);
+                    (result, partialParseSyntaxTree) = _partialParser.Parse(change);
                 }
             }
 
@@ -299,6 +320,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             if ((result & PartialParseResultInternal.Rejected) == PartialParseResultInternal.Rejected)
             {
                 QueueChange(change, snapshot);
+            }
+            else
+            {
+                TryUpdateLatestParsedSyntaxTreeSnapshot(partialParseSyntaxTree, snapshot);
             }
 
             if ((result & PartialParseResultInternal.Provisional) == PartialParseResultInternal.Provisional)
@@ -389,9 +414,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private void OnResultsReady(object sender, BackgroundParserResultsReadyEventArgs args)
+        // Internal for testing
+        internal void OnResultsReady(object sender, BackgroundParserResultsReadyEventArgs args)
         {
             _dispatcher.AssertBackgroundThread();
+
+            UpdateParserState(args.CodeDocument, args.ChangeReference.Snapshot);
 
             // Jump back to UI thread to notify structure changes.
             Task.Factory.StartNew(OnDocumentStructureChanged, args, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
@@ -425,15 +453,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return;
             }
 
-            lock (GetCodeDocumentLock)
-            {
-                _latestChangeReference = null;
-                _codeDocument = backgroundParserArgs.CodeDocument;
-                _snapshot = backgroundParserArgs.ChangeReference.Snapshot;
-                _partialParser = new RazorSyntaxTreePartialParser(_codeDocument.GetSyntaxTree());
-                _codeDocumentTaskCompletionSource?.SetResult(_codeDocument);
-                _codeDocumentTaskCompletionSource = null;
-            }
+            _latestChangeReference = null;
 
             var documentStructureChangedArgs = new DocumentStructureChangedEventArgs(
                 backgroundParserArgs.ChangeReference.Change,
@@ -446,6 +466,73 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             builder.Features.Add(new VisualStudioParserOptionsFeature(_documentTracker.EditorSettings));
             builder.Features.Add(new VisualStudioTagHelperFeature(_documentTracker.TagHelpers));
+        }
+
+        private void UpdateParserState(RazorCodeDocument codeDocument, ITextSnapshot snapshot)
+        {
+            lock (UpdateStateLock)
+            {
+                if (_snapshot != null && snapshot.Version.VersionNumber < _snapshot.Version.VersionNumber)
+                {
+                    // Changes flowed out of order due to the slight race condition at the beginning of this method. Our current
+                    // CodeDocument and Snapshot are newer then the ones that made it into the lock.
+                    return;
+                }
+
+                _codeDocument = codeDocument;
+                _snapshot = snapshot;
+                _partialParser = new RazorSyntaxTreePartialParser(_codeDocument.GetSyntaxTree());
+                TryUpdateLatestParsedSyntaxTreeSnapshot(_codeDocument.GetSyntaxTree(), _snapshot);
+            }
+        }
+
+        private void TryUpdateLatestParsedSyntaxTreeSnapshot(RazorSyntaxTree syntaxTree, ITextSnapshot snapshot)
+        {
+            if (snapshot == null)
+            {
+                throw new ArgumentNullException(nameof(snapshot));
+            }
+
+            lock (UpdateStateLock)
+            {
+                if (_latestParsedSnapshot == null ||
+                    _latestParsedSnapshot.Version.VersionNumber < snapshot.Version.VersionNumber)
+                {
+                    _latestParsedSnapshot = snapshot;
+
+                    CompleteSyntaxTreeRequestsForSnapshot(syntaxTree, snapshot);
+                }
+            }
+        }
+
+        private void CompleteSyntaxTreeRequestsForSnapshot(RazorSyntaxTree syntaxTree, ITextSnapshot snapshot)
+        {
+            lock (UpdateStateLock)
+            {
+                if (_syntaxTreeRequests.Count == 0)
+                {
+                    return;
+                }
+
+                var matchingRequests = new List<SyntaxTreeRequest>();
+                for (var i = _syntaxTreeRequests.Count - 1; i >= 0; i--)
+                {
+                    var request = _syntaxTreeRequests[i];
+                    if (request.Snapshot.Version.VersionNumber <= snapshot.Version.VersionNumber)
+                    {
+                        // This change was for a newer snapshot, we can complete the TCS.
+                        matchingRequests.Add(request);
+                        _syntaxTreeRequests.RemoveAt(i);
+                    }
+                }
+
+                // The matching requests are in reverse order so we need to invoke them from the back to front.
+                for (var i = matchingRequests.Count - 1; i >= 0; i--)
+                {
+                    // At this point it's possible these requests have been cancelled, if that's the case Complete noops.
+                    matchingRequests[i].Complete(syntaxTree);
+                }
+            }
         }
 
         private class VisualStudioParserOptionsFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
@@ -480,6 +567,74 @@ namespace Microsoft.VisualStudio.Editor.Razor
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
             {
                 return _tagHelpers;
+            }
+        }
+
+        // Internal for testing
+        internal class SyntaxTreeRequest
+        {
+            private readonly object CompletionLock = new object();
+            private readonly TaskCompletionSource<RazorSyntaxTree> _taskCompletionSource;
+            private readonly CancellationTokenRegistration _cancellationTokenRegistration;
+            private bool _done;
+
+            public SyntaxTreeRequest(ITextSnapshot snapshot, CancellationToken cancellationToken)
+            {
+                if (snapshot == null)
+                {
+                    throw new ArgumentNullException(nameof(snapshot));
+                }
+
+                Snapshot = snapshot;
+                _taskCompletionSource = new TaskCompletionSource<RazorSyntaxTree>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _cancellationTokenRegistration = cancellationToken.Register(Cancel);
+                Task = _taskCompletionSource.Task;
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    // If the token was already cancelled we need to bail.
+                    Cancel();
+                }
+            }
+
+            public ITextSnapshot Snapshot { get; }
+
+            public Task<RazorSyntaxTree> Task { get; }
+
+            public void Complete(RazorSyntaxTree syntaxTree)
+            {
+                if (syntaxTree == null)
+                {
+                    throw new ArgumentNullException(nameof(syntaxTree));
+                }
+
+                lock (CompletionLock)
+                {
+                    if (_done)
+                    {
+                        // Request was already cancelled.
+                        return;
+                    }
+
+                    _done = true;
+                    _cancellationTokenRegistration.Dispose();
+                    _taskCompletionSource.SetResult(syntaxTree);
+                }
+            }
+
+            public void Cancel()
+            {
+                lock (CompletionLock)
+                {
+                    if (_done)
+                    {
+                        return;
+                    }
+
+                    _taskCompletionSource.TrySetCanceled();
+                    _cancellationTokenRegistration.Dispose();
+                    _done = true;
+                }
             }
         }
     }

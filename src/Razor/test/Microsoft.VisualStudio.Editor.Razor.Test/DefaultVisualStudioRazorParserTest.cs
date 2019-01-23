@@ -36,10 +36,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private Workspace Workspace { get; }
 
-        private VisualStudioDocumentTracker CreateDocumentTracker(bool isSupportedProject = true)
+        private VisualStudioDocumentTracker CreateDocumentTracker(bool isSupportedProject = true, int versionNumber = 0)
         {
             var documentTracker = Mock.Of<VisualStudioDocumentTracker>(tracker =>
-            tracker.TextBuffer == new TestTextBuffer(new StringTextSnapshot(string.Empty)) &&
+            tracker.TextBuffer == new TestTextBuffer(new StringTextSnapshot(string.Empty, versionNumber)) &&
                 tracker.ProjectPath == "c:\\SomeProject.csproj" &&
                 tracker.ProjectSnapshot == ProjectSnapshot &&
                 tracker.FilePath == "c:\\SomeFilePath.cshtml" &&
@@ -49,7 +49,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [ForegroundFact]
-        public async Task GetLatestCodeDocumentAsync_WaitsForParse()
+        public async Task GetLatestSyntaxTreeAsync_WaitsForParse()
         {
             // Arrange
             var documentTracker = CreateDocumentTracker();
@@ -64,33 +64,34 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
                 parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
                 var codeDocument = TestRazorCodeDocument.CreateEmpty();
-                codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(TestRazorSourceDocument.Create()));
+                var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create());
+                codeDocument.SetSyntaxTree(syntaxTree);
                 var args = new BackgroundParserResultsReadyEventArgs(
                     parser._latestChangeReference,
                     codeDocument);
 
                 // Act - 1
-                var getLatestCodeDocumentTask = parser.GetLatestCodeDocumentAsync();
+                var getLatestSyntaxTreeTask = parser.GetLatestSyntaxTreeAsync(StringTextSnapshot.Empty);
 
                 // Assert - 1
-                Assert.False(getLatestCodeDocumentTask.IsCompleted);
+                Assert.False(getLatestSyntaxTreeTask.IsCompleted);
 
                 // Act - 2
-                parser.OnDocumentStructureChanged(args);
+                await Task.Run(() => parser.OnResultsReady(sender: null, args));
 
                 // Assert - 2
-                Assert.True(getLatestCodeDocumentTask.IsCompleted);
+                Assert.True(getLatestSyntaxTreeTask.IsCompleted);
 
                 // Act - 3
-                var latestCodeDocument = await getLatestCodeDocumentTask;
+                var latestSyntaxTree = await getLatestSyntaxTreeTask;
 
                 // Assert - 3
-                Assert.Same(latestCodeDocument, codeDocument);
+                Assert.Same(latestSyntaxTree, syntaxTree);
             }
         }
 
         [ForegroundFact]
-        public async Task GetLatestCodeDocumentAsync_NoPendingChangesReturnsImmediately()
+        public async Task GetLatestSyntaxTreeAsync_NoPendingChangesReturnsImmediately()
         {
             // Arrange
             var documentTracker = CreateDocumentTracker();
@@ -105,28 +106,31 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
                 parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
                 var codeDocument = TestRazorCodeDocument.CreateEmpty();
-                codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(TestRazorSourceDocument.Create()));
+                var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create());
+                codeDocument.SetSyntaxTree(syntaxTree);
                 var args = new BackgroundParserResultsReadyEventArgs(
                     parser._latestChangeReference,
                     codeDocument);
-                parser.OnDocumentStructureChanged(args);
+
+                // Initialize the document with some content so we have a syntax tree to return.
+                await Task.Run(() => parser.OnResultsReady(sender: null, args));
 
                 // Act - 1
-                var getLatestCodeDocumentTask = parser.GetLatestCodeDocumentAsync();
+                var getLatestSyntaxTreeTask = parser.GetLatestSyntaxTreeAsync(StringTextSnapshot.Empty);
 
                 // Assert - 1
-                Assert.True(getLatestCodeDocumentTask.IsCompleted);
+                Assert.True(getLatestSyntaxTreeTask.IsCompleted);
 
                 // Act - 2
-                var latestCodeDocument = await getLatestCodeDocumentTask;
+                var latestSyntaxTree = await getLatestSyntaxTreeTask;
 
                 // Assert - 2
-                Assert.Same(latestCodeDocument, codeDocument);
+                Assert.Same(latestSyntaxTree, syntaxTree);
             }
         }
 
         [ForegroundFact]
-        public void GetLatestCodeDocumentAsync_MultipleCallsWithPendingChangesMemoizesReturnedTasks()
+        public void GetLatestSyntaxTreeAsync_MultipleCallsSameSnapshotMemoizesReturnedTasks()
         {
             // Arrange
             var documentTracker = CreateDocumentTracker();
@@ -140,19 +144,228 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 var latestChange = new SourceChange(0, 0, string.Empty);
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
                 parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
+                var sameSnapshot = StringTextSnapshot.Empty;
+
+                // Act
+                var getLatestSyntaxTreeTask1 = parser.GetLatestSyntaxTreeAsync(sameSnapshot);
+                var getLatestSyntaxTreeTask2 = parser.GetLatestSyntaxTreeAsync(sameSnapshot);
+
+                // Assert
+                Assert.Same(getLatestSyntaxTreeTask1, getLatestSyntaxTreeTask2);
+            }
+        }
+
+        [ForegroundFact]
+        public void GetLatestSyntaxTreeAsync_MultipleCallsDifferentSnapshotsReturnDifferentTasks()
+        {
+            // Arrange
+            var documentTracker = CreateDocumentTracker();
+            using (var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                ProjectEngineFactory,
+                new DefaultErrorReporter(),
+                Mock.Of<VisualStudioCompletionBroker>()))
+            {
+                var latestChange = new SourceChange(0, 0, string.Empty);
+                var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
+                parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
+                var snapshot1 = new StringTextSnapshot("Snapshot 1");
+                var snapshot2 = new StringTextSnapshot("Snapshot 2");
+
+                // Act
+                var getLatestSyntaxTreeTask1 = parser.GetLatestSyntaxTreeAsync(snapshot1);
+                var getLatestSyntaxTreeTask2 = parser.GetLatestSyntaxTreeAsync(snapshot2);
+
+                // Assert
+                Assert.NotSame(getLatestSyntaxTreeTask1, getLatestSyntaxTreeTask2);
+            }
+        }
+
+        [ForegroundFact]
+        public async Task GetLatestSyntaxTreeAsync_LatestChangeIsNewerThenRequested_ReturnsImmediately()
+        {
+            // Arrange
+            var documentTracker = CreateDocumentTracker(versionNumber: 1337);
+            var olderSnapshot = new StringTextSnapshot("Older", versionNumber: 910);
+            using (var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                ProjectEngineFactory,
+                new DefaultErrorReporter(),
+                Mock.Of<VisualStudioCompletionBroker>()))
+            {
+                var latestChange = new SourceChange(0, 0, string.Empty);
+                var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
+                parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
                 var codeDocument = TestRazorCodeDocument.CreateEmpty();
-                codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(TestRazorSourceDocument.Create()));
+                var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create());
+                codeDocument.SetSyntaxTree(syntaxTree);
                 var args = new BackgroundParserResultsReadyEventArgs(
                     parser._latestChangeReference,
                     codeDocument);
 
-                // Act
-                var getLatestCodeDocumentTask1 = parser.GetLatestCodeDocumentAsync();
-                var getLatestCodeDocumentTask2 = parser.GetLatestCodeDocumentAsync();
+                // Initialize the document with some content so we have a syntax tree to return.
+                await Task.Run(() => parser.OnResultsReady(sender: null, args));
 
-                // Assert
-                Assert.Same(getLatestCodeDocumentTask1, getLatestCodeDocumentTask2);
+                // Act - 1
+                var getLatestSyntaxTreeTask = parser.GetLatestSyntaxTreeAsync(olderSnapshot);
+
+                // Assert - 1
+                Assert.True(getLatestSyntaxTreeTask.IsCompleted);
+
+                // Act - 2
+                var latestSyntaxTree = await getLatestSyntaxTreeTask;
+
+                // Assert - 2
+                Assert.Same(latestSyntaxTree, syntaxTree);
             }
+        }
+
+        [ForegroundFact]
+        public async Task GetLatestSyntaxTreeAsync_ParserDisposed_ReturnsImmediately()
+        {
+            // Arrange
+            var documentTracker = CreateDocumentTracker();
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create());
+            DefaultVisualStudioRazorParser parser;
+            using (parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                ProjectEngineFactory,
+                new DefaultErrorReporter(),
+                Mock.Of<VisualStudioCompletionBroker>()))
+            {
+                var latestChange = new SourceChange(0, 0, string.Empty);
+                var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
+                parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
+                var codeDocument = TestRazorCodeDocument.CreateEmpty();
+                codeDocument.SetSyntaxTree(syntaxTree);
+                var args = new BackgroundParserResultsReadyEventArgs(
+                    parser._latestChangeReference,
+                    codeDocument);
+
+                // Initialize the document with some content so we have a syntax tree to return.
+                await Task.Run(() => parser.OnResultsReady(sender: null, args));
+            }
+            var newerSnapshot = new StringTextSnapshot("Newer", versionNumber: 1337);
+
+            // Act - 1
+            var getLatestSyntaxTreeTask = parser.GetLatestSyntaxTreeAsync(newerSnapshot);
+
+            // Assert - 1
+            Assert.True(getLatestSyntaxTreeTask.IsCompleted);
+
+            // Act - 2
+            var latestSyntaxTree = await getLatestSyntaxTreeTask;
+
+            // Assert - 2
+            Assert.Same(latestSyntaxTree, syntaxTree);
+        }
+
+        [ForegroundFact]
+        public void SyntaxTreeRequest_Complete_CanBeCalledMultipleTimes()
+        {
+            // Arrange
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create());
+            var request = new DefaultVisualStudioRazorParser.SyntaxTreeRequest(StringTextSnapshot.Empty, CancellationToken.None);
+
+            // Act & Assert
+            request.Complete(syntaxTree);
+            request.Complete(syntaxTree);
+            request.Complete(syntaxTree);
+        }
+
+        [ForegroundFact]
+        public async Task SyntaxTreeRequest_Complete_FinishesTask()
+        {
+            // Arrange
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create());
+            var request = new DefaultVisualStudioRazorParser.SyntaxTreeRequest(StringTextSnapshot.Empty, CancellationToken.None);
+
+            // Act
+            request.Complete(syntaxTree);
+
+            // Assert
+            Assert.True(request.Task.IsCompleted);
+            var resolvedSyntaxTree = await request.Task;
+            Assert.Same(syntaxTree, resolvedSyntaxTree);
+        }
+
+        [ForegroundFact]
+        public void SyntaxTreeRequest_Cancel_CanBeCalledMultipleTimes()
+        {
+            // Arrange
+            var request = new DefaultVisualStudioRazorParser.SyntaxTreeRequest(StringTextSnapshot.Empty, CancellationToken.None);
+
+            // Act & Assert
+            request.Cancel();
+            request.Cancel();
+            request.Cancel();
+        }
+
+        [ForegroundFact]
+        public void SyntaxTreeRequest_Cancel_CancelsTask()
+        {
+            // Arrange
+            var request = new DefaultVisualStudioRazorParser.SyntaxTreeRequest(StringTextSnapshot.Empty, CancellationToken.None);
+
+            // Act
+            request.Cancel();
+
+            // Assert
+            Assert.True(request.Task.IsCanceled);
+        }
+
+        [ForegroundFact]
+        public void SyntaxTreeRequest_LinkedTokenCancel_CancelsTask()
+        {
+            // Arrange
+            var cts = new CancellationTokenSource();
+            var request = new DefaultVisualStudioRazorParser.SyntaxTreeRequest(StringTextSnapshot.Empty, cts.Token);
+
+            // Act
+            cts.Cancel();
+
+            // Assert
+            Assert.True(request.Task.IsCanceled);
+        }
+
+        [ForegroundFact]
+        public void SyntaxTreeRequest_CompleteToCancelNoops()
+        {
+            // Arrange
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create());
+            var request = new DefaultVisualStudioRazorParser.SyntaxTreeRequest(StringTextSnapshot.Empty, CancellationToken.None);
+
+            // Act - 1
+            request.Complete(syntaxTree);
+
+            // Assert - 1
+            Assert.True(request.Task.IsCompleted);
+
+            // Act - 2
+            request.Cancel();
+
+            // Assert - 2
+            Assert.False(request.Task.IsCanceled);
+        }
+
+        [ForegroundFact]
+        public void SyntaxTreeRequest_CancelToCompleteNoops()
+        {
+            // Arrange
+            var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create());
+            var request = new DefaultVisualStudioRazorParser.SyntaxTreeRequest(StringTextSnapshot.Empty, CancellationToken.None);
+
+            // Act - 1
+            request.Cancel();
+
+            // Assert - 1
+            Assert.True(request.Task.IsCanceled);
+
+            // Act & Assert - 2
+            request.Complete(syntaxTree);
         }
 
         [ForegroundFact]
