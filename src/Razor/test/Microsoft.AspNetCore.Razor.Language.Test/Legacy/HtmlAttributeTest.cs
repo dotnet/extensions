@@ -13,240 +13,240 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void SymbolBoundAttributes_BeforeEqualWhitespace1()
         {
             var attributeName = "[item]";
-            ParseBlockTest($"<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />");
+            ParseDocumentTest($"@{{<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_BeforeEqualWhitespace2()
         {
             var attributeName = "[(item,";
-            ParseBlockTest($"<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />");
+            ParseDocumentTest($"@{{<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_BeforeEqualWhitespace3()
         {
             var attributeName = "(click)";
-            ParseBlockTest($"<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />");
+            ParseDocumentTest($"@{{<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_BeforeEqualWhitespace4()
         {
             var attributeName = "(^click)";
-            ParseBlockTest($"<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />");
+            ParseDocumentTest($"@{{<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_BeforeEqualWhitespace5()
         {
             var attributeName = "*something";
-            ParseBlockTest($"<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />");
+            ParseDocumentTest($"@{{<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_BeforeEqualWhitespace6()
         {
             var attributeName = "#local";
-            ParseBlockTest($"<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />");
+            ParseDocumentTest($"@{{<a {attributeName}{Environment.NewLine}='Foo'\t{attributeName}={Environment.NewLine}'Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_Whitespace1()
         {
             var attributeName = "[item]";
-            ParseBlockTest($"<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />");
+            ParseDocumentTest($"@{{<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_Whitespace2()
         {
             var attributeName = "[(item,";
-            ParseBlockTest($"<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />");
+            ParseDocumentTest($"@{{<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_Whitespace3()
         {
             var attributeName = "(click)";
-            ParseBlockTest($"<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />");
+            ParseDocumentTest($"@{{<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_Whitespace4()
         {
             var attributeName = "(^click)";
-            ParseBlockTest($"<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />");
+            ParseDocumentTest($"@{{<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_Whitespace5()
         {
             var attributeName = "*something";
-            ParseBlockTest($"<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />");
+            ParseDocumentTest($"@{{<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes_Whitespace6()
         {
             var attributeName = "#local";
-            ParseBlockTest($"<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />");
+            ParseDocumentTest($"@{{<a {Environment.NewLine}  {attributeName}='Foo'\t{Environment.NewLine}{attributeName}='Bar' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes1()
         {
             var attributeName = "[item]";
-            ParseBlockTest($"<a {attributeName}='Foo' />");
+            ParseDocumentTest($"@{{<a {attributeName}='Foo' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes2()
         {
             var attributeName = "[(item,";
-            ParseBlockTest($"<a {attributeName}='Foo' />");
+            ParseDocumentTest($"@{{<a {attributeName}='Foo' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes3()
         {
             var attributeName = "(click)";
-            ParseBlockTest($"<a {attributeName}='Foo' />");
+            ParseDocumentTest($"@{{<a {attributeName}='Foo' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes4()
         {
             var attributeName = "(^click)";
-            ParseBlockTest($"<a {attributeName}='Foo' />");
+            ParseDocumentTest($"@{{<a {attributeName}='Foo' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes5()
         {
             var attributeName = "*something";
-            ParseBlockTest($"<a {attributeName}='Foo' />");
+            ParseDocumentTest($"@{{<a {attributeName}='Foo' />}}");
         }
 
         [Fact]
         public void SymbolBoundAttributes6()
         {
             var attributeName = "#local";
-            ParseBlockTest($"<a {attributeName}='Foo' />");
+            ParseDocumentTest($"@{{<a {attributeName}='Foo' />}}");
         }
 
         [Fact]
         public void SimpleLiteralAttribute()
         {
-            ParseBlockTest("<a href='Foo' />");
+            ParseDocumentTest("@{<a href='Foo' />}");
         }
 
         [Fact]
         public void SimpleLiteralAttributeWithWhitespaceSurroundingEquals()
         {
-            ParseBlockTest("<a href \f\r\n= \t\n'Foo' />");
+            ParseDocumentTest("@{<a href \f\r\n= \t\n'Foo' />}");
         }
 
         [Fact]
         public void DynamicAttributeWithWhitespaceSurroundingEquals()
         {
-            ParseBlockTest("<a href \n= \r\n'@Foo' />");
+            ParseDocumentTest("@{<a href \n= \r\n'@Foo' />}");
         }
 
         [Fact]
         public void MultiPartLiteralAttribute()
         {
-            ParseBlockTest("<a href='Foo Bar Baz' />");
+            ParseDocumentTest("@{<a href='Foo Bar Baz' />}");
         }
 
         [Fact]
         public void DoubleQuotedLiteralAttribute()
         {
-            ParseBlockTest("<a href=\"Foo Bar Baz\" />");
+            ParseDocumentTest("@{<a href=\"Foo Bar Baz\" />}");
         }
 
         [Fact]
         public void NewLinePrecedingAttribute()
         {
-            ParseBlockTest("<a\r\nhref='Foo' />");
+            ParseDocumentTest("@{<a\r\nhref='Foo' />}");
         }
 
         [Fact]
         public void NewLineBetweenAttributes()
         {
-            ParseBlockTest("<a\nhref='Foo'\r\nabcd='Bar' />");
+            ParseDocumentTest("@{<a\nhref='Foo'\r\nabcd='Bar' />}");
         }
 
         [Fact]
         public void WhitespaceAndNewLinePrecedingAttribute()
         {
-            ParseBlockTest("<a \t\r\nhref='Foo' />");
+            ParseDocumentTest("@{<a \t\r\nhref='Foo' />}");
         }
 
         [Fact]
         public void UnquotedLiteralAttribute()
         {
-            ParseBlockTest("<a href=Foo Bar Baz />");
+            ParseDocumentTest("@{<a href=Foo Bar Baz />}");
         }
 
         [Fact]
         public void SimpleExpressionAttribute()
         {
-            ParseBlockTest("<a href='@foo' />");
+            ParseDocumentTest("@{<a href='@foo' />}");
         }
 
         [Fact]
         public void MultiValueExpressionAttribute()
         {
-            ParseBlockTest("<a href='@foo bar @baz' />");
+            ParseDocumentTest("@{<a href='@foo bar @baz' />}");
         }
 
         [Fact]
         public void VirtualPathAttributesWorkWithConditionalAttributes()
         {
-            ParseBlockTest("<a href='@foo ~/Foo/Bar' />");
+            ParseDocumentTest("@{<a href='@foo ~/Foo/Bar' />}");
         }
 
         [Fact]
         public void UnquotedAttributeWithCodeWithSpacesInBlock()
         {
-            ParseBlockTest("<input value=@foo />");
+            ParseDocumentTest("@{<input value=@foo />}");
         }
 
         [Fact]
         public void UnquotedAttributeWithCodeWithSpacesInDocument()
         {
-            ParseDocumentTest("<input value=@foo />");
+            ParseDocumentTest("<input value=@foo />}");
         }
 
         [Fact]
         public void ConditionalAttributesAreEnabledForDataAttributesWithExperimentalFlag()
         {
-            ParseBlockTest(RazorLanguageVersion.Experimental, "<span data-foo='@foo'></span>", directives: null, designTime: false);
+            ParseDocumentTest(RazorLanguageVersion.Experimental, "@{<span data-foo='@foo'></span>}", directives: null, designTime: false);
         }
 
         [Fact]
         public void ConditionalAttributesAreDisabledForDataAttributesInBlock()
         {
-            ParseBlockTest("<span data-foo='@foo'></span>");
+            ParseDocumentTest("@{<span data-foo='@foo'></span>}");
         }
 
         [Fact]
         public void ConditionalAttributesWithWeirdSpacingAreDisabledForDataAttributesInBlock()
         {
-            ParseBlockTest("<span data-foo  =  '@foo'></span>");
+            ParseDocumentTest("@{<span data-foo  =  '@foo'></span>}");
         }
 
         [Fact]
         public void ConditionalAttributesAreDisabledForDataAttributesInDocument()
         {
-            ParseDocumentTest("<span data-foo='@foo'></span>");
+            ParseDocumentTest("@{<span data-foo='@foo'></span>}");
         }
 
         [Fact]
         public void ConditionalAttributesWithWeirdSpacingAreDisabledForDataAttributesInDocument()
         {
-            ParseDocumentTest("<span data-foo=@foo ></span>");
+            ParseDocumentTest("@{<span data-foo=@foo ></span>}");
         }
     }
 }
