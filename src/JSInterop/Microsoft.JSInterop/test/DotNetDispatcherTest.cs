@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.JSInterop.Test
+namespace Microsoft.JSInterop.Tests
 {
     public class DotNetDispatcherTest
     {
@@ -320,7 +320,8 @@ namespace Microsoft.JSInterop.Test
             protected static void StaticMethodWithoutAttribute() { }
             protected static void InstanceMethodWithoutAttribute() { }
 
-            [JSInvokable("InvocableStaticVoid")] public static void MyInvocableVoid()
+            [JSInvokable("InvocableStaticVoid")]
+            public static void MyInvocableVoid()
             {
                 DidInvokeMyInvocableStaticVoid = true;
             }

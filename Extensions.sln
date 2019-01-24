@@ -289,7 +289,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JSInterop", "JSInterop", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop", "src\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj", "{6D3807BD-28A8-4B7C-92D2-8A72E1522398}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.Test", "src\JSInterop\Microsoft.JSInterop\test\Microsoft.JSInterop.Test.csproj", "{FD4896CE-E3FB-458E-8581-7552347C4260}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.Tests", "src\JSInterop\Microsoft.JSInterop\test\Microsoft.JSInterop.Tests.csproj", "{FD4896CE-E3FB-458E-8581-7552347C4260}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.JS", "src\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.csproj", "{76258B76-8CDD-471A-9D43-0815B712D668}"
 EndProject
