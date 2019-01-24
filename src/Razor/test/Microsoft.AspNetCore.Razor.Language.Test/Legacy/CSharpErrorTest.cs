@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpErrorTest : CodeParserTestBase
+    public class CSharpErrorTest : ParserTestBase
     {
         [Fact]
         public void HandlesQuotesAfterTransition()

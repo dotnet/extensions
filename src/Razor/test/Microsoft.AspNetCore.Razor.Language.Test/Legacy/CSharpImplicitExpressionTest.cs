@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpImplicitExpressionTest : CodeParserTestBase
+    public class CSharpImplicitExpressionTest : ParserTestBase
     {
         [Fact]
         public void ParsesNullConditionalOperatorImplicitExpression_Bracket1()

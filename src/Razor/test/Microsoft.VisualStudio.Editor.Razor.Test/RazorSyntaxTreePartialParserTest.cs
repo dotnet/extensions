@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    public class RazorSyntaxTreePartialParserTest : PartialParserTestBase
+    public class RazorSyntaxTreePartialParserTest : ParserTestBase
     {
         private const string NewLine = "\r\n";
 

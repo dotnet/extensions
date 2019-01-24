@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Razor;
 
 namespace Xunit
 {
-    public abstract class ForegroundDispatcherTestBase : PartialParserTestBase
+    public abstract class ForegroundDispatcherTestBase : ParserTestBase
     {
         internal ForegroundDispatcher Dispatcher { get; } = new SingleThreadedForegroundDispatcher();
     }

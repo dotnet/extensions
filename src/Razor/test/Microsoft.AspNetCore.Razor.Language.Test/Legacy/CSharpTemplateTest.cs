@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpTemplateTest : CodeParserTestBase
+    public class CSharpTemplateTest : ParserTestBase
     {
         [Fact]
         public void HandlesSingleLineTemplate()

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpSpecialBlockTest : CodeParserTestBase
+    public class CSharpSpecialBlockTest : ParserTestBase
     {
         [Fact]
         public void NamespaceImportInsideCodeBlockCausesError()

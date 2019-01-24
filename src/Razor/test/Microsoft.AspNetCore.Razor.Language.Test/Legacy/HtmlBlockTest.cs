@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class HtmlBlockTest : MarkupParserTestBase
+    public class HtmlBlockTest : ParserTestBase
     {
         [Fact]
         public void HandlesUnbalancedTripleDashHTMLComments()
@@ -219,13 +219,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void SupportsScriptTagsWithLessThanSignsInThem()
         {
-            ParseBlockTest(@"<script>if(foo<bar) { alert(""baz"");)</script>");
+            ParseDocumentTest(@"@{<script>if(foo<bar) { alert(""baz"");)</script>}");
         }
 
         [Fact]
         public void SupportsScriptTagsWithSpacedLessThanSignsInThem()
         {
-            ParseBlockTest(@"<script>if(foo < bar) { alert(""baz"");)</script>");
+            ParseDocumentTest(@"@{<script>if(foo < bar) { alert(""baz"");)</script>}");
         }
 
         [Fact]
@@ -267,13 +267,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void IgnoresTagsInContentsOfScriptTag()
         {
-            ParseBlockTest(@"<script>foo<bar baz='@boz'></script>");
+            ParseDocumentTest(@"@{<script>foo<bar baz='@boz'></script>}");
         }
 
         [Fact]
         public void HandlesForwardSlashInAttributeContent()
         {
-            ParseBlockTest(@"<p / class=foo />");
+            ParseDocumentTest(@"@{<p / class=foo />}");
         }
     }
 }

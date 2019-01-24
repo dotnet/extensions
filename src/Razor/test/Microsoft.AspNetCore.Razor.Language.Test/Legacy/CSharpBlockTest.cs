@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpBlockTest : CodeParserTestBase
+    public class CSharpBlockTest : ParserTestBase
     {
         [Fact]
         public void NestedCodeBlockWithCSharpAt()

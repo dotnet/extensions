@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class TagHelperRewritingTestBase : MarkupParserTestBase
+    public class TagHelperRewritingTestBase : ParserTestBase
     {
         internal void RunParseTreeRewriterTest(string documentContent, params string[] tagNames)
         {

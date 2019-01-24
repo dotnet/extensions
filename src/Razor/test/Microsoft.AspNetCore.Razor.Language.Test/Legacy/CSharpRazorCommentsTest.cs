@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpRazorCommentsTest : MarkupParserTestBase
+    public class CSharpRazorCommentsTest : ParserTestBase
     {
         [Fact]
         public void UnterminatedRazorComment()

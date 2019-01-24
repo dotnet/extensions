@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpExplicitExpressionTest : CodeParserTestBase
+    public class CSharpExplicitExpressionTest : ParserTestBase
     {
         [Fact]
         public void ShouldOutputZeroLengthCodeSpanIfExplicitExpressionIsEmpty()

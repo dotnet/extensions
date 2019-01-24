@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class HtmlToCodeSwitchTest : MarkupParserTestBase
+    public class HtmlToCodeSwitchTest : ParserTestBase
     {
         [Fact]
         public void SwitchesWhenCharacterBeforeSwapIsNonAlphanumeric()

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class MarkupElementGroupingTest : MarkupParserTestBase
+    public class MarkupElementGroupingTest : ParserTestBase
     {
         [Fact]
         public void Handles_ValidTags()

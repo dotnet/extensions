@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class HtmlTagsTest : MarkupParserTestBase
+    public class HtmlTagsTest : ParserTestBase
     {
         private static readonly string[] VoidElementNames = new[]
         {

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpSectionTest : MarkupParserTestBase
+    public class CSharpSectionTest : ParserTestBase
     {
         [Fact]
         public void CapturesNewlineImmediatelyFollowing()
