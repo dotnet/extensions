@@ -18,7 +18,7 @@
   <!-- The versions in this section are updated manually and can be removed when conversion to the Arcade SDK is complete. -->
   <PropertyGroup>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-build-20190105.1</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftDotNetBuildTasksFeedVersion>2.2.0-beta.19070.2</MicrosoftDotNetBuildTasksFeedVersion>
+    <MicrosoftDotNetBuildTasksFeedVersion>2.2.0-beta.19072.5</MicrosoftDotNetBuildTasksFeedVersion>
   </PropertyGroup>
   <!-- Stable dependencies which are not expected to update via automation -->
   <PropertyGroup>
