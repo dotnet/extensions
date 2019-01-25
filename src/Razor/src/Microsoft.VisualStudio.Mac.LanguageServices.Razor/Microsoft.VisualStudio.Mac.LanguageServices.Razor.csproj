@@ -12,7 +12,6 @@
   <ItemGroup>
     <PackageReference Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(VSMAC_NewtonsoftJsonPackageVersion)" />
-    <PackageReference Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
