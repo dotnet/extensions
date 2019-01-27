@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.Fakes;
 using Microsoft.Extensions.DependencyInjection.Specification;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
@@ -208,6 +210,78 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var service = CreateServiceProvider(serviceCollection).GetService<IEnumerable<IFakeOuterService>>();
         }
 
+#if NETCOREAPP
+        [Fact]
+        public async Task ProviderDisposeAsyncCallsDisposeAsyncOnServices()
+        {
+            var asyncDisposable = new Mock<IAsyncDisposable>();
+            asyncDisposable.Setup(disposable => disposable.DisposeAsync());
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<IAsyncDisposable>(provider => asyncDisposable.Object);
+
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+            serviceProvider.GetService<IAsyncDisposable>();
+
+            await (serviceProvider as IAsyncDisposable).DisposeAsync();
+
+            asyncDisposable.Verify(disposable => disposable.DisposeAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task ProviderDisposeAsyncPrefersDisposeAsyncOnServices()
+        {
+            var asyncDisposable = new Mock<IAsyncDisposable>();
+            asyncDisposable.Setup(disposable => disposable.DisposeAsync());
+            asyncDisposable.As<IDisposable>();
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<IAsyncDisposable>(provider => asyncDisposable.Object);
+
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+            serviceProvider.GetService<IAsyncDisposable>();
+
+            await (serviceProvider as IAsyncDisposable).DisposeAsync();
+
+            asyncDisposable.Verify(disposable => disposable.DisposeAsync(), Times.Once);
+        }
+
+        [Fact]
+        public void ProviderDisposePrefersServiceDispose()
+        {
+            var asyncDisposable = new Mock<IAsyncDisposable>();
+            asyncDisposable.Setup(disposable => disposable.DisposeAsync());
+            asyncDisposable.As<IDisposable>();
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<IAsyncDisposable>(provider => asyncDisposable.Object);
+
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+            serviceProvider.GetService<IAsyncDisposable>();
+
+            (serviceProvider as IDisposable).Dispose();
+
+            asyncDisposable
+                .As<IDisposable>()
+                .Verify(disposable => disposable.Dispose(), Times.Once);
+        }
+
+        [Fact]
+        public void ProviderDisposeThrowsWhenOnlyDisposeAsyncImplemented()
+        {
+            var asyncDisposable = new Mock<IAsyncDisposable>();
+            asyncDisposable.Setup(disposable => disposable.DisposeAsync());
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<IAsyncDisposable>(provider => asyncDisposable.Object);
+
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+            serviceProvider.GetService<IAsyncDisposable>();
+
+            var exception = Assert.Throws<InvalidOperationException>(() => (serviceProvider as IDisposable).Dispose());
+            Assert.Equal("'Castle.Proxies.IAsyncDisposableProxy' type only implements IAsyncDisposable. Use DisposeAsync to dispose the container.", exception.Message);
+        }
+#endif
         private class FakeMultipleServiceWithIEnumerableDependency: IFakeMultipleService
         {
             public FakeMultipleServiceWithIEnumerableDependency(IEnumerable<IFakeService> fakeServices)
