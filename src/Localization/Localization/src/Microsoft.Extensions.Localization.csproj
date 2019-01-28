@@ -17,4 +17,8 @@
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Localization.Tests" />
+  </ItemGroup>
+
 </Project>
