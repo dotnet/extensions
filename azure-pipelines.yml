@@ -27,8 +27,7 @@ jobs:
         # For public or PR jobs, use the hosted pool.  For internal jobs use the internal pool.
         # Will eventually change this to two BYOC pools.
         ${{ if ne(variables['System.TeamProject'], 'internal') }}:
-          name: Hosted VS2017
-          vmImage: vs2017-win2016
+          name: dotnet-external-temp
         ${{ if eq(variables['System.TeamProject'], 'internal') }}:
           name: dotnet-internal-temp
       variables:
@@ -79,7 +78,7 @@ jobs:
           -prepareMachine
           $(_BuildArgs)
         displayName: Build and Publish
-      - powershell: eng\common\msbuild.ps1 eng/repo.targets '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
+      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
         displayName: Set CI Tags
         condition: eq(variables['_BuildConfig'], 'Release')
       - task: PublishBuildArtifacts@1

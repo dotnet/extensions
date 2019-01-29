@@ -35,18 +35,9 @@
   <PropertyGroup>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
     <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsUnitTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
-
-    <!-- Suppress KoreBuild warnings about the mismatch of repo version and local project version. The versioning in this mega repo is sufficiently complicated that KoreBuild's validation isn't helpful. -->
-    <VerifyVersion>false</VerifyVersion>
   </PropertyGroup>
 
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="eng\targets\ResolveReferences.targets" Condition=" '$(DisableReferenceRestrictions)' != 'true' AND '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-
-  <!-- Has to be set after Sdk.targets or it will be overrided -->
-  <PropertyGroup>
-    <PackageOutputPath Condition="'$(IsProductComponent)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
-    <PackageOutputPath Condition="'$(IsProductComponent)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
-  </PropertyGroup>
 </Project>
