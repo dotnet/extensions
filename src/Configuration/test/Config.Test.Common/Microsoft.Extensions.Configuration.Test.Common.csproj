@@ -10,7 +10,6 @@
     <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <UseProjectReferences>true</UseProjectReferences>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

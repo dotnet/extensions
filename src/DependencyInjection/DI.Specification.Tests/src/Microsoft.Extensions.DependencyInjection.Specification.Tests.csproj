@@ -8,7 +8,6 @@
     <PackageTags>dependencyinjection;di</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <IsUnitTestProject>false</IsUnitTestProject>
-    <IsTestProject>false</IsTestProject>
     <TestRunnerName></TestRunnerName>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
