@@ -1,40 +1,147 @@
-#
-# See https://docs.microsoft.com/en-us/vsts/pipelines/yaml-schema for details
-#
+variables:
+  - name: _TeamName
+    value: AspNetCore
+  - name: _GeneralBuildArg
+    value: /p:ArtifactsShippingPackagesDir=$(Build.SourcesDirectory)/artifacts/$(_BuildConfig)/packages/product/
+           /p:ArtifactsNonShippingPackagesDir=$(Build.SourcesDirectory)/artifacts/$(_BuildConfig)/packages/internal/
 
-# Only run CI builds for these branches
+# CI and PR triggers
 trigger:
-  branches:
-    include:
-    - 'master'
-    - 'release/*'
-    - 'internal/release/*'
-# Run PR validation on all branches
-pr:
-  branches:
-    include:
-    - '*'
+- master
 
-name: $(Date:yyyyMMdd).$(Rev:rr)
+pr:
+- master
 
 jobs:
-- template: eng/templates/default-build.yml
+- template: /eng/common/templates/jobs/jobs.yml
   parameters:
-    agentOs: Windows
-    configuration: Release
-    codeSign: true
-    publishToBar: true
-    artifacts:
-      publish: true
-      name: artifacts
-      path: artifacts/
+    enableMicrobuild: true
+    enablePublishBuildArtifacts: true
+    enablePublishTestResults: true
+    enablePublishBuildAssets: true
+    enableTelemetry: true
+    helixRepo: aspnet/Extensions
+    jobs:
+    - job: Windows
+      pool:
+        # For public or PR jobs, use the hosted pool.  For internal jobs use the internal pool.
+        # Will eventually change this to two BYOC pools.
+        ${{ if ne(variables['System.TeamProject'], 'internal') }}:
+          name: Hosted VS2017
+          vmImage: vs2017-win2016
+        ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+          name: dotnet-internal-temp
+      variables:
+      # Only enable publishing in official builds.
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
+        # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+        - group: DotNet-Blob-Feed
+        - group: Publish-Build-Assets
+        - name: _OfficialBuildArgs
+          value: /p:DotNetSignType=$(_SignType)
+                 /p:TeamName=$(_TeamName)
+                 /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                 /p:DotNetPublishBlobFeedUrl=https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+                 /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+      # else
+      - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+        - name: _OfficialBuildArgs
+          value: ''
+      strategy:
+        matrix:
+          ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+            Debug:
+              _BuildConfig: Debug
+              _SignType: test
+              _DotNetPublishToBlobFeed: false
+              _BuildArgs: $(_GeneralBuildArg)
 
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: macOS
-    configuration: Release
+          Release:
+            _BuildConfig: Release
+            # PRs or external builds are not signed.
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              _SignType: test
+              _DotNetPublishToBlobFeed: false
+              _BuildArgs: $(_GeneralBuildArg)
+            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              _SignType: real
+              _DotNetPublishToBlobFeed: true
+              _BuildArgs: $(_OfficialBuildArgs)
+                          $(_GeneralBuildArg)
+      steps:
+      - checkout: self
+        clean: true
+      - script: eng\common\cibuild.cmd
+          -warnaserror $False
+          -configuration $(_BuildConfig)
+          -prepareMachine
+          $(_BuildArgs)
+        displayName: Build and Publish
+      - powershell: eng\common\msbuild.ps1 eng/repo.targets '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
+        displayName: Set CI Tags
+        condition: eq(variables['_BuildConfig'], 'Release')
+      - task: PublishBuildArtifacts@1
+        displayName: Upload package artifacts
+        condition: and(eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+        inputs:
+          pathtoPublish: artifacts/
+          ${{ if eq(parameters.artifacts.name, '') }}:
+            artifactName: artifacts
+          ${{ if ne(parameters.artifacts.name, '') }}:
+            artifactName: ${{ parameters.artifacts.name }}
+          artifactType: Container
+          parallel: true
 
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: Linux
-    configuration: Release
+    - job: Ubuntu_16_04
+      displayName: 'Ubuntu 16.04'
+      pool:
+        name: Hosted Ubuntu 1604
+        vmImage: ubuntu-16.04
+      strategy:
+        matrix:
+          ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+            Debug:
+              _BuildConfig: Debug
+              _SignType: none
+              _DotNetPublishToBlobFeed : false
+          Release:
+            _BuildConfig: Release
+            _SignType: none
+            _DotNetPublishToBlobFeed : false
+      steps:
+      - checkout: self
+        clean: true
+      - script: eng/common/cibuild.sh
+          --warnAsError false
+          --configuration $(_BuildConfig)
+          --prepareMachine
+          $(_GeneralBuildArg)
+        displayName: Build
+
+    - job: OSX_10_13
+      displayName: 'OSX'
+      pool:
+        name: Hosted macOS
+        vmImage: macOS-10.13
+      strategy:
+        matrix:
+          ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+            Debug:
+              _BuildConfig: Debug
+              _SignType: none
+              _DotNetPublishToBlobFeed : false
+          Release:
+            _BuildConfig: Release
+            _SignType: none
+            _DotNetPublishToBlobFeed : false
+      steps:
+      - checkout: self
+        clean: true
+      - script: eng/common/cibuild.sh
+          --warnAsError false
+          --configuration $(_BuildConfig)
+          --prepareMachine
+          $(_GeneralBuildArg)
+        displayName: Build

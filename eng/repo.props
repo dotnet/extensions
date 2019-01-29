@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <ProjectToBuild Include="$(RepositoryRoot)**\*.csproj;$(RepositoryRoot)**\*.fsproj;$(RepositoryRoot)**\*.vbproj" Exclude="$(ProjectToExclude)" Condition=" '$(Projects)' == '' " />
+    <ProjectToBuild Include="$(Projects)" Exclude="$(ProjectToExclude)" Condition=" '$(Projects)' != '' " />
+  </ItemGroup>
+</Project>
