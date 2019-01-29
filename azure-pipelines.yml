@@ -82,6 +82,15 @@ jobs:
       - powershell: eng\common\msbuild.ps1 eng/repo.targets '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
         displayName: Set CI Tags
         condition: eq(variables['_BuildConfig'], 'Release')
+      # Remove temporary files before publishing artifacts
+      - task: DeleteFiles@1
+        inputs:
+          sourceFolder: artifacts/
+          contents: bin
+      - task: DeleteFiles@1
+        inputs:
+          sourceFolder: artifacts/
+          contents: obj
       - task: PublishBuildArtifacts@1
         displayName: Upload package artifacts
         inputs:
