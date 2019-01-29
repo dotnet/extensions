@@ -9,7 +9,6 @@
     <VerifyVersion>false</VerifyVersion>
     <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <EnableApiCheck>false</EnableApiCheck>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
