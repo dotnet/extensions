@@ -73,7 +73,7 @@ namespace Microsoft.JSInterop.Tests
             Assert.Equal($"The assembly '{thisAssemblyName}' does not contain a public method with [JSInvokableAttribute(\"{methodIdentifier}\")].", ex.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1733")]
         public Task CanInvokeStaticVoidMethod() => WithJSRuntime(jsRuntime =>
         {
             // Arrange/Act
@@ -109,7 +109,7 @@ namespace Microsoft.JSInterop.Tests
             Assert.Equal(456, result.IntVal);
         });
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1733")]
         public Task CanInvokeStaticWithParams() => WithJSRuntime(jsRuntime =>
         {
             // Arrange: Track a .NET object to use as an arg
@@ -140,7 +140,7 @@ namespace Microsoft.JSInterop.Tests
             Assert.Equal(1299, resultDto2.IntVal);
         });
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1733")]
         public Task CanInvokeInstanceVoidMethod() => WithJSRuntime(jsRuntime =>
         {
             // Arrange: Track some instance
@@ -155,7 +155,7 @@ namespace Microsoft.JSInterop.Tests
             Assert.True(targetInstance.DidInvokeMyInvocableInstanceVoid);
         });
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1733")]
         public Task CanInvokeBaseInstanceVoidMethod() => WithJSRuntime(jsRuntime =>
         {
             // Arrange: Track some instance
@@ -206,7 +206,7 @@ namespace Microsoft.JSInterop.Tests
             Assert.StartsWith("There is no tracked object with id '1'.", ex.Message);
         });
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1733")]
         public Task CanInvokeInstanceMethodWithParams() => WithJSRuntime(jsRuntime =>
         {
             // Arrange: Track some instance plus another object we'll pass as a param
@@ -242,7 +242,7 @@ namespace Microsoft.JSInterop.Tests
             Assert.Equal("In call to 'InvocableStaticWithParams', expected 3 parameters but received 4.", ex.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1733")]
         public Task CanInvokeAsyncMethod() => WithJSRuntime(async jsRuntime =>
         {
             // Arrange: Track some instance plus another object we'll pass as a param
