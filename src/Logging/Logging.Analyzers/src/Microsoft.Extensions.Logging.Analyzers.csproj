@@ -9,10 +9,9 @@
     <VerifyVersion>false</VerifyVersion>
     <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <EnableApiCheck>false</EnableApiCheck>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
-    <IsPackable>true</IsPackable>
+    <!-- This is currently an experimental, internal-only analyzer. -->
     <IsShipping>false</IsShipping>
   </PropertyGroup>
 

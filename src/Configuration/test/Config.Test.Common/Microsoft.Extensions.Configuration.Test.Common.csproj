@@ -2,15 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <!--
-      This project does not fit cleanly into well-defined categories. It is neither a test nor an assembly that ships in the product, not a sample or a test asset.
-      So these manual settings are required.
-    -->
-    <IsImplementationProject>false</IsImplementationProject>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
-    <UseProjectReferences>true</UseProjectReferences>
+    <IsTestAssetProject>true</IsTestAssetProject>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -24,24 +24,14 @@ Building ASP.NET Core on macOS or Linux requires:
 * At least 5 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
 * Git <https://git-scm.org>
 
-## Building in Visual Studio / Code
+## Building in Visual Studio
 
-Before opening our .sln files in Visual Studio or VS Code, executing the following on command-line:
+Visual Studio requires special tools and command lien parameters. You can acquire these by executing the following on command-line:
 ```
-.\build.cmd /t:Restore
+.\restore.cmd
+.\startvs.cmd
 ```
-This will download required tools.
-
-#### PATH
-
-For VS Code and Visual Studio to work correctly, you must place the following location in your PATH.
-```
-Windows: %USERPROFILE%\.dotnet\x64
-Linux/macOS: $HOME/.dotnet
-```
-This must come **before** any other installation of `dotnet`. In Windows, we recommend removing `C:\Program Files\dotnet` from PATH in system variables and adding `%USERPROFILE%\.dotnet\x64` to PATH in user variables.
-
-<img src="http://i.imgur.com/Tm2PAfy.png" width="400" />
+This will download required tools and start Visual Studio with the correct environment variables.
 
 ## Building on command-line
 
@@ -57,22 +47,6 @@ On macOS/Linux:
 ./build.sh
 ```
 
-#### Build properties
-
-Additional properties can be added as an argument in the form `/property:$name=$value`, or `/p:$name=$value` for short. For example:
-```
-.\build.cmd /p:Configuration=Release
-```
-
-Common properties include:
-
-Property                 | Description
--------------------------|---------------------------------------------------------
-BuildNumber              | (string). A specific build number, typically from a CI counter
-Configuration            | `Debug` or `Release`. Default = `Debug`.
-SkipTests                | `true` or `false`. When true, builds without running tests.
-NoBuild                  | `true` or `false`. Runs tests without rebuilding.
-
 ## Use the result of your build
 
 After building Extensions from source, you can use these in a project by pointing NuGet to the folder containing the .nupkg files.
@@ -84,7 +58,7 @@ After building Extensions from source, you can use these in a project by pointin
   <configuration>
       <packageSources>
           <clear />
-          <add key="MyBuildOfExtensions" value="C:\src\aspnet\Extensions\artifacts\build\" />
+          <add key="MyBuildOfExtensions" value="C:\src\aspnet\Extensions\artifacts\packages\Debug\Shipping\" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>

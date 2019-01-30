@@ -5,9 +5,14 @@ variables:
 # CI and PR triggers
 trigger:
 - master
+- release/*
+- internal/release/*
 
 pr:
-- master
+  autoCancel: false
+  branches:
+    include:
+    - '*'
 
 jobs:
 - template: /eng/common/templates/jobs/jobs.yml
@@ -24,8 +29,7 @@ jobs:
         # For public or PR jobs, use the hosted pool.  For internal jobs use the internal pool.
         # Will eventually change this to two BYOC pools.
         ${{ if ne(variables['System.TeamProject'], 'internal') }}:
-          name: Hosted VS2017
-          vmImage: vs2017-win2016
+          name: dotnet-external-temp
         ${{ if eq(variables['System.TeamProject'], 'internal') }}:
           name: dotnet-internal-temp
       variables:
@@ -53,7 +57,6 @@ jobs:
               _BuildConfig: Debug
               _SignType: test
               _DotNetPublishToBlobFeed: false
-              _BuildArgs:
 
           Release:
             _BuildConfig: Release
@@ -61,7 +64,6 @@ jobs:
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: test
               _DotNetPublishToBlobFeed: false
-              _BuildArgs:
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: real
               _DotNetPublishToBlobFeed: true
@@ -70,12 +72,11 @@ jobs:
       - checkout: self
         clean: true
       - script: eng\common\cibuild.cmd
-          -warnaserror $False
           -configuration $(_BuildConfig)
           -prepareMachine
           $(_BuildArgs)
         displayName: Build and Publish
-      - powershell: eng\common\msbuild.ps1 eng/repo.targets '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
+      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
         displayName: Set CI Tags
         condition: eq(variables['_BuildConfig'], 'Release')
       - task: PublishBuildArtifacts@1
@@ -110,7 +111,6 @@ jobs:
       - checkout: self
         clean: true
       - script: eng/common/cibuild.sh
-          --warnAsError false
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
@@ -135,7 +135,6 @@ jobs:
       - checkout: self
         clean: true
       - script: eng/common/cibuild.sh
-          --warnAsError false
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
