@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <summary>
         /// Number of milliseconds to wait inbetween each attempt at polling the Azure KeyVault for changes.
         /// </summary>
-        public int ReloadPollDelay { get; set; } = 1000;
+        public uint ReloadPollDelay { get; set; } = 5000;
 
         /// <inheritdoc />
         public IConfigurationProvider Build(IConfigurationBuilder builder)
