@@ -1,9 +1,6 @@
 variables:
   - name: _TeamName
     value: AspNetCore
-  - name: _GeneralBuildArg
-    value: /p:ArtifactsShippingPackagesDir=$(Build.SourcesDirectory)/artifacts/$(_BuildConfig)/packages/product/
-           /p:ArtifactsNonShippingPackagesDir=$(Build.SourcesDirectory)/artifacts/$(_BuildConfig)/packages/internal/
 
 # CI and PR triggers
 trigger:
@@ -56,7 +53,7 @@ jobs:
               _BuildConfig: Debug
               _SignType: test
               _DotNetPublishToBlobFeed: false
-              _BuildArgs: $(_GeneralBuildArg)
+              _BuildArgs:
 
           Release:
             _BuildConfig: Release
@@ -64,12 +61,11 @@ jobs:
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: test
               _DotNetPublishToBlobFeed: false
-              _BuildArgs: $(_GeneralBuildArg)
+              _BuildArgs:
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: real
               _DotNetPublishToBlobFeed: true
               _BuildArgs: $(_OfficialBuildArgs)
-                          $(_GeneralBuildArg)
       steps:
       - checkout: self
         clean: true
@@ -86,7 +82,7 @@ jobs:
         displayName: Upload package artifacts
         condition: and(eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
         inputs:
-          pathtoPublish: artifacts/
+          pathtoPublish: artifacts/packages/
           ${{ if eq(parameters.artifacts.name, '') }}:
             artifactName: artifacts
           ${{ if ne(parameters.artifacts.name, '') }}:
@@ -117,7 +113,6 @@ jobs:
           --warnAsError false
           --configuration $(_BuildConfig)
           --prepareMachine
-          $(_GeneralBuildArg)
         displayName: Build
 
     - job: OSX_10_13
@@ -143,5 +138,4 @@ jobs:
           --warnAsError false
           --configuration $(_BuildConfig)
           --prepareMachine
-          $(_GeneralBuildArg)
         displayName: Build

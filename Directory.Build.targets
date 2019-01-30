@@ -43,10 +43,4 @@
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="eng\targets\ResolveReferences.targets" Condition=" '$(DisableReferenceRestrictions)' != 'true' AND '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-
-  <!-- Has to be set after Sdk.targets or it will be overrided -->
-  <PropertyGroup>
-    <PackageOutputPath Condition="'$(IsProductComponent)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
-    <PackageOutputPath Condition="'$(IsProductComponent)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
-  </PropertyGroup>
 </Project>
