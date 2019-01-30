@@ -39,4 +39,5 @@
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="eng\targets\ResolveReferences.targets" Condition=" '$(DisableReferenceRestrictions)' != 'true' AND '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\Workarounds.AfterArcade.targets" />
 </Project>
