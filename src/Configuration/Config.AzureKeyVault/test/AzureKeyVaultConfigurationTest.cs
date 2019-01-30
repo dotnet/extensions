@@ -150,6 +150,32 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         }
 
         [Fact]
+        public void SupportsReloadOnChange() {
+            var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);
+            var secret1Id = GetSecretId("Secret1");
+            var value = "Value1";
+
+            client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock() {
+                Value = new[] { new SecretItem { Id = secret1Id, Attributes = new SecretAttributes { Enabled = true } } }
+            });
+
+            client.Setup(c => c.GetSecretAsync(secret1Id)).Returns((string id) => Task.FromResult(new SecretBundle() { Value = value, Id = id }));
+
+            // Act & Assert
+            var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager());
+            provider.Load();
+
+            client.VerifyAll();
+            Assert.Equal("Value1", provider.Get("Secret1"));
+
+            value = "Value2";
+
+            // Wait some time for reload
+
+            Assert.Equal("Value2", provider.Get("Secret1"));
+        }
+
+        [Fact]
         public void ReplaceDoubleMinusInKeyName()
         {
             var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);

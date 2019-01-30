@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         private readonly IKeyVaultClient _client;
         private readonly string _vault;
         private readonly IKeyVaultSecretManager _manager;
+        private Dictionary<string, SecretIdentifier> _loadedSecrets;
 
         /// <summary>
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationProvider"/>.
@@ -43,16 +44,19 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             _client = client;
             _vault = vault;
             _manager = manager;
+            _loadedSecrets = new Dictionary<string, SecretIdentifier>();
         }
-
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
         private async Task LoadAsync()
         {
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+            _loadedSecrets.Clear();
+
             var secrets = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
             var tasks = new List<Task<SecretBundle>>(secrets.Count());
+
             do
             {
                 tasks.Clear();
@@ -70,6 +74,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                 foreach (var task in tasks)
                 {
                     data.Add(_manager.GetKey(task.Result), task.Result.Value);
+                    _loadedSecrets.Add(task.Result.SecretIdentifier.Name, task.Result.SecretIdentifier);
                 }
 
                 secrets = secrets.NextPageLink != null ?
@@ -78,6 +83,34 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             } while (secrets != null);
 
             Data = data;
+            OnReload();
+        }
+
+        private async Task<bool> ShouldReloadAsync()
+        {
+            var secrets = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
+
+            if (secrets.Count() != _loadedSecrets.Count())
+            {
+                return true;
+            }
+
+            foreach (var secret in secrets)
+            {
+                if (_loadedSecrets.ContainsKey(secret.Identifier.Name))
+                {
+                    if (_loadedSecrets[secret.Identifier.Name].Version != secret.Identifier.Version)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
