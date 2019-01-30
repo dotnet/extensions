@@ -14,6 +14,8 @@
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <PackageTags>analyzers;async</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

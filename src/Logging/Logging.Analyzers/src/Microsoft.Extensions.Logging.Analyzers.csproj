@@ -12,6 +12,8 @@
     <EnableApiCheck>false</EnableApiCheck>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
