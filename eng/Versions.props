@@ -16,6 +16,10 @@
     <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview.19073.11</SystemSecurityCryptographyXmlPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview.19073.11</SystemTextEncodingsWebPackageVersion>
   </PropertyGroup>
+  <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
+  <PropertyGroup>
+    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview.19073.11</MicrosoftNETCorePlatformsPackageVersion>
+  </PropertyGroup>
   <!-- Stable dependencies which are not expected to update via automation -->
   <PropertyGroup>
     <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
