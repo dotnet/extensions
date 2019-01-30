@@ -83,7 +83,7 @@ jobs:
         displayName: Upload package artifacts
         condition: and(eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
         inputs:
-          pathtoPublish: artifacts/
+          pathtoPublish: artifacts/packages/
           ${{ if eq(parameters.artifacts.name, '') }}:
             artifactName: artifacts
           ${{ if ne(parameters.artifacts.name, '') }}:
