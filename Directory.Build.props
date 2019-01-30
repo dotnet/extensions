@@ -11,8 +11,9 @@
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('samples'))">true</IsSampleProject>
   </PropertyGroup>
 
+  <Import Project="eng\Workarounds.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="eng\Workarounds.props" />
+  <Import Project="eng\Workarounds.AfterArcade.props" />
 
   <PropertyGroup>
     <IncludeSymbols>true</IncludeSymbols>
