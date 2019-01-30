@@ -7,7 +7,7 @@ trigger:
 - master
 
 pr:
-- master
+  autoCancel: false
 
 jobs:
 - template: /eng/common/templates/jobs/jobs.yml
