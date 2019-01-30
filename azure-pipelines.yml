@@ -5,9 +5,13 @@ variables:
 # CI and PR triggers
 trigger:
 - master
+- release/*
 
 pr:
   autoCancel: false
+  branches:
+    include:
+    - '*'
 
 jobs:
 - template: /eng/common/templates/jobs/jobs.yml
