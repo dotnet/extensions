@@ -1,9 +1,6 @@
 variables:
   - name: _TeamName
     value: AspNetCore
-  - name: _GeneralBuildArg
-    value: /p:ArtifactsShippingPackagesDir=$(Build.SourcesDirectory)/artifacts/$(_BuildConfig)/packages/product/
-           /p:ArtifactsNonShippingPackagesDir=$(Build.SourcesDirectory)/artifacts/$(_BuildConfig)/packages/internal/
 
 # CI and PR triggers
 trigger:
@@ -55,7 +52,6 @@ jobs:
               _BuildConfig: Debug
               _SignType: test
               _DotNetPublishToBlobFeed: false
-              _BuildArgs: $(_GeneralBuildArg)
 
           Release:
             _BuildConfig: Release
@@ -63,12 +59,10 @@ jobs:
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: test
               _DotNetPublishToBlobFeed: false
-              _BuildArgs: $(_GeneralBuildArg)
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: real
               _DotNetPublishToBlobFeed: true
               _BuildArgs: $(_OfficialBuildArgs)
-                          $(_GeneralBuildArg)
       steps:
       - checkout: self
         clean: true
@@ -114,7 +108,6 @@ jobs:
       - script: eng/common/cibuild.sh
           --configuration $(_BuildConfig)
           --prepareMachine
-          $(_GeneralBuildArg)
         displayName: Build
 
     - job: OSX_10_13
@@ -139,5 +132,4 @@ jobs:
       - script: eng/common/cibuild.sh
           --configuration $(_BuildConfig)
           --prepareMachine
-          $(_GeneralBuildArg)
         displayName: Build
