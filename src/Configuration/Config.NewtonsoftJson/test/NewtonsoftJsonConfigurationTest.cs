@@ -4,17 +4,17 @@
 using System;
 using System.Globalization;
 using System.IO;
-using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.Configuration.NewtonsoftJson;
 using Microsoft.Extensions.Configuration.Test;
 using Xunit;
 
-namespace Microsoft.Extensions.Configuration
+namespace Microsoft.Extensions.Configuration.NewtonsoftJson.Test
 {
-    public class JsonConfigurationTest
+    public class NewtonsoftJsonConfigurationTest
     {
-        private JsonConfigurationProvider LoadProvider(string json)
+        private NewtonsoftJsonConfigurationProvider LoadProvider(string json)
         {
-            var p = new JsonConfigurationProvider(new JsonConfigurationSource { Optional = true });
+            var p = new NewtonsoftJsonConfigurationProvider(new NewtonsoftJsonConfigurationSource { Optional = true });
             p.Load(TestStreamHelpers.StringToStream(json));
             return p;
         }
@@ -24,11 +24,11 @@ namespace Microsoft.Extensions.Configuration
         {
             var json = @"
 {
-    ""firstname"": ""test"",
-    ""test.last.name"": ""last.name"",
-        ""residential.address"": {
-            ""street.name"": ""Something street"",
-            ""zipcode"": ""12345""
+    'firstname': 'test',
+    'test.last.name': 'last.name',
+        'residential.address': {
+            'street.name': 'Something street',
+            'zipcode': '12345'
         }
 }";
             var jsonConfigSrc = LoadProvider(json);
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Configuration
         {
             var json = @"
 {
-    ""name"": """"
+    'name': ''
 }";
             var jsonConfigSrc = LoadProvider(json);
             Assert.Equal(string.Empty, jsonConfigSrc.Get("name"));
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.Configuration
 
                 var json = @"
 {
-    ""number"": 3.14
+    'number': 3.14
 }";
                 var jsonConfigSrc = LoadProvider(json);
                 Assert.Equal("3.14", jsonConfigSrc.Get("number"));
@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.Configuration
         [Fact]
         public void NonObjectRootIsInvalid()
         {
-            var json = @"""test""";
+            var json = @"'test'";
 
             var exception = Assert.Throws<FormatException>(
                 () => LoadProvider(json));
@@ -104,14 +104,14 @@ namespace Microsoft.Extensions.Configuration
         public void ThrowExceptionWhenUnexpectedEndFoundBeforeFinishParsing()
         {
             var json = @"{
-                ""name"": ""test"",
-                ""address"": {
-                    ""street"": ""Something street"",
-                    ""zipcode"": ""12345""
+                'name': 'test',
+                'address': {
+                    'street': 'Something street',
+                    'zipcode': '12345'
                 }
             /* Missing a right brace here*/";
             var exception = Assert.Throws<FormatException>(() => LoadProvider(json));
-            Assert.Contains("Could not parse the JSON file.", exception.Message);
+            Assert.NotNull(exception.Message);
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace Microsoft.Extensions.Configuration
         {
             var json = @"
             {
-              ""Data"": {
+              'Data': {
             ";
 
             var exception = Assert.Throws<FormatException>(() => LoadProvider(json));
@@ -131,7 +131,7 @@ namespace Microsoft.Extensions.Configuration
         {
             var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
 
-            var exception = Assert.Throws<ArgumentException>(() => new ConfigurationBuilder().AddJsonFile(path: null));
+            var exception = Assert.Throws<ArgumentException>(() => new ConfigurationBuilder().AddNewtonsoftJsonFile(path: null));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -141,7 +141,7 @@ namespace Microsoft.Extensions.Configuration
         {
             var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
 
-            var exception = Assert.Throws<ArgumentException>(() => new ConfigurationBuilder().AddJsonFile(string.Empty));
+            var exception = Assert.Throws<ArgumentException>(() => new ConfigurationBuilder().AddNewtonsoftJsonFile(string.Empty));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -149,7 +149,7 @@ namespace Microsoft.Extensions.Configuration
         [Fact]
         public void JsonConfiguration_Throws_On_Missing_Configuration_File()
         {
-            var config = new ConfigurationBuilder().AddJsonFile("NotExistingConfig.json", optional: false);
+            var config = new ConfigurationBuilder().AddNewtonsoftJsonFile("NotExistingConfig.json", optional: false);
             var exception = Assert.Throws<FileNotFoundException>(() => config.Build());
 
             // Assert
@@ -159,14 +159,13 @@ namespace Microsoft.Extensions.Configuration
         [Fact]
         public void JsonConfiguration_Does_Not_Throw_On_Optional_Configuration()
         {
-            var config = new ConfigurationBuilder().AddJsonFile("NotExistingConfig.json", optional: true).Build();
+            var config = new ConfigurationBuilder().AddNewtonsoftJsonFile("NotExistingConfig.json", optional: true).Build();
         }
 
         [Fact]
         public void ThrowFormatExceptionWhenFileIsEmpty()
         {
             var exception = Assert.Throws<FormatException>(() => LoadProvider(@""));
-            Assert.Contains("Could not parse the JSON file.", exception.Message);
         }
     }
 }
