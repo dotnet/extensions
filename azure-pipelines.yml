@@ -23,6 +23,7 @@ jobs:
     enablePublishBuildAssets: true
     enableTelemetry: true
     helixRepo: aspnet/Extensions
+    timeoutInMinutes: 120 # increase timeout since BAR publishing might wait a long time
     jobs:
     - job: Windows
       pool:
