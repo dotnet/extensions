@@ -49,6 +49,9 @@ if (-not $env:DISABLE_CUSTOM_PROMPT) {
 }
 
 Write-Host -f Magenta "Enabled the .NET Core environment. Execute 'deactivate' to exit."
-Write-Host ""
-Write-Host "  dotnet = ${env:DOTNET_ROOT}\dotnet.exe"
-Write-Host ""
+if (-not (Test-Path "${env:DOTNET_ROOT}\dotnet.exe")) {
+    Write-Host -f Yellow ".NET Core has not been installed yet. Run $PSScriptRoot\restore.cmd to install it."
+}
+else {
+    Write-Host "dotnet = ${env:DOTNET_ROOT}\dotnet.exe"
+}

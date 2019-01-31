@@ -4,6 +4,7 @@
 # To exit from the environment this creates, execute the 'deactivate' function.
 
 _MAGENTA="\033[0;95m"
+_YELLOW="\033[0;33m"
 _RESET="\033[0m"
 
 deactivate () {
@@ -60,6 +61,9 @@ if [ -n "${BASH:-}" ] || [ -n "${ZSH_VERSION:-}" ] ; then
 fi
 
 echo "${_MAGENTA}Enabled the .NET Core environment. Execute 'deactivate' to exit.${_RESET}"
-echo ""
-echo "  dotnet = $DOTNET_ROOT/dotnet"
-echo ""
+
+if [ ! -f "$DOTNET_ROOT/dotnet" ]; then
+    echo "${_YELLOW}.NET Core has not been installed yet. Run $DIR/restore.sh to install it.${_RESET}"
+else
+    echo "dotnet = $DOTNET_ROOT/dotnet"
+fi
