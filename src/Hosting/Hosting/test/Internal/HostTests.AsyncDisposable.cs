@@ -39,6 +39,32 @@ namespace Microsoft.Extensions.Hosting.Internal
             }
         }
 
+        [Fact]
+        public async Task HostCallsDisposeAsyncOnServiceProviderWhenDisposeAsyncCalled()
+        {
+            using (var host = CreateBuilder()
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddSingleton<AsyncDisposableService>();
+                })
+                .Build())
+            {
+                await host.StartAsync();
+
+                var asyncDisposableService = host.Services.GetService<AsyncDisposableService>();
+
+                Assert.False(asyncDisposableService.DisposeAsyncCalled);
+
+                await host.StopAsync();
+
+                Assert.False(asyncDisposableService.DisposeAsyncCalled);
+
+                await ((IAsyncDisposable)host).DisposeAsync();
+
+                Assert.True(asyncDisposableService.DisposeAsyncCalled);
+            }
+        }
+
         private class AsyncDisposableService: IAsyncDisposable
         {
             public bool DisposeAsyncCalled { get; set; }
