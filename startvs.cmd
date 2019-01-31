@@ -14,7 +14,8 @@ SET PATH=%DOTNET_ROOT%;%PATH%
 SET sln=%1
 
 IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
-    restore.cmd
+    echo .NET Core has not yet been installed. Running restore.cmd to install it.
+    call restore.cmd
 )
 
 start %~dp0Extensions.sln
