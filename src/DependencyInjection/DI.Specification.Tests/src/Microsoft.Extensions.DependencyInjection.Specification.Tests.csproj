@@ -7,8 +7,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>dependencyinjection;di</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- This is actually a library of test projects that we ship to consumer, not a test project. -->
     <IsUnitTestProject>false</IsUnitTestProject>
-    <TestRunnerName></TestRunnerName>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
 
@@ -17,6 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.
+      XUnit recommends only using these packages which "extend" xunit. This allows consumers
+      to decide which type of xunit runner they want to use to run these tests.
+     -->
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.core" />
   </ItemGroup>
