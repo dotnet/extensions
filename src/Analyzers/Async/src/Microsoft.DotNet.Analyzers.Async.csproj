@@ -3,9 +3,6 @@
   <PropertyGroup>
     <Description>Analyzer package for async best practices.</Description>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
-    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
-    <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
-    <InformationalVersion>$(ExperimentalPackageVersion)</InformationalVersion>
     <VerifyVersion>false</VerifyVersion>
     <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>

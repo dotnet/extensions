@@ -58,6 +58,7 @@ jobs:
               _BuildConfig: Debug
               _SignType: test
               _DotNetPublishToBlobFeed: false
+              _BuildArgs:
 
           Release:
             _BuildConfig: Release
