@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh -c
-$ErrorActionPreference = 'Ignore'
+$ErrorActionPreference = 'Continue'
 
 taskkill /T /F /IM dotnet.exe
 taskkill /T /F /IM testhost.exe
@@ -12,3 +12,5 @@ taskkill /T /F /IM git.exe
 taskkill /T /F /IM vctip.exe
 taskkill /T /F /IM chrome.exe
 iisreset /restart
+
+exit 0
