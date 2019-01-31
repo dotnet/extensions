@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -27,10 +27,10 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Serialization
 
             var obj = JObject.Load(reader);
             var filePath = obj[nameof(ProjectSnapshotHandleProxy.FilePath)].ToObject<Uri>(serializer);
-            var tagHelpers = obj[nameof(ProjectSnapshotHandleProxy.TagHelpers)].ToObject<List<TagHelperDescriptor>>(serializer);
+            var projectWorkspaceState = obj[nameof(ProjectSnapshotHandleProxy.ProjectWorkspaceState)].ToObject<ProjectWorkspaceState>(serializer);
             var configuration = obj[nameof(ProjectSnapshotHandleProxy.Configuration)].ToObject<RazorConfiguration>(serializer);
 
-            return new ProjectSnapshotHandleProxy(filePath, tagHelpers, configuration);
+            return new ProjectSnapshotHandleProxy(filePath, configuration, projectWorkspaceState);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -42,19 +42,19 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Serialization
             writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.FilePath));
             writer.WriteValue(handle.FilePath);
 
-            writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.TagHelpers));
-            serializer.Serialize(writer, handle.TagHelpers);
-
-            if (handle.Configuration == null)
+            if (handle.ProjectWorkspaceState == null)
             {
-                writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.Configuration));
+                writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.ProjectWorkspaceState));
                 writer.WriteNull();
             }
             else
             {
-                writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.Configuration));
-                serializer.Serialize(writer, handle.Configuration);
+                writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.ProjectWorkspaceState));
+                serializer.Serialize(writer, handle.ProjectWorkspaceState);
             }
+
+            writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.Configuration));
+            serializer.Serialize(writer, handle.Configuration);
 
             writer.WriteEndObject();
         }

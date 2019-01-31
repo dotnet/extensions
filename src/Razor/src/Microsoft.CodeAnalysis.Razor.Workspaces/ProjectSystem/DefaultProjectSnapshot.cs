@@ -42,12 +42,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override IReadOnlyList<TagHelperDescriptor> TagHelpers => State.TagHelpers;
 
-#pragma warning disable CS0672 // Member overrides obsolete member
-        public override bool IsInitialized => throw new NotImplementedException();
-
-        public override Project WorkspaceProject => throw new NotImplementedException();
-#pragma warning restore CS0672 // Member overrides obsolete member
-
         public override DocumentSnapshot GetDocument(string filePath)
         {
             lock (_lock)
@@ -95,18 +89,5 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             return State.ProjectEngine;
         }
-
-#pragma warning disable CS0672 // Member overrides obsolete member
-        public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync()
-        {
-            return Task.FromResult(TagHelpers);
-        }
-
-        public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
-        {
-            result = TagHelpers;
-            return true;
-        }
-#pragma warning restore CS0672 // Member overrides obsolete member
     }
 }

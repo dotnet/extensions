@@ -58,11 +58,6 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
 
             public override VersionStamp Version { get; }
 
-#pragma warning disable CS0672 // Member overrides obsolete member
-            public override bool IsInitialized { get; }
-            public override Project WorkspaceProject { get; }
-#pragma warning restore CS0672 // Member overrides obsolete member
-
             public override DocumentSnapshot GetDocument(string filePath)
             {
                 if (filePath == null)
@@ -87,18 +82,6 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             {
                 throw new NotImplementedException();
             }
-
-#pragma warning disable CS0672 // Member overrides obsolete member
-            public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync()
-            {
-                throw new NotImplementedException();
-            }
-
-            public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
-            {
-                throw new NotImplementedException();
-            }
-#pragma warning restore CS0672 // Member overrides obsolete member
         }
     }
 }

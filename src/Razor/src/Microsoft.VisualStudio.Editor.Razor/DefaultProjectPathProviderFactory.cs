@@ -13,16 +13,25 @@ namespace Microsoft.VisualStudio.Editor.Razor
     internal class DefaultProjectPathProviderFactory : IWorkspaceServiceFactory
     {
         private readonly TextBufferProjectService _projectService;
-        
+        private readonly LiveShareProjectPathProvider _liveShareProjectPathProvider;
+
         [ImportingConstructor]
-        public DefaultProjectPathProviderFactory(TextBufferProjectService projectService)
+        public DefaultProjectPathProviderFactory(
+            TextBufferProjectService projectService,
+            LiveShareProjectPathProvider liveShareProjectPathProvider)
         {
             if (projectService == null)
             {
                 throw new ArgumentNullException(nameof(projectService));
             }
 
+            if (liveShareProjectPathProvider == null)
+            {
+                throw new ArgumentNullException(nameof(liveShareProjectPathProvider));
+            }
+
             _projectService = projectService;
+            _liveShareProjectPathProvider = liveShareProjectPathProvider;
         }
 
         public IWorkspaceService CreateService(HostWorkspaceServices workspaceServices)
@@ -32,7 +41,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(workspaceServices));
             }
 
-            return new DefaultProjectPathProvider(_projectService);
+            return new DefaultProjectPathProvider(_projectService, _liveShareProjectPathProvider);
         }
     }
 }

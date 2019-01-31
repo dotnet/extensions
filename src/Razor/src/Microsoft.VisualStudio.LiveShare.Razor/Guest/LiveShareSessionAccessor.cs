@@ -3,10 +3,10 @@
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 {
-    public abstract class ProxyAccessor
+    public abstract class LiveShareSessionAccessor
     {
-        public abstract IProjectSnapshotManagerProxy GetProjectSnapshotManagerProxy();
+        public abstract CollaborationSession Session { get; }
 
-        public abstract IProjectHierarchyProxy GetProjectHierarchyProxy();
+        public abstract bool IsGuestSessionActive { get; }
     }
 }

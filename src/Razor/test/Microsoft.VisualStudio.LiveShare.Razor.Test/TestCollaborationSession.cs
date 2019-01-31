@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Test
 {
-    class TestCollaborationSession : CollaborationSession
+    public class TestCollaborationSession : CollaborationSession
     {
         private readonly bool _isHost;
 
@@ -64,6 +64,16 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Test
             }
 
             return null;
+        }
+
+        public override Task<Uri[]> ListRootsAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<Uri[]> ListDirectoryAsync(Uri uri, ListDirectoryOptions options, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }
