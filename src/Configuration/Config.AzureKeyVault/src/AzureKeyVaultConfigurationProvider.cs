@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     /// </summary>
     internal class AzureKeyVaultConfigurationProvider : ConfigurationProvider
     {
+        private readonly bool _reloadOnChange;
         private readonly IKeyVaultClient _client;
         private readonly string _vault;
         private readonly IKeyVaultSecretManager _manager;
@@ -26,7 +27,9 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <param name="client">The <see cref="KeyVaultClient"/> to use for retrieving values.</param>
         /// <param name="vault">Azure KeyVault uri.</param>
         /// <param name="manager"></param>
-        public AzureKeyVaultConfigurationProvider(IKeyVaultClient client, string vault, IKeyVaultSecretManager manager)
+        /// <param name="reloadOnChange">Whether the configuration should be reloaded if the Azure KeyVault changes.</param>
+        /// <param name="reloadPollDelay">Number of milliseconds to wait inbetween each attempt at polling the Azure KeyVault for changes.</param>
+        public AzureKeyVaultConfigurationProvider(IKeyVaultClient client, string vault, IKeyVaultSecretManager manager, bool reloadOnChange = false, int reloadPollDelay = 10000)
         {
             if (client == null)
             {
@@ -41,12 +44,38 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                 throw new ArgumentNullException(nameof(manager));
             }
 
+            if(reloadOnChange && reloadPollDelay <= 0)
+            {
+                throw new ArgumentException("{0} must be greater than 0", nameof(reloadPollDelay));
+            }
+
+            _reloadOnChange = reloadOnChange;
             _client = client;
             _vault = vault;
             _manager = manager;
             _loadedSecrets = new Dictionary<string, SecretIdentifier>();
+
+            if(_reloadOnChange)
+            {
+                var task = PollForSecretChangesAsync(reloadPollDelay);
+            }
         }
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
+        private async Task PollForSecretChangesAsync(int reloadPollDelay)
+        {
+            while (true)
+            {
+                await Task.Delay(reloadPollDelay);
+                bool secretsHaveChanged = await ShouldReloadAsync();
+
+                // if the secret list has changed, reload.
+                if(secretsHaveChanged)
+                {
+                    Load();
+                }
+            }
+        }
 
         private async Task LoadAsync()
         {
@@ -89,7 +118,6 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         private async Task<bool> ShouldReloadAsync()
         {
             var secrets = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
-
             if (secrets.Count() != _loadedSecrets.Count())
             {
                 return true;
@@ -97,19 +125,14 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
             foreach (var secret in secrets)
             {
-                if (_loadedSecrets.ContainsKey(secret.Identifier.Name))
-                {
-                    if (_loadedSecrets[secret.Identifier.Name].Version != secret.Identifier.Version)
-                    {
-                        return true;
-                    }
-                }
-                else
+                bool isKeyFound = _loadedSecrets.ContainsKey(secret.Identifier.Name);
+                bool isKeyVersionSame = isKeyFound && _loadedSecrets[secret.Identifier.Name].Version == secret.Identifier.Version;
+
+                if (!isKeyVersionSame)
                 {
                     return true;
                 }
             }
-
             return false;
         }
     }
