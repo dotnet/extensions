@@ -12,5 +12,3 @@ taskkill /T /F /IM git.exe
 taskkill /T /F /IM vctip.exe
 taskkill /T /F /IM chrome.exe
 iisreset /restart
-
-exit /b 0
