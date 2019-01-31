@@ -92,8 +92,8 @@
     <VSMAC_NewtonsoftJsonPackageVersion>10.0.3</VSMAC_NewtonsoftJsonPackageVersion>
     <TEST_NewtonsoftJsonPackageVersion>11.0.1</TEST_NewtonsoftJsonPackageVersion>
     <StreamJsonRpcPackageVersion>1.3.23</StreamJsonRpcPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview.19079.11</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.6.0-preview.19079.11</SystemTextEncodingsWebPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview.19080.5</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0-preview.19080.5</SystemTextEncodingsWebPackageVersion>
     <VSIX_MicrosoftCodeAnalysisPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
