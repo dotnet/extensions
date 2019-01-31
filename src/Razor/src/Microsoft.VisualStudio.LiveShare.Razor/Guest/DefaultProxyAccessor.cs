@@ -2,33 +2,38 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.Composition;
+using System.Threading;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 {
+    [System.Composition.Shared]
+    [Export(typeof(ProxyAccessor))]
     public class DefaultProxyAccessor : ProxyAccessor
     {
-        private readonly LiveShareClientProvider _liveShareClientProvider;
+        private readonly LiveShareSessionAccessor _liveShareSessionAccessor;
         private readonly JoinableTaskFactory _joinableTaskFactory;
         private IProjectSnapshotManagerProxy _projectSnapshotManagerProxy;
         private IProjectHierarchyProxy _projectHierarchyProxy;
 
+        [ImportingConstructor]
         public DefaultProxyAccessor(
-            LiveShareClientProvider liveShareClientProvider,
-            JoinableTaskFactory joinableTaskFactory)
+            LiveShareSessionAccessor liveShareSessionAccessor,
+            JoinableTaskContext joinableTaskContext)
         {
-            if (liveShareClientProvider == null)
+            if (liveShareSessionAccessor == null)
             {
-                throw new ArgumentNullException(nameof(liveShareClientProvider));
+                throw new ArgumentNullException(nameof(liveShareSessionAccessor));
             }
 
-            if (joinableTaskFactory == null)
+            if (joinableTaskContext == null)
             {
-                throw new ArgumentNullException(nameof(joinableTaskFactory));
+                throw new ArgumentNullException(nameof(joinableTaskContext));
             }
 
-            _liveShareClientProvider = liveShareClientProvider;
-            _joinableTaskFactory = joinableTaskFactory;
+            _liveShareSessionAccessor = liveShareSessionAccessor;
+            _joinableTaskFactory = joinableTaskContext.Factory;
         }
 
         // Testing constructor
@@ -59,7 +64,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         // Internal virtual for testing
         internal virtual TProxy CreateServiceProxy<TProxy>() where TProxy : class
         {
-            return _joinableTaskFactory.Run(() => _liveShareClientProvider.CreateServiceProxyAsync<TProxy>());
+            return _joinableTaskFactory.Run(() => _liveShareSessionAccessor.Session?.GetRemoteServiceAsync<TProxy>(typeof(TProxy).Name, CancellationToken.None));
         }
     }
 }

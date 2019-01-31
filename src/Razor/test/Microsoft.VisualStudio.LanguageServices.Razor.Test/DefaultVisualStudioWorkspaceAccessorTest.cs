@@ -14,27 +14,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     public class DefaultVisualStudioWorkspaceAccessorTest
     {
-        private static readonly LiveShareWorkspaceProvider NoLiveShare = null;
-
-        [Fact]
-        public void TryGetWorkspace_PrioritizesLiveShareWhenResolvingWorkspaces()
-        {
-            // Arrange
-            var expectedWorkspace = TestWorkspace.Create();
-            var liveShareWorkspaceProvider = new Mock<LiveShareWorkspaceProvider>();
-            liveShareWorkspaceProvider.Setup(provider => provider.TryGetWorkspace(It.IsAny<ITextBuffer>(), out expectedWorkspace))
-                .Returns(true);
-            var workspaceAccessor = new TestWorkspaceAccessor(canGetWorkspaceFromProjectionBuffer: true, canGetWorkspaceFromHostProject: true, liveShareWorkspaceProvider.Object);
-            var textBuffer = Mock.Of<ITextBuffer>();
-
-            // Act
-            var result = workspaceAccessor.TryGetWorkspace(textBuffer, out var workspace);
-
-            // Assert
-            Assert.True(result);
-            Assert.Same(expectedWorkspace, workspace);
-        }
-
         [Fact]
         public void TryGetWorkspace_CanGetWorkspaceFromProjectionBuffersOnly()
         {
@@ -78,57 +57,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         }
 
         [Fact]
-        public void TryGetWorkspaceFromLiveShare_NoLiveShareProvider_ReturnsFalse()
-        {
-            // Arrange
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(), Mock.Of<TextBufferProjectService>(), TestWorkspace.Create(), NoLiveShare);
-            var textBuffer = Mock.Of<ITextBuffer>();
-
-            // Act
-            var result = workspaceAccessor.TryGetWorkspaceFromLiveShare(textBuffer, out var workspace);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void TryGetWorkspaceFromLiveShare_CanNotFindWorkspace_ReturnsFalse()
-        {
-            // Arrange
-            Workspace nullWorkspace = null;
-            var liveShareWorkspaceProvider = new Mock<LiveShareWorkspaceProvider>();
-            liveShareWorkspaceProvider.Setup(provider => provider.TryGetWorkspace(It.IsAny<ITextBuffer>(), out nullWorkspace))
-                .Returns(false);
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(), Mock.Of<TextBufferProjectService>(), TestWorkspace.Create(), liveShareWorkspaceProvider.Object);
-            var textBuffer = Mock.Of<ITextBuffer>();
-
-            // Act
-            var result = workspaceAccessor.TryGetWorkspaceFromLiveShare(textBuffer, out var workspace);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void TryGetWorkspaceFromLiveShare_CanFindWorkspace_ReturnsTrue()
-        {
-            // Arrange
-            var expectedWorkspace = TestWorkspace.Create();
-            var liveShareWorkspaceProvider = new Mock<LiveShareWorkspaceProvider>();
-            liveShareWorkspaceProvider.Setup(provider => provider.TryGetWorkspace(It.IsAny<ITextBuffer>(), out expectedWorkspace))
-                .Returns(true);
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(), Mock.Of<TextBufferProjectService>(), TestWorkspace.Create(), liveShareWorkspaceProvider.Object);
-            var textBuffer = Mock.Of<ITextBuffer>();
-
-            // Act
-            var result = workspaceAccessor.TryGetWorkspaceFromLiveShare(textBuffer, out var workspace);
-
-            // Assert
-            Assert.True(result);
-            Assert.Same(expectedWorkspace, workspace);
-        }
-
-        [Fact]
         public void TryGetWorkspaceFromProjectionBuffer_NoProjectionBuffer_ReturnsFalse()
         {
             // Arrange
@@ -138,7 +66,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var bufferGraphService = new Mock<IBufferGraphFactoryService>();
             bufferGraphService.Setup(service => service.CreateBufferGraph(It.IsAny<ITextBuffer>()))
                 .Returns(bufferGraph.Object);
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(bufferGraphService.Object, Mock.Of<TextBufferProjectService>(), TestWorkspace.Create(), NoLiveShare);
+            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(bufferGraphService.Object, Mock.Of<TextBufferProjectService>(), TestWorkspace.Create());
             var textBuffer = Mock.Of<ITextBuffer>();
 
             // Act
@@ -152,7 +80,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public void TryGetWorkspaceFromHostProject_NoHostProject_ReturnsFalse()
         {
             // Arrange
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(), Mock.Of<TextBufferProjectService>(), TestWorkspace.Create(), NoLiveShare);
+            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(), Mock.Of<TextBufferProjectService>(), TestWorkspace.Create());
             var textBuffer = Mock.Of<ITextBuffer>();
 
             // Act
@@ -169,7 +97,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var textBuffer = Mock.Of<ITextBuffer>();
             var projectService = Mock.Of<TextBufferProjectService>(service => service.GetHostProject(textBuffer) == new object());
             var defaultWorkspace = TestWorkspace.Create();
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(), projectService, defaultWorkspace, NoLiveShare);
+            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(), projectService, defaultWorkspace);
 
             // Act
             var result = workspaceAccessor.TryGetWorkspaceFromHostProject(textBuffer, out var workspace);
@@ -184,20 +112,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             private readonly bool _canGetWorkspaceFromProjectionBuffer;
             private readonly bool _canGetWorkspaceFromHostProject;
 
-            internal TestWorkspaceAccessor(bool canGetWorkspaceFromProjectionBuffer, bool canGetWorkspaceFromHostProject) :
-                this(canGetWorkspaceFromProjectionBuffer, canGetWorkspaceFromHostProject, NoLiveShare)
-            {
-            }
-
             internal TestWorkspaceAccessor(
                 bool canGetWorkspaceFromProjectionBuffer,
-                bool canGetWorkspaceFromHostProject,
-                LiveShareWorkspaceProvider liveShareWorkspaceProvider) :
+                bool canGetWorkspaceFromHostProject) :
                 base(
                     Mock.Of<IBufferGraphFactoryService>(),
                     Mock.Of<TextBufferProjectService>(),
-                    TestWorkspace.Create(),
-                    liveShareWorkspaceProvider)
+                    TestWorkspace.Create())
             {
                 _canGetWorkspaceFromProjectionBuffer = canGetWorkspaceFromProjectionBuffer;
                 _canGetWorkspaceFromHostProject = canGetWorkspaceFromHostProject;

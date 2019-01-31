@@ -2,37 +2,34 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.Composition;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 {
-    internal class GuestProjectPathProvider : ProjectPathProvider
+    [System.Composition.Shared]
+    [Export(typeof(LiveShareProjectPathProvider))]
+    internal class GuestProjectPathProvider : LiveShareProjectPathProvider
     {
-        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
         private readonly ProxyAccessor _proxyAccessor;
-        private readonly LiveShareClientProvider _liveShareClientProvider;
+        private readonly LiveShareSessionAccessor _liveShareSessionAccessor;
 
+        [ImportingConstructor]
         public GuestProjectPathProvider(
-            ForegroundDispatcher foregroundDispatcher,
-            JoinableTaskFactory joinableTaskFactory,
+            JoinableTaskContext joinableTaskContext,
             ITextDocumentFactoryService textDocumentFactory,
             ProxyAccessor proxyAccessor,
-            LiveShareClientProvider liveShareClientProvider)
+            LiveShareSessionAccessor liveShareSessionAccessor)
         {
-            if (foregroundDispatcher == null)
+            if (joinableTaskContext == null)
             {
-                throw new ArgumentNullException(nameof(foregroundDispatcher));
-            }
-
-            if (joinableTaskFactory == null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskFactory));
+                throw new ArgumentNullException(nameof(joinableTaskContext));
             }
 
             if (textDocumentFactory == null)
@@ -45,20 +42,25 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 throw new ArgumentNullException(nameof(proxyAccessor));
             }
 
-            if (liveShareClientProvider == null)
+            if (liveShareSessionAccessor == null)
             {
-                throw new ArgumentNullException(nameof(liveShareClientProvider));
+                throw new ArgumentNullException(nameof(liveShareSessionAccessor));
             }
 
-            _foregroundDispatcher = foregroundDispatcher;
-            _joinableTaskFactory = joinableTaskFactory;
+            _joinableTaskFactory = joinableTaskContext.Factory;
             _textDocumentFactory = textDocumentFactory;
             _proxyAccessor = proxyAccessor;
-            _liveShareClientProvider = liveShareClientProvider;
+            _liveShareSessionAccessor = liveShareSessionAccessor;
         }
 
         public override bool TryGetProjectPath(ITextBuffer textBuffer, out string filePath)
         {
+            if (!_liveShareSessionAccessor.IsGuestSessionActive)
+            {
+                filePath = null;
+                return false;
+            }
+
             if (!_textDocumentFactory.TryGetTextDocument(textBuffer, out var textDocument))
             {
                 filePath = null;
@@ -73,7 +75,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             }
 
             // Host always responds with a host-based path, convert back to a guest one.
-            filePath = _liveShareClientProvider.ConvertToLocalPath(hostProjectPath);
+            filePath = ResolveGuestPath(hostProjectPath);
             return true;
         }
 
@@ -81,7 +83,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         internal virtual Uri GetHostProjectPath(ITextDocument textDocument)
         {
             // The path we're given is from the guest so following other patterns we always ask the host information in its own form (aka convert on guest instead of on host).
-            var ownerPath = _liveShareClientProvider.ConvertToSharedUri(textDocument.FilePath);
+            var ownerPath = _liveShareSessionAccessor.Session?.ConvertLocalPathToSharedUri(textDocument.FilePath);
 
             var hostProjectPath = _joinableTaskFactory.Run(() =>
             {
@@ -92,6 +94,14 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             });
 
             return hostProjectPath;
+        }
+
+        // We do not want this inlined because the work done in this method requires the VisualStudio.LiveShare assembly.
+        // We do not want to load that assembly outside of a LiveShare session.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private string ResolveGuestPath(Uri hostProjectPath)
+        {
+            return _liveShareSessionAccessor.Session?.ConvertSharedUriToLocalPath(hostProjectPath);
         }
     }
 }

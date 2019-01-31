@@ -9,8 +9,8 @@ namespace Microsoft.VisualStudio.LiveShare.Razor
 {
     public interface IProjectSnapshotManagerProxy
     {
-        event EventHandler<ProjectManagerProxyChangeEventArgs> Changed;
+        event EventHandler<ProjectChangeEventProxyArgs> Changed;
 
-        Task<ProjectSnapshotManagerProxyState> GetStateAsync(CancellationToken cancellationToken);
+        Task<ProjectSnapshotManagerProxyState> GetProjectManagerStateAsync(CancellationToken cancellationToken);
     }
 }
