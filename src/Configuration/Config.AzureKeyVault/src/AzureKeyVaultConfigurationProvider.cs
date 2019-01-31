@@ -16,10 +16,11 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     internal class AzureKeyVaultConfigurationProvider : ConfigurationProvider
     {
         private readonly bool _reloadOnChange;
+        private readonly int _reloadPollDelay;
         private readonly IKeyVaultClient _client;
         private readonly string _vault;
         private readonly IKeyVaultSecretManager _manager;
-        private Dictionary<string, SecretIdentifier> _loadedSecrets;
+        private Dictionary<string, SecretAttributes> _loadedSecrets;
 
         /// <summary>
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationProvider"/>.
@@ -50,15 +51,11 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             }
 
             _reloadOnChange = reloadOnChange;
+            _reloadPollDelay = reloadPollDelay;
             _client = client;
             _vault = vault;
             _manager = manager;
-            _loadedSecrets = new Dictionary<string, SecretIdentifier>();
-
-            if(_reloadOnChange)
-            {
-                var task = PollForSecretChangesAsync(reloadPollDelay);
-            }
+            _loadedSecrets = new Dictionary<string, SecretAttributes>();
         }
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -67,7 +64,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             while (true)
             {
                 await Task.Delay(reloadPollDelay);
-                bool secretsHaveChanged = await ShouldReloadAsync();
+                var secretsHaveChanged = await ShouldReloadAsync();
 
                 // if the secret list has changed, reload.
                 if(secretsHaveChanged)
@@ -95,6 +92,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                     if (_manager.Load(secretItem) && secretItem.Attributes?.Enabled == true)
                     {
                         tasks.Add(_client.GetSecretAsync(secretItem.Id));
+                        _loadedSecrets.Add(secretItem.Identifier.Name, secretItem.Attributes);
                     }
                 }
 
@@ -103,7 +101,6 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                 foreach (var task in tasks)
                 {
                     data.Add(_manager.GetKey(task.Result), task.Result.Value);
-                    _loadedSecrets.Add(task.Result.SecretIdentifier.Name, task.Result.SecretIdentifier);
                 }
 
                 secrets = secrets.NextPageLink != null ?
@@ -113,6 +110,11 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
             Data = data;
             OnReload();
+
+            if (_reloadOnChange)
+            {
+                var task = PollForSecretChangesAsync(_reloadPollDelay);
+            }
         }
 
         private async Task<bool> ShouldReloadAsync()
@@ -125,12 +127,22 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
             foreach (var secret in secrets)
             {
-                bool isKeyFound = _loadedSecrets.ContainsKey(secret.Identifier.Name);
-                bool isKeyVersionSame = isKeyFound && _loadedSecrets[secret.Identifier.Name].Version == secret.Identifier.Version;
-
-                if (!isKeyVersionSame)
+                if (!_loadedSecrets.ContainsKey(secret.Identifier.Name))
                 {
                     return true;
+                }
+
+                long? currentSecretLastUpdateTick = secret.Attributes.Updated.Value.Ticks;
+                long? loadedSecretLastUpdateTick = _loadedSecrets[secret.Identifier.Name].Updated.Value.Ticks;
+
+                if(currentSecretLastUpdateTick != null && loadedSecretLastUpdateTick != null)
+                {
+                    bool isKeyUpdateTimeDifferent = (loadedSecretLastUpdateTick != currentSecretLastUpdateTick);
+
+                    if (isKeyUpdateTimeDifferent)
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
