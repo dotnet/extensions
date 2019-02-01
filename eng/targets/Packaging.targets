@@ -7,4 +7,31 @@
                  See $(RepoRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
   </Target>
 
+  <!-- Package reference assemblies -->
+  <Target Name="_PackageRefAssembly" BeforeTargets="_GetPackageFiles"
+          Condition=" '$(PackageReferenceAssembly)' == 'true' "
+          Returns="@(_RefAssemblyToPack)">
+
+    <ItemGroup Condition="'$(TargetFramework)' == ''">
+      <_TargetFrameworks Remove="@(_TargetFrameworks)" />
+      <_TargetFrameworks Include="$(TargetFrameworks)" />
+    </ItemGroup>
+
+    <MSBuild Condition="'$(TargetFramework)' == ''"
+             Targets="_PackageRefAssembly"
+             BuildInParallel="true"
+             Projects="$(MSBuildProjectFullPath)"
+             Properties="TargetFramework=%(_TargetFrameworks.Identity)">
+      <Output TaskParameter="TargetOutputs" ItemName="_RefAssemblyToPack" />
+    </MSBuild>
+
+    <ItemGroup Condition="'$(TargetFramework)' != ''">
+      <_RefAssemblyToPack Include="@(IntermediateRefAssembly->'%(FullPath)')" PackagePath="ref/$(TargetFramework)/" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="@(_RefAssemblyToPack)" Pack="true" />
+    </ItemGroup>
+  </Target>
+
 </Project>

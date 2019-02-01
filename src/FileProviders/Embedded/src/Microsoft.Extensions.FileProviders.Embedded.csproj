@@ -39,7 +39,8 @@
         targetframework=$(TargetFramework);
         AssemblyName=$(AssemblyName);
 
-        OutputBinary=@(BuiltProjectOutputGroupOutput);
+        OutputBinary=$(TargetPath);
+        OutputRefBinary=$(TargetRefPath);
         OutputSymbol=@(DebugSymbolsProjectOutputGroupOutput);
         OutputDocumentation=@(DocumentationProjectOutputGroupOutput);
 

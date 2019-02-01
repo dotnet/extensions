@@ -36,6 +36,23 @@
     <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsUnitTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
+
+    <!--
+      Setting back to empty because this value is set by default to 'false' by Microsoft.Common.CurrentVersion.targets before this file is evaluated.
+      Projects in this repo that need to suppress ref assembly generation should set DisableReferenceAssemblyGeneration=true instead.
+    -->
+    <ProduceReferenceAssembly Condition="'$(DisableReferenceAssemblyGeneration)' != 'true' "/>
+
+    <!-- Instructs the compiler to produce reference assemblies. -->
+    <ProduceReferenceAssembly Condition=" '$(ProduceReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true' ">true</ProduceReferenceAssembly>
+    <!-- Enables the target in eng/targets/Packaging.targets which puts the reference assembly in the nuget package. -->
+    <PackageReferenceAssembly Condition=" '$(ProduceReferenceAssembly)' == 'true' ">true</PackageReferenceAssembly>
+
+    <!--
+      Copied from https://github.com/Microsoft/msbuild/blob/3a844ce00a873d8ca6ba0a8abc0c6b64f772d937/src/Tasks/Microsoft.Common.CurrentVersion.targets#L288.
+      This is here to workaround for problems caused by setting ProduceReferenceAssembly=true after Microsoft.Common.CurrentVersion.targets is evaluated.
+    -->
+    <TargetRefPath Condition=" '$(TargetRefPath)' == '' and '$(ProduceReferenceAssembly)' == 'true' ">$([MSBuild]::NormalizePath($(TargetDir), 'ref', $(TargetFileName)))</TargetRefPath>
   </PropertyGroup>
 
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
