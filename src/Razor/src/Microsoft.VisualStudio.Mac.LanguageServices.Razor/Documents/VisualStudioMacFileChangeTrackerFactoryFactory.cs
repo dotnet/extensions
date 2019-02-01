@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Razor;
 namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
     [Shared]
-    [ExportWorkspaceService(typeof(FileChangeTrackerFactory), ServiceLayer.Host)]
+    [ExportWorkspaceServiceFactory(typeof(FileChangeTrackerFactory), ServiceLayer.Host)]
     internal class VisualStudioMacFileChangeTrackerFactoryFactory : IWorkspaceServiceFactory
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;

@@ -259,7 +259,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 _backgroundThread = new Thread(WorkerLoop)
                 {
-                    Name = "Razor Background Document Parser"
+                    Name = "Razor Background Document Parser",
+                    IsBackground = true,
                 };
                 SetThreadId(_backgroundThread.ManagedThreadId);
             }

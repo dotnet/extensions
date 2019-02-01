@@ -28,11 +28,11 @@
     </AssemblyAttribute>
     <AssemblyAttribute Include="Mono.Addins.AddinDependencyAttribute">
       <_Parameter1>::MonoDevelop.Ide</_Parameter1>
-      <_Parameter2>7.4</_Parameter2>
+      <_Parameter2>8.0</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Mono.Addins.AddinDependencyAttribute">
       <_Parameter1>::MonoDevelop.Core</_Parameter1>
-      <_Parameter2>7.4</_Parameter2>
+      <_Parameter2>8.0</_Parameter2>
     </AssemblyAttribute>
     </ItemGroup>
 
