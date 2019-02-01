@@ -1,7 +1,21 @@
+<!--
+This file contains a list of all the external dependencies used in ASP.NET Core. These dependencies
+are expressed as `<LatestPackageReference>`. These are used as inputs reference resolution, and
+may be turned into `<PackageReference>` items in projects.
+`<BaselinePackageReference>` items should not be in this file. Those items appear in Baseline.Designer.props
+and are generated based on the last package release.
+-->
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <LatestPackageReference>
+      <!-- Required. Expected to be an exact package version. Wildcards are not allowed. -->
+      <Version></Version>
+    </LatestPackageReference>
+  </ItemDefinitionGroup>
 
   <ItemGroup Label=".NET Core dependencies">
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
@@ -23,7 +37,6 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' " Label="MSBuild">
-    <LatestPackageReference Include="Microsoft.Build" Version="15.8.166" />
     <LatestPackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
     <LatestPackageReference Include="Microsoft.Build.Tasks.Core" Version="15.8.166" />
     <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
@@ -46,7 +59,6 @@
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.8.0" />
     <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
     <LatestPackageReference Include="Microsoft.TypeScript.MSBuild" Version="2.9.2" />
-    <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <LatestPackageReference Include="Polly.Extensions.Http" Version="2.0.1" />

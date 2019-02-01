@@ -1,9 +1,17 @@
 
+<!--
+
+  This file defines the versions of external dependencies used by this repo.
+  This file might be updated by automation.
+
+-->
 <Project>
   <Import Project="..\version.props" />
-  <!-- The versions in this section are managed by automation -->
-  <PropertyGroup>
+  <!-- The versions in this section are managed by automation, but you must also add an entry into Version.Details.xml -->
+  <PropertyGroup Label="Automated">
+    <!-- Packages from dotnet/core-setup -->
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27330-4</MicrosoftNETCoreAppPackageVersion>
+    <!-- Packages from dotnet/corefx -->
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.19080.5</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.19080.5</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview.19080.5</SystemDataSqlClientPackageVersion>
@@ -21,7 +29,8 @@
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview.19080.5</MicrosoftNETCorePlatformsPackageVersion>
   </PropertyGroup>
   <!-- Stable dependencies which are not expected to update via automation -->
-  <PropertyGroup>
+  <PropertyGroup Label="Pinned">
+    <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>

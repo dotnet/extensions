@@ -4,9 +4,12 @@ variables:
 
 # CI and PR triggers
 trigger:
-- master
-- release/*
-- internal/release/*
+  batch: true
+  branches:
+    include:
+    - master
+    - release/*
+    - internal/release/*
 
 pr:
   autoCancel: false
@@ -15,6 +18,16 @@ pr:
     - '*'
 
 jobs:
+- job: Code_check
+  displayName: Code check
+  workspace:
+    clean: all
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - powershell: ./eng/scripts/CodeCheck.ps1 -ci
+    displayName: Run eng/scripts/CodeCheck.ps1
+
 - template: /eng/common/templates/jobs/jobs.yml
   parameters:
     enableMicrobuild: true
