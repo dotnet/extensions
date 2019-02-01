@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Azure.KeyVault;
@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     /// <summary>
     /// Represents Azure KeyVault secrets as an <see cref="IConfigurationSource"/>.
     /// </summary>
-    public class AzureKeyVaultConfigurationSource : IConfigurationSource
+    internal class AzureKeyVaultConfigurationSource : IConfigurationSource
     {
         /// <summary>
         /// Gets or sets the <see cref="KeyVaultClient"/> to use for retrieving values.
@@ -33,12 +33,12 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <summary>
         /// Number of milliseconds to wait inbetween each attempt at polling the Azure KeyVault for changes.
         /// </summary>
-        public uint ReloadPollDelay { get; set; } = 5000;
+        public int ReloadPollDelay { get; set; }
 
         /// <inheritdoc />
         public IConfigurationProvider Build(IConfigurationBuilder builder)
         {
-            return new AzureKeyVaultConfigurationProvider(new KeyVaultClientWrapper(Client), Vault, Manager);
+            return new AzureKeyVaultConfigurationProvider(new KeyVaultClientWrapper(Client), Vault, Manager, ReloadOnChange, ReloadPollDelay);
         }
     }
 }
