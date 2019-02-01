@@ -32,7 +32,6 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Hosting" ProjectPath="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.Extensions.Hosting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http" ProjectPath="$(RepoRoot)src\HttpClientFactory\Http\src\Microsoft.Extensions.Http.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http.Polly" ProjectPath="$(RepoRoot)src\HttpClientFactory\Polly\src\Microsoft.Extensions.Http.Polly.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.JSInterop.JS" ProjectPath="$(RepoRoot)src\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.csproj" />
     <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj" />
     <ProjectReferenceProvider Include="Mono.WebAssembly.Interop" ProjectPath="$(RepoRoot)src\JSInterop\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Localization.Abstractions" ProjectPath="$(RepoRoot)src\Localization\Abstractions\src\Microsoft.Extensions.Localization.Abstractions.csproj" />
