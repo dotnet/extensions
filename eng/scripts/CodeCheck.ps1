@@ -26,7 +26,7 @@ try {
     #
 
     if ($ci) {
-        & $repoRoot/build.cmd -ci -prepareMachine
+        & $PSScriptRoot\..\common\build.ps1 -ci -prepareMachine -build:$false -restore:$false
     }
 
     Write-Host "Checking that solutions are up to date"
