@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Config.Binder\src\Microsoft.Extensions.Configuration.Binder.csproj" />
-    <ProjectReference Include="$(RepoRoot)src\Configuration\testassets\Test.Common\Microsoft.Extensions.Configuration.Test.Common.csproj" />
+    <ProjectReference Include="..\..\testassets\Test.Common\Microsoft.Extensions.Configuration.Test.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

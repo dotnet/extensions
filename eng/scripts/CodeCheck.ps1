@@ -33,17 +33,17 @@ try {
 
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
         | % {
-        Write-Host "  Checking $(Split-Path -Leaf $_)"
-        $slnDir = Split-Path -Parent $_
-        $sln = $_
-        & dotnet sln $_ list `
-            | ? { $_ -ne 'Project(s)' -and $_ -ne '----------' } `
-            | % {
-                $proj = Join-Path $slnDir $_
-                if (-not (Test-Path $proj)) {
-                    LogError "Missing project. Solution references a project which does not exist: $proj. [$sln] "
-                }
-            }
+            Write-Host "  Checking $(Split-Path -Leaf $_)"
+            $slnDir = Split-Path -Parent $_
+            $sln = $_
+            & dotnet sln $_ list `
+                | ? { $_ -ne 'Project(s)' -and $_ -ne '----------' } `
+                | % {
+                        $proj = Join-Path $slnDir $_
+                        if (-not (Test-Path $proj)) {
+                            LogError "Missing project. Solution references a project which does not exist: $proj. [$sln] "
+                        }
+                    }
         }
 
     #
