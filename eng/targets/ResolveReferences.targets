@@ -119,7 +119,7 @@
 
     <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
            Code="MSB3245"
-           Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;" />
+           Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. If you are adding a new project or package, see instructions in docs/ReferenceResolution.md" />
   </Target>
 
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
@@ -137,7 +137,7 @@
   </Target>
 
   <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
-    <ItemGroup Condition=" '$(IsImplementationProject)' == 'true' OR '$(IsProjectReferenceProvider)' == 'true' ">
+    <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
       </ProvidesReference>

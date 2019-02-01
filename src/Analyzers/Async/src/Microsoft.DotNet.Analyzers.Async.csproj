@@ -3,10 +3,11 @@
   <PropertyGroup>
     <Description>Analyzer package for async best practices.</Description>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
-    <VerifyVersion>false</VerifyVersion>
     <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
+      <!-- Analyzers cannot be referenced as a ProjectReference. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <PackageTags>analyzers;async</PackageTags>

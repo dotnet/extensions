@@ -6,6 +6,10 @@
     <PackageTags>$(PackageTags);analyzers</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
+    <!-- Analyzers cannot be referenced as a ProjectReference. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
   </PropertyGroup>

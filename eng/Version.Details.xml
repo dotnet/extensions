@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+
+This file is used by automation to update the Versions.props and global.json files in this repo.
+It is typically updated by automation on a regular basis.
+
+-->
 <Dependencies>
   <ProductDependencies>
     <Dependency Name="Microsoft.Win32.Registry" Version="4.6.0-preview.19080.5">
