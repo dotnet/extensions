@@ -195,7 +195,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return state;
         }
 
-        public virtual DocumentState WithWorkspaceProjectChange()
+        public virtual DocumentState WithProjectWorkspaceStateChange()
         {
             var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader);
 
@@ -323,7 +323,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 // - This document
                 //
                 // All of these things are cached, so no work is wasted if we do need to generate the code.
-                var computedStateVersion = await project.State.GetComputedStateVersionAsync(project).ConfigureAwait(false);
+                var configurationVersion = project.State.ConfigurationVersion;
+                var projectWorkspaceStateVersion = project.State.ProjectWorkspaceStateVersion;
                 var documentCollectionVersion = project.State.DocumentCollectionVersion;
                 var imports = await GetImportsAsync(project, document).ConfigureAwait(false);
                 var documentVersion = await document.GetTextVersionAsync().ConfigureAwait(false);
@@ -331,9 +332,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 // OK now that have the previous output and all of the versions, we can see if anything
                 // has changed that would require regenerating the code.
                 var inputVersion = documentVersion;
-                if (inputVersion.GetNewerVersion(computedStateVersion) == computedStateVersion)
+                if (inputVersion.GetNewerVersion(configurationVersion) == configurationVersion)
                 {
-                    inputVersion = computedStateVersion;
+                    inputVersion = configurationVersion;
+                }
+
+                if (inputVersion.GetNewerVersion(projectWorkspaceStateVersion) == projectWorkspaceStateVersion)
+                {
+                    inputVersion = projectWorkspaceStateVersion;
                 }
 
                 if (inputVersion.GetNewerVersion(documentCollectionVersion) == documentCollectionVersion)
@@ -369,7 +375,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
 
                 // OK we have to generate the code.
-                var tagHelpers = await project.GetTagHelpersAsync().ConfigureAwait(false);
                 var importSources = new List<RazorSourceDocument>();
                 foreach (var item in imports)
                 {
@@ -381,7 +386,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 var projectEngine = project.GetProjectEngine();
 
-                var codeDocument = projectEngine.ProcessDesignTime(documentSource, fileKind: document.FileKind, importSources, tagHelpers);
+                var codeDocument = projectEngine.ProcessDesignTime(documentSource, fileKind: document.FileKind, importSources, project.TagHelpers);
                 var csharpDocument = codeDocument.GetCSharpDocument();
 
                 // OK now we've generated the code. Let's check if the output is actually different. This is

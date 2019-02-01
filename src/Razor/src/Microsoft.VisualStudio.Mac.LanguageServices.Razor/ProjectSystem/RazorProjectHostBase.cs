@@ -152,15 +152,15 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             }
             else if (_currentHostProject == null && newHostProject != null)
             {
-                _projectSnapshotManager.HostProjectAdded(newHostProject);
+                _projectSnapshotManager.ProjectAdded(newHostProject);
             }
             else if (_currentHostProject != null && newHostProject == null)
             {
-                _projectSnapshotManager.HostProjectRemoved(HostProject);
+                _projectSnapshotManager.ProjectRemoved(HostProject);
             }
             else
             {
-                _projectSnapshotManager.HostProjectChanged(newHostProject);
+                _projectSnapshotManager.ProjectConfigurationChanged(newHostProject);
             }
 
             _currentHostProject = newHostProject;

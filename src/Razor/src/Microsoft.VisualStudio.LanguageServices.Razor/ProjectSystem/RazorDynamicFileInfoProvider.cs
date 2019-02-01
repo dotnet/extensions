@@ -39,11 +39,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public event EventHandler<string> Updated;
 
         // Called by us to update entries
-        public void UpdateFileInfo(ProjectSnapshot project, DocumentSnapshot document)
+        public void UpdateFileInfo(ProjectSnapshot projectSnapshot, DocumentSnapshot document)
         {
-            if (project == null)
+            if (projectSnapshot == null)
             {
-                throw new ArgumentNullException(nameof(project));
+                throw new ArgumentNullException(nameof(projectSnapshot));
             }
 
             if (document == null)
@@ -51,16 +51,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(document));
             }
 
-            if (project.WorkspaceProject == null)
-            {
-                // Don't bother if this isn't assocated with a project.
-                return;
-            }
-
             // There's a possible race condition here where we're processing an update
             // and the project is getting unloaded. So if we don't find an entry we can
             // just ignore it.
-            var key = new Key(project.WorkspaceProject.Id, project.WorkspaceProject.FilePath, document.FilePath);
+            var key = new Key(projectSnapshot.FilePath, document.FilePath);
             if (_entries.TryGetValue(key, out var entry))
             {
                 lock (entry.Lock)
@@ -85,16 +79,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(document));
             }
 
-            if (project.WorkspaceProject == null)
-            {
-                // Don't bother if this isn't assocated with a project.
-                return;
-            }
-
             // There's a possible race condition here where we're processing an update
             // and the project is getting unloaded. So if we don't find an entry we can
             // just ignore it.
-            var key = new Key(project.WorkspaceProject.Id, project.WorkspaceProject.FilePath, document.FilePath);
+            var key = new Key(project.FilePath, document.FilePath);
             if (_entries.TryGetValue(key, out var entry))
             {
                 var updated = false;
@@ -126,7 +114,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            var key = new Key(projectId, projectFilePath, filePath);
+            var key = new Key(projectFilePath, filePath);
             var entry = _entries.GetOrAdd(key, _createEmptyEntry);
             return Task.FromResult(entry.Current);
         }
@@ -143,7 +131,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            var key = new Key(projectId, projectFilePath, filePath);
+            var key = new Key(projectFilePath, filePath);
             _entries.TryRemove(key, out var entry);
             return Task.CompletedTask;
         }
@@ -207,13 +195,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private readonly struct Key : IEquatable<Key>
         {
-            public readonly ProjectId ProjectId;
             public readonly string ProjectFilePath;
             public readonly string FilePath;
 
-            public Key(ProjectId projectId, string projectFilePath, string filePath)
+            public Key(string projectFilePath, string filePath)
             {
-                ProjectId = projectId;
                 ProjectFilePath = projectFilePath;
                 FilePath = filePath;
             }

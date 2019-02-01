@@ -19,11 +19,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces.ProjectSystem
 
         public override string FilePath => throw new NotImplementedException();
 
-        public override bool IsInitialized => throw new NotImplementedException();
-
         public override VersionStamp Version => throw new NotImplementedException();
-
-        public override Project WorkspaceProject => throw new NotImplementedException();
 
         public override DocumentSnapshot GetDocument(string filePath) => throw new NotImplementedException();
 
@@ -33,8 +29,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces.ProjectSystem
 
         public override RazorProjectEngine GetProjectEngine() => throw new NotImplementedException();
 
+#pragma warning disable CS0672 // Member overrides obsolete member
+        public override bool IsInitialized => throw new NotImplementedException();
+
+        public override Project WorkspaceProject => throw new NotImplementedException();
+
         public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync() => throw new NotImplementedException();
 
         public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result) => throw new NotImplementedException();
+#pragma warning restore CS0672 // Member overrides obsolete member
     }
 }

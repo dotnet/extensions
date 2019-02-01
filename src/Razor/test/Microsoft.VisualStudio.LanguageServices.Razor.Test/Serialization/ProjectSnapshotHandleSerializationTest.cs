@@ -1,10 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Newtonsoft.Json;
@@ -30,14 +28,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             var snapshot = new ProjectSnapshotHandle(
                 "Test.csproj",
                 new ProjectSystemRazorConfiguration(
-                RazorLanguageVersion.Version_1_1,
+                    RazorLanguageVersion.Version_1_1,
                     "Test",
                     new[]
                     {
                         new ProjectSystemRazorExtension("Test-Extension1"),
                         new ProjectSystemRazorExtension("Test-Extension2"),
-                    }),
-                ProjectId.CreateFromSerialized(Guid.NewGuid(), "Test"));
+                    }));
 
             // Act
             var json = JsonConvert.SerializeObject(snapshot, Converters);
@@ -47,18 +44,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             Assert.Equal(snapshot.FilePath, obj.FilePath);
             Assert.Equal(snapshot.Configuration.ConfigurationName, obj.Configuration.ConfigurationName);
             Assert.Collection(
-                snapshot.Configuration.Extensions.OrderBy(e => e.ExtensionName), 
+                snapshot.Configuration.Extensions.OrderBy(e => e.ExtensionName),
                 e => Assert.Equal("Test-Extension1", e.ExtensionName),
                 e => Assert.Equal("Test-Extension2", e.ExtensionName));
             Assert.Equal(snapshot.Configuration.LanguageVersion, obj.Configuration.LanguageVersion);
-            Assert.Equal(snapshot.WorkspaceProjectId.Id, obj.WorkspaceProjectId.Id);
         }
 
         [Fact]
         public void ProjectSnapshotHandleJsonConverter_SerializationWithNulls_CanKindaRoundTrip()
         {
             // Arrange
-            var snapshot = new ProjectSnapshotHandle("Test.csproj", null, null);
+            var snapshot = new ProjectSnapshotHandle("Test.csproj", null);
 
             // Act
             var json = JsonConvert.SerializeObject(snapshot, Converters);
@@ -67,7 +63,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             // Assert
             Assert.Equal(snapshot.FilePath, obj.FilePath);
             Assert.Null(obj.Configuration);
-            Assert.Null(obj.WorkspaceProjectId);
         }
     }
 }

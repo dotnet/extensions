@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -30,12 +31,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private bool _isSupportedProject;
         private ProjectSnapshot _projectSnapshot;
         private int _subscribeCount;
-
-        // Only allow a single tag helper computation task at a time.
-        private (ProjectSnapshot project, Task task) _computingTagHelpers;
-
-        // Stores the result from the last time we computed tag helpers.
-        private IReadOnlyList<TagHelperDescriptor> _tagHelpers;
 
         public override event EventHandler<ContextChangeEventArgs> ContextChanged;
 
@@ -99,21 +94,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _workspace = workspace; // For now we assume that the workspace is the always default VS workspace.
 
             _textViews = new List<ITextView>();
-            _tagHelpers = Array.Empty<TagHelperDescriptor>();
         }
 
         public override RazorConfiguration Configuration => _projectSnapshot?.Configuration;
 
         public override EditorSettings EditorSettings => _workspaceEditorSettings.Current;
 
-        public override IReadOnlyList<TagHelperDescriptor> TagHelpers => _tagHelpers;
+        public override IReadOnlyList<TagHelperDescriptor> TagHelpers => ProjectSnapshot?.TagHelpers;
 
         public override bool IsSupportedProject => _isSupportedProject;
-
-        public override Project Project =>
-            _projectSnapshot.WorkspaceProject == null ?
-            null :
-            _workspace.CurrentSolution.GetProject(_projectSnapshot.WorkspaceProject.Id);
 
         internal override ProjectSnapshot ProjectSnapshot => _projectSnapshot;
 
@@ -126,8 +115,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public override string FilePath => _filePath;
 
         public override string ProjectPath => _projectPath;
-
-        public Task PendingTagHelperTask => _computingTagHelpers.task ?? Task.CompletedTask;
 
         internal void AddTextView(ITextView textView)
         {
@@ -216,51 +203,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             OnContextChanged(kind: ContextChangeKind.ProjectChanged);
         }
 
-        private void StartComputingTagHelpers()
-        {
-            _foregroundDispatcher.AssertForegroundThread();
-
-            Debug.Assert(_projectSnapshot != null);
-            Debug.Assert(_computingTagHelpers.project == null && _computingTagHelpers.task == null);
-
-            if (_projectSnapshot.TryGetTagHelpers(out var results))
-            {
-                _tagHelpers = results;
-                OnContextChanged(ContextChangeKind.TagHelpersChanged);
-                return;
-            }
-
-            // if we get here then we know the tag helpers aren't available, so force async for ease of testing
-            var task = _projectSnapshot
-                .GetTagHelpersAsync()
-                .ContinueWith(TagHelpersUpdated, CancellationToken.None, TaskContinuationOptions.RunContinuationsAsynchronously, _foregroundDispatcher.ForegroundScheduler);
-            _computingTagHelpers = (_projectSnapshot, task);
-        }
-
-        private void TagHelpersUpdated(Task<IReadOnlyList<TagHelperDescriptor>> task)
-        {
-            _foregroundDispatcher.AssertForegroundThread();
-
-            Debug.Assert(_computingTagHelpers.project != null && _computingTagHelpers.task != null);
-
-            if (!_isSupportedProject)
-            {
-                return;
-            }
-
-            _tagHelpers = task.Exception == null ? task.Result : Array.Empty<TagHelperDescriptor>();
-            OnContextChanged(ContextChangeKind.TagHelpersChanged);
-
-            var projectHasChanges = _projectSnapshot != null && _projectSnapshot != _computingTagHelpers.project;
-            _computingTagHelpers = (null, null);
-
-            if (projectHasChanges)
-            {
-                // More changes, keep going.
-                StartComputingTagHelpers();
-            }
-        }
-
         private void OnContextChanged(ContextChangeKind kind)
         {
             _foregroundDispatcher.AssertForegroundThread();
@@ -269,13 +211,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             if (handler != null)
             {
                 handler(this, new ContextChangeEventArgs(kind));
-            }
-
-            if (kind == ContextChangeKind.ProjectChanged && 
-                _projectSnapshot != null &&
-                _computingTagHelpers.project == null)
-            {
-                StartComputingTagHelpers();
             }
         }
 
@@ -304,6 +239,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                         // Just an update
                         OnContextChanged(ContextChangeKind.ProjectChanged);
+
+                        if (e.Older == null ||
+                            !Enumerable.SequenceEqual(e.Older.TagHelpers, e.Newer.TagHelpers))
+                        {
+                            OnContextChanged(ContextChangeKind.TagHelpersChanged);
+                        }
                         break;
 
                     case ProjectChangeKind.ProjectRemoved:

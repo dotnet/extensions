@@ -29,28 +29,23 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
 
         protected RazorServices RazorServices { get; }
 
-        protected virtual async Task<ProjectSnapshot> GetProjectSnapshotAsync(ProjectSnapshotHandle projectHandle, CancellationToken cancellationToken)
+        protected virtual Task<ProjectSnapshot> GetProjectSnapshotAsync(ProjectSnapshotHandle projectHandle, CancellationToken cancellationToken)
         {
             if (projectHandle == null)
             {
                 throw new ArgumentNullException(nameof(projectHandle));
             }
 
-            var solution = await GetSolutionAsync(cancellationToken).ConfigureAwait(false);
-            var workspaceProject = solution.GetProject(projectHandle.WorkspaceProjectId);
-
-            return new SerializedProjectSnapshot(projectHandle.FilePath, projectHandle.Configuration, workspaceProject);
+            return Task.FromResult<ProjectSnapshot>(new SerializedProjectSnapshot(projectHandle.FilePath, projectHandle.Configuration));
         }
 
         private class SerializedProjectSnapshot : ProjectSnapshot
         {
-            public SerializedProjectSnapshot(string filePath, RazorConfiguration configuration, Project workspaceProject)
+            public SerializedProjectSnapshot(string filePath, RazorConfiguration configuration)
             {
                 FilePath = filePath;
                 Configuration = configuration;
-                WorkspaceProject = workspaceProject;
 
-                IsInitialized = true;
                 Version = VersionStamp.Default;
             }
 
@@ -60,11 +55,13 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
 
             public override string FilePath { get; }
 
-            public override bool IsInitialized { get; }
 
             public override VersionStamp Version { get; }
 
+#pragma warning disable CS0672 // Member overrides obsolete member
+            public override bool IsInitialized { get; }
             public override Project WorkspaceProject { get; }
+#pragma warning restore CS0672 // Member overrides obsolete member
 
             public override DocumentSnapshot GetDocument(string filePath)
             {
@@ -91,6 +88,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
                 throw new NotImplementedException();
             }
 
+#pragma warning disable CS0672 // Member overrides obsolete member
             public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync()
             {
                 throw new NotImplementedException();
@@ -100,6 +98,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             {
                 throw new NotImplementedException();
             }
+#pragma warning restore CS0672 // Member overrides obsolete member
         }
     }
 }

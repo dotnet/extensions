@@ -11,8 +11,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class EphemeralProjectSnapshot : ProjectSnapshot
     {
-        private static readonly Task<IReadOnlyList<TagHelperDescriptor>> EmptyTagHelpers = Task.FromResult<IReadOnlyList<TagHelperDescriptor>>(Array.Empty<TagHelperDescriptor>());
-
         private readonly HostWorkspaceServices _services;
         private readonly Lazy<RazorProjectEngine> _projectEngine;
 
@@ -40,11 +38,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override string FilePath { get; }
 
-        public override bool IsInitialized => false;
-
         public override VersionStamp Version { get; } = VersionStamp.Default;
 
+        public override IReadOnlyList<TagHelperDescriptor> TagHelpers { get; } = Array.Empty<TagHelperDescriptor>();
+
+#pragma warning disable CS0672 // Member overrides obsolete member
+        public override bool IsInitialized => false;
+
         public override Project WorkspaceProject => null;
+#pragma warning restore CS0672 // Member overrides obsolete member
 
         public override DocumentSnapshot GetDocument(string filePath)
         {
@@ -81,16 +83,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return _projectEngine.Value;
         }
 
+#pragma warning disable CS0672 // Member overrides obsolete member
         public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync()
         {
-            return EmptyTagHelpers;
+            return Task.FromResult(TagHelpers);
         }
 
         public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
         {
-            result = EmptyTagHelpers.Result;
+            result = TagHelpers;
             return true;
         }
+#pragma warning restore CS0672 // Member overrides obsolete member
 
         private RazorProjectEngine CreateProjectEngine()
         {

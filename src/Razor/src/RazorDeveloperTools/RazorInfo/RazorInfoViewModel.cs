@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
@@ -13,6 +15,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
     {
         private readonly Workspace _workspace;
         private readonly ProjectSnapshotManager _projectManager;
+        private readonly ProjectWorkspaceStateGenerator _workspaceStateGenerator;
         private readonly Action<Exception> _errorHandler;
         
         private ProjectViewModel _selectedProject;
@@ -22,10 +25,15 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         private TagHelperCollectionViewModel _tagHelpers;
         private ICommand _updateCommand;
 
-        public RazorInfoViewModel(Workspace workspace, ProjectSnapshotManager projectManager, Action<Exception> errorHandler)
+        public RazorInfoViewModel(
+            Workspace workspace, 
+            ProjectSnapshotManager projectManager, 
+            ProjectWorkspaceStateGenerator workspaceStateGenerator,
+            Action<Exception> errorHandler)
         {
             _workspace = workspace;
             _projectManager = projectManager;
+            _workspaceStateGenerator = workspaceStateGenerator;
             _errorHandler = errorHandler;
             
             UpdateCommand = new RelayCommand<object>(ExecuteUpdate, CanExecuteUpdate);
@@ -190,14 +198,15 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 return;
             }
 
-            var project = _projectManager.GetLoadedProject(projectFilePath);
-            if (project != null && project.WorkspaceProject != null)
+            var projectSnapshot = _projectManager.GetLoadedProject(projectFilePath);
+            if (projectSnapshot != null)
             {
+                var workspaceProject = _workspace.CurrentSolution.Projects.FirstOrDefault(
+                    wp => FilePathComparer.Instance.Equals(wp.FilePath, SelectedProject.FilePath));
                 var solution = _workspace.CurrentSolution;
-                var workspaceProject = solution.GetProject(project.WorkspaceProject.Id);
                 if (workspaceProject != null)
                 {
-                    ((ProjectSnapshotManagerBase)_projectManager).WorkspaceProjectChanged(workspaceProject);
+                    _workspaceStateGenerator.Update(workspaceProject, projectSnapshot);
                 }
             }
         }

@@ -25,28 +25,32 @@ namespace Microsoft.CodeAnalysis.Razor
             _fallbackFactory = fallbackFactory;
         }
 
-        public override Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshot project, CancellationToken cancellationToken = default)
+        public override Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshot project, string factoryTypeName, CancellationToken cancellationToken = default)
+        public Task<TagHelperResolutionResult> GetTagHelpersAsync(
+            Project project,
+            RazorConfiguration configuration,
+            string factoryTypeName,
+            CancellationToken cancellationToken = default)
         {
             if (project == null)
             {
                 throw new ArgumentNullException(nameof(project));
             }
 
-            if (project.Configuration == null || project.WorkspaceProject == null)
+            if (configuration == null || project == null)
             {
                 return Task.FromResult(TagHelperResolutionResult.Empty);
             }
 
-            var engine = CreateProjectEngine(project, factoryTypeName);
+            var engine = CreateProjectEngine(configuration, factoryTypeName);
             return GetTagHelpersAsync(project, engine);
         }
 
-        internal RazorProjectEngine CreateProjectEngine(ProjectSnapshot project, string factoryTypeName)
+        internal RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, string factoryTypeName)
         {
             // This section is really similar to the code DefaultProjectEngineFactoryService
             // but with a few differences that are significant in the remote scenario
@@ -57,7 +61,7 @@ namespace Microsoft.CodeAnalysis.Razor
             // The default configuration currently matches MVC-2.0. Beyond MVC-2.0 we added SDK support for 
             // properly detecting project versions, so that's a good version to assume when we can't find a
             // configuration.
-            var configuration = project?.Configuration ?? DefaultConfiguration;
+            configuration = configuration ?? DefaultConfiguration;
 
             // If there's no factory to handle the configuration then fall back to a very basic configuration.
             //

@@ -28,8 +28,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public abstract string ProjectPath { get; }
 
-        public abstract Project Project { get; }
-
         internal abstract ProjectSnapshot ProjectSnapshot { get; }
 
         public abstract Workspace Workspace { get; }

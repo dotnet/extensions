@@ -38,11 +38,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public HostProject HostProject => State.HostProject;
 
-        public override bool IsInitialized => WorkspaceProject != null;
-
         public override VersionStamp Version => State.Version;
 
-        public override Project WorkspaceProject => State.WorkspaceProject;
+        public override IReadOnlyList<TagHelperDescriptor> TagHelpers => State.TagHelpers;
+
+#pragma warning disable CS0672 // Member overrides obsolete member
+        public override bool IsInitialized => throw new NotImplementedException();
+
+        public override Project WorkspaceProject => throw new NotImplementedException();
+#pragma warning restore CS0672 // Member overrides obsolete member
 
         public override DocumentSnapshot GetDocument(string filePath)
         {
@@ -92,22 +96,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return State.ProjectEngine;
         }
 
+#pragma warning disable CS0672 // Member overrides obsolete member
         public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync()
         {
-            // IMPORTANT: Don't put more code here. We want this to return a cached task.
-            return State.GetTagHelpersAsync(this);
+            return Task.FromResult(TagHelpers);
         }
 
         public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
         {
-            if (State.IsTagHelperResultAvailable)
-            {
-                result = State.GetTagHelpersAsync(this).Result;
-                return true;
-            }
-
-            result = null;
-            return false;
+            result = TagHelpers;
+            return true;
         }
+#pragma warning restore CS0672 // Member overrides obsolete member
     }
 }

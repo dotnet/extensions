@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
@@ -19,9 +20,18 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
 
         public async Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshotHandle projectHandle, string factoryTypeName, CancellationToken cancellationToken = default)
         {
-            var project = await GetProjectSnapshotAsync(projectHandle, cancellationToken).ConfigureAwait(false);
+            var projectSnapshot = await GetProjectSnapshotAsync(projectHandle, cancellationToken).ConfigureAwait(false);
+            var solution = await GetSolutionAsync(cancellationToken);
+            var workspaceProject = solution
+                .Projects
+                .FirstOrDefault(project => FilePathComparer.Instance.Equals(project.FilePath, projectSnapshot.FilePath));
 
-            return await RazorServices.TagHelperResolver.GetTagHelpersAsync(project, factoryTypeName, cancellationToken);
+            if (workspaceProject == null)
+            {
+                return TagHelperResolutionResult.Empty;
+            }
+
+            return await RazorServices.TagHelperResolver.GetTagHelpersAsync(workspaceProject, projectHandle.Configuration, factoryTypeName, cancellationToken);
         }
     }
 }

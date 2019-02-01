@@ -110,15 +110,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
             };
             DocumentTracker.Subscribe();
 
-            // Call count is 2 right now:
-            // 1 trigger for initial subscribe context changed.
-            // 1 trigger for TagHelpers being changed (computed).
-
             // Act
             DocumentTracker.Subscribe();
 
             // Assert
-            Assert.Equal(2, callCount);
+            Assert.Equal(1, callCount);
         }
 
         [ForegroundFact]
@@ -188,15 +184,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_ProjectAdded_TriggersContextChanged()
         {
             // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.ProjectAdded(HostProject);
 
             var e = new ProjectChangeEventArgs(null, ProjectManager.GetLoadedProject(HostProject.FilePath), ProjectChangeKind.ProjectAdded);
 
             var called = false;
             DocumentTracker.ContextChanged += (sender, args) =>
             {
-                Assert.Equal(ContextChangeKind.ProjectChanged, args.Kind);
                 called = true;
 
                 Assert.Same(ProjectManager.GetLoadedProject(DocumentTracker.ProjectPath), DocumentTracker.ProjectSnapshot);
@@ -213,15 +207,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_ProjectChanged_TriggersContextChanged()
         {
             // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.ProjectAdded(HostProject);
             
             var e = new ProjectChangeEventArgs(null, ProjectManager.GetLoadedProject(HostProject.FilePath), ProjectChangeKind.ProjectChanged);
 
             var called = false;
             DocumentTracker.ContextChanged += (sender, args) =>
             {
-                Assert.Equal(ContextChangeKind.ProjectChanged, args.Kind);
                 called = true;
 
                 Assert.Same(ProjectManager.GetLoadedProject(DocumentTracker.ProjectPath), DocumentTracker.ProjectSnapshot);
@@ -238,11 +230,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_ProjectRemoved_TriggersContextChanged_WithEphemeralProject()
         {
             // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
-            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.ProjectAdded(HostProject);
 
             var project = ProjectManager.GetLoadedProject(HostProject.FilePath);
-            ProjectManager.HostProjectRemoved(HostProject);
+            ProjectManager.ProjectRemoved(HostProject);
 
             var e = new ProjectChangeEventArgs(project, null, ProjectChangeKind.ProjectRemoved);
 
@@ -266,7 +257,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_IgnoresUnknownProject()
         {
             // Arrange
-            ProjectManager.HostProjectAdded(OtherHostProject);
+            ProjectManager.ProjectAdded(OtherHostProject);
 
             var e = new ProjectChangeEventArgs(null, ProjectManager.GetLoadedProject(OtherHostProject.FilePath), ProjectChangeKind.ProjectChanged);
 
@@ -471,7 +462,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void Subscribed_InitializesRealProjectSnapshot()
         {
             // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.ProjectAdded(HostProject);
 
             // Act
             DocumentTracker.Subscribe();
@@ -481,23 +472,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [ForegroundFact]
-        public async Task Subscribed_ListensToProjectChanges()
+        public void Subscribed_ListensToProjectChanges()
         {
             // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.ProjectAdded(HostProject);
 
             DocumentTracker.Subscribe();
 
-            await DocumentTracker.PendingTagHelperTask;
-
-            // There can be multiple args here because the tag helpers will return
-            // immediately and trigger another ContextChanged.
-            List<ContextChangeEventArgs> args = new List<ContextChangeEventArgs>();
+            var args = new List<ContextChangeEventArgs>();
             DocumentTracker.ContextChanged += (sender, e) => { args.Add(e); };
             
             // Act
-            ProjectManager.HostProjectChanged(UpdatedHostProject);
-            await DocumentTracker.PendingTagHelperTask;
+            ProjectManager.ProjectConfigurationChanged(UpdatedHostProject);
 
             // Assert
             var snapshot = Assert.IsType<DefaultProjectSnapshot>(DocumentTracker.ProjectSnapshot);
@@ -506,63 +492,29 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             Assert.Collection(
                 args,
-                e => Assert.Equal(ContextChangeKind.ProjectChanged, e.Kind),
-                e => Assert.Equal(ContextChangeKind.TagHelpersChanged, e.Kind));
+                e => Assert.Equal(ContextChangeKind.ProjectChanged, e.Kind));
         }
 
         [ForegroundFact]
-        public async Task Subscribed_ListensToProjectRemoval()
+        public void Subscribed_ListensToProjectRemoval()
         {
             // Arrange
-            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.ProjectAdded(HostProject);
 
             DocumentTracker.Subscribe();
 
-            await DocumentTracker.PendingTagHelperTask;
-
-            List<ContextChangeEventArgs> args = new List<ContextChangeEventArgs>();
+            var args = new List<ContextChangeEventArgs>();
             DocumentTracker.ContextChanged += (sender, e) => { args.Add(e); };
 
             // Act
-            ProjectManager.HostProjectRemoved(HostProject);
-            await DocumentTracker.PendingTagHelperTask;
+            ProjectManager.ProjectRemoved(HostProject);
 
             // Assert
             Assert.IsType<EphemeralProjectSnapshot>(DocumentTracker.ProjectSnapshot);
 
             Assert.Collection(
                 args,
-                e => Assert.Equal(ContextChangeKind.ProjectChanged, e.Kind),
-                e => Assert.Equal(ContextChangeKind.TagHelpersChanged, e.Kind));
-        }
-
-        [ForegroundFact]
-        public async Task Subscribed_ListensToProjectChanges_ComputesTagHelpers()
-        {
-            // Arrange
-            TagHelperResolver.CompletionSource = new TaskCompletionSource<TagHelperResolutionResult>();
-
-            ProjectManager.HostProjectAdded(HostProject);
-
-            DocumentTracker.Subscribe();
-
-            // We haven't let the tag helpers complete yet
-            Assert.False(DocumentTracker.PendingTagHelperTask.IsCompleted);
-            Assert.Empty(DocumentTracker.TagHelpers);
-
-            List<ContextChangeEventArgs> args = new List<ContextChangeEventArgs>();
-            DocumentTracker.ContextChanged += (sender, e) => { args.Add(e); };
-
-            // Act
-            TagHelperResolver.CompletionSource.SetResult(new TagHelperResolutionResult(SomeTagHelpers, Array.Empty<RazorDiagnostic>()));
-            await DocumentTracker.PendingTagHelperTask;
-
-            // Assert
-            Assert.Same(SomeTagHelpers, DocumentTracker.TagHelpers);
-
-            Assert.Collection(
-                args,
-                e => Assert.Equal(ContextChangeKind.TagHelpersChanged, e.Kind));
+                e => Assert.Equal(ContextChangeKind.ProjectChanged, e.Kind));
         }
     }
 }

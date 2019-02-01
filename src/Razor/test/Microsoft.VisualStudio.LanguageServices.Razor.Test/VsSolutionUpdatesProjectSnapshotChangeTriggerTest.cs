@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
+using Microsoft.VisualStudio.LanguageServices.Razor.Test;
 using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
 using Xunit;
@@ -28,14 +30,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     "SomeProject",
                     LanguageNames.CSharp,
                     filePath: SomeProject.FilePath));
-
-                SomeOtherWorkspaceProject = w.AddProject(ProjectInfo.Create(
-                    ProjectId.CreateNewId(),
-                    VersionStamp.Create(),
-                    "SomeOtherProject",
-                    "SomeOtherProject",
-                    LanguageNames.CSharp,
-                    filePath: SomeOtherProject.FilePath));
             });
         }
 
@@ -44,8 +38,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         private HostProject SomeOtherProject { get; }
 
         private Project SomeWorkspaceProject { get; set; }
-
-        private Project SomeOtherWorkspaceProject { get; set; }
 
         private Workspace Workspace { get; }
 
@@ -63,7 +55,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var services = new Mock<IServiceProvider>();
             services.Setup(s => s.GetService(It.Is<Type>(f => f == typeof(SVsSolutionBuildManager)))).Returns(buildManager.Object);
 
-            var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(services.Object, Mock.Of<TextBufferProjectService>());
+            var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(
+                services.Object,
+                Mock.Of<TextBufferProjectService>(),
+                Mock.Of<ProjectWorkspaceStateGenerator>());
 
             // Act
             trigger.Initialize(Mock.Of<ProjectSnapshotManagerBase>());
@@ -73,7 +68,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         }
 
         [Fact]
-        public void UpdateProjectCfg_Done_KnownProject_Invokes_WorkspaceProjectChanged()
+        public void UpdateProjectCfg_Done_KnownProject_EnqueuesProjectStateUpdate()
         {
             // Arrange
             var expectedProjectPath = SomeProject.FilePath;
@@ -92,40 +87,33 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             var projectSnapshots = new[]
             {
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject, SomeWorkspaceProject)),
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
+                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject)),
+                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject)),
             };
 
-            var called = false;
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
                 .Setup(p => p.GetLoadedProject(expectedProjectPath))
                 .Returns(projectSnapshots[0]);
-            projectManager
-                .Setup(p => p.WorkspaceProjectChanged(It.IsAny<Project>()))
-                .Callback<Project>(c =>
-                {
-                    called = true;
-                    Assert.Equal(expectedProjectPath, c.FilePath);
-                });
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
 
-            var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(services.Object, projectService.Object);
+            var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(services.Object, projectService.Object, workspaceStateGenerator);
             trigger.Initialize(projectManager.Object);
 
             // Act
             trigger.UpdateProjectCfg_Done(Mock.Of<IVsHierarchy>(), Mock.Of<IVsCfg>(), Mock.Of<IVsCfg>(), 0, 0, 0);
 
             // Assert
-            Assert.True(called);
+            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(update.workspaceProject.Id, SomeWorkspaceProject.Id);
+            Assert.Same(update.projectSnapshot, projectSnapshots[0]);
         }
 
         [Fact]
-        public void UpdateProjectCfg_Done_WithoutWorkspaceProject_DoesNotInvoke_WorkspaceProjectChanged()
+        public void UpdateProjectCfg_Done_WithoutWorkspaceProject_DoesNotEnqueueUpdate()
         {
             // Arrange
-            var expectedProjectPath = SomeProject.FilePath;
-
             uint cookie;
             var buildManager = new Mock<IVsSolutionBuildManager>(MockBehavior.Strict);
             buildManager
@@ -134,37 +122,34 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             var services = new Mock<IServiceProvider>();
             services.Setup(s => s.GetService(It.Is<Type>(f => f == typeof(SVsSolutionBuildManager)))).Returns(buildManager.Object);
+            var projectSnapshot = new DefaultProjectSnapshot(
+                ProjectState.Create(
+                    Workspace.Services, 
+                    new HostProject("/Some/Unknown/Path.csproj", RazorConfiguration.Default)));
+            var expectedProjectPath = projectSnapshot.FilePath;
 
             var projectService = new Mock<TextBufferProjectService>();
             projectService.Setup(p => p.GetProjectPath(It.IsAny<IVsHierarchy>())).Returns(expectedProjectPath);
-
-            var projectSnapshots = new[]
-            {
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject, null)),
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
-            };
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
                 .Setup(p => p.GetLoadedProject(expectedProjectPath))
-                .Returns(projectSnapshots[0]);
-            projectManager
-                .Setup(p => p.WorkspaceProjectChanged(It.IsAny<Project>()))
-                .Callback<Project>(c =>
-                {
-                    throw new InvalidOperationException("This should not be called.");
-                });
+                .Returns(projectSnapshot);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
 
-            var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(services.Object, projectService.Object);
+            var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(services.Object, projectService.Object, workspaceStateGenerator);
             trigger.Initialize(projectManager.Object);
 
-            // Act & Assert - Does not throw
+            // Act
             trigger.UpdateProjectCfg_Done(Mock.Of<IVsHierarchy>(), Mock.Of<IVsCfg>(), Mock.Of<IVsCfg>(), 0, 0, 0);
+
+            // Assert
+            Assert.Empty(workspaceStateGenerator.UpdateQueue);
         }
 
         [Fact]
-        public void UpdateProjectCfg_Done_UnknownProject_DoesNotInvoke_WorkspaceProjectChanged()
+        public void UpdateProjectCfg_Done_UnknownProject_DoesNotEnqueueUpdate()
         {
             // Arrange
             var expectedProjectPath = "Path/To/Project";
@@ -181,29 +166,21 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var projectService = new Mock<TextBufferProjectService>();
             projectService.Setup(p => p.GetProjectPath(It.IsAny<IVsHierarchy>())).Returns(expectedProjectPath);
 
-            var projectSnapshots = new[]
-            {
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeProject, SomeWorkspaceProject)),
-                new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, SomeOtherProject, SomeOtherWorkspaceProject)),
-            };
-
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
                 .Setup(p => p.GetLoadedProject(expectedProjectPath))
                 .Returns((ProjectSnapshot)null);
-            projectManager
-                .Setup(p => p.WorkspaceProjectChanged(It.IsAny<Project>()))
-                .Callback<Project>(c =>
-                {
-                    throw new InvalidOperationException("This should not be called.");
-                });
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
 
-            var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(services.Object, projectService.Object);
+            var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(services.Object, projectService.Object, workspaceStateGenerator);
             trigger.Initialize(projectManager.Object);
 
-            // Act & Assert - Does not throw
+            // Act
             trigger.UpdateProjectCfg_Done(Mock.Of<IVsHierarchy>(), Mock.Of<IVsCfg>(), Mock.Of<IVsCfg>(), 0, 0, 0);
+
+            // Assert
+            Assert.Empty(workspaceStateGenerator.UpdateQueue);
         }
     }
 }

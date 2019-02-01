@@ -4,14 +4,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.LanguageServices.Razor.Test;
 using Moq;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class WorkspaceProjectSnapshotChangeTriggerTest : ForegroundDispatcherWorkspaceTestBase
+    public class WorkspaceProjectStateChangeDetectorTest : ForegroundDispatcherWorkspaceTestBase
     {
-        public WorkspaceProjectSnapshotChangeTriggerTest()
+        public WorkspaceProjectStateChangeDetectorTest()
         {
             EmptySolution = Workspace.CurrentSolution.GetIsolatedSolution();
 
@@ -77,24 +78,25 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         [InlineData(WorkspaceChangeKind.SolutionCleared)]
         [InlineData(WorkspaceChangeKind.SolutionReloaded)]
         [InlineData(WorkspaceChangeKind.SolutionRemoved)]
-        public void WorkspaceChanged_SolutionEvents_AddsProjectsInSolution(WorkspaceChangeKind kind)
+        public void WorkspaceChanged_SolutionEvents_EnqueuesUpdatesForProjectsInSolution(WorkspaceChangeKind kind)
         {
             // Arrange
-            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
-            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
-            projectManager.HostProjectAdded(HostProjectOne);
-            projectManager.HostProjectAdded(HostProjectTwo);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator);
+            var projectManager = new TestProjectSnapshotManager(new[] { detector }, Workspace);
+            projectManager.ProjectAdded(HostProjectOne);
+            projectManager.ProjectAdded(HostProjectTwo);
 
             var e = new WorkspaceChangeEventArgs(kind, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
 
             // Act
-            trigger.Workspace_WorkspaceChanged(Workspace, e);
+            detector.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.WorkspaceProject.Name),
-                p => Assert.Equal(ProjectNumberOne.Id, p.WorkspaceProject.Id),
-                p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
+                workspaceStateGenerator.UpdateQueue,
+                p => Assert.Equal(ProjectNumberOne.Id, p.workspaceProject.Id),
+                p => Assert.Equal(ProjectNumberTwo.Id, p.workspaceProject.Id));
         }
 
         [ForegroundTheory]
@@ -103,118 +105,108 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         [InlineData(WorkspaceChangeKind.SolutionCleared)]
         [InlineData(WorkspaceChangeKind.SolutionReloaded)]
         [InlineData(WorkspaceChangeKind.SolutionRemoved)]
-        public void WorkspaceChanged_SolutionEvents_ClearsExistingProjects_AddsProjectsInSolution(WorkspaceChangeKind kind)
+        public void WorkspaceChanged_SolutionEvents_EnqueuesStateClear_EnqueuesSolutionProjectUpdates(WorkspaceChangeKind kind)
         {
             // Arrange
-            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
-            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
-            projectManager.HostProjectAdded(HostProjectOne);
-            projectManager.HostProjectAdded(HostProjectTwo);
-            projectManager.HostProjectAdded(HostProjectThree);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator);
+            var projectManager = new TestProjectSnapshotManager(new[] { detector }, Workspace);
+            projectManager.ProjectAdded(HostProjectOne);
+            projectManager.ProjectAdded(HostProjectTwo);
+            projectManager.ProjectAdded(HostProjectThree);
 
             // Initialize with a project. This will get removed.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithOneProject);
-            trigger.Workspace_WorkspaceChanged(Workspace, e);
+            detector.Workspace_WorkspaceChanged(Workspace, e);
 
             e = new WorkspaceChangeEventArgs(kind, oldSolution: SolutionWithOneProject, newSolution: SolutionWithTwoProjects);
 
             // Act
-            trigger.Workspace_WorkspaceChanged(Workspace, e);
+            detector.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.WorkspaceProject?.Name),
-                p => Assert.Null(p.WorkspaceProject),
-                p => Assert.Equal(ProjectNumberOne.Id, p.WorkspaceProject.Id),
-                p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
+                workspaceStateGenerator.UpdateQueue,
+                p => Assert.Equal(ProjectNumberThree.Id, p.workspaceProject.Id),
+                p => Assert.Null(p.workspaceProject),
+                p => Assert.Equal(ProjectNumberOne.Id, p.workspaceProject.Id),
+                p => Assert.Equal(ProjectNumberTwo.Id, p.workspaceProject.Id));
         }
 
         [ForegroundTheory]
         [InlineData(WorkspaceChangeKind.ProjectChanged)]
         [InlineData(WorkspaceChangeKind.ProjectReloaded)]
-        public async Task WorkspaceChanged_ProjectChangeEvents_UpdatesProject_AfterDelay(WorkspaceChangeKind kind)
+        public async Task WorkspaceChanged_ProjectChangeEvents_UpdatesProjectState_AfterDelay(WorkspaceChangeKind kind)
         {
             // Arrange
-            var trigger = new WorkspaceProjectSnapshotChangeTrigger()
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator)
             {
-                ProjectChangeDelay = 50,
+                EnqueueDelay = 50,
             };
 
-            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
-            projectManager.HostProjectAdded(HostProjectOne);
-            projectManager.HostProjectAdded(HostProjectTwo);
-
-            // Initialize with some projects.
-            var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
-            trigger.Workspace_WorkspaceChanged(Workspace, e);
+            var projectManager = new TestProjectSnapshotManager(new[] { detector }, Workspace);
+            projectManager.ProjectAdded(HostProjectOne);
 
             var solution = SolutionWithTwoProjects.WithProjectAssemblyName(ProjectNumberOne.Id, "Changed");
-            e = new WorkspaceChangeEventArgs(kind, oldSolution: SolutionWithTwoProjects, newSolution: solution, projectId: ProjectNumberOne.Id);
+            var e = new WorkspaceChangeEventArgs(kind, oldSolution: SolutionWithTwoProjects, newSolution: solution, projectId: ProjectNumberOne.Id);
 
             // Act
-            trigger.Workspace_WorkspaceChanged(Workspace, e);
+            detector.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             //
             // The change hasn't come through yet.
-            Assert.Equal("One", projectManager.Projects.Single().WorkspaceProject.AssemblyName);
+            Assert.Empty(workspaceStateGenerator.UpdateQueue);
 
-            await trigger._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value;
 
-            Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.WorkspaceProject.Name),
-                p =>
-                {
-                    Assert.Equal(ProjectNumberOne.Id, p.WorkspaceProject.Id);
-                    Assert.Equal("Changed", p.WorkspaceProject.AssemblyName);
-                },
-                p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
+            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
-        public void WorkspaceChanged_ProjectRemovedEvent_RemovesProject()
+        public void WorkspaceChanged_ProjectRemovedEvent_QueuesProjectStateRemoval()
         {
             // Arrange
-            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
-            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
-            projectManager.HostProjectAdded(HostProjectOne);
-            projectManager.HostProjectAdded(HostProjectTwo);
-
-            // Initialize with some projects project.
-            var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
-            trigger.Workspace_WorkspaceChanged(Workspace, e);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator);
+            var projectManager = new TestProjectSnapshotManager(new[] { detector }, Workspace);
+            projectManager.ProjectAdded(HostProjectOne);
+            projectManager.ProjectAdded(HostProjectTwo);
 
             var solution = SolutionWithTwoProjects.RemoveProject(ProjectNumberOne.Id);
-            e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.ProjectRemoved, oldSolution: SolutionWithTwoProjects, newSolution: solution, projectId: ProjectNumberOne.Id);
+            var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.ProjectRemoved, oldSolution: SolutionWithTwoProjects, newSolution: solution, projectId: ProjectNumberOne.Id);
 
             // Act
-            trigger.Workspace_WorkspaceChanged(Workspace, e);
+            detector.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.WorkspaceProject?.Name),
-                p => Assert.Null(p.WorkspaceProject),
-                p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
+                workspaceStateGenerator.UpdateQueue,
+                p => Assert.Null(p.workspaceProject));
         }
 
         [ForegroundFact]
         public void WorkspaceChanged_ProjectAddedEvent_AddsProject()
         {
             // Arrange
-            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
-            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
-            projectManager.HostProjectAdded(HostProjectThree);
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator);
+            var projectManager = new TestProjectSnapshotManager(new[] { detector }, Workspace);
+            projectManager.ProjectAdded(HostProjectThree);
 
             var solution = SolutionWithOneProject;
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.ProjectAdded, oldSolution: EmptySolution, newSolution: solution, projectId: ProjectNumberThree.Id);
 
             // Act
-            trigger.Workspace_WorkspaceChanged(Workspace, e);
+            detector.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.WorkspaceProject.Name),
-                p => Assert.Equal(ProjectNumberThree.Id, p.WorkspaceProject.Id));
+                workspaceStateGenerator.UpdateQueue,
+                p => Assert.Equal(ProjectNumberThree.Id, p.workspaceProject.Id));
         }
 
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
