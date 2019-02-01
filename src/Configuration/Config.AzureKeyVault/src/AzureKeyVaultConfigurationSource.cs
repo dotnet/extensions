@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     /// <summary>
     /// Represents Azure KeyVault secrets as an <see cref="IConfigurationSource"/>.
     /// </summary>
-    public class AzureKeyVaultConfigurationSource : IConfigurationSource
+    internal class AzureKeyVaultConfigurationSource : IConfigurationSource
     {
         /// <summary>
         /// Gets or sets the <see cref="KeyVaultClient"/> to use for retrieving values.
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <summary>
         /// Number of milliseconds to wait inbetween each attempt at polling the Azure KeyVault for changes.
         /// </summary>
-        public int ReloadPollDelay { get; set; } = 10000;
+        public int ReloadPollDelay { get; set; }
 
         /// <inheritdoc />
         public IConfigurationProvider Build(IConfigurationBuilder builder)

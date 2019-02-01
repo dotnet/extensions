@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -177,13 +177,15 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="client">The <see cref="KeyVaultClient"/> to use for retrieving values.</param>
         /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.</param>
         /// <param name="reloadOnChange">Whether the configuration should be reloaded if the Azure KeyVault changes.</param>
+        /// <param name="reloadPollDelay">Number of milliseconds to wait inbetween each attempt at polling the Azure KeyVault for changes. Default is 10000 ms.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddAzureKeyVault(
             this IConfigurationBuilder configurationBuilder,
             string vault,
             KeyVaultClient client,
             IKeyVaultSecretManager manager,
-            bool reloadOnChange = false)
+            bool reloadOnChange = false,
+            int reloadPollDelay = 10000)
         {
             if (configurationBuilder == null)
             {
@@ -202,21 +204,15 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentNullException(nameof(manager));
             }
 
-            return AddAzureKeyVault(configurationBuilder, s => {
-                s.Client = client;
-                s.Vault = vault;
-                s.Manager = manager;
-                s.ReloadOnChange = reloadOnChange;
+            configurationBuilder.Add(new AzureKeyVaultConfigurationSource()
+            {
+                Client = client,
+                Vault = vault,
+                Manager = manager,
+                ReloadPollDelay = reloadPollDelay
             });
-        }
 
-        /// <summary>
-        /// Adds an Azure KeyVault configuration source to <paramref name="configurationBuilder"/>.
-        /// </summary>
-        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
-        /// <param name="configureSource">Configures the source.</param>
-        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddAzureKeyVault(this IConfigurationBuilder configurationBuilder, Action<AzureKeyVaultConfigurationSource> configureSource)
-            => configurationBuilder.Add(configureSource);
+            return configurationBuilder;
+        }
     }
 }
