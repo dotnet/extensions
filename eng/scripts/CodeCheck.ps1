@@ -26,7 +26,7 @@ try {
     #
 
     if ($ci) {
-        & $repoRoot/build.ps1 -ci -prepareMachine
+        & $repoRoot/build.cmd -ci -prepareMachine
     }
 
     Write-Host "Checking that solutions are up to date"
