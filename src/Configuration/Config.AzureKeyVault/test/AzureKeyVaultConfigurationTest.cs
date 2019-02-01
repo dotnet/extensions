@@ -161,7 +161,9 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 Value = new[] { new SecretItem { Id = secret1Id, Attributes = secretAttribute } }
             });
 
-            client.Setup(c => c.GetSecretAsync(secret1Id)).Returns((string id) => Task.FromResult(new SecretBundle() { Value = value, Id = id }));
+            client.Setup(c => c.GetSecretAsync(secret1Id)).Returns((string id) => Task.FromResult(new SecretBundle() 
+                { Value = value, Id = id }
+            ));
 
             // Act & Assert
             bool reloadOnChange = true;
