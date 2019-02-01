@@ -112,7 +112,6 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
             if (_reloadOnChange && _pollingTask == null)
             {
-
                 _pollingTask = PollForSecretChangesAsync(_reloadPollDelay, _cancellationToken.Token);
             }
         }
