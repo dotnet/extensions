@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var parser = new RazorSyntaxTreePartialParser(syntaxTree);
 
             // Act
-            var result = parser.Parse(edit.Change);
+            var (result, _) = parser.Parse(edit.Change);
 
             // Assert
             Assert.Equal(PartialParseResultInternal.Rejected, result);
@@ -123,7 +123,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var parser = new RazorSyntaxTreePartialParser(syntaxTree);
 
             // Act
-            var result = parser.Parse(edit.Change);
+            var (result, _) = parser.Parse(edit.Change);
 
             // Assert
             Assert.Equal(partialParseResult, result);
@@ -357,7 +357,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var syntaxTree = document.GetSyntaxTree();
             var parser = new RazorSyntaxTreePartialParser(syntaxTree);
 
-            var result = parser.Parse(edit.Change);
+            var (result, _) = parser.Parse(edit.Change);
             Assert.Equal(PartialParseResultInternal.Rejected | additionalFlags, result);
         }
 
@@ -369,7 +369,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var syntaxTree = document.GetSyntaxTree();
             var parser = new RazorSyntaxTreePartialParser(syntaxTree);
 
-            var result = parser.Parse(edit.Change);
+            var (result, _) = parser.Parse(edit.Change);
             Assert.Equal(PartialParseResultInternal.Accepted | additionalFlags, result);
 
             var newSource = TestRazorSourceDocument.Create(edit.NewSnapshot.GetText());

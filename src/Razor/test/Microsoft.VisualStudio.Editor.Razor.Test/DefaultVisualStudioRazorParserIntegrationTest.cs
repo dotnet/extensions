@@ -201,6 +201,34 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [ForegroundFact]
+        public async Task ImpExprProvisionallyAcceptsDCIAfterIdentifiers_CompletesSyntaxTreeRequest()
+        {
+            var original = new StringTextSnapshot("foo @DateTime baz", versionNumber: 0);
+            var changed = new StringTextSnapshot("foo @DateTime. baz", versionNumber: 1);
+            var edit = new TestEdit(13, 0, original, 1, changed, ".");
+            using (var manager = CreateParserManager(original))
+            {
+                void ApplyAndVerifyPartialChange(TestEdit testEdit, string expectedCode)
+                {
+                    manager.ApplyEdit(testEdit);
+                    Assert.Equal(1, manager.ParseCount);
+
+                    VerifyPartialParseTree(manager, testEdit.NewSnapshot.GetText(), expectedCode);
+                };
+
+                await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
+                var getSyntaxTreeTask = manager.InnerParser.GetLatestSyntaxTreeAsync(changed);
+
+                Assert.False(getSyntaxTreeTask.IsCompleted);
+
+                // Perform a partially parsed accepted change
+                ApplyAndVerifyPartialChange(edit, "DateTime.");
+
+                Assert.True(getSyntaxTreeTask.IsCompleted);
+            }
+        }
+
+        [ForegroundFact]
         public async Task ImpExprProvisionallyAcceptsDCIAfterIdentifiers()
         {
             // ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertionsAfterIdentifiers
@@ -620,6 +648,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             public RazorSyntaxTree CurrentSyntaxTree { get; private set; }
 
             public SyntaxNode PartialParsingSyntaxTreeRoot => _parser._partialParser.ModifiedSyntaxTreeRoot;
+
+            public VisualStudioRazorParser InnerParser => _parser;
 
             public async Task InitializeWithDocumentAsync(ITextSnapshot snapshot)
             {

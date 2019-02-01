@@ -30,14 +30,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
         // Internal for testing
         internal SyntaxNode ModifiedSyntaxTreeRoot { get; private set; }
 
-        public PartialParseResultInternal Parse(SourceChange change)
+        /// <summary>
+        /// Partially parses the provided <paramref name="change"/>.
+        /// </summary>
+        /// <param name="change">The <see cref="SourceChange"/> that should be partially parsed.</param>
+        /// <returns>The <see cref="PartialParseResultInternal"/> and <see cref="RazorSyntaxTree"/> of the partial parse.</returns>
+        /// <remarks>
+        /// The returned <see cref="RazorSyntaxTree"/> has the <see cref="OriginalSyntaxTree"/>'s <see cref="RazorSyntaxTree.Source"/> and <see cref="RazorSyntaxTree.Diagnostics"/>.
+        /// </remarks>
+        public (PartialParseResultInternal, RazorSyntaxTree) Parse(SourceChange change)
         {
             var result = GetPartialParseResult(change);
 
             // Remember if this was provisionally accepted for next partial parse.
             _lastResultProvisional = (result & PartialParseResultInternal.Provisional) == PartialParseResultInternal.Provisional;
+            var newSyntaxTree = RazorSyntaxTree.Create(ModifiedSyntaxTreeRoot, OriginalSyntaxTree.Source, OriginalSyntaxTree.Diagnostics, OriginalSyntaxTree.Options);
 
-            return result;
+            return (result, newSyntaxTree);
         }
 
         private PartialParseResultInternal GetPartialParseResult(SourceChange change)

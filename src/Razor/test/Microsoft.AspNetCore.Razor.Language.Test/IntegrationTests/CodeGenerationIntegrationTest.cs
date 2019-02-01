@@ -446,6 +446,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         [Fact]
+        public void TagHelpersWithDataDashAttributes_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
         public void Implements_Runtime()
         {
             RunTimeTest();
@@ -875,6 +882,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         [Fact]
         public void TagHelpersWithTemplate_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void TagHelpersWithDataDashAttributes_DesignTime()
         {
             // Arrange, Act & Assert
             RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.Text;
@@ -24,6 +25,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public abstract void QueueReparse();
 
-        public virtual Task<RazorCodeDocument> GetLatestCodeDocumentAsync() => throw new NotImplementedException();
+        public virtual Task<RazorSyntaxTree> GetLatestSyntaxTreeAsync(ITextSnapshot atOrNewerSnapshot, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 }
