@@ -81,6 +81,9 @@ jobs:
       - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
         displayName: Set CI Tags
         condition: eq(variables['_BuildConfig'], 'Release')
+      - powershell: eng\scripts\KillProcesses.ps1
+        displayName: Kill processes
+        condition: always()
       - task: PublishBuildArtifacts@1
         displayName: Upload package artifacts
         condition: and(eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
@@ -116,6 +119,9 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
+      - script: eng/scripts/KillProcesses.sh
+        displayName: Kill processes
+        condition: always()
 
     - job: OSX_10_13
       displayName: 'OSX'
@@ -140,3 +146,6 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
+      - script: eng/scripts/KillProcesses.sh
+        displayName: Kill processes
+        condition: always()
