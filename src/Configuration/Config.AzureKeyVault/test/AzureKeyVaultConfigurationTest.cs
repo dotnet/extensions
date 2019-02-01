@@ -150,7 +150,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         }
 
         [Fact]
-        public void SupportsReloadOnChange() {
+        public void SupportsReloadOnChange()
+        {
             var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);
             var secret1Id = GetSecretId("Secret1");
             var value = "Value1";
