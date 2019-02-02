@@ -1,41 +1,42 @@
-﻿#if NET461
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace GenericHostSample
+namespace Microsoft.Extensions.Hosting.WindowsService
 {
-    public static class ServiceBaseLifetimeHostExtensions
-    {
-        public static IHostBuilder UseServiceBaseLifetime(this IHostBuilder hostBuilder)
-        {
-            return hostBuilder.ConfigureServices((hostContext, services) => services.AddSingleton<IHostLifetime, ServiceBaseLifetime>());
-        }
-
-        public static Task RunAsServiceAsync(this IHostBuilder hostBuilder, CancellationToken cancellationToken = default)
-        {
-            return hostBuilder.UseServiceBaseLifetime().Build().RunAsync(cancellationToken);
-        }
-    }
-
     public class ServiceBaseLifetime : ServiceBase, IHostLifetime
     {
         private TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>();
 
-        public ServiceBaseLifetime(IApplicationLifetime applicationLifetime)
+        public ServiceBaseLifetime(IHostingEnvironment environment, IApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory)
         {
+            Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
+            Logger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
         }
 
+        public IHostingEnvironment Environment { get; }
         private IApplicationLifetime ApplicationLifetime { get; }
+        private ILogger Logger { get; }
 
         public Task WaitForStartAsync(CancellationToken cancellationToken)
         {
             cancellationToken.Register(() => _delayStart.TrySetCanceled());
-            ApplicationLifetime.ApplicationStopping.Register(Stop);
+            ApplicationLifetime.ApplicationStarted.Register(() =>
+            {
+                Logger.LogInformation("Application started. Hosting environment: {envName}; Content root path: {contentRoot}",
+                    Environment.EnvironmentName, Environment.ContentRootPath);
+            });
+            ApplicationLifetime.ApplicationStopping.Register(() =>
+            {
+                Logger.LogInformation("Application is shutting down...");
+                Stop();
+            });
 
             new Thread(Run).Start(); // Otherwise this would block and prevent IHost.StartAsync from finishing.
             return _delayStart.Task;
@@ -76,4 +77,3 @@ namespace GenericHostSample
         }
     }
 }
-#endif

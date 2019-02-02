@@ -50,6 +50,10 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>53b8e52dbf12355ce845230f6bbe6c5425bb73e6</Sha>
     </Dependency>
+    <Dependency Name="System.ServiceProcess.ServiceController" Version="4.6.0-preview.19105.1">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>53b8e52dbf12355ce845230f6bbe6c5425bb73e6</Sha>
+    </Dependency>
     <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview.19105.1">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>53b8e52dbf12355ce845230f6bbe6c5425bb73e6</Sha>
