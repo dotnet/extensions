@@ -7,13 +7,13 @@
         <Reference Include="@(ProjectReferenceProvider)" />
     </ItemGroup>
 
-    <Target Name="Generate" DependsOnTargets="ResolveAssemblyReferences">
+    <Target Name="GenerateReferenceSources" DependsOnTargets="ResolveAssemblyReferences">
         <MSBuild
             Projects="%(ReferencePath.ProjectPath)"
             Condition="'%(ReferencePath.ProjectPath)' != ''"
             Targets="GenerateReferenceSource"
             Properties="%(ReferencePath.SetTargetFramework)"
             BuildInParallel="true"/>
-
     </Target>
+
 </Project>
