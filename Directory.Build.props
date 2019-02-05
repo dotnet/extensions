@@ -41,9 +41,14 @@
     <Reference Include="Moq" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" />
+  </ItemGroup>
+
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
 
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+  <Import Project="eng\targets\ref.props"  Condition="$(BuildDefinition.EndsWith('.ref.csproj'))" />
 </Project>

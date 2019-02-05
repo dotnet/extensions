@@ -10,6 +10,7 @@
   <!-- The versions in this section are managed by automation, but you must also add an entry into Version.Details.xml -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27330-4</MicrosoftNETCoreAppPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.19080.5</MicrosoftWin32RegistryPackageVersion>
@@ -23,6 +24,7 @@
     <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview.19080.5</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview.19080.5</SystemSecurityCryptographyXmlPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview.19080.5</SystemTextEncodingsWebPackageVersion>
+    <MicrosoftDotNetGenApiPackageVersion>1.0.0-beta.19081.1</MicrosoftDotNetGenApiPackageVersion>
   </PropertyGroup>
   <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
   <PropertyGroup>
@@ -38,6 +40,7 @@
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
   </PropertyGroup>
   <ItemGroup>
+    <DotNetRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
     <DotNetRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>
