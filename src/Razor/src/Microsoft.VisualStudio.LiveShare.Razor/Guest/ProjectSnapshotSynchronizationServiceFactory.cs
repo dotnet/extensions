@@ -66,10 +66,11 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var languageServices = _workspace.Services.GetLanguageServices(RazorLanguage.Name);
             var projectManager = (ProjectSnapshotManagerBase)languageServices.GetRequiredService<ProjectSnapshotManager>();
 
+            var projectSnapshotManagerProxy = await sessionContext.GetRemoteServiceAsync<IProjectSnapshotManagerProxy>(typeof(IProjectSnapshotManagerProxy).Name, cancellationToken);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 _joinableTaskContext.Factory,
                 _liveShareSessionAccessor,
-                _proxyAccessor.GetProjectSnapshotManagerProxy(),
+                projectSnapshotManagerProxy,
                 projectManager);
 
             await synchronizationService.InitializeAsync(cancellationToken);
