@@ -14,10 +14,9 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     /// <summary>
     /// An AzureKeyVault based <see cref="ConfigurationProvider"/>.
     /// </summary>
-    internal class AzureKeyVaultConfigurationProvider : ConfigurationProvider
+    internal class AzureKeyVaultConfigurationProvider : ConfigurationProvider, IDisposable
     {
-        private readonly bool _reloadOnChange;
-        private readonly int _reloadPollDelay;
+        private readonly TimeSpan? _reloadPollDelay;
         private readonly IKeyVaultClient _client;
         private readonly string _vault;
         private readonly IKeyVaultSecretManager _manager;
@@ -31,67 +30,99 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <param name="client">The <see cref="KeyVaultClient"/> to use for retrieving values.</param>
         /// <param name="vault">Azure KeyVault uri.</param>
         /// <param name="manager"></param>
-        /// <param name="reloadOnChange">Whether the configuration should be reloaded if the Azure KeyVault changes.</param>
-        /// <param name="reloadPollDelay">Number of milliseconds to wait inbetween each attempt at polling the Azure KeyVault for changes.</param>
-        public AzureKeyVaultConfigurationProvider(IKeyVaultClient client, string vault, IKeyVaultSecretManager manager, bool reloadOnChange = false, int reloadPollDelay = 10000)
+        /// <param name="reloadPollDelay">The timespan to wait inbetween each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
+        public AzureKeyVaultConfigurationProvider(IKeyVaultClient client, string vault, IKeyVaultSecretManager manager, TimeSpan? reloadPollDelay = null)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _vault = vault ?? throw new ArgumentNullException(nameof(vault));
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
-
-            if (reloadOnChange && reloadPollDelay <= 0)
+            if (_reloadPollDelay != null && _reloadPollDelay.Value == TimeSpan.Zero)
             {
-                throw new ArgumentException("{0} must be greater than 0", nameof(reloadPollDelay));
+                throw new ArgumentException(nameof(reloadPollDelay));
             }
 
             _pollingTask = null;
             _cancellationToken = new CancellationTokenSource();
-            _reloadOnChange = reloadOnChange;
             _reloadPollDelay = reloadPollDelay;
             _loadedSecrets = new Dictionary<string, SecretAttributes>();
         }
 
-        ~AzureKeyVaultConfigurationProvider()
-        {
-            _cancellationToken.Cancel();
-        }
-
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
-        private async Task PollForSecretChangesAsync(int reloadPollDelay, CancellationToken ct)
+        private async Task PollForSecretChangesAsync(CancellationToken ct)
         {
             while (!ct.IsCancellationRequested)
             {
-                await Task.Delay(reloadPollDelay);
-                var secretsHaveChanged = await ShouldReloadAsync();
-
-                // if the secret list has changed, reload.
-                if(secretsHaveChanged)
-                {
-                    Load();
-                }
+                await Task.Delay(_reloadPollDelay.Value.Milliseconds);
+                Load();
             }
+        }
+
+        private bool ShouldReloadSecret(SecretItem secretItem)
+        {
+            bool result = false;
+
+            if (_manager.Load(secretItem) && secretItem.Attributes?.Enabled == true)
+            {
+                string key = secretItem.Identifier.Name;
+                var secretUpdateTime = secretItem.Attributes.Updated;
+                var cachedUpdateTime = _loadedSecrets[key]?.Updated;
+                bool isKeyLoaded = _loadedSecrets.ContainsKey(key);
+                bool isUpdateTimeknown = (secretUpdateTime != null) && (cachedUpdateTime != null);
+                bool isKeyUnchanged = isKeyLoaded &&
+                                        isUpdateTimeknown &&
+                                        (cachedUpdateTime?.Ticks == secretUpdateTime?.Ticks);
+                result = !isKeyUnchanged;
+            }
+            return result;
         }
 
         private async Task LoadAsync()
         {
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            _loadedSecrets.Clear();
-
             var secrets = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
+            var secretList = new List<SecretItem>(secrets.Count());
             var tasks = new List<Task<SecretBundle>>(secrets.Count());
+            bool isReloadNeeded = false;
+
+            // if a secret has been removed/added, mark for reloading
+            if (secrets.Count() != _loadedSecrets.Count())
+            {
+                isReloadNeeded = true;
+            }
 
             do
             {
-                tasks.Clear();
+                secretList.AddRange(secrets.ToList());
 
-                foreach (var secretItem in secrets)
+                // if secret counts are the same, check update times
+                if(!isReloadNeeded)
+                {
+                    foreach (var secretItem in secrets)
+                    {
+                        if (ShouldReloadSecret(secretItem))
+                        {
+                            isReloadNeeded = true;
+                            break;
+                        }
+                    }
+                }
+ 
+                secrets = secrets.NextPageLink != null ?
+                    await _client.GetSecretsNextAsync(secrets.NextPageLink).ConfigureAwait(false) :
+                     null;
+            } while (secrets != null);
+
+            if (isReloadNeeded)
+            {
+                tasks.Clear();
+                _loadedSecrets.Clear();
+
+                foreach (var secretItem in secretList)
                 {
                     if (_manager.Load(secretItem) && secretItem.Attributes?.Enabled == true)
                     {
                         tasks.Add(_client.GetSecretAsync(secretItem.Id));
-                        _loadedSecrets.Add(secretItem.Identifier.Name, secretItem.Attributes);
                     }
                 }
 
@@ -100,51 +131,23 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                 foreach (var task in tasks)
                 {
                     data.Add(_manager.GetKey(task.Result), task.Result.Value);
+                    _loadedSecrets.Add(task.Result.SecretIdentifier.Name, task.Result.Attributes);
                 }
 
-                secrets = secrets.NextPageLink != null ?
-                    await _client.GetSecretsNextAsync(secrets.NextPageLink).ConfigureAwait(false) :
-                    null;
-            } while (secrets != null);
+                Data = data;
+                OnReload();
+            } 
 
-            Data = data;
-            OnReload();
-
-            if (_reloadOnChange && _pollingTask == null)
+            // schedule a polling task only if none exists and a valid delay is specified
+            if (_pollingTask == null && _reloadPollDelay != null)
             {
-                _pollingTask = PollForSecretChangesAsync(_reloadPollDelay, _cancellationToken.Token);
+                _pollingTask = PollForSecretChangesAsync(_cancellationToken.Token);
             }
         }
 
-        private async Task<bool> ShouldReloadAsync()
+        public void Dispose()
         {
-            var secrets = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
-            if (secrets.Count() != _loadedSecrets.Count())
-            {
-                return true;
-            }
-
-            foreach (var secret in secrets)
-            {
-                if (!_loadedSecrets.ContainsKey(secret.Identifier.Name))
-                {
-                    return true;
-                }
-
-                long? currentSecretLastUpdateTick = secret.Attributes.Updated.Value.Ticks;
-                long? loadedSecretLastUpdateTick = _loadedSecrets[secret.Identifier.Name].Updated.Value.Ticks;
-
-                if(currentSecretLastUpdateTick != null && loadedSecretLastUpdateTick != null)
-                {
-                    bool isKeyUpdateTimeDifferent = (loadedSecretLastUpdateTick != currentSecretLastUpdateTick);
-
-                    if (isKeyUpdateTimeDifferent)
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            _cancellationToken.Cancel();
         }
     }
 }

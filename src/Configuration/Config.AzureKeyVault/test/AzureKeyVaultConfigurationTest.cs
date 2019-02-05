@@ -167,17 +167,16 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             ));
 
             // Act & Assert
-            bool reloadOnChange = true;
-            int delay = 10;
+            TimeSpan delay = new TimeSpan(0,0,0,0,10);
 
-            var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager(), reloadOnChange, delay);
+            var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager(), delay);
             provider.Load();
 
             client.VerifyAll();
             Assert.Equal("Value1", provider.Get("Secret1"));
 
             // update the record
-            SecretAttributes secretAttributeUpdated = new SecretAttributes(true, null, null, null, time.AddTicks(delay * 10), null);
+            SecretAttributes secretAttributeUpdated = new SecretAttributes(true, null, null, null, time.AddTicks(delay.Milliseconds * 10), null);
             client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
             {
                 Value = new[] { new SecretItem { Id = secret1Id, Attributes = secretAttributeUpdated } }
@@ -186,7 +185,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             value = "Value2";
 
             // Wait some time for reload
-            Thread.Sleep(delay * 10);
+            Thread.Sleep(delay.Milliseconds * 10);
 
             Assert.Equal("Value2", provider.Get("Secret1"));
         }
