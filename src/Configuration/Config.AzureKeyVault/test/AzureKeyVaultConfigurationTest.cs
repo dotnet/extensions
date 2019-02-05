@@ -21,6 +21,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
     public class AzureKeyVaultConfigurationTest
     {
         private const string VaultUri = "https://vault";
+        private const int _msDelay = 200;
+        private const int _retries = 10;
 
         [Fact]
         public void LoadsAllSecretsFromVault()
@@ -151,7 +153,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         }
 
         [Fact]
-        public void SupportsReloadOnChange()
+        public async Task SupportsReloadOnChange()
         {
             const int expectedNumOfTokensFired = 2;
             int numOfTokensFired = 0;
@@ -193,9 +195,10 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                     Value = new[] { new SecretItem { Id = secret1Id, Attributes = secretAttributeUpdated } }
                 });
 
+                var token = provider.GetReloadToken();
                 value = "Value2";
 
-                Thread.Sleep(1000);
+                await WaitForTokenChange(token, "Reload token never changed when key vault updated.");
 
                 Assert.Equal("Value2", provider.Get("Secret1"));
             }
@@ -301,6 +304,20 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             }
 
             public string NextPageLink { get; set; }
+        }
+
+        private async Task WaitForTokenChange(
+            Primitives.IChangeToken token,
+            string failureMessage,
+            int multiplier = 1) {
+            var i = 0;
+            while (!token.HasChanged) {
+                if (++i >= _retries * multiplier) {
+                    throw new Exception(failureMessage);
+                }
+
+                await Task.Delay(_msDelay);
+                }
         }
     }
 }
