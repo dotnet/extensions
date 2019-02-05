@@ -387,13 +387,13 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             Assert.NotNull(exception.InnerException);
             Assert.NotNull(getException.InnerException);
             Assert.Equal(
-                Resources.FormatError_FailedBinding(IncorrectValue, type),
+                Resources.FormatError_FailedBinding(IncorrectValue, "Value", type),
                 exception.Message);
             Assert.Equal(
-                Resources.FormatError_FailedBinding(IncorrectValue, type),
+                Resources.FormatError_FailedBinding(IncorrectValue, "Value", type),
                 getException.Message);
             Assert.Equal(
-                Resources.FormatError_FailedBinding(IncorrectValue, type),
+                Resources.FormatError_FailedBinding(IncorrectValue, "Value", type),
                 getValueException.Message);
         }
 
