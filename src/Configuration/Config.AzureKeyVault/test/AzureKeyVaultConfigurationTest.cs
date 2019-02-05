@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Extensions.Configuration.Test;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Rest.Azure;
 using Moq;
 using Xunit;
@@ -152,6 +153,9 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         [Fact]
         public void SupportsReloadOnChange()
         {
+            const int expectedNumOfTokensFired = 2;
+            int numOfTokensFired = 0;
+
             var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);
             var secret1Id = GetSecretId("Secret1");
             var value = "Value1";
@@ -169,25 +173,34 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             // Act & Assert
             TimeSpan delay = new TimeSpan(0,0,0,0,10);
 
-            var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager(), delay);
-            provider.Load();
-
-            client.VerifyAll();
-            Assert.Equal("Value1", provider.Get("Secret1"));
-
-            // update the record
-            SecretAttributes secretAttributeUpdated = new SecretAttributes(true, null, null, null, time.AddTicks(delay.Milliseconds * 10), null);
-            client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
+            using (var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager(), delay))
             {
-                Value = new[] { new SecretItem { Id = secret1Id, Attributes = secretAttributeUpdated } }
-            });
+                ChangeToken.OnChange(
+                    () => provider.GetReloadToken(),
+                    () => {
+                        numOfTokensFired++;
+                    });
 
-            value = "Value2";
+                provider.Load();
 
-            // Wait some time for reload
-            Thread.Sleep(delay.Milliseconds * 10);
+                client.VerifyAll();
+                Assert.Equal("Value1", provider.Get("Secret1"));
 
-            Assert.Equal("Value2", provider.Get("Secret1"));
+                // update the record
+                SecretAttributes secretAttributeUpdated = new SecretAttributes(true, null, null, null, time.AddTicks(delay.Milliseconds * 10), null);
+                client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
+                {
+                    Value = new[] { new SecretItem { Id = secret1Id, Attributes = secretAttributeUpdated } }
+                });
+
+                value = "Value2";
+
+                Thread.Sleep(1000);
+
+                Assert.Equal("Value2", provider.Get("Secret1"));
+            }
+
+            Assert.Equal(expectedNumOfTokensFired, numOfTokensFired);
         }
 
         [Fact]

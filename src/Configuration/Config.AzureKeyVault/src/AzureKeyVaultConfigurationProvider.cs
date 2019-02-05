@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             }
         }
 
-        private bool isSecretAddedOrUpdated(SecretItem secretItem)
+        private bool IsSecretAddedOrUpdated(SecretItem secretItem)
         {
             bool result = false;
 
@@ -111,7 +111,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             {
                 foreach (var secretItem in secretList)
                 {
-                    if (isSecretAddedOrUpdated(secretItem))
+                    if (IsSecretAddedOrUpdated(secretItem))
                     {
                         isReloadNeeded = true;
                         break;
@@ -130,6 +130,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                     if (_manager.Load(secretItem) && secretItem.Attributes?.Enabled == true)
                     {
                         tasks.Add(_client.GetSecretAsync(secretItem.Id));
+                        _loadedSecrets.Add(secretItem.Identifier.Name, secretItem.Attributes);
                     }
                 }
 
@@ -138,7 +139,6 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                 foreach (var task in tasks)
                 {
                     data.Add(_manager.GetKey(task.Result), task.Result.Value);
-                    _loadedSecrets.Add(task.Result.SecretIdentifier.Name, task.Result.Attributes);
                 }
 
                 Data = data;
