@@ -23,7 +23,6 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         private Dictionary<string, SecretAttributes> _loadedSecrets;
         private Task _pollingTask;
         private CancellationTokenSource _cancellationToken;
-        private bool disposed = false;
 
         /// <summary>
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationProvider"/>.
@@ -155,29 +154,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-
-        protected virtual void Dispose(bool disposing)
-        {
-            // Check to see if Dispose has already been called.
-            if (!this.disposed)
-            {
-                // If disposing equals true, dispose all managed
-                // and unmanaged resources.
-                if (disposing)
-                {
-                    // Dispose managed resources.
-                    //component.Dispose();
-                }
-
-                _cancellationToken.Cancel();
-                // Note disposing has been done.
-                disposed = true;
-
-            }
+            _cancellationToken.Cancel();
         }
     }
 }
