@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         private Dictionary<string, SecretAttributes> _loadedSecrets;
         private Task _pollingTask;
         private CancellationTokenSource _cancellationToken;
+        private bool disposed = false;
 
         /// <summary>
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationProvider"/>.
@@ -58,19 +59,25 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             }
         }
 
-        private bool ShouldReloadSecret(SecretItem secretItem)
+        private bool isSecretAddedOrUpdated(SecretItem secretItem)
         {
             bool result = false;
 
             if (_manager.Load(secretItem) && secretItem.Attributes?.Enabled == true)
             {
                 string key = secretItem.Identifier.Name;
+                bool isKeyLoaded = _loadedSecrets.ContainsKey(key);
+
+                //a new key has been added
+                if(!isKeyLoaded)
+                {
+                    return true;
+                }
+
                 var secretUpdateTime = secretItem.Attributes.Updated;
                 var cachedUpdateTime = _loadedSecrets[key]?.Updated;
-                bool isKeyLoaded = _loadedSecrets.ContainsKey(key);
                 bool isUpdateTimeknown = (secretUpdateTime != null) && (cachedUpdateTime != null);
-                bool isKeyUnchanged = isKeyLoaded &&
-                                        isUpdateTimeknown &&
+                bool isKeyUnchanged = isUpdateTimeknown &&
                                         (cachedUpdateTime?.Ticks == secretUpdateTime?.Ticks);
                 result = !isKeyUnchanged;
             }
@@ -85,34 +92,35 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             var tasks = new List<Task<SecretBundle>>(secrets.Count());
             bool isReloadNeeded = false;
 
-            // if a secret has been removed/added, mark for reloading
-            if (secrets.Count() != _loadedSecrets.Count())
-            {
-                isReloadNeeded = true;
-            }
-
+            // fetch all the secretItems
             do
             {
                 secretList.AddRange(secrets.ToList());
-
-                // if secret counts are the same, check update times
-                if(!isReloadNeeded)
-                {
-                    foreach (var secretItem in secrets)
-                    {
-                        if (ShouldReloadSecret(secretItem))
-                        {
-                            isReloadNeeded = true;
-                            break;
-                        }
-                    }
-                }
- 
                 secrets = secrets.NextPageLink != null ?
                     await _client.GetSecretsNextAsync(secrets.NextPageLink).ConfigureAwait(false) :
                      null;
             } while (secrets != null);
 
+            // check if any secrets have been removed
+            if(secretList.Count() != _loadedSecrets.Count)
+            {
+                isReloadNeeded = true;
+            }
+
+            // check if any secrets have been added or updated
+            if (!isReloadNeeded)
+            {
+                foreach (var secretItem in secretList)
+                {
+                    if (isSecretAddedOrUpdated(secretItem))
+                    {
+                        isReloadNeeded = true;
+                        break;
+                    }
+                }
+            }
+
+            // reload secret values if needed
             if (isReloadNeeded)
             {
                 tasks.Clear();
@@ -147,7 +155,29 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         public void Dispose()
         {
-            _cancellationToken.Cancel();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+
+        protected virtual void Dispose(bool disposing)
+        {
+            // Check to see if Dispose has already been called.
+            if (!this.disposed)
+            {
+                // If disposing equals true, dispose all managed
+                // and unmanaged resources.
+                if (disposing)
+                {
+                    // Dispose managed resources.
+                    //component.Dispose();
+                }
+
+                _cancellationToken.Cancel();
+                // Note disposing has been done.
+                disposed = true;
+
+            }
         }
     }
 }
