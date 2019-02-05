@@ -14,7 +14,6 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
     {
         private readonly LiveShareSessionAccessor _liveShareSessionAccessor;
         private readonly JoinableTaskFactory _joinableTaskFactory;
-        private IProjectSnapshotManagerProxy _projectSnapshotManagerProxy;
         private IProjectHierarchyProxy _projectHierarchyProxy;
 
         [ImportingConstructor]
@@ -39,16 +38,6 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         // Testing constructor
         private protected DefaultProxyAccessor()
         {
-        }
-
-        public override IProjectSnapshotManagerProxy GetProjectSnapshotManagerProxy()
-        {
-            if (_projectSnapshotManagerProxy == null)
-            {
-                _projectSnapshotManagerProxy = CreateServiceProxy<IProjectSnapshotManagerProxy>();
-            }
-
-            return _projectSnapshotManagerProxy;
         }
 
         public override IProjectHierarchyProxy GetProjectHierarchyProxy()

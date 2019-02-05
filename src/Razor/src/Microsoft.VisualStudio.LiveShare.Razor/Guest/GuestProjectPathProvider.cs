@@ -101,7 +101,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         [MethodImpl(MethodImplOptions.NoInlining)]
         private string ResolveGuestPath(Uri hostProjectPath)
         {
-            return _liveShareSessionAccessor.Session?.ConvertSharedUriToLocalPath(hostProjectPath);
+            return _liveShareSessionAccessor.Session.ConvertSharedUriToLocalPath(hostProjectPath);
         }
     }
 }
