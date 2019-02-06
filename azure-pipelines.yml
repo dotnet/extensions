@@ -102,10 +102,7 @@ jobs:
         condition: and(eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
         inputs:
           pathtoPublish: artifacts/packages/
-          ${{ if eq(parameters.artifacts.name, '') }}:
-            artifactName: artifacts
-          ${{ if ne(parameters.artifacts.name, '') }}:
-            artifactName: ${{ parameters.artifacts.name }}
+          artifactName: artifacts
           artifactType: Container
           parallel: true
 
