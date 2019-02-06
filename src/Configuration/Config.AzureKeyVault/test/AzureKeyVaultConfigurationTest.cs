@@ -153,6 +153,130 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         }
 
         [Fact]
+        public async Task SupportsReloadOnRemove()
+        {
+            const int expectedNumOfTokensFired = 2;
+            int numOfTokensFired = 0;
+
+            var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);
+            var secret1Id = GetSecretId("Secret1");
+            var secret2Id = GetSecretId("secret2");
+            var value1 = "Value1";
+            var value2 = "Value2";
+
+
+            DateTime time = new DateTime(100);
+            SecretAttributes secretAttribute = new SecretAttributes(true, null, null, null, time, null);
+            SecretAttributes anotherSecretAttribute = new SecretAttributes(true, null, null, null, time, null);
+
+            client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
+            {
+                Value = new[] { new SecretItem { Id = secret1Id, Attributes = secretAttribute },
+                                new SecretItem { Id = secret2Id, Attributes = anotherSecretAttribute }}
+            });
+
+            client.Setup(c => c.GetSecretAsync(secret1Id)).Returns((string id) => Task.FromResult(new SecretBundle()
+            { Value = value1, Id = id }
+            ));
+
+            client.Setup(c => c.GetSecretAsync(secret2Id)).Returns((string id) => Task.FromResult(new SecretBundle()
+            { Value = value2, Id = id }
+            ));
+
+            // Act & Assert
+            TimeSpan delay = new TimeSpan(0, 0, 0, 0, 10);
+
+            using (var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager(), delay))
+            {
+                ChangeToken.OnChange(
+                    () => provider.GetReloadToken(),
+                    () => {
+                        numOfTokensFired++;
+                    });
+
+                provider.Load();
+
+                client.VerifyAll();
+                Assert.Equal("Value1", provider.Get("Secret1"));
+                Assert.Equal("Value2", provider.Get("Secret2"));
+
+                // Remove one secret
+                client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
+                {
+                    Value = new[] { new SecretItem { Id = secret1Id, Attributes = secretAttribute }}
+                });
+
+                // Verfy reloadToken was recieved
+                var token = provider.GetReloadToken();
+                await WaitForTokenChange(token, "Reload token never changed when key vault updated.");
+
+            }
+
+            Assert.Equal(expectedNumOfTokensFired, numOfTokensFired);
+        }
+
+        [Fact]
+        public async Task SupportsReloadOnAdd()
+        {
+            const int expectedNumOfTokensFired = 2;
+            int numOfTokensFired = 0;
+
+            var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);
+            var secret1Id = GetSecretId("Secret1");
+            var secret2Id = GetSecretId("secret2");
+            var value1 = "Value1";
+            var value2 = "Value2";
+
+
+            DateTime time = new DateTime(100);
+            SecretAttributes secretAttribute = new SecretAttributes(true, null, null, null, time, null);
+            client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
+            {
+                Value = new[] { new SecretItem { Id = secret1Id, Attributes = secretAttribute } }
+            });
+
+            client.Setup(c => c.GetSecretAsync(secret1Id)).Returns((string id) => Task.FromResult(new SecretBundle()
+            { Value = value1, Id = id }
+            ));
+
+            // Act & Assert
+            TimeSpan delay = new TimeSpan(0, 0, 0, 0, 10);
+
+            using (var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager(), delay))
+            {
+                ChangeToken.OnChange(
+                    () => provider.GetReloadToken(),
+                    () => {
+                        numOfTokensFired++;
+                    });
+
+                provider.Load();
+
+                client.VerifyAll();
+                Assert.Equal("Value1", provider.Get("Secret1"));
+
+                // Add a new record
+                SecretAttributes anotherSecretAttribute = new SecretAttributes(true, null, null, null, time, null);
+                client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
+                {
+                    Value = new[] { new SecretItem { Id = secret2Id, Attributes = anotherSecretAttribute },
+                                    new SecretItem { Id = secret1Id, Attributes = secretAttribute } }
+                });
+
+                client.Setup(c => c.GetSecretAsync(secret2Id)).Returns((string id) => Task.FromResult(new SecretBundle()
+                { Value = value2, Id = id }
+                ));
+
+                var token = provider.GetReloadToken();
+                await WaitForTokenChange(token, "Reload token never changed when key vault updated.");
+
+                Assert.Equal("Value2", provider.Get("Secret2"));
+            }
+
+            Assert.Equal(expectedNumOfTokensFired, numOfTokensFired);
+        }
+
+        [Fact]
         public async Task SupportsReloadOnChange()
         {
             const int expectedNumOfTokensFired = 2;
@@ -411,7 +535,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         }
 
         private async Task WaitForTokenChange(
-            Primitives.IChangeToken token,
+            IChangeToken token,
             string failureMessage,
             int multiplier = 1) {
             var i = 0;
