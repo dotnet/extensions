@@ -14,8 +14,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             : base(generateBaselines: null)
         {
         }
-        
+
         #region Runtime
+        [Fact]
+        public void CSharp8_Runtime()
+        {
+            RunTimeTest();
+        }
+
         [Fact]
         public void IncompleteDirectives_Runtime()
         {
@@ -467,6 +473,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         #endregion
 
         #region DesignTime
+        [Fact]
+        public void CSharp8_DesignTime()
+        {
+            DesignTimeTest();
+        }
+
         [Fact]
         public void IncompleteDirectives_DesignTime()
         {

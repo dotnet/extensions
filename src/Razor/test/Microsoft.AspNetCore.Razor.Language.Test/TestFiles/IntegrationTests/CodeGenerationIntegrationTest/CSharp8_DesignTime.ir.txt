@@ -1,0 +1,22 @@
+Document - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingDirective - (1:0,1 [32] CSharp8.cshtml) - System.Collections.Generic
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CSharp8_DesignTime -  - 
+            DesignTimeDirective - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (33:0,33 [4] CSharp8.cshtml)
+                    IntermediateToken - (33:0,33 [4] CSharp8.cshtml) - Html - \n\n
+                CSharpCode - (39:2,2 [158] CSharp8.cshtml)
+                    IntermediateToken - (39:2,2 [158] CSharp8.cshtml) - CSharp - \n    IAsyncEnumerable<bool> GetAsyncEnumerable()\n    {\n        return null;\n    }\n\n    await foreach (var val in GetAsyncEnumerable())\n    {\n\n    }\n
+                HtmlContent - (200:13,0 [2] CSharp8.cshtml)
+                    IntermediateToken - (200:13,0 [2] CSharp8.cshtml) - Html - \n
+                CSharpCode - (203:14,1 [55] CSharp8.cshtml)
+                    IntermediateToken - (203:14,1 [55] CSharp8.cshtml) - CSharp - await foreach (var val in GetAsyncEnumerable())\n{\n\n}
+                HtmlContent - (258:17,1 [2] CSharp8.cshtml)
+                    IntermediateToken - (258:17,1 [2] CSharp8.cshtml) - Html - \n

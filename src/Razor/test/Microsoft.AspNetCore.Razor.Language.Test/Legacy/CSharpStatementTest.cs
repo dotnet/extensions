@@ -29,6 +29,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void AwaitForEachStatement()
+        {
+            ParseDocumentTest("@await foreach(var foo in bar) { foo(); }");
+        }
+
+        [Fact]
+        public void MalformedAwaitForEachStatement()
+        {
+            ParseDocumentTest("@await foreach(var foo in bar { foo(); ");
+        }
+
+        [Fact]
         public void WhileStatement()
         {
             ParseDocumentTest("@while(true) { foo(); }");

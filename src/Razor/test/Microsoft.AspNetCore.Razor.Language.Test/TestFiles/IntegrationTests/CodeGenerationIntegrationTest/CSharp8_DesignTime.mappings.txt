@@ -1,0 +1,41 @@
+Source Location: (1:0,1 [32] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|using System.Collections.Generic|
+Generated Location: (230:6,0 [32] )
+|using System.Collections.Generic|
+
+Source Location: (39:2,2 [158] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|
+    IAsyncEnumerable<bool> GetAsyncEnumerable()
+    {
+        return null;
+    }
+
+    await foreach (var val in GetAsyncEnumerable())
+    {
+
+    }
+|
+Generated Location: (864:23,2 [158] )
+|
+    IAsyncEnumerable<bool> GetAsyncEnumerable()
+    {
+        return null;
+    }
+
+    await foreach (var val in GetAsyncEnumerable())
+    {
+
+    }
+|
+
+Source Location: (203:14,1 [55] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|await foreach (var val in GetAsyncEnumerable())
+{
+
+}|
+Generated Location: (1138:37,1 [55] )
+|await foreach (var val in GetAsyncEnumerable())
+{
+
+}|
+

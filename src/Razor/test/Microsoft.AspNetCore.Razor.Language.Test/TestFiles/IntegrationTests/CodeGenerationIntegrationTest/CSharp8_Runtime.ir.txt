@@ -1,0 +1,15 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        UsingDirective - (1:0,1 [34] CSharp8.cshtml) - System.Collections.Generic
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CSharp8_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (35:1,0 [2] CSharp8.cshtml)
+                    IntermediateToken - (35:1,0 [2] CSharp8.cshtml) - Html - \n
+                CSharpCode - (39:2,2 [158] CSharp8.cshtml)
+                    IntermediateToken - (39:2,2 [158] CSharp8.cshtml) - CSharp - \n    IAsyncEnumerable<bool> GetAsyncEnumerable()\n    {\n        return null;\n    }\n\n    await foreach (var val in GetAsyncEnumerable())\n    {\n\n    }\n
+                HtmlContent - (200:13,0 [2] CSharp8.cshtml)
+                    IntermediateToken - (200:13,0 [2] CSharp8.cshtml) - Html - \n
+                CSharpCode - (203:14,1 [57] CSharp8.cshtml)
+                    IntermediateToken - (203:14,1 [57] CSharp8.cshtml) - CSharp - await foreach (var val in GetAsyncEnumerable())\n{\n\n}\n
