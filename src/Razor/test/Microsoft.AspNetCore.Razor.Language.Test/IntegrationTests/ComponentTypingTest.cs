@@ -77,7 +77,7 @@ Exception:
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6113")] // Regression test for #1068 
+        [Fact] // Regression test for #1068 
         public void Regression_1068()
         {
             // Arrange

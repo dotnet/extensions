@@ -292,8 +292,17 @@ Document -
                                     IntermediateToken - (1387:34,41 [5] ComplexTagHelpers.cshtml) - Html - hello
                             DefaultTagHelperExecute - 
                     IntermediateToken - (1424:34,78 [1] ComplexTagHelpers.cshtml) - CSharp - )
-                HtmlContent - (1425:34,79 [12] ComplexTagHelpers.cshtml)
-                    IntermediateToken - (1425:34,79 [6] ComplexTagHelpers.cshtml) - Html - \n    
-                    IntermediateToken - (1431:35,4 [6] ComplexTagHelpers.cshtml) - Html - </div>
-                CSharpCode - (1437:35,10 [3] ComplexTagHelpers.cshtml)
-                    IntermediateToken - (1437:35,10 [3] ComplexTagHelpers.cshtml) - CSharp - \n}
+                HtmlContent - (1425:34,79 [10] ComplexTagHelpers.cshtml)
+                    IntermediateToken - (1425:34,79 [10] ComplexTagHelpers.cshtml) - Html - \n        
+                TagHelper - (1435:35,8 [22] ComplexTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - TestNamespace.PTagHelper
+                    DefaultTagHelperProperty - (1443:35,16 [8] ComplexTagHelpers.cshtml) - age - int TestNamespace.PTagHelper.Age - HtmlAttributeValueStyle.DoubleQuotes
+                        CSharpCode - (1445:35,18 [5] ComplexTagHelpers.cshtml)
+                            IntermediateToken - (1445:35,18 [5] ComplexTagHelpers.cshtml) - CSharp - 1 + 2
+                    DefaultTagHelperExecute - 
+                HtmlContent - (1457:35,30 [12] ComplexTagHelpers.cshtml)
+                    IntermediateToken - (1457:35,30 [6] ComplexTagHelpers.cshtml) - Html - \n    
+                    IntermediateToken - (1463:36,4 [6] ComplexTagHelpers.cshtml) - Html - </div>
+                CSharpCode - (1469:36,10 [3] ComplexTagHelpers.cshtml)
+                    IntermediateToken - (1469:36,10 [3] ComplexTagHelpers.cshtml) - CSharp - \n}

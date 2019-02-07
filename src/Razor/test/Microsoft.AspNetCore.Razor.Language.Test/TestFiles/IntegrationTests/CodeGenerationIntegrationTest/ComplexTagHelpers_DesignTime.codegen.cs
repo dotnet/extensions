@@ -206,7 +206,13 @@ __TestNamespace_PTagHelper.Age = 123;
 
 #line default
 #line hidden
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 36 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+__TestNamespace_PTagHelper.Age = ;
+
+#line default
+#line hidden
+#line 37 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
           
 }
 
