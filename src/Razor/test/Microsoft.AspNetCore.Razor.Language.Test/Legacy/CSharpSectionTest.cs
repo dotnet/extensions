@@ -68,6 +68,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void ParserOutputsErrorOnMultipleNestedSections()
+        {
+            ParseDocumentTest(
+                "@section foo { @section bar { <p>Foo</p> @section baz { } } }",
+                new[] { SectionDirective.Directive });
+        }
+
+        [Fact]
+        public void ParserDoesNotOutputErrorOtherNestedDirectives()
+        {
+            // This isn't a real scenario but we just want to verify we don't show misleading errors.
+            ParseDocumentTest(
+                "@section foo { @inherits Bar }",
+                new[] { SectionDirective.Directive, InheritsDirective.Directive });
+        }
+
+        [Fact]
         public void HandlesEOFAfterOpenBrace()
         {
             ParseDocumentTest(
