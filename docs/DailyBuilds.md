@@ -32,7 +32,7 @@ packages that will not be supported in a officially released build.
 Commonly referenced packages:
 
 [logging-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.Extensions.Logging
-[logging-myget-badge]: https://img.shields.io/dotnet.myget/dotnet-core/vpre/Microsoft.Extensions.Logging  .svg?style=flat-square&label=myget
+[logging-myget-badge]: https://img.shields.io/dotnet.myget/dotnet-core/vpre/Microsoft.Extensions.Logging.svg?style=flat-square&label=myget
 
 [di-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.Extensions.DependencyInjection
 [di-myget-badge]: https://img.shields.io/dotnet.myget/dotnet-core/vpre/Microsoft.Extensions.DependencyInjection.svg?style=flat-square&label=myget
