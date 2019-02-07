@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
+using System;
 using Microsoft.Azure.KeyVault;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault
@@ -25,20 +25,16 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// </summary>
         public IKeyVaultSecretManager Manager { get; set; }
 
-        /// <summary>
-        /// Determines whether the source will be loaded if the Azure KeyVault changes.
-        /// </summary>
-        public bool ReloadOnChange { get; set; }
 
         /// <summary>
-        /// Number of milliseconds to wait inbetween each attempt at polling the Azure KeyVault for changes.
+        /// Time to wait inbetween each attempt at polling the Azure KeyVault for changes.
         /// </summary>
-        public int ReloadPollDelay { get; set; }
+        public TimeSpan? ReloadPollDelay { get; set; }
 
         /// <inheritdoc />
         public IConfigurationProvider Build(IConfigurationBuilder builder)
         {
-            return new AzureKeyVaultConfigurationProvider(new KeyVaultClientWrapper(Client), Vault, Manager, ReloadOnChange, ReloadPollDelay);
+            return new AzureKeyVaultConfigurationProvider(new KeyVaultClientWrapper(Client), Vault, Manager, ReloadPollDelay);
         }
     }
 }
