@@ -257,6 +257,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         [Fact]
+        public void Tags_Runtime()
+        {
+            RunTimeTest();
+        }
+
+        [Fact]
         public void SimpleTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
@@ -703,6 +709,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         [Fact]
         public void Await_DesignTime()
+        {
+            DesignTimeTest();
+        }
+
+        [Fact]
+        public void Tags_DesignTime()
         {
             DesignTimeTest();
         }

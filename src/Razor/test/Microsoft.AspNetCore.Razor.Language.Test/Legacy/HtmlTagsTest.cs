@@ -115,6 +115,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void ScriptTag_Invalid()
+        {
+            ParseDocumentTest("@{ <script></script @ > }");
+        }
+
+        [Fact]
         public void VoidElementFollowedByContent()
         {
             // Arrange
