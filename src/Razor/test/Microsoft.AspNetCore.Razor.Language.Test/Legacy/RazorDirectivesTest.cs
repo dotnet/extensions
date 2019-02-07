@@ -902,5 +902,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 "@namespace",
                 new[] { descriptor });
         }
+
+        [Fact]
+        public void Directives_ReservedWordInsideCodeBlock()
+        {
+            ParseDocumentTest("@{ class }");
+        }
     }
 }
