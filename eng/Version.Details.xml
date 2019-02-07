@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 
-This file is used by automation to update the Versions.props and global.json files in this repo.
-It is typically updated by automation on a regular basis.
+  This file is used by automation to update Versions.props and may be used for other purposes, such as
+  static analysis to determine the repo dependency graph.  It should only be modified manually when adding
+  or removing dependencies. Updating versions should be done using the `darc` command line tool.
+
+  See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
 
 -->
 <Dependencies>

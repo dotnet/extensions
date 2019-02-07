@@ -7,7 +7,16 @@
 -->
 <Project>
   <Import Project="..\version.props" />
-  <!-- The versions in this section are managed by automation, but you must also add an entry into Version.Details.xml -->
+  <!--
+
+    These versions should ONLY be updated by automation.
+
+    DO NOT UPDATE THESE MANUALLY. Use the `darc` command line tool to update this file so it stays in sync with
+    Version.Details.xml.
+
+    See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
+
+  -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27404-9</MicrosoftNETCoreAppPackageVersion>
@@ -23,13 +32,19 @@
     <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview.19105.1</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview.19105.1</SystemSecurityCryptographyXmlPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview.19105.1</SystemTextEncodingsWebPackageVersion>
-  </PropertyGroup>
-  <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
-  <PropertyGroup>
+    <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview.19105.1</MicrosoftNETCorePlatformsPackageVersion>
   </PropertyGroup>
-  <!-- Stable dependencies which are not expected to update via automation -->
-  <PropertyGroup Label="Pinned">
+  <!--
+
+    ^^^^^^^^^^
+    SEE NOTE ABOVE.
+
+    Versions above this comment are updated automatically. Don't change them manually.
+
+    Versions below this comment are not managed by automation and can be changed as needed.
+  -->
+  <PropertyGroup Label="Manual">
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
