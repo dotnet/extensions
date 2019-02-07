@@ -284,10 +284,10 @@ Source Location: (1424:34,78 [1] TestFiles/IntegrationTests/CodeGenerationIntegr
 Generated Location: (9546:204,1 [1] )
 |)|
 
-Source Location: (1437:35,10 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
+Source Location: (1469:36,10 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |
 }|
-Generated Location: (9685:209,10 [3] )
+Generated Location: (9941:215,10 [3] )
 |
 }|
 

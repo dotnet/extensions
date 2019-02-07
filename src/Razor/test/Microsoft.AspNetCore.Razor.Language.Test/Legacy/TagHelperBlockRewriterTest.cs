@@ -347,6 +347,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void CreatesErrorForMalformedTagHelpersWithAttributes20()
+        {
+            RunParseTreeRewriterTest("<p attr=\"@if (true) <p attr='@foo'> }\"></p>", "strong", "p");
+        }
+
+        [Fact]
         public void CreatesErrorForMalformedTagHelper1()
         {
             RunParseTreeRewriterTest("<p", "strong", "p");
@@ -480,6 +486,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes11()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"@@@(11+1)\" birthday=\"DateTime.Now\" name=\"Time: @DateTime.Now\" />");
+        }
+
+        [Fact]
+        public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes12()
+        {
+            EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"@{flag == 0 ? 11 : 12}\" />");
         }
 
         [Fact]
