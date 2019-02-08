@@ -16,8 +16,8 @@
   <PropertyGroup>
     <MajorVersion>3</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <SemanticVersioningV1>true</SemanticVersioningV1>
+    <PatchVersion>0</PatchVersion>
+    <PreReleaseVersionLabel>preview3</PreReleaseVersionLabel>
   </PropertyGroup>
   <!-- 
     Versioning for tooling releases.
