@@ -34,6 +34,7 @@
   <ItemGroup>
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
+    <OriginalReferences Include="@(Reference)" />
 
     <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 
@@ -42,7 +43,9 @@
       Include="@(ProjectReferenceProvider)"
       Exclude="@(UnusedProjectReferenceProvider)" />
 
-    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
+    <!-- Use ref assembly project paths for ref assembly projects -->
+    <ProjectReference Condition="'$(IsReferenceAssemblyProject)' == 'false'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
+    <ProjectReference Condition="'$(IsReferenceAssemblyProject)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" />
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
 
@@ -113,9 +116,9 @@
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
 
-    <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0 AND ! $(NoWarn.Contains('PKG0001'))"
+    <!-- <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0 AND ! $(NoWarn.Contains('PKG0001'))"
              Code="PKG0001"
-             Text="Package references changed since the last release. This could be a breaking change. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
+             Text="Package references changed since the last release. This could be a breaking change. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" /> -->
 
     <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
            Code="MSB3245"
@@ -137,9 +140,13 @@
   </Target>
 
   <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
+    <PropertyGroup>
+      <ReferenceAssemblyProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), '$(MSBuildProjectDirectory)/../ref/$(MSBuildProjectFile)'))</ReferenceAssemblyProjectFileRelativePath>
+    </PropertyGroup>
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+        <ReferenceAssemblyProjectFileRelativePath>$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
       </ProvidesReference>
     </ItemGroup>
   </Target>
