@@ -25,9 +25,7 @@ jobs:
   pool:
     vmImage: vs2017-win2016
   steps:
-  - powershell: ./restore.cmd
-    displayName: Restore solution
-  - powershell: ./eng/scripts/CodeCheck.ps1 -ci
+  - powershell: . ./activate.ps1; ./restore.cmd; ./eng/scripts/CodeCheck.ps1 -ci
     displayName: Run eng/scripts/CodeCheck.ps1
 
 - template: /eng/common/templates/jobs/jobs.yml
