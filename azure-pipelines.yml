@@ -27,7 +27,6 @@ jobs:
   steps:
   - powershell: ./restore.cmd
     displayName: Restore solution
-  steps:
   - powershell: ./eng/scripts/CodeCheck.ps1 -ci
     displayName: Run eng/scripts/CodeCheck.ps1
 
