@@ -35,7 +35,6 @@ namespace Microsoft.Extensions.Hosting.WindowsService
             ApplicationLifetime.ApplicationStopping.Register(() =>
             {
                 Logger.LogInformation("Application is shutting down...");
-                Stop();
             });
 
             new Thread(Run).Start(); // Otherwise this would block and prevent IHost.StartAsync from finishing.
