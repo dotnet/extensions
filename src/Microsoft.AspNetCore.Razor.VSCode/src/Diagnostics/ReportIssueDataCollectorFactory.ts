@@ -17,7 +17,7 @@ export class ReportIssueDataCollectorFactory {
 
     public register() {
         return vscode.window.onDidChangeActiveTextEditor((newEditor) => {
-            if (newEditor && newEditor.document.fileName.endsWith(RazorLanguage.fileExtension)) {
+            if (newEditor && RazorLanguage.fileExtensions.some(ext => newEditor.document.fileName.endsWith(ext))) {
                 this.onRazorDocumentFocusedEmitter.fire(newEditor.document);
             }
         });

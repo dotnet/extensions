@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public static DocumentSelector Selector { get; } = new DocumentSelector(
             new DocumentFilter()
             {
-                Pattern = "**/*.cshtml"
+                Pattern = "**/*.{cshtml,razor}"
             });
 
         public static RazorConfiguration Configuration { get; } = FallbackRazorConfiguration.MVC_2_1;

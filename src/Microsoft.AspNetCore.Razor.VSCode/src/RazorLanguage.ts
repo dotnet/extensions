@@ -7,7 +7,7 @@ import * as vscode from './vscodeAdapter';
 
 export class RazorLanguage {
     public static id = 'aspnetcorerazor';
-    public static fileExtension = 'cshtml';
-    public static globbingPattern = `**/*.${RazorLanguage.fileExtension}`;
-    public static documentSelector: vscode.DocumentSelector =  [ { pattern: RazorLanguage.globbingPattern } ];
+    public static fileExtensions = [ 'cshtml', 'razor' ];
+    public static globbingPattern = `**/*.{${RazorLanguage.fileExtensions.join(',')}}`;
+    public static documentSelector: vscode.DocumentSelector = { pattern: RazorLanguage.globbingPattern };
 }

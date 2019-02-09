@@ -42,7 +42,8 @@
             {
                 "id": "aspnetcorerazor",
                 "extensions": [
-                    ".cshtml"
+                    ".cshtml",
+                    ".razor"
                 ],
                 "mimetypes": [
                     "text/x-cshtml"

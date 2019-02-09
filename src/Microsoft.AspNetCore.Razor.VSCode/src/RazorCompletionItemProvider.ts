@@ -34,7 +34,7 @@ export class RazorCompletionItemProvider
                     : completions ? completions.items       // was vscode.CompletionList
                         : [];
 
-            // There are times when the generated code will not line up with the content of the .cshtml file.
+            // There are times when the generated code will not line up with the content of the .razor/.cshtml file.
             // Therefore, we need to offset all completion items charactesr by a certain amount in order
             // to have proper completion. An example of this is typing @DateTime at the beginning of a line.
             // In the code behind it's represented as __o = DateTime.
