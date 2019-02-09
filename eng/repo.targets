@@ -47,6 +47,8 @@
       <MSBuild
           Projects="@(ProjectToBuild)"
           Targets="GenerateReferenceSource"
-          BuildInParallel="true"/>
+          BuildInParallel="true"
+          SkipNonexistentTargets="true"
+          SkipNonexistentProjects="true" />
   </Target>
 </Project>
