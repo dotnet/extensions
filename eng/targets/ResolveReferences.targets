@@ -34,7 +34,7 @@
   <ItemGroup>
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
-    <OriginalReferences Include="@(Reference)" />
+    <_OriginalReferences Include="@(Reference)" />
 
     <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 

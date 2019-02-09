@@ -54,7 +54,6 @@
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <DotNetRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
     <DotNetRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>
