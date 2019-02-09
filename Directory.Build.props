@@ -58,5 +58,4 @@
   <Import Project="eng\ProjectReferences.props" />
 
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
-  <Import Project="eng\targets\ref.props"  Condition="$(BuildDefinition.EndsWith('.ref.csproj'))" />
 </Project>
