@@ -38,8 +38,7 @@ namespace Microsoft.Extensions.Hosting
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, "Only available on Windows")]
-        [OSSkipCondition(OperatingSystems.MacOSX, "Only available on Windows")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, "Only available on Windows")]
         public void CanOptInViaConfig()
         {
             var host = new HostBuilder()
@@ -82,8 +81,7 @@ namespace Microsoft.Extensions.Hosting
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, "Only available on Windows")]
-        [OSSkipCondition(OperatingSystems.MacOSX, "Only available on Windows")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, "Only available on Windows")]
         public void CanOptInViaProduction()
         {
             var host = new HostBuilder()
