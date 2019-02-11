@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)/src/**/ref/*.csproj" />
+    <ProjectReference Include="@(ProjectReferenceProvider->Metadata(RefProjectPath))" />
   </ItemGroup>
 
   <PropertyGroup>
