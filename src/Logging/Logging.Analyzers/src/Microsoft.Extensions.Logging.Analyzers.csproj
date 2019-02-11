@@ -15,11 +15,4 @@
     <Compile Include="..\..\Logging.Abstractions\src\LogValuesFormatter.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
-    <PackageReference Update="NETStandard.Library" PrivateAssets="All" />
-  </ItemGroup>
-
 </Project>

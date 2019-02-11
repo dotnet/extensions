@@ -79,6 +79,11 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1
     }
 
+    Write-Host "Re-generating references assemblies"
+    Invoke-Block {
+        & $PSScriptRoot\GenerateReferenceAssemblies.ps1
+    }
+
     Write-Host "Re-generating package baselines"
     $dotnet = 'dotnet'
     if ($ci) {

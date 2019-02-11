@@ -6,9 +6,17 @@
     <!-- Set these before importing Arcade to override Arcade's defaults -->
     <IsUnitTestProject>false</IsUnitTestProject>
     <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests')) OR $(MSBuildProjectName.EndsWith('.FunctionalTests'))">true</IsUnitTestProject>
+    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">false</IsUnitTestProject>
+
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('samples'))">true</IsSampleProject>
+
+    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
+    <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
+    <HasReferenceAssembly>true</HasReferenceAssembly>
+    <HasReferenceAssembly Condition="'$(IsReferenceAssemblyProject)' == 'true'">false</HasReferenceAssembly>
+    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.BeforeArcade.props" />
@@ -39,6 +47,10 @@
   <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="eng\Dependencies.props" />

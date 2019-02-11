@@ -34,6 +34,7 @@
   <ItemGroup>
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
+    <_OriginalReferences Include="@(Reference)" />
 
     <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 
@@ -42,7 +43,9 @@
       Include="@(ProjectReferenceProvider)"
       Exclude="@(UnusedProjectReferenceProvider)" />
 
-    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
+    <!-- Use ref assembly project paths for ref assembly projects -->
+    <ProjectReference Condition="'$(IsReferenceAssemblyProject)' == 'false'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
+    <ProjectReference Condition="'$(IsReferenceAssemblyProject)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" />
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
 
@@ -137,9 +140,13 @@
   </Target>
 
   <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
+    <PropertyGroup>
+      <ReferenceAssemblyProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), '$(MSBuildProjectDirectory)/../ref/$(MSBuildProjectFile)'))</ReferenceAssemblyProjectFileRelativePath>
+    </PropertyGroup>
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+        <ReferenceAssemblyProjectFileRelativePath Condition="'$(HasReferenceAssembly)' == 'true'">$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
       </ProvidesReference>
     </ItemGroup>
   </Target>
