@@ -33,6 +33,7 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Hosting.Abstractions" ProjectPath="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.Extensions.Hosting.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Hosting" ProjectPath="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.Extensions.Hosting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http" ProjectPath="$(RepoRoot)src\HttpClientFactory\Http\src\Microsoft.Extensions.Http.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Http.HeaderPropagation" ProjectPath="$(RepoRoot)src\HttpClientFactory\HeaderPropagation\src\Microsoft.Extensions.Http.HeaderPropagation.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http.Polly" ProjectPath="$(RepoRoot)src\HttpClientFactory\Polly\src\Microsoft.Extensions.Http.Polly.csproj" />
     <ProjectReferenceProvider Include="Microsoft.JSInterop.JS" ProjectPath="$(RepoRoot)src\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.csproj" />
     <ProjectReferenceProvider Include="Microsoft.JSInterop" ProjectPath="$(RepoRoot)src\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj" />

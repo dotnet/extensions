@@ -39,6 +39,7 @@
   <ItemGroup Label="External dependencies">
     <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.0" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
     <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.3" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.8.0" />
