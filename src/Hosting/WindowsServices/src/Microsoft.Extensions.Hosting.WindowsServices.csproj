@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
 

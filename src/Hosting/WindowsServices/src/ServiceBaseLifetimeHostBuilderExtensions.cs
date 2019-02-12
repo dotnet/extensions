@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting.WindowsServices;
@@ -26,34 +26,32 @@ namespace Microsoft.Extensions.Hosting
         /// <returns></returns>
         public static IHostBuilder UseServiceBaseLifetime(this IHostBuilder hostBuilder)
         {
-            return hostBuilder.ConfigureServices((hostContext, services) =>
+            if (IsWindowsService())
             {
-                bool? isService = null;
-                var config = hostContext.Configuration;
-
-                // Opt out
-                if (string.Equals(config["service"], "false", StringComparison.OrdinalIgnoreCase))
-                {
-                    isService = false;
-                }
-                // Opt in
-                else if (string.Equals(config["service"], "true", StringComparison.OrdinalIgnoreCase))
-                {
-                    isService = true;
-                }
-                // Guess?
-                else if (!hostContext.HostingEnvironment.IsDevelopment()
-                    && RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                    && !Debugger.IsAttached)
-                {
-                    isService = true;
-                }
-
-                if (isService == true)
+                // CurrentDirectory for services is c:\Windows\System32, but that's what Host.CreateDefaultBuilder uses for VS scenarios.
+                hostBuilder.UseContentRoot(AppContext.BaseDirectory);
+                return hostBuilder.ConfigureServices((hostContext, services) =>
                 {
                     services.AddSingleton<IHostLifetime, ServiceBaseLifetime>();
-                }
-            });
+                });
+            }
+
+            return hostBuilder;
+        }
+
+        private static bool IsWindowsService()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return false;
+            }
+
+            var parrent = WindowsServices.Internal.Win32.GetParrentProcess();
+            if (parrent == null)
+            {
+                return false;
+            }
+            return parrent.SessionId == 0 && "services".Equals(parrent.ProcessName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
