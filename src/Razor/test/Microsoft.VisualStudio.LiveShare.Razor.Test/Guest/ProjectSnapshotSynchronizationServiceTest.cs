@@ -22,8 +22,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
             JoinableTaskFactory = new JoinableTaskFactory(joinableTaskContext.Context);
 
-            var collabSession = new TestCollaborationSession(isHost: false);
-            SessionAccessor = Mock.Of<LiveShareSessionAccessor>(accessor => accessor.IsGuestSessionActive == true && accessor.Session == collabSession);
+            SessionContext = new TestCollaborationSession(isHost: false);
 
             ProjectSnapshotManager = new TestProjectSnapshotManager(Workspace);
 
@@ -35,7 +34,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 
         private JoinableTaskFactory JoinableTaskFactory { get; }
 
-        private LiveShareSessionAccessor SessionAccessor { get; }
+        private CollaborationSession SessionContext { get; }
 
         private TestProjectSnapshotManager ProjectSnapshotManager { get; }
 
@@ -54,7 +53,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 proxy => proxy.GetProjectManagerStateAsync(It.IsAny<CancellationToken>()) == Task.FromResult(state));
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
-                SessionAccessor,
+                SessionContext,
                 hostProjectManagerProxy,
                 ProjectSnapshotManager);
 
@@ -78,7 +77,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 ProjectWorkspaceStateWithTagHelpers);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
-                SessionAccessor,
+                SessionContext,
                 Mock.Of<IProjectSnapshotManagerProxy>(),
                 ProjectSnapshotManager);
             var args = new ProjectChangeEventProxyArgs(older: null, newHandle, ProjectProxyChangeKind.ProjectAdded);
@@ -103,7 +102,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 projectWorkspaceState: null);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
-                SessionAccessor,
+                SessionContext,
                 Mock.Of<IProjectSnapshotManagerProxy>(),
                 ProjectSnapshotManager);
             var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default);
@@ -132,7 +131,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 oldHandle.ProjectWorkspaceState);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
-                SessionAccessor,
+                SessionContext,
                 Mock.Of<IProjectSnapshotManagerProxy>(),
                 ProjectSnapshotManager);
             var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default);
@@ -165,7 +164,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 newProjectWorkspaceState);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
-                SessionAccessor,
+                SessionContext,
                 Mock.Of<IProjectSnapshotManagerProxy>(),
                 ProjectSnapshotManager);
             var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default);

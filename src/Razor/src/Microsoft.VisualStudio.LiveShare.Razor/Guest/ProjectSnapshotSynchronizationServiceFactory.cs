@@ -20,14 +20,12 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
     {
         private readonly ProxyAccessor _proxyAccessor;
         private readonly JoinableTaskContext _joinableTaskContext;
-        private readonly LiveShareSessionAccessor _liveShareSessionAccessor;
         private readonly Workspace _workspace;
 
         [ImportingConstructor]
         public ProjectSnapshotSynchronizationServiceFactory(
             ProxyAccessor proxyAccessor,
             JoinableTaskContext joinableTaskContext,
-            LiveShareSessionAccessor liveShareSessionAccessor,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
         {
             if (proxyAccessor == null)
@@ -40,11 +38,6 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 throw new ArgumentNullException(nameof(joinableTaskContext));
             }
 
-            if (liveShareSessionAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(liveShareSessionAccessor));
-            }
-
             if (workspace == null)
             {
                 throw new ArgumentNullException(nameof(workspace));
@@ -52,7 +45,6 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 
             _proxyAccessor = proxyAccessor;
             _joinableTaskContext = joinableTaskContext;
-            _liveShareSessionAccessor = liveShareSessionAccessor;
             _workspace = workspace;
         }
 
@@ -69,7 +61,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var projectSnapshotManagerProxy = await sessionContext.GetRemoteServiceAsync<IProjectSnapshotManagerProxy>(typeof(IProjectSnapshotManagerProxy).Name, cancellationToken);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 _joinableTaskContext.Factory,
-                _liveShareSessionAccessor,
+                sessionContext,
                 projectSnapshotManagerProxy,
                 projectManager);
 
