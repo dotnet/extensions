@@ -75,6 +75,7 @@ jobs:
 
           Release:
             _BuildConfig: Release
+            _BuildArgs:
             # PRs or external builds are not signed.
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: test
@@ -86,10 +87,7 @@ jobs:
       steps:
       - checkout: self
         clean: true
-      - script: eng\common\cibuild.cmd
-          -configuration $(_BuildConfig)
-          -prepareMachine
-          $(_BuildArgs)
+      - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_BuildArgs)
         displayName: Build and Publish
       - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
         displayName: Set CI Tags
