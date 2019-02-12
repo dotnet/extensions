@@ -8,10 +8,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Hosting.Internal
 {
+    // Type or member is obsolete
     /// <summary>
     /// Allows consumers to perform cleanup during a graceful shutdown.
     /// </summary>
-    public class ApplicationLifetime : IApplicationLifetime
+#pragma warning disable CS0618 // Type or member is obsolete
+    public class ApplicationLifetime : IApplicationLifetime, IAppLifetime
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly CancellationTokenSource _startedSource = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppingSource = new CancellationTokenSource();

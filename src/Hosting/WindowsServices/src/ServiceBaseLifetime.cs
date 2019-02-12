@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
     {
         private TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>();
 
-        public ServiceBaseLifetime(IHostingEnvironment environment, IApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory)
+        public ServiceBaseLifetime(IHostingEnvironment environment, IAppLifetime applicationLifetime, ILoggerFactory loggerFactory)
         {
             Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
@@ -21,8 +21,8 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
         }
 
         public IHostingEnvironment Environment { get; }
-        private IApplicationLifetime ApplicationLifetime { get; }
         private ILogger Logger { get; }
+        private IAppLifetime ApplicationLifetime { get; }
 
         public Task WaitForStartAsync(CancellationToken cancellationToken)
         {

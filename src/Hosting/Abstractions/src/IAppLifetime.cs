@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading;
 
 namespace Microsoft.Extensions.Hosting
@@ -9,8 +8,7 @@ namespace Microsoft.Extensions.Hosting
     /// <summary>
     /// Allows consumers to perform cleanup during a graceful shutdown.
     /// </summary>
-    [Obsolete("Use IAppLifetime instead.", error: false)]
-    public interface IApplicationLifetime
+    public interface IAppLifetime
     {
         /// <summary>
         /// Triggered when the application host has fully started and is about to wait

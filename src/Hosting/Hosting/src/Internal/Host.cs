@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Hosting.Internal
         private readonly HostOptions _options;
         private IEnumerable<IHostedService> _hostedServices;
 
-        public Host(IServiceProvider services, IApplicationLifetime applicationLifetime, ILogger<Host> logger,
+        public Host(IServiceProvider services, IAppLifetime applicationLifetime, ILogger<Host> logger,
             IHostLifetime hostLifetime, IOptions<HostOptions> options)
         {
             Services = services ?? throw new ArgumentNullException(nameof(services));
@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 await hostedService.StartAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            // Fire IApplicationLifetime.Started
+            // Fire IAppLifetime.Started
             _applicationLifetime?.NotifyStarted();
 
             _logger.Started();
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken))
             {
                 var token = linkedCts.Token;
-                // Trigger IApplicationLifetime.ApplicationStopping
+                // Trigger IAppLifetime.ApplicationStopping
                 _applicationLifetime?.StopApplication();
 
                 IList<Exception> exceptions = new List<Exception>();
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 token.ThrowIfCancellationRequested();
                 await _hostLifetime.StopAsync(token);
 
-                // Fire IApplicationLifetime.Stopped
+                // Fire IAppLifetime.Stopped
                 _applicationLifetime?.NotifyStopped();
 
                 if (exceptions.Count > 0)
