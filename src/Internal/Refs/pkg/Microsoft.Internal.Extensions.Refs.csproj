@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <PackageDescription>For internal-use only. This package contains reference assemblies for Microsoft.Extensions projects.</PackageDescription>
+
+    <!--
+      This package is not meant to be used as a regular PackageReference. This is mean to transport
+      bits to the AspNetCore repo which builds a targeting pack with these assembies.
+    -->
+    <PackageType>Transport</PackageType>
+    <RefAssemblyPackagePath>data/refs/$(TargetFramework)/</RefAssemblyPackagePath>
+
+    <!-- There are no symbols for reference assemblies. -->
+    <IncludeSymbols>false</IncludeSymbols>
+
+    <!-- The project representing the shared framework doesn't produce a .NET assembly or symbols. -->
+    <DebugType>none</DebugType>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+
+    <!-- This project should not be referenced via the `<Reference>` impementation. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="@(ProjectReferenceProvider->Metadata(RefProjectPath))" />
+
+    <Content Include="Microsoft.Internal.Extensions.Refs.props" PackagePath="build/" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      _ResolveTargetingPackContent;
+    </BuildDependsOn>
+  </PropertyGroup>
+
+  <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
+  <Target Name="GetTargetPath" />
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
+
+  <!-- This project doesn't compile anything. -->
+  <Target Name="CoreCompile" />
+
+  <!-- Completely disable default targets for copying to output. -->
+  <Target Name="CopyFilesToOutputDirectory" />
+
+  <!-- This target finds the reference assemblies. -->
+  <Target Name="_ResolveTargetingPackContent"
+          BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <_PackageFiles
+          Include="@(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"
+          PackagePath="$(RefAssemblyPackagePath)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

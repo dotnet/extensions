@@ -5,13 +5,15 @@
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <PackageDescription>For internal-use only. This package contains symbols for Microsoft.Extensions projects.</PackageDescription>
 
-    <!-- Subject to change: see https://github.com/dotnet/designs/pull/50 -->
-    <PackageType>TargetingPack</PackageType>
-    <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
-
-    <!-- There are no symbols for reference assemblies. -->
-    <IncludeSymbols>false</IncludeSymbols>
+    <!--
+      This package is not meant to be used as a regular PackageReference. This is mean to transport
+      bits to the AspNetCore repo which builds a targeting pack with these assembies.
+    -->
+    <PackageType>Transport</PackageType>
+    <SymbolsPackagePath>data/symbols/$(TargetFramework)/</SymbolsPackagePath>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
     <!-- The project representing the shared framework doesn't produce a .NET assembly or symbols. -->
     <DebugType>none</DebugType>
@@ -26,21 +28,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="@(ProjectReferenceProvider->Metadata(RefProjectPath))" />
+    <ProjectReference Include="@(ProjectReferenceProvider->HasMetadata('RefProjectPath')->Metadata('ProjectPath'))" />
+
+    <Content Include="Microsoft.Internal.Extensions.Symbols.props" PackagePath="build/" />
   </ItemGroup>
 
   <PropertyGroup>
     <BuildDependsOn>
       $(BuildDependsOn);
-      _ResolveTargetingPackContent;
+      _ResolveSymbolsPackageContent;
     </BuildDependsOn>
   </PropertyGroup>
 
   <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
   <Target Name="GetTargetPath" />
-  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
-    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TargetDir)" />
-  </Target>
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
 
   <!-- This project doesn't compile anything. -->
   <Target Name="CoreCompile" />
@@ -49,16 +51,13 @@
   <Target Name="CopyFilesToOutputDirectory" />
 
   <!-- This target finds the reference assemblies. -->
-  <Target Name="_ResolveTargetingPackContent"
+  <Target Name="_ResolveSymbolsPackageContent"
           BeforeTargets="_GetPackageFiles"
-          DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
+          DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <AspNetCoreReferenceAssemblyPath
-          Include="@(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
-
-      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
-
-      <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
+      <_PackageFiles
+          Include="@(_ResolvedProjectReferencePaths->'%(RootDir)%(Directory)%(FileName).pdb')"
+          PackagePath="$(SymbolsPackagePath)" />
     </ItemGroup>
   </Target>
 

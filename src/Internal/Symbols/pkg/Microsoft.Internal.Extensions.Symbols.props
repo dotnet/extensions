@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <MicrosoftExtensionsSymbolsRoot>$(MSBuildThisFileDirectory)..\data\symbols\</MicrosoftExtensionsSymbolsRoot>
+  </PropertyGroup>
+</Project>
