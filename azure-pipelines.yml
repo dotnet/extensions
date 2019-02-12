@@ -4,9 +4,12 @@ variables:
 
 # CI and PR triggers
 trigger:
-- master
-- release/*
-- internal/release/*
+  batch: true
+  branches:
+    include:
+    - master
+    - release/*
+    - internal/release/*
 
 pr:
   autoCancel: false
@@ -15,6 +18,16 @@ pr:
     - '*'
 
 jobs:
+- job: Code_check
+  displayName: Code check
+  workspace:
+    clean: all
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - powershell: . ./activate.ps1; ./restore.cmd -ci; ./eng/scripts/CodeCheck.ps1 -ci
+    displayName: Run eng/scripts/CodeCheck.ps1
+
 - template: /eng/common/templates/jobs/jobs.yml
   parameters:
     enableMicrobuild: true
@@ -81,15 +94,15 @@ jobs:
       - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
         displayName: Set CI Tags
         condition: eq(variables['_BuildConfig'], 'Release')
+      - powershell: eng\scripts\KillProcesses.ps1
+        displayName: Kill processes
+        condition: always()
       - task: PublishBuildArtifacts@1
         displayName: Upload package artifacts
         condition: and(eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
         inputs:
           pathtoPublish: artifacts/packages/
-          ${{ if eq(parameters.artifacts.name, '') }}:
-            artifactName: artifacts
-          ${{ if ne(parameters.artifacts.name, '') }}:
-            artifactName: ${{ parameters.artifacts.name }}
+          artifactName: artifacts
           artifactType: Container
           parallel: true
 
@@ -116,6 +129,9 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
+      - script: eng/scripts/KillProcesses.sh
+        displayName: Kill processes
+        condition: always()
 
     - job: OSX_10_13
       displayName: 'OSX'
@@ -140,3 +156,6 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
+      - script: eng/scripts/KillProcesses.sh
+        displayName: Kill processes
+        condition: always()

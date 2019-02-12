@@ -1,5 +1,5 @@
 #
-# This file must be used by invoking ". activate.ps1" from the command line.
+# This file must be used by invoking ". .\activate.ps1" from the command line.
 # You cannot run it directly.
 # To exit from the environment this creates, execute the 'deactivate' function.
 #

@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\src\Microsoft.DotNet.Analyzers.Async.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.Common" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
-    <Reference Include="Microsoft.DotNet.Analyzers.Async" />
   </ItemGroup>
 
   <ItemGroup>

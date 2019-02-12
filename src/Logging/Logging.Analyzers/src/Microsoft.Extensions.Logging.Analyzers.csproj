@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>Analyzer package for Microsoft.Extensions.Logging.</Description>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
-    <VerifyVersion>false</VerifyVersion>
     <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
@@ -14,13 +13,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\Logging.Abstractions\src\LogValuesFormatter.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
-    <PackageReference Update="NETStandard.Library" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
