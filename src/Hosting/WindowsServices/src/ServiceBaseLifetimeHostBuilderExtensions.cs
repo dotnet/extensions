@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting.WindowsService;
+using Microsoft.Extensions.Hosting.WindowsServices;
 
 namespace Microsoft.Extensions.Hosting
 {

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting.Internal;
-using Microsoft.Extensions.Hosting.WindowsService;
+using Microsoft.Extensions.Hosting.WindowsServices;
 using Xunit;
 
 namespace Microsoft.Extensions.Hosting

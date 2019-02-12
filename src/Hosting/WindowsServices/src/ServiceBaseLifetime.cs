@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Hosting.WindowsService
+namespace Microsoft.Extensions.Hosting.WindowsServices
 {
     public class ServiceBaseLifetime : ServiceBase, IHostLifetime
     {
