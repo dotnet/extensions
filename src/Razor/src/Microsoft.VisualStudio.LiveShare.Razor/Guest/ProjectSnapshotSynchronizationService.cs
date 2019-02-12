@@ -14,13 +14,13 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
     internal class ProjectSnapshotSynchronizationService : ICollaborationService, IAsyncDisposable
     {
         private readonly JoinableTaskFactory _joinableTaskFactory;
-        private readonly LiveShareSessionAccessor _liveShareSessionAccessor;
+        private readonly CollaborationSession _sessionContext;
         private readonly IProjectSnapshotManagerProxy _hostProjectManagerProxy;
         private readonly ProjectSnapshotManagerBase _projectSnapshotManager;
 
         public ProjectSnapshotSynchronizationService(
             JoinableTaskFactory joinableTaskFactory,
-            LiveShareSessionAccessor liveShareSessionAccessor,
+            CollaborationSession sessionContext,
             IProjectSnapshotManagerProxy hostProjectManagerProxy,
             ProjectSnapshotManagerBase projectSnapshotManager)
         {
@@ -29,9 +29,9 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 throw new ArgumentNullException(nameof(joinableTaskFactory));
             }
 
-            if (liveShareSessionAccessor == null)
+            if (sessionContext == null)
             {
-                throw new ArgumentNullException(nameof(liveShareSessionAccessor));
+                throw new ArgumentNullException(nameof(sessionContext));
             }
 
             if (hostProjectManagerProxy == null)
@@ -45,7 +45,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             }
 
             _joinableTaskFactory = joinableTaskFactory;
-            _liveShareSessionAccessor = liveShareSessionAccessor;
+            _sessionContext = sessionContext;
             _hostProjectManagerProxy = hostProjectManagerProxy;
             _projectSnapshotManager = projectSnapshotManager;
         }
@@ -159,7 +159,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 
         private string ResolveGuestPath(Uri filePath)
         {
-            return _liveShareSessionAccessor.Session?.ConvertSharedUriToLocalPath(filePath);
+            return _sessionContext.ConvertSharedUriToLocalPath(filePath);
         }
     }
 }
