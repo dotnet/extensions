@@ -12,15 +12,11 @@ namespace Microsoft.Extensions.Hosting
     public static class ServiceBaseLifetimeHostBuilderExtensions
     {
         /// <summary>
-        /// Sets the host lifetime to ServiceBaseLifetime.
+        /// Sets the host lifetime to ServiceBaseLifetime and sets the Content Root.
         /// </summary>
         /// <remarks>
-        /// This is context aware and will only activate under the following circumstances:
-        /// - Opted in via the config setting service=true, overrides detection
-        /// - Not opted out via the config setting service=false, overrides detection
-        /// - Not running in Development
-        /// - Running on Windows
-        /// - The debugger is not attached
+        /// This is context aware and will only activate if it detects the process is running
+        /// as a Windows Service.
         /// </remarks>
         /// <param name="hostBuilder"></param>
         /// <returns></returns>
@@ -46,12 +42,12 @@ namespace Microsoft.Extensions.Hosting
                 return false;
             }
 
-            var parrent = WindowsServices.Internal.Win32.GetParrentProcess();
-            if (parrent == null)
+            var parent = WindowsServices.Internal.Win32.GetParentProcess();
+            if (parent == null)
             {
                 return false;
             }
-            return parrent.SessionId == 0 && "services".Equals(parrent.ProcessName, StringComparison.OrdinalIgnoreCase);
+            return parent.SessionId == 0 && "services".Equals(parent.ProcessName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
