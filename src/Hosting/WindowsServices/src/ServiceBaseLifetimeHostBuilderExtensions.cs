@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.Hosting
             {
                 return false;
             }
-            return parent.SessionId == 0 && "services".Equals(parent.ProcessName, StringComparison.OrdinalIgnoreCase);
+            return parent.SessionId == 0 && string.Equals("services", parent.ProcessName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
