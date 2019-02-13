@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices.Internal
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool CloseHandle([In] IntPtr hObject);
 
-        internal static Process GetParrentProcess()
+        internal static Process GetParentProcess()
         {
             var snapshotHandle = IntPtr.Zero;
             try
