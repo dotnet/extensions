@@ -32,7 +32,7 @@
             "outFiles": [
                 "${workspaceFolder}/client/out/test/**/*.js"
             ],
-            "preLaunchTask": "client-npm-watch"
+            "preLaunchTask": "client-npm-compile"
         },
         {
             "type": "node",

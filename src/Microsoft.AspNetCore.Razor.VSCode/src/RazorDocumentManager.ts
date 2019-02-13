@@ -131,6 +131,7 @@ export class RazorDocumentManager implements IRazorDocumentManager {
     private openDocument(uri: vscode.Uri) {
         const document = this._getDocument(uri);
 
+        this.updateHtmlBuffer(document);
         this.notifyDocumentChange(document, RazorDocumentChangeKind.opened);
     }
 
@@ -214,7 +215,7 @@ export class RazorDocumentManager implements IRazorDocumentManager {
     private notifyDocumentChange(document: IRazorDocument, kind: RazorDocumentChangeKind) {
         if (this.logger.verboseEnabled) {
             this.logger.logVerbose(
-                `Notifying docoument '${getUriPath(document.uri)}' changed '${RazorDocumentChangeKind[kind]}'`);
+                `Notifying document '${getUriPath(document.uri)}' changed '${RazorDocumentChangeKind[kind]}'`);
         }
 
         const args: IRazorDocumentChangeEvent = {
