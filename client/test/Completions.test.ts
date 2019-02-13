@@ -70,6 +70,22 @@ describe('Completions', () => {
         assert.deepEqual(matchingCompletions, ['DateTime', 'DateTimeKind', 'DateTimeOffset']);
     });
 
+    it('Can complete imported C#', async () => {
+        const lastLine = new vscode.Position(doc.lineCount - 1, 0);
+        await editor.edit(edit => edit.insert(lastLine, '@'));
+        await waitForDocumentUpdate(doc.uri, document => document.lineAt(document.lineCount - 1).text === '@');
+
+        const completions = await vscode.commands.executeCommand<vscode.CompletionList>(
+            'vscode.executeCompletionItemProvider',
+            doc.uri,
+            new vscode.Position(doc.lineCount - 1, 1));
+        const matchingCompletions = completions!.items
+            .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('TheTime'))
+            .map(item => item.insertText as string);
+
+        assert.deepEqual(matchingCompletions, ['TheTime']);
+    });
+
     it('Can complete Razor directive', async () => {
         const firstLine = new vscode.Position(0, 0);
         await editor.edit(edit => edit.insert(firstLine, '@\n'));

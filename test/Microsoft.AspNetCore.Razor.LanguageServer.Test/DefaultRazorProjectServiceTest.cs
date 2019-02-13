@@ -787,7 +787,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private class TestHostDocumentFactory : HostDocumentFactory
         {
-            public override HostDocument Create(string documentFilePath)
+            public override HostDocument Create(string documentFilePath, ProjectSnapshot projectSnapshot)
             {
                 return new HostDocument(documentFilePath, documentFilePath);
             }

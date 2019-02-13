@@ -2,89 +2,63 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Razor;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.CodeAnalysis.Text;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultHostDocumentFactory : HostDocumentFactory
     {
-        private readonly ILanguageServer _router;
         private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly DocumentVersionCache _documentVersionCache;
+        private readonly GeneratedCodeContainerStore _generatedCodeContainerStore;
 
         public DefaultHostDocumentFactory(
             ForegroundDispatcher foregroundDispatcher,
-            DocumentVersionCache documentVersionCache,
-            ILanguageServer router)
+            GeneratedCodeContainerStore generatedCodeContainerStore)
         {
-
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
-            if (documentVersionCache == null)
+            if (generatedCodeContainerStore == null)
             {
-                throw new ArgumentNullException(nameof(documentVersionCache));
-            }
-
-            if (router == null)
-            {
-                throw new ArgumentNullException(nameof(router));
+                throw new ArgumentNullException(nameof(generatedCodeContainerStore));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
-            _documentVersionCache = documentVersionCache;
-            _router = router;
+            _generatedCodeContainerStore = generatedCodeContainerStore;
         }
 
-        public override HostDocument Create(string documentFilePath)
+        public override HostDocument Create(string documentFilePath, ProjectSnapshot projectSnapshot)
         {
+            var engine = projectSnapshot.GetProjectEngine();
+            var fileSystem = engine.FileSystem;
+            var documentItem = fileSystem.GetItem(documentFilePath);
+            var targetPath = documentItem.FilePath;
+
             // Representing all of our host documents with a re-normalized target path to workaround GetRelatedDocument limitations.
-            var targetPath = documentFilePath.Replace('/', '\\').TrimStart('\\');
-            var hostDocument = new HostDocument(documentFilePath, targetPath);
+            var normalizedTargetPath = targetPath.Replace('/', '\\').TrimStart('\\');
+            var hostDocument = new HostDocument(documentItem.PhysicalPath, normalizedTargetPath);
             hostDocument.GeneratedCodeContainer.GeneratedCodeChanged += (sender, args) =>
             {
-                var generatedCodeContainer = (GeneratedCodeContainer)sender;
-
-                IReadOnlyList<TextChange> textChanges;
-
-                if (args.NewText.ContentEquals(args.OldText))
+                var sharedContainer = _generatedCodeContainerStore.Get(documentItem.PhysicalPath);
+                var container = (GeneratedCodeContainer)sender;
+                var latestDocument = (DefaultDocumentSnapshot)container.LatestDocument;
+                Task.Factory.StartNew(async () =>
                 {
-                    // If the content is equal then no need to update the underlying CSharp buffer.
-                    textChanges = Array.Empty<TextChange>();
-                }
-                else
-                {
-                    textChanges = args.NewText.GetTextChanges(args.OldText);
-                }
+                    var codeDocument = await latestDocument.GetGeneratedOutputAsync();
 
-                var latestDocument = generatedCodeContainer.LatestDocument;
+                    sharedContainer.SetOutput(
+                        latestDocument,
+                        codeDocument.GetCSharpDocument(),
+                        container.InputVersion,
+                        container.OutputVersion);
+                }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.BackgroundScheduler);
 
-                Task.Factory.StartNew(() =>
-                {
-                    if (!_documentVersionCache.TryGetDocumentVersion(latestDocument, out var hostDocumentVersion))
-                    {
-                        // Cache entry doesn't exist, document most likely was evicted from the cache/too old.
-                        return;
-                    }
-
-                    var request = new UpdateCSharpBufferRequest()
-                    {
-                        HostDocumentFilePath = documentFilePath,
-                        Changes = textChanges,
-                        HostDocumentVersion = hostDocumentVersion
-                    };
-
-                    _router.Client.SendRequest("updateCSharpBuffer", request);
-                }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
             };
 
             return hostDocument;

@@ -54,7 +54,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
 
             var factory = new LoggerFactory();
-            var server = await OmniSharp.Extensions.LanguageServer.Server.LanguageServer.From(options =>
+            ILanguageServer server = null;
+            server = await OmniSharp.Extensions.LanguageServer.Server.LanguageServer.From(options =>
                 options
                     .WithInput(Console.OpenStandardInput())
                     .WithOutput(Console.OpenStandardOutput())
@@ -83,6 +84,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher);
                         services.AddSingleton<DocumentVersionCache>(documentVersionCache);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(documentVersionCache);
+                        var containerStore = new DefaultGeneratedCodeContainerStore(
+                            foregroundDispatcher,
+                            documentVersionCache,
+                            new Lazy<ILanguageServer>(() => server));
+                        services.AddSingleton<GeneratedCodeContainerStore>(containerStore);
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>(containerStore);
                     }));
 
             // Workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/106

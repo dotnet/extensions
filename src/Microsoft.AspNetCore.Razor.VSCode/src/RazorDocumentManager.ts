@@ -141,11 +141,10 @@ export class RazorDocumentManager implements IRazorDocumentManager {
         const csharpProjectedDocument = csharpDocument as CSharpProjectedDocument;
         const htmlDocument = document.htmlDocument;
         const htmlProjectedDocument = htmlDocument as HtmlProjectedDocument;
-        const currentHtmlContent = htmlProjectedDocument.getContent();
 
-        // Force the sync version back to null. VSCode resets all sync versions when a document closes.
-        csharpProjectedDocument.update([], null);
-        htmlProjectedDocument.setContent(currentHtmlContent, null);
+        // Reset the projected documents, VSCode resets all sync versions when a document closes.
+        csharpProjectedDocument.reset();
+        htmlProjectedDocument.reset();
 
         this.notifyDocumentChange(document, RazorDocumentChangeKind.closed);
     }
@@ -189,7 +188,7 @@ export class RazorDocumentManager implements IRazorDocumentManager {
         if (!projectedDocument.hostDocumentSyncVersion ||
             projectedDocument.hostDocumentSyncVersion <= updateBufferRequest.hostDocumentVersion) {
             // We allow re-setting of the updated content from the same doc sync version in the case
-            // of project or _ViewImport.cshtml changes.
+            // of project or _ViewImports.cshtml changes.
             const csharpProjectedDocument = projectedDocument as CSharpProjectedDocument;
             csharpProjectedDocument.update(updateBufferRequest.changes, updateBufferRequest.hostDocumentVersion);
 

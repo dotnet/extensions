@@ -3,9 +3,9 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as vscode from 'vscode';
 import { IProjectedDocument } from '../IProjectedDocument';
 import { getUriPath } from '../UriPaths';
+import * as vscode from '../vscodeAdapter';
 
 export class HtmlProjectedDocument implements IProjectedDocument {
     public readonly path: string;
@@ -29,9 +29,15 @@ export class HtmlProjectedDocument implements IProjectedDocument {
         return this.content;
     }
 
-    public setContent(content: string, hostDocumentVersion: number | null) {
+    public setContent(content: string, hostDocumentVersion: number) {
         this.projectedDocumentVersion++;
         this.hostDocumentVersion = hostDocumentVersion;
         this.content = content;
+    }
+
+    public reset() {
+        this.projectedDocumentVersion++;
+        this.hostDocumentVersion = null;
+        this.content = '';
     }
 }

@@ -3,10 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as vscode from 'vscode';
 import { IProjectedDocument } from '../IProjectedDocument';
 import { ServerTextChange } from '../RPC/ServerTextChange';
 import { getUriPath } from '../UriPaths';
+import * as vscode from '../vscodeAdapter';
 
 export class CSharpProjectedDocument implements IProjectedDocument {
     public readonly path: string;
@@ -29,7 +29,7 @@ export class CSharpProjectedDocument implements IProjectedDocument {
         return this.projectedDocumentVersion;
     }
 
-    public update(edits: ServerTextChange[], hostDocumentVersion: number | null) {
+    public update(edits: ServerTextChange[], hostDocumentVersion: number) {
         this.removeProvisionalDot();
 
         this.hostDocumentVersion = hostDocumentVersion;
@@ -46,6 +46,13 @@ export class CSharpProjectedDocument implements IProjectedDocument {
         }
 
         this.setContent(content);
+    }
+
+    public reset() {
+        this.provisionalEditAt = undefined;
+        this.preProvisionalContent = undefined;
+        this.hostDocumentVersion = null;
+        this.setContent('');
     }
 
     public getContent() {

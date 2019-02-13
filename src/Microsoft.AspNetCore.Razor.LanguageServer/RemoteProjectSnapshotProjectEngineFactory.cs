@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
@@ -11,23 +12,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class RemoteProjectSnapshotProjectEngineFactory : DefaultProjectSnapshotProjectEngineFactory
     {
+        public static readonly IFallbackProjectEngineFactory FallbackProjectEngineFactory = new FallbackProjectEngineFactory();
+
         private readonly FilePathNormalizer _filePathNormalizer;
 
-        public RemoteProjectSnapshotProjectEngineFactory(
-            IFallbackProjectEngineFactory fallback,
-            Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[] factories,
-            FilePathNormalizer filePathNormalizer) : base(fallback, factories)
+        public RemoteProjectSnapshotProjectEngineFactory(FilePathNormalizer filePathNormalizer,
+            Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[] factories) : 
+            base(FallbackProjectEngineFactory, factories)
         {
-            if (fallback == null)
-            {
-                throw new ArgumentNullException(nameof(fallback));
-            }
-
-            if (factories == null)
-            {
-                throw new ArgumentNullException(nameof(factories));
-            }
-
             if (filePathNormalizer == null)
             {
                 throw new ArgumentNullException(nameof(filePathNormalizer));
@@ -37,12 +29,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         public override RazorProjectEngine Create(
-            RazorConfiguration configuration, 
-            RazorProjectFileSystem fileSystem, 
+            RazorConfiguration configuration,
+            RazorProjectFileSystem fileSystem,
             Action<RazorProjectEngineBuilder> configure)
         {
-            var remoteFileSystem = new RemoteRazorProjectFileSystem(_filePathNormalizer);
+            if (!(fileSystem is DefaultRazorProjectFileSystem defaultFileSystem))
+            {
+                Debug.Fail("Unexpected file system.");
+                return null;
+            }
 
+            var remoteFileSystem = new RemoteRazorProjectFileSystem(defaultFileSystem.Root, _filePathNormalizer);
             return base.Create(configuration, remoteFileSystem, configure);
         }
     }

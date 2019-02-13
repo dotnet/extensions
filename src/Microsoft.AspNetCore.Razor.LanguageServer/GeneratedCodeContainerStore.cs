@@ -5,8 +5,8 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal abstract class HostDocumentFactory
+    internal abstract class GeneratedCodeContainerStore : ProjectSnapshotChangeTrigger
     {
-        public abstract HostDocument Create(string documentFilePath, ProjectSnapshot projectSnapshot);
+        public abstract GeneratedCodeContainer Get(string physicalFilePath);
     }
 }

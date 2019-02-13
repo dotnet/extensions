@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
             }
 
-            var hostDocument = _hostDocumentFactory.Create(textDocumentPath);
+            var hostDocument = _hostDocumentFactory.Create(textDocumentPath, projectSnapshot);
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
 
             _logger.LogInformation($"Adding document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
@@ -274,8 +274,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
                 var textLoader = new DocumentSnapshotTextLoader(documentSnapshot);
                 var defaultToProject = (DefaultProjectSnapshot)toProject;
+                var oldHostDocument = documentSnapshot.State.HostDocument;
+                var newHostDocument = _hostDocumentFactory.Create(documentSnapshot.FilePath, defaultToProject);
                 _logger.LogInformation($"Migrating '{documentFilePath}' from the '{project.FilePath}' project to '{toProject.FilePath}' project.");
-                _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultToProject.HostProject, documentSnapshot.State.HostDocument, textLoader);
+                _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultToProject.HostProject, newHostDocument, textLoader);
             }
         }
 
@@ -303,8 +305,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
                 var textLoader = new DocumentSnapshotTextLoader(documentSnapshot);
                 var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
+                var newHostDocument = _hostDocumentFactory.Create(documentSnapshot.FilePath, defaultProject);
                 _logger.LogInformation($"Migrating '{documentFilePath}' from the '{miscellaneousProject.FilePath}' project to '{projectSnapshot.FilePath}' project.");
-                _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, documentSnapshot.State.HostDocument, textLoader);
+                _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, newHostDocument, textLoader);
             }
         }
 

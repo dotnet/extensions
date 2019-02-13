@@ -79,10 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     var services = AdhocServices.Create(
                         workspaceServices: new[]
                         {
-                            new RemoteProjectSnapshotProjectEngineFactory(
-                                new FallbackProjectEngineFactory(),
-                                projectEngineFactories,
-                                _filePathNormalizer)
+                            new RemoteProjectSnapshotProjectEngineFactory(_filePathNormalizer, projectEngineFactories)
                         },
                         razorLanguageServices: new[]
                         {
