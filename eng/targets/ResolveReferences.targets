@@ -31,7 +31,17 @@
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
   </PropertyGroup>
 
+  <ItemDefinitionGroup>
+    <Reference>
+      <IsSharedSource></IsSharedSource>
+    </Reference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
+    <Reference Update="@(Reference)">
+      <IsSharedSource Condition="'%(IsSharedSource)' == '' AND $([System.String]::new('%(Identity)').EndsWith('.Sources'))">true</IsSharedSource>
+    </Reference>
+
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
     <_OriginalReferences Include="@(Reference)" />
@@ -66,8 +76,8 @@
 
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
-        <IncludeAssets Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))">ContentFiles</IncludeAssets>
-        <PrivateAssets Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))">All</PrivateAssets>
+        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles</IncludeAssets>
+        <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
       </Reference>
 
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
