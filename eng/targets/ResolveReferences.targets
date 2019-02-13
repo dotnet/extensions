@@ -64,6 +64,12 @@
       <Reference Include="@(_ReferenceTemp)" />
       <_ReferenceTemp Remove="@(_ReferenceTemp)" />
 
+      <!-- Ensure only content asset are consumed from .Sources packages -->
+      <Reference>
+        <IncludeAssets Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))">ContentFiles</IncludeAssets>
+        <PrivateAssets Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))">All</PrivateAssets>
+      </Reference>
+
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
 
       <!--
