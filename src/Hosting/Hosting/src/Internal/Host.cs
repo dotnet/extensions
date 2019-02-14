@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Hosting.Internal
         private readonly HostOptions _options;
         private IEnumerable<IHostedService> _hostedServices;
 
-        public Host(IServiceProvider services, IAppLifetime applicationLifetime, ILogger<Host> logger,
+        public Host(IServiceProvider services, IHostApplicationLifetime applicationLifetime, ILogger<Host> logger,
             IHostLifetime hostLifetime, IOptions<HostOptions> options)
         {
             Services = services ?? throw new ArgumentNullException(nameof(services));

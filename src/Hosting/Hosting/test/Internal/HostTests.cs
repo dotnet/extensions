@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                    })
                    .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IAppLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 lifetime.StopApplication();
 
                 var svc = (TestHostedService)host.Services.GetRequiredService<IHostedService>();
@@ -434,7 +434,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 .ConfigureServices((services) => services.AddSingleton<IHostedService, FakeHostedService>())
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IAppLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 service = (FakeHostedService)host.Services.GetRequiredService<IHostedService>();
 
                 var cts = new CancellationTokenSource();
@@ -560,7 +560,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             using (var host = CreateBuilder()
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IAppLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 var applicationStartedEvent = new ManualResetEventSlim(false);
                 var applicationStoppingEvent = new ManualResetEventSlim(false);
                 var applicationStoppedEvent = new ManualResetEventSlim(false);
@@ -651,7 +651,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             using (var host = CreateBuilder()
                 .Build())
             {
-                var applicationLifetime = host.Services.GetService<IAppLifetime>();
+                var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
 
                 Assert.False(applicationLifetime.ApplicationStarted.IsCancellationRequested);
 
@@ -666,7 +666,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             using (var host = CreateBuilder()
                 .Build())
             {
-                var applicationLifetime = host.Services.GetService<IAppLifetime>();
+                var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
 
                 var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
                 var stopping = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopping);
@@ -709,7 +709,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 })
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IAppLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 lifetime.StopApplication();
 
                 await host.StartAsync();
@@ -731,7 +731,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                    })
                    .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IAppLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 lifetime.StopApplication();
 
                 await host.StartAsync();
@@ -772,7 +772,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 })
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IAppLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
                 Assert.Equal(0, startedCalls);
 
@@ -824,7 +824,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 })
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IAppLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
                 Assert.Equal(0, startedCalls);
                 await host.StartAsync();
@@ -852,7 +852,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 })
                 .Build())
             {
-                var applicationLifetime = host.Services.GetService<IAppLifetime>();
+                var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
 
                 var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
                 var stopping = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopping);
@@ -927,9 +927,9 @@ namespace Microsoft.Extensions.Hosting.Internal
 
         private class TestHostedService : IHostedService, IDisposable
         {
-            private readonly IAppLifetime _lifetime;
+            private readonly IHostApplicationLifetime _lifetime;
 
-            public TestHostedService(IAppLifetime lifetime)
+            public TestHostedService(IHostApplicationLifetime lifetime)
             {
                 _lifetime = lifetime;
             }

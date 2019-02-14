@@ -13,16 +13,16 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
     {
         private TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>();
 
-        public ServiceBaseLifetime(IHostingEnvironment environment, IAppLifetime applicationLifetime, ILoggerFactory loggerFactory)
+        public ServiceBaseLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory)
         {
             Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
             Logger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
         }
 
-        public IHostingEnvironment Environment { get; }
+        private IHostEnvironment Environment { get; }
         private ILogger Logger { get; }
-        private IAppLifetime ApplicationLifetime { get; }
+        private IHostApplicationLifetime ApplicationLifetime { get; }
 
         public Task WaitForStartAsync(CancellationToken cancellationToken)
         {

@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Hosting
     /// <summary>
     /// Extension methods for <see cref="IHostEnvironment"/>.
     /// </summary>
-    public static class HostEnvironmentExtensions
+    public static class HostEnvironmentEnvExtensions
     {
         /// <summary>
         /// Checks if the current host environment name is <see cref="EnvironmentName.Development"/>.

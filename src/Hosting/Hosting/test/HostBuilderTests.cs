@@ -301,7 +301,7 @@ namespace Microsoft.Extensions.Hosting
 #pragma warning disable CS0618 // Type or member is obsolete
                 Assert.NotNull(host.Services.GetRequiredService<IApplicationLifetime>());
 #pragma warning restore CS0618 // Type or member is obsolete
-                Assert.NotNull(host.Services.GetRequiredService<IAppLifetime>());
+                Assert.NotNull(host.Services.GetRequiredService<IHostApplicationLifetime>());
                 Assert.NotNull(host.Services.GetRequiredService<ILoggerFactory>());
                 Assert.NotNull(host.Services.GetRequiredService<IOptions<FakeOptions>>());
             }

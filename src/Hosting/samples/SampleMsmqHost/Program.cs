@@ -59,7 +59,7 @@ namespace SampleMsmqHost
         private static void StartReadLoop(IHost host)
         {
             var connection = host.Services.GetRequiredService<IMsmqConnection>();
-            var applicationLifetime = host.Services.GetRequiredService<IAppLifetime>();
+            var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
             // run the read loop in a background thread so that it can be stopped with CTRL+C
             Task.Run(() => ReadLoop(connection, applicationLifetime.ApplicationStopping));

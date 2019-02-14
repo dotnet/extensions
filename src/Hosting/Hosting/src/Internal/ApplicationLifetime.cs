@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Hosting.Internal
     /// Allows consumers to perform cleanup during a graceful shutdown.
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
-    public class ApplicationLifetime : IApplicationLifetime, IAppLifetime
+    public class ApplicationLifetime : IApplicationLifetime, IHostApplicationLifetime
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly CancellationTokenSource _startedSource = new CancellationTokenSource();

@@ -192,9 +192,9 @@ namespace Microsoft.Extensions.Hosting
             services.AddSingleton(_hostBuilderContext);
             services.AddSingleton(_appConfiguration);
 #pragma warning disable CS0618 // Type or member is obsolete
-            services.AddSingleton<IApplicationLifetime>(s => (IApplicationLifetime)s.GetService<IAppLifetime>());
+            services.AddSingleton<IApplicationLifetime>(s => (IApplicationLifetime)s.GetService<IHostApplicationLifetime>());
 #pragma warning restore CS0618 // Type or member is obsolete
-            services.AddSingleton<IAppLifetime, ApplicationLifetime>();
+            services.AddSingleton<IHostApplicationLifetime, ApplicationLifetime>();
             services.AddSingleton<IHostLifetime, ConsoleLifetime>();
             services.AddSingleton<IHost, Internal.Host>();
             services.AddOptions();

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Hosting
     /// <summary>
     /// Allows consumers to perform cleanup during a graceful shutdown.
     /// </summary>
-    [Obsolete("Use IAppLifetime instead.", error: false)]
+    [Obsolete("Use IHostApplicationLifetime instead.", error: false)]
     public interface IApplicationLifetime
     {
         /// <summary>
