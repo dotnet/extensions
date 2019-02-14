@@ -1,7 +1,7 @@
 Reference assemblies
 ========================
 
-Most projects in this solution have `ref` directory next to `src` that contains project and source code for reference assembly.
+Most projects in this repo have a `ref` directory next to their `src` that contains the project and source code for a reference assembly.
 Reference assemblies contain public API surface of libraries and are used for ASP.NET Core targeting pack generation.
 
 ### When changing public API
