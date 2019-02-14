@@ -6,7 +6,7 @@ Reference assemblies contain public API surface of libraries and are used for AS
 
 ### When changing public API
 
-Run `dotnet msbuild /t:GenerateReferenceSource` in projects `src` directory
+Run `dotnet msbuild /t:GenerateReferenceSource` in that project's `src` directory
 
 ### When adding a new project
 
