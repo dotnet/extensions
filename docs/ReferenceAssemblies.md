@@ -18,7 +18,7 @@ Run `.\eng\scripts\GenerateProjectList.ps1` from the repository root and `dotnet
 
 ### My project doesn't need reference assembly
 
-Set `<HasReferenceAssembly>false</HasReferenceAssembly>` in implementation (`src`) project and re-run `.\eng\scripts\GenerateProjectList.ps1`.
+Set `<HasReferenceAssembly>false</HasReferenceAssembly>` in the implementation (`src`) project and re-run `.\eng\scripts\GenerateProjectList.ps1`.
 
 ### Regenerate reference assemblies for all projects
 
