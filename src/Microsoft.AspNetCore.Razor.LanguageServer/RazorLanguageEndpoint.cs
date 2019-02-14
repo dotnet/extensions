@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -91,7 +92,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var syntaxTree = codeDocument.GetSyntaxTree();
             var classifiedSpans = syntaxTree.GetClassifiedSpans();
-            var languageKind = GetLanguageKind(classifiedSpans, hostDocumentIndex);
+            var tagHelperSpans = syntaxTree.GetTagHelperSpans();
+            var languageKind = GetLanguageKind(classifiedSpans, tagHelperSpans, hostDocumentIndex);
 
             var responsePositionIndex = hostDocumentIndex;
 
@@ -126,7 +128,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         // Internal for testing
-        internal static RazorLanguageKind GetLanguageKind(IReadOnlyList<ClassifiedSpanInternal> classifiedSpans, int absoluteIndex)
+        internal static RazorLanguageKind GetLanguageKind(
+            IReadOnlyList<ClassifiedSpanInternal> classifiedSpans,
+            IReadOnlyList<TagHelperSpanInternal> tagHelperSpans,
+            int absoluteIndex)
         {
             for (var i = 0; i < classifiedSpans.Count; i++)
             {
@@ -142,9 +147,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         {
                             // We're at an edge.
 
-                            if (classifiedSpan.AcceptedCharacters == AcceptedCharactersInternal.None)
+                            if (span.Length > 0 &&
+                                classifiedSpan.AcceptedCharacters == AcceptedCharactersInternal.None)
                             {
-                                // This span doesn't own the edge after it
+                                // Non-marker spans do not own the edges after it
                                 continue;
                             }
                         }
@@ -158,12 +164,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                                 return RazorLanguageKind.CSharp;
                         }
 
-                        break;
+                        // Content type was non-C# or Html or we couldn't find a classified span overlapping the request position.
+                        // All other classified span kinds default back to Razor
+                        return RazorLanguageKind.Razor;
                     }
                 }
             }
 
-            // Content type was non-C# or Html or we couldn't find a classified span overlapping the request position.
+            for (var i = 0; i < tagHelperSpans.Count; i++)
+            {
+                var tagHelperSpan = tagHelperSpans[i];
+                var span = tagHelperSpan.Span;
+
+                if (span.AbsoluteIndex <= absoluteIndex)
+                {
+                    var end = span.AbsoluteIndex + span.Length;
+                    if (end >= absoluteIndex)
+                    {
+                        if (end == absoluteIndex)
+                        {
+                            // We're at an edge. TagHelper spans never own their edge and aren't represented by marker spans
+                            continue;
+                        }
+
+                        // Found intersection
+                        return RazorLanguageKind.Html;
+                    }
+                }
+            }
+
             // Default to Razor
             return RazorLanguageKind.Razor;
         }

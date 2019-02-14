@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure;
 using Xunit;
 using Xunit.Sdk;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceDocument = TestRazorSourceDocument.Create("<strong>Hello World!</strong>", RazorSourceDocumentProperties.Default);
 
             // Act
-            var codeDocument = engine.ProcessDesignTime(sourceDocument, Array.Empty<RazorSourceDocument>(), Array.Empty<TagHelperDescriptor>());
+            var codeDocument = engine.ProcessDesignTime(sourceDocument, "test", Array.Empty<RazorSourceDocument>(), Array.Empty<TagHelperDescriptor>());
 
             // Assert
             Assert.Equal(UnsupportedCSharpLoweringPhase.UnsupportedDisclaimer, codeDocument.GetCSharpDocument().GeneratedCode);

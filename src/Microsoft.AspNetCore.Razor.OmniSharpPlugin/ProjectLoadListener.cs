@@ -8,12 +8,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Serialization;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Execution;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OmniSharp;
 using OmniSharp.MSBuild.Notification;
 
 namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
@@ -33,15 +36,36 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         private const string DebugRazorOmnisharpPluginPropertyName = "_DebugRazorOmnisharpPlugin_";
         private readonly ILogger _logger;
         private readonly IEnumerable<RazorConfigurationProvider> _projectConfigurationProviders;
+        private readonly ProjectEngineFactory _projectEngineFactory;
+        private readonly TagHelperResolver _tagHelperResolver;
+        private readonly OmniSharpWorkspace _workspace;
 
         [ImportingConstructor]
         public ProjectLoadListener(
             [ImportMany] IEnumerable<RazorConfigurationProvider> projectConfigurationProviders,
+            ProjectEngineFactory projectEngineFactory,
+            TagHelperResolver tagHelperResolver,
+            OmniSharpWorkspace workspace,
             ILoggerFactory loggerFactory)
         {
             if (projectConfigurationProviders == null)
             {
                 throw new ArgumentNullException(nameof(projectConfigurationProviders));
+            }
+
+            if (projectEngineFactory == null)
+            {
+                throw new ArgumentNullException(nameof(projectEngineFactory));
+            }
+
+            if (tagHelperResolver == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperResolver));
+            }
+
+            if (workspace == null)
+            {
+                throw new ArgumentNullException(nameof(workspace));
             }
 
             if (loggerFactory == null)
@@ -51,9 +75,12 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
 
             _logger = loggerFactory.CreateLogger<ProjectLoadListener>();
             _projectConfigurationProviders = projectConfigurationProviders;
+            _projectEngineFactory = projectEngineFactory;
+            _tagHelperResolver = tagHelperResolver;
+            _workspace = workspace;
         }
 
-        public void ProjectLoaded(ProjectLoadedEventArgs args)
+        public async void ProjectLoaded(ProjectLoadedEventArgs args)
         {
             try
             {
@@ -78,12 +105,20 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                     return;
                 }
 
-                var razorConfiguration = GetRazorConfiguration(args.ProjectInstance);
+                var razorConfiguration = GetRazorConfiguration(args.ProjectInstance, _projectConfigurationProviders);
+                var projectDirectory = args.ProjectInstance.GetPropertyValue(MSBuildProjectDirectoryPropertyName);
+                var fileSystem = RazorProjectFileSystem.Create(projectDirectory);
+                var projectEngine = _projectEngineFactory.Create(razorConfiguration, fileSystem, (builder) => { });
+                var project = _workspace.CurrentSolution.GetProject(args.Id);
+                var tagHelpers = await _tagHelperResolver.GetTagHelpersAsync(project, projectEngine, CancellationToken.None);
+                var projectWorkspaceState = new ProjectWorkspaceState(tagHelpers);
+
                 var projectConfiguration = new RazorProjectConfiguration()
                 {
                     ProjectFilePath = projectFilePath,
                     Configuration = razorConfiguration,
                     TargetFramework = targetFramework,
+                    ProjectWorkspaceState = projectWorkspaceState,
                 };
 
                 var serializedOutput = JsonConvert.SerializeObject(
@@ -107,15 +142,27 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         }
 
         // Internal for testing
-        internal RazorConfiguration GetRazorConfiguration(ProjectInstance projectInstance)
+        internal static RazorConfiguration GetRazorConfiguration(
+            ProjectInstance projectInstance, 
+            IEnumerable<RazorConfigurationProvider> projectConfigurationProviders)
         {
+            if (projectInstance == null)
+            {
+                throw new ArgumentNullException(nameof(projectInstance));
+            }
+
+            if (projectConfigurationProviders == null)
+            {
+                throw new ArgumentNullException(nameof(projectConfigurationProviders));
+            }
+
             var projectCapabilities = projectInstance
                 .GetItems(ProjectCapabilityItemType)
                 .Select(capability => capability.EvaluatedInclude)
                 .ToList();
 
             var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
-            foreach (var projectConfigurationProvider in _projectConfigurationProviders)
+            foreach (var projectConfigurationProvider in projectConfigurationProviders)
             {
                 if (projectConfigurationProvider.TryResolveConfiguration(context, out var configuration))
                 {

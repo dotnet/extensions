@@ -168,7 +168,7 @@ export class RazorProjectManager {
                 projectPath: projectFilePath,
                 projectUri,
                 configuration: projectParsed.Configuration,
-                tagHelpers: projectParsed.TagHelpers,
+                projectWorkspaceState: projectParsed.ProjectWorkspaceState,
                 targetFramework: projectParsed.TargetFramework,
                 lastUpdated,
             };

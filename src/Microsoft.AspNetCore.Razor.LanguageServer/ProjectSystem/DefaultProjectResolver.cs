@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var miscellaneousProject = _projectSnapshotManagerAccessor.Instance.GetLoadedProject(_miscellaneousHostProject.FilePath);
             if (miscellaneousProject == null)
             {
-                _projectSnapshotManagerAccessor.Instance.HostProjectAdded(_miscellaneousHostProject);
+                _projectSnapshotManagerAccessor.Instance.ProjectAdded(_miscellaneousHostProject);
                 miscellaneousProject = _projectSnapshotManagerAccessor.Instance.GetLoadedProject(_miscellaneousHostProject.FilePath);
             }
 

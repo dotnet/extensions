@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 .Returns(() => projects);
             snapshotManager.Setup(manager => manager.GetLoadedProject(It.IsAny<string>()))
                 .Returns<string>(filePath => projects.FirstOrDefault(p => p.FilePath == filePath));
-            snapshotManager.Setup(manager => manager.HostProjectAdded(It.IsAny<HostProject>()))
+            snapshotManager.Setup(manager => manager.ProjectAdded(It.IsAny<HostProject>()))
                 .Callback<HostProject>(hostProject => projects.Add(Mock.Of<ProjectSnapshot>(p => p.FilePath == hostProject.FilePath)));
             var snapshotManagerAccessor = Mock.Of<ProjectSnapshotManagerAccessor>(accessor => accessor.Instance == snapshotManager.Object);
             projectResolver = new DefaultProjectResolver(Dispatcher, filePathNormalizer, snapshotManagerAccessor);

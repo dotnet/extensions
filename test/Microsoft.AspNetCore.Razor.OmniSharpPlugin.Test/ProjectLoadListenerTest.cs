@@ -80,7 +80,6 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.AddItem(ProjectLoadListener.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
-            var loggerFactory = Mock.Of<ILoggerFactory>();
             var provider1 = new Mock<RazorConfigurationProvider>();
             var configuration = RazorConfiguration.Default; // Setting to non-null to ensure the listener doesn't return the config verbatim.
             provider1.Setup(p => p.TryResolveConfiguration(It.IsAny<RazorConfigurationProviderContext>(), out configuration))
@@ -88,10 +87,9 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var provider2 = new Mock<RazorConfigurationProvider>();
             provider2.Setup(p => p.TryResolveConfiguration(It.IsAny<RazorConfigurationProviderContext>(), out configuration))
                 .Returns(true);
-            var projectLoadListener = new ProjectLoadListener(new[] { provider1.Object, provider2.Object }, loggerFactory);
 
             // Act
-            var result = projectLoadListener.GetRazorConfiguration(projectInstance);
+            var result = ProjectLoadListener.GetRazorConfiguration(projectInstance, new[] { provider1.Object, provider2.Object });
 
             // Assert
             Assert.Same(configuration, result);
@@ -103,15 +101,13 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.AddItem(ProjectLoadListener.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
-            var loggerFactory = Mock.Of<ILoggerFactory>();
             var provider = new Mock<RazorConfigurationProvider>();
             var configuration = RazorConfiguration.Default; // Setting to non-null to ensure the listener doesn't return the config verbatim.
             provider.Setup(p => p.TryResolveConfiguration(It.IsAny<RazorConfigurationProviderContext>(), out configuration))
                 .Returns(false);
-            var projectLoadListener = new ProjectLoadListener(Enumerable.Empty<RazorConfigurationProvider>(), loggerFactory);
 
             // Act
-            var result = projectLoadListener.GetRazorConfiguration(projectInstance);
+            var result = ProjectLoadListener.GetRazorConfiguration(projectInstance, Enumerable.Empty<RazorConfigurationProvider>());
 
             // Assert
             Assert.Null(result);
@@ -123,11 +119,9 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.AddItem(ProjectLoadListener.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
-            var loggerFactory = Mock.Of<ILoggerFactory>();
-            var projectLoadListener = new ProjectLoadListener(Enumerable.Empty<RazorConfigurationProvider>(), loggerFactory);
 
             // Act
-            var result = projectLoadListener.GetRazorConfiguration(projectInstance);
+            var result = ProjectLoadListener.GetRazorConfiguration(projectInstance, Enumerable.Empty<RazorConfigurationProvider>());
 
             // Assert
             Assert.Null(result);

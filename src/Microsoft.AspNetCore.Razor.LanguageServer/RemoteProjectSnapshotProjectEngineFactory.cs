@@ -4,9 +4,9 @@
 using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -16,9 +16,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private readonly FilePathNormalizer _filePathNormalizer;
 
-        public RemoteProjectSnapshotProjectEngineFactory(FilePathNormalizer filePathNormalizer,
-            Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[] factories) : 
-            base(FallbackProjectEngineFactory, factories)
+        public RemoteProjectSnapshotProjectEngineFactory(FilePathNormalizer filePathNormalizer) : 
+            base(FallbackProjectEngineFactory, ProjectEngineFactories.Factories)
         {
             if (filePathNormalizer == null)
             {

@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectFilePath = "/C:/path/to/project.csproj";
             var container = Store.Get(documentFilePath);
             var project = new HostProject(projectFilePath, RazorConfiguration.Default);
-            ProjectManager.HostProjectAdded(project);
+            ProjectManager.ProjectAdded(project);
             var document = new HostDocument(documentFilePath, "file.cshtml");
             ProjectManager.DocumentAdded(project, document, null);
             ProjectManager.DocumentOpened(projectFilePath, documentFilePath, SourceText.From(string.Empty));

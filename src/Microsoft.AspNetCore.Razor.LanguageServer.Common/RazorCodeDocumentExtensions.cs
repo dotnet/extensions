@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
     internal static class RazorCodeDocumentExtensions
     {

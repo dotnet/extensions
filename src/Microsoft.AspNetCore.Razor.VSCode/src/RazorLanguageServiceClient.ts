@@ -61,7 +61,7 @@ export class RazorLanguageServiceClient {
 
         const request: UpdateProjectRequest = {
             projectFilePath: project.uri.fsPath,
-            tagHelpers: project.configuration ? project.configuration.tagHelpers : [],
+            projectWorkspaceState: project.configuration ? project.configuration.projectWorkspaceState : null,
             targetFramework: project.configuration ? project.configuration.targetFramework : undefined,
             configuration: project.configuration ? project.configuration.configuration : undefined,
         };

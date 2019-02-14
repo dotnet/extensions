@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             document.TryGetTextVersion(out var textVersion);
             var textAndVersion = TextAndVersion.Create(text, textVersion);
             documentVersionCache.TrackDocumentVersion(document, 1337);
-            projectSnapshotManager.HostProjectAdded(document.ProjectInternal.HostProject);
+            projectSnapshotManager.ProjectAdded(document.ProjectInternal.HostProject);
             projectSnapshotManager.DocumentAdded(document.ProjectInternal.HostProject, document.State.HostDocument, TextLoader.From(textAndVersion));
 
             // Act - 1
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             document.TryGetTextVersion(out var textVersion);
             var textAndVersion = TextAndVersion.Create(text, textVersion);
             documentVersionCache.TrackDocumentVersion(document, 1337);
-            projectSnapshotManager.HostProjectAdded(document.ProjectInternal.HostProject);
+            projectSnapshotManager.ProjectAdded(document.ProjectInternal.HostProject);
             var textLoader = TextLoader.From(textAndVersion);
             projectSnapshotManager.DocumentAdded(document.ProjectInternal.HostProject, document.State.HostDocument, textLoader);
 

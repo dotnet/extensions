@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.Embedded.MediatR;
 
@@ -95,7 +96,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             await Task.Factory.StartNew(
-                () => _projectService.UpdateProject(request.ProjectFilePath, request.Configuration),
+                () => _projectService.UpdateProject(
+                    request.ProjectFilePath, 
+                    request.Configuration, 
+                    request.ProjectWorkspaceState ?? ProjectWorkspaceState.Default),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);

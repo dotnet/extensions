@@ -4,9 +4,9 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
-    internal static class UnsupportedRazorConfiguration
+    public static class UnsupportedRazorConfiguration
     {
         public static readonly RazorConfiguration Instance = RazorConfiguration.Create(
             RazorLanguageVersion.Version_1_0,

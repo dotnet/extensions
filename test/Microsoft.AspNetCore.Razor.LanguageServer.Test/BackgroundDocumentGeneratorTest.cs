@@ -51,8 +51,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
-            projectManager.HostProjectAdded(HostProject1);
-            projectManager.HostProjectAdded(HostProject2);
+            projectManager.ProjectAdded(HostProject1);
+            projectManager.ProjectAdded(HostProject2);
             projectManager.DocumentAdded(HostProject1, Documents[0], null);
             projectManager.DocumentAdded(HostProject1, Documents[1], null);
 
@@ -88,8 +88,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
-            projectManager.HostProjectAdded(HostProject1);
-            projectManager.HostProjectAdded(HostProject2);
+            projectManager.ProjectAdded(HostProject1);
+            projectManager.ProjectAdded(HostProject2);
             projectManager.DocumentAdded(HostProject1, Documents[0], null);
             projectManager.DocumentAdded(HostProject1, Documents[1], null);
 

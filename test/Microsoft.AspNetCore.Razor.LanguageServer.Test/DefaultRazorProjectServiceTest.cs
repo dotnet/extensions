@@ -26,12 +26,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
                 .Returns(ownerProject);
-            projectSnapshotManager.Setup(manager => manager.HostProjectChanged(It.IsAny<HostProject>()))
+            projectSnapshotManager.Setup(manager => manager.ProjectWorkspaceStateChanged(It.IsAny<string>(), It.IsAny<ProjectWorkspaceState>()));
+            projectSnapshotManager.Setup(manager => manager.ProjectConfigurationChanged(It.IsAny<HostProject>()))
                 .Throws(new XunitException("Should not have been called."));
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act & Assert
-            projectService.UpdateProject(projectFilePath, ownerProject.Configuration);
+            projectService.UpdateProject(projectFilePath, ownerProject.Configuration, ProjectWorkspaceState.Default);
         }
 
         [Fact]
@@ -43,7 +44,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
                 .Returns(ownerProject);
-            projectSnapshotManager.Setup(manager => manager.HostProjectChanged(It.IsAny<HostProject>()))
+            projectSnapshotManager.Setup(manager => manager.ProjectWorkspaceStateChanged(It.IsAny<string>(), It.IsAny<ProjectWorkspaceState>()));
+            projectSnapshotManager.Setup(manager => manager.ProjectConfigurationChanged(It.IsAny<HostProject>()))
                 .Callback<HostProject>((hostProject) =>
                 {
                     Assert.Same(RazorDefaults.Configuration, hostProject.Configuration);
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act
-            projectService.UpdateProject(projectFilePath, configuration: null);
+            projectService.UpdateProject(projectFilePath, configuration: null, ProjectWorkspaceState.Default);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -67,7 +69,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
                 .Returns(ownerProject);
-            projectSnapshotManager.Setup(manager => manager.HostProjectChanged(It.IsAny<HostProject>()))
+            projectSnapshotManager.Setup(manager => manager.ProjectWorkspaceStateChanged(It.IsAny<string>(), It.IsAny<ProjectWorkspaceState>()));
+            projectSnapshotManager.Setup(manager => manager.ProjectConfigurationChanged(It.IsAny<HostProject>()))
                 .Callback<HostProject>((hostProject) =>
                 {
                     Assert.Same(FallbackRazorConfiguration.MVC_1_1, hostProject.Configuration);
@@ -76,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act
-            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1);
+            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, ProjectWorkspaceState.Default);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -90,12 +93,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
                 .Returns<ProjectSnapshot>(null);
-            projectSnapshotManager.Setup(manager => manager.HostProjectChanged(It.IsAny<HostProject>()))
+            projectSnapshotManager.Setup(manager => manager.ProjectConfigurationChanged(It.IsAny<HostProject>()))
                 .Throws(new XunitException("Should not have been called."));
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act & Assert
-            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1);
+            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, ProjectWorkspaceState.Default);
         }
 
         [Fact]
@@ -550,7 +553,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var miscellaneousProject = TestProjectSnapshot.Create("/__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
-            projectSnapshotManager.Setup(manager => manager.HostProjectAdded(It.IsAny<HostProject>()))
+            projectSnapshotManager.Setup(manager => manager.ProjectAdded(It.IsAny<HostProject>()))
                 .Callback<HostProject>((hostProject) =>
                 {
                     Assert.Equal(projectFilePath, hostProject.FilePath);
@@ -576,7 +579,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
                 .Returns(ownerProject);
-            projectSnapshotManager.Setup(manager => manager.HostProjectRemoved(ownerProject.HostProject))
+            projectSnapshotManager.Setup(manager => manager.ProjectRemoved(ownerProject.HostProject))
                 .Callback<HostProject>((hostProject) =>
                 {
                     Assert.Equal(projectFilePath, hostProject.FilePath);
@@ -598,7 +601,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var miscellaneousProject = TestProjectSnapshot.Create("/__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>();
-            projectSnapshotManager.Setup(manager => manager.HostProjectRemoved(It.IsAny<HostProject>()))
+            projectSnapshotManager.Setup(manager => manager.ProjectRemoved(It.IsAny<HostProject>()))
                 .Throws(new InvalidOperationException("Should not have been called."));
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
 

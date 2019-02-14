@@ -3,7 +3,7 @@
 
 using System.Composition;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {

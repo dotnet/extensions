@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         public string TargetFramework { get; set; }
 
-        public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; } = Array.Empty<TagHelperDescriptor>();
+        public ProjectWorkspaceState ProjectWorkspaceState { get; set; } = ProjectWorkspaceState.Default;
 
         public RazorConfiguration Configuration { get; set; }
 

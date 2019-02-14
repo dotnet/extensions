@@ -15,19 +15,16 @@
     <Compile Include="..\Microsoft.AspNetCore.Razor.LanguageServer\Serialization\*.cs">
       <Link>Serialization\%(FileName)%(Extension)</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNetCore.Razor.LanguageServer\UnsupportedRazorConfiguration.cs" Link="UnsupportedRazorConfiguration.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\modules\omnisharp-roslyn\src\OmniSharp.MSBuild\OmniSharp.MSBuild.csproj" ExcludeAssets="Runtime" Private="True" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer.Common\Microsoft.AspNetCore.Razor.LanguageServer.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="$(MicrosoftCodeAnalysisRazorWorkspacesPackageVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="System.Runtime" Version="$(SystemRuntimePackageVersion)" />
   </ItemGroup>
 
 </Project>

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.LanguageServer;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
 using Xunit;

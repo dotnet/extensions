@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -195,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             var normalizedPath = _filePathNormalizer.Normalize(filePath);
             var hostProject = new HostProject(normalizedPath, RazorDefaults.Configuration);
-            _projectSnapshotManagerAccessor.Instance.HostProjectAdded(hostProject);
+            _projectSnapshotManagerAccessor.Instance.ProjectAdded(hostProject);
             _logger.LogInformation($"Added project '{filePath}' to project system.");
 
             TryMigrateMiscellaneousDocumentsToProject();
@@ -215,12 +214,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
 
             _logger.LogInformation($"Removing project '{filePath}' from project system.");
-            _projectSnapshotManagerAccessor.Instance.HostProjectRemoved(project.HostProject);
+            _projectSnapshotManagerAccessor.Instance.ProjectRemoved(project.HostProject);
 
             TryMigrateDocumentsFromRemovedProject(project);
         }
 
-        public override void UpdateProject(string filePath, RazorConfiguration configuration)
+        public override void UpdateProject(
+            string filePath,
+            RazorConfiguration configuration,
+            ProjectWorkspaceState projectWorkspaceState)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -234,10 +236,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 return;
             }
 
+            if (!projectWorkspaceState.Equals(ProjectWorkspaceState.Default))
+            {
+                _logger.LogInformation($"Updating project '{filePath}' TagHelpers ({projectWorkspaceState.TagHelpers.Count}).");
+            }
+
+            _projectSnapshotManagerAccessor.Instance.ProjectWorkspaceStateChanged(project.FilePath, projectWorkspaceState);
+
             var currentConfiguration = project.HostProject.Configuration;
             if (currentConfiguration.ConfigurationName == configuration?.ConfigurationName)
             {
-                _logger.LogTrace($"Updating project '{filePath}' ignored. The project is already using configuration '{configuration.ConfigurationName}'.");
+                _logger.LogTrace($"Updating project '{filePath}'. The project is already using configuration '{configuration.ConfigurationName}'.");
                 return;
             }
 
@@ -252,7 +261,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
 
             var hostProject = new HostProject(project.FilePath, configuration);
-            _projectSnapshotManagerAccessor.Instance.HostProjectChanged(hostProject);
+            _projectSnapshotManagerAccessor.Instance.ProjectConfigurationChanged(hostProject);
         }
 
         // Internal for testing
@@ -276,6 +285,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 var defaultToProject = (DefaultProjectSnapshot)toProject;
                 var oldHostDocument = documentSnapshot.State.HostDocument;
                 var newHostDocument = _hostDocumentFactory.Create(documentSnapshot.FilePath, defaultToProject);
+
                 _logger.LogInformation($"Migrating '{documentFilePath}' from the '{project.FilePath}' project to '{toProject.FilePath}' project.");
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultToProject.HostProject, newHostDocument, textLoader);
             }

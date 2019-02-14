@@ -48,11 +48,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
             }
         }
 
-        public override bool IsInitialized => throw new NotImplementedException();
-
         public override VersionStamp Version => throw new NotImplementedException();
-
-        public override Project WorkspaceProject => throw new NotImplementedException();
 
         public override DocumentSnapshot GetDocument(string filePath)
         {
@@ -69,14 +65,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
         public override RazorProjectEngine GetProjectEngine()
         {
             throw new NotImplementedException();
-        }
-
-        public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync() => Task.FromResult<IReadOnlyList<TagHelperDescriptor>>(Array.Empty<TagHelperDescriptor>());
-
-        public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
-        {
-            result = Array.Empty<TagHelperDescriptor>();
-            return true;
         }
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Blazor.Razor;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
     // This is a verbatim copy of Blazor's project engine implementation.
 

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using OmniSharp.Extensions.Embedded.MediatR;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
         public string TargetFramework { get; set; }
 
-        public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
+        public ProjectWorkspaceState ProjectWorkspaceState { get; set; }
 
         public RazorConfiguration Configuration { get; set; }
     }

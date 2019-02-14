@@ -6,6 +6,6 @@
 export interface UpdateProjectRequest {
     readonly projectFilePath: string;
     readonly targetFramework?: string;
-    readonly tagHelpers?: any[];
+    readonly projectWorkspaceState?: any;
     readonly configuration?: any;
 }

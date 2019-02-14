@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             var testProjectManager = TestProjectSnapshotManager.Create(Dispatcher);
             var hostProject = new HostProject("/C:/project/project.csproj", RazorConfiguration.Default);
-            testProjectManager.HostProjectAdded(hostProject);
+            testProjectManager.ProjectAdded(hostProject);
             var sourceText = SourceText.From(string.Empty);
             var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
             var openedHostDocument = new HostDocument("/C:/project/open_document.cshtml", "/C:/project/open_document.cshtml");

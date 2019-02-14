@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
@@ -52,39 +53,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 if (_instance == null)
                 {
-                    var projectEngineFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
-                    {
-                        new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new ProjectEngineFactory_1_0(),
-                            new ExportCustomProjectEngineFactoryAttribute("MVC-1.0") { SupportsSerialization = true }),
-                        new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new ProjectEngineFactory_1_1(),
-                            new ExportCustomProjectEngineFactoryAttribute("MVC-1.1") { SupportsSerialization = true }),
-                        new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new ProjectEngineFactory_2_0(),
-                            new ExportCustomProjectEngineFactoryAttribute("MVC-2.0") { SupportsSerialization = true }),
-                        new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new ProjectEngineFactory_2_1(),
-                            new ExportCustomProjectEngineFactoryAttribute("MVC-2.1") { SupportsSerialization = true }),
-                        new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new ProjectEngineFactory_3_0(),
-                            new ExportCustomProjectEngineFactoryAttribute("MVC-3.0") { SupportsSerialization = true }),
-                        new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new ProjectEngineFactory_Unsupported(),
-                            new ExportCustomProjectEngineFactoryAttribute(UnsupportedRazorConfiguration.Instance.ConfigurationName) { SupportsSerialization = true }),
-                        new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new ProjectEngineFactory_Blazor(),
-                            new ExportCustomProjectEngineFactoryAttribute("Blazor-0.1") { SupportsSerialization = false }),
-                    };
                     var services = AdhocServices.Create(
                         workspaceServices: new[]
                         {
-                            new RemoteProjectSnapshotProjectEngineFactory(_filePathNormalizer, projectEngineFactories)
+                            new RemoteProjectSnapshotProjectEngineFactory(_filePathNormalizer)
                         },
-                        razorLanguageServices: new[]
-                        {
-                            NoopTagHelperResolver.Instance
-                        });
+                        razorLanguageServices: Enumerable.Empty<ILanguageService>());
                     var workspace = new AdhocWorkspace(services);
                     _instance = new DefaultProjectSnapshotManager(
                         _foregroundDispatcher,
@@ -94,19 +68,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 }
 
                 return _instance;
-            }
-        }
-
-        private class NoopTagHelperResolver : TagHelperResolver
-        {
-            public static readonly NoopTagHelperResolver Instance = new NoopTagHelperResolver();
-            private NoopTagHelperResolver()
-            {
-            }
-
-            public override Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshot project, CancellationToken cancellationToken = default)
-            {
-                return Task.FromResult(TagHelperResolutionResult.Empty);
             }
         }
 
