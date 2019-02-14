@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public sealed class ServiceProvider : IServiceProvider, IDisposable, IServiceProviderEngineCallback
 #if DISPOSE_ASYNC
-        , IAsyncDisposable
+        ,IAsyncDisposable
 #endif
     {
         private readonly IServiceProviderEngine _engine;
