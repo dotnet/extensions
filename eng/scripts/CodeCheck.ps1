@@ -98,7 +98,7 @@ try {
     if ($LastExitCode -ne 0) {
         $status = git status -s | Out-String
         $status = $status -replace "`n","`n    "
-        LogError "Generated code is not up to date."
+        LogError "Generated code is not up to date. You might need to regenerate the reference assemblies or project list (see docs/ReferenceAssemblies.md and docs/ReferenceResolution.md)"
     }
 }
 finally {
