@@ -10,7 +10,7 @@ Run `dotnet msbuild /t:GenerateReferenceSource` in projects `src` directory
 
 ### When adding a new project
 
-Run `.\eng\scripts\GenerateProjectList.ps1` and `.\eng\scripts\GenerateReferenceAssemblies.ps1` from repository root
+Run `.\eng\scripts\GenerateProjectList.ps1` from repository root and `dotnet msbuild /t:GenerateReferenceSource` in projects `src` directory
 
 ### To set project properties in reference assembly project
 
@@ -18,4 +18,4 @@ Run `.\eng\scripts\GenerateProjectList.ps1` and `.\eng\scripts\GenerateReference
 
 ### My project doesn't need reference assembly
 
-Set `<HasReferenceAssembly>false</HasReferenceAssembly>` in implementation (`src`) project.
+Set `<HasReferenceAssembly>false</HasReferenceAssembly>` in implementation (`src`) project and re-run `.\eng\scripts\GenerateProjectList.ps1`.
