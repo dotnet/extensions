@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
+using System.Composition;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    [System.Composition.Shared]
+    [Shared]
     [Export(typeof(TagHelperFactsService))]
     internal class DefaultTagHelperFactsService : TagHelperFactsService
     {

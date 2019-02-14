@@ -3,15 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
+using System.Composition;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    [System.Composition.Shared]
+    [Shared]
     [Export(typeof(TagHelperCompletionService))]
     internal class DefaultTagHelperCompletionService : TagHelperCompletionService
     {
