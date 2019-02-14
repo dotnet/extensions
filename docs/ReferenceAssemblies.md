@@ -10,7 +10,7 @@ Run `dotnet msbuild /t:GenerateReferenceSource` in that project's `src` director
 
 ### When adding a new project
 
-Run `.\eng\scripts\GenerateProjectList.ps1` from repository root and `dotnet msbuild /t:GenerateReferenceSource` in projects `src` directory
+Run `.\eng\scripts\GenerateProjectList.ps1` from the repository root and `dotnet msbuild /t:GenerateReferenceSource` in that project's `src` directory
 
 ### To set project properties in reference assembly project
 
