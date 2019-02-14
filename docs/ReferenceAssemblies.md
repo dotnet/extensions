@@ -14,7 +14,7 @@ Run `.\eng\scripts\GenerateProjectList.ps1` from the repository root and `dotnet
 
 ### To set project properties in reference assembly project
 
-`ref.csproj` is automaticaly generated and shouldn't be edited. To set project properties on reference assembly project place `Directory.Build.props` next to it and add properties there.
+`ref.csproj` is automaticaly generated and shouldn't be edited. To set project properties on a reference assembly project place a `Directory.Build.props` next to it and add the properties there.
 
 ### My project doesn't need reference assembly
 
