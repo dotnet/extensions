@@ -2,7 +2,7 @@ Reference assemblies
 ========================
 
 Most projects in this repo have a `ref` directory next to their `src` that contains the project and source code for a reference assembly.
-Reference assemblies contain public API surface of libraries and are used for ASP.NET Core targeting pack generation.
+Reference assemblies contain the public API surface of libraries and are used for ASP.NET Core targeting pack generation.
 
 ### When changing public API
 
@@ -12,7 +12,7 @@ Run `dotnet msbuild /t:GenerateReferenceSource` in that project's `src` director
 
 Run `.\eng\scripts\GenerateProjectList.ps1` from the repository root and `dotnet msbuild /t:GenerateReferenceSource` in that project's `src` directory
 
-### To set project properties in reference assembly project
+### To set project properties in a reference assembly project
 
 `ref.csproj` is automaticaly generated and shouldn't be edited. To set project properties on a reference assembly project place a `Directory.Build.props` next to it and add the properties there.
 
