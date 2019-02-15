@@ -16,6 +16,9 @@ $repoRoot = Resolve-Path "$PSScriptRoot/../../"
 [string[]] $errors = @()
 
 function LogError([string]$message) {
+    if ($env:TF_BUILD) {
+        Write-Host "##vso[task.logissue type=error]$message"
+    }
     Write-Host -f Red "error: $message"
     $script:errors += $message
 }
