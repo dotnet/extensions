@@ -79,5 +79,22 @@ namespace Test
             var diagnostic = Assert.Single(generated.Diagnostics);
             Assert.Equal("BL9991", diagnostic.Id);
         }
+
+        [Fact]
+        public void Bind_InvalidUseOfDirective_DoesNotThrow()
+        {
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<input type=""text"" bind=""@page"" />
+@functions {
+    public string page { get; set; } = ""text"";
+}");
+
+            // Assert
+            Assert.Collection(
+                generated.Diagnostics,
+                d => Assert.Equal("RZ2005", d.Id),
+                d => Assert.Equal("RZ1011", d.Id));
+        }
     }
 }
