@@ -24,28 +24,34 @@ function LogError([string]$message) {
 }
 
 try {
+    #
+    # Solutions
+    #
+
     if ($ci) {
         & $PSScriptRoot\..\common\build.ps1 -ci -prepareMachine -build:$false -restore:$false
     }
 
-    Write-Host 'Running `darc verify`'
+    Write-Host "Checking that Versions.props and Version.Details.xml match"
+    [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
+    [xml] $versionDetails = Get-Content "$repoRoot/eng/Version.Details.xml"
+    foreach ($dep in $versionDetails.SelectNodes('//ProductDependencies/Dependency')) {
+        Write-Verbose "Found $dep"
+        $varName = $dep.Name -replace '\.',''
+        $varName = $varName -replace '\-',''
+        $varName = "${varName}PackageVersion"
+        $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
+        if (-not $versionVar) {
+            LogError "Missing version variable '$varName' in the 'Automated' property group in $repoRoot/eng/Versions.props"
+            continue
+        }
 
-    if ($ci) {
-        # Workaround the way darc-init and dotnet tool install work on CI
-        $artifactTmpDir = "$repoRoot/artifacts/tmp/"
-        mkdir $artifactTmpDir -ea ignore | out-null
-        Set-Content -path "$artifactTmpDir/Directory.Build.props" -value "<Project />"
-        Set-Content -path "$artifactTmpDir/Directory.Build.targets" -value "<Project />"
-    }
+        $expectedVersion = $dep.Version
+        $actualVersion = $versionVar.InnerText
 
-    & "$repoRoot/eng/common/darc-init.ps1"
-
-    try {
-        Invoke-Block { & darc verify --verbose }
-    }
-    catch {
-        LogError '`darc verify` failed'
-        exit 1
+        if ($expectedVersion -ne $actualVersion) {
+            LogError "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'"
+        }
     }
 
     Write-Host "Checking that solutions are up to date"
