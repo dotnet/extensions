@@ -28,7 +28,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>@(_ResultTargetFramework)</TargetFrameworks>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   @(ProjectListContentItem->'%(Identity)', '%0A')
 </Project>
