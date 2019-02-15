@@ -33,7 +33,7 @@ try {
     if ($ci) {
         # Workaround the way darc-init and dotnet tool install work on CI
         $artifactTmpDir = "$repoRoot/artifacts/tmp/"
-        mkdir $artifactTmpDir
+        mkdir $artifactTmpDir -ea ignore | out-null
         Set-Content -path "$artifactTmpDir/Directory.Build.props" -value "<Project />"
         Set-Content -path "$artifactTmpDir/Directory.Build.targets" -value "<Project />"
     }
