@@ -125,7 +125,8 @@
       <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
     </ItemGroup>
 
-    <Error Condition="@(_ExplicitPackageReference->Count()) != 0"
+    <!-- Disable RestoreProjectStyle=DotnetToolReference to workaround how 'dotnet tool install' works on CI. -->
+    <Error Condition="@(_ExplicitPackageReference->Count()) != 0 AND '$(RestoreProjectStyle)' != 'DotnetToolReference'"
            Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead. " />
 
     <ItemGroup>
