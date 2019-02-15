@@ -12,8 +12,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
 {
     public partial class ServiceBaseLifetime : System.ServiceProcess.ServiceBase, Microsoft.Extensions.Hosting.IHostLifetime
     {
-        public ServiceBaseLifetime(Microsoft.Extensions.Hosting.IHostingEnvironment environment, Microsoft.Extensions.Hosting.IApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public Microsoft.Extensions.Hosting.IHostingEnvironment Environment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public ServiceBaseLifetime(Microsoft.Extensions.Hosting.IHostEnvironment environment, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         protected override void OnStart(string[] args) { }
         protected override void OnStop() { }
         public System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
