@@ -26,9 +26,9 @@ function LogError([string]$message) {
 try {
     if ($ci) {
         # workaround how this script changes tmp, which messses up 'darc-init.ps1'
-        $_originalTmp = $env:TMP
+        $_originalTmp = $env:TEMP
         & $PSScriptRoot\..\common\build.ps1 -ci -prepareMachine -build:$false -restore:$false
-        $env:TMP = $_originalTmp
+        $env:TEMP = $_originalTmp
     }
 
     Write-Host 'Running `darc verify`'
