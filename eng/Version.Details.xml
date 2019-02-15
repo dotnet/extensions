@@ -26,7 +26,7 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0000000</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview.19105.2">
+    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview.19109.6">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0000000</Sha>
     </Dependency>
