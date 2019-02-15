@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 await hostedService.StartAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            // Fire IAppLifetime.Started
+            // Fire IHostApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
 
             _logger.Started();
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken))
             {
                 var token = linkedCts.Token;
-                // Trigger IAppLifetime.ApplicationStopping
+                // Trigger IHostApplicationLifetime.ApplicationStopping
                 _applicationLifetime?.StopApplication();
 
                 IList<Exception> exceptions = new List<Exception>();
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 token.ThrowIfCancellationRequested();
                 await _hostLifetime.StopAsync(token);
 
-                // Fire IAppLifetime.Stopped
+                // Fire IHostApplicationLifetime.Stopped
                 _applicationLifetime?.NotifyStopped();
 
                 if (exceptions.Count > 0)

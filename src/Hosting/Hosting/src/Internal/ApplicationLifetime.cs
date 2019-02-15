@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Hosting.Internal
 {
-    // Type or member is obsolete
     /// <summary>
     /// Allows consumers to perform cleanup during a graceful shutdown.
     /// </summary>

@@ -20,9 +20,9 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
             Logger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
         }
 
+        private IHostApplicationLifetime ApplicationLifetime { get; }
         private IHostEnvironment Environment { get; }
         private ILogger Logger { get; }
-        private IHostApplicationLifetime ApplicationLifetime { get; }
 
         public Task WaitForStartAsync(CancellationToken cancellationToken)
         {

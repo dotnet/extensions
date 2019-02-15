@@ -661,7 +661,7 @@ namespace Microsoft.Extensions.Hosting.Internal
         }
 
         [Fact]
-        public async Task HostNotifiesAllIAppLifetimeCallbacksEvenIfTheyThrow()
+        public async Task HostNotifiesAllIHostApplicationLifetimeCallbacksEvenIfTheyThrow()
         {
             using (var host = CreateBuilder()
                 .Build())
@@ -839,7 +839,7 @@ namespace Microsoft.Extensions.Hosting.Internal
         }
 
         [Fact]
-        public async Task HostDoesNotNotifyIAppLifetimeCallbacksIfIHostedServicesThrow()
+        public async Task HostDoesNotNotifyIHostApplicationLifetimeCallbacksIfIHostedServicesThrow()
         {
             bool[] events1 = null;
             bool[] events2 = null;
