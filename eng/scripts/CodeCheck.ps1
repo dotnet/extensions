@@ -25,13 +25,18 @@ function LogError([string]$message) {
 
 try {
     if ($ci) {
-        # workaround how this script changes tmp, which messses up 'darc-init.ps1'
-        $_originalTmp = $env:TEMP
         & $PSScriptRoot\..\common\build.ps1 -ci -prepareMachine -build:$false -restore:$false
-        $env:TEMP = $_originalTmp
     }
 
     Write-Host 'Running `darc verify`'
+
+    if ($ci) {
+        # Workaround the way darc-init and dotnet tool install work on CI
+        $artifactTmpDir = "$repoRoot/artifacts/tmp/"
+        mkdir $artifactTmpDir
+        Set-Content -path "$artifactTmpDir/Directory.Build.props" -value "<Project />"
+        Set-Content -path "$artifactTmpDir/Directory.Build.targets" -value "<Project />"
+    }
 
     & "$repoRoot/eng/common/darc-init.ps1"
 
