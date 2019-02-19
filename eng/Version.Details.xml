@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
     <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview.19078.2">
@@ -13,21 +13,21 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>a58a80bdf5ad971167f73e501661131c3e34a901</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview.19080.5">
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview.19109.6">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>9e074e4a3f3626fa953f36ab79e3cd3e6db1c9de</Sha>
+      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview.19080.5">
+    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview.19109.6">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>9e074e4a3f3626fa953f36ab79e3cd3e6db1c9de</Sha>
+      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview-27330-4">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview3-27415-4">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>373df9c049aaa6daa967f0bea3bac44c065051f0</Sha>
+      <Sha>0dfcccec1a9fdf391fe4544ed354ac15390d9205</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview-27330-4">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview3-27415-4">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>373df9c049aaa6daa967f0bea3bac44c065051f0</Sha>
+      <Sha>0dfcccec1a9fdf391fe4544ed354ac15390d9205</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
