@@ -393,7 +393,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 });
         }
 
-        [Fact]
+        [Fact(Skip = "This test is flakey due to https://github.com/dotnet/roslyn/issues/31548. Skipping until the blocking issue is resovled.")]
         public async Task TryGetExcerptInternalAsync_MultiLine_Boundaries_CanClassifyCSharp()
         {
             // Arrange
