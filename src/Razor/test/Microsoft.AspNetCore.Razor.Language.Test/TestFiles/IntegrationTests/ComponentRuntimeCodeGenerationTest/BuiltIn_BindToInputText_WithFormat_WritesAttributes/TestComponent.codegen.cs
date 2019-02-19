@@ -17,7 +17,7 @@ namespace Test
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "text");
             builder.AddAttribute(2, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(CurrentDate, "MM/dd/yyyy"));
-            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => CurrentDate = __value, CurrentDate, "MM/dd/yyyy"));
+            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, "MM/dd/yyyy"));
             builder.CloseElement();
         }
         #pragma warning restore 1998

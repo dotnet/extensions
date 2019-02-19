@@ -17,7 +17,7 @@ namespace Test
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "checkbox");
             builder.AddAttribute(2, "checked", Microsoft.AspNetCore.Components.BindMethods.GetValue(Enabled));
-            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Enabled = __value, Enabled));
+            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, Enabled));
             builder.CloseElement();
         }
         #pragma warning restore 1998

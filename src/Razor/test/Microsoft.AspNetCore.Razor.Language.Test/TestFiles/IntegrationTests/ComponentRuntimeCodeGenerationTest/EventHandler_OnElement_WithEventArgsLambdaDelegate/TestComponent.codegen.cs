@@ -15,7 +15,7 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Components.UIMouseEventArgs>(x => { }));
+            builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, x => { }));
             builder.CloseElement();
         }
         #pragma warning restore 1998

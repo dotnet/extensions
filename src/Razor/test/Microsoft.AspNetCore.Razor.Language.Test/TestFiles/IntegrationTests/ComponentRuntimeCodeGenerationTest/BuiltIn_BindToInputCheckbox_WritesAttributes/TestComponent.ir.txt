@@ -20,6 +20,6 @@ Document -
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (60:1,29 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Enabled = __value, Enabled)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, Enabled)
             CSharpCode - (86:2,12 [41] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (86:2,12 [41] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public bool Enabled { get; set; }\n

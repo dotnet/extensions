@@ -12,6 +12,6 @@ Document -
                 MarkupElement - (0:0,0 [34] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute - (16:0,16 [14] x:\dir\subdir\Test\TestComponent.cshtml) - onfocus=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Components.UIFocusEventArgs>(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIFocusEventArgs>(this, 
                             IntermediateToken -  - CSharp - "alert(\"Test\");"
                             IntermediateToken -  - CSharp - )

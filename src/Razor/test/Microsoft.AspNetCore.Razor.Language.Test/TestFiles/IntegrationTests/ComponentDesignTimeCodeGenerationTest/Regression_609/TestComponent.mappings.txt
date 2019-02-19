@@ -10,7 +10,7 @@ Generated Location: (1158:33,18 [8] )
 
 Source Location: (75:1,44 [12] x:\dir\subdir\Test\TestComponent.cshtml)
 |UserIsActive|
-Generated Location: (1504:41,44 [12] )
+Generated Location: (1517:41,44 [12] )
 |UserIsActive|
 
 Source Location: (107:3,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -18,7 +18,7 @@ Source Location: (107:3,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
     public string UserName { get; set; }
     public bool UserIsActive { get; set; }
 |
-Generated Location: (1957:53,12 [88] )
+Generated Location: (1983:53,12 [88] )
 |
     public string UserName { get; set; }
     public bool UserIsActive { get; set; }

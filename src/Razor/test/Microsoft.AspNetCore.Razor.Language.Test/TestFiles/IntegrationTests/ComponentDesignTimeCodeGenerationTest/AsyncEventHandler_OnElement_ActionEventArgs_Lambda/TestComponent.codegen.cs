@@ -25,7 +25,7 @@ using System.Threading.Tasks;
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-            __o = Microsoft.AspNetCore.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Components.UIMouseEventArgs>("async (e) => await Task.Delay(10)");
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, "async (e) => await Task.Delay(10)");
         }
         #pragma warning restore 1998
     }

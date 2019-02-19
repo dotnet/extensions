@@ -1,0 +1,19 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (554:16,38 [15] )
+|*, TestAssembly|
+
+Source Location: (60:1,29 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+|ParentValue|
+Generated Location: (1242:33,29 [11] )
+|ParentValue|
+
+Source Location: (89:2,12 [65] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    public DateTime ParentValue { get; set; } = DateTime.Now;
+|
+Generated Location: (1647:42,12 [65] )
+|
+    public DateTime ParentValue { get; set; } = DateTime.Now;
+|
+

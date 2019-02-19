@@ -16,9 +16,9 @@ namespace Test
             base.BuildRenderTree(builder);
             builder.OpenComponent<Test.User>(0);
             builder.AddAttribute(1, "Name", Microsoft.AspNetCore.Components.BindMethods.GetValue(UserName));
-            builder.AddAttribute(2, "NameChanged", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserName = __value, UserName));
+            builder.AddAttribute(2, "NameChanged", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserName = __value, UserName));
             builder.AddAttribute(3, "IsActive", Microsoft.AspNetCore.Components.BindMethods.GetValue(UserIsActive));
-            builder.AddAttribute(4, "IsActiveChanged", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserIsActive = __value, UserIsActive));
+            builder.AddAttribute(4, "IsActiveChanged", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, UserIsActive));
             builder.CloseComponent();
         }
         #pragma warning restore 1998

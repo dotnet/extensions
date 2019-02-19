@@ -32,7 +32,7 @@ Document -
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Value = __value, Value)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Value = __value, Value)
                 HtmlContent - (73:1,42 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (73:1,42 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (87:2,12 [21] x:\dir\subdir\Test\TestComponent.cshtml)

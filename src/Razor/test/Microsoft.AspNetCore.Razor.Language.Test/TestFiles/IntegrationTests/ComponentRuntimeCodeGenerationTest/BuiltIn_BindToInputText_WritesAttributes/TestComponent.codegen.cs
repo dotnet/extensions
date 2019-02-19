@@ -17,7 +17,7 @@ namespace Test
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "text");
             builder.AddAttribute(2, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(ParentValue));
-            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue));
+            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue));
             builder.CloseElement();
         }
         #pragma warning restore 1998

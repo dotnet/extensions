@@ -32,7 +32,7 @@ Document -
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (60:1,29 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Enabled = __value, Enabled)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, Enabled)
                 HtmlContent - (72:1,41 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (72:1,41 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (86:2,12 [41] x:\dir\subdir\Test\TestComponent.cshtml)

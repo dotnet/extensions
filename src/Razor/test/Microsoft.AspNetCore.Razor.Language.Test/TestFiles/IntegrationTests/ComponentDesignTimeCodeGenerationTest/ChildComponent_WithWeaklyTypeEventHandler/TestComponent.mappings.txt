@@ -5,14 +5,14 @@ Generated Location: (554:16,38 [15] )
 
 Source Location: (57:1,26 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |OnClick|
-Generated Location: (1228:33,26 [7] )
+Generated Location: (1230:33,26 [7] )
 |OnClick|
 
 Source Location: (84:3,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Action<UIMouseEventArgs> OnClick { get; set; }
 |
-Generated Location: (1547:44,12 [62] )
+Generated Location: (1549:44,12 [62] )
 |
     private Action<UIMouseEventArgs> OnClick { get; set; }
 |

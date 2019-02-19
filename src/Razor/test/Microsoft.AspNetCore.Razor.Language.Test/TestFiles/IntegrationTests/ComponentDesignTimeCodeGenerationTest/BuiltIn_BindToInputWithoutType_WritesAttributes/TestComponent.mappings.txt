@@ -12,7 +12,7 @@ Source Location: (74:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public int ParentValue { get; set; } = 42;
 |
-Generated Location: (1341:36,12 [50] )
+Generated Location: (1354:36,12 [50] )
 |
     public int ParentValue { get; set; } = 42;
 |

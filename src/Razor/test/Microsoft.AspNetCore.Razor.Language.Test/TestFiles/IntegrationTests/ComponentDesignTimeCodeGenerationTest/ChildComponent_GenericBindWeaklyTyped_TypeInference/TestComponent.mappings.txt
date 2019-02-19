@@ -17,7 +17,7 @@ Source Location: (87:2,12 [21] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     string Value;
 |
-Generated Location: (1646:47,12 [21] )
+Generated Location: (1659:47,12 [21] )
 |
     string Value;
 |

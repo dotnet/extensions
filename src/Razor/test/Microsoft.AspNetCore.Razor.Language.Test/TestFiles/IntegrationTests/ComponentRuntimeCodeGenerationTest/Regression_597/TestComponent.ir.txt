@@ -17,6 +17,6 @@ Document -
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (48:1,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => y = __value, y)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => y = __value, y)
             CSharpCode - (67:2,12 [24] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (67:2,12 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n

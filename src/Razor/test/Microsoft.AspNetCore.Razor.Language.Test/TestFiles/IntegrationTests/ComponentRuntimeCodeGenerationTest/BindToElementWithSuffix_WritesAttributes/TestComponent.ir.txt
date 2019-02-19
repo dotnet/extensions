@@ -17,6 +17,6 @@ Document -
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (48:1,17 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myevent=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue)
             CSharpCode - (78:2,12 [55] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (78:2,12 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n

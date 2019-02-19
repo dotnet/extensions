@@ -16,7 +16,7 @@ namespace Test
             base.BuildRenderTree(builder);
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, "Value", Microsoft.AspNetCore.Components.BindMethods.GetValue(ParentValue));
-            builder.AddAttribute(2, "OnChanged", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue));
+            builder.AddAttribute(2, "OnChanged", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue));
             builder.CloseComponent();
         }
         #pragma warning restore 1998

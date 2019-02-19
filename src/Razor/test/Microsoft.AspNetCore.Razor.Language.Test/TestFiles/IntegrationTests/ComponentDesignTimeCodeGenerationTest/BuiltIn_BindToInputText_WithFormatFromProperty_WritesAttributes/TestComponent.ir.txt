@@ -34,7 +34,7 @@ Document -
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (56:1,25 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => CurrentDate = __value, CurrentDate, Format)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, Format)
                 HtmlContent - (94:1,63 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (94:1,63 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (108:2,12 [135] x:\dir\subdir\Test\TestComponent.cshtml)

@@ -16,7 +16,7 @@ namespace Test
             base.BuildRenderTree(builder);
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "myvalue", Microsoft.AspNetCore.Components.BindMethods.GetValue(ParentValue));
-            builder.AddAttribute(2, "myevent", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue));
+            builder.AddAttribute(2, "myevent", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue));
             builder.CloseElement();
         }
         #pragma warning restore 1998

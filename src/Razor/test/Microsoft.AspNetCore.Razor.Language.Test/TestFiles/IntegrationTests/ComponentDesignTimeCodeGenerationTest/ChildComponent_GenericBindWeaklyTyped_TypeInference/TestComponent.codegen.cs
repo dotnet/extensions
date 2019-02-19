@@ -41,7 +41,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
-            ), -1, Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Value = __value, Value));
+            ), -1, Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Value = __value, Value));
         }
         #pragma warning restore 1998
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"

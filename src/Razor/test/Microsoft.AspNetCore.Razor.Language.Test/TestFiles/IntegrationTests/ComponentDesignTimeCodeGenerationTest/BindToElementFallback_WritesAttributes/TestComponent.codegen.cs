@@ -30,7 +30,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         {
             base.BuildRenderTree(builder);
             __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(ParentValue);
-            __o = Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue);
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue);
         }
         #pragma warning restore 1998
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"

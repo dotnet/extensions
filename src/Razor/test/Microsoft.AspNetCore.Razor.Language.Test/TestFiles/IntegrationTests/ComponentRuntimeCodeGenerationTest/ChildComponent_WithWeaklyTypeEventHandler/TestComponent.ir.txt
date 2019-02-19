@@ -12,7 +12,7 @@ Document -
                 Component - (31:1,0 [37] x:\dir\subdir\Test\TestComponent.cshtml) - DynamicElement
                     ComponentAttribute - (56:1,25 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onclick - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Components.UIMouseEventArgs>(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
                             IntermediateToken - (57:1,26 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
                             IntermediateToken -  - CSharp - )
             CSharpCode - (84:3,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)

@@ -36,7 +36,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
             );
-            __o = Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserName = __value, UserName);
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserName = __value, UserName);
             __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                             UserIsActive
@@ -44,7 +44,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
             );
-            __o = Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserIsActive = __value, UserIsActive);
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, UserIsActive);
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));

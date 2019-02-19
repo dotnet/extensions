@@ -17,7 +17,7 @@ Document -
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (48:1,17 [9] x:\dir\subdir\Test\TestComponent.cshtml) - NameChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserName = __value, UserName)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserName = __value, UserName)
                     ComponentAttribute - (74:1,43 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActive - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
@@ -25,6 +25,6 @@ Document -
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (74:1,43 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActiveChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserIsActive = __value, UserIsActive)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, UserIsActive)
             CSharpCode - (107:3,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (107:3,12 [88] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string UserName { get; set; }\n    public bool UserIsActive { get; set; }\n

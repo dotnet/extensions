@@ -12,7 +12,7 @@ Document -
                 MarkupElement - (31:1,0 [28] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute - (47:1,16 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Components.UIMouseEventArgs>(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
                             IntermediateToken - (48:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
                             IntermediateToken -  - CSharp - )
             CSharpCode - (73:2,12 [73] x:\dir\subdir\Test\TestComponent.cshtml)

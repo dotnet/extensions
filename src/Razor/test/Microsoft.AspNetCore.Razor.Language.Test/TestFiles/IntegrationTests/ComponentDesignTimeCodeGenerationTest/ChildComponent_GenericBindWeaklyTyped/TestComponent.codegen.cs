@@ -43,7 +43,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
             );
-            __o = Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Value = __value, Value);
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Value = __value, Value);
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));

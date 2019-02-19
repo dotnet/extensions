@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 18, 2, Microsoft.AspNetCore.Components.BindMethods.GetValue(Value), 3, Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Value = __value, Value));
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 18, 2, Microsoft.AspNetCore.Components.BindMethods.GetValue(Value), 3, Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Value = __value, Value));
         }
         #pragma warning restore 1998
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
