@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         internal override string FileKind => FileKinds.Component;
 
-        internal override bool UseTwoPhaseCompilation => false;
+        internal override bool UseTwoPhaseCompilation => true;
 
         [Fact]
         public void DoSomeTyping()
@@ -62,7 +62,7 @@ namespace Test
             {
                 try
                 {
-                    CompileToCSharp(text.Substring(0, i));
+                    CompileToCSharp(text.Substring(0, i), throwOnFailure: false);
                 }
                 catch (Exception ex)
                 {
@@ -88,9 +88,45 @@ Exception:
 @functions {
     Test.ModelState ModelState { get; set; }
 }
-");
+", throwOnFailure: false);
 
             // Assert
+        }
+
+        [Fact]
+        public void MalformedAttributeContent()
+        {
+            // Act
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter] int Value { get; set; }
+        [Parameter] Action<int> ValueChanged { get; set; }
+        [Parameter] string AnotherValue { get; set; }
+    }
+
+    public class ModelState
+    {
+        public Action<string> Bind(Func<string, string> func) => throw null;
+    }
+}
+"));
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+  <MyComponent Value=10 Something=@for
+
+  <button disabled=@form.IsSubmitting type=""submit"" class=""btn btn-primary mt-3 mr-3 has-spinner @(form.IsSubmitting ? ""active"" :"""")"" onclick=@(async () => await SaveAsync(false))>
+@functions {
+    Test.ModelState ModelState { get; set; }
+}", throwOnFailure: false);
+
+            // Assert - does not throw
         }
     }
 }
