@@ -27,8 +27,8 @@ else # All other shells: examine $0 for known shell binary filenames
 fi
 
 if [ $sourced -eq 0 ]; then
-    echo -e "${_RED}This script cannot be invoked directly.${_RESET}"
-    echo -e "${_RED}To function correctly, this script file must be sourced by calling \"source $0\".${_RESET}"
+    printf "${_RED}This script cannot be invoked directly.${_RESET}\n"
+    printf "${_RED}To function correctly, this script file must be sourced by calling \"source $0\".${_RESET}\n"
     exit 1
 fi
 
@@ -85,10 +85,10 @@ if [ -n "${BASH:-}" ] || [ -n "${ZSH_VERSION:-}" ] ; then
     hash -r 2>/dev/null
 fi
 
-echo -e "${_MAGENTA}Enabled the .NET Core environment. Execute 'deactivate' to exit.${_RESET}"
+printf "${_MAGENTA}Enabled the .NET Core environment. Execute 'deactivate' to exit.${_RESET}\n"
 
 if [ ! -f "$DOTNET_ROOT/dotnet" ]; then
-    echo -e "${_YELLOW}.NET Core has not been installed yet. Run $DIR/restore.sh to install it.${_RESET}"
+    printf "${_YELLOW}.NET Core has not been installed yet. Run $DIR/restore.sh to install it.${_RESET}\n"
 else
-    echo -e "dotnet = $DOTNET_ROOT/dotnet"
+    printf "dotnet = $DOTNET_ROOT/dotnet\n"
 fi
