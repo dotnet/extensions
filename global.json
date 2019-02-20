@@ -2,7 +2,7 @@
   "tools": {
     "dotnet": "3.0.100-preview3-010280",
     "vs": {
-      "version": "15.9",
+      "version": "16.0",
       "components": [
         "Microsoft.VisualStudio.Component.VSSDK"
       ]
