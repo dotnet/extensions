@@ -32,9 +32,6 @@ function LogError {
 }
 
 try {
-    # Suppresses the 'Welcome to .NET Core!' output that breaks invocations of `dotnet sln`
-    $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
-
     if ($ci) {
         $env:DOTNET_ROOT = "$repoRoot\.dotnet"
         $env:PATH = "$env:DOTNET_ROOT;$env:PATH"
@@ -95,7 +92,7 @@ try {
         $slnDir = Split-Path -Parent $_
         $sln = $_
         & dotnet sln $_ list `
-            | ? { $_ -ne 'Project(s)' -and $_ -ne '----------' } `
+            | ? { $_ -like '*proj' } `
             | % {
                 $proj = Join-Path $slnDir $_
                 if (-not (Test-Path $proj)) {
