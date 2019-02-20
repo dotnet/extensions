@@ -151,7 +151,7 @@ namespace Microsoft.Extensions.Localization
         /// </summary>
         /// <param name="culture">The <see cref="CultureInfo"/> to use.</param>
         /// <returns>A culture-specific <see cref="ResourceManagerStringLocalizer"/>.</returns>
-        [Obsolete("Set the CurrentCulture and CurrentUICulture instead.")]
+        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
         public IStringLocalizer WithCulture(CultureInfo culture)
         {
             return culture == null

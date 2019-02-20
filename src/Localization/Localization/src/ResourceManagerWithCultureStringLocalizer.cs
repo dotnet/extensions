@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Localization
     /// An <see cref="IStringLocalizer"/> that uses the <see cref="ResourceManager"/> and
     /// <see cref="ResourceReader"/> to provide localized strings for a specific <see cref="CultureInfo"/>.
     /// </summary>
-    [Obsolete("Set the CurrentCulture and CurrentUICulture instead.")]
+    [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
     public class ResourceManagerWithCultureStringLocalizer : ResourceManagerStringLocalizer
     {
         private readonly string _resourceBaseName;
