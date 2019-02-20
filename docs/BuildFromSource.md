@@ -53,8 +53,10 @@ Because we are using pre-release versions of .NET Core, you have to set a handfu
 to make the .NET Core command line tool work well. You can set these environment variables like this
 
 On Windows (requires PowerShell):
-```
-. activate.ps1
+```ps1
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
+. .\activate.ps1
 ```
 
 On macOS/Linux:
