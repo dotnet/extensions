@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Localization
         public LocalizationOptions() { }
         public string ResourcesPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=false, Inherited=false)]
     public partial class ResourceLocationAttribute : System.Attribute
     {
         public ResourceLocationAttribute(string resourceLocation) { }
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.Localization
     [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
     public partial class ResourceManagerWithCultureStringLocalizer : Microsoft.Extensions.Localization.ResourceManagerStringLocalizer
     {
-        public ResourceManagerWithCultureStringLocalizer(System.Resources.ResourceManager resourceManager, System.Reflection.Assembly resourceAssembly, string baseName, Microsoft.Extensions.Localization.IResourceNamesCache resourceNamesCache, System.Globalization.CultureInfo culture, Microsoft.Extensions.Logging.ILogger logger) : base(default(System.Resources.ResourceManager), default(System.Reflection.Assembly), default(string), default(Microsoft.Extensions.Localization.IResourceNamesCache), default(Microsoft.Extensions.Logging.ILogger)) { }
+        public ResourceManagerWithCultureStringLocalizer(System.Resources.ResourceManager resourceManager, System.Reflection.Assembly resourceAssembly, string baseName, Microsoft.Extensions.Localization.IResourceNamesCache resourceNamesCache, System.Globalization.CultureInfo culture, Microsoft.Extensions.Logging.ILogger logger) : base (default(System.Resources.ResourceManager), default(System.Reflection.Assembly), default(string), default(Microsoft.Extensions.Localization.IResourceNamesCache), default(Microsoft.Extensions.Logging.ILogger)) { }
         public override Microsoft.Extensions.Localization.LocalizedString this[string name] { get { throw null; } }
         public override Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] { get { throw null; } }
         public override System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.Localization
         public ResourceNamesCache() { }
         public System.Collections.Generic.IList<string> GetOrAdd(string name, System.Func<string, System.Collections.Generic.IList<string>> valueFactory) { throw null; }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=false, Inherited=false)]
     public partial class RootNamespaceAttribute : System.Attribute
     {
         public RootNamespaceAttribute(string rootNamespace) { }

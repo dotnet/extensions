@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Localization
         public bool ResourceNotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string SearchedLocation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static implicit operator string(Microsoft.Extensions.Localization.LocalizedString localizedString) { throw null; }
+        public static implicit operator string (Microsoft.Extensions.Localization.LocalizedString localizedString) { throw null; }
         public override string ToString() { throw null; }
     }
     public static partial class StringLocalizerExtensions
