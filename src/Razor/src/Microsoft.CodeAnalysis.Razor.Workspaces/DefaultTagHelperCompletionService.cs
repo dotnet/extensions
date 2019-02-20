@@ -88,11 +88,25 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     foreach (var attributeDescriptor in descriptor.BoundAttributes)
                     {
                         UpdateCompletions(attributeDescriptor.Name, attributeDescriptor);
+
+                        if (!string.IsNullOrEmpty(attributeDescriptor.IndexerNamePrefix))
+                        {
+                            UpdateCompletions(attributeDescriptor.IndexerNamePrefix + "...", attributeDescriptor);
+                        }
                     }
                 }
                 else
                 {
-                    var htmlNameToBoundAttribute = descriptor.BoundAttributes.ToDictionary(attribute => attribute.Name, StringComparer.OrdinalIgnoreCase);
+                    var htmlNameToBoundAttribute = new Dictionary<string, BoundAttributeDescriptor>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var attributeDescriptor in descriptor.BoundAttributes)
+                    {
+                        htmlNameToBoundAttribute[attributeDescriptor.Name] = attributeDescriptor;
+
+                        if (!string.IsNullOrEmpty(attributeDescriptor.IndexerNamePrefix))
+                        {
+                            htmlNameToBoundAttribute[attributeDescriptor.IndexerNamePrefix] = attributeDescriptor;
+                        }
+                    }
 
                     foreach (var rule in descriptor.TagMatchingRules)
                     {
@@ -100,11 +114,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         {
                             if (htmlNameToBoundAttribute.TryGetValue(requiredAttribute.Name, out var attributeDescriptor))
                             {
-                                UpdateCompletions(requiredAttribute.Name, attributeDescriptor);
+                                UpdateCompletions(requiredAttribute.DisplayName, attributeDescriptor);
                             }
                             else
                             {
-                                UpdateCompletions(requiredAttribute.Name, possibleDescriptor: null);
+                                UpdateCompletions(requiredAttribute.DisplayName, possibleDescriptor: null);
                             }
                         }
                     }

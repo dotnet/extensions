@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
@@ -11,6 +12,96 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class DefaultTagHelperCompletionServiceTest
     {
+        [Fact]
+        public void GetAttributeCompletions_BoundDictionaryAttribute_ReturnsPrefixIndexerAndFullSetter()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("FormTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule
+                        .RequireTagName("form"))
+                    .BoundAttributeDescriptor(attribute => attribute
+                        .Name("asp-all-route-data")
+                        .TypeName("System.Collections.Generic.IDictionary<System.String, System.String>")
+                        .PropertyName("RouteValues").AsDictionary("asp-route-", typeof(string).FullName))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["asp-all-route-data"] = new HashSet<BoundAttributeDescriptor>()
+                {
+                    documentDescriptors[0].BoundAttributes.Last(),
+                },
+                ["asp-route-..."] = new HashSet<BoundAttributeDescriptor>()
+                {
+                    documentDescriptors[0].BoundAttributes.Last(),
+                }
+            });
+
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                Array.Empty<string>(),
+                attributes: new Dictionary<string, string>(),
+                currentTagName: "form");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_RequiredBoundDictionaryAttribute_ReturnsPrefixIndexerAndFullSetter()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("FormTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule
+                        .RequireTagName("form")
+                        .RequireAttributeDescriptor(builder =>
+                        {
+                            builder.Name = "asp-route-";
+                            builder.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch;
+                        }))
+                    .TagMatchingRuleDescriptor(rule => rule
+                        .RequireTagName("form")
+                        .RequireAttributeDescriptor(builder => builder.Name = "asp-all-route-data"))
+                    .BoundAttributeDescriptor(attribute => attribute
+                        .Name("asp-all-route-data")
+                        .TypeName("System.Collections.Generic.IDictionary<System.String, System.String>")
+                        .PropertyName("RouteValues").AsDictionary("asp-route-", typeof(string).FullName))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["asp-all-route-data"] = new HashSet<BoundAttributeDescriptor>()
+                {
+                    documentDescriptors[0].BoundAttributes.Last(),
+                },
+                ["asp-route-..."] = new HashSet<BoundAttributeDescriptor>()
+                {
+                    documentDescriptors[0].BoundAttributes.Last(),
+                }
+            });
+
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                Array.Empty<string>(),
+                attributes: new Dictionary<string, string>(),
+                currentTagName: "form");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
         [Fact]
         public void GetAttributeCompletions_DoesNotReturnCompletionsForAlreadySuppliedAttributes()
         {
