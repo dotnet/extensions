@@ -17,7 +17,7 @@
     <MajorVersion>3</MajorVersion>
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
-    <PreReleaseVersionLabel>preview3</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>preview4</PreReleaseVersionLabel>
   </PropertyGroup>
   <!-- 
     Versioning for tooling releases.
