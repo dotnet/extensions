@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultTagHelperCompletionService : TagHelperCompletionService
     {
+        private static readonly Container<string> AttributeCommitCharacters = new Container<string>(" ");
         private static readonly Container<string> ElementCommitCharacters = new Container<string>(" ", ">");
         private static readonly HashSet<string> HtmlSchemaTagNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -181,8 +182,97 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return elementCompletions;
             }
 
+            if (TryGetAttributeInfo(parent, out containingTagNameToken, out var selectedAttributeName, out attributes) &&
+                attributes.Span.IntersectsWith(location.AbsoluteIndex))
+            {
+                var stringifiedAttributes = StringifyAttributes(attributes);
+                var attributeCompletions = GetAttributeCompletions(parent, containingTagNameToken.Content, selectedAttributeName, stringifiedAttributes, codeDocument);
+                return attributeCompletions;
+            }
+
             // Invalid location for TagHelper completions.
             return Array.Empty<CompletionItem>();
+        }
+
+        private static bool TryGetAttributeInfo(SyntaxNode attribute, out SyntaxToken containingTagNameToken, out string selectedAttributeName, out SyntaxList<RazorSyntaxNode> attributeNodes)
+        {
+            if ((attribute is MarkupMiscAttributeContentSyntax ||
+                attribute is MarkupMinimizedAttributeBlockSyntax ||
+                attribute is MarkupAttributeBlockSyntax ||
+                attribute is MarkupTagHelperAttributeSyntax ||
+                attribute is MarkupMinimizedTagHelperAttributeSyntax) &&
+                TryGetElementInfo(attribute.Parent, out containingTagNameToken, out attributeNodes))
+            {
+                selectedAttributeName = null;
+                return true;
+            }
+
+            containingTagNameToken = null;
+            selectedAttributeName = null;
+            attributeNodes = default;
+            return false;
+        }
+
+        private IReadOnlyList<CompletionItem> GetAttributeCompletions(
+            SyntaxNode containingAttribute,
+            string containingTagName,
+            string selectedAttributeName,
+            IEnumerable<KeyValuePair<string, string>> attributes,
+            RazorCodeDocument codeDocument)
+        {
+            var ancestors = containingAttribute.Parent.Ancestors();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var (ancestorTagName, ancestorIsTagHelper) = GetNearestAncestorTagInfo(ancestors);
+            var attributeCompletionContext = new AttributeCompletionContext(
+                tagHelperDocumentContext,
+                existingCompletions: Enumerable.Empty<string>(),
+                containingTagName,
+                selectedAttributeName,
+                attributes,
+                ancestorTagName,
+                ancestorIsTagHelper,
+                HtmlSchemaTagNames.Contains);
+
+            var completionItems = new List<CompletionItem>();
+            var completionResult = _razorTagHelperCompletionService.GetAttributeCompletions(attributeCompletionContext);
+            foreach (var completion in completionResult.Completions)
+            {
+                var filterText = completion.Key;
+
+                // This is a little bit of a hack because the information returned by _razorTagHelperCompletionService.GetAttributeCompletions
+                // does not have enough information for us to determine if a completion is an indexer completion or not. Therefore we have to
+                // jump through a few hoops below to:
+                //   1. Determine if this specific completion is an indexer based completion
+                //   2. Resolve an appropriate snippet if it is. This is more troublesome because we need to remove the ... suffix to accurately
+                //      build a snippet that makes sense for the user to type.
+                var indexerCompletion = filterText.EndsWith("...");
+                if (indexerCompletion)
+                {
+                    filterText = filterText.Substring(0, filterText.Length - 3);
+                }
+
+                var insertTextFormat = InsertTextFormat.Snippet;
+                if (!TryResolveAttributeInsertionSnippet(filterText, completion.Value, indexerCompletion, out var insertText))
+                {
+                    insertTextFormat = InsertTextFormat.PlainText;
+                    insertText = filterText;
+                }
+
+                var razorCompletionItem = new CompletionItem()
+                {
+                    Label = completion.Key,
+                    InsertText = insertText,
+                    InsertTextFormat = insertTextFormat,
+                    FilterText = filterText,
+                    SortText = filterText,
+                    Kind = CompletionItemKind.TypeParameter,
+                    CommitCharacters = AttributeCommitCharacters,
+                };
+
+                completionItems.Add(razorCompletionItem);
+            }
+
+            return completionItems;
         }
 
         private IReadOnlyList<CompletionItem> GetElementCompletions(
@@ -299,6 +389,36 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             containingTagNameToken = null;
             attributeNodes = default;
             return false;
+        }
+
+        private bool TryResolveAttributeInsertionSnippet(
+            string text,
+            IEnumerable<BoundAttributeDescriptor> boundAttributes,
+            bool indexerCompletion,
+            out string snippetText)
+        {
+            const string BoolTypeName = "System.Boolean";
+
+            // Boolean returning bound attribute, auto-complete to just the attribute name.
+            if (indexerCompletion)
+            {
+                if (boundAttributes.All(boundAttribute => boundAttribute.IndexerTypeName == BoolTypeName))
+                {
+                    snippetText = null;
+                    return false;
+                }
+
+                snippetText = string.Concat(text, "$1=\"$2\"");
+                return true;
+            }
+            else if (boundAttributes.All(boundAttribute => boundAttribute.TypeName == BoolTypeName))
+            {
+                snippetText = null;
+                return false;
+            }
+
+            snippetText = string.Concat(text, "=\"$1\"");
+            return true;
         }
     }
 }
