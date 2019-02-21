@@ -22,9 +22,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Working around strong naming restriction.
             CompletionFactsService = new DefaultRazorCompletionFactsService();
+            TagHelperCompletionService = Mock.Of<TagHelperCompletionService>(
+                service => service.GetCompletionsAt(It.IsAny<SourceSpan>(), It.IsAny<RazorCodeDocument>()) == Array.Empty<CompletionItem>());
         }
 
-        private RazorCompletionFactsService CompletionFactsService { get; set; }
+        private RazorCompletionFactsService CompletionFactsService { get; }
+
+        private TagHelperCompletionService TagHelperCompletionService { get; }
 
         // This is more of an integration test to validate that all the pieces work together
         [Fact]
@@ -35,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var codeDocument = CreateCodeDocument("@");
             codeDocument.SetUnsupported();
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, LoggerFactory);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, TagHelperCompletionService, LoggerFactory);
             var request = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
@@ -57,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("@");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, LoggerFactory);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, TagHelperCompletionService, LoggerFactory);
             var request = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
@@ -73,6 +77,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Contains(completionList, item => item.InsertText == "addTagHelper");
             Assert.Contains(completionList, item => item.InsertText == "removeTagHelper");
             Assert.Contains(completionList, item => item.InsertText == "tagHelperPrefix");
+        }
+
+        // This is more of an integration test to validate that all the pieces work together
+        [Fact]
+        public async Task Handle_ResolvesTagHelperElementCompletionItems()
+        {
+            // Arrange
+            var documentPath = "C:/path/to/document.cshtml";
+            var tagHelperCompletionItem = new CompletionItem()
+            {
+                InsertText = "Test"
+            };
+            var tagHelperCompletionService = Mock.Of<TagHelperCompletionService>(
+                service => service.GetCompletionsAt(It.IsAny<SourceSpan>(), It.IsAny<RazorCodeDocument>()) == new[] { tagHelperCompletionItem });
+            var codeDocument = CreateCodeDocument("<");
+            var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, tagHelperCompletionService, LoggerFactory);
+            var request = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Position = new Position(0, 1)
+            };
+
+            // Act
+            var completionList = await Task.Run(() => completionEndpoint.Handle(request, default));
+
+            // Assert
+            Assert.Contains(completionList, item => item.InsertText == "Test");
         }
 
         private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)

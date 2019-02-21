@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 using OmniSharp.Extensions.LanguageServer.Server;
 
@@ -77,6 +78,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<DocumentProcessedListener, RazorDiagnosticsPublisher>();
                         services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
                         services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
+                        services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();
+                        services.AddSingleton<VisualStudio.Editor.Razor.TagHelperCompletionService, VisualStudio.Editor.Razor.DefaultTagHelperCompletionService>();
+                        services.AddSingleton<TagHelperCompletionService, DefaultTagHelperCompletionService>();
 
                         var foregroundDispatcher = new VSCodeForegroundDispatcher();
                         services.AddSingleton<ForegroundDispatcher>(foregroundDispatcher);

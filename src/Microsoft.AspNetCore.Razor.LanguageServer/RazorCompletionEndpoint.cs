@@ -24,11 +24,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RazorCompletionFactsService _completionFactsService;
+        private readonly TagHelperCompletionService _tagHelperCompletionService;
 
         public RazorCompletionEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             RazorCompletionFactsService completionFactsService,
+            TagHelperCompletionService tagHelperCompletionService,
             ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
@@ -46,6 +48,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(completionFactsService));
             }
 
+            if (tagHelperCompletionService == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperCompletionService));
+            }
+
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
@@ -54,6 +61,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _completionFactsService = completionFactsService;
+            _tagHelperCompletionService = tagHelperCompletionService;
             _logger = loggerFactory.CreateLogger<RazorCompletionEndpoint>();
         }
 
@@ -87,12 +95,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var hostDocumentIndex = sourceText.Lines.GetPosition(linePosition);
             var location = new SourceSpan(hostDocumentIndex, 0);
 
-            var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);
+            var directiveCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);
 
-            _logger.LogTrace($"Found {razorCompletionItems.Count} Razor specific completion items.");
+            _logger.LogTrace($"Found {directiveCompletionItems.Count} directive completion items.");
 
             var completionItems = new List<CompletionItem>();
-            foreach (var razorCompletionItem in razorCompletionItems)
+            foreach (var razorCompletionItem in directiveCompletionItems)
             {
                 if (razorCompletionItem.Kind != RazorCompletionItemKind.Directive)
                 {
@@ -114,6 +122,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 completionItems.Add(directiveCompletionItem);
             }
 
+            var tagHelperCompletionItems = _tagHelperCompletionService.GetCompletionsAt(location, codeDocument);
+
+            _logger.LogTrace($"Found {tagHelperCompletionItems.Count} TagHelper completion items.");
+
+            completionItems.AddRange(tagHelperCompletionItems);
+
             var completionList = new CompletionList(completionItems, isIncomplete: false);
 
             return completionList;
@@ -125,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 DocumentSelector = RazorDefaults.Selector,
                 ResolveProvider = true,
-                TriggerCharacters = new Container<string>("@"),
+                TriggerCharacters = new Container<string>("@", "<"),
             };
         }
     }
