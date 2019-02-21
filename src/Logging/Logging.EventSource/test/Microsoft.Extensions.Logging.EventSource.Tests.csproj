@@ -7,7 +7,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Logging.EventSource" />
-    <Reference Include="Microsoft.Extensions.Logging.Tests" />
+    <ProjectReference Include="../Microsoft.Extensions.Logging.Tests/Microsoft.Extensions.Logging.Tests.csproj" />
   </ItemGroup>
 
 </Project>
