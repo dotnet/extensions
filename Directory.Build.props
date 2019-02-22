@@ -14,8 +14,6 @@
 
     <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
     <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
-    <HasReferenceAssembly>true</HasReferenceAssembly>
-    <HasReferenceAssembly Condition="'$(IsReferenceAssemblyProject)' == 'true'">false</HasReferenceAssembly>
     <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
   </PropertyGroup>
 
