@@ -24,11 +24,83 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             CompletionFactsService = new DefaultRazorCompletionFactsService();
             TagHelperCompletionService = Mock.Of<TagHelperCompletionService>(
                 service => service.GetCompletionsAt(It.IsAny<SourceSpan>(), It.IsAny<RazorCodeDocument>()) == Array.Empty<CompletionItem>());
+            TagHelperDescriptionFactory = Mock.Of<TagHelperDescriptionFactory>();
+            EmptyDocumentResolver = Mock.Of<DocumentResolver>();
         }
 
         private RazorCompletionFactsService CompletionFactsService { get; }
 
         private TagHelperCompletionService TagHelperCompletionService { get; }
+
+        private TagHelperDescriptionFactory TagHelperDescriptionFactory { get; }
+
+        private DocumentResolver EmptyDocumentResolver { get; }
+
+        [Fact]
+        public async Task Handle_TagHelperCompletion_ReturnsCompletionItemWithDocumentation()
+        {
+            // Arrange
+            var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
+            var markdown = "Some Markdown";
+            descriptionFactory.Setup(factory => factory.TryCreateDescription(It.IsAny<ElementDescriptionInfo>(), out markdown))
+                .Returns(true);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
+            var completionItem = new CompletionItem();
+            completionItem.SetDescriptionData(ElementDescriptionInfo.Default);
+
+            // Act
+            var newCompletionItem = await completionEndpoint.Handle(completionItem, default);
+
+            // Assert
+            Assert.NotNull(newCompletionItem.Documentation);
+        }
+
+        [Fact]
+        public async Task Handle_NonTagHelperCompletion_Noops()
+        {
+            // Arrange
+            var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
+            var markdown = "Some Markdown";
+            descriptionFactory.Setup(factory => factory.TryCreateDescription(It.IsAny<ElementDescriptionInfo>(), out markdown))
+                .Returns(true);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
+            var completionItem = new CompletionItem();
+
+            // Act
+            var newCompletionItem = await completionEndpoint.Handle(completionItem, default);
+
+            // Assert
+            Assert.Null(newCompletionItem.Documentation);
+        }
+
+        [Fact]
+        public void CanResolve_TagHelperElementCompletion_ReturnsTrue()
+        {
+            // Arrange
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, TagHelperDescriptionFactory, LoggerFactory);
+            var completionItem = new CompletionItem();
+            completionItem.SetDescriptionData(ElementDescriptionInfo.Default);
+
+            // Act
+            var result = completionEndpoint.CanResolve(completionItem);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CanResolve_NonTagHelperCompletion_ReturnsFalse()
+        {
+            // Arrange
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, TagHelperDescriptionFactory, LoggerFactory);
+            var completionItem = new CompletionItem();
+
+            // Act
+            var result = completionEndpoint.CanResolve(completionItem);
+
+            // Assert
+            Assert.False(result);
+        }
 
         // This is more of an integration test to validate that all the pieces work together
         [Fact]
@@ -39,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var codeDocument = CreateCodeDocument("@");
             codeDocument.SetUnsupported();
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, TagHelperCompletionService, LoggerFactory);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, TagHelperCompletionService, TagHelperDescriptionFactory, LoggerFactory);
             var request = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
@@ -61,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("@");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, TagHelperCompletionService, LoggerFactory);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, TagHelperCompletionService, TagHelperDescriptionFactory, LoggerFactory);
             var request = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
@@ -93,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 service => service.GetCompletionsAt(It.IsAny<SourceSpan>(), It.IsAny<RazorCodeDocument>()) == new[] { tagHelperCompletionItem });
             var codeDocument = CreateCodeDocument("<");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, tagHelperCompletionService, LoggerFactory);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, tagHelperCompletionService, TagHelperDescriptionFactory, LoggerFactory);
             var request = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),

@@ -306,6 +306,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Kind = CompletionItemKind.TypeParameter,
                     CommitCharacters = ElementCommitCharacters,
                 };
+                var tagHelperDescriptions = completion.Value.Select(tagHelper => new TagHelperDescriptionInfo(tagHelper.GetTypeName(), tagHelper.Documentation));
+                var elementDescription = new ElementDescriptionInfo(tagHelperDescriptions.ToList());
+                razorCompletionItem.SetDescriptionData(elementDescription);
 
                 completionItems.Add(razorCompletionItem);
             }

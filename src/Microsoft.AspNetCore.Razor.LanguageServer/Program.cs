@@ -81,6 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();
                         services.AddSingleton<VisualStudio.Editor.Razor.TagHelperCompletionService, VisualStudio.Editor.Razor.DefaultTagHelperCompletionService>();
                         services.AddSingleton<TagHelperCompletionService, DefaultTagHelperCompletionService>();
+                        services.AddSingleton<TagHelperDescriptionFactory, DefaultTagHelperDescriptionFactory>();
 
                         var foregroundDispatcher = new VSCodeForegroundDispatcher();
                         services.AddSingleton<ForegroundDispatcher>(foregroundDispatcher);
