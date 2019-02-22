@@ -44,7 +44,6 @@ jobs:
     enableTelemetry: true
     helixRepo: aspnet/AspNetCore-Tooling
     helixType: build.product/
-    timeoutInMinutes: 180 # increase timeout since BAR publishing might wait a long time
     # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
     ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
       enableMicrobuild: true
@@ -74,7 +73,7 @@ jobs:
                 /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
       variables:
       - _DotNetPublishToBlobFeed : false
-      - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+      - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json
       - _PublishArgs: '/p:PublishToSymbolServer=false /p:PublishToAzure=false'
       - _BuildArgs: ''
       - _OfficialBuildIdArgs: ''
