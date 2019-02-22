@@ -7,6 +7,11 @@
     <TestRunnerName Condition="'$(IsUnitTestProject)' == 'false'"/>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Workaround https://github.com/dotnet/sdk/issues/2976 -->
+    <PackageReference Update="Microsoft.NETCore.Platforms" PrivateAssets="All" />
+  </ItemGroup>
+
   <!-- Workaround for implicit references added by Arcade based on project name. Non-test projects should not reference these projects. -->
   <ItemGroup Condition="'$(IsUnitTestProject)' == 'false'">
     <PackageReference Remove="Microsoft.NET.Test.Sdk" />
