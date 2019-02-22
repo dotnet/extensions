@@ -34,6 +34,7 @@
   <PropertyGroup>
     <RestoreSources>
       $(RestoreSources);
+      https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json;
       https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
       https://dotnet.myget.org/F/msbuild/api/v3/index.json;
