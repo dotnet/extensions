@@ -30,9 +30,11 @@
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
 
+    <!-- Specifies if reference assembly projects should be resolved for Reference items -->
     <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' == 'true'">true</ReferenceReferenceAssemblies>
     <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
 
+    <!-- Specifies if implementation assembly projects should be resolved for Reference items -->
     <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true'">true</ReferenceImplementationAssemblies>
     <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' ">false</ReferenceImplementationAssemblies>
   </PropertyGroup>
