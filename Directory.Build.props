@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-  <PropertyGroup>
-    <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
-  </PropertyGroup>
-
   <!--
-    We don't follow their conventions for project naming. 
+    We don't follow Arcade conventions for project naming. 
   -->
   <PropertyGroup Condition="'$(IsUnitTestProject)' == ''">
     <IsUnitTestProject>false</IsUnitTestProject>
@@ -18,6 +14,11 @@
   <Import
     Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
     Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
+
+  <PropertyGroup Condition="'$(CopyrightMicrosoft)' != ''">
+    <Copyright>$(CopyrightMicrosoft)</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+  </PropertyGroup>
 
   <PropertyGroup Label="Build Settings">
     <LangVersion>7.3</LangVersion>
