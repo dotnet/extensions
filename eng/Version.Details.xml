@@ -1,43 +1,48 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview.19078.2">
+    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview3.19120.3">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a58a80bdf5ad971167f73e501661131c3e34a901</Sha>
+      <Sha>924015e98bc443023a6b0eea2c0016b876e4051f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.0.0-preview.19078.2">
+    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.0.0-preview3.19120.3">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a58a80bdf5ad971167f73e501661131c3e34a901</Sha>
+      <Sha>924015e98bc443023a6b0eea2c0016b876e4051f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.NonCapturingTimer.Sources" Version="3.0.0-preview.19078.2">
+    <Dependency Name="Microsoft.Extensions.NonCapturingTimer.Sources" Version="3.0.0-preview3.19120.3">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a58a80bdf5ad971167f73e501661131c3e34a901</Sha>
+      <Sha>924015e98bc443023a6b0eea2c0016b876e4051f</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview3.19115.9">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>b07bc5efcad439d5157f65df176e08f26ccb4b88</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview3.19115.9">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>b07bc5efcad439d5157f65df176e08f26ccb4b88</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview3-27415-4">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview3-27419-3">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>0dfcccec1a9fdf391fe4544ed354ac15390d9205</Sha>
+      <Sha>84174943d9ea6cf34ade0dbab8e7f0319378f0ab</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview3-27415-4">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview3-27419-3">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>0dfcccec1a9fdf391fe4544ed354ac15390d9205</Sha>
+      <Sha>84174943d9ea6cf34ade0dbab8e7f0319378f0ab</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.0.0-preview.19078.2">
-      <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a58a80bdf5ad971167f73e501661131c3e34a901</Sha>
+    <!-- Listed as a dependency to workaround https://github.com/dotnet/cli/issues/10528 -->
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview3.19115.9">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>b07bc5efcad439d5157f65df176e08f26ccb4b88</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview.19078.2">
+    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.0.0-preview3.19120.3">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a58a80bdf5ad971167f73e501661131c3e34a901</Sha>
+      <Sha>924015e98bc443023a6b0eea2c0016b876e4051f</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview3.19120.3">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>924015e98bc443023a6b0eea2c0016b876e4051f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19121.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
