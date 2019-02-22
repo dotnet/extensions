@@ -55,7 +55,7 @@ jobs:
           value: /p:DotNetSignType=$(_SignType)
                  /p:TeamName=$(_TeamName)
                  /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-                 /p:DotNetPublishBlobFeedUrl=https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json
+                 /p:DotNetPublishBlobFeedUrl=https://dotnetfeed.blob.core.windows.net/aspnet/extensions/index.json
                  /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
                  /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
       # else
