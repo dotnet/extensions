@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -153,7 +154,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public bool CanResolve(CompletionItem completionItem)
         {
-            if (completionItem.IsTagHelperElementCompletion())
+            if (completionItem.IsTagHelperElementCompletion() ||
+                completionItem.IsTagHelperAttributeCompletion())
             {
                 return true;
             }
@@ -163,19 +165,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public Task<CompletionItem> Handle(CompletionItem completionItem, CancellationToken cancellationToken)
         {
+            string markdown = null;
             if (completionItem.IsTagHelperElementCompletion())
             {
                 var descriptionInfo = completionItem.GetElementDescriptionInfo();
-                if (_tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out var markdown))
-                {
-                    var documentation = new StringOrMarkupContent(
-                        new MarkupContent()
-                        {
-                            Kind = MarkupKind.Markdown,
-                            Value = markdown,
-                        });
-                    completionItem.Documentation = documentation;
-                }
+                _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
+            }
+
+            if (completionItem.IsTagHelperAttributeCompletion())
+            {
+                var descriptionInfo = completionItem.GetAttributeDescriptionInfo();
+                _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
+            }
+
+            if (markdown != null)
+            {
+                var documentation = new StringOrMarkupContent(
+                    new MarkupContent()
+                    {
+                        Kind = MarkupKind.Markdown,
+                        Value = markdown,
+                    });
+                completionItem.Documentation = documentation;
             }
 
             return Task.FromResult(completionItem);

@@ -13,6 +13,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private static readonly Lazy<Regex> ExtractCrefRegex = new Lazy<Regex>(
             () => new Regex("<(see|seealso)[\\s]+cref=\"([^\">]+)\"[^>]*>", RegexOptions.Compiled, TimeSpan.FromSeconds(1)));
+        private static readonly IReadOnlyDictionary<string, string> PrimitiveDisplayTypeNameLookups = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [typeof(byte).FullName] = "byte",
+            [typeof(sbyte).FullName] = "sbyte",
+            [typeof(int).FullName] = "int",
+            [typeof(uint).FullName] = "uint",
+            [typeof(short).FullName] = "short",
+            [typeof(ushort).FullName] = "ushort",
+            [typeof(long).FullName] = "long",
+            [typeof(ulong).FullName] = "ulong",
+            [typeof(float).FullName] = "float",
+            [typeof(double).FullName] = "double",
+            [typeof(char).FullName] = "char",
+            [typeof(bool).FullName] = "bool",
+            [typeof(object).FullName] = "object",
+            [typeof(string).FullName] = "string",
+            [typeof(decimal).FullName] = "decimal",
+        };
 
         public override bool TryCreateDescription(ElementDescriptionInfo elementDescriptionInfo, out string markdown)
         {
@@ -45,6 +63,61 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 var tagHelperType = descriptionInfo.TagHelperTypeName;
                 var reducedTypeName = ReduceTypeName(tagHelperType);
                 descriptionBuilder.Append(reducedTypeName);
+                descriptionBuilder.AppendLine("**");
+                descriptionBuilder.AppendLine();
+
+                var documentation = descriptionInfo.Documentation;
+                if (!TryExtractSummary(documentation, out var summaryContent))
+                {
+                    continue;
+                }
+
+                var finalSummaryContent = CleanSummaryContent(summaryContent);
+                descriptionBuilder.AppendLine(finalSummaryContent);
+            }
+
+            markdown = descriptionBuilder.ToString();
+            return true;
+        }
+
+        public override bool TryCreateDescription(AttributeDescriptionInfo attributeDescriptionInfo, out string markdown)
+        {
+            var associatedAttributeInfos = attributeDescriptionInfo.AssociatedAttributeDescriptions;
+            if (associatedAttributeInfos.Count == 0)
+            {
+                markdown = null;
+                return false;
+            }
+
+            // This generates a markdown description that looks like the following:
+            // **ReturnTypeName** SomeTypeName.**SomeProperty**
+            //
+            // The Summary documentation text with `CrefTypeValues` in code.
+            //
+            // Additional description infos result in a triple `---` to separate the markdown entries.
+
+
+                              var descriptionBuilder = new StringBuilder();
+            for (var i = 0; i < associatedAttributeInfos.Count; i++)
+            {
+                var descriptionInfo = associatedAttributeInfos[i];
+
+                if (descriptionBuilder.Length > 0)
+                {
+                    descriptionBuilder.AppendLine();
+                    descriptionBuilder.AppendLine("---");
+                }
+
+                descriptionBuilder.Append("**");
+                var returnTypeName = GetSimpleName(descriptionInfo.ReturnTypeName);
+                var reducedReturnTypeName = ReduceTypeName(returnTypeName);
+                descriptionBuilder.Append(reducedReturnTypeName);
+                descriptionBuilder.Append("** ");
+                var tagHelperTypeName = ResolveTagHelperTypeName(descriptionInfo);
+                var reducedTagHelperTypeName = ReduceTypeName(tagHelperTypeName);
+                descriptionBuilder.Append(reducedTagHelperTypeName);
+                descriptionBuilder.Append(".**");
+                descriptionBuilder.Append(descriptionInfo.PropertyName);
                 descriptionBuilder.AppendLine("**");
                 descriptionBuilder.AppendLine();
 
@@ -153,6 +226,43 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return value;
         }
 
+        // Internal for testing
+        internal static string GetSimpleName(string typeName)
+        {
+            if (PrimitiveDisplayTypeNameLookups.TryGetValue(typeName, out var simpleName))
+            {
+                return simpleName;
+            }
+
+            return typeName;
+        }
+
+        // Internal for testing
+        internal static string ResolveTagHelperTypeName(TagHelperAttributeDescriptionInfo info)
+        {
+            // A BoundAttributeDescriptor does not have a direct reference to its parent TagHelper.
+            // However, when it was constructed the parent TagHelper's type name was embedded into
+            // its DisplayName. In VSCode we can't use the DisplayName verbatim for descriptions
+            // because the DisplayName is typically too long to display properly. Therefore we need
+            // to break it apart and then reconstruct it in a reduced format.
+            // i.e. this is the format the display name comes in:
+            // ReturnTypeName SomeTypeName.SomePropertyName
+
+            // We must simplify the return type name before using it to determine the type name prefix
+            // because that is how the display name was originally built (a little hacky).
+            var simpleReturnType = GetSimpleName(info.ReturnTypeName);
+
+            // "ReturnTypeName "
+            var typeNamePrefixLength = simpleReturnType.Length + 1 /* space */;
+
+            // ".SomePropertyName"
+            var typeNameSuffixLength = /* . */ 1 + info.PropertyName.Length;
+
+            // "SomeTypeName"
+            var typeNameLength = info.DisplayName.Length - typeNamePrefixLength - typeNameSuffixLength;
+            var tagHelperTypeName = info.DisplayName.Substring(typeNamePrefixLength, typeNameLength);
+            return tagHelperTypeName;
+        }
 
         // Internal for testing
         internal static string ReduceTypeName(string content) => ReduceFullName(content, reduceWhenDotCount: 1);

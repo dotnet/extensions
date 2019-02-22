@@ -8,6 +8,68 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DefaultTagHelperDescriptionFactoryTest
     {
         [Fact]
+        public void ResolveTagHelperTypeName_ExtractsTypeName_SimpleReturnType()
+        {
+            // Arrange
+            var info = new TagHelperAttributeDescriptionInfo(
+                displayName: "string SomeTypeName.SomePropertyName",
+                propertyName: "SomePropertyName",
+                returnTypeName: "System.String",
+                documentation: string.Empty);
+
+            // Act
+            var typeName = DefaultTagHelperDescriptionFactory.ResolveTagHelperTypeName(info);
+
+            // Assert
+            Assert.Equal("SomeTypeName", typeName);
+        }
+
+        [Fact]
+        public void ResolveTagHelperTypeName_ExtractsTypeName_ComplexReturnType()
+        {
+            // Arrange
+            var info = new TagHelperAttributeDescriptionInfo(
+                displayName: "SomeReturnTypeName SomeTypeName.SomePropertyName",
+                propertyName: "SomePropertyName",
+                returnTypeName: "SomeReturnTypeName",
+                documentation: string.Empty);
+
+            // Act
+            var typeName = DefaultTagHelperDescriptionFactory.ResolveTagHelperTypeName(info);
+
+            // Assert
+            Assert.Equal("SomeTypeName", typeName);
+        }
+
+        [Fact]
+        public void GetSimpleName_NoopsForNonPrimitiveType()
+        {
+            // Arrange
+            var typeName = "Microsoft.AspNetCore.SomeType";
+
+            // Act
+            var result = DefaultTagHelperDescriptionFactory.GetSimpleName(typeName);
+
+            // Assert
+            Assert.Equal(typeName, result);
+        }
+
+        [Theory]
+        [InlineData("System.Int32", "int")]
+        [InlineData("System.Boolean", "bool")]
+        [InlineData("System.String", "string")]
+        public void GetSimpleName_SimplifiesPrimitiveTypes(string typeName, string expectedTypeName)
+        {
+            // Arrange
+
+            // Act
+            var result = DefaultTagHelperDescriptionFactory.GetSimpleName(typeName);
+
+            // Assert
+            Assert.Equal(expectedTypeName, result);
+        }
+
+        [Fact]
         public void ReduceTypeName_Plain()
         {
             // Arrange
@@ -330,7 +392,7 @@ World
         }
 
         [Fact]
-        public void TryCreateDescription_SingleAssociatedTagHelper_ReturnsTrue()
+        public void TryCreateDescription_Element_SingleAssociatedTagHelper_ReturnsTrue()
         {
             // Arrange
             var descriptionFactory = new DefaultTagHelperDescriptionFactory();
@@ -352,7 +414,7 @@ Uses `List<System.String>`s
         }
 
         [Fact]
-        public void TryCreateDescription_MultipleAssociatedTagHelpers_ReturnsTrue()
+        public void TryCreateDescription_Element_MultipleAssociatedTagHelpers_ReturnsTrue()
         {
             // Arrange
             var descriptionFactory = new DefaultTagHelperDescriptionFactory();
@@ -376,6 +438,68 @@ Uses `List<System.String>`s
 **OtherTagHelper**
 
 Also uses `List<System.String>`s
+", markdown);
+        }
+
+        [Fact]
+        public void TryCreateDescription_Attribute_SingleAssociatedAttribute_ReturnsTrue()
+        {
+            // Arrange
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var associatedAttributeDescriptions = new[]
+            {
+                new TagHelperAttributeDescriptionInfo(
+                    displayName: "string Microsoft.AspNetCore.SomeTagHelpers.SomeTypeName.SomeProperty",
+                    propertyName: "SomeProperty",
+                    returnTypeName: "System.String",
+                    documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>")
+            };
+            var attributeDescription = new AttributeDescriptionInfo(associatedAttributeDescriptions);
+
+            // Act
+            var result = descriptionFactory.TryCreateDescription(attributeDescription, out var markdown);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(@"**string** SomeTypeName.**SomeProperty**
+
+Uses `List<System.String>`s
+", markdown);
+        }
+
+        [Fact]
+        public void TryCreateDescription_Attribute_MultipleAssociatedAttributes_ReturnsTrue()
+        {
+            // Arrange
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var associatedAttributeDescriptions = new[]
+            {
+                new TagHelperAttributeDescriptionInfo(
+                    displayName: "string Microsoft.AspNetCore.SomeTagHelpers.SomeTypeName.SomeProperty",
+                    propertyName: "SomeProperty",
+                    returnTypeName: "System.String",
+                    documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+                new TagHelperAttributeDescriptionInfo(
+                    displayName: "System.Boolean? Microsoft.AspNetCore.SomeTagHelpers.AnotherTypeName.AnotherProperty",
+                    propertyName: "AnotherProperty",
+                    returnTypeName: "System.Boolean?",
+                    documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+            };
+            var attributeDescription = new AttributeDescriptionInfo(associatedAttributeDescriptions);
+
+            // Act
+            var result = descriptionFactory.TryCreateDescription(attributeDescription, out var markdown);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(@"**string** SomeTypeName.**SomeProperty**
+
+Uses `List<System.String>`s
+
+---
+**Boolean?** AnotherTypeName.**AnotherProperty**
+
+Uses `List<System.String>`s
 ", markdown);
         }
     }

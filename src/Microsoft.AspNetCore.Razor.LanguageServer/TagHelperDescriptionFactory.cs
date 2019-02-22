@@ -6,5 +6,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     internal abstract class TagHelperDescriptionFactory
     {
         public abstract bool TryCreateDescription(ElementDescriptionInfo descriptionInfos, out string markdown);
+
+        public abstract bool TryCreateDescription(AttributeDescriptionInfo descriptionInfos, out string markdown);
     }
 }

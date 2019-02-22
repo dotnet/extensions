@@ -268,6 +268,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Kind = CompletionItemKind.TypeParameter,
                     CommitCharacters = AttributeCommitCharacters,
                 };
+                var attributeDescriptions = completion.Value.Select(boundAttribute => new TagHelperAttributeDescriptionInfo(
+                    boundAttribute.DisplayName,
+                    boundAttribute.GetPropertyName(),
+                    indexerCompletion ? boundAttribute.IndexerTypeName : boundAttribute.TypeName,
+                    boundAttribute.Documentation));
+                var attributeDescriptionInfo = new AttributeDescriptionInfo(attributeDescriptions.ToList());
+                razorCompletionItem.SetDescriptionInfo(attributeDescriptionInfo);
 
                 completionItems.Add(razorCompletionItem);
             }
@@ -308,7 +315,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 };
                 var tagHelperDescriptions = completion.Value.Select(tagHelper => new TagHelperDescriptionInfo(tagHelper.GetTypeName(), tagHelper.Documentation));
                 var elementDescription = new ElementDescriptionInfo(tagHelperDescriptions.ToList());
-                razorCompletionItem.SetDescriptionData(elementDescription);
+                razorCompletionItem.SetDescriptionInfo(elementDescription);
 
                 completionItems.Add(razorCompletionItem);
             }
