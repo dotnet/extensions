@@ -9,7 +9,6 @@ trigger:
     include:
     - master
     - release/*
-    - internal/release/*
 
 pr:
   autoCancel: false
