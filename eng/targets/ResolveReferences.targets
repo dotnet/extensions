@@ -29,6 +29,14 @@
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
+
+    <!-- Specifies if reference assembly projects should be resolved for Reference items -->
+    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' == 'true'">true</ReferenceReferenceAssemblies>
+    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
+
+    <!-- Specifies if implementation assembly projects should be resolved for Reference items -->
+    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true'">true</ReferenceImplementationAssemblies>
+    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' ">false</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
@@ -54,8 +62,13 @@
       Exclude="@(UnusedProjectReferenceProvider)" />
 
     <!-- Use ref assembly project paths for ref assembly projects -->
-    <ProjectReference Condition="'$(IsReferenceAssemblyProject)' == 'false'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
-    <ProjectReference Condition="'$(IsReferenceAssemblyProject)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" />
+    <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
+      <IsReferenceAssembly>false</IsReferenceAssembly>
+    </ProjectReference>
+
+    <ProjectReference Condition="'$(ReferenceReferenceAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" >
+      <IsReferenceAssembly>true</IsReferenceAssembly>
+    </ProjectReference>
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
 
