@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 
   This file is used by automation to update Versions.props and may be used for other purposes, such as
@@ -58,9 +58,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>fc4468357a6d44ca36f2c9fd94ab541cfa529cf9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview3-27422-3">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview3-27422-6">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>347132079485eaccaed3def2ba15d31469d8b5a3</Sha>
+      <Sha>cc146b444df76e62d606f3431ff954b0cc112f92</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
