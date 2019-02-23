@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -41,6 +40,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public override VersionStamp Version => State.Version;
 
         public override IReadOnlyList<TagHelperDescriptor> TagHelpers => State.TagHelpers;
+
+        public override ProjectWorkspaceState ProjectWorkspaceState => State.ProjectWorkspaceState;
 
         public override DocumentSnapshot GetDocument(string filePath)
         {

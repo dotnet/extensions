@@ -18,6 +18,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public virtual IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
 
+        public virtual ProjectWorkspaceState ProjectWorkspaceState { get; }
+
         public abstract RazorProjectEngine GetProjectEngine();
 
         public abstract DocumentSnapshot GetDocument(string filePath);
