@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             HostProject_For_UnknownConfiguration = new HostProject(
                 "/TestPath/SomePath/Test.csproj",
-                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Blazor-0.1", Array.Empty<RazorExtension>()));
+                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Random-0.1", Array.Empty<RazorExtension>()));
 
             Snapshot_For_1_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_0, ProjectWorkspaceState));
             Snapshot_For_1_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_1, ProjectWorkspaceState));

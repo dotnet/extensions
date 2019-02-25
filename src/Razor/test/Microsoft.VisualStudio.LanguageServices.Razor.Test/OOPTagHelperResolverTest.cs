@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             HostProject_For_2_0 = new HostProject("Test.csproj", FallbackRazorConfiguration.MVC_2_0);
             HostProject_For_NonSerializableConfiguration = new HostProject(
                 "Test.csproj",
-                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Blazor-0.1", Array.Empty<RazorExtension>()));
+                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Random-0.1", Array.Empty<RazorExtension>()));
 
             CustomFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
             {
@@ -33,7 +33,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 // We don't really use this factory, we just use it to ensure that the call is going to go out of process.
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
                     () => new LegacyProjectEngineFactory_2_1(),
-                    new ExportCustomProjectEngineFactoryAttribute("Blazor-0.1") { SupportsSerialization = false, }),
+                    new ExportCustomProjectEngineFactoryAttribute("Random-0.1") { SupportsSerialization = false, }),
             };
 
             FallbackFactory = new FallbackProjectEngineFactory();
