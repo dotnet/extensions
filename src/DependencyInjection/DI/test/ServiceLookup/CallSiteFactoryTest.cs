@@ -331,7 +331,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
-        public void CreateCallSite_ReturnsEmpty_IfClosedTypeSatisfiesBaseClassConstraintAndRegisteredType()
+        public void CreateCallSite_ReturnsMatchingTypes_IfClosedTypeSatisfiesBaseClassConstraintAndRegisteredType()
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<AbstractClass>);
