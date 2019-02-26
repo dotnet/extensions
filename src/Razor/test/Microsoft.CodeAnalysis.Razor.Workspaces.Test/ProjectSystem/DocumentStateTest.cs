@@ -49,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private SourceText Text { get; }
 
-        protected override void ConfigureLanguageServices(List<ILanguageService> services)
+        protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
             services.Add(TagHelperResolver);
         }

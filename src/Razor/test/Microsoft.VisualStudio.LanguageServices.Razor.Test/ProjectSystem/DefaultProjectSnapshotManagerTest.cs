@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private SourceText SourceText { get; }
 
-        protected override void ConfigureLanguageServices(List<ILanguageService> services)
+        protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
             services.Add(TagHelperResolver);
         }
@@ -322,8 +322,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             snapshot = ProjectManager.GetSnapshot(HostProject);
             Assert.Same(projectEngine, snapshot.GetProjectEngine());
         }
-
-        [ForegroundFact]
+       [ForegroundFact]
         public async Task DocumentOpened_UpdatesDocument()
         {
             // Arrange

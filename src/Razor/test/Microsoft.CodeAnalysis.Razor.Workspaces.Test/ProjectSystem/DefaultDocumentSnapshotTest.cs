@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private DefaultDocumentSnapshot LegacyDocument { get; }
 
-        protected override void ConfigureLanguageServices(List<ILanguageService> services)
+        protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
             services.Add(new TestTagHelperResolver());
         }

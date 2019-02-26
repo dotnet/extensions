@@ -50,8 +50,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             _projectManager = projectManager;
 
-            var razorLanguageServices = _projectManager.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
-            _tagHelperResolver = razorLanguageServices.GetRequiredService<TagHelperResolver>();
+            _tagHelperResolver = _projectManager.Workspace.Services.GetRequiredService<TagHelperResolver>();
         }
 
         public override void Update(Project workspaceProject, ProjectSnapshot projectSnapshot)

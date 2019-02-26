@@ -82,7 +82,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private DefaultVisualStudioDocumentTracker DocumentTracker { get; }
 
-        protected override void ConfigureLanguageServices(List<ILanguageService> services)
+        protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
             TagHelperResolver = new TestTagHelperResolver();
             services.Add(TagHelperResolver);

@@ -4,15 +4,14 @@
 using System.Composition;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
-using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.VisualStudio.Editor.Razor
+namespace Microsoft.CodeAnalysis.Razor
 {
     [Shared]
-    [ExportLanguageServiceFactory(typeof(TagHelperResolver), RazorLanguage.Name, ServiceLayer.Default)]
-    internal class DefaultTagHelperResolverFactory : ILanguageServiceFactory
+    [ExportWorkspaceServiceFactory(typeof(TagHelperResolver), ServiceLayer.Default)]
+    internal class DefaultTagHelperResolverFactory : IWorkspaceServiceFactory
     {
-        public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
+        public IWorkspaceService CreateService(HostWorkspaceServices workspaceServices)
         {
             return new DefaultTagHelperResolver();
         }

@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    internal abstract class TagHelperResolver : ILanguageService
+    internal abstract class TagHelperResolver : IWorkspaceService
     {
         public abstract Task<TagHelperResolutionResult> GetTagHelpersAsync(Project workspaceProject, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken = default);
 

@@ -20,8 +20,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var tagHelperResolver = new TestTagHelperResolver();
             tagHelperResolver.TagHelpers.Add(TagHelperDescriptorBuilder.Create("ResolvableTagHelper", "TestAssembly").Build());
             ResolvableTagHelpers = tagHelperResolver.TagHelpers;
-            var languageServices = new List<ILanguageService>() { tagHelperResolver };
-            var testServices = TestServices.Create(languageServices);
+            var workspaceServices = new List<IWorkspaceService>() { tagHelperResolver };
+            var testServices = TestServices.Create(workspaceServices, Enumerable.Empty<ILanguageService>());
             Workspace = TestWorkspace.Create(testServices);
             var projectId = ProjectId.CreateNewId("Test");
             var solution = Workspace.CurrentSolution.AddProject(ProjectInfo.Create(

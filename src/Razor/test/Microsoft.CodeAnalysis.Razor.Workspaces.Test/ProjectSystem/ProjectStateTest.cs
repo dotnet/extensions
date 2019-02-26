@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private SourceText Text { get; }
 
-        protected override void ConfigureLanguageServices(List<ILanguageService> services)
+        protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
             TagHelperResolver = new TestTagHelperResolver();
             services.Add(TagHelperResolver);
@@ -162,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                             TestProjectData.SomeProjectNestedFile3.FilePath,
                         },
                         kvp.Value.OrderBy(f => f));
-                },
+           },
                 kvp =>
                 {
                     Assert.Equal(TestProjectData.SomeProjectNestedImportFile.TargetPath, kvp.Key);

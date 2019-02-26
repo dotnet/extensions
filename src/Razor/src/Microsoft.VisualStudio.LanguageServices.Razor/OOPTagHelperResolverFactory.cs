@@ -1,26 +1,22 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     [System.Composition.Shared]
-    [ExportLanguageServiceFactory(typeof(TagHelperResolver), RazorLanguage.Name, ServiceLayer.Host)]
-    internal class OOPTagHelperResolverFactory : ILanguageServiceFactory
+    [ExportWorkspaceServiceFactory(typeof(TagHelperResolver), ServiceLayer.Host)]
+    internal class OOPTagHelperResolverFactory : IWorkspaceServiceFactory
     {
-        public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
+        public IWorkspaceService CreateService(HostWorkspaceServices workspaceServices)
         {
             return new OOPTagHelperResolver(
-                languageServices.WorkspaceServices.GetRequiredService<ProjectSnapshotProjectEngineFactory>(),
-                languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>(),
-                languageServices.WorkspaceServices.Workspace);
+                workspaceServices.GetRequiredService<ProjectSnapshotProjectEngineFactory>(),
+                workspaceServices.GetRequiredService<ErrorReporter>(),
+                workspaceServices.Workspace);
         }
     }
 }

@@ -4,11 +4,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
-namespace Microsoft.VisualStudio.Editor.Razor
+namespace Microsoft.CodeAnalysis.Razor
 {
     internal class DefaultTagHelperResolver : TagHelperResolver
     {
@@ -28,7 +26,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 return Task.FromResult(TagHelperResolutionResult.Empty);
             }
-            
+
             return GetTagHelpersAsync(workspaceProject, projectSnapshot.GetProjectEngine());
         }
     }

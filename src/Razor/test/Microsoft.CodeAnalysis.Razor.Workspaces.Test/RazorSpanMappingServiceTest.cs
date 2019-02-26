@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Razor
         private HostProject HostProject { get; }
         private HostDocument HostDocument { get; }
 
-        protected override void ConfigureLanguageServices(List<ILanguageService> services)
+        protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
             services.Add(new TestTagHelperResolver());
         }
