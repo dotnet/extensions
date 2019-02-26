@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -28,7 +28,29 @@ namespace ConsoleApplication
 
             config = builder.Build();
 
-            Console.WriteLine(config["ConnectionString"]);
+            void Register()
+            {
+                config.GetReloadToken().RegisterChangeCallback(
+                    o => {
+                        Console.WriteLine("RELOAD");
+                        Print();
+                        Register();
+                    }, null);
+            }
+
+            void Print()
+            {
+                foreach (var keyValuePair in config.AsEnumerable())
+                {
+                    Console.WriteLine(keyValuePair.Key + " " + keyValuePair.Value);
+                }
+            }
+
+            Register();
+
+            Print();
+
+            Console.ReadLine();
         }
     }
 }
