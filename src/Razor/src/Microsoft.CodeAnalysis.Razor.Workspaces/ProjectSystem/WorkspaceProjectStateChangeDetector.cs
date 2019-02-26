@@ -48,8 +48,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             InitializeSolution(_projectManager.Workspace.CurrentSolution);
         }
 
-        // Internal for testing
-        internal void Workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
+        // Internal for testing, virtual for temporary VSCode workaround
+        internal virtual void Workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
         {
             Project project;
             switch (e.Kind)
@@ -134,7 +134,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        private void InitializeSolution(Solution solution)
+        // Virtual for temporary VSCode workaround
+        protected virtual void InitializeSolution(Solution solution)
         {
             Debug.Assert(solution != null);
 
