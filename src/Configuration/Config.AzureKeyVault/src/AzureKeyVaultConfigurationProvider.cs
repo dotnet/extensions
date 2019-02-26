@@ -80,15 +80,17 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                     continue;
                 }
 
-                var secretId = secret.Id;
+                var secretId = secret.Identifier.BaseIdentifier;
                 if (oldLoadedSecrets != null &&
-                    oldLoadedSecrets.TryGetValue(secretId, out var existingSecret))
+                    oldLoadedSecrets.TryGetValue(secretId, out var existingSecret) &&
+                    existingSecret.IsUpToDate(secret.Attributes.Updated))
                 {
                     oldLoadedSecrets.Remove(secretId);
                     newLoadedSecrets.Add(secretId, existingSecret);
                 }
                 else
                 {
+                    Console.WriteLine("Loading "+ secretId);
                     tasks.Add(_client.GetSecretAsync(secretId));
                 }
             }
@@ -97,7 +99,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
             foreach (var task in tasks)
             {
-                newLoadedSecrets.Add(task.Result.Id, new LoadedSecret(_manager.GetKey(task.Result), task.Result.Value));
+                var secretBundle = task.Result;
+                newLoadedSecrets.Add(secretBundle.SecretIdentifier.BaseIdentifier, new LoadedSecret(_manager.GetKey(secretBundle), secretBundle.Value, secretBundle.Attributes.Updated));
             }
 
             _loadedSecrets = newLoadedSecrets;
@@ -136,14 +139,26 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         private readonly struct LoadedSecret
         {
-            public LoadedSecret(string key, string value)
+            public LoadedSecret(string key, string value, DateTime? updated)
             {
                 Key = key;
                 Value = value;
+                Updated = updated;
             }
 
             public string Key { get; }
             public string Value { get; }
+            public DateTime? Updated { get; }
+
+            public bool IsUpToDate(DateTime? updated)
+            {
+                if (updated.HasValue != Updated.HasValue)
+                {
+                    return false;
+                }
+
+                return updated.GetValueOrDefault() == Updated.GetValueOrDefault();
+            }
         }
     }
 }
