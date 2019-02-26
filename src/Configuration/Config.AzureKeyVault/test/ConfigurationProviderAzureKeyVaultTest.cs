@@ -14,6 +14,11 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 {
     public class ConfigurationProviderKeyVaultTest : ConfigurationProviderTestBase
     {
+        public override void Null_values_are_included_in_the_config()
+        {
+            AssertConfig(BuildConfigRoot(LoadThroughProvider(TestSection.NullsTestConfig)), expectNulls: true);
+        }
+
         protected override (IConfigurationProvider Provider, System.Action Initializer) LoadThroughProvider(
             TestSection testConfig)
         {

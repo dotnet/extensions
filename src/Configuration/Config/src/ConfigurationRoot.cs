@@ -12,9 +12,10 @@ namespace Microsoft.Extensions.Configuration
     /// <summary>
     /// The root node for a configuration.
     /// </summary>
-    public class ConfigurationRoot : IConfigurationRoot
+    public class ConfigurationRoot : IConfigurationRoot, IDisposable
     {
-        private IList<IConfigurationProvider> _providers;
+        private readonly IList<IConfigurationProvider> _providers;
+        private readonly IList<IDisposable> _changeTokenRegistrations;
         private ConfigurationReloadToken _changeToken = new ConfigurationReloadToken();
 
         /// <summary>
@@ -29,10 +30,11 @@ namespace Microsoft.Extensions.Configuration
             }
 
             _providers = providers;
+            _changeTokenRegistrations = new List<IDisposable>(providers.Count);
             foreach (var p in providers)
             {
                 p.Load();
-                ChangeToken.OnChange(() => p.GetReloadToken(), () => RaiseChanged());
+                _changeTokenRegistrations.Add(ChangeToken.OnChange(() => p.GetReloadToken(), () => RaiseChanged()));
             }
         }
 
@@ -52,9 +54,7 @@ namespace Microsoft.Extensions.Configuration
             {
                 foreach (var provider in _providers.Reverse())
                 {
-                    string value;
-
-                    if (provider.TryGet(key, out value))
+                    if (provider.TryGet(key, out var value))
                     {
                         return value;
                     }
@@ -62,7 +62,6 @@ namespace Microsoft.Extensions.Configuration
 
                 return null;
             }
-
             set
             {
                 if (!_providers.Any())
@@ -117,6 +116,22 @@ namespace Microsoft.Extensions.Configuration
         {
             var previousToken = Interlocked.Exchange(ref _changeToken, new ConfigurationReloadToken());
             previousToken.OnReload();
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            // dispose change token registrations
+            foreach (var registration in _changeTokenRegistrations)
+            {
+                registration.Dispose();
+            }
+
+            // dispose providers
+            foreach (var provider in _providers)
+            {
+                (provider as IDisposable)?.Dispose();
+            }
         }
     }
 }

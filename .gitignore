@@ -36,3 +36,6 @@ node_modules/
 .testPublish/
 BenchmarkDotNet.Artifacts/
 *.binlog
+dist/
+.dotnet/
+.packages/

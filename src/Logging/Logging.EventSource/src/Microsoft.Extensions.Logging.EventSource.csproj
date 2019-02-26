@@ -4,6 +4,8 @@
     <Description>EventSource/EventListener logger provider implementation for Microsoft.Extensions.Logging.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);EventSource;ETW</PackageTags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

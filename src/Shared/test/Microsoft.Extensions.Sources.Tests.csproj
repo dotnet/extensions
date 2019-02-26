@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
-    <DebugType>portable</DebugType>
+    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -10,19 +9,21 @@
     <Compile Include="..\src\**\*.cs"
              Exclude="
               ..\src\BenchmarkRunner\**\*.cs;
-              ..\src\RazorViews\**\*.cs;
               ..\src\StackTrace\ExceptionDetails\**\*.cs;
               " />
-    <EmbeddedResource Include="..\src\**\*.resx" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\testassets\ThrowingLibrary\ThrowingLibrary.csproj" />
+    <ProjectReference Include="..\testassets\BuildWebHostInvalidSignature\BuildWebHostInvalidSignature.csproj" />
+    <ProjectReference Include="..\testassets\BuildWebHostPatternTestSite\BuildWebHostPatternTestSite.csproj" />
+    <ProjectReference Include="..\testassets\CreateHostBuilderInvalidSignature\CreateHostBuilderInvalidSignature.csproj" />
+    <ProjectReference Include="..\testassets\CreateHostBuilderPatternTestSite\CreateHostBuilderPatternTestSite.csproj" />
+    <ProjectReference Include="..\testassets\CreateWebHostBuilderInvalidSignature\CreateWebHostBuilderInvalidSignature.csproj" />
+    <ProjectReference Include="..\testassets\CreateWebHostBuilderPatternTestSite\CreateWebHostBuilderPatternTestSite.csproj" />
+    <ProjectReference Include="..\testassets\MockHostTypes\MockHostTypes.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="FSharp.Core" />
-    <Reference Include="System.Reflection.Metadata" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="System.Security.Cryptography.Cng" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe" />

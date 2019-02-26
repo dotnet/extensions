@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -11,6 +13,9 @@ namespace Microsoft.Extensions.DependencyInjection
     /// The default IServiceProvider.
     /// </summary>
     public sealed class ServiceProvider : IServiceProvider, IDisposable, IServiceProviderEngineCallback
+#if DISPOSE_ASYNC
+        , IAsyncDisposable
+#endif
     {
         private readonly IServiceProviderEngine _engine;
 
@@ -27,6 +32,21 @@ namespace Microsoft.Extensions.DependencyInjection
 
             switch (options.Mode)
             {
+                case ServiceProviderMode.Default:
+#if !NETCOREAPP
+                    _engine = new DynamicServiceProviderEngine(serviceDescriptors, callback);
+#else
+                    if (RuntimeFeature.IsSupported("IsDynamicCodeCompiled"))
+                    {
+                        _engine = new DynamicServiceProviderEngine(serviceDescriptors, callback);
+                    }
+                    else
+                    {
+                        // Don't try to compile Expressions/IL if they are going to get interpreted
+                        _engine = new RuntimeServiceProviderEngine(serviceDescriptors, callback);
+                    }
+#endif
+                    break;
                 case ServiceProviderMode.Dynamic:
                     _engine = new DynamicServiceProviderEngine(serviceDescriptors, callback);
                     break;
@@ -76,7 +96,10 @@ namespace Microsoft.Extensions.DependencyInjection
         public object GetService(Type serviceType) => _engine.GetService(serviceType);
 
         /// <inheritdoc />
-        public void Dispose() => _engine.Dispose();
+        public void Dispose()
+        {
+            _engine.Dispose();
+        }
 
         void IServiceProviderEngineCallback.OnCreate(ServiceCallSite callSite)
         {
@@ -87,5 +110,13 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             _callSiteValidator.ValidateResolution(serviceType, scope, _engine.RootScope);
         }
+
+#if DISPOSE_ASYNC
+        /// <inheritdoc/>
+        public ValueTask DisposeAsync()
+        {
+            return _engine.DisposeAsync();
+        }
+#endif
     }
 }

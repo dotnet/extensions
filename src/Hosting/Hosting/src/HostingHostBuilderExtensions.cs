@@ -50,6 +50,19 @@ namespace Microsoft.Extensions.Hosting
             });
         }
 
+        public static IHostBuilder UseDefaultServiceProvider(this IHostBuilder hostBuilder, Action<ServiceProviderOptions> configure)
+            => hostBuilder.UseDefaultServiceProvider((context, options) => configure(options));
+
+        public static IHostBuilder UseDefaultServiceProvider(this IHostBuilder hostBuilder, Action<HostBuilderContext, ServiceProviderOptions> configure)
+        {
+            return hostBuilder.UseServiceProviderFactory(context =>
+            {
+                var options = new ServiceProviderOptions();
+                configure(context, options);
+                return new DefaultServiceProviderFactory(options);
+            });
+        }
+
         /// <summary>
         /// Adds a delegate for configuring the provided <see cref="ILoggingBuilder"/>. This may be called multiple times.
         /// </summary>
@@ -109,7 +122,7 @@ namespace Microsoft.Extensions.Hosting
         }
 
         /// <summary>
-        /// Listens for Ctrl+C or SIGTERM and calls <see cref="IApplicationLifetime.StopApplication"/> to start the shutdown process.
+        /// Listens for Ctrl+C or SIGTERM and calls <see cref="IHostApplicationLifetime.StopApplication"/> to start the shutdown process.
         /// This will unblock extensions like RunAsync and WaitForShutdownAsync.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IHostBuilder" /> to configure.</param>
@@ -120,7 +133,7 @@ namespace Microsoft.Extensions.Hosting
         }
 
         /// <summary>
-        /// Listens for Ctrl+C or SIGTERM and calls <see cref="IApplicationLifetime.StopApplication"/> to start the shutdown process.
+        /// Listens for Ctrl+C or SIGTERM and calls <see cref="IHostApplicationLifetime.StopApplication"/> to start the shutdown process.
         /// This will unblock extensions like RunAsync and WaitForShutdownAsync.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IHostBuilder" /> to configure.</param>
