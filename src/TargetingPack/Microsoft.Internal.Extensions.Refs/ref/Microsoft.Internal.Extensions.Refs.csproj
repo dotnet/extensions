@@ -23,10 +23,13 @@
 
     <!-- This project should not be referenced via the `<Reference>` impementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+
+    <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="@(ProjectReferenceProvider->Metadata(RefProjectPath))" />
+    <Reference Include="@(ProjectReferenceProvider)" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -53,10 +56,11 @@
           BeforeTargets="_GetPackageFiles"
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
-      <AspNetCoreReferenceAssemblyPath
-          Include="@(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+      <AspNetCoreReferenceAssemblyPath Include="@(ReferencePathWithRefAssemblies->WithMetadataValue('IsReferenceAssembly', 'true'))" />
+      <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />
 
       <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
     </ItemGroup>
