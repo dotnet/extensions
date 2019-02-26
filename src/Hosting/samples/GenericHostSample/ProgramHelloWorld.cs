@@ -10,11 +10,7 @@ namespace GenericHostSample
     {
         public static async Task Main(string[] args)
         {
-            var builder = new HostBuilder()
-                .ConfigureLogging(logging =>
-                {
-                    logging.AddConsole();
-                })
+            var builder = Host.CreateDefaultBuilder()
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<MyServiceA>();

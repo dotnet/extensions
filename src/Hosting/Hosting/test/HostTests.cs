@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Hosting
 {
-    public class HostTests
+    public partial class HostTests
     {
         [Fact]
         public void CreateDefaultBuilder_IncludesContentRootByDefault()
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Hosting
             var host = builder.Build();
             var config = host.Services.GetRequiredService<IConfiguration>();
             Assert.Equal(expected, config["ContentRoot"]);
-            var env = host.Services.GetRequiredService<IHostingEnvironment>();
+            var env = host.Services.GetRequiredService<IHostEnvironment>();
             Assert.Equal(expected, env.ContentRootPath);
         }
 
@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.Hosting
             var expected = Directory.GetParent(Directory.GetCurrentDirectory()).FullName; // It must exist
             var builder = Host.CreateDefaultBuilder(new string[] { "--contentroot", expected });
             var host = builder.Build();
-            var env = host.Services.GetRequiredService<IHostingEnvironment>();
+            var env = host.Services.GetRequiredService<IHostEnvironment>();
             Assert.Equal(expected, env.ContentRootPath);
         }
 
@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.Hosting
         {
             var listener = new TestEventListener();
             var host = Host.CreateDefaultBuilder()
-                .UseEnvironment(EnvironmentName.Development)
+                .UseEnvironment(Environments.Development)
                 .ConfigureServices(serices =>
                 {
                     serices.AddScoped<ServiceA>();

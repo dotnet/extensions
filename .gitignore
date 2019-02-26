@@ -37,3 +37,5 @@ node_modules/
 BenchmarkDotNet.Artifacts/
 *.binlog
 dist/
+.dotnet/
+.packages/

@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Hosting
             builder.UseContentRoot(Directory.GetCurrentDirectory());
             builder.ConfigureHostConfiguration(config =>
             {
-                config.AddEnvironmentVariables(); // TODO: Prefix?
+                config.AddEnvironmentVariables(prefix: "DOTNET_");
                 if (args != null)
                 {
                     config.AddCommandLine(args);
