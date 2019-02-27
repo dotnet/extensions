@@ -59,13 +59,13 @@
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview3.19125.2</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview3.19125.2</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview3.19125.2</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview3-27425-4</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview3-27426-9</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview3.19125.2</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview3.19125.2</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview3-27425-4</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview3.19125.2</MicrosoftNETCorePlatformsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview3.19125.2</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.6.0-preview3.19125.2</SystemTextEncodingsWebPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview3-27426-9</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview3.19126.9</MicrosoftNETCorePlatformsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview3.19126.9</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0-preview3.19126.9</SystemTextEncodingsWebPackageVersion>
   </PropertyGroup>
   <!--
 
