@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -30,7 +31,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public override async Task<TextAndVersion> LoadTextAndVersionAsync(Workspace workspace, DocumentId documentId, CancellationToken cancellationToken)
         {
             var output = await _document.GetGeneratedOutputAsync().ConfigureAwait(false);
-            return TextAndVersion.Create(SourceText.From(output.GetCSharpDocument().GeneratedCode), _version, _filePath);
+
+            // Providing an encoding here is important for debuggability. Without this edit-and-continue
+            // won't work for projects with Razor files.
+            return TextAndVersion.Create(SourceText.From(output.GetCSharpDocument().GeneratedCode, Encoding.UTF8), _version, _filePath);
         }
     }
 }

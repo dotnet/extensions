@@ -526,7 +526,7 @@ namespace Microsoft.CodeAnalysis.Razor
             solution = solution.AddDocument(
                 DocumentId.CreateNewId(solution.ProjectIds.Single(), HostDocument.FilePath),
                 HostDocument.FilePath,
-                new GeneratedOutputTextLoader(primary, HostDocument.FilePath));
+                new GeneratedDocumentTextLoader(primary, HostDocument.FilePath));
 
             var secondary = solution.Projects.Single().Documents.Single();
             return (primary, secondary);
