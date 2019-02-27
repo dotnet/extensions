@@ -4,7 +4,6 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" ProjectPath="$(RepoRoot)src\DependencyInjection\DI.Specification.Tests\src\Microsoft.Extensions.DependencyInjection.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Analyzers" ProjectPath="$(RepoRoot)src\Logging\Logging.Analyzers\src\Microsoft.Extensions.Logging.Analyzers.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Testing" ProjectPath="$(RepoRoot)src\Logging\Logging.Testing\src\Microsoft.Extensions.Logging.Testing.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Tests" ProjectPath="$(RepoRoot)src\Logging\test\Microsoft.Extensions.Logging.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Analyzer.Testing" ProjectPath="$(RepoRoot)src\TestingUtils\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Testing" ProjectPath="$(RepoRoot)src\TestingUtils\Microsoft.AspNetCore.Testing\src\Microsoft.AspNetCore.Testing.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Caching.Abstractions" ProjectPath="$(RepoRoot)src\Caching\Abstractions\src\Microsoft.Extensions.Caching.Abstractions.csproj" RefProjectPath="$(RepoRoot)src\Caching\Abstractions\ref\Microsoft.Extensions.Caching.Abstractions.csproj" />
