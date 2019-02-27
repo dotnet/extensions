@@ -45,7 +45,7 @@ and are generated based on the last package release.
 
   <!-- These versions must not be renamed because they override the implicit package references from Arcade. -->
   <PropertyGroup Label="External dependency versions">
-    <XUnitVersion>2.4.0</XUnitVersion>
+    <XUnitVersion>2.4.1</XUnitVersion>
     <XUnitRunnerVisualStudioVersion>$(XUnitVersion)</XUnitRunnerVisualStudioVersion>
     <XUnitRunnerConsoleVersion>$(XUnitVersion)</XUnitRunnerConsoleVersion>
   </PropertyGroup>
