@@ -3,6 +3,8 @@ variables:
   value: true
 - name: _TeamName
   value: AspNetCore
+- name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
+  value: true
 
 resources:
   containers:
