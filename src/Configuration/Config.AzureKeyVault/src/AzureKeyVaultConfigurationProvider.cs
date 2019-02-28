@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
             if (_reloadInterval != null && _reloadInterval.Value <= TimeSpan.Zero)
             {
-                throw new ArgumentException(nameof(reloadInterval));
+                throw new ArgumentOutOfRangeException (nameof(reloadInterval), reloadInterval, nameof(reloadInterval) + " must be positive.");
             }
 
             _pollingTask = null;
@@ -53,7 +53,14 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             while (!_cancellationToken.IsCancellationRequested)
             {
                 await WaitForReload();
-                await LoadAsync();
+                try
+                {
+                    await LoadAsync();
+                }
+                catch (Exception)
+                {
+                    // Ignore
+                }
             }
         }
 
@@ -95,7 +102,6 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                 }
                 else
                 {
-                    Console.WriteLine("Loading "+ secretId);
                     tasks.Add(_client.GetSecretAsync(secretId));
                 }
             }
