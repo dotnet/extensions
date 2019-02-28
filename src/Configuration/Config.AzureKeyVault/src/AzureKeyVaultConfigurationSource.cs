@@ -27,14 +27,14 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
 
         /// <summary>
-        /// Time to wait inbetween each attempt at polling the Azure KeyVault for changes.
+        /// Gets or sets the timespan to wait between attempts at polling the Azure KeyVault for changes. <code>null</code> to disable reloading.
         /// </summary>
-        public TimeSpan? ReloadPollDelay { get; set; }
+        public TimeSpan? ReloadInterval { get; set; }
 
         /// <inheritdoc />
         public IConfigurationProvider Build(IConfigurationBuilder builder)
         {
-            return new AzureKeyVaultConfigurationProvider(new KeyVaultClientWrapper(Client), Vault, Manager, ReloadPollDelay);
+            return new AzureKeyVaultConfigurationProvider(new KeyVaultClientWrapper(Client), Vault, Manager, ReloadInterval);
         }
     }
 }

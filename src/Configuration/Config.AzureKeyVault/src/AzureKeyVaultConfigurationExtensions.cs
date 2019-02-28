@@ -23,16 +23,52 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="vault">The Azure KeyVault uri.</param>
         /// <param name="clientId">The application client id.</param>
         /// <param name="clientSecret">The client secret to use for authentication.</param>
-        /// <param name="reloadPollDelay">The timespan to wait inbetween each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddAzureKeyVault(
+            this IConfigurationBuilder configurationBuilder,
+            string vault,
+            string clientId,
+            string clientSecret)
+        {
+            return AddAzureKeyVault(configurationBuilder, vault, clientId, clientSecret, reloadInterval: null);
+        }
+
+        /// <summary>
+        /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
+        /// </summary>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="vault">The Azure KeyVault uri.</param>
+        /// <param name="clientId">The application client id.</param>
+        /// <param name="clientSecret">The client secret to use for authentication.</param>
+        /// <param name="reloadInterval">The timespan to wait between attempts at polling the Azure KeyVault for changes. <code>null</code> to disable reloading.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddAzureKeyVault(
             this IConfigurationBuilder configurationBuilder,
             string vault,
             string clientId,
             string clientSecret,
-            TimeSpan? reloadPollDelay = null)
+            TimeSpan? reloadInterval)
         {
-            return AddAzureKeyVault(configurationBuilder, vault, clientId, clientSecret, new DefaultKeyVaultSecretManager(), reloadPollDelay);
+            return AddAzureKeyVault(configurationBuilder, vault, clientId, clientSecret, new DefaultKeyVaultSecretManager(), reloadInterval);
+        }
+        
+        /// <summary>
+        /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
+        /// </summary>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="vault">The Azure KeyVault uri.</param>
+        /// <param name="clientId">The application client id.</param>
+        /// <param name="clientSecret">The client secret to use for authentication.</param>
+        /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddAzureKeyVault(
+            this IConfigurationBuilder configurationBuilder,
+            string vault,
+            string clientId,
+            string clientSecret,
+            IKeyVaultSecretManager manager)
+        {
+            return AddAzureKeyVault(configurationBuilder, vault, clientId, clientSecret, manager, reloadInterval: null);
         }
 
         /// <summary>
@@ -43,7 +79,7 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="clientId">The application client id.</param>
         /// <param name="clientSecret">The client secret to use for authentication.</param>
         /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.</param>
-        /// <param name="reloadPollDelay">The timespan to wait inbetween each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
+        /// <param name="reloadInterval">The timespan to wait between attempts at polling the Azure KeyVault for changes. <code>null</code> to disable reloading.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddAzureKeyVault(
             this IConfigurationBuilder configurationBuilder,
@@ -51,7 +87,7 @@ namespace Microsoft.Extensions.Configuration
             string clientId,
             string clientSecret,
             IKeyVaultSecretManager manager,
-            TimeSpan? reloadPollDelay = null)
+            TimeSpan? reloadInterval)
         {
             if (clientId == null)
             {
@@ -64,7 +100,7 @@ namespace Microsoft.Extensions.Configuration
             KeyVaultClient.AuthenticationCallback callback =
                 (authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret);
 
-            return configurationBuilder.AddAzureKeyVault(vault, new KeyVaultClient(callback), manager, reloadPollDelay);
+            return configurationBuilder.AddAzureKeyVault(vault, new KeyVaultClient(callback), manager, reloadInterval);
         }
 
         private static async Task<string> GetTokenFromClientSecret(string authority, string resource, string clientId, string clientSecret)
@@ -82,16 +118,52 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="vault">Azure KeyVault uri.</param>
         /// <param name="clientId">The application client id.</param>
         /// <param name="certificate">The <see cref="X509Certificate2"/> to use for authentication.</param>
-        /// <param name="reloadPollDelay">The timespan to wait inbetween each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddAzureKeyVault(
+            this IConfigurationBuilder configurationBuilder,
+            string vault,
+            string clientId,
+            X509Certificate2 certificate)
+        {
+            return AddAzureKeyVault(configurationBuilder, vault, clientId, certificate, reloadInterval: null);
+        }
+
+        /// <summary>
+        /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
+        /// </summary>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="vault">Azure KeyVault uri.</param>
+        /// <param name="clientId">The application client id.</param>
+        /// <param name="certificate">The <see cref="X509Certificate2"/> to use for authentication.</param>
+        /// <param name="reloadInterval">The timespan to wait between attempts at polling the Azure KeyVault for changes. <code>null</code> to disable reloading.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddAzureKeyVault(
             this IConfigurationBuilder configurationBuilder,
             string vault,
             string clientId,
             X509Certificate2 certificate,
-            TimeSpan? reloadPollDelay = null)
+            TimeSpan? reloadInterval)
         {
-            return AddAzureKeyVault(configurationBuilder, vault, clientId, certificate, new DefaultKeyVaultSecretManager(), reloadPollDelay);
+            return AddAzureKeyVault(configurationBuilder, vault, clientId, certificate, new DefaultKeyVaultSecretManager(), reloadInterval);
+        }
+        
+        /// <summary>
+        /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
+        /// </summary>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="vault">Azure KeyVault uri.</param>
+        /// <param name="clientId">The application client id.</param>
+        /// <param name="certificate">The <see cref="X509Certificate2"/> to use for authentication.</param>
+        /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddAzureKeyVault(
+            this IConfigurationBuilder configurationBuilder,
+            string vault,
+            string clientId,
+            X509Certificate2 certificate,
+            IKeyVaultSecretManager manager)
+        {
+            return AddAzureKeyVault(configurationBuilder, vault, clientId, certificate, manager, reloadInterval: null);
         }
 
         /// <summary>
@@ -102,7 +174,7 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="clientId">The application client id.</param>
         /// <param name="certificate">The <see cref="X509Certificate2"/> to use for authentication.</param>
         /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.</param>
-        /// <param name="reloadPollDelay">The timespan to wait inbetween each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
+        /// <param name="reloadInterval">The timespan to wait between attempts at polling the Azure KeyVault for changes. <code>null</code> to disable reloading.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddAzureKeyVault(
             this IConfigurationBuilder configurationBuilder,
@@ -110,7 +182,7 @@ namespace Microsoft.Extensions.Configuration
             string clientId,
             X509Certificate2 certificate,
             IKeyVaultSecretManager manager,
-            TimeSpan? reloadPollDelay = null)
+            TimeSpan? reloadInterval)
         {
             if (clientId == null)
             {
@@ -123,7 +195,7 @@ namespace Microsoft.Extensions.Configuration
             KeyVaultClient.AuthenticationCallback callback =
                 (authority, resource, scope) => GetTokenFromClientCertificate(authority, resource, clientId, certificate);
 
-            return configurationBuilder.AddAzureKeyVault(vault, new KeyVaultClient(callback), manager, reloadPollDelay);
+            return configurationBuilder.AddAzureKeyVault(vault, new KeyVaultClient(callback), manager, reloadInterval);
         }
 
         private static async Task<string> GetTokenFromClientCertificate(string authority, string resource, string clientId, X509Certificate2 certificate)
@@ -132,20 +204,48 @@ namespace Microsoft.Extensions.Configuration
             var result = await authContext.AcquireTokenAsync(resource, new ClientAssertionCertificate(clientId, certificate));
             return result.AccessToken;
         }
+        
+        /// <summary>
+        /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
+        /// </summary>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="vault">Azure KeyVault uri.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddAzureKeyVault(
+            this IConfigurationBuilder configurationBuilder,
+            string vault)
+        {
+            return AddAzureKeyVault(configurationBuilder, vault, reloadInterval: null);
+        }
 
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="vault">Azure KeyVault uri.</param>
-        /// <param name="reloadPollDelay">The timespan to wait inbetween each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
+        /// <param name="reloadInterval">The timespan to wait between attempts at polling the Azure KeyVault for changes. <code>null</code> to disable reloading.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddAzureKeyVault(
             this IConfigurationBuilder configurationBuilder,
             string vault,
-            TimeSpan? reloadPollDelay = null)
+            TimeSpan? reloadInterval)
         {
-            return AddAzureKeyVault(configurationBuilder, vault, new DefaultKeyVaultSecretManager(), reloadPollDelay);
+            return AddAzureKeyVault(configurationBuilder, vault, new DefaultKeyVaultSecretManager(), reloadInterval);
+        }
+        
+        /// <summary>
+        /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
+        /// </summary>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="vault">Azure KeyVault uri.</param>
+        /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddAzureKeyVault(
+            this IConfigurationBuilder configurationBuilder,
+            string vault,
+            IKeyVaultSecretManager manager)
+        {
+            return AddAzureKeyVault(configurationBuilder, vault, manager, reloadInterval: null);
         }
 
         /// <summary>
@@ -154,19 +254,36 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="vault">Azure KeyVault uri.</param>
         /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.</param>
-        /// <param name="reloadPollDelay">The timespan to wait inbetween each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
+        /// <param name="reloadInterval">The timespan to wait between attempts at polling the Azure KeyVault for changes. <code>null</code> to disable reloading.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddAzureKeyVault(
             this IConfigurationBuilder configurationBuilder,
             string vault,
             IKeyVaultSecretManager manager,
-            TimeSpan? reloadPollDelay = null)
+            TimeSpan? reloadInterval)
         {
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var authenticationCallback = new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback);
             var keyVaultClient = new KeyVaultClient(authenticationCallback);
             
-            return AddAzureKeyVault(configurationBuilder, vault, keyVaultClient, manager, reloadPollDelay);
+            return AddAzureKeyVault(configurationBuilder, vault, keyVaultClient, manager, reloadInterval);
+        }
+        
+        /// <summary>
+        /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
+        /// </summary>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="vault">Azure KeyVault uri.</param>
+        /// <param name="client">The <see cref="KeyVaultClient"/> to use for retrieving values.</param>
+        /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddAzureKeyVault(
+            this IConfigurationBuilder configurationBuilder,
+            string vault,
+            KeyVaultClient client,
+            IKeyVaultSecretManager manager)
+        {
+            return AddAzureKeyVault(configurationBuilder, vault, client, manager, reloadInterval: null);
         }
 
         /// <summary>
@@ -176,14 +293,14 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="vault">Azure KeyVault uri.</param>
         /// <param name="client">The <see cref="KeyVaultClient"/> to use for retrieving values.</param>
         /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.</param>
-        /// <param name="reloadPollDelay">The timespan to wait inbetween each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
+        /// <param name="reloadInterval">The timespan to wait between attempts at polling the Azure KeyVault for changes. <code>null</code> to disable reloading.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddAzureKeyVault(
             this IConfigurationBuilder configurationBuilder,
             string vault,
             KeyVaultClient client,
             IKeyVaultSecretManager manager,
-            TimeSpan? reloadPollDelay = null)
+            TimeSpan? reloadInterval)
         {
             if (configurationBuilder == null)
             {
@@ -207,7 +324,7 @@ namespace Microsoft.Extensions.Configuration
                 Client = client,
                 Vault = vault,
                 Manager = manager,
-                ReloadPollDelay = reloadPollDelay
+                ReloadInterval = reloadInterval
             });
 
             return configurationBuilder;
