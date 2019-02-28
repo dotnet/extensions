@@ -87,9 +87,9 @@
       <Reference Include="@(_ReferenceTemp)" />
       <_ReferenceTemp Remove="@(_ReferenceTemp)" />
 
-      <!-- Ensure only content asset are consumed from .Sources packages -->
+      <!-- Ensure only content asset and msbuild props/targets are consumed from .Sources packages -->
       <Reference>
-        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles</IncludeAssets>
+        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
         <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
       </Reference>
 
