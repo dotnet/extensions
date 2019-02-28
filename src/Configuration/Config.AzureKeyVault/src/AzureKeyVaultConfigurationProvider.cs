@@ -52,9 +52,14 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         {
             while (!_cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(_reloadPollDelay.Value.Milliseconds, _cancellationToken.Token);
+                await WaitForReload();
                 await LoadAsync();
             }
+        }
+
+        protected virtual async Task WaitForReload()
+        {
+            await Task.Delay(_reloadPollDelay.Value.Milliseconds, _cancellationToken.Token);
         }
 
         private async Task LoadAsync()
@@ -107,11 +112,10 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
             // Reload is needed if we are loading secrets that were not loaded before or
             // secret that was loaded previously is not available anymore
-            if (tasks.Any() || oldLoadedSecrets.Any())
+            if (tasks.Any() || oldLoadedSecrets?.Any() == true)
             {
-                SetData(_loadedSecrets);
+                SetData(_loadedSecrets, fireToken: oldLoadedSecrets != null);
             }
-
 
             // schedule a polling task only if none exists and a valid delay is specified
             if (_pollingTask == null && _reloadPollDelay != null)
@@ -120,16 +124,19 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             }
         }
 
-        private void SetData(Dictionary<string, LoadedSecret> loadedSecrets)
+        private void SetData(Dictionary<string, LoadedSecret> loadedSecrets, bool fireToken)
         {
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var secretItem in loadedSecrets)
             {
-                data[secretItem.Value.Key] = secretItem.Value.Value;
+                data.Add(secretItem.Value.Key, secretItem.Value.Value);
             }
 
             Data = data;
-            OnReload();
+            if (fireToken)
+            {
+                OnReload();
+            }
         }
 
         public void Dispose()
