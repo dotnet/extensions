@@ -97,8 +97,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             await Task.Factory.StartNew(
                 () => _projectService.UpdateProject(
-                    request.ProjectFilePath, 
-                    request.Configuration, 
+                    request.FilePath,
+                    request.Configuration,
                     request.ProjectWorkspaceState ?? ProjectWorkspaceState.Default),
                 CancellationToken.None,
                 TaskCreationOptions.None,

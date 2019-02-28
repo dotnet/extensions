@@ -12,6 +12,5 @@ export interface IRazorProjectConfiguration {
     readonly projectUri: vscode.Uri;
     readonly projectWorkspaceState: any;
     readonly configuration: any;
-    readonly targetFramework: string;
     readonly lastUpdated: Date;
 }

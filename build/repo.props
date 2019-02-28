@@ -2,6 +2,8 @@
   <Import Project="dependencies.props" />
 
   <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.OmniSharpPlugin.Test\Microsoft.AspNetCore.Razor.OmniSharpPlugin.Test.csproj" Condition="'$(OS)'!='Windows_NT'" />
   </ItemGroup>
 
   <PropertyGroup>

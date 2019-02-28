@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftCodeAnalysisVisualBasicFeaturesPackageVersion)" />
 
     <!-- Blazor dependencies. We have to lift a few runtime packages to make things work with our other dependnecies -->
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Razor.Extensions" Version="$(MicrosoftAspNetCoreBlazorExtensionsPackageVersion)" />
     <PackageReference Include="System.Runtime.Handles" Version="$(SystemRuntimeHandlesPackageVersion)" />
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="$(SystemIOFileSystemPrimitivesPackageVersion)" />

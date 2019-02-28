@@ -4,8 +4,7 @@
 * ------------------------------------------------------------------------------------------ */
 
 export interface UpdateProjectRequest {
-    readonly projectFilePath: string;
-    readonly targetFramework?: string;
+    readonly filePath: string;
     readonly projectWorkspaceState?: any;
     readonly configuration?: any;
 }

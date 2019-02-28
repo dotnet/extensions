@@ -58,9 +58,8 @@ export class TelemetryReporter {
             languageVersion = 'Default';
         }
 
-        const targetFramework = projectConfiguration.targetFramework;
         const projectIdentifier = this.razorProjects[project.path];
-        const newIdentifier = `${configurationName},${languageVersion},${targetFramework}`;
+        const newIdentifier = `${configurationName},${languageVersion}`;
 
         if (projectIdentifier === newIdentifier) {
             // We've already reported this project data.
@@ -74,7 +73,6 @@ export class TelemetryReporter {
             {
                 path: project.path,
                 configurationName,
-                targetFramework,
                 languageVersion,
             });
         this.eventStream.post(projectInfoEvent);

@@ -10,9 +10,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     internal class RazorUpdateProjectParams : IRequest
     {
-        public string ProjectFilePath { get; set; }
-
-        public string TargetFramework { get; set; }
+        public string FilePath { get; set; }
 
         public ProjectWorkspaceState ProjectWorkspaceState { get; set; }
 

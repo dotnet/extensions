@@ -159,17 +159,16 @@ export class RazorProjectManager {
             const path = getUriPath(uri);
             const projectJson = fs.readFileSync(fileSystemPath, 'utf8');
             const lastUpdated = fs.statSync(fileSystemPath).mtime;
-            const projectParsed = JSON.parse(projectJson);
-            const projectUri = vscode.Uri.file(projectParsed.ProjectFilePath);
+            const projectHandle = JSON.parse(projectJson);
+            const projectUri = vscode.Uri.file(projectHandle.FilePath);
             const projectFilePath = getUriPath(projectUri);
             const configuration: IRazorProjectConfiguration = {
                 uri,
                 path,
                 projectPath: projectFilePath,
                 projectUri,
-                configuration: projectParsed.Configuration,
-                projectWorkspaceState: projectParsed.ProjectWorkspaceState,
-                targetFramework: projectParsed.TargetFramework,
+                configuration: projectHandle.Configuration,
+                projectWorkspaceState: projectHandle.ProjectWorkspaceState,
                 lastUpdated,
             };
             return configuration;

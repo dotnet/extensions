@@ -1,11 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
-using Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -16,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             FilePathNormalizer = new FilePathNormalizer();
         }
-        
+
         private FilePathNormalizer FilePathNormalizer { get; }
 
         [Fact]

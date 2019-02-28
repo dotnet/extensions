@@ -60,9 +60,8 @@ export class RazorLanguageServiceClient {
         await this.ensureStarted();
 
         const request: UpdateProjectRequest = {
-            projectFilePath: project.uri.fsPath,
+            filePath: project.uri.fsPath,
             projectWorkspaceState: project.configuration ? project.configuration.projectWorkspaceState : null,
-            targetFramework: project.configuration ? project.configuration.targetFramework : undefined,
             configuration: project.configuration ? project.configuration.configuration : undefined,
         };
         await this.serverClient.sendRequest<UpdateProjectRequest>('projects/updateProject', request);
