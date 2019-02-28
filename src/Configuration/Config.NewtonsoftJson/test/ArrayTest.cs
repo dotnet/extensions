@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.Extensions.Configuration.Test;
 using Xunit;
 
-namespace Microsoft.Extensions.Configuration.Json.Test
+namespace Microsoft.Extensions.Configuration.NewtonsoftJson.Test
 {
     public class ArrayTest
     {
@@ -13,14 +13,14 @@ namespace Microsoft.Extensions.Configuration.Json.Test
         public void ArraysAreConvertedToKeyValuePairs()
         {
             var json = @"{
-                ""ip"": [
-                    ""1.2.3.4"",
-                    ""7.8.9.10"",
-                    ""11.12.13.14""
+                'ip': [
+                    '1.2.3.4',
+                    '7.8.9.10',
+                    '11.12.13.14'
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationProvider(new JsonConfigurationSource());
+            var jsonConfigSource = new NewtonsoftJsonConfigurationProvider(new NewtonsoftJsonConfigurationSource());
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
             
             Assert.Equal("1.2.3.4", jsonConfigSource.Get("ip:0"));
@@ -32,19 +32,19 @@ namespace Microsoft.Extensions.Configuration.Json.Test
         public void ArrayOfObjects()
         {
             var json = @"{
-                ""ip"": [
+                'ip': [
                     {
-                        ""address"": ""1.2.3.4"",
-                        ""hidden"": false
+                        'address': '1.2.3.4',
+                        'hidden': false
                     },
                     {
-                        ""address"": ""5.6.7.8"",
-                        ""hidden"": true
+                        'address': '5.6.7.8',
+                        'hidden': true
                     }
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationProvider(new JsonConfigurationSource());
+            var jsonConfigSource = new NewtonsoftJsonConfigurationProvider(new NewtonsoftJsonConfigurationSource());
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             Assert.Equal("1.2.3.4", jsonConfigSource.Get("ip:0:address"));
@@ -57,19 +57,19 @@ namespace Microsoft.Extensions.Configuration.Json.Test
         public void NestedArrays()
         {
             var json = @"{
-                ""ip"": [
+                'ip': [
                     [ 
-                        ""1.2.3.4"",
-                        ""5.6.7.8""
+                        '1.2.3.4',
+                        '5.6.7.8'
                     ],
                     [ 
-                        ""9.10.11.12"",
-                        ""13.14.15.16""
-                    ]
+                        '9.10.11.12',
+                        '13.14.15.16'
+                    ],
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationProvider(new JsonConfigurationSource());
+            var jsonConfigSource = new NewtonsoftJsonConfigurationProvider(new NewtonsoftJsonConfigurationSource());
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             Assert.Equal("1.2.3.4", jsonConfigSource.Get("ip:0:0"));
@@ -82,21 +82,21 @@ namespace Microsoft.Extensions.Configuration.Json.Test
         public void ImplicitArrayItemReplacement()
         {
             var json1 = @"{
-                ""ip"": [
-                    ""1.2.3.4"",
-                    ""7.8.9.10"",
-                    ""11.12.13.14""
+                'ip': [
+                    '1.2.3.4',
+                    '7.8.9.10',
+                    '11.12.13.14'
                 ]
             }";
 
             var json2 = @"{
-                ""ip"": [
-                    ""15.16.17.18""
+                'ip': [
+                    '15.16.17.18'
                 ]
             }";
 
-            var jsonConfigSource1 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json1) };
-            var jsonConfigSource2 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json2) };
+            var jsonConfigSource1 = new NewtonsoftJsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json1) };
+            var jsonConfigSource2 = new NewtonsoftJsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json2) };
 
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.Add(jsonConfigSource1);
@@ -113,21 +113,21 @@ namespace Microsoft.Extensions.Configuration.Json.Test
         public void ExplicitArrayReplacement()
         {
             var json1 = @"{
-                ""ip"": [
-                    ""1.2.3.4"",
-                    ""7.8.9.10"",
-                    ""11.12.13.14""
+                'ip': [
+                    '1.2.3.4',
+                    '7.8.9.10',
+                    '11.12.13.14'
                 ]
             }";
 
             var json2 = @"{
-                ""ip"": {
-                    ""1"": ""15.16.17.18""
+                'ip': {
+                    '1': '15.16.17.18'
                 }
             }";
 
-            var jsonConfigSource1 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json1) };
-            var jsonConfigSource2 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json2) };
+            var jsonConfigSource1 = new NewtonsoftJsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json1) };
+            var jsonConfigSource2 = new NewtonsoftJsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json2) };
 
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.Add(jsonConfigSource1);
@@ -144,21 +144,21 @@ namespace Microsoft.Extensions.Configuration.Json.Test
         public void ArrayMerge()
         {
             var json1 = @"{
-                ""ip"": [
-                    ""1.2.3.4"",
-                    ""7.8.9.10"",
-                    ""11.12.13.14""
+                'ip': [
+                    '1.2.3.4',
+                    '7.8.9.10',
+                    '11.12.13.14'
                 ]
             }";
 
             var json2 = @"{
-                ""ip"": {
-                    ""3"": ""15.16.17.18""
+                'ip': {
+                    '3': '15.16.17.18'
                 }
             }";
 
-            var jsonConfigSource1 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json1) };
-            var jsonConfigSource2 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json2) };
+            var jsonConfigSource1 = new NewtonsoftJsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json1) };
+            var jsonConfigSource2 = new NewtonsoftJsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json2) };
 
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.Add(jsonConfigSource1);
@@ -176,14 +176,14 @@ namespace Microsoft.Extensions.Configuration.Json.Test
         public void ArraysAreKeptInFileOrder()
         {
             var json = @"{
-                ""setting"": [
-                    ""b"",
-                    ""a"",
-                    ""2""
+                'setting': [
+                    'b',
+                    'a',
+                    '2'
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json) };
+            var jsonConfigSource = new NewtonsoftJsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json) };
 
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.Add(jsonConfigSource);
@@ -202,17 +202,17 @@ namespace Microsoft.Extensions.Configuration.Json.Test
         public void PropertiesAreSortedByNumberOnlyFirst()
         {
             var json = @"{
-                ""setting"": {
-                    ""hello"": ""a"",
-                    ""bob"": ""b"",
-                    ""42"": ""c"",
-                    ""4"":""d"",
-                    ""10"": ""e"",
-                    ""1text"": ""f""
+                'setting': {
+                    'hello': 'a',
+                    'bob': 'b',
+                    '42': 'c',
+                    '4':'d',
+                    '10': 'e',
+                    '1text': 'f',
                 }
             }";
 
-            var jsonConfigSource = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json) };
+            var jsonConfigSource = new NewtonsoftJsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json) };
 
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.Add(jsonConfigSource);
