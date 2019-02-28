@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Configuration
         {
             return AddAzureKeyVault(configurationBuilder, vault, clientId, clientSecret, new DefaultKeyVaultSecretManager(), reloadInterval);
         }
-        
+
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
         /// </summary>
@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.Configuration
         {
             return AddAzureKeyVault(configurationBuilder, vault, clientId, certificate, new DefaultKeyVaultSecretManager(), reloadInterval);
         }
-        
+
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
         /// </summary>
@@ -204,7 +204,7 @@ namespace Microsoft.Extensions.Configuration
             var result = await authContext.AcquireTokenAsync(resource, new ClientAssertionCertificate(clientId, certificate));
             return result.AccessToken;
         }
-        
+
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
         /// </summary>
@@ -232,7 +232,7 @@ namespace Microsoft.Extensions.Configuration
         {
             return AddAzureKeyVault(configurationBuilder, vault, new DefaultKeyVaultSecretManager(), reloadInterval);
         }
-        
+
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
         /// </summary>
@@ -265,10 +265,10 @@ namespace Microsoft.Extensions.Configuration
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var authenticationCallback = new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback);
             var keyVaultClient = new KeyVaultClient(authenticationCallback);
-            
+
             return AddAzureKeyVault(configurationBuilder, vault, keyVaultClient, manager, reloadInterval);
         }
-        
+
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
         /// </summary>
