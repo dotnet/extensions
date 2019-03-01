@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Microsoft.Extensions.Configuration.NewtonsoftJson" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 

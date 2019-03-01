@@ -3,15 +3,15 @@
 
 using System;
 using System.IO;
-using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.Configuration.NewtonsoftJson;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.Extensions.Configuration
 {
     /// <summary>
-    /// Extension methods for adding <see cref="JsonConfigurationProvider"/>.
+    /// Extension methods for adding <see cref="NewtonsoftJsonConfigurationProvider"/>.
     /// </summary>
-    public static class JsonConfigurationExtensions
+    public static class NewtonsoftJsonConfigurationExtensions
     {
         /// <summary>
         /// Adds the JSON configuration provider at <paramref name="path"/> to <paramref name="builder"/>.
@@ -20,9 +20,9 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="path">Path relative to the base path stored in 
         /// <see cref="IConfigurationBuilder.Properties"/> of <paramref name="builder"/>.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddJsonFile(this IConfigurationBuilder builder, string path)
+        public static IConfigurationBuilder AddNewtonsoftJsonFile(this IConfigurationBuilder builder, string path)
         {
-            return AddJsonFile(builder, provider: null, path: path, optional: false, reloadOnChange: false);
+            return AddNewtonsoftJsonFile(builder, provider: null, path: path, optional: false, reloadOnChange: false);
         }
 
         /// <summary>
@@ -33,9 +33,9 @@ namespace Microsoft.Extensions.Configuration
         /// <see cref="IConfigurationBuilder.Properties"/> of <paramref name="builder"/>.</param>
         /// <param name="optional">Whether the file is optional.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddJsonFile(this IConfigurationBuilder builder, string path, bool optional)
+        public static IConfigurationBuilder AddNewtonsoftJsonFile(this IConfigurationBuilder builder, string path, bool optional)
         {
-            return AddJsonFile(builder, provider: null, path: path, optional: optional, reloadOnChange: false);
+            return AddNewtonsoftJsonFile(builder, provider: null, path: path, optional: optional, reloadOnChange: false);
         }
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="optional">Whether the file is optional.</param>
         /// <param name="reloadOnChange">Whether the configuration should be reloaded if the file changes.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddJsonFile(this IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange)
+        public static IConfigurationBuilder AddNewtonsoftJsonFile(this IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange)
         {
-            return AddJsonFile(builder, provider: null, path: path, optional: optional, reloadOnChange: reloadOnChange);
+            return AddNewtonsoftJsonFile(builder, provider: null, path: path, optional: optional, reloadOnChange: reloadOnChange);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="optional">Whether the file is optional.</param>
         /// <param name="reloadOnChange">Whether the configuration should be reloaded if the file changes.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddJsonFile(this IConfigurationBuilder builder, IFileProvider provider, string path, bool optional, bool reloadOnChange)
+        public static IConfigurationBuilder AddNewtonsoftJsonFile(this IConfigurationBuilder builder, IFileProvider provider, string path, bool optional, bool reloadOnChange)
         {
             if (builder == null)
             {
@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
             }
 
-            return builder.AddJsonFile(s =>
+            return builder.AddNewtonsoftJsonFile(s =>
             {
                 s.FileProvider = provider;
                 s.Path = path;
@@ -89,7 +89,7 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="configureSource">Configures the source.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddJsonFile(this IConfigurationBuilder builder, Action<JsonConfigurationSource> configureSource)
+        public static IConfigurationBuilder AddNewtonsoftJsonFile(this IConfigurationBuilder builder, Action<NewtonsoftJsonConfigurationSource> configureSource)
             => builder.Add(configureSource);
     }
 }
