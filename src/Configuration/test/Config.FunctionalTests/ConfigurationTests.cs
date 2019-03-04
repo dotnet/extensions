@@ -944,9 +944,7 @@ IniKey1=IniValue2");
             Assert.True(token.HasChanged);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Fact]
         public void BindingDoesNotThrowIfReloadedDuringBinding()
         {
             WriteTestFiles();
