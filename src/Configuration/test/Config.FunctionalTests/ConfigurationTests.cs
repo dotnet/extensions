@@ -5,9 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Configuration.Xml;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -866,6 +869,79 @@ IniKey1=IniValue2");
             Assert.NotNull(providers.Single(p => p is IniConfigurationProvider));
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        public async Task TouchingFileWillReloadForUserSecrets()
+        {
+            string userSecretsId = "Test";
+            var userSecretsPath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
+            var userSecretsFolder = Path.GetDirectoryName(userSecretsPath);
+
+            _fileSystem.CreateFolder(userSecretsFolder);
+            _fileSystem.WriteFile(userSecretsPath, @"{""UserSecretKey1"": ""UserSecretValue1""}");
+
+            var config = CreateBuilder()
+                .AddUserSecrets(userSecretsId, reloadOnChange: true)
+                .Build();
+
+            Assert.Equal("UserSecretValue1", config["UserSecretKey1"]);
+
+            var token = config.GetReloadToken();
+
+            // Update file
+            _fileSystem.WriteFile(userSecretsPath, @"{""UserSecretKey1"": ""UserSecretValue2""}");
+
+            await WaitForChange(
+                () => config["UserSecretKey1"] == "UserSecretValue2",
+                "Reload failed after create-delete-create.");
+
+            Assert.Equal("UserSecretValue2", config["UserSecretKey1"]);
+            Assert.True(token.HasChanged);
+        }
+
+        [Fact]
+        public void BindingDoesNotThrowIfReloadedDuringBinding()
+        {
+            WriteTestFiles();
+
+            var configurationBuilder = CreateBuilder();
+            configurationBuilder.Add(new TestIniSourceProvider(_iniFile));
+            configurationBuilder.Add(new TestJsonSourceProvider(_jsonFile));
+            configurationBuilder.Add(new TestXmlSourceProvider(_xmlFile));
+            configurationBuilder.AddEnvironmentVariables();
+            configurationBuilder.AddCommandLine(new[] { "--CmdKey1=CmdValue1" });
+            configurationBuilder.AddInMemoryCollection(_memConfigContent);
+
+            var config = configurationBuilder.Build();
+
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(250)))
+            {
+                void ReloadLoop()
+                {
+                    while (!cts.IsCancellationRequested)
+                    {
+                        config.Reload();
+                    }
+                }
+
+                _ = Task.Run(ReloadLoop);
+
+                MyOptions options = null;
+
+                while (!cts.IsCancellationRequested)
+                {
+                    options = config.Get<MyOptions>();
+                }
+
+                Assert.Equal("CmdValue1", options.CmdKey1);
+                Assert.Equal("IniValue1", options.IniKey1);
+                Assert.Equal("JsonValue1", options.JsonKey1);
+                Assert.Equal("MemValue1", options.MemKey1);
+                Assert.Equal("XmlValue1", options.XmlKey1);
+            }
+        }
+
         public void Dispose()
         {
             _fileProvider.Dispose();
@@ -887,6 +963,19 @@ IniKey1=IniValue2");
 
                 await Task.Delay(_msDelay);
             }
+        }
+
+        private sealed class MyOptions
+        {
+            public string CmdKey1 { get; set; }
+
+            public string IniKey1 { get; set; }
+
+            public string JsonKey1 { get; set; }
+
+            public string MemKey1 { get; set; }
+
+            public string XmlKey1 { get; set; }
         }
     }
 }
