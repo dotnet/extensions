@@ -18,6 +18,7 @@ and are generated based on the last package release.
   </ItemDefinitionGroup>
 
   <ItemGroup Label=".NET Core dependencies">
+    <LatestPackageReference Include="Microsoft.Bcl.Json.Sources" Version="$(MicrosoftBclJsonSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
@@ -45,7 +46,7 @@ and are generated based on the last package release.
 
   <!-- These versions must not be renamed because they override the implicit package references from Arcade. -->
   <PropertyGroup Label="External dependency versions">
-    <XUnitVersion>2.4.0</XUnitVersion>
+    <XUnitVersion>2.4.1</XUnitVersion>
     <XUnitRunnerVisualStudioVersion>$(XUnitVersion)</XUnitRunnerVisualStudioVersion>
     <XUnitRunnerConsoleVersion>$(XUnitVersion)</XUnitRunnerConsoleVersion>
   </PropertyGroup>
