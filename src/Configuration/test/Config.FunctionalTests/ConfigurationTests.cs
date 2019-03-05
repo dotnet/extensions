@@ -869,9 +869,7 @@ IniKey1=IniValue2");
             Assert.NotNull(providers.Single(p => p is IniConfigurationProvider));
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Fact]
         public async Task TouchingFileWillReloadForUserSecrets()
         {
             string userSecretsId = "Test";
