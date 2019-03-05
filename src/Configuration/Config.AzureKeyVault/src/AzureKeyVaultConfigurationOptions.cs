@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// </summary>
         public AzureKeyVaultConfigurationOptions()
         {
+            Manager = DefaultKeyVaultSecretManager.Instance;
         }
 
         /// <summary>
@@ -31,7 +32,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         public AzureKeyVaultConfigurationOptions(
             string vault,
             string clientId,
-            X509Certificate2 certificate)
+            X509Certificate2 certificate) : this()
         {
             KeyVaultClient.AuthenticationCallback authenticationCallback =
                 (authority, resource, scope) => GetTokenFromClientCertificate(authority, resource, clientId, certificate);
@@ -44,7 +45,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationOptions"/>.
         /// </summary>
         /// <param name="vault">The Azure KeyVault uri.</param>
-        public AzureKeyVaultConfigurationOptions(string vault)
+        public AzureKeyVaultConfigurationOptions(string vault) : this()
         {
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var authenticationCallback = new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback);
@@ -62,7 +63,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         public AzureKeyVaultConfigurationOptions(
             string vault,
             string clientId,
-            string clientSecret)
+            string clientSecret) : this()
         {
             if (clientId == null)
             {

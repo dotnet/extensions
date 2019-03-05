@@ -136,31 +136,12 @@ namespace Microsoft.Extensions.Configuration
             KeyVaultClient client,
             IKeyVaultSecretManager manager)
         {
-            if (configurationBuilder == null)
-            {
-                throw new ArgumentNullException(nameof(configurationBuilder));
-            }
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-            if (vault == null)
-            {
-                throw new ArgumentNullException(nameof(vault));
-            }
-            if (manager == null)
-            {
-                throw new ArgumentNullException(nameof(manager));
-            }
-
-            configurationBuilder.Add(new AzureKeyVaultConfigurationSource(new AzureKeyVaultConfigurationOptions()
+            return configurationBuilder.Add(new AzureKeyVaultConfigurationSource(new AzureKeyVaultConfigurationOptions()
             {
                 Client = client,
                 Vault = vault,
                 Manager = manager
             }));
-
-            return configurationBuilder;
         }
 
         /// <summary>
@@ -186,6 +167,10 @@ namespace Microsoft.Extensions.Configuration
             if (options.Vault == null)
             {
                 throw new ArgumentNullException(nameof(options.Vault));
+            }
+            if (options.Manager == null)
+            {
+                throw new ArgumentNullException(nameof(options.Manager));
             }
 
             configurationBuilder.Add(new AzureKeyVaultConfigurationSource(options));
