@@ -11,14 +11,14 @@ namespace Microsoft.AspNetCore.Testing.Tests
         [Flaky("http://example.com")]
         public void AlwaysFlaky()
         {
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX")) || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("BUILD_BUILDNUMBER")))
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX")) || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AGENT_OS")))
             {
                 throw new Exception("Flaky!");
             }
         }
 
         [Fact]
-        [Flaky("http://example.com", OnAzDO = false)]
+        [Flaky("http://example.com", OnAzP = AzurePipelines.None)]
         public void FlakyInHelixOnly()
         {
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX")))
@@ -28,9 +28,10 @@ namespace Microsoft.AspNetCore.Testing.Tests
         }
 
         [Fact]
-        [Flaky("http://example.com", OnAzDO = false, OnHelixQueues = HelixQueues.macOS1012Amd64 + HelixQueues.Fedora28Amd64)]
+        [Flaky("http://example.com", OnAzP = AzurePipelines.None, OnHelix = HelixQueues.macOS1012Amd64 + HelixQueues.Fedora28Amd64)]
         public void FlakyInSpecificHelixQueue()
         {
+            // Today we don't run Extensions tests on Helix, but this test should light up when we do.
             var queueName = Environment.GetEnvironmentVariable("HELIX");
             if (!string.IsNullOrEmpty(queueName))
             {
@@ -44,18 +45,59 @@ namespace Microsoft.AspNetCore.Testing.Tests
                 var failingQueues = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { HelixQueues.macOS1012Amd64, HelixQueues.Fedora28Amd64 };
                 if (failingQueues.Contains(queueName))
                 {
-                    throw new Exception("Flaky on Helix!");
+                    throw new Exception($"Flaky on Helix Queue '{queueName}' !");
                 }
             }
         }
 
         [Fact]
-        [Flaky("http://example.com", OnHelixQueues = HelixQueues.None)]
+        [Flaky("http://example.com", OnHelix = HelixQueues.None)]
         public void FlakyInAzDoOnly()
         {
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("BUILD_BUILDNUMBER")))
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AGENT_OS")))
             {
-                throw new Exception("Flaky on AzDO!");
+                throw new Exception("Flaky on AzP!");
+            }
+        }
+
+        [Fact]
+        [Flaky("http://example.com", OnHelix = HelixQueues.None, OnAzP = AzurePipelines.Windows)]
+        public void FlakyInAzPWindowsOnly()
+        {
+            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Windows_NT"))
+            {
+                throw new Exception("Flaky on AzP Windows!");
+            }
+        }
+
+        [Fact]
+        [Flaky("http://example.com", OnHelix = HelixQueues.None, OnAzP = AzurePipelines.macOS)]
+        public void FlakyInAzPmacOSOnly()
+        {
+            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Darwin"))
+            {
+                throw new Exception("Flaky on AzP macOS!");
+            }
+        }
+
+        [Fact]
+        [Flaky("http://example.com", OnHelix = HelixQueues.None, OnAzP = AzurePipelines.Linux)]
+        public void FlakyInAzPLinuxOnly()
+        {
+            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Linux"))
+            {
+                throw new Exception("Flaky on AzP Linux!");
+            }
+        }
+
+        [Fact]
+        [Flaky("http://example.com", OnHelix = HelixQueues.None, OnAzP = AzurePipelines.Linux + AzurePipelines.macOS)]
+        public void FlakyInAzPNonWindowsOnly()
+        {
+            var agentOs = Environment.GetEnvironmentVariable("AGENT_OS");
+            if (string.Equals(agentOs, "Linux") || string.Equals(agentOs, "Darwin"))
+            {
+                throw new Exception("Flaky on AzP non-Windows!");
             }
         }
     }

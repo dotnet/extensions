@@ -21,14 +21,14 @@ namespace Microsoft.AspNetCore.Testing.xunit
 
         private IEnumerable<KeyValuePair<string, string>> GetTraitsCore(FlakyAttribute attribute)
         {
-            foreach(var job in attribute.FlakyAzPJobs)
+            foreach(var os in attribute.FlakyAzurePipelinesOSes)
             {
-                yield return new KeyValuePair<string, string>($"Flaky:AzP:{job}", "true");
+                yield return new KeyValuePair<string, string>($"Flaky:AzP:OS:{os}", "true");
             }
 
             foreach(var queue in attribute.FlakyHelixQueues)
             {
-                yield return new KeyValuePair<string, string>($"Flaky:Helix:{queue}", "true");
+                yield return new KeyValuePair<string, string>($"Flaky:Helix:Queue:{queue}", "true");
             }
         }
     }
