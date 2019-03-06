@@ -12,17 +12,17 @@ namespace Microsoft.AspNetCore.Testing
         // Queue names end in ';' because it makes it easier to concat these into a list using a constant expression:
         //  HelixQueues.Fedora28 + HelixQueues.Centos7
 
-        public const string Fedora28 = "Fedora.28." + HelixSuffix + ";";
-        public const string Fedora27 = "Fedora.27." + HelixSuffix + ";";
-        public const string Redhat7 = "Redhat.7." + HelixSuffix + ";";
-        public const string Debian9 = "Debian.9." + HelixSuffix + ";";
-        public const string Debian8 = "Debian.8." + HelixSuffix + ";";
-        public const string Centos7 = "Centos.7." + HelixSuffix + ";";
-        public const string Ubuntu1604 = "Ubuntu.1604." + HelixSuffix + ";";
-        public const string Ubuntu1810 = "Ubuntu.1810." + HelixSuffix + ";";
-        public const string macOS1012 = "OSX.1012." + HelixSuffix + ";";
-        public const string Windows10 = "Windows.10.Amd64.ClientRS4.VS2017.Open;"; // Doesn't have the default suffix!
+        public const string Fedora28Amd64 = "Fedora.28." + Amd64Suffix + ";";
+        public const string Fedora27Amd64 = "Fedora.27." + Amd64Suffix + ";";
+        public const string Redhat7Amd64 = "Redhat.7." + Amd64Suffix + ";";
+        public const string Debian9Amd64 = "Debian.9." + Amd64Suffix + ";";
+        public const string Debian8Amd64 = "Debian.8." + Amd64Suffix + ";";
+        public const string Centos7Amd64 = "Centos.7." + Amd64Suffix + ";";
+        public const string Ubuntu1604Amd64 = "Ubuntu.1604." + Amd64Suffix + ";";
+        public const string Ubuntu1810Amd64 = "Ubuntu.1810." + Amd64Suffix + ";";
+        public const string macOS1012Amd64 = "OSX.1012." + Amd64Suffix + ";";
+        public const string Windows10Amd64 = "Windows.10.Amd64.ClientRS4.VS2017.Open;"; // Doesn't have the default suffix!
 
-        private const string HelixSuffix = "Amd64.Open";
+        private const string Amd64Suffix = "Amd64.Open";
     }
 }

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         }
 
         [Fact]
-        [Flaky("http://example.com", OnAzDO = false, OnHelixQueues = HelixQueues.macOS1012 + HelixQueues.Fedora28)]
+        [Flaky("http://example.com", OnAzDO = false, OnHelixQueues = HelixQueues.macOS1012Amd64 + HelixQueues.Fedora28Amd64)]
         public void FlakyInSpecificHelixQueue()
         {
             var queueName = Environment.GetEnvironmentVariable("HELIX");
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
                     queueName = $"{queueName};";
                 }
 
-                var failingQueues = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { HelixQueues.macOS1012, HelixQueues.Fedora28 };
+                var failingQueues = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { HelixQueues.macOS1012Amd64, HelixQueues.Fedora28Amd64 };
                 if (failingQueues.Contains(queueName))
                 {
                     throw new Exception("Flaky on Helix!");
