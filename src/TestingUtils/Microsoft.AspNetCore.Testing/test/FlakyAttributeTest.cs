@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Testing.Tests
         [Flaky("http://example.com", OnAzDO = false)]
         public void FlakyInHelixOnly()
         {
-            // TODO: Use actual Helix detection variable ;)
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX")))
             {
                 throw new Exception("Flaky on Helix!");
@@ -29,7 +28,6 @@ namespace Microsoft.AspNetCore.Testing.Tests
         [Flaky("http://example.com", OnAzDO = false, OnHelixQueues = HelixQueues.macOS1012 + HelixQueues.Fedora28)]
         public void FlakyInSpecificHelixQueue()
         {
-            // TODO: Use actual Helix detection variable ;)
             var queueName = Environment.GetEnvironmentVariable("HELIX");
             if (!string.IsNullOrEmpty(queueName))
             {
@@ -52,8 +50,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         [Flaky("http://example.com", OnHelixQueues = HelixQueues.None)]
         public void FlakyInAzDoOnly()
         {
-            // TODO: Use actual AzDO detection variable ;)
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AZDO")))
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("BUILD_BUILDNUMBER")))
             {
                 throw new Exception("Flaky on AzDO!");
             }
