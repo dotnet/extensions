@@ -22,10 +22,10 @@
       <!-- Replace the previous runs -->
       <TestToRun Remove="@(TestToRun)" />
 
-      <!-- <TestToRun Include="@(NonFlakyRuns)" /> -->
 
-      <!-- TODO: Uncomment when [arcade issue to enable ignoring exit code] is in -->
-      <TestToRun Include="@(NonFlakyRuns);@(FlakyRuns)" />
+      <!-- TODO: Replace with below when https://github.com/dotnet/arcade/issues/2182 is in -->
+      <!-- <TestToRun Include="@(NonFlakyRuns);@(FlakyRuns)" /> -->
+      <TestToRun Include="@(NonFlakyRuns)" />
     </ItemGroup>
   </Target>
 
