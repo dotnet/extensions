@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         }
 
         [Fact]
-        [Flaky("http://example.com", OnHelix = HelixQueues.None, OnAzP = AzurePipelines.Windows)]
+        [Flaky("http://example.com", AzurePipelines.Windows)]
         public void FlakyInAzPWindowsOnly()
         {
             if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Windows_NT"))
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         }
 
         [Fact]
-        [Flaky("http://example.com", OnHelix = HelixQueues.None, OnAzP = AzurePipelines.macOS)]
+        [Flaky("http://example.com", AzurePipelines.macOS)]
         public void FlakyInAzPmacOSOnly()
         {
             if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Darwin"))
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         }
 
         [Fact]
-        [Flaky("http://example.com", OnHelix = HelixQueues.None, OnAzP = AzurePipelines.Linux)]
+        [Flaky("http://example.com", AzurePipelines.Linux)]
         public void FlakyInAzPLinuxOnly()
         {
             if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Linux"))
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         }
 
         [Fact]
-        [Flaky("http://example.com", OnHelix = HelixQueues.None, OnAzP = AzurePipelines.Linux + AzurePipelines.macOS)]
+        [Flaky("http://example.com", AzurePipelines.Linux, AzurePipelines.macOS)]
         public void FlakyInAzPNonWindowsOnly()
         {
             var agentOs = Environment.GetEnvironmentVariable("AGENT_OS");
