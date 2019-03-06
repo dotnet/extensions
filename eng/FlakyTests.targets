@@ -22,7 +22,6 @@
       <!-- Replace the previous runs -->
       <TestToRun Remove="@(TestToRun)" />
 
-
       <!-- TODO: Replace with below when https://github.com/dotnet/arcade/issues/2182 is in -->
       <!-- <TestToRun Include="@(NonFlakyRuns);@(FlakyRuns)" /> -->
       <TestToRun Include="@(NonFlakyRuns)" />
