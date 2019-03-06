@@ -6,11 +6,11 @@ namespace Microsoft.AspNetCore.Testing
 {
     public static class HelixQueues
     {
-        public const string All = "all";
-        public const string None = "none";
-
         // Queue names end in ';' because it makes it easier to concat these into a list using a constant expression:
         //  HelixQueues.Fedora28 + HelixQueues.Centos7
+
+        public const string All = "all;";
+        public const string None = "none;";
 
         public const string Fedora28Amd64 = "Fedora.28." + Amd64Suffix + ";";
         public const string Fedora27Amd64 = "Fedora.27." + Amd64Suffix + ";";

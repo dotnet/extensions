@@ -8,7 +8,8 @@ namespace Microsoft.AspNetCore.Testing.xunit
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class FlakyAttribute : Attribute, ITraitAttribute
     {
-        private List<string> _queues = new List<string>() { "all" };
+        private List<string> _helixQueues = new List<string>() { HelixQueues.All };
+        private List<string> _azPJobs = new List<string>() { AzurePipelines.All };
 
         /// <summary>
         /// Gets a URL to a GitHub issue tracking this flaky test.
@@ -21,19 +22,28 @@ namespace Microsoft.AspNetCore.Testing.xunit
         /// </summary>
         public string OnHelixQueues
         {
-            get => string.Join(";", _queues);
-            set => _queues = new List<string>(value.Split(';'));
+            get => string.Join(";", _helixQueues);
+            set => _helixQueues = new List<string>(value.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
         }
 
         /// <summary>
         /// Gets or sets a boolean indicating if this test is flaky on Azure DevOps Pipelines. Defaults to <see langword="true" />.
         /// </summary>
-        public bool OnAzDO { get; set; } = true;
+        public string OnAzPJobs
+        {
+            get => string.Join(";", _azPJobs);
+            set => _azPJobs = new List<string>(value.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
+        }
 
         /// <summary>
         /// Gets a list of Helix queues on which the test is flaky (including <see cref="HelixQueues.All"/> if specified).
         /// </summary>
-        public IReadOnlyList<string> FlakyQueues => _queues;
+        public IReadOnlyList<string> FlakyHelixQueues => _helixQueues;
+
+        /// <summary>
+        /// Gets a list of Azure Pipelines jobs on which the test is flaky (including <see cref="HelixQueues.All"/> if specified).
+        /// </summary>
+        public IReadOnlyList<string> FlakyAzPJobs => _helixQueues;
 
         public FlakyAttribute(string gitHubIssueUrl)
         {

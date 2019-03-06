@@ -1,8 +1,8 @@
 <Project>
   <Target Name="_GenerateTestPasses" DependsOnTargets="$(_GetTestsToRunTarget)">
     <PropertyGroup>
-      <_FlakyRunAdditionalArgs>-trait "Flaky:AzDO=true"</_FlakyRunAdditionalArgs>
-      <_NonFlakyRunAdditionalArgs>-notrait "Flaky:AzDO=true"</_NonFlakyRunAdditionalArgs>
+      <_FlakyRunAdditionalArgs>-trait "Flaky:AzDO:all=true"</_FlakyRunAdditionalArgs>
+      <_NonFlakyRunAdditionalArgs>-notrait "Flaky:AzDO:all=true"</_NonFlakyRunAdditionalArgs>
     </PropertyGroup>
     <ItemGroup>
       <!-- Take the TestToRun values and update them to only run non-flaky tests -->
