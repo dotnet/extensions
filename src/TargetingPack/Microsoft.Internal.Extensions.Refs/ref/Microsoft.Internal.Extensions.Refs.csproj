@@ -32,6 +32,10 @@
     <Reference Include="@(ProjectReferenceProvider)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="build\**\*.props" PackagePath="%(Identity)" />
+  </ItemGroup>
+
   <PropertyGroup>
     <BuildDependsOn>
       $(BuildDependsOn);
