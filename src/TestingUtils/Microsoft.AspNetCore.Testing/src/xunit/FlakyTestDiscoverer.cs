@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             foreach(var job in attribute.FlakyAzPJobs)
             {
-                yield return new KeyValuePair<string, string>($"Flaky:AzDO:{job}", "true");
+                yield return new KeyValuePair<string, string>($"Flaky:AzP:{job}", "true");
             }
 
             foreach(var queue in attribute.FlakyHelixQueues)
