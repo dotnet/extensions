@@ -11,7 +11,10 @@ namespace Microsoft.AspNetCore.Testing.Tests
         [Flaky("http://example.com")]
         public void AlwaysFlaky()
         {
-            throw new Exception("Flakey!");
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX")) || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("BUILD_BUILDNUMBER")))
+            {
+                throw new Exception("Flaky!");
+            }
         }
 
         [Fact]
