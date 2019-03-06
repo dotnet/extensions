@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -21,14 +22,16 @@ namespace Microsoft.AspNetCore.Testing.xunit
 
         private IEnumerable<KeyValuePair<string, string>> GetTraitsCore(FlakyAttribute attribute)
         {
-            foreach(var os in attribute.FlakyAzurePipelinesOSes)
+            if (attribute.Filters.Count > 0)
             {
-                yield return new KeyValuePair<string, string>($"Flaky:AzP:OS:{os}", "true");
+                foreach (var filter in attribute.Filters)
+                {
+                    yield return new KeyValuePair<string, string>($"Flaky:{filter}", "true");
+                }
             }
-
-            foreach(var queue in attribute.FlakyHelixQueues)
+            else
             {
-                yield return new KeyValuePair<string, string>($"Flaky:Helix:Queue:{queue}", "true");
+                yield return new KeyValuePair<string, string>($"Flaky:All", "true");
             }
         }
     }

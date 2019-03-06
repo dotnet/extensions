@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         }
 
         [Fact]
-        [Flaky("http://example.com", OnAzP = AzurePipelines.None)]
+        [Flaky("http://example.com", HelixQueues.All)]
         public void FlakyInHelixOnly()
         {
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX")))
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         }
 
         [Fact]
-        [Flaky("http://example.com", OnAzP = AzurePipelines.None, OnHelix = HelixQueues.macOS1012Amd64 + HelixQueues.Fedora28Amd64)]
+        [Flaky("http://example.com", HelixQueues.macOS1012Amd64, HelixQueues.Fedora28Amd64)]
         public void FlakyInSpecificHelixQueue()
         {
             // Today we don't run Extensions tests on Helix, but this test should light up when we do.
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         }
 
         [Fact]
-        [Flaky("http://example.com", OnHelix = HelixQueues.None)]
+        [Flaky("http://example.com", AzurePipelines.All)]
         public void FlakyInAzDoOnly()
         {
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AGENT_OS")))
