@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Configuration.Json;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Configuration.Xml;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -870,35 +869,6 @@ IniKey1=IniValue2");
         }
 
         [Fact]
-        public async Task TouchingFileWillReloadForUserSecrets()
-        {
-            string userSecretsId = "Test";
-            var userSecretsPath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
-            var userSecretsFolder = Path.GetDirectoryName(userSecretsPath);
-
-            _fileSystem.CreateFolder(userSecretsFolder);
-            _fileSystem.WriteFile(userSecretsPath, @"{""UserSecretKey1"": ""UserSecretValue1""}");
-
-            var config = CreateBuilder()
-                .AddUserSecrets(userSecretsId, reloadOnChange: true)
-                .Build();
-
-            Assert.Equal("UserSecretValue1", config["UserSecretKey1"]);
-
-            var token = config.GetReloadToken();
-
-            // Update file
-            _fileSystem.WriteFile(userSecretsPath, @"{""UserSecretKey1"": ""UserSecretValue2""}");
-
-            await WaitForChange(
-                () => config["UserSecretKey1"] == "UserSecretValue2",
-                "Reload failed after create-delete-create.");
-
-            Assert.Equal("UserSecretValue2", config["UserSecretKey1"]);
-            Assert.True(token.HasChanged);
-        }
-
-        [Fact]
         public void BindingDoesNotThrowIfReloadedDuringBinding()
         {
             WriteTestFiles();
@@ -915,16 +885,7 @@ IniKey1=IniValue2");
 
             using (var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(250)))
             {
-                void ReloadLoop()
-                {
-                    while (!cts.IsCancellationRequested)
-                    {
-                        config.Reload();
-                    }
-                }
-
-                _ = Task.Run(ReloadLoop);
-
+                _ = Task.Run(() => { while (!cts.IsCancellationRequested) config.Reload(); });
                 MyOptions options = null;
 
                 while (!cts.IsCancellationRequested)
