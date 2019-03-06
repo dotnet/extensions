@@ -35,13 +35,6 @@ namespace Microsoft.AspNetCore.Testing.Tests
             var queueName = Environment.GetEnvironmentVariable("HELIX");
             if (!string.IsNullOrEmpty(queueName))
             {
-
-                // Normalize the queue name to have a trailing ';' (this is only for testing anyway)
-                if (!queueName.EndsWith(";"))
-                {
-                    queueName = $"{queueName};";
-                }
-
                 var failingQueues = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { HelixQueues.macOS1012Amd64, HelixQueues.Fedora28Amd64 };
                 if (failingQueues.Contains(queueName))
                 {
@@ -52,7 +45,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
 
         [Fact]
         [Flaky("http://example.com", AzurePipelines.All)]
-        public void FlakyInAzDoOnly()
+        public void FlakyInAzPOnly()
         {
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AGENT_OS")))
             {
@@ -64,7 +57,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         [Flaky("http://example.com", AzurePipelines.Windows)]
         public void FlakyInAzPWindowsOnly()
         {
-            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Windows_NT"))
+            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), AzurePipelines.Windows))
             {
                 throw new Exception("Flaky on AzP Windows!");
             }
@@ -74,7 +67,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         [Flaky("http://example.com", AzurePipelines.macOS)]
         public void FlakyInAzPmacOSOnly()
         {
-            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Darwin"))
+            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), AzurePipelines.macOS))
             {
                 throw new Exception("Flaky on AzP macOS!");
             }
@@ -84,7 +77,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         [Flaky("http://example.com", AzurePipelines.Linux)]
         public void FlakyInAzPLinuxOnly()
         {
-            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Linux"))
+            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), AzurePipelines.Linux))
             {
                 throw new Exception("Flaky on AzP Linux!");
             }
@@ -95,7 +88,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
         public void FlakyInAzPNonWindowsOnly()
         {
             var agentOs = Environment.GetEnvironmentVariable("AGENT_OS");
-            if (string.Equals(agentOs, "Linux") || string.Equals(agentOs, "Darwin"))
+            if (string.Equals(agentOs, "Linux") || string.Equals(agentOs, AzurePipelines.macOS))
             {
                 throw new Exception("Flaky on AzP non-Windows!");
             }

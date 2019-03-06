@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Testing
         public const string Linux = OsPrefix + "Linux";
 
         private const string Prefix = "AzP:";
-        private const string OsPrefix = Prefix + "AzP:OS:";
+        private const string OsPrefix = Prefix + "OS:";
     }
 }
