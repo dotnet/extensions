@@ -91,6 +91,9 @@ jobs:
           -prepareMachine
           $(_BuildArgs)
         displayName: Build and Publish
+      - script: eng\scripts\run-flaky-tests.cmd
+        displayName: Run Flaky Tests
+        continueOnError: true
       - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
         displayName: Set CI Tags
         condition: eq(variables['_BuildConfig'], 'Release')
@@ -133,6 +136,9 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
+      - script: eng/scripts/run-flaky-tests.sh
+        displayName: Run Flaky Tests
+        continueOnError: true
       - script: eng/scripts/KillProcesses.sh
         displayName: Kill processes
         condition: always()
@@ -160,6 +166,9 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
+      - script: eng/scripts/run-flaky-tests.sh
+        displayName: Run Flaky Tests
+        continueOnError: true
       - script: eng/scripts/KillProcesses.sh
         displayName: Kill processes
         condition: always()

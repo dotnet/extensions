@@ -47,8 +47,5 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\Workarounds.AfterArcade.targets" />
 
-  <!-- Only needed on AzDO: Flaky Test handling -->
-  <Import Project="eng\FlakyTests.targets" Condition="'$(BUILD_BUILDNUMBER)' != ''" />
-
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 </Project>
