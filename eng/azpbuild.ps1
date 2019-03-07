@@ -24,7 +24,7 @@ $loggerAssembly = Join-Path $tmpDir "Microsoft.TeamFoundation.DistributedTask.MS
 # Write a root "logdetail" entry
 $detailId = [Guid]::NewGuid()
 $detailStartTime = [datetime]::UtcNow.ToString('O')
-Write-Host "##vso[task.logdetail id=$detailId;type=process;name=Arcade Build;order=1;starttime=$detailStartTime;progress=0;state=Initialized"
+Write-Host "##vso[task.logdetail id=$detailId;type=Process;name=Arcade Build;order=1;starttime=$detailStartTime;progress=0;state=Initialized;]"
 
 $solutionDirectory = Split-Path -Parent $PSScriptRoot
 $loggerArg = "/dl:CentralLogger,`"$loggerAssembly`";`"RootDetailId=$($detailId)|SolutionDir=$($solutionDirectory)`"*ForwardingLogger,`"$loggerAssembly`""
