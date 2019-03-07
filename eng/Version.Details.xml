@@ -39,10 +39,10 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>ebe74b3ad7d1b7be02217bf199f5dedc05f76297</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview4.19156.5">
+    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview4.19154.9">
       <CoherentParentDependency>Microsoft.NETCore.App</CoherentParentDependency>
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>ebe74b3ad7d1b7be02217bf199f5dedc05f76297</Sha>
+      <Sha>8a730a6ecd96fef04d74e1807c8b1d193e0a5f16</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.Metadata" Version="1.7.0-preview4.19156.5">
       <CoherentParentDependency>Microsoft.NETCore.App</CoherentParentDependency>
