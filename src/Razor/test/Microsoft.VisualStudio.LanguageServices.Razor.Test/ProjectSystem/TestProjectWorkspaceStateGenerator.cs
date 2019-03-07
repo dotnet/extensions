@@ -28,5 +28,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Test
             var update = (workspaceProject, projectSnapshot);
             _updates.Add(update);
         }
+
+        public void ClearQueue()
+        {
+            _updates.Clear();
+        }
     }
 }

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     [System.Composition.Shared]
-    [ExportMetadata("Extensions", new string[] { "cshtml", })]
+    [ExportMetadata("Extensions", new string[] { "cshtml", "razor", })]
     [Export(typeof(RazorDynamicFileInfoProvider))]
     [Export(typeof(IDynamicFileInfoProvider))]
     internal class RazorDynamicFileInfoProvider : IDynamicFileInfoProvider

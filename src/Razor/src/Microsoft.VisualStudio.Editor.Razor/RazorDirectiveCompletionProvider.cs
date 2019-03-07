@@ -97,8 +97,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             // FilePath will be null when the editor is open for cases where we don't have a file on disk (C# interactive window and others).
-            if (context.Document?.FilePath == null ||
-                !context.Document.FilePath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
+            if (context.Document?.FilePath == null)
+            {
+                // Cannot detect a file path, can't determine if we should provide directive completion.
+                return Task.CompletedTask;
+            }
+
+            if (!context.Document.FilePath.EndsWith(".cshtml", FilePathComparison.Instance) && !context.Document.FilePath.EndsWith(".razor", FilePathComparison.Instance))
             {
                 // Not a Razor file.
                 return Task.CompletedTask;

@@ -101,9 +101,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                         project = e.OldSolution.GetProject(e.ProjectId);
                         var document = project.GetDocument(e.DocumentId);
 
+                        if (document.FilePath == null)
+                        {
+                            break;
+                        }
+
                         // Using EndsWith because Path.GetExtension will ignore everything before .cs
                         // Using Ordinal because the SDK generates these filenames.
-                        if (document.FilePath != null && document.FilePath.EndsWith(".cshtml.g.cs", StringComparison.Ordinal))
+                        if (document.FilePath.EndsWith(".cshtml.g.cs", StringComparison.Ordinal) || document.FilePath.EndsWith(".razor.g.cs", StringComparison.Ordinal))
                         {
                             EnqueueUpdate(e.ProjectId);
                         }
