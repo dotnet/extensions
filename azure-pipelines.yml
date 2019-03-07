@@ -86,10 +86,7 @@ jobs:
       steps:
       - checkout: self
         clean: true
-      - script: eng\common\cibuild.cmd
-          -configuration $(_BuildConfig)
-          -prepareMachine
-          $(_BuildArgs)
+      - powershell: eng\azpbuild.ps1 -configuration $(_BuildConfig) $(_BuildArgs)
         displayName: Build and Publish
       - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
         displayName: Set CI Tags
