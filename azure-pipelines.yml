@@ -127,7 +127,7 @@ jobs:
       steps:
       - checkout: self
         clean: true
-      - script: eng/common/cibuild.sh
+      - script: eng/azpbuild.sh
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
@@ -154,7 +154,7 @@ jobs:
       steps:
       - checkout: self
         clean: true
-      - script: eng/common/cibuild.sh
+      - script: eng/azpbuild.sh
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
