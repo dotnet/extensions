@@ -7,7 +7,7 @@
     <IsShipping>true</IsShipping>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>true</IsPackable>
-    <NoWarn>$(NoWarn);3021;PKG0001</NoWarn>
+    <NoWarn>$(NoWarn);3021</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
