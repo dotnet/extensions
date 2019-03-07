@@ -10,7 +10,7 @@ while [[ -h "$source" ]]; do
 done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
-repoRoot="$( cd "$scriptroot/.." && pwd )"
+repoRoot="$( cd "$scriptroot/../.." && pwd )"
 tmpDir="$repoRoot/artifacts/tmp"
 
 if [ ! -d $tmpDir ]; then
@@ -28,9 +28,9 @@ loggerAssembly="$tmpDir/$loggerAssemblyName"
 # This the same URL used by the Azure tasks: https://github.com/Microsoft/azure-pipelines-tasks/blob/da57c7efbf858a628786c869d7d14b887d1d90d7/Tasks/Common/MSBuildHelpers/make.json#L5
 # And it's HTTPS, so I think we can trust it.
 echo "Downloading Azure Pipelines MSBuild logger..."
-curl -sSL https://vstsagenttools.blob.core.windows.net/tools/msbuildlogger/3/msbuildlogger.zip "-o$loggersZip" >/dev/null
+curl -sSL https://vstsagenttools.blob.core.windows.net/tools/msbuildlogger/3/msbuildlogger.zip -o "$loggersZip" >/dev/null
 echo "Extracting logger..."
-unzip -p "$loggersZip" "$loggerAssemblyName" > "$loggerAssembly"
+unzip -p -b "$loggersZip" "$loggerAssemblyName" > "$loggerAssembly"
 
 # Write a root "logdetail" entry
 detailId=$(uuidgen)

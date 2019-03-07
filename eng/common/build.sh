@@ -137,16 +137,13 @@ while [[ $# > 0 ]]; do
       node_reuse=$2
       shift
       ;;
-    -p:*|/p:*)
+    /p:*)
       properties="$properties $1"
       ;;
-    -m:*|/m:*)
+    /m:*)
       properties="$properties $1"
       ;;
-    -bl:*|/bl:*)
-      properties="$properties $1"
-      ;;
-    -dl:*|/dl:*)
+    /bl:*)
       properties="$properties $1"
       ;;
     *)

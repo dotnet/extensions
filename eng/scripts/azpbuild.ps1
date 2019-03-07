@@ -3,7 +3,7 @@ param(
     [Parameter(ValueFromRemainingArguments = $true)][String[]]$OtherArgs
 )
 
-$repoRoot = Split-Path $PSScriptRoot -Parent
+$repoRoot = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 $artifactDir = Join-Path $repoRoot "artifacts"
 $tmpDir = Join-Path $artifactDir "tmp"
 $loggerRsp = Join-Path $tmpDir "logger.rsp"
