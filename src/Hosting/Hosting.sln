@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hostin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.WindowsServices.Tests", "WindowsServices\test\Microsoft.Extensions.Hosting.WindowsServices.Tests.csproj", "{1A3BC0DA-CB53-4C21-BDD0-2B2CF83655FA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.IntegrationTesting", "IntegrationTesting\src\Microsoft.Extensions.Hosting.IntegrationTesting.csproj", "{A607D5A9-15FB-43D6-9DA3-816CB416C6BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{1A3BC0DA-CB53-4C21-BDD0-2B2CF83655FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A3BC0DA-CB53-4C21-BDD0-2B2CF83655FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A3BC0DA-CB53-4C21-BDD0-2B2CF83655FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A607D5A9-15FB-43D6-9DA3-816CB416C6BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A607D5A9-15FB-43D6-9DA3-816CB416C6BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A607D5A9-15FB-43D6-9DA3-816CB416C6BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A607D5A9-15FB-43D6-9DA3-816CB416C6BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
