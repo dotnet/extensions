@@ -18,16 +18,15 @@ if (!(Test-Path $tmpDir)) {
 # And it's HTTPS, so I think we can trust it.
 $loggerUrl = "https://vstsagenttools.blob.core.windows.net/tools/msbuildlogger/3/msbuildlogger.zip"
 Invoke-WebRequest $loggerUrl -OutFile $loggersZip
-Expand-Archive $loggersZip -DestinationPath $tmpDir
+Expand-Archive $loggersZip -DestinationPath $tmpDir -Force
 $loggerAssembly = Join-Path $tmpDir "Microsoft.TeamFoundation.DistributedTask.MSBuild.Logger.dll"
 
 # Write a root "logdetail" entry
 $detailId = [Guid]::NewGuid()
 $detailStartTime = [datetime]::UtcNow.ToString('O')
-Write-Host "##vso[task.logdetail id=$detailId;type=Process;name=Arcade Build;order=1;starttime=$detailStartTime;progress=0;state=Initialized;]"
+"##vso[task.logdetail id=$detailId;type=Process;name=Arcade Build;order=1;starttime=$detailStartTime;progress=0;state=Initialized;]"
 
-$solutionDirectory = Split-Path -Parent $PSScriptRoot
-$loggerArg = "/dl:CentralLogger,`"$loggerAssembly`";`"RootDetailId=$($detailId)|SolutionDir=$($solutionDirectory)`"*ForwardingLogger,`"$loggerAssembly`""
+$loggerArg = "/dl:CentralLogger,`"$loggerAssembly`";`"RootDetailId=$($detailId)|SolutionDir=$($repoRoot)`"*ForwardingLogger,`"$loggerAssembly`""
 
 # PowerShell has a lot of problems with strings with ";" in them when we keep passing them down through various layers
 # So, let's write this to a temporary '.rsp' file
