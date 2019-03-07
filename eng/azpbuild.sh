@@ -11,7 +11,7 @@ done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
 repoRoot="$( cd "$scriptroot/.." && pwd )"
-tmpDir="$artifactsDir/artifacts/tmp"
+tmpDir="$repoRoot/artifacts/tmp"
 
 if [ ! -d $tmpDir ]; then
     # 'mkdir -p' isn't technically guaranteed to be available on all POSIX systems
