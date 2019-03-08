@@ -1,5 +1,4 @@
-`<Reference>` resolution
-========================
+# `<Reference>` resolution
 
 Most project files in this repo should use `<Reference>` instead of `<ProjectReference>` or `<PackageReference>`.
 This was done to enable ASP.NET Core's unique requirements without requiring most ASP.NET Core contributors
@@ -33,7 +32,7 @@ The requirements that led to this system are:
 * [eng/Dependencies.props](/eng/Dependencies.props) - contains a list of all package references that might be used in the repo.
 * [eng/PatchConfig.props](/eng/PatchConfig.props) - lists which assemblies or packages are patching in the current build.
 * [eng/ProjectReferences.props](/eng/ProjectReferences.props) - lists which assemblies or packages might be available to be referenced as a local project.
-* [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation. This is used by MSBuild to restore and buid.
+* [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation. This is used by MSBuild to restore and build.
 * [eng/Version.Details.xml](/eng/Version.Details.xml) - used by automation to update dependencies variables in other files.
 
 ## Example: adding a new project
@@ -58,8 +57,7 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
         ```xml
         <ProductDependencies>
           <!-- ... -->
-          </Dependency>
-            <Dependency Name="System.Banana" Version="0.0.1-beta-1">
+          <Dependency Name="System.Banana" Version="0.0.1-beta-1">
             <Uri>https://github.com/dotnet/corefx</Uri>
             <Sha>000000</Sha>
           </Dependency>
@@ -67,5 +65,27 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
         </ProductDependencies>
         ```
 
-       If you don't know the commit hash of the source code used to produce "0.0.1-beta-1", you can use `000000` as a placeholder for `Sha`
-       as its value is unimportant and will be updated the next time the bot runs.
+        If you don't know the commit hash of the source code used to produce "0.0.1-beta-1", you can use `000000` as a placeholder for `Sha`
+        as its value is unimportant and will be updated the next time the bot runs.
+
+        If the new dependency comes from dotnet/CoreFx, add a
+        `CoherentParentDependency` attribute to the `<Dependency>` element as shown below. This indicates the
+        dotnet/CoreFx dependency version should be determined based on the build that produced the chosen
+        Microsoft.NETCore.App. That is, the dotnet/CoreFx dependency and Microsoft.NETCore.App should be
+        coherent.
+
+        ```xml
+        <Dependency Name="System.Banana" Version="0.0.1-beta-1" CoherentParentDependency="Microsoft.NETCore.App">
+          <!-- ... -->
+        </Dependency>
+        ```
+
+## Updating dependencies manually
+
+If the `dotnet-maestro` bot has not correctly updated the dependencies, it may be worthwhile running `darc` manually:
+
+1. Install `darc` as described in https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md#setting-up-your-darc-client
+2. Run `darc update-dependencies --channel '.NET Core 3 Dev'`
+   * Use `'.NET Core 3 Release'` in a `release/3.0-*` branch
+3. `git diff` to confirm the tool's changes
+4. Proceed with usual commit and PR&hellip;
