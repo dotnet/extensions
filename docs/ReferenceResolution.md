@@ -68,9 +68,11 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
         If you don't know the commit hash of the source code used to produce "0.0.1-beta-1", you can use `000000` as a placeholder for `Sha`
         as its value is unimportant and will be updated the next time the bot runs.
 
-        If the new dependency comes from dotnet/CoreFx or dotnet/core-setup and is not `Microsoft.NetCore.App`, add a
-        `CoherentParentDependency` attribute to the `<Dependency>` element as shown below. This indicates
-        Microsoft.NETCore.App also brings in the System.Banana content and tells `darc` to make the versions coherent.
+        If the new dependency comes from dotnet/CoreFx, add a
+        `CoherentParentDependency` attribute to the `<Dependency>` element as shown below. This indicates the
+        dotnet/CoreFx dependency version should be determined based on the build that produced the chosen
+        Microsoft.NETCore.App. That is, the dotnet/CoreFx dependency and Microsoft.NETCore.App should be
+        coherent.
 
         ```xml
         <Dependency Name="System.Banana" Version="0.0.1-beta-1" CoherentParentDependency="Microsoft.NETCore.App">
