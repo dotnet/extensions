@@ -80,17 +80,17 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19154.14">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19157.13">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>827c7896f8aa902136ad9dc68cb46147a43cd383</Sha>
+      <Sha>4b2966daf2675f9588d27cdb06803dda6d5a7ec5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19154.14">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19157.13">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>827c7896f8aa902136ad9dc68cb46147a43cd383</Sha>
+      <Sha>4b2966daf2675f9588d27cdb06803dda6d5a7ec5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19154.14">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19157.13">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>827c7896f8aa902136ad9dc68cb46147a43cd383</Sha>
+      <Sha>4b2966daf2675f9588d27cdb06803dda6d5a7ec5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview4.19156.5">
       <Uri>https://github.com/dotnet/corefx</Uri>
