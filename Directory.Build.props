@@ -33,7 +33,7 @@
     <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
 
     <Product>Microsoft .NET Extensions</Product>
     <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
