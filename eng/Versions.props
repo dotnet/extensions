@@ -1,3 +1,4 @@
+
 <!--
 
   This file defines the versions of external dependencies used by this repo.
@@ -18,7 +19,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview4-27507-11</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview4-27508-16</MicrosoftNETCoreAppPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview4.19157.3</MicrosoftBclJsonSourcesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview4.19157.3</MicrosoftWin32RegistryPackageVersion>
