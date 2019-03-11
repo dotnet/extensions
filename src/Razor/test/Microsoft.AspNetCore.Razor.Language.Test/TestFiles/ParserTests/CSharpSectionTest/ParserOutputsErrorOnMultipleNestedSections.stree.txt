@@ -22,7 +22,7 @@ RazorDocument - [0..61)::61 - [@section foo { @section bar { <p>Foo</p> @section
                             MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Whitespace;[ ];
                             CSharpCodeBlock - [15..59)::44
-                                RazorDirective - [15..59)::44 - Directive:{section;RazorBlock;Unrestricted} [RZ2002(15:0,15 [8] )]
+                                RazorDirective - [15..59)::44 - Directive:{section;RazorBlock;Unrestricted} [RZ2005(16:0,16 [7] ), RZ2002(15:0,15 [8] )]
                                     CSharpTransition - [15..16)::1 - Gen<None> - SpanEditHandler;Accepts:None
                                         Transition;[@];
                                     RazorDirectiveBody - [16..59)::43

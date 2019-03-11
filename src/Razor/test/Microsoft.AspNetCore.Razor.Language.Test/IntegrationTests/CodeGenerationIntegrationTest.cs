@@ -905,6 +905,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         [Fact]
+        public void TagHelpersInSection_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.TagHelpersInSectionDescriptors);
+        }
+
+        [Fact]
         public void TagHelpersWithTemplate_DesignTime()
         {
             // Arrange, Act & Assert
