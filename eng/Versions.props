@@ -59,10 +59,10 @@
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview4.19158.2</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview4.19158.2</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview4.19158.2</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview4-27510-07</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview4-27511-01</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview4.19158.2</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview4.19158.2</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview4-27510-07</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview4-27511-01</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview4.19160.8</MicrosoftNETCorePlatformsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview4.19160.8</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview4.19160.8</SystemTextEncodingsWebPackageVersion>
