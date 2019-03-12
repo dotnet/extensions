@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
@@ -18,9 +19,23 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         public string FilePath => InternalProjectSnapshot.FilePath;
 
+        public IEnumerable<string> DocumentFilePaths => InternalProjectSnapshot.DocumentFilePaths;
+
         public RazorConfiguration Configuration => InternalProjectSnapshot.Configuration;
 
         public ProjectWorkspaceState ProjectWorkspaceState => InternalProjectSnapshot.ProjectWorkspaceState;
+
+        public OmniSharpDocumentSnapshot GetDocument(string filePath)
+        {
+            var documentSnapshot = InternalProjectSnapshot.GetDocument(filePath);
+            if (documentSnapshot == null)
+            {
+                return null;
+            }
+
+            var internalDocumentSnapshot = new OmniSharpDocumentSnapshot(documentSnapshot);
+            return internalDocumentSnapshot;
+        }
 
         internal static OmniSharpProjectSnapshot Convert(ProjectSnapshot projectSnapshot)
         {

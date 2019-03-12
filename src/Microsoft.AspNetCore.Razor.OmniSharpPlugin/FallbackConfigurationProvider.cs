@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
-using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         internal const string ReferencePathWithRefAssembliesItemType = "ReferencePathWithRefAssemblies";
         internal const string MvcAssemblyFileName = "Microsoft.AspNetCore.Mvc.Razor.dll";
 
-        public override bool TryResolveConfiguration(RazorConfigurationProviderContext context, out RazorConfiguration configuration)
+        public override bool TryResolveConfiguration(ProjectConfigurationProviderContext context, out ProjectConfiguration configuration)
         {
             if (!HasRazorCoreCapability(context))
             {
@@ -59,7 +58,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 return false;
             }
 
-            configuration = FallbackRazorConfiguration.SelectConfiguration(version);
+            var razorConfiguration = FallbackRazorConfiguration.SelectConfiguration(version);
+            configuration = new ProjectConfiguration(razorConfiguration, Array.Empty<OmniSharpHostDocument>());
             return true;
         }
 

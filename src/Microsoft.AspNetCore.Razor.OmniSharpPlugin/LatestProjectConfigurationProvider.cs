@@ -11,16 +11,21 @@ using Microsoft.Build.Execution;
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     [Shared]
-    [Export(typeof(RazorConfigurationProvider))]
-    internal class LatestConfigurationProvider : CoreProjectConfigurationProvider
+    [Export(typeof(ProjectConfigurationProvider))]
+    internal class LatestProjectConfigurationProvider : CoreProjectConfigurationProvider
     {
+        // Internal for testing
+        internal const string RazorGenerateWithTargetPathItemType = "RazorGenerateWithTargetPath";
+        internal const string RazorComponentWithTargetPathItemType = "RazorComponentWithTargetPath";
+        internal const string RazorTargetPathMetadataName = "TargetPath";
+
         private const string RazorLangVersionProperty = "RazorLangVersion";
         private const string RazorDefaultConfigurationProperty = "RazorDefaultConfiguration";
         private const string RazorExtensionItemType = "RazorExtension";
         private const string RazorConfigurationItemType = "RazorConfiguration";
         private const string RazorConfigurationItemTypeExtensionsProperty = "Extensions";
 
-        public override bool TryResolveConfiguration(RazorConfigurationProviderContext context, out RazorConfiguration configuration)
+        public override bool TryResolveConfiguration(ProjectConfigurationProviderContext context, out ProjectConfiguration configuration)
         {
             if (!HasRazorCoreCapability(context))
             {
@@ -48,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         // Internal for testing
         internal static bool TryGetConfiguration(
             ProjectInstance projectInstance,
-            out RazorConfiguration configuration)
+            out ProjectConfiguration configuration)
         {
             if (!TryGetDefaultConfiguration(projectInstance, out var defaultConfiguration))
             {
@@ -75,8 +80,37 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             }
 
             var extensions = GetExtensions(configuredExtensionNames, projectInstance.Items);
-            configuration = new ProjectSystemRazorConfiguration(languageVersion, configurationItem.EvaluatedInclude, extensions);
+            var razorConfiguration = new ProjectSystemRazorConfiguration(languageVersion, configurationItem.EvaluatedInclude, extensions);
+            var hostDocuments = GetHostDocuments(projectInstance.Items);
+
+            configuration = new ProjectConfiguration(razorConfiguration, hostDocuments);
             return true;
+        }
+
+        // Internal for testing
+        internal static IReadOnlyList<OmniSharpHostDocument> GetHostDocuments(ICollection<ProjectItemInstance> projectItems)
+        {
+            var hostDocuments = new HashSet<OmniSharpHostDocument>();
+
+            foreach (var item in projectItems)
+            {
+                if (item.ItemType == RazorGenerateWithTargetPathItemType)
+                {
+                    var filePath = item.EvaluatedInclude;
+                    var targetPath = item.GetMetadataValue(RazorTargetPathMetadataName);
+                    var hostDocument = new OmniSharpHostDocument(filePath, targetPath, FileKinds.Legacy);
+                    hostDocuments.Add(hostDocument);
+                }
+                else if (item.ItemType == RazorComponentWithTargetPathItemType)
+                {
+                    var filePath = item.EvaluatedInclude;
+                    var targetPath = item.GetMetadataValue(RazorTargetPathMetadataName);
+                    var hostDocument = new OmniSharpHostDocument(filePath, targetPath, FileKinds.Component);
+                    hostDocuments.Add(hostDocument);
+                }
+            }
+
+            return hostDocuments.ToList();
         }
 
 

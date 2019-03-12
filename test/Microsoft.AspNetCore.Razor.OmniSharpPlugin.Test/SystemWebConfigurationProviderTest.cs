@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             };
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.AddItem(SystemWebConfigurationProvider.ReferencePathWithRefAssembliesItemType, SystemWebConfigurationProvider.SystemWebRazorAssemblyFileName);
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             var provider = new SystemWebConfigurationProvider();
 
             // Act
@@ -56,21 +56,21 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var provider = new SystemWebConfigurationProvider();
 
             // Act
-            var result = provider.TryResolveConfiguration(context, out var configuration);
+            var result = provider.TryResolveConfiguration(context, out var projectConfiguration);
 
             // Assert
             Assert.True(result);
-            Assert.Same(UnsupportedRazorConfiguration.Instance, configuration);
+            Assert.Same(UnsupportedRazorConfiguration.Instance, projectConfiguration.Configuration);
         }
 
-        private RazorConfigurationProviderContext BuildContext(params string[] referencePaths)
+        private ProjectConfigurationProviderContext BuildContext(params string[] referencePaths)
         {
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             foreach (var path in referencePaths)
             {
                 projectInstance.AddItem(SystemWebConfigurationProvider.ReferencePathWithRefAssembliesItemType, path);
             }
-            var context = new RazorConfigurationProviderContext(Array.Empty<string>(), projectInstance);
+            var context = new ProjectConfigurationProviderContext(Array.Empty<string>(), projectInstance);
             return context;
         }
     }

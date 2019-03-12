@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectCapabilities = Array.Empty<string>();
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             var provider = new TestLegacyConfigurationProvider(MvcAssemblyVersion);
 
             // Act
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 CoreProjectConfigurationProvider.DotNetCoreRazorConfigurationCapability
             };
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             var provider = new TestLegacyConfigurationProvider(MvcAssemblyVersion);
 
             // Act
@@ -89,14 +89,15 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var expectedConfiguration = FallbackRazorConfiguration.SelectConfiguration(MvcAssemblyVersion);
 
             // Act
-            var result = provider.TryResolveConfiguration(context, out var configuration);
+            var result = provider.TryResolveConfiguration(context, out var projectConfiguration);
 
             // Assert
             Assert.True(result);
-            Assert.Same(expectedConfiguration, configuration);
+            Assert.Same(expectedConfiguration, projectConfiguration.Configuration);
+            Assert.Empty(projectConfiguration.Documents);
         }
 
-        private RazorConfigurationProviderContext BuildContext(params string[] referencePaths)
+        private ProjectConfigurationProviderContext BuildContext(params string[] referencePaths)
         {
             var projectCapabilities = new[] { CoreProjectConfigurationProvider.DotNetCoreRazorCapability };
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             {
                 projectInstance.AddItem(FallbackConfigurationProvider.ReferencePathWithRefAssembliesItemType, path);
             }
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             return context;
         }
 

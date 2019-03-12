@@ -9,8 +9,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     public sealed class OmniSharpHostProject
     {
-        private readonly HostProject _hostProject;
-
         public OmniSharpHostProject(string projectFilePath, RazorConfiguration razorConfiguration)
         {
             if (projectFilePath == null)
@@ -23,11 +21,13 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 throw new ArgumentNullException(nameof(razorConfiguration));
             }
 
-            _hostProject = new HostProject(projectFilePath, razorConfiguration);
+            InternalHostProject = new HostProject(projectFilePath, razorConfiguration);
         }
 
-        public string FilePath => _hostProject.FilePath;
+        public string FilePath => InternalHostProject.FilePath;
 
-        public RazorConfiguration Configuration => _hostProject.Configuration;
+        public RazorConfiguration Configuration => InternalHostProject.Configuration;
+
+        internal HostProject InternalHostProject { get; }
     }
 }

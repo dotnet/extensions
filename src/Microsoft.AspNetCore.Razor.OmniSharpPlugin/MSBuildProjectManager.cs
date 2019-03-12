@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Execution;
 using Microsoft.Extensions.Logging;
@@ -20,8 +19,9 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
 {
     [Shared]
     [Export(typeof(IMSBuildEventSink))]
+    [Export(typeof(IRazorDocumentChangeListener))]
     [Export(typeof(IOmniSharpProjectSnapshotManagerChangeTrigger))]
-    internal class MSBuildProjectManager : IMSBuildEventSink, IOmniSharpProjectSnapshotManagerChangeTrigger
+    internal class MSBuildProjectManager : IMSBuildEventSink, IOmniSharpProjectSnapshotManagerChangeTrigger, IRazorDocumentChangeListener
     {
         // Internal for testing
         internal const string IntermediateOutputPathPropertyName = "IntermediateOutputPath";
@@ -32,23 +32,28 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         private const string MSBuildProjectFullPathPropertyName = "MSBuildProjectFullPath";
         private const string DebugRazorOmnisharpPluginPropertyName = "_DebugRazorOmnisharpPlugin_";
         private readonly ILogger _logger;
-        private readonly IEnumerable<RazorConfigurationProvider> _projectConfigurationProviders;
+        private readonly IEnumerable<ProjectConfigurationProvider> _projectConfigurationProviders;
+        private readonly ProjectInstanceEvaluator _projectInstanceEvaluator;
         private readonly ProjectChangePublisher _projectConfigurationPublisher;
         private readonly OmniSharpForegroundDispatcher _foregroundDispatcher;
-        private readonly OmniSharpWorkspace _workspace;
         private OmniSharpProjectSnapshotManagerBase _projectManager;
 
         [ImportingConstructor]
         public MSBuildProjectManager(
-            [ImportMany] IEnumerable<RazorConfigurationProvider> projectConfigurationProviders,
+            [ImportMany] IEnumerable<ProjectConfigurationProvider> projectConfigurationProviders,
+            ProjectInstanceEvaluator projectInstanceEvaluator,
             ProjectChangePublisher projectConfigurationPublisher,
             OmniSharpForegroundDispatcher foregroundDispatcher,
-            OmniSharpWorkspace workspace,
             ILoggerFactory loggerFactory)
         {
             if (projectConfigurationProviders == null)
             {
                 throw new ArgumentNullException(nameof(projectConfigurationProviders));
+            }
+
+            if (projectInstanceEvaluator == null)
+            {
+                throw new ArgumentNullException(nameof(projectInstanceEvaluator));
             }
 
             if (projectConfigurationPublisher == null)
@@ -61,11 +66,6 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
-            if (workspace == null)
-            {
-                throw new ArgumentNullException(nameof(workspace));
-            }
-
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
@@ -73,10 +73,9 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
 
             _logger = loggerFactory.CreateLogger<MSBuildProjectManager>();
             _projectConfigurationProviders = projectConfigurationProviders;
+            _projectInstanceEvaluator = projectInstanceEvaluator;
             _projectConfigurationPublisher = projectConfigurationPublisher;
             _foregroundDispatcher = foregroundDispatcher;
-
-            _workspace = workspace;
         }
 
         public void Initialize(OmniSharpProjectSnapshotManagerBase projectManager)
@@ -93,38 +92,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         {
             try
             {
-                HandleDebug(args.ProjectInstance);
-
-                if (!TryResolveConfigurationOutputPath(args.ProjectInstance, out var configPath))
-                {
-                    return;
-                }
-
-                var projectFilePath = args.ProjectInstance.GetPropertyValue(MSBuildProjectFullPathPropertyName);
-                if (string.IsNullOrEmpty(projectFilePath))
-                {
-                    // This should never be true but we're being extra careful.
-                    return;
-                }
-
-                _projectConfigurationPublisher.SetPublishFilePath(projectFilePath, configPath);
-                var razorConfiguration = GetRazorConfiguration(args.ProjectInstance, _projectConfigurationProviders);
-                var project = _workspace.CurrentSolution.GetProject(args.Id);
-
-                await Task.Factory.StartNew(() =>
-                {
-                    var projectSnapshot = _projectManager.GetLoadedProject(projectFilePath);
-                    var hostProject = new OmniSharpHostProject(projectFilePath, razorConfiguration);
-                    if (projectSnapshot == null)
-                    {
-                        _projectManager.ProjectAdded(hostProject);
-                    }
-                    else
-                    {
-                        _projectManager.ProjectConfigurationChanged(hostProject);
-                    }
-                },
-                CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+                await ProjectLoadedAsync(args);
             }
             catch (Exception ex)
             {
@@ -132,10 +100,143 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             }
         }
 
+        public void RazorDocumentChanged(RazorFileChangeEventArgs args)
+        {
+            _foregroundDispatcher.AssertBackgroundThread();
+
+            if (args.Kind == RazorFileChangeKind.Added ||
+                args.Kind == RazorFileChangeKind.Removed)
+            {
+                // When documents get added or removed we need to refresh project state to properly reflect the host documents in the project.
+
+                var evaluatedProjectInstance = _projectInstanceEvaluator.Evaluate(args.UnevaluatedProjectInstance);
+                Task.Factory.StartNew(
+                    () => UpdateProjectState(evaluatedProjectInstance),
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    _foregroundDispatcher.ForegroundScheduler);
+            }
+        }
+
         // Internal for testing
-        internal static RazorConfiguration GetRazorConfiguration(
+        internal async Task ProjectLoadedAsync(ProjectLoadedEventArgs args)
+        {
+            var projectInstance = args.ProjectInstance;
+            HandleDebug(projectInstance);
+
+            if (!TryResolveConfigurationOutputPath(projectInstance, out var configPath))
+            {
+                return;
+            }
+
+            var projectFilePath = projectInstance.GetPropertyValue(MSBuildProjectFullPathPropertyName);
+            if (string.IsNullOrEmpty(projectFilePath))
+            {
+                // This should never be true but we're being extra careful.
+                return;
+            }
+
+            _projectConfigurationPublisher.SetPublishFilePath(projectFilePath, configPath);
+
+            // Force project instance evaluation to ensure that all Razor specific targets have run.
+            projectInstance = _projectInstanceEvaluator.Evaluate(projectInstance);
+
+            await Task.Factory.StartNew(() =>
+            {
+                UpdateProjectState(projectInstance);
+            },
+            CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+        }
+
+        private void UpdateProjectState(ProjectInstance projectInstance)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            var projectFilePath = projectInstance.GetPropertyValue(MSBuildProjectFullPathPropertyName);
+            if (string.IsNullOrEmpty(projectFilePath))
+            {
+                // This should never be true but we're being extra careful.
+                return;
+            }
+
+            var projectConfiguration = GetProjectConfiguration(projectInstance, _projectConfigurationProviders);
+            if (projectConfiguration == null)
+            {
+                // Not a Razor project
+                return;
+            }
+
+            var projectSnapshot = _projectManager.GetLoadedProject(projectFilePath);
+            var hostProject = new OmniSharpHostProject(projectFilePath, projectConfiguration.Configuration);
+            if (projectSnapshot == null)
+            {
+                // Project doesn't exist yet, create it and set it up with all of its host documents.
+
+                _projectManager.ProjectAdded(hostProject);
+
+                foreach (var hostDocument in projectConfiguration.Documents)
+                {
+                    _projectManager.DocumentAdded(hostProject, hostDocument);
+                }
+            }
+            else
+            {
+                // Project already exists (project change). Reconfigure the project and add or remove host documents to synchronize it with the configured host documents.
+
+                _projectManager.ProjectConfigurationChanged(hostProject);
+
+                SynchronizeDocuments(projectConfiguration.Documents, projectSnapshot, hostProject);
+            }
+        }
+
+        // Internal for testing
+        internal void SynchronizeDocuments(
+            IReadOnlyList<OmniSharpHostDocument> configuredHostDocuments, 
+            OmniSharpProjectSnapshot projectSnapshot, 
+            OmniSharpHostProject hostProject)
+        {
+            // Remove any documents that need to be removed
+            foreach (var documentFilePath in projectSnapshot.DocumentFilePaths)
+            {
+                OmniSharpHostDocument associatedHostDocument = null;
+
+                for (var i = 0; i < configuredHostDocuments.Count; i++)
+                {
+                    var hostDocument = configuredHostDocuments[i];
+                    if (FilePathComparer.Instance.Equals(hostDocument.FilePath, documentFilePath))
+                    {
+                        associatedHostDocument = hostDocument;
+                    }
+                }
+
+                if (associatedHostDocument == null)
+                {
+                    // Document was removed
+                    var removedDocumentSnapshot = projectSnapshot.GetDocument(documentFilePath);
+                    var removedHostDocument = new OmniSharpHostDocument(removedDocumentSnapshot.FilePath, removedDocumentSnapshot.TargetPath, removedDocumentSnapshot.FileKind);
+                    _projectManager.DocumentRemoved(hostProject, removedHostDocument);
+                }
+            }
+
+            // Refresh the project snapshot to reflect any removed documents.
+            projectSnapshot = _projectManager.GetLoadedProject(projectSnapshot.FilePath);
+
+            // Add any documents that need to be added
+            for (var i = 0; i < configuredHostDocuments.Count; i++)
+            {
+                var hostDocument = configuredHostDocuments[i];
+                if (!projectSnapshot.DocumentFilePaths.Contains(hostDocument.FilePath, FilePathComparer.Instance))
+                {
+                    // Document was added.
+                    _projectManager.DocumentAdded(hostProject, hostDocument);
+                }
+            }
+        }
+
+        // Internal for testing
+        internal static ProjectConfiguration GetProjectConfiguration(
             ProjectInstance projectInstance,
-            IEnumerable<RazorConfigurationProvider> projectConfigurationProviders)
+            IEnumerable<ProjectConfigurationProvider> projectConfigurationProviders)
         {
             if (projectInstance == null)
             {
@@ -152,7 +253,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 .Select(capability => capability.EvaluatedInclude)
                 .ToList();
 
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             foreach (var projectConfigurationProvider in projectConfigurationProviders)
             {
                 if (projectConfigurationProvider.TryResolveConfiguration(context, out var configuration))

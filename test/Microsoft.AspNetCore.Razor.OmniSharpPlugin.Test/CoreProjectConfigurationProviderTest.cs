@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectCapabilities = Array.Empty<string>();
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             var provider = new TestCoreProjectConfigurationProvider();
 
             // Act
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectCapabilities = new[] { CoreProjectConfigurationProvider.DotNetCoreRazorCapability };
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             var provider = new TestCoreProjectConfigurationProvider();
 
             // Act
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectCapabilities = new[] { CoreProjectConfigurationProvider.DotNetCoreWebCapability };
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             var provider = new TestCoreProjectConfigurationProvider();
 
             // Act
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectCapabilities = new[] { CoreProjectConfigurationProvider.DotNetCoreRazorCapability };
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             var provider = new TestCoreProjectConfigurationProvider();
 
             // Act
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectCapabilities = new[] { CoreProjectConfigurationProvider.DotNetCoreRazorConfigurationCapability };
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
             var provider = new TestCoreProjectConfigurationProvider();
 
             // Act
@@ -93,11 +93,11 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         private class TestCoreProjectConfigurationProvider : CoreProjectConfigurationProvider
         {
-            public new bool HasRazorCoreCapability(RazorConfigurationProviderContext context) => base.HasRazorCoreCapability(context);
+            public new bool HasRazorCoreCapability(ProjectConfigurationProviderContext context) => base.HasRazorCoreCapability(context);
 
-            public new bool HasRazorCoreConfigurationCapability(RazorConfigurationProviderContext context) => base.HasRazorCoreConfigurationCapability(context);
+            public new bool HasRazorCoreConfigurationCapability(ProjectConfigurationProviderContext context) => base.HasRazorCoreConfigurationCapability(context);
 
-            public override bool TryResolveConfiguration(RazorConfigurationProviderContext context, out RazorConfiguration configuration)
+            public override bool TryResolveConfiguration(ProjectConfigurationProviderContext context, out ProjectConfiguration configuration)
             {
                 throw new NotImplementedException();
             }

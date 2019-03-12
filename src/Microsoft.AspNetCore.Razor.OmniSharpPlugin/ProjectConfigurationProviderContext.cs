@@ -7,9 +7,9 @@ using Microsoft.Build.Execution;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public sealed class RazorConfigurationProviderContext
+    public sealed class ProjectConfigurationProviderContext
     {
-        public RazorConfigurationProviderContext(
+        public ProjectConfigurationProviderContext(
             IReadOnlyList<string> projectCapabilities,
             ProjectInstance projectInstance)
         {

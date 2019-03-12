@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         [Fact]
-        public void ProjectAdded_PublishesToCorrectFilePath()
+        public async Task ProjectAdded_PublishesToCorrectFilePath()
         {
             // Arrange
             var snapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
@@ -68,14 +69,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             publisher.SetPublishFilePath(hostProject.FilePath, expectedPublishFilePath);
 
             // Act
-            snapshotManager.ProjectAdded(hostProject);
+            await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
 
             // Assert
             Assert.True(attemptedToSerialize);
         }
 
         [Fact]
-        public void ProjectChanged_PublishesToCorrectFilePath()
+        public async Task ProjectChanged_PublishesToCorrectFilePath()
         {
             // Arrange
             var snapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
@@ -92,33 +93,33 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             publisher.Initialize(snapshotManager);
             var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
             publisher.SetPublishFilePath(hostProject.FilePath, expectedPublishFilePath);
-            snapshotManager.ProjectAdded(hostProject);
+            await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
             var newConfiguration = RazorConfiguration.Create(RazorLanguageVersion.Experimental, "Custom", Enumerable.Empty<RazorExtension>());
             var newHostProject = new OmniSharpHostProject(hostProject.FilePath, newConfiguration);
 
             // Act
-            snapshotManager.ProjectConfigurationChanged(newHostProject);
+            await RunOnForegroundAsync(() => snapshotManager.ProjectConfigurationChanged(newHostProject));
 
             // Assert
             Assert.Equal(2, attemptsToSerialize);
         }
 
         [Fact]
-        public void ProjectRemoved_UnSetPublishFilePath_Noops()
+        public async Task ProjectRemoved_UnSetPublishFilePath_Noops()
         {
             // Arrange
             var snapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
             var publisher = new TestProjectChangePublisher(LoggerFactory);
             publisher.Initialize(snapshotManager);
             var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
-            snapshotManager.ProjectAdded(hostProject);
+            await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
 
             // Act & Assert
-            snapshotManager.ProjectRemoved(hostProject);
+            await RunOnForegroundAsync(() => snapshotManager.ProjectRemoved(hostProject));
         }
 
         [Fact]
-        public void ProjectRemoved_DeletesPublishFile()
+        public async Task ProjectRemoved_DeletesPublishFile()
         {
             // Arrange
             var attemptedToDelete = false;
@@ -134,10 +135,10 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             publisher.Initialize(snapshotManager);
             var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
             publisher.SetPublishFilePath(hostProject.FilePath, expectedPublishFilePath);
-            snapshotManager.ProjectAdded(hostProject);
+            await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
 
             // Act
-            snapshotManager.ProjectRemoved(hostProject);
+            await RunOnForegroundAsync(() => snapshotManager.ProjectRemoved(hostProject));
 
             // Assert
             Assert.True(attemptedToDelete);

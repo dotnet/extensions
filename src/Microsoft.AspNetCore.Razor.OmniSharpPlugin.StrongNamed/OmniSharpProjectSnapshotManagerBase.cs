@@ -14,6 +14,10 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         public abstract void ProjectAdded(OmniSharpHostProject hostProject);
 
+        public abstract void DocumentAdded(OmniSharpHostProject hostProject, OmniSharpHostDocument hostDocument);
+
+        public abstract void DocumentRemoved(OmniSharpHostProject hostProject, OmniSharpHostDocument hostDocument);
+
         public abstract void ProjectRemoved(OmniSharpHostProject hostProject);
 
         public abstract void ProjectConfigurationChanged(OmniSharpHostProject hostProject);

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Composition;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     [Shared]
-    [Export(typeof(RazorConfigurationProvider))]
+    [Export(typeof(ProjectConfigurationProvider))]
     internal class SystemWebConfigurationProvider : CoreProjectConfigurationProvider
     {
         // Internal for testing
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         private const string LegacyRazorAssemblyName = "System.Web.Razor";
 
-        public override bool TryResolveConfiguration(RazorConfigurationProviderContext context, out RazorConfiguration configuration)
+        public override bool TryResolveConfiguration(ProjectConfigurationProviderContext context, out ProjectConfiguration configuration)
         {
             if (HasRazorCoreCapability(context))
             {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 return false;
             }
 
-            configuration = UnsupportedRazorConfiguration.Instance;
+            configuration = new ProjectConfiguration(UnsupportedRazorConfiguration.Instance, Array.Empty<OmniSharpHostDocument>());
             return true;
         }
     }

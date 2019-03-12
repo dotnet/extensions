@@ -13,16 +13,118 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class LatestConfigurationProviderTest
+    public class LatestProjectConfigurationProviderTest
     {
+        [Fact]
+        public void GetHostDocuments_SomeLegacyDocuments()
+        {
+            // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorGenerateWithTargetPathItemType, "file.cshtml", new Dictionary<string, string>()
+            {
+                [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "path/file.cshtml",
+            });
+            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorGenerateWithTargetPathItemType, "otherfile.cshtml", new Dictionary<string, string>()
+            {
+                [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "other/path/otherfile.cshtml",
+            });
+
+            // Act
+            var hostDocuments = LatestProjectConfigurationProvider.GetHostDocuments(projectInstance.Items);
+
+            // Assert
+            Assert.Collection(
+                hostDocuments,
+                hostDocument =>
+                {
+                    Assert.Equal("file.cshtml", hostDocument.FilePath);
+                    Assert.Equal("path/file.cshtml", hostDocument.TargetPath);
+                    Assert.Equal(FileKinds.Legacy, hostDocument.FileKind);
+                },
+                hostDocument =>
+                {
+                    Assert.Equal("otherfile.cshtml", hostDocument.FilePath);
+                    Assert.Equal("other/path/otherfile.cshtml", hostDocument.TargetPath);
+                    Assert.Equal(FileKinds.Legacy, hostDocument.FileKind);
+                });
+        }
+
+        [Fact]
+        public void GetHostDocuments_SomeComponentDocuments()
+        {
+            // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorComponentWithTargetPathItemType, "file.razor", new Dictionary<string, string>()
+            {
+                [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "path/file.razor",
+            });
+            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorComponentWithTargetPathItemType, "otherfile.razor", new Dictionary<string, string>()
+            {
+                [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "other/path/otherfile.razor",
+            });
+
+            // Act
+            var hostDocuments = LatestProjectConfigurationProvider.GetHostDocuments(projectInstance.Items);
+
+            // Assert
+            Assert.Collection(
+                hostDocuments,
+                hostDocument =>
+                {
+                    Assert.Equal("file.razor", hostDocument.FilePath);
+                    Assert.Equal("path/file.razor", hostDocument.TargetPath);
+                    Assert.Equal(FileKinds.Component, hostDocument.FileKind);
+                },
+                hostDocument =>
+                {
+                    Assert.Equal("otherfile.razor", hostDocument.FilePath);
+                    Assert.Equal("other/path/otherfile.razor", hostDocument.TargetPath);
+                    Assert.Equal(FileKinds.Component, hostDocument.FileKind);
+                });
+        }
+
+        [Fact]
+        public void GetHostDocuments_MixedDocuments()
+        {
+            // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorComponentWithTargetPathItemType, "file.razor", new Dictionary<string, string>()
+            {
+                [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "path/file.razor",
+            });
+            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorGenerateWithTargetPathItemType, "otherfile.cshtml", new Dictionary<string, string>()
+            {
+                [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "other/path/otherfile.cshtml",
+            });
+
+            // Act
+            var hostDocuments = LatestProjectConfigurationProvider.GetHostDocuments(projectInstance.Items);
+
+            // Assert
+            Assert.Collection(
+                hostDocuments,
+                hostDocument =>
+                {
+                    Assert.Equal("file.razor", hostDocument.FilePath);
+                    Assert.Equal("path/file.razor", hostDocument.TargetPath);
+                    Assert.Equal(FileKinds.Component, hostDocument.FileKind);
+                },
+                hostDocument =>
+                {
+                    Assert.Equal("otherfile.cshtml", hostDocument.FilePath);
+                    Assert.Equal("other/path/otherfile.cshtml", hostDocument.TargetPath);
+                    Assert.Equal(FileKinds.Legacy, hostDocument.FileKind);
+                });
+        }
+
         [Fact]
         public void TryResolveConfiguration_NoCoreCapability_ReturnsFalse()
         {
             // Arrange
             var projectCapabilities = Array.Empty<string>();
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
-            var provider = new LatestConfigurationProvider();
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
+            var provider = new LatestProjectConfigurationProvider();
 
             // Act
             var result = provider.TryResolveConfiguration(context, out var configuration);
@@ -41,8 +143,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 CoreProjectConfigurationProvider.DotNetCoreRazorCapability,
             };
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
-            var provider = new LatestConfigurationProvider();
+            var context = new ProjectConfigurationProviderContext(projectCapabilities, projectInstance);
+            var provider = new LatestProjectConfigurationProvider();
 
             // Act
             var result = provider.TryResolveConfiguration(context, out var configuration);
@@ -59,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
 
             // Act
-            var result = LatestConfigurationProvider.TryGetDefaultConfiguration(projectInstance, out var defaultConfiguration);
+            var result = LatestProjectConfigurationProvider.TryGetDefaultConfiguration(projectInstance, out var defaultConfiguration);
 
             // Assert
             Assert.False(result);
@@ -74,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.SetProperty("RazorDefaultConfiguration", string.Empty);
 
             // Act
-            var result = LatestConfigurationProvider.TryGetDefaultConfiguration(projectInstance, out var defaultConfiguration);
+            var result = LatestProjectConfigurationProvider.TryGetDefaultConfiguration(projectInstance, out var defaultConfiguration);
 
             // Assert
             Assert.False(result);
@@ -90,7 +192,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.SetProperty("RazorDefaultConfiguration", expectedConfiguration);
 
             // Act
-            var result = LatestConfigurationProvider.TryGetDefaultConfiguration(projectInstance, out var defaultConfiguration);
+            var result = LatestProjectConfigurationProvider.TryGetDefaultConfiguration(projectInstance, out var defaultConfiguration);
 
             // Assert
             Assert.True(result);
@@ -104,7 +206,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
 
             // Act
-            var result = LatestConfigurationProvider.TryGetLanguageVersion(projectInstance, out var languageVersion);
+            var result = LatestProjectConfigurationProvider.TryGetLanguageVersion(projectInstance, out var languageVersion);
 
             // Assert
             Assert.False(result);
@@ -119,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.SetProperty("RazorLangVersion", string.Empty);
 
             // Act
-            var result = LatestConfigurationProvider.TryGetLanguageVersion(projectInstance, out var languageVersion);
+            var result = LatestProjectConfigurationProvider.TryGetLanguageVersion(projectInstance, out var languageVersion);
 
             // Assert
             Assert.False(result);
@@ -134,7 +236,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.SetProperty("RazorLangVersion", "1.0");
 
             // Act
-            var result = LatestConfigurationProvider.TryGetLanguageVersion(projectInstance, out var languageVersion);
+            var result = LatestProjectConfigurationProvider.TryGetLanguageVersion(projectInstance, out var languageVersion);
 
             // Assert
             Assert.True(result);
@@ -149,7 +251,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.SetProperty("RazorLangVersion", "13.37");
 
             // Act
-            var result = LatestConfigurationProvider.TryGetLanguageVersion(projectInstance, out var languageVersion);
+            var result = LatestProjectConfigurationProvider.TryGetLanguageVersion(projectInstance, out var languageVersion);
 
             // Assert
             Assert.True(result);
@@ -163,7 +265,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectItems = Enumerable.Empty<ProjectItemInstance>();
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfigurationItem("Razor-13.37", projectItems, out var configurationItem);
+            var result = LatestProjectConfigurationProvider.TryGetConfigurationItem("Razor-13.37", projectItems, out var configurationItem);
 
             // Assert
             Assert.False(result);
@@ -178,7 +280,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.AddItem("RazorConfiguration", "Razor-10.0");
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfigurationItem("Razor-13.37", projectInstance.Items, out var configurationItem);
+            var result = LatestProjectConfigurationProvider.TryGetConfigurationItem("Razor-13.37", projectInstance.Items, out var configurationItem);
 
             // Assert
             Assert.False(result);
@@ -195,7 +297,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var expectedConfigurationItem = projectInstance.AddItem("RazorConfiguration", expectedConfiguration);
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfigurationItem(expectedConfiguration, projectInstance.Items, out var configurationItem);
+            var result = LatestProjectConfigurationProvider.TryGetConfigurationItem(expectedConfiguration, projectInstance.Items, out var configurationItem);
 
             // Assert
             Assert.True(result);
@@ -210,7 +312,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var configurationItem = projectInstance.AddItem("RazorConfiguration", "Razor-10.0");
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionnames);
+            var result = LatestProjectConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionnames);
 
             // Assert
             Assert.False(result);
@@ -231,7 +333,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 });
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+            var result = LatestProjectConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
 
             // Assert
             Assert.False(result);
@@ -253,7 +355,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 });
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+            var result = LatestProjectConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
 
             // Assert
             Assert.True(result);
@@ -275,7 +377,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 });
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+            var result = LatestProjectConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
 
             // Assert
             Assert.True(result);
@@ -293,7 +395,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.AddItem("NotAnExtension", "Extension1");
 
             // Act
-            var extensions = LatestConfigurationProvider.GetExtensions(new[] { "Extension1", "Extension2" }, projectInstance.Items);
+            var extensions = LatestProjectConfigurationProvider.GetExtensions(new[] { "Extension1", "Extension2" }, projectInstance.Items);
 
             // Assert
             Assert.Empty(extensions);
@@ -307,7 +409,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.AddItem("NotAnExtension", "UnconfiguredExtensionName");
 
             // Act
-            var extensions = LatestConfigurationProvider.GetExtensions(new[] { "Extension1", "Extension2" }, projectInstance.Items);
+            var extensions = LatestProjectConfigurationProvider.GetExtensions(new[] { "Extension1", "Extension2" }, projectInstance.Items);
 
             // Assert
             Assert.Empty(extensions);
@@ -325,7 +427,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.AddItem("RazorExtension", expectedExtension2Name);
 
             // Act
-            var extensions = LatestConfigurationProvider.GetExtensions(new[] { expectedExtension1Name, expectedExtension2Name }, projectInstance.Items);
+            var extensions = LatestProjectConfigurationProvider.GetExtensions(new[] { expectedExtension1Name, expectedExtension2Name }, projectInstance.Items);
 
             // Assert
             Assert.Collection(
@@ -341,7 +443,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
+            var result = LatestProjectConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
 
             // Assert
             Assert.False(result);
@@ -354,10 +456,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.SetProperty("RazorDefaultConfiguration", "Razor-13.37");
-            var projectItems = new ProjectItemInstance[0];
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
+            var result = LatestProjectConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
 
             // Assert
             Assert.False(result);
@@ -371,10 +472,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.SetProperty("RazorDefaultConfiguration", "Razor-13.37");
             projectInstance.SetProperty("RazorLangVersion", "1.0");
-            var projectItems = new ProjectItemInstance[0];
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
+            var result = LatestProjectConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
 
             // Assert
             Assert.False(result);
@@ -391,7 +491,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.AddItem("RazorConfiguration", "Razor-13.37");
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
+            var result = LatestProjectConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
 
             // Assert
             Assert.False(result);
@@ -424,14 +524,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectInstance.SetProperty("RazorLangVersion", "1.0");
 
             // Act
-            var result = LatestConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
+            var result = LatestProjectConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
 
             // Assert
             Assert.True(result);
-            Assert.Equal(expectedLanguageVersion, configuration.LanguageVersion);
-            Assert.Equal(expectedConfigurationName, configuration.ConfigurationName);
+            Assert.Equal(expectedLanguageVersion, configuration.Configuration.LanguageVersion);
+            Assert.Equal(expectedConfigurationName, configuration.Configuration.ConfigurationName);
             Assert.Collection(
-                configuration.Extensions,
+                configuration.Configuration.Extensions,
                 extension => Assert.Equal(expectedExtension1Name, extension.ExtensionName),
                 extension => Assert.Equal(expectedExtension2Name, extension.ExtensionName));
         }

@@ -10,5 +10,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         ProjectAdded = ProjectChangeKind.ProjectAdded,
         ProjectRemoved = ProjectChangeKind.ProjectRemoved,
         ProjectChanged = ProjectChangeKind.ProjectChanged,
+        DocumentAdded = ProjectChangeKind.DocumentAdded,
+        DocumentRemoved = ProjectChangeKind.DocumentRemoved,
     }
 }

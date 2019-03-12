@@ -41,25 +41,32 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         public override void ProjectAdded(OmniSharpHostProject hostProject)
         {
-            var internalHostProject = new HostProject(hostProject.FilePath, hostProject.Configuration);
-            InternalProjectSnapshotManager.ProjectAdded(internalHostProject);
+            InternalProjectSnapshotManager.ProjectAdded(hostProject.InternalHostProject);
         }
 
         public override void ProjectRemoved(OmniSharpHostProject hostProject)
         {
-            var internalHostProject = new HostProject(hostProject.FilePath, hostProject.Configuration);
-            InternalProjectSnapshotManager.ProjectRemoved(internalHostProject);
+            InternalProjectSnapshotManager.ProjectRemoved(hostProject.InternalHostProject);
         }
 
         public override void ProjectConfigurationChanged(OmniSharpHostProject hostProject)
         {
-            var internalHostProject = new HostProject(hostProject.FilePath, hostProject.Configuration);
-            InternalProjectSnapshotManager.ProjectConfigurationChanged(internalHostProject);
+            InternalProjectSnapshotManager.ProjectConfigurationChanged(hostProject.InternalHostProject);
         }
 
         public override void ProjectWorkspaceStateChanged(string projectFilePath, ProjectWorkspaceState projectWorkspaceState)
         {
             InternalProjectSnapshotManager.ProjectWorkspaceStateChanged(projectFilePath, projectWorkspaceState);
+        }
+
+        public override void DocumentAdded(OmniSharpHostProject hostProject, OmniSharpHostDocument hostDocument)
+        {
+            InternalProjectSnapshotManager.DocumentAdded(hostProject.InternalHostProject, hostDocument.InternalHostDocument, textLoader: null);
+        }
+
+        public override void DocumentRemoved(OmniSharpHostProject hostProject, OmniSharpHostDocument hostDocument)
+        {
+            InternalProjectSnapshotManager.DocumentRemoved(hostProject.InternalHostProject, hostDocument.InternalHostDocument);
         }
 
         private void ProjectSnapshotManager_Changed(object sender, ProjectChangeEventArgs args)

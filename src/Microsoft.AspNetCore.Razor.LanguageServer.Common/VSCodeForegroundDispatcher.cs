@@ -58,8 +58,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             {
                 while (true)
                 {
-                    var task = _tasks.Take();
-                    TryExecuteTask(task);
+                    try
+                    {
+                        var task = _tasks.Take();
+                        TryExecuteTask(task);
+                    }
+                    catch (ThreadAbortException)
+                    {
+                        // Fires when things shut down or in tests. Swallow thread abort exceptions and bail out.
+                        return;
+                    }
                 }
             }
         }
