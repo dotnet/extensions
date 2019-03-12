@@ -13,4 +13,4 @@ while [[ -h $source ]]; do
 done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
-. "$scriptroot/../common/build.sh" -test -p:RunFlakyTests=true $@
+. "$scriptroot/../common/build.sh" --ci --test -p:RunFlakyTests=true $@
