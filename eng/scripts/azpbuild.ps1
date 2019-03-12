@@ -33,6 +33,9 @@ $loggerArg = "/dl:CentralLogger,`"$loggerAssembly`";`"RootDetailId=$($detailId)|
 $loggerArg | Out-File $loggerRsp
 $loggerRsp = Convert-Path $loggerRsp
 
+"Debug: logger.rsp content"
+cat $loggerRsp
+
 eng\common\cibuild.cmd `
     -configuration $Configuration `
     -prepareMachine `
