@@ -173,7 +173,7 @@ export class RazorProjectManager {
             };
             return configuration;
         } catch (error) {
-            this.logger.logError(`Failed to read project config at location ${fileSystemPath}: ${error}`);
+            this.logger.logError(`Failed to read project config at location ${fileSystemPath}.`, error);
         }
 
         return undefined;

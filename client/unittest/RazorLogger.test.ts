@@ -55,14 +55,16 @@ describe('RazorLogger', () => {
         const sink = api.getOutputChannelSink();
         const eventEmitterFactory = new TestEventEmitterFactory();
         const logger = new RazorLogger(api, eventEmitterFactory, Trace.Off);
+        const error = new Error('Extra message');
 
         // Act
-        logger.logError('Test Error');
+        logger.logError('Test Error', error);
 
         // Assert
         const log = getAndAssertLog(sink);
         const lastLog = log[log.length - 1].trim();
-        assert.ok(lastLog.endsWith('Test Error'));
+        assert.ok(lastLog.indexOf('Test Error') >= 0);
+        assert.ok(lastLog.indexOf('Extra message') >= 0);
     });
 
     it('logMessage does not log when trace is Off', () => {
