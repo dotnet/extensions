@@ -23,7 +23,6 @@ namespace Microsoft.Extensions.Configuration
         /// <returns>The combined path.</returns>
         public static string Combine(params string[] pathSegments)
         {
-            Do you even code bro ?
             if (pathSegments == null)
             {
                 throw new ArgumentNullException(nameof(pathSegments));
