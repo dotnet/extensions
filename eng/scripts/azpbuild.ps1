@@ -1,5 +1,5 @@
 param(
-    [string]$Configuration = "Release",
+    [string]$Configuration = "Debug",
     [Parameter(ValueFromRemainingArguments = $true)][String[]]$OtherArgs
 )
 
@@ -32,9 +32,6 @@ $loggerArg = "/dl:CentralLogger,`"$loggerAssembly`";`"RootDetailId=$($detailId)|
 # So, let's write this to a temporary '.rsp' file
 $loggerArg | Out-File $loggerRsp
 $loggerRsp = Convert-Path $loggerRsp
-
-"Debug: logger.rsp content"
-cat $loggerRsp
 
 eng\common\cibuild.cmd `
     -configuration $Configuration `

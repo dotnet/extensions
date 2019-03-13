@@ -32,15 +32,11 @@ curl -sSL https://vstsagenttools.blob.core.windows.net/tools/msbuildlogger/3/msb
 echo "Extracting logger..."
 unzip -p -b "$loggersZip" "$loggerAssemblyName" > "$loggerAssembly"
 
-echo "ls -l $loggerAssembly (debug):"
-ls -l "$loggerAssembly"
-
 # Write a root "logdetail" entry
 detailId=$(uuidgen)
 detailStartTime=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 echo "##vso[task.logdetail id=$detailId;type=Process;name=Arcade Build;order=1;starttime=$detailStartTime;progress=0;state=Initialized;]"
 
 loggerArg="-dl:CentralLogger,\"$loggerAssembly\";\"RootDetailId=$detailId|SolutionDir=$repoRoot\"*ForwardingLogger,\"$loggerAssembly\""
-echo "loggerArg=[$loggerArg] (debug)"
 
 "$repoRoot/eng/common/cibuild.sh" "$@" "$loggerArg"
