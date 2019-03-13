@@ -17,9 +17,11 @@
     <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
   </PropertyGroup>
 
+  <Import Project="eng\FlakyTests.BeforeArcade.props" />
   <Import Project="eng\Workarounds.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\Workarounds.AfterArcade.props" />
+  <Import Project="eng\FlakyTests.AfterArcade.props" />
 
   <PropertyGroup Condition="'$(CopyrightMicrosoft)' != ''">
     <Copyright>$(CopyrightMicrosoft)</Copyright>
