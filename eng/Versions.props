@@ -1,4 +1,3 @@
-
 <!--
 
   This file defines the versions of external dependencies used by this repo.
@@ -37,7 +36,7 @@
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview4.19161.10</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19160.2</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19162.7</MicrosoftDotNetGenAPIPackageVersion>
   </PropertyGroup>
   <!--
 
