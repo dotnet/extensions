@@ -132,7 +132,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     await UpdateAsync(() =>
                     {
                         var filePath = CommonServices.UnconfiguredProject.FullPath;
-                        UpdateProjectUnsafe(new HostProject(filePath, old.Configuration));
+                        UpdateProjectUnsafe(new HostProject(filePath, old.Configuration, old.RootNamespace));
 
                         // This should no-op in the common case, just putting it here for insurance.
                         for (var i = 0; i < oldDocuments.Length; i++)

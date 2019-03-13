@@ -20,6 +20,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         private const string RazorExtensionItemType = "RazorExtension";
         private const string RazorConfigurationItemType = "RazorConfiguration";
         private const string RazorConfigurationItemTypeExtensionsProperty = "Extensions";
+        private const string RootNamespaceProperty = "RootNamespace";
 
         public DefaultRazorProjectHost(
             DotNetProject project,
@@ -40,7 +41,8 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
 
                 if (TryGetConfiguration(projectProperties, projectItems, out var configuration))
                 {
-                    var hostProject = new HostProject(DotNetProject.FileName.FullPath, configuration);
+                    TryGetRootNamespace(projectProperties, out var rootNamespace);
+                    var hostProject = new HostProject(DotNetProject.FileName.FullPath, configuration, rootNamespace);
                     await UpdateHostProjectUnsafeAsync(hostProject).ConfigureAwait(false);
                 }
                 else
@@ -175,6 +177,19 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             }
 
             return extensions.ToArray();
+        }
+
+        // Internal for testing
+        internal static bool TryGetRootNamespace(IMSBuildEvaluatedPropertyCollection projectProperties, out string rootNamespace)
+        {
+            rootNamespace = projectProperties.GetValue(RootNamespaceProperty);
+            if (string.IsNullOrEmpty(rootNamespace))
+            {
+                rootNamespace = null;
+                return false;
+            }
+
+            return true;
         }
     }
 }

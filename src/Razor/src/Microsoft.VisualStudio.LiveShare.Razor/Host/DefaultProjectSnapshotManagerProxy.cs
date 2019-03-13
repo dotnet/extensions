@@ -118,7 +118,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
         {
             var projectWorkspaceState = new ProjectWorkspaceState(project.TagHelpers);
             var projectFilePath = _session.ConvertLocalPathToSharedUri(project.FilePath);
-            var projectHandleProxy = new ProjectSnapshotHandleProxy(projectFilePath, project.Configuration, projectWorkspaceState);
+            var projectHandleProxy = new ProjectSnapshotHandleProxy(projectFilePath, project.Configuration, project.RootNamespace, projectWorkspaceState);
             return projectHandleProxy;
         }
 

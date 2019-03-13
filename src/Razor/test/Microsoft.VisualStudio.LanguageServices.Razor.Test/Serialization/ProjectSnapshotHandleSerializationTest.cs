@@ -34,7 +34,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
                     {
                         new ProjectSystemRazorExtension("Test-Extension1"),
                         new ProjectSystemRazorExtension("Test-Extension2"),
-                    }));
+                    }),
+                "Test");
 
             // Act
             var json = JsonConvert.SerializeObject(snapshot, Converters);
@@ -48,13 +49,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
                 e => Assert.Equal("Test-Extension1", e.ExtensionName),
                 e => Assert.Equal("Test-Extension2", e.ExtensionName));
             Assert.Equal(snapshot.Configuration.LanguageVersion, obj.Configuration.LanguageVersion);
+            Assert.Equal(snapshot.RootNamespace, obj.RootNamespace);
         }
 
         [Fact]
         public void ProjectSnapshotHandleJsonConverter_SerializationWithNulls_CanKindaRoundTrip()
         {
             // Arrange
-            var snapshot = new ProjectSnapshotHandle("Test.csproj", null);
+            var snapshot = new ProjectSnapshotHandle("Test.csproj", null, null);
 
             // Act
             var json = JsonConvert.SerializeObject(snapshot, Converters);
@@ -63,6 +65,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             // Assert
             Assert.Equal(snapshot.FilePath, obj.FilePath);
             Assert.Null(obj.Configuration);
+            Assert.Null(obj.RootNamespace);
         }
     }
 }

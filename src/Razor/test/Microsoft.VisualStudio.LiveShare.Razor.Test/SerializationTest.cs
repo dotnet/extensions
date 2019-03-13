@@ -24,7 +24,8 @@ namespace Microsoft.VisualStudio.LiveShare.Razor
             };
             var projectWorkspaceState = new ProjectWorkspaceState(tagHelpers);
             var expectedConfiguration = RazorConfiguration.Default;
-            var handle = new ProjectSnapshotHandleProxy(new Uri("vsls://some/path/project.csproj"), RazorConfiguration.Default, projectWorkspaceState);
+            var expectedRootNamespace = "project";
+            var handle = new ProjectSnapshotHandleProxy(new Uri("vsls://some/path/project.csproj"), RazorConfiguration.Default, expectedRootNamespace, projectWorkspaceState);
             var converterCollection = new JsonConverterCollection();
             converterCollection.RegisterRazorLiveShareConverters();
             var converters = converterCollection.ToArray();
@@ -39,6 +40,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor
             Assert.Equal(expectedConfiguration.ConfigurationName, deserializedHandle.Configuration.ConfigurationName);
             Assert.Equal(expectedConfiguration.Extensions.Count, deserializedHandle.Configuration.Extensions.Count);
             Assert.Equal(expectedConfiguration.LanguageVersion, deserializedHandle.Configuration.LanguageVersion);
+            Assert.Equal(expectedRootNamespace, deserializedHandle.RootNamespace);
         }
     }
 }

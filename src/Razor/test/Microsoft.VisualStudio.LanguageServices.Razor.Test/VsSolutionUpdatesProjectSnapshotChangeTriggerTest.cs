@@ -18,8 +18,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         public VsSolutionUpdatesProjectSnapshotChangeTriggerTest()
         {
-            SomeProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
-            SomeOtherProject = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_2_0);
+            SomeProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
+            SomeOtherProject = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_2_0, TestProjectData.AnotherProject.RootNamespace);
 
             Workspace = TestWorkspace.Create(w =>
             {
@@ -125,7 +125,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var projectSnapshot = new DefaultProjectSnapshot(
                 ProjectState.Create(
                     Workspace.Services, 
-                    new HostProject("/Some/Unknown/Path.csproj", RazorConfiguration.Default)));
+                    new HostProject("/Some/Unknown/Path.csproj", RazorConfiguration.Default, "Path")));
             var expectedProjectPath = projectSnapshot.FilePath;
 
             var projectService = new Mock<TextBufferProjectService>();

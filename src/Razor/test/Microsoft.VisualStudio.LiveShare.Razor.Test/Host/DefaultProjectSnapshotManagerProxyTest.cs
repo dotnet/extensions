@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
             ProjectSnapshot1 = new DefaultProjectSnapshot(
                 ProjectState.Create(
                     Workspace.Services,
-                    new HostProject("/host/path/to/project1.csproj", RazorConfiguration.Default),
+                    new HostProject("/host/path/to/project1.csproj", RazorConfiguration.Default, "project1"),
                     projectWorkspaceState1));
             var projectWorkspaceState2 = new ProjectWorkspaceState(new[]
             {
@@ -37,7 +37,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
             ProjectSnapshot2 = new DefaultProjectSnapshot(
                 ProjectState.Create(
                     Workspace.Services,
-                    new HostProject("/host/path/to/project2.csproj", RazorConfiguration.Default),
+                    new HostProject("/host/path/to/project2.csproj", RazorConfiguration.Default, "project2"),
                     projectWorkspaceState2));
         }
 

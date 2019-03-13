@@ -12,6 +12,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor
         public ProjectSnapshotHandleProxy(
             Uri filePath,
             RazorConfiguration configuration,
+            string rootNamespace,
             ProjectWorkspaceState projectWorkspaceState)
         {
             if (filePath == null)
@@ -26,12 +27,15 @@ namespace Microsoft.VisualStudio.LiveShare.Razor
 
             FilePath = filePath;
             Configuration = configuration;
+            RootNamespace = rootNamespace;
             ProjectWorkspaceState = projectWorkspaceState;
         }
 
         public Uri FilePath { get; }
 
         public RazorConfiguration Configuration { get; }
+
+        public string RootNamespace { get; }
 
         public ProjectWorkspaceState ProjectWorkspaceState { get; }
 

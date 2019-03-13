@@ -36,15 +36,16 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
                 throw new ArgumentNullException(nameof(projectHandle));
             }
 
-            return Task.FromResult<ProjectSnapshot>(new SerializedProjectSnapshot(projectHandle.FilePath, projectHandle.Configuration));
+            return Task.FromResult<ProjectSnapshot>(new SerializedProjectSnapshot(projectHandle.FilePath, projectHandle.Configuration, projectHandle.RootNamespace));
         }
 
         private class SerializedProjectSnapshot : ProjectSnapshot
         {
-            public SerializedProjectSnapshot(string filePath, RazorConfiguration configuration)
+            public SerializedProjectSnapshot(string filePath, RazorConfiguration configuration, string rootNamespace)
             {
                 FilePath = filePath;
                 Configuration = configuration;
+                RootNamespace = rootNamespace;
 
                 Version = VersionStamp.Default;
             }
@@ -55,6 +56,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
 
             public override string FilePath { get; }
 
+            public override string RootNamespace { get; }
 
             public override VersionStamp Version { get; }
 

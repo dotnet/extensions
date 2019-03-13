@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var services = TestWorkspace.Create().Services;
-            var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default);
+            var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default, "project");
             var projectState = ProjectState.Create(services, hostProject);
             var project = new DefaultProjectSnapshot(projectState);
 
@@ -47,7 +47,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var services = TestWorkspace.Create().Services;
-            var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default);
+            var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default, "project");
             var projectState = ProjectState.Create(services, hostProject);
             var project = new DefaultProjectSnapshot(projectState);
 

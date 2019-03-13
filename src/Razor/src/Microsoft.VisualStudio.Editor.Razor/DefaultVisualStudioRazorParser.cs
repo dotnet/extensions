@@ -464,6 +464,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
+            builder.SetRootNamespace(_documentTracker.ProjectSnapshot?.RootNamespace);
             builder.Features.Add(new VisualStudioParserOptionsFeature(_documentTracker.EditorSettings));
             builder.Features.Add(new VisualStudioTagHelperFeature(_documentTracker.TagHelpers));
         }

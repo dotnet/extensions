@@ -38,6 +38,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override string FilePath { get; }
 
+        public override string RootNamespace { get; }
+
         public override VersionStamp Version { get; } = VersionStamp.Default;
 
         public override IReadOnlyList<TagHelperDescriptor> TagHelpers { get; } = Array.Empty<TagHelperDescriptor>();

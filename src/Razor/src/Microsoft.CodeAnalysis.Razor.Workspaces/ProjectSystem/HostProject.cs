@@ -8,7 +8,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class HostProject
     {
-        public HostProject(string projectFilePath, RazorConfiguration razorConfiguration)
+        public HostProject(string projectFilePath, RazorConfiguration razorConfiguration, string rootNamespace)
         {
             if (projectFilePath == null)
             {
@@ -22,10 +22,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             FilePath = projectFilePath;
             Configuration = razorConfiguration;
+            RootNamespace = rootNamespace;
         }
 
         public RazorConfiguration Configuration { get; }
 
         public string FilePath { get; }
+
+        public string RootNamespace { get; }
     }
 }

@@ -47,6 +47,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var projectHandle = new ProjectSnapshotHandleProxy(
                 new Uri("vsls:/path/project.csproj"),
                 RazorConfiguration.Default,
+                "project",
                 ProjectWorkspaceStateWithTagHelpers);
             var state = new ProjectSnapshotManagerProxyState(new[] { projectHandle });
             var hostProjectManagerProxy = Mock.Of<IProjectSnapshotManagerProxy>(
@@ -74,6 +75,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var newHandle = new ProjectSnapshotHandleProxy(
                 new Uri("vsls:/path/project.csproj"),
                 RazorConfiguration.Default,
+                "project",
                 ProjectWorkspaceStateWithTagHelpers);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
@@ -99,13 +101,14 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var olderHandle = new ProjectSnapshotHandleProxy(
                 new Uri("vsls:/path/project.csproj"),
                 RazorConfiguration.Default,
+                "project",
                 projectWorkspaceState: null);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
                 Mock.Of<IProjectSnapshotManagerProxy>(),
                 ProjectSnapshotManager);
-            var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default);
+            var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default, "project");
             ProjectSnapshotManager.ProjectAdded(hostProject);
             var args = new ProjectChangeEventProxyArgs(olderHandle, newer: null, ProjectProxyChangeKind.ProjectRemoved);
 
@@ -123,18 +126,20 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var oldHandle = new ProjectSnapshotHandleProxy(
                 new Uri("vsls:/path/project.csproj"),
                 RazorConfiguration.Default,
+                "project",
                 projectWorkspaceState: null);
             var newConfiguration = RazorConfiguration.Create(RazorLanguageVersion.Version_1_0, "Custom-1.0", Enumerable.Empty<RazorExtension>());
             var newHandle = new ProjectSnapshotHandleProxy(
                 oldHandle.FilePath,
                 newConfiguration,
+                oldHandle.RootNamespace,
                 oldHandle.ProjectWorkspaceState);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
                 Mock.Of<IProjectSnapshotManagerProxy>(),
                 ProjectSnapshotManager);
-            var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default);
+            var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default, "project");
             ProjectSnapshotManager.ProjectAdded(hostProject);
             ProjectSnapshotManager.ProjectConfigurationChanged(hostProject);
             var args = new ProjectChangeEventProxyArgs(oldHandle, newHandle, ProjectProxyChangeKind.ProjectChanged);
@@ -156,18 +161,20 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var oldHandle = new ProjectSnapshotHandleProxy(
                 new Uri("vsls:/path/project.csproj"),
                 RazorConfiguration.Default,
+                "project",
                 ProjectWorkspaceState.Default);
             var newProjectWorkspaceState = ProjectWorkspaceStateWithTagHelpers;
             var newHandle = new ProjectSnapshotHandleProxy(
                 oldHandle.FilePath,
                 oldHandle.Configuration,
+                oldHandle.RootNamespace,
                 newProjectWorkspaceState);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
                 Mock.Of<IProjectSnapshotManagerProxy>(),
                 ProjectSnapshotManager);
-            var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default);
+            var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default, "project");
             ProjectSnapshotManager.ProjectAdded(hostProject);
             ProjectSnapshotManager.ProjectWorkspaceStateChanged(hostProject.FilePath, oldHandle.ProjectWorkspaceState);
             var args = new ProjectChangeEventProxyArgs(oldHandle, newHandle, ProjectProxyChangeKind.ProjectChanged);

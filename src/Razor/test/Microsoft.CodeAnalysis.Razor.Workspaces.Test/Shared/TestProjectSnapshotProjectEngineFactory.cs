@@ -14,7 +14,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
         {
-            return Engine ?? RazorProjectEngine.Create(configuration, fileSystem, configure ?? Configure);
+            return Engine ?? RazorProjectEngine.Create(configuration, fileSystem, b =>
+            {
+                configure(b);
+                Configure(b);
+            });
         }
 
         public override IProjectEngineFactory FindFactory(ProjectSnapshot project)

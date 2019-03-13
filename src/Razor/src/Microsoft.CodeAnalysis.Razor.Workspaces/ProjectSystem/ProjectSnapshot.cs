@@ -14,6 +14,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public abstract string FilePath { get; }
 
+        public virtual string RootNamespace { get; }
+
         public abstract VersionStamp Version { get; }
 
         public virtual IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }

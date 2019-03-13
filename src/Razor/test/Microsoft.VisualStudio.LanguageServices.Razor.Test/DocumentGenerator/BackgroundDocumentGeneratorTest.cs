@@ -24,8 +24,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 TestProjectData.AnotherProjectFile1,
             };
 
-            HostProject1 = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
-            HostProject2 = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
+            HostProject1 = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
+            HostProject2 = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.AnotherProject.RootNamespace);
 
             DynamicFileInfoProvider = new RazorDynamicFileInfoProvider(new DefaultDocumentServiceProviderFactory());
         }

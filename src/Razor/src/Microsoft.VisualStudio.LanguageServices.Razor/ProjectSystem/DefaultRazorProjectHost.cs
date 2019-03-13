@@ -29,6 +29,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     [Export(ExportContractNames.Scopes.UnconfiguredProject, typeof(IProjectDynamicLoadComponent))]
     internal class DefaultRazorProjectHost : RazorProjectHostBase
     {
+        private const string ConfigurationGeneralSchemaName = "ConfigurationGeneral";
+        private const string RootNamespaceProperty = "RootNamespace";
         private IDisposable _subscription;
 
         [ImportingConstructor]
@@ -72,6 +74,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     Rules.RazorExtension.SchemaName,
                     Rules.RazorComponentWithTargetPath.SchemaName,
                     Rules.RazorGenerateWithTargetPath.SchemaName,
+                    ConfigurationGeneralSchemaName,
                 });
         }
 
@@ -99,7 +102,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 {
                     if (TryGetConfiguration(update.Value.CurrentState, out var configuration))
                     {
-                        var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
+                        TryGetRootNamespace(update.Value.CurrentState, out var rootNamespace);
+                        var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration, rootNamespace);
 
                         // We need to deal with the case where the project was uninitialized, but now
                         // is valid for Razor. In that case we might have previously seen all of the documents
@@ -303,6 +307,33 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             extensions = extensionList.ToArray();
+            return true;
+        }
+
+        // Internal for testing
+        internal static bool TryGetRootNamespace(
+            IImmutableDictionary<string, IProjectRuleSnapshot> state,
+            out string rootNamespace)
+        {
+            if (!state.TryGetValue(ConfigurationGeneralSchemaName, out var rule))
+            {
+                rootNamespace = null;
+                return false;
+            }
+
+            if (!rule.Properties.TryGetValue(RootNamespaceProperty, out var rootNamespaceValue))
+            {
+                rootNamespace = null;
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(rootNamespaceValue))
+            {
+                rootNamespace = null;
+                return false;
+            }
+
+            rootNamespace = rootNamespaceValue;
             return true;
         }
         

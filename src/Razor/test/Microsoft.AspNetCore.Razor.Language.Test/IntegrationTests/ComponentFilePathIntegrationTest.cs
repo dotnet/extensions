@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Empty(result.Diagnostics);
 
             var type = Assert.Single(result.Assembly.GetTypes());
-            Assert.Equal(DefaultBaseNamespace, type.Namespace);
+            Assert.Equal(DefaultRootNamespace, type.Namespace);
             Assert.Equal("Filename_with_spaces", type.Name);
         }
 

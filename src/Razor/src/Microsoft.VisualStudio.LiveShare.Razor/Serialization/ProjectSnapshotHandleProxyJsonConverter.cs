@@ -27,10 +27,11 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Serialization
 
             var obj = JObject.Load(reader);
             var filePath = obj[nameof(ProjectSnapshotHandleProxy.FilePath)].ToObject<Uri>(serializer);
+            var rootNamespace = obj[nameof(ProjectSnapshotHandleProxy.RootNamespace)].ToObject<string>(serializer);
             var projectWorkspaceState = obj[nameof(ProjectSnapshotHandleProxy.ProjectWorkspaceState)].ToObject<ProjectWorkspaceState>(serializer);
             var configuration = obj[nameof(ProjectSnapshotHandleProxy.Configuration)].ToObject<RazorConfiguration>(serializer);
 
-            return new ProjectSnapshotHandleProxy(filePath, configuration, projectWorkspaceState);
+            return new ProjectSnapshotHandleProxy(filePath, configuration, rootNamespace, projectWorkspaceState);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -41,6 +42,17 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Serialization
 
             writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.FilePath));
             writer.WriteValue(handle.FilePath);
+
+            if (handle.RootNamespace == null)
+            {
+                writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.RootNamespace));
+                writer.WriteNull();
+            }
+            else
+            {
+                writer.WritePropertyName(nameof(ProjectSnapshotHandleProxy.RootNamespace));
+                writer.WriteValue(handle.RootNamespace);
+            }
 
             if (handle.ProjectWorkspaceState == null)
             {

@@ -18,8 +18,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public ProjectStateTest()
         {
-            HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0);
-            HostProjectWithConfigurationChange = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
+            HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0, TestProjectData.SomeProject.RootNamespace);
+            HostProjectWithConfigurationChange = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
             ProjectWorkspaceState = new ProjectWorkspaceState(new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),

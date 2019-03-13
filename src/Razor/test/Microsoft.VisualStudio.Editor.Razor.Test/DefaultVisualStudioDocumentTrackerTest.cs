@@ -28,6 +28,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             FilePath = TestProjectData.SomeProjectFile1.FilePath;
             ProjectPath = TestProjectData.SomeProject.FilePath;
+            RootNamespace = TestProjectData.SomeProject.RootNamespace;
 
             ImportDocumentManager = Mock.Of<ImportDocumentManager>();
             WorkspaceEditorSettings = new DefaultWorkspaceEditorSettings(Mock.Of<ForegroundDispatcher>(), Mock.Of<EditorSettingsManager>());
@@ -39,9 +40,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
             
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Workspace) { AllowNotifyListeners = true };
 
-            HostProject = new HostProject(ProjectPath, FallbackRazorConfiguration.MVC_2_1);
-            UpdatedHostProject = new HostProject(ProjectPath, FallbackRazorConfiguration.MVC_2_0);
-            OtherHostProject = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_2_0);
+            HostProject = new HostProject(ProjectPath, FallbackRazorConfiguration.MVC_2_1, RootNamespace);
+            UpdatedHostProject = new HostProject(ProjectPath, FallbackRazorConfiguration.MVC_2_0, RootNamespace);
+            OtherHostProject = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_2_0, TestProjectData.AnotherProject.RootNamespace);
 
             DocumentTracker = new DefaultVisualStudioDocumentTracker(
                 Dispatcher,
@@ -61,6 +62,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private string FilePath { get; }
 
         private string ProjectPath { get; }
+
+        private string RootNamespace { get; }
 
         private HostProject HostProject { get; }
 

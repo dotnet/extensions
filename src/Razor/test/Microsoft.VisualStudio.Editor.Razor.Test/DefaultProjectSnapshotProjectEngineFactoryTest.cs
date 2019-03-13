@@ -24,21 +24,21 @@ namespace Microsoft.CodeAnalysis.Razor
 
             ProjectWorkspaceState = ProjectWorkspaceState.Default;
 
-            HostProject_For_1_0 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_0);
-            HostProject_For_1_1 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_1);
-            HostProject_For_2_0 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_2_0);
+            HostProject_For_1_0 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_0, "Test");
+            HostProject_For_1_1 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_1, "Test");
+            HostProject_For_2_0 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_2_0, "Test");
 
             HostProject_For_2_1 = new HostProject(
                 "/TestPath/SomePath/Test.csproj",
-                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "MVC-2.1", Array.Empty<RazorExtension>()));
+                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "MVC-2.1", Array.Empty<RazorExtension>()), "Test");
 
             HostProject_For_3_0 = new HostProject(
                 "/TestPath/SomePath/Test.csproj",
-                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_3_0, "MVC-3.0", Array.Empty<RazorExtension>()));
+                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_3_0, "MVC-3.0", Array.Empty<RazorExtension>()), "Test");
 
             HostProject_For_UnknownConfiguration = new HostProject(
                 "/TestPath/SomePath/Test.csproj",
-                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Random-0.1", Array.Empty<RazorExtension>()));
+                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Random-0.1", Array.Empty<RazorExtension>()), rootNamespace: null);
 
             Snapshot_For_1_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_0, ProjectWorkspaceState));
             Snapshot_For_1_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_1, ProjectWorkspaceState));

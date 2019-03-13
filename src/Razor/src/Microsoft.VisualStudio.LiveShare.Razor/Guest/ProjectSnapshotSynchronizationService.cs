@@ -87,7 +87,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             if (args.Kind == ProjectProxyChangeKind.ProjectAdded)
             {
                 var guestPath = ResolveGuestPath(args.ProjectFilePath);
-                var hostProject = new HostProject(guestPath, args.Newer.Configuration);
+                var hostProject = new HostProject(guestPath, args.Newer.Configuration, args.Newer.RootNamespace);
                 _projectSnapshotManager.ProjectAdded(hostProject);
 
                 if (args.Newer.ProjectWorkspaceState != null)
@@ -98,7 +98,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             else if (args.Kind == ProjectProxyChangeKind.ProjectRemoved)
             {
                 var guestPath = ResolveGuestPath(args.ProjectFilePath);
-                var hostProject = new HostProject(guestPath, args.Older.Configuration);
+                var hostProject = new HostProject(guestPath, args.Older.Configuration, args.Older.RootNamespace);
                 _projectSnapshotManager.ProjectRemoved(hostProject);
             }
             else if (args.Kind == ProjectProxyChangeKind.ProjectChanged)
@@ -106,7 +106,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 if (!args.Older.Configuration.Equals(args.Newer.Configuration))
                 {
                     var guestPath = ResolveGuestPath(args.Newer.FilePath);
-                    var hostProject = new HostProject(guestPath, args.Newer.Configuration);
+                    var hostProject = new HostProject(guestPath, args.Newer.Configuration, args.Newer.RootNamespace);
                     _projectSnapshotManager.ProjectConfigurationChanged(hostProject);
                 }
                 else if (args.Older.ProjectWorkspaceState != args.Newer.ProjectWorkspaceState ||
@@ -127,7 +127,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             foreach (var projectHandle in projectHandles)
             {
                 var guestPath = ResolveGuestPath(projectHandle.FilePath);
-                var hostProject = new HostProject(guestPath, projectHandle.Configuration);
+                var hostProject = new HostProject(guestPath, projectHandle.Configuration, projectHandle.RootNamespace);
                 _projectSnapshotManager.ProjectAdded(hostProject);
 
                 if (projectHandle.ProjectWorkspaceState != null)

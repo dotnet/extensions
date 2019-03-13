@@ -52,7 +52,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
                 }
 
                 var configuration = FallbackRazorConfiguration.SelectConfiguration(version);
-                var hostProject = new HostProject(DotNetProject.FileName.FullPath, configuration);
+                var hostProject = new HostProject(DotNetProject.FileName.FullPath, configuration, rootNamespace: null);
                 await UpdateHostProjectUnsafeAsync(hostProject).ConfigureAwait(false);
             });
         }

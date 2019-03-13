@@ -19,8 +19,8 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
     {
         public ProjectBuildChangeTriggerTest()
         {
-            SomeProject = new HostProject("c:\\SomeProject\\SomeProject.csproj", FallbackRazorConfiguration.MVC_1_0);
-            SomeOtherProject = new HostProject("c:\\SomeOtherProject\\SomeOtherProject.csproj", FallbackRazorConfiguration.MVC_2_0);
+            SomeProject = new HostProject("c:\\SomeProject\\SomeProject.csproj", FallbackRazorConfiguration.MVC_1_0, "SomeProject");
+            SomeOtherProject = new HostProject("c:\\SomeOtherProject\\SomeOtherProject.csproj", FallbackRazorConfiguration.MVC_2_0, "SomeOtherProject");
 
             Workspace = TestWorkspace.Create(w =>
             {
@@ -79,7 +79,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             var projectSnapshot = new DefaultProjectSnapshot(
                 ProjectState.Create(
                     Workspace.Services,
-                    new HostProject(expectedPath, RazorConfiguration.Default)));
+                    new HostProject(expectedPath, RazorConfiguration.Default, "Project")));
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Returns(Workspace);

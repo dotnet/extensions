@@ -397,7 +397,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private RazorProjectEngine CreateProjectEngine()
         {
             var factory = Services.GetRequiredService<ProjectSnapshotProjectEngineFactory>();
-            return factory.Create(HostProject.Configuration, Path.GetDirectoryName(HostProject.FilePath), configure: null);
+            return factory.Create(
+                HostProject.Configuration,
+                Path.GetDirectoryName(HostProject.FilePath),
+                configure: c => c.SetRootNamespace(HostProject.RootNamespace));
         }
 
         public List<string> GetImportDocumentTargetPaths(string targetPath)

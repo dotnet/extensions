@@ -39,7 +39,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
             codeDocument.SetFileKind(FileKinds.Component);
 
-            var projectEngine = CreateProjectEngine();
+            var projectEngine = CreateProjectEngine(b =>
+            {
+                b.SetRootNamespace("MyApp");
+            });
+
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
             var pass = new ComponentDocumentClassifierPass
             {
@@ -63,7 +67,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
             codeDocument.SetFileKind(FileKinds.Component);
 
-            var projectEngine = CreateProjectEngine();
+            var projectEngine = CreateProjectEngine(b =>
+            {
+                b.SetRootNamespace("MyApp");
+            });
+
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
             var pass = new ComponentDocumentClassifierPass
             {
@@ -90,7 +98,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
             codeDocument.SetFileKind(FileKinds.Component);
 
-            var projectEngine = CreateProjectEngine();
+            var projectEngine = CreateProjectEngine(b =>
+            {
+                b.SetRootNamespace("MyApp");
+            });
+
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
             var pass = new ComponentDocumentClassifierPass
             {
@@ -111,11 +123,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public void ComponentDocumentClassifierPass_SanitizesClassName()
         {
             // Arrange
-            var properties = new RazorSourceDocumentProperties(filePath: @"x:\path.with+invalid-chars.razor", relativePath: "path.with+invalid-chars.razor");
+            var properties = new RazorSourceDocumentProperties(filePath: @"x:\My.+App\path.with+invalid-chars.razor", relativePath: "path.with+invalid-chars.razor");
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("some-content", properties));
             codeDocument.SetFileKind(FileKinds.Component);
 
-            var projectEngine = CreateProjectEngine();
+            var projectEngine = CreateProjectEngine(b =>
+            {
+                b.SetRootNamespace("My.+App");
+            });
+
             var irDocument = CreateIRDocument(projectEngine, codeDocument);
             var pass = new ComponentDocumentClassifierPass
             {
@@ -129,6 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Assert
             Assert.Equal("path_with_invalid_chars", visitor.Class.ClassName);
+            Assert.Equal("My._App", visitor.Namespace.Content);
         }
 
         [Fact]

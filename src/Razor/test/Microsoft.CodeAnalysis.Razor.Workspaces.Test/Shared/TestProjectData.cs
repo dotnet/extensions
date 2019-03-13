@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             var baseDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "c:\\users\\example\\src" : "/home/example";
 
-            SomeProject = new HostProject(Path.Combine(baseDirectory, "SomeProject", "SomeProject.csproj"), RazorConfiguration.Default);
+            SomeProject = new HostProject(Path.Combine(baseDirectory, "SomeProject", "SomeProject.csproj"), RazorConfiguration.Default, "SomeProject");
             SomeProjectFile1 = new HostDocument(Path.Combine(baseDirectory, "SomeProject", "File1.cshtml"), "File1.cshtml", FileKinds.Legacy);
             SomeProjectFile2 = new HostDocument(Path.Combine(baseDirectory, "SomeProject", "File2.cshtml"), "File2.cshtml", FileKinds.Legacy);
             SomeProjectImportFile = new HostDocument(Path.Combine(baseDirectory, "SomeProject", "_Imports.cshtml"), "_Imports.cshtml", FileKinds.Legacy);
@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Razor
             SomeProjectNestedComponentFile3 = new HostDocument(Path.Combine(baseDirectory, "SomeProject", "Nested", "File3.razor"), "Nested\\File1.razor", FileKinds.Component);
             SomeProjectNestedComponentFile4 = new HostDocument(Path.Combine(baseDirectory, "SomeProject", "Nested", "File4.razor"), "Nested\\File2.razor", FileKinds.Component);
 
-            AnotherProject = new HostProject(Path.Combine(baseDirectory, "AnotherProject", "AnotherProject.csproj"), RazorConfiguration.Default);
+            AnotherProject = new HostProject(Path.Combine(baseDirectory, "AnotherProject", "AnotherProject.csproj"), RazorConfiguration.Default, "AnotherProject");
             AnotherProjectFile1 = new HostDocument(Path.Combine(baseDirectory, "AnotherProject", "File1.cshtml"), "File1.cshtml", FileKinds.Legacy);
             AnotherProjectFile2 = new HostDocument(Path.Combine(baseDirectory, "AnotherProject", "File2.cshtml"), "File2.cshtml", FileKinds.Legacy);
             AnotherProjectImportFile = new HostDocument(Path.Combine(baseDirectory, "AnotherProject", "_Imports.cshtml"), "_Imports.cshtml", FileKinds.Legacy);

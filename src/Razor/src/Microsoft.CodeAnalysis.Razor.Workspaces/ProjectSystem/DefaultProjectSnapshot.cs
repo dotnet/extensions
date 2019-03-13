@@ -35,6 +35,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override string FilePath => State.HostProject.FilePath;
 
+        public override string RootNamespace => State.HostProject.RootNamespace;
+
         public HostProject HostProject => State.HostProject;
 
         public override VersionStamp Version => State.Version;
