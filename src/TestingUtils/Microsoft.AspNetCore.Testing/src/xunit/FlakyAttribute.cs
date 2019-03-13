@@ -68,8 +68,8 @@ namespace Microsoft.AspNetCore.Testing.xunit
         /// At least one filter is required.
         /// </remarks>
         /// <param name="gitHubIssueUrl">The URL to a GitHub issue tracking this flaky test.</param>
-        /// <param name="firstFilter">The first filter that indicates where the test is flaky.</param>
-        /// <param name="additionalFilters">A list of filters that define where this test is flaky. Use values in <see cref="FlakyOn"/>.</param>
+        /// <param name="firstFilter">The first filter that indicates where the test is flaky. Use a value from <see cref="FlakyOn"/>.</param>
+        /// <param name="additionalFilters">A list of additional filters that define where this test is flaky. Use values in <see cref="FlakyOn"/>.</param>
         public FlakyAttribute(string gitHubIssueUrl, string firstFilter, params string[] additionalFilters)
         {
             if(string.IsNullOrEmpty(gitHubIssueUrl))
