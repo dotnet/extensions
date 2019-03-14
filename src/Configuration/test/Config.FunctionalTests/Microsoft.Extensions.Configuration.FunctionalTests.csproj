@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\testassets\Test.Common\Microsoft.Extensions.Configuration.Test.Common.csproj" />
+    <ProjectReference Include="..\Config.Test.Common/Microsoft.Extensions.Configuration.Test.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
