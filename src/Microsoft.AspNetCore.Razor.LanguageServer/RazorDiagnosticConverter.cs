@@ -53,13 +53,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return null;
             }
 
-            var startPosition = sourceText.Lines.GetLinePosition(sourceSpan.AbsoluteIndex);
+            var spanStartIndex = NormalizeIndex(sourceSpan.AbsoluteIndex);
+            var startPosition = sourceText.Lines.GetLinePosition(spanStartIndex);
             var start = new Position()
             {
                 Line = startPosition.Line,
                 Character = startPosition.Character,
             };
-            var endPosition = sourceText.Lines.GetLinePosition(sourceSpan.AbsoluteIndex + sourceSpan.Length);
+
+            var spanEndIndex = NormalizeIndex(sourceSpan.AbsoluteIndex + sourceSpan.Length);
+            var endPosition = sourceText.Lines.GetLinePosition(spanEndIndex);
             var end = new Position()
             {
                 Line = endPosition.Line,
@@ -72,6 +75,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             };
 
             return range;
+
+            int NormalizeIndex(int index)
+            {
+                if (index >= sourceText.Length)
+                {
+                    // Span start index is past the end of the document. Roslyn and VSCode don't support 
+                    // virtual positions that don't exist on the document; normalize to the last character.
+                    index = sourceText.Length - 1;
+                }
+
+                return index;
+            }
         }
     }
 }
