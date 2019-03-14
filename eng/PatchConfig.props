@@ -9,5 +9,9 @@
       Microsoft.Extensions.Logging.AzureAppServices
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.4' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 
 </Project>
