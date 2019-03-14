@@ -9,6 +9,36 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpBlockTest : ParserTestBase
     {
         [Fact]
+        public void LocalFunctionsWithRazor()
+        {
+            ParseDocumentTest(
+@"@{
+    void Foo() 
+    {
+        var time = DateTime.Now
+        <strong>Hello the time is @time</strong>
+    }
+}");
+        }
+
+        [Fact]
+        public void LocalFunctionsWithGenerics()
+        {
+            ParseDocumentTest(
+@"@{
+    void Foo()
+    {
+        <strong>Hello the time is @{ DisplayCount(new List<string>()); }</strong>
+    }
+
+    void DisplayCount<T>(List<T> something)
+    {
+        <text>The count is something.Count</text>
+    }
+}");
+        }
+
+        [Fact]
         public void NestedCodeBlockWithCSharpAt()
         {
             ParseDocumentTest("@{ if (true) { var val = @x; if (val != 3) { } } }");

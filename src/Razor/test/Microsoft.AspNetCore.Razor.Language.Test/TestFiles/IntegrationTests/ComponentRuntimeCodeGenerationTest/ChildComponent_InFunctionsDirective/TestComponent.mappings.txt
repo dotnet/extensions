@@ -1,0 +1,23 @@
+Source Location: (87:3,2 [32] x:\dir\subdir\Test\TestComponent.cshtml)
+| RenderChildComponent(builder); |
+Generated Location: (657:18,2 [32] )
+| RenderChildComponent(builder); |
+
+Source Location: (136:5,12 [67] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    void RenderChildComponent(RenderTreeBuilder builder)
+    {
+|
+Generated Location: (834:25,12 [67] )
+|
+    void RenderChildComponent(RenderTreeBuilder builder)
+    {
+|
+
+Source Location: (228:9,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+|    }
+|
+Generated Location: (1156:36,0 [7] )
+|    }
+|
+

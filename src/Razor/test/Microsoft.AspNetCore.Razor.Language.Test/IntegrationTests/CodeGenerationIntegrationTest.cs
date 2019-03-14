@@ -47,6 +47,18 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         [Fact]
+        public void Markup_InCodeBlocks_Runtime()
+        {
+            RunTimeTest();
+        }
+
+        [Fact]
+        public void Markup_InCodeBlocksWithTagHelper_Runtime()
+        {
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
         public void StringLiterals_Runtime()
         {
             RunTimeTest();
@@ -501,6 +513,18 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void Templates_DesignTime()
         {
             DesignTimeTest();
+        }
+
+        [Fact]
+        public void Markup_InCodeBlocks_DesignTime()
+        {
+            DesignTimeTest();
+        }
+
+        [Fact]
+        public void Markup_InCodeBlocksWithTagHelper_DesignTime()
+        {
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
 
         [Fact]

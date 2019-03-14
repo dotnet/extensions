@@ -10,14 +10,9 @@ RazorDocument - [0..10)::10 - [@{ class }]
                     RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..9)::7
-                        RazorDirective - [2..8)::6
-                            CSharpTransition - [2..2)::0
-                                Transition;[<Missing>];
-                            RazorDirectiveBody - [2..8)::6
-                                RazorMetaCode - [2..8)::6 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEOL
-                                    Whitespace;[ ];
-                                    Keyword;[class];
-                        CSharpStatementLiteral - [8..9)::1 - [ ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                        CSharpStatementLiteral - [2..9)::7 - [ class ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            Whitespace;[ ];
+                            Keyword;[class];
                             Whitespace;[ ];
                     RazorMetaCode - [9..10)::1 - Gen<None> - SpanEditHandler;Accepts:None
                         RightBrace;[}];

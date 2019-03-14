@@ -20,6 +20,76 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         #region Basics
 
         [Fact]
+        public void ChildComponent_InFunctionsDirective()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+@using Microsoft.AspNetCore.Components.RenderTree;
+
+@{ RenderChildComponent(builder); }
+
+@functions {
+    void RenderChildComponent(RenderTreeBuilder builder)
+    {
+        <MyComponent />
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ChildComponent_InLocalFunction()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+@using Microsoft.AspNetCore.Components.RenderTree;
+@{
+    void RenderChildComponent()
+    {
+        <MyComponent />
+    }
+}
+
+@{ RenderChildComponent(); }
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_Simple()
         {
             // Arrange

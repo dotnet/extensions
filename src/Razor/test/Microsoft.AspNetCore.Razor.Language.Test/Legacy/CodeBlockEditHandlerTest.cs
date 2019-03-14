@@ -25,11 +25,53 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         }
 
         [Fact]
+        public void IsAcceptableReplacement_AcceptableReplacement_WithMarkup_ReturnsTrue()
+        {
+            // Arrange
+            var span = GetSpan(SourceLocation.Zero, "Hello <div>@world</div>.");
+            var change = new SourceChange(new SourceSpan(0, 5), "H3ll0");
+
+            // Act
+            var result = CodeBlockEditHandler.IsAcceptableReplacement(span, change);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
         public void IsAcceptableReplacement_ChangeModifiesInvalidContent_ReturnsFalse()
         {
             // Arrange
             var span = GetSpan(SourceLocation.Zero, "Hello {world}.");
             var change = new SourceChange(new SourceSpan(6, 1), "!");
+
+            // Act
+            var result = CodeBlockEditHandler.IsAcceptableReplacement(span, change);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsAcceptableReplacement_ChangeAddsOpenAngle_ReturnsFalse()
+        {
+            // Arrange
+            var span = GetSpan(SourceLocation.Zero, "Hello <div></div>.");
+            var change = new SourceChange(new SourceSpan(6, 1), "<");
+
+            // Act
+            var result = CodeBlockEditHandler.IsAcceptableReplacement(span, change);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsAcceptableReplacement_ChangeToComment_ReturnsFalse()
+        {
+            // Arrange
+            var span = GetSpan(SourceLocation.Zero, "Hello @");
+            var change = new SourceChange(new SourceSpan(6, 1), "@*");
 
             // Act
             var result = CodeBlockEditHandler.IsAcceptableReplacement(span, change);
@@ -163,6 +205,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         }
 
         [Fact]
+        public void IsAcceptableInsertion_InvalidChange_Transition_ReturnsFalse()
+        {
+            // Arrange
+            var change = new SourceChange(new SourceSpan(0, 0), "@");
+
+            // Act
+            var result = CodeBlockEditHandler.IsAcceptableInsertion(change);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsAcceptableInsertion_InvalidChange_TemplateTransition_ReturnsFalse()
+        {
+            // Arrange
+            var change = new SourceChange(new SourceSpan(0, 0), "<");
+
+            // Act
+            var result = CodeBlockEditHandler.IsAcceptableInsertion(change);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
         public void IsAcceptableInsertion_NotInsert_ReturnsFalse()
         {
             // Arrange
@@ -179,6 +247,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         [InlineData("{")]
         [InlineData("}")]
         [InlineData("if (true) { }")]
+        [InlineData("@<div></div>")]
+        [InlineData("<div></div>")]
+        [InlineData("*")]
         public void ContainsInvalidContent_InvalidContent_ReturnsTrue(string content)
         {
             // Arrange

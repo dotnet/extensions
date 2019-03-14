@@ -1,0 +1,23 @@
+Source Location: (85:2,2 [42] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    void RenderChildComponent()
+    {
+|
+Generated Location: (657:18,2 [42] )
+|
+    void RenderChildComponent()
+    {
+|
+
+Source Location: (152:6,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+|    }
+|
+Generated Location: (969:29,0 [7] )
+|    }
+|
+
+Source Location: (166:9,2 [25] x:\dir\subdir\Test\TestComponent.cshtml)
+| RenderChildComponent(); |
+Generated Location: (1105:35,2 [25] )
+| RenderChildComponent(); |
+
