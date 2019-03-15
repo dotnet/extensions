@@ -103,7 +103,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return Task.CompletedTask;
             }
 
-            if (!context.Document.FilePath.EndsWith(".cshtml", FilePathComparison.Instance) && !context.Document.FilePath.EndsWith(".razor", FilePathComparison.Instance))
+            if (!context.Document.FilePath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase) && !context.Document.FilePath.EndsWith(".razor", FilePathComparison.Instance))
             {
                 // Not a Razor file.
                 return Task.CompletedTask;
