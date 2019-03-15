@@ -25,6 +25,16 @@
           }
         }
       },
+      "Microsoft.Extensions.Configuration.Binder": {
+        "Exclusions": {
+          "ASSEMBLY_FILE_VERSION_MISMATCH": {
+            "lib/netstandard2.0/Microsoft.Extensions.Configuration.Binder.dll": "Enter justification"
+          },
+          "ASSEMBLY_VERSION_MISMATCH": {
+            "lib/netstandard2.0/Microsoft.Extensions.Configuration.Binder.dll": "Enter justification"
+          }
+        }
+      },
       "Microsoft.Extensions.Configuration.EnvironmentVariables": {
        "Exclusions": {
           "ASSEMBLY_FILE_VERSION_MISMATCH": {

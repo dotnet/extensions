@@ -93,7 +93,6 @@ namespace PackageBaselineGenerator
                     }
                 }
 
-
                 using (var reader = new PackageArchiveReader(nupkgPath))
                 {
                     doc.Root.Add(new XComment($" Package: {id}"));
@@ -126,7 +125,9 @@ namespace PackageBaselineGenerator
             {
                 doc.Save(writer);
             }
+
             Console.WriteLine($"Generated file in {output}");
+
             return 0;
         }
     }
