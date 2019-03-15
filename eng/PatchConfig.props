@@ -17,4 +17,10 @@
     </PackagesInPatch>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.10' ">
+    <PackagesInPatch>
+      Microsoft.Extensions.Configuration.Binder;
+    </PackagesInPatch>
+  </PropertyGroup>
+  
 </Project>
