@@ -29,12 +29,30 @@
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
+
+    <!-- Specifies if reference assembly projects should be resolved for Reference items -->
+    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' == 'true'">true</ReferenceReferenceAssemblies>
+    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
+
+    <!-- Specifies if implementation assembly projects should be resolved for Reference items -->
+    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true'">true</ReferenceImplementationAssemblies>
+    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' ">false</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
+  <ItemDefinitionGroup>
+    <Reference>
+      <IsSharedSource></IsSharedSource>
+    </Reference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
+    <Reference Update="@(Reference)">
+      <IsSharedSource Condition="'%(IsSharedSource)' == '' AND $([System.String]::new('%(Identity)').EndsWith('.Sources'))">true</IsSharedSource>
+    </Reference>
+
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
-    <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
+    <_OriginalReferences Include="@(Reference)" />
 
     <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 
@@ -43,7 +61,14 @@
       Include="@(ProjectReferenceProvider)"
       Exclude="@(UnusedProjectReferenceProvider)" />
 
-    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
+    <!-- Use ref assembly project paths for ref assembly projects -->
+    <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
+      <IsReferenceAssembly>false</IsReferenceAssembly>
+    </ProjectReference>
+
+    <ProjectReference Condition="'$(ReferenceReferenceAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" >
+      <IsReferenceAssembly>true</IsReferenceAssembly>
+    </ProjectReference>
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
 
@@ -61,6 +86,12 @@
     <ItemGroup>
       <Reference Include="@(_ReferenceTemp)" />
       <_ReferenceTemp Remove="@(_ReferenceTemp)" />
+
+      <!-- Ensure only content asset and msbuild props/targets are consumed from .Sources packages -->
+      <Reference>
+        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
+        <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
+      </Reference>
 
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
 
@@ -114,12 +145,13 @@
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
 
-    <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0"
+    <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0 AND ! $(NoWarn.Contains('PKG0001'))"
+             Code="PKG0001"
              Text="Package references changed since the last release. This could be a breaking change. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
 
     <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
            Code="MSB3245"
-           Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;" />
+           Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. If you are adding a new project or package, see instructions in docs/ReferenceResolution.md" />
   </Target>
 
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
@@ -137,9 +169,13 @@
   </Target>
 
   <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
-    <ItemGroup Condition=" '$(IsImplementationProject)' == 'true' OR '$(IsProjectReferenceProvider)' == 'true' ">
+    <PropertyGroup>
+      <ReferenceAssemblyProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), '$(MSBuildProjectDirectory)/../ref/$(MSBuildProjectFile)'))</ReferenceAssemblyProjectFileRelativePath>
+    </PropertyGroup>
+    <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
-        <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+        <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+        <ReferenceAssemblyProjectFileRelativePath Condition="'$(HasReferenceAssembly)' == 'true'">$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
       </ProvidesReference>
     </ItemGroup>
   </Target>

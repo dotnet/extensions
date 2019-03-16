@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- Reset this to the Microsoft.NET.Sdk default to workaround Arcade's defaults, which sets IsPackable=false by default. -->
+    <IsPackable />
+
+    <!-- Ensure symbols type is 'portable'. Arcade attempts to embed symbols in CI builds. -->
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+</Project>

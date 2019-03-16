@@ -4,7 +4,12 @@
     <Description>Azure KeyVault configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);azure;keyvault</PackageTags>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Configuration.AzureKeyVault.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Azure.KeyVault" />

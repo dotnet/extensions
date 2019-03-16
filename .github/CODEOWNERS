@@ -1,0 +1,11 @@
+# Users referenced in this file will automatically be requested as reviewers for PRs that modify the given paths.
+# See https://help.github.com/articles/about-code-owners/
+
+/eng/ @dougbu
+/src/Caching/ @tratcher
+/src/Configuration/ @tratcher
+/src/DependencyInjection/ @pakrym
+/src/Hosting/ @tratcher
+/src/Logging/ @pakrym
+/src/Primitives/ @tratcher
+/src/Shared/src/HostFactoryResolver/ @tratcher
