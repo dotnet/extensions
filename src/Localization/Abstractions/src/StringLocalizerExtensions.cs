@@ -23,11 +23,6 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(stringLocalizer));
             }
 
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
             return stringLocalizer[name];
         }
 
@@ -46,11 +41,6 @@ namespace Microsoft.Extensions.Localization
             if (stringLocalizer == null)
             {
                 throw new ArgumentNullException(nameof(stringLocalizer));
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
             }
 
             return stringLocalizer[name, arguments];
