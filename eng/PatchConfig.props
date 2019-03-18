@@ -19,5 +19,12 @@ Later on, this will be checked using this condition:
       Microsoft.Extensions.Logging.AzureAppServices
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.4' ">
+    <PackagesInPatch>
+      Microsoft.Extensions.Configuration.Binder;
+      Microsoft.Extensions.Configuration.EnvironmentVariables;
+      Microsoft.Extensions.Configuration.KeyPerFile;
+    </PackagesInPatch>
+  </PropertyGroup>
 
 </Project>
