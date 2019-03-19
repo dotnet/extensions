@@ -17,6 +17,37 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public ProjectInstance ProjectInstance { get; } = new ProjectInstance(ProjectRootElement.Create());
 
         [Fact]
+        public void IsCompileItem_CompileItem_ReturnsTrue()
+        {
+            // Arrange
+            var relativeFilePath = "/path/to/obj/Debug/file.razor.g.cs";
+            var projectRootElement = ProjectRootElement.Create("/path/to/project.csproj");
+            projectRootElement.AddItem("Compile", relativeFilePath);
+            var projectInstance = new ProjectInstance(projectRootElement);
+
+            // Act
+            var result = ComponentRefreshTrigger.IsCompileItem(relativeFilePath, projectInstance);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsCompileItem_NotCompileItem_ReturnsFalse()
+        {
+            // Arrange
+            var relativeFilePath = "/path/to/obj/Debug/file.razor.g.cs";
+            var projectRootElement = ProjectRootElement.Create("/path/to/project.csproj");
+            var projectInstance = new ProjectInstance(projectRootElement);
+
+            // Act
+            var result = ComponentRefreshTrigger.IsCompileItem(relativeFilePath, projectInstance);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
         public async Task RazorDocumentChangedAsync_Changed_PerformsProjectEvaluation()
         {
             // Arrange

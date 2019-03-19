@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     [Export(typeof(IOmniSharpProjectSnapshotManagerChangeTrigger))]
     internal class ComponentRefreshTrigger : IRazorDocumentChangeListener, IRazorDocumentOutputChangeListener, IOmniSharpProjectSnapshotManagerChangeTrigger
     {
+        private const string CompileItemType = "Compile";
         private readonly OmniSharpForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectInstanceEvaluator _projectInstanceEvaluator;
         private readonly BufferManager _bufferManager;
@@ -104,6 +105,16 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // we need to play that part and force buffer updates to indirectly update their workspace to include our Razor
             // declaration files.
 
+
+            // Re-evaluate project instance so we can determine compile items properly.
+            var projectInstance = _projectInstanceEvaluator.Evaluate(args.UnevaluatedProjectInstance);
+
+            // Not all Razor output files are compile items
+            if (!IsCompileItem(args.RelativeFilePath, projectInstance))
+            {
+                return;
+            }
+
             try
             {
                 // Force update the OmniSharp Workspace for component declaration changes.
@@ -135,6 +146,21 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             {
                 _logger.LogError("Unexpected error when determining if file " + args.FilePath + " was a Razor component or not: " + ex);
             }
+        }
+
+        // Internal for testing
+        internal static bool IsCompileItem(string filePath, ProjectInstance projectInstance)
+        {
+            var compileItems = projectInstance.GetItems(CompileItemType);
+            foreach (var item in compileItems)
+            {
+                if (FilePathComparer.Instance.Equals(item.EvaluatedInclude, filePath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // Internal for testing
