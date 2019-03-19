@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
                 TagHelperDescriptorBuilder.Create("TestTagHelper2", "TestAssembly2").Build(),
             };
-            var projectWorkspaceState = new ProjectWorkspaceState(tagHelpers);
+            var projectWorkspaceState = new ProjectWorkspaceState(tagHelpers, default);
             var expectedConfiguration = RazorConfiguration.Default;
             var expectedRootNamespace = "project";
             var handle = new ProjectSnapshotHandleProxy(new Uri("vsls://some/path/project.csproj"), RazorConfiguration.Default, expectedRootNamespace, projectWorkspaceState);

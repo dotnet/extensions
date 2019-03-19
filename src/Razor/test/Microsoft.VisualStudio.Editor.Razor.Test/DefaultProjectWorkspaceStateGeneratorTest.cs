@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             ProjectWorkspaceStateWithTagHelpers = new ProjectWorkspaceState(new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
-            });
+            }, default);
         }
 
         private IReadOnlyList<TagHelperDescriptor> ResolvableTagHelpers { get; }

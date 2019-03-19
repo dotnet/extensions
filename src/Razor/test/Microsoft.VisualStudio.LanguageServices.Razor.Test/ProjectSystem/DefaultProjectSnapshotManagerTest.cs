@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Enumerable.Empty<ProjectSnapshotChangeTrigger>(), Workspace);
 
-            ProjectWorkspaceStateWithTagHelpers = new ProjectWorkspaceState(TagHelperResolver.TagHelpers);
+            ProjectWorkspaceStateWithTagHelpers = new ProjectWorkspaceState(TagHelperResolver.TagHelpers, default);
 
             SourceText = SourceText.From("Hello world");
         }

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.Extensions.Internal;
@@ -464,7 +465,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
-            builder.SetRootNamespace(_documentTracker.ProjectSnapshot?.RootNamespace);
+            var projectSnapshot = _documentTracker.ProjectSnapshot;
+            if (projectSnapshot != null)
+            {
+                builder.SetCSharpLanguageVersion(projectSnapshot.CSharpLanguageVersion);
+            }
+            builder.SetRootNamespace(projectSnapshot?.RootNamespace);
             builder.Features.Add(new VisualStudioParserOptionsFeature(_documentTracker.EditorSettings));
             builder.Features.Add(new VisualStudioTagHelperFeature(_documentTracker.TagHelpers));
         }

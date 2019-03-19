@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.CodeAnalysis.Razor
@@ -113,10 +115,21 @@ namespace Microsoft.CodeAnalysis.Razor
                 var workspaceState = ProjectWorkspaceState.Default;
                 try
                 {
+                    var csharpLanguageVersion = LanguageVersion.Default;
+                    var csharpParseOptions = (CSharpParseOptions)workspaceProject.ParseOptions;
+                    if (csharpParseOptions == null)
+                    {
+                        Debug.Fail("Workspace project should always have CSharp parse options.");
+                    }
+                    else
+                    {
+                        csharpLanguageVersion = csharpParseOptions.LanguageVersion;
+                    }
+
                     if (workspaceProject != null)
                     {
                         var tagHelperResolutionResult = await _tagHelperResolver.GetTagHelpersAsync(workspaceProject, projectSnapshot, cancellationToken);
-                        workspaceState = new ProjectWorkspaceState(tagHelperResolutionResult.Descriptors);
+                        workspaceState = new ProjectWorkspaceState(tagHelperResolutionResult.Descriptors, csharpLanguageVersion);
                     }
                 }
                 catch (Exception ex)

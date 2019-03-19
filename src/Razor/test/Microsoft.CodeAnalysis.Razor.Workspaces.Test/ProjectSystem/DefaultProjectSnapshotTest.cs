@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host;
 using Xunit;
 
@@ -21,7 +22,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectWorkspaceState = new ProjectWorkspaceState(new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
-            });
+            },
+            default);
 
             SomeTagHelpers = new List<TagHelperDescriptor>
             {

@@ -23,7 +23,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectWorkspaceState = new ProjectWorkspaceState(new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
-            });
+            }, default);
 
             SomeTagHelpers = new List<TagHelperDescriptor>();
             SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
@@ -585,7 +585,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void ProjectState_WithProjectWorkspaceState_Removed()
         {
             // Arrange
-            var emptyProjectWorkspaceState = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>());
+            var emptyProjectWorkspaceState = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>(), default);
             var original = ProjectState.Create(Workspace.Services, HostProject, emptyProjectWorkspaceState)
                 .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
                 .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
@@ -657,7 +657,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var originalTagHelpers = original.TagHelpers;
             var originalProjectWorkspaceStateVersion = original.ProjectWorkspaceStateVersion;
 
-            var changed = new ProjectWorkspaceState(ProjectWorkspaceState.TagHelpers);
+            var changed = new ProjectWorkspaceState(ProjectWorkspaceState.TagHelpers, default);
 
             // Act
             var state = original.WithProjectWorkspaceState(changed);
@@ -690,7 +690,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var originalTagHelpers = original.TagHelpers;
             var originalProjectWorkspaceStateVersion = original.ProjectWorkspaceStateVersion;
 
-            var changed = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>());
+            var changed = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>(), default);
 
             // Now create some tag helpers
             TagHelperResolver.TagHelpers = SomeTagHelpers;
@@ -728,7 +728,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var original = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState);
             original.Documents = documents.ToImmutable();
 
-            var changed = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>());
+            var changed = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>(), default);
 
             // Act
             var state = original.WithProjectWorkspaceState(changed);

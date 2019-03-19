@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
             var projectWorkspaceState1 = new ProjectWorkspaceState(new[]
             {
                 TagHelperDescriptorBuilder.Create("test1", "TestAssembly1").Build(),
-            });
+            }, default);
             ProjectSnapshot1 = new DefaultProjectSnapshot(
                 ProjectState.Create(
                     Workspace.Services,
@@ -33,7 +33,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
             var projectWorkspaceState2 = new ProjectWorkspaceState(new[]
             {
                 TagHelperDescriptorBuilder.Create("test2", "TestAssembly2").Build(),
-            });
+            }, default);
             ProjectSnapshot2 = new DefaultProjectSnapshot(
                 ProjectState.Create(
                     Workspace.Services,

@@ -5,15 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     public sealed class ProjectWorkspaceState : IEquatable<ProjectWorkspaceState>
     {
-        public static readonly ProjectWorkspaceState Default = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>());
+        public static readonly ProjectWorkspaceState Default = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>(), LanguageVersion.Default);
 
-        public ProjectWorkspaceState(IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        public ProjectWorkspaceState(
+            IReadOnlyList<TagHelperDescriptor> tagHelpers,
+            LanguageVersion csharpLanguageVersion)
         {
             if (tagHelpers == null)
             {
@@ -21,9 +24,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             TagHelpers = tagHelpers;
+            CSharpLanguageVersion = csharpLanguageVersion;
         }
 
         public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
+
+        public LanguageVersion CSharpLanguageVersion { get; }
 
         public override bool Equals(object obj)
         {
@@ -42,6 +48,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 return false;
             }
 
+            if (CSharpLanguageVersion != other.CSharpLanguageVersion)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -52,6 +63,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 hash.Add(TagHelpers[i].GetHashCode());
             }
+
+            hash.Add(CSharpLanguageVersion);
 
             return hash.CombinedHash;
         }

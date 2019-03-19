@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Text;
 
@@ -152,6 +153,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public HostWorkspaceServices Services { get; }
 
         public IReadOnlyList<TagHelperDescriptor> TagHelpers => ProjectWorkspaceState?.TagHelpers ?? EmptyTagHelpers;
+
+        public LanguageVersion CSharpLanguageVersion => ProjectWorkspaceState?.CSharpLanguageVersion ?? LanguageVersion.Default;
 
         /// <summary>
         /// Gets the version of this project, INCLUDING content changes. The <see cref="Version"/> is
@@ -400,7 +403,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return factory.Create(
                 HostProject.Configuration,
                 Path.GetDirectoryName(HostProject.FilePath),
-                configure: c => c.SetRootNamespace(HostProject.RootNamespace));
+                configure: builder =>
+                {
+                    builder.SetRootNamespace(HostProject.RootNamespace);
+                    builder.SetCSharpLanguageVersion(CSharpLanguageVersion);
+                });
         }
 
         public List<string> GetImportDocumentTargetPaths(string targetPath)

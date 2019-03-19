@@ -8,11 +8,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
 global::System.Object Footer = null;
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -23,46 +25,60 @@ global::System.Object Footer = null;
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
              for(int i = 1; i <= 10; i++) {
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
                 __o = i;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
                            
             }
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
 __o = Foo(Bar.Baz);
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
 __o = Foo(item => new Template(async(__razor_template_writer) => {
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
         __o = baz;
 
 #line default
 #line hidden
+#nullable disable
 }
 ));
 
 #line default
 #line hidden
+#nullable disable
             DefineSection("Footer", async(__razor_section_writer) => {
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
 __o = bar;
 
 #line default
 #line hidden
+#nullable disable
             }
             );
         }

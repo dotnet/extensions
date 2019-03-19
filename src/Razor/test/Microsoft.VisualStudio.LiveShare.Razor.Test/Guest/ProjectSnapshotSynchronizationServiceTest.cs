@@ -29,7 +29,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             ProjectWorkspaceStateWithTagHelpers = new ProjectWorkspaceState(new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build()
-            });
+            }, default);
         }
 
         private JoinableTaskFactory JoinableTaskFactory { get; }

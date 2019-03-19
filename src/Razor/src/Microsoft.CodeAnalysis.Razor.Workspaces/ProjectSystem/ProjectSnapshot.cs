@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -17,6 +18,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public virtual string RootNamespace { get; }
 
         public abstract VersionStamp Version { get; }
+
+        public virtual LanguageVersion CSharpLanguageVersion { get; }
 
         public virtual IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
 

@@ -179,7 +179,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 .WithProjectWorkspaceState(ProjectWorkspaceState.Default);
 
             var (originalOutput, originalInputVersion, originalOutputVersion) = await GetOutputAsync(original, HostDocument);
-            var changed = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>());
+            var changed = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>(), default);
 
             // Act
             var state = original.WithProjectWorkspaceState(changed);
@@ -202,7 +202,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 .WithAddedHostDocument(HostDocument, DocumentState.EmptyLoader);
 
             var (originalOutput, originalInputVersion, originalOutputVersion) = await GetOutputAsync(original, HostDocument);
-            var changed = new ProjectWorkspaceState(SomeTagHelpers);
+            var changed = new ProjectWorkspaceState(SomeTagHelpers, default);
 
             // Act
             var state = original.WithProjectWorkspaceState(changed);
