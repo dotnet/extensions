@@ -20,6 +20,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Create a new HostDocument to avoid mutating the code container
             ComponentHostDocument = new HostDocument(TestProjectData.SomeProjectComponentFile1);
             LegacyHostDocument = new HostDocument(TestProjectData.SomeProjectFile1);
+            NestedComponentHostDocument = new HostDocument(TestProjectData.SomeProjectNestedComponentFile3);
 
             var projectState = ProjectState.Create(Workspace.Services, TestProjectData.SomeProject);
             var project = new DefaultProjectSnapshot(projectState);
@@ -31,6 +32,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             documentState = DocumentState.Create(Workspace.Services, ComponentHostDocument, () => Task.FromResult(textAndVersion));
             ComponentDocument = new DefaultDocumentSnapshot(project, documentState);
+
+            documentState = DocumentState.Create(Workspace.Services, NestedComponentHostDocument, () => Task.FromResult(textAndVersion));
+            NestedComponentDocument = new DefaultDocumentSnapshot(project, documentState);
         }
 
         private SourceText SourceText { get; }
@@ -44,6 +48,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private DefaultDocumentSnapshot ComponentDocument { get; }
 
         private DefaultDocumentSnapshot LegacyDocument { get; }
+
+        private HostDocument NestedComponentHostDocument { get; }
+
+        private DefaultDocumentSnapshot NestedComponentDocument { get; }
 
         protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
@@ -72,6 +80,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Assert
             Assert.NotNull(ComponentHostDocument.GeneratedCodeContainer.Output);
             Assert.Contains("ComponentBase", ComponentHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
+        }
+
+        [Fact]
+        public async Task GetGeneratedOutputAsync_NestedComponentDocument_SetsCorrectNamespaceAndClassName()
+        {
+            // Act
+            await NestedComponentDocument.GetGeneratedOutputAsync();
+
+            // Assert
+            Assert.NotNull(NestedComponentHostDocument.GeneratedCodeContainer.Output);
+            Assert.Contains("ComponentBase", NestedComponentHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
+            Assert.Contains("namespace SomeProject.Nested", NestedComponentHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
+            Assert.Contains("class File3", NestedComponentHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
         }
 
         // This is a sanity test that we invoke legacy codegen for .cshtml files. It's a little fragile but

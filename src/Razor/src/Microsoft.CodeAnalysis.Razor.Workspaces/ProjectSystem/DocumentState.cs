@@ -376,15 +376,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 // OK we have to generate the code.
                 var importSources = new List<RazorSourceDocument>();
+                var projectEngine = project.GetProjectEngine();
                 foreach (var item in imports)
                 {
-                    var sourceDocument = await GetRazorSourceDocumentAsync(item.Document).ConfigureAwait(false);
+                    var importProjectItem = item.FilePath == null ? null : projectEngine.FileSystem.GetItem(item.FilePath);
+                    var sourceDocument = await GetRazorSourceDocumentAsync(item.Document, importProjectItem).ConfigureAwait(false);
                     importSources.Add(sourceDocument);
                 }
 
-                var documentSource = await GetRazorSourceDocumentAsync(document).ConfigureAwait(false);
+                var projectItem = document.FilePath == null ? null : projectEngine.FileSystem.GetItem(document.FilePath);
+                var documentSource = await GetRazorSourceDocumentAsync(document, projectItem).ConfigureAwait(false);
 
-                var projectEngine = project.GetProjectEngine();
 
                 var codeDocument = projectEngine.ProcessDesignTime(documentSource, fileKind: document.FileKind, importSources, project.TagHelpers);
                 var csharpDocument = codeDocument.GetCSharpDocument();
@@ -434,10 +436,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 return (codeDocument, inputVersion, outputVersion);
             }
 
-            private async Task<RazorSourceDocument> GetRazorSourceDocumentAsync(DocumentSnapshot document)
+            private async Task<RazorSourceDocument> GetRazorSourceDocumentAsync(DocumentSnapshot document, RazorProjectItem projectItem)
             {
                 var sourceText = await document.GetTextAsync();
-                return sourceText.GetRazorSourceDocument(document.FilePath);
+                return sourceText.GetRazorSourceDocument(document.FilePath, projectItem?.RelativePhysicalPath);
             }
 
             private async Task<IReadOnlyList<ImportItem>> GetImportsAsync(ProjectSnapshot project, DocumentSnapshot document)

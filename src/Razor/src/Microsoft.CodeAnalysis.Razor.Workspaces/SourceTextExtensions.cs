@@ -8,7 +8,7 @@ namespace Microsoft.CodeAnalysis.Text
 {
     internal static class SourceTextExtensions
     {
-        public static RazorSourceDocument GetRazorSourceDocument(this SourceText sourceText, string fileName)
+        public static RazorSourceDocument GetRazorSourceDocument(this SourceText sourceText, string filePath, string relativePath)
         {
             if (sourceText == null)
             {
@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Text
 
             var content = sourceText.ToString();
 
-            return RazorSourceDocument.Create(content, fileName);
+            return RazorSourceDocument.Create(content, new RazorSourceDocumentProperties(filePath, relativePath));
         }
     }
 }
