@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     index = sourceText.Length - 1;
                 }
 
-                return index;
+                return Math.Max(index, 0);
             }
         }
     }

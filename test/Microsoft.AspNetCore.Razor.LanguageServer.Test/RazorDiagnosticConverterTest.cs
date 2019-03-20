@@ -58,6 +58,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
+        public void ConvertSpanToRange_StartsOutsideOfDocument_EmptyDocument_NormalizesTo0()
+        {
+            // Arrange
+            var sourceText = SourceText.From(string.Empty);
+            var sourceSpan = new SourceSpan(5, 0, 5, 4);
+            var expectedRange = new Range(
+                new Position(0, 0),
+                new Position(0, 0));
+
+            // Act
+            var range = RazorDiagnosticConverter.ConvertSpanToRange(sourceSpan, sourceText);
+
+            // Assert
+            Assert.Equal(expectedRange, range);
+        }
+
+        [Fact]
         public void ConvertSpanToRange_StartsOutsideOfDocument_NormalizesToEnd()
         {
             // Arrange
