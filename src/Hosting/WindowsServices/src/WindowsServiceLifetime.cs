@@ -9,11 +9,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Hosting.WindowsServices
 {
-    public class ServiceBaseLifetime : ServiceBase, IHostLifetime
+    public class WindowsServiceLifetime : ServiceBase, IHostLifetime
     {
         private TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>();
 
-        public ServiceBaseLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory)
+        public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory)
         {
             Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));

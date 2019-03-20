@@ -20,7 +20,7 @@ namespace GenericHostSample
                     services.AddHostedService<MyServiceB>();
                 });
 
-            builder.UseServiceBaseLifetime();
+            builder.UseWindowsService();
             await builder.Build().RunAsync();
         }
     }

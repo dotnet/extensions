@@ -2,17 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting.WindowsServices;
 
 namespace Microsoft.Extensions.Hosting
 {
-    public static class ServiceBaseLifetimeHostBuilderExtensions
+    public static class WindowsServiceLifetimeHostBuilderExtensions
     {
         /// <summary>
-        /// Sets the host lifetime to ServiceBaseLifetime and sets the Content Root.
+        /// Sets the host lifetime to WindowsServiceLifetime and sets the Content Root.
         /// </summary>
         /// <remarks>
         /// This is context aware and will only activate if it detects the process is running
@@ -20,7 +19,7 @@ namespace Microsoft.Extensions.Hosting
         /// </remarks>
         /// <param name="hostBuilder"></param>
         /// <returns></returns>
-        public static IHostBuilder UseServiceBaseLifetime(this IHostBuilder hostBuilder)
+        public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder)
         {
             if (IsWindowsService())
             {
@@ -28,7 +27,7 @@ namespace Microsoft.Extensions.Hosting
                 hostBuilder.UseContentRoot(AppContext.BaseDirectory);
                 return hostBuilder.ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<IHostLifetime, ServiceBaseLifetime>();
+                    services.AddSingleton<IHostLifetime, WindowsServiceLifetime>();
                 });
             }
 
