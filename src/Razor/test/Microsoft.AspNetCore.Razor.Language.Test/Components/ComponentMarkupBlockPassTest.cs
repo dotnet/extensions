@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         }
 
         // The unclosed tag will have errors, so we won't rewrite it or its parent.
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6217")]
+        [Fact]
         public void Execute_CannotRewriteHtml_Errors()
         {
             // Arrange
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6217")]
+        [Fact]
         public void Execute_RewritesHtml_MismatchedClosingTag()
         {
             // Arrange

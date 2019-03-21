@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     {
         internal override string FileKind => FileKinds.Component;
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6217")]
+        [Fact]
         public void RejectsEndTagWithNoStartTag()
         {
             // Arrange/Act
