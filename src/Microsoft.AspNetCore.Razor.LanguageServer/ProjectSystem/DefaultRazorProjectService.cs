@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var normalizedPath = _filePathNormalizer.Normalize(filePath);
-            var hostProject = new HostProject(normalizedPath, RazorDefaults.Configuration);
+            var hostProject = new HostProject(normalizedPath, RazorDefaults.Configuration, RazorDefaults.RootNamespace);
             _projectSnapshotManagerAccessor.Instance.ProjectAdded(hostProject);
             _logger.LogInformation($"Added project '{filePath}' to project system.");
 
@@ -223,6 +223,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         public override void UpdateProject(
             string filePath,
             RazorConfiguration configuration,
+            string rootNamespace,
             ProjectWorkspaceState projectWorkspaceState)
         {
             _foregroundDispatcher.AssertForegroundThread();
@@ -244,10 +245,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             _projectSnapshotManagerAccessor.Instance.ProjectWorkspaceStateChanged(project.FilePath, projectWorkspaceState);
 
-            var currentConfiguration = project.HostProject.Configuration;
-            if (currentConfiguration.ConfigurationName == configuration?.ConfigurationName)
+            var currentHostProject = project.HostProject;
+            var currentConfiguration = currentHostProject.Configuration;
+            if (currentConfiguration.ConfigurationName == configuration?.ConfigurationName &&
+                currentHostProject.RootNamespace == rootNamespace)
             {
-                _logger.LogTrace($"Updating project '{filePath}'. The project is already using configuration '{configuration.ConfigurationName}'.");
+                _logger.LogTrace($"Updating project '{filePath}'. The project is already using configuration '{configuration.ConfigurationName}' and root namespace '{rootNamespace}'.");
                 return;
             }
 
@@ -256,12 +259,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 configuration = RazorDefaults.Configuration;
                 _logger.LogInformation($"Updating project '{filePath}' to use Razor's default configuration ('{configuration.ConfigurationName}')'.");
             }
-            else
+            else if (currentConfiguration.ConfigurationName != configuration.ConfigurationName)
             {
                 _logger.LogInformation($"Updating project '{filePath}' to Razor configuration '{configuration.ConfigurationName}' with language version '{configuration.LanguageVersion}'.");
             }
 
-            var hostProject = new HostProject(project.FilePath, configuration);
+            if (currentHostProject.RootNamespace != rootNamespace)
+            {
+                _logger.LogInformation($"Updating project '{filePath}''s root namespace to '{rootNamespace}'.");
+            }
+
+            var hostProject = new HostProject(project.FilePath, configuration, rootNamespace);
             _projectSnapshotManagerAccessor.Instance.ProjectConfigurationChanged(hostProject);
         }
 

@@ -41,7 +41,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         public void FullProjectSnapshotHandle_CanRoundTrip()
         {
             // Arrange
-            var handle = new FullProjectSnapshotHandle("/path/to/project.csproj", Configuration, ProjectWorkspaceState);
+            var handle = new FullProjectSnapshotHandle(
+                "/path/to/project.csproj", 
+                Configuration, 
+                rootNamespace: "TestProject", 
+                ProjectWorkspaceState);
             var serializedHandle = JsonConvert.SerializeObject(handle, Converters);
 
             // Act
@@ -50,6 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             // Assert
             Assert.Equal(handle.FilePath, deserializedHandle.FilePath);
             Assert.Equal(handle.Configuration, deserializedHandle.Configuration);
+            Assert.Equal(handle.RootNamespace, deserializedHandle.RootNamespace);
             Assert.Equal(handle.ProjectWorkspaceState, deserializedHandle.ProjectWorkspaceState);
         }
 

@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         internal const string RazorGenerateWithTargetPathItemType = "RazorGenerateWithTargetPath";
         internal const string RazorComponentWithTargetPathItemType = "RazorComponentWithTargetPath";
         internal const string RazorTargetPathMetadataName = "TargetPath";
+        internal const string RootNamespaceProperty = "RootNamespace";
 
         private const string RazorLangVersionProperty = "RazorLangVersion";
         private const string RazorDefaultConfigurationProperty = "RazorDefaultConfiguration";
@@ -79,12 +80,25 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 return false;
             }
 
+            var rootNamespace = GetRootNamespace(projectInstance);
             var extensions = GetExtensions(configuredExtensionNames, projectInstance.Items);
             var razorConfiguration = new ProjectSystemRazorConfiguration(languageVersion, configurationItem.EvaluatedInclude, extensions);
             var hostDocuments = GetHostDocuments(projectInstance.Items);
 
-            configuration = new ProjectConfiguration(razorConfiguration, hostDocuments);
+            configuration = new ProjectConfiguration(razorConfiguration, hostDocuments, rootNamespace);
             return true;
+        }
+
+        // Internal for testing
+        internal static string GetRootNamespace(ProjectInstance projectInstance)
+        {
+            var rootNamespace = projectInstance.GetPropertyValue(RootNamespaceProperty);
+            if (string.IsNullOrEmpty(rootNamespace))
+            {
+                return null;
+            }
+
+            return rootNamespace;
         }
 
         // Internal for testing

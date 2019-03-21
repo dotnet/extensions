@@ -168,6 +168,7 @@ export class RazorProjectManager {
                 projectPath: projectFilePath,
                 projectUri,
                 configuration: projectHandle.Configuration,
+                rootNamespace: projectHandle.RootNamespace,
                 projectWorkspaceState: projectHandle.ProjectWorkspaceState,
                 lastUpdated,
             };

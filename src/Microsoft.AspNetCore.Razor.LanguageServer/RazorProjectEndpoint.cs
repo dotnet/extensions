@@ -99,6 +99,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 () => _projectService.UpdateProject(
                     request.FilePath,
                     request.Configuration,
+                    request.RootNamespace,
                     request.ProjectWorkspaceState ?? ProjectWorkspaceState.Default),
                 CancellationToken.None,
                 TaskCreationOptions.None,

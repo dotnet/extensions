@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
         public FullProjectSnapshotHandle(
             string filePath,
             RazorConfiguration configuration,
+            string rootNamespace,
             ProjectWorkspaceState projectWorkspaceState)
         {
             if (filePath == null)
@@ -24,12 +25,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
 
             FilePath = filePath;
             Configuration = configuration;
+            RootNamespace = rootNamespace;
             ProjectWorkspaceState = projectWorkspaceState;
         }
 
         public string FilePath { get; }
 
         public RazorConfiguration Configuration { get; }
+
+        public string RootNamespace { get; }
 
         public ProjectWorkspaceState ProjectWorkspaceState { get; }
     }

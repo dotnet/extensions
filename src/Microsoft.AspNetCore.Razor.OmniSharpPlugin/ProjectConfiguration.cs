@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     public sealed class ProjectConfiguration
     {
-        public ProjectConfiguration(RazorConfiguration configuration, IReadOnlyList<OmniSharpHostDocument> documents)
+        public ProjectConfiguration(RazorConfiguration configuration, IReadOnlyList<OmniSharpHostDocument> documents, string rootNamespace)
         {
             if (configuration == null)
             {
@@ -23,10 +23,13 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             Configuration = configuration;
             Documents = documents;
+            RootNamespace = rootNamespace;
         }
 
         public RazorConfiguration Configuration { get; }
 
         public IReadOnlyList<OmniSharpHostDocument> Documents { get; }
+
+        public string RootNamespace { get; }
     }
 }

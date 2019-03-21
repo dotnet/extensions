@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             }
 
             var razorConfiguration = FallbackRazorConfiguration.SelectConfiguration(version);
-            configuration = new ProjectConfiguration(razorConfiguration, Array.Empty<OmniSharpHostDocument>());
+            configuration = new ProjectConfiguration(razorConfiguration, Array.Empty<OmniSharpHostDocument>(), rootNamespace: null);
             return true;
         }
 

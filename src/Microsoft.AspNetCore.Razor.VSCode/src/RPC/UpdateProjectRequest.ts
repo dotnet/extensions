@@ -5,6 +5,7 @@
 
 export interface UpdateProjectRequest {
     readonly filePath: string;
-    readonly projectWorkspaceState?: any;
     readonly configuration?: any;
+    readonly rootNamespace?: string;
+    readonly projectWorkspaceState?: any;
 }

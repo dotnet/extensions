@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();
             msbuildProjectManager.Initialize(projectManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", CustomConfiguration);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", CustomConfiguration, "TestRootNamespace");
             var projectSnapshot = await RunOnForegroundAsync(() =>
             {
                 projectManager.ProjectAdded(hostProject);
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
             msbuildProjectManager.Initialize(projectManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", CustomConfiguration);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", CustomConfiguration, "TestRootNamespace");
             var projectSnapshot = await RunOnForegroundAsync(() =>
             {
                 projectManager.ProjectAdded(hostProject);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();
             msbuildProjectManager.Initialize(projectManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", CustomConfiguration);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", CustomConfiguration, "TestRootNamespace");
             var projectSnapshot = await RunOnForegroundAsync(() =>
             {
                 projectManager.ProjectAdded(hostProject);
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             projectRootElement.AddProperty(MSBuildProjectManager.IntermediateOutputPathPropertyName, intermediateOutputPath);
             var projectInstance = new ProjectInstance(projectRootElement);
             var hostDocument = new OmniSharpHostDocument("file.razor", "file.razor", FileKinds.Component);
-            var projectConfiguration = new ProjectConfiguration(CustomConfiguration, new[] { hostDocument });
+            var projectConfiguration = new ProjectConfiguration(CustomConfiguration, new[] { hostDocument }, "TestRootNamespace");
             var configurationProvider = new Mock<ProjectConfigurationProvider>();
             configurationProvider.Setup(provider => provider.TryResolveConfiguration(It.IsAny<ProjectConfigurationProviderContext>(), out projectConfiguration))
                 .Returns(true);
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.AddItem(MSBuildProjectManager.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
             var provider1 = new Mock<ProjectConfigurationProvider>();
-            var configuration = new ProjectConfiguration(RazorConfiguration.Default, Array.Empty<OmniSharpHostDocument>()); // Setting to non-null to ensure the listener doesn't return the config verbatim.
+            var configuration = new ProjectConfiguration(RazorConfiguration.Default, Array.Empty<OmniSharpHostDocument>(), "TestRootNamespace"); // Setting to non-null to ensure the listener doesn't return the config verbatim.
             provider1.Setup(p => p.TryResolveConfiguration(It.IsAny<ProjectConfigurationProviderContext>(), out configuration))
                 .Returns(false);
             var provider2 = new Mock<ProjectConfigurationProvider>();
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.AddItem(MSBuildProjectManager.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
             var provider = new Mock<ProjectConfigurationProvider>();
-            var configuration = new ProjectConfiguration(RazorConfiguration.Default, Array.Empty<OmniSharpHostDocument>()); // Setting to non-null to ensure the listener doesn't return the config verbatim.
+            var configuration = new ProjectConfiguration(RazorConfiguration.Default, Array.Empty<OmniSharpHostDocument>(), "TestRootNamespace"); // Setting to non-null to ensure the listener doesn't return the config verbatim.
             provider.Setup(p => p.TryResolveConfiguration(It.IsAny<ProjectConfigurationProviderContext>(), out configuration))
                 .Returns(false);
 
@@ -260,7 +260,6 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         {
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            var loggerFactory = Mock.Of<ILoggerFactory>();
 
             // Act
             var result = MSBuildProjectManager.TryResolveConfigurationOutputPath(projectInstance, out var path);

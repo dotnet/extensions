@@ -30,11 +30,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 new HostDocument("c:\\Test1\\Components\\Counter.cshtml", "Components\\Counter.cshtml"),
             };
 
-            HostProject1 = new HostProject("c:\\Test1\\Test1.csproj", RazorConfiguration.Default);
-            HostProject2 = new HostProject("c:\\Test2\\Test2.csproj", RazorConfiguration.Default);
-
-            var projectId1 = ProjectId.CreateNewId("Test1");
-            var projectId2 = ProjectId.CreateNewId("Test2");
+            HostProject1 = new HostProject("c:\\Test1\\Test1.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            HostProject2 = new HostProject("c:\\Test2\\Test2.csproj", RazorConfiguration.Default, "TestRootNamespace");
         }
 
         private IEnumerable<DocumentProcessedListener> Listeners => Enumerable.Empty<DocumentProcessedListener>();

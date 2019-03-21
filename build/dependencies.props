@@ -3,15 +3,15 @@
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview3.19120.3</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181108.5</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreBlazorExtensionsPackageVersion>0.7.0</MicrosoftAspNetCoreBlazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview4.19158.1</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>3.0.0-preview4.19158.1</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>3.0.0-preview4.19158.1</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview4.19170.2</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>3.0.0-preview4.19170.2</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>3.0.0-preview4.19170.2</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10643</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildPackageVersion>15.9.20</MicrosoftBuildPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>3.0.0-preview4.19158.1</MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>3.0.0-preview4.19170.2</MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisVisualBasicFeaturesPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisVisualBasicFeaturesPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-preview4.19155.3</MicrosoftExtensionsLoggingAbstractionsPackageVersion>

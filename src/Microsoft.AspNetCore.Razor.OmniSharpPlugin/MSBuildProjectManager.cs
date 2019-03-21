@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             }
 
             var projectSnapshot = _projectManager.GetLoadedProject(projectFilePath);
-            var hostProject = new OmniSharpHostProject(projectFilePath, projectConfiguration.Configuration);
+            var hostProject = new OmniSharpHostProject(projectFilePath, projectConfiguration.Configuration, projectConfiguration.RootNamespace);
             if (projectSnapshot == null)
             {
                 // Project doesn't exist yet, create it and set it up with all of its host documents.

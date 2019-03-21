@@ -28,9 +28,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             var obj = JObject.Load(reader);
             var filePath = obj[nameof(FullProjectSnapshotHandle.FilePath)].Value<string>();
             var configuration = obj[nameof(FullProjectSnapshotHandle.Configuration)].ToObject<RazorConfiguration>(serializer);
+            var rootNamespace = obj[nameof(FullProjectSnapshotHandle.RootNamespace)].ToObject<string>(serializer);
             var projectWorkspaceState = obj[nameof(FullProjectSnapshotHandle.ProjectWorkspaceState)].ToObject<ProjectWorkspaceState>(serializer);
 
-            return new FullProjectSnapshotHandle(filePath, configuration, projectWorkspaceState);
+            return new FullProjectSnapshotHandle(filePath, configuration, rootNamespace, projectWorkspaceState);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -63,6 +64,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
                 writer.WritePropertyName(nameof(FullProjectSnapshotHandle.ProjectWorkspaceState));
                 serializer.Serialize(writer, handle.ProjectWorkspaceState);
             }
+
+            writer.WritePropertyName(nameof(FullProjectSnapshotHandle.RootNamespace));
+            writer.WriteValue(handle.RootNamespace);
 
             writer.WriteEndObject();
         }

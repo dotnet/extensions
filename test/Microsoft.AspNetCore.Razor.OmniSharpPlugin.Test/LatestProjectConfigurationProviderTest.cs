@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
@@ -15,6 +13,48 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     public class LatestProjectConfigurationProviderTest
     {
+        [Fact]
+        public void GetRootNamespace_NoRootNamespace_ReturnsNull()
+        {
+            // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+
+            // Act
+            var rootNamespace = LatestProjectConfigurationProvider.GetRootNamespace(projectInstance);
+
+            // Assert
+            Assert.Null(rootNamespace);
+        }
+
+        [Fact]
+        public void GetRootNamespace_EmptyRootNamespace_ReturnsNull()
+        {
+            // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.SetProperty(LatestProjectConfigurationProvider.RootNamespaceProperty, string.Empty);
+
+            // Act
+            var rootNamespace = LatestProjectConfigurationProvider.GetRootNamespace(projectInstance);
+
+            // Assert
+            Assert.Null(rootNamespace);
+        }
+
+        [Fact]
+        public void GetRootNamespace_ReturnsRootNamespace()
+        {
+            // Arrange
+            var expectedRootNamespace = "SomeApp.Root.Namespace";
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.SetProperty(LatestProjectConfigurationProvider.RootNamespaceProperty, expectedRootNamespace);
+
+            // Act
+            var rootNamespace = LatestProjectConfigurationProvider.GetRootNamespace(projectInstance);
+
+            // Assert
+            Assert.Equal(expectedRootNamespace, rootNamespace);
+        }
+
         [Fact]
         public void GetHostDocuments_SomeLegacyDocuments()
         {
@@ -503,18 +543,20 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public void TryGetConfiguration_SucceedsWithAllPreRequisites()
         {
             // Arrange
+            var expectedRootNamespace = "SomeApp.Root.Namespace";
             var expectedLanguageVersion = RazorLanguageVersion.Version_1_0;
             var expectedConfigurationName = "Razor-Test";
             var expectedExtension1Name = "Extension1";
             var expectedExtension2Name = "Extension2";
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.SetProperty(LatestProjectConfigurationProvider.RootNamespaceProperty, expectedRootNamespace);
             projectInstance.AddItem("RazorConfiguration", "UnconfiguredRazorConfiguration");
             projectInstance.AddItem("RazorConfiguration", "UnconfiguredExtensionName");
             projectInstance.AddItem("RazorExtension", expectedExtension1Name);
             projectInstance.AddItem("RazorExtension", expectedExtension2Name);
             var expectedRazorConfigurationItem = projectInstance.AddItem(
-                "RazorConfiguration", 
-                expectedConfigurationName, 
+                "RazorConfiguration",
+                expectedConfigurationName,
                 new Dictionary<string, string>()
                 {
                     ["Extensions"] = "Extension1;Extension2",
@@ -534,6 +576,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 configuration.Configuration.Extensions,
                 extension => Assert.Equal(expectedExtension1Name, extension.ExtensionName),
                 extension => Assert.Equal(expectedExtension2Name, extension.ExtensionName));
+            Assert.Equal(expectedRootNamespace, configuration.RootNamespace);
         }
     }
 }

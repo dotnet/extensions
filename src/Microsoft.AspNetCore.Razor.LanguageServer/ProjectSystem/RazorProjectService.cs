@@ -25,6 +25,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
         public abstract void RemoveProject(string filePath);
 
-        public abstract void UpdateProject(string filePath, RazorConfiguration configuration, ProjectWorkspaceState projectWorkspaceState);
+        public abstract void UpdateProject(string filePath, RazorConfiguration configuration, string rootNamespace, ProjectWorkspaceState projectWorkspaceState);
     }
 }

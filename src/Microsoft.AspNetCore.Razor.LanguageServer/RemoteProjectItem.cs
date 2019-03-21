@@ -13,6 +13,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             FilePath = filePath;
             PhysicalPath = physicalPath;
+
+            if (FilePath.StartsWith('/'))
+            {
+                RelativePhysicalPath = FilePath.Substring(1);
+            }
+            else
+            {
+                RelativePhysicalPath = FilePath;
+            }
         }
 
         public override string BasePath => "/";
@@ -20,6 +29,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public override string FilePath { get; }
 
         public override string PhysicalPath { get; }
+
+        public override string RelativePhysicalPath { get; }
 
         public override bool Exists
         {

@@ -16,5 +16,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             });
 
         public static RazorConfiguration Configuration { get; } = FallbackRazorConfiguration.MVC_2_1;
+
+        public static string RootNamespace { get; } = null;
     }
 }

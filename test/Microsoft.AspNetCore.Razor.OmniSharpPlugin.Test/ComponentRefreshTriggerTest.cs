@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     public class ComponentRefreshTriggerTest : OmniSharpTestBase
     {
-        public ProjectInstanceEvaluator ProjectInstanceEvaluator { get; } = Mock.Of<ProjectInstanceEvaluator>();
+        private ProjectInstanceEvaluator ProjectInstanceEvaluator { get; } = Mock.Of<ProjectInstanceEvaluator>();
 
-        public ProjectInstance ProjectInstance { get; } = new ProjectInstance(ProjectRootElement.Create());
+        private ProjectInstance ProjectInstance { get; } = new ProjectInstance(ProjectRootElement.Create());
 
         [Fact]
         public void IsCompileItem_CompileItem_ReturnsTrue()
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             refreshTrigger.Initialize(projectManager);
             await RunOnForegroundAsync(() =>
             {
-                var hostProject = new OmniSharpHostProject(projectInstance.ProjectFileLocation.File, RazorConfiguration.Default);
+                var hostProject = new OmniSharpHostProject(projectInstance.ProjectFileLocation.File, RazorConfiguration.Default, "TestRootNamespace");
                 projectManager.ProjectAdded(hostProject);
                 var hostDocument = new OmniSharpHostDocument("file.cshtml", "file.cshtml", FileKinds.Component);
                 projectManager.DocumentAdded(hostProject, hostDocument);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             await RunOnForegroundAsync(() =>
             {
-                var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
+                var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
                 projectManager.ProjectAdded(hostProject);
                 var hostDocument = new OmniSharpHostDocument("file.cshtml", "file.cshtml", FileKinds.Legacy);
                 projectManager.DocumentAdded(hostProject, hostDocument);
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectManager = CreateProjectSnapshotManager();
             var refreshTrigger = new ComponentRefreshTrigger(Dispatcher, ProjectInstanceEvaluator, LoggerFactory);
             refreshTrigger.Initialize(projectManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             await RunOnForegroundAsync(() => projectManager.ProjectAdded(hostProject));
 
             // Act
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectManager = CreateProjectSnapshotManager();
             var refreshTrigger = new ComponentRefreshTrigger(Dispatcher, ProjectInstanceEvaluator, LoggerFactory);
             refreshTrigger.Initialize(projectManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             var hostDocument = new OmniSharpHostDocument("file.cshtml", "file.cshtml", FileKinds.Legacy);
             await RunOnForegroundAsync(() =>
             {
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectManager = CreateProjectSnapshotManager();
             var refreshTrigger = new ComponentRefreshTrigger(Dispatcher, ProjectInstanceEvaluator, LoggerFactory);
             refreshTrigger.Initialize(projectManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             var hostDocument = new OmniSharpHostDocument("file.cshtml", "file.cshtml", FileKinds.Component);
             await RunOnForegroundAsync(() =>
             {

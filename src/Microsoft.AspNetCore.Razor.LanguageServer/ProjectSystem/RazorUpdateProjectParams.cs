@@ -12,8 +12,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
     {
         public string FilePath { get; set; }
 
-        public ProjectWorkspaceState ProjectWorkspaceState { get; set; }
-
         public RazorConfiguration Configuration { get; set; }
+
+        public string RootNamespace { get; set; }
+
+        public ProjectWorkspaceState ProjectWorkspaceState { get; set; }
     }
 }

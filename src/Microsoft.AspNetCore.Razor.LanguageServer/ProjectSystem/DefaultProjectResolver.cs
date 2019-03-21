@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
 
             var miscellaneousProjectPath = Path.Combine(TempDirectory.Instance.DirectoryPath, "__MISC_RAZOR_PROJECT__");
-            _miscellaneousHostProject = new HostProject(miscellaneousProjectPath, RazorDefaults.Configuration);
+            _miscellaneousHostProject = new HostProject(miscellaneousProjectPath, RazorDefaults.Configuration, RazorDefaults.RootNamespace);
         }
 
         public override bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshot projectSnapshot)

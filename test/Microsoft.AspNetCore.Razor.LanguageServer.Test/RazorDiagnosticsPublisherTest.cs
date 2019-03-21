@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public RazorDiagnosticsPublisherTest()
         {
             var testProjectManager = TestProjectSnapshotManager.Create(Dispatcher);
-            var hostProject = new HostProject("/C:/project/project.csproj", RazorConfiguration.Default);
+            var hostProject = new HostProject("/C:/project/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             testProjectManager.ProjectAdded(hostProject);
             var sourceText = SourceText.From(string.Empty);
             var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);

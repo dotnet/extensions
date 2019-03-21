@@ -19,7 +19,32 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DefaultRazorProjectServiceTest : TestBase
     {
         [Fact]
-        public void UpdateProject_SameConfigurationNoops()
+        public void UpdateProject_SameConfigurationDifferentRootNamespace_UpdatesRootNamespace()
+        {
+            // Arrange
+            var projectFilePath = "/C:/path/to/project.csproj";
+            var ownerProject = TestProjectSnapshot.Create(projectFilePath);
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
+            var expectedRootNamespace = "NewRootNamespace";
+            projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
+                .Returns(ownerProject);
+            projectSnapshotManager.Setup(manager => manager.ProjectWorkspaceStateChanged(It.IsAny<string>(), It.IsAny<ProjectWorkspaceState>()));
+            projectSnapshotManager.Setup(manager => manager.ProjectConfigurationChanged(It.IsAny<HostProject>()))
+                .Callback<HostProject>((hostProject) =>
+                {
+                    Assert.Equal(expectedRootNamespace, hostProject.RootNamespace);
+                });
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
+
+            // Act
+            projectService.UpdateProject(projectFilePath, ownerProject.Configuration, expectedRootNamespace, ProjectWorkspaceState.Default);
+
+            // Assert
+            projectSnapshotManager.VerifyAll();
+        }
+
+        [Fact]
+        public void UpdateProject_SameConfigurationAndRootNamespaceNoops()
         {
             // Arrange
             var projectFilePath = "/C:/path/to/project.csproj";
@@ -33,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act & Assert
-            projectService.UpdateProject(projectFilePath, ownerProject.Configuration, ProjectWorkspaceState.Default);
+            projectService.UpdateProject(projectFilePath, ownerProject.Configuration, "TestRootNamespace", ProjectWorkspaceState.Default);
         }
 
         [Fact]
@@ -55,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act
-            projectService.UpdateProject(projectFilePath, configuration: null, ProjectWorkspaceState.Default);
+            projectService.UpdateProject(projectFilePath, configuration: null, "TestRootNamespace", ProjectWorkspaceState.Default);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -80,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act
-            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, ProjectWorkspaceState.Default);
+            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, "TestRootNamespace", ProjectWorkspaceState.Default);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -99,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act & Assert
-            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, ProjectWorkspaceState.Default);
+            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, "TestRootNamespace", ProjectWorkspaceState.Default);
         }
 
         [Fact]

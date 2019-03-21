@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     Assert.Equal(expectedPublishFilePath, publishFilePath);
                 });
             publisher.Initialize(snapshotManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             publisher.SetPublishFilePath(hostProject.FilePath, expectedPublishFilePath);
 
             // Act
@@ -91,11 +91,11 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     Assert.Equal(expectedPublishFilePath, publishFilePath);
                 });
             publisher.Initialize(snapshotManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             publisher.SetPublishFilePath(hostProject.FilePath, expectedPublishFilePath);
             await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
             var newConfiguration = RazorConfiguration.Create(RazorLanguageVersion.Experimental, "Custom", Enumerable.Empty<RazorExtension>());
-            var newHostProject = new OmniSharpHostProject(hostProject.FilePath, newConfiguration);
+            var newHostProject = new OmniSharpHostProject(hostProject.FilePath, newConfiguration, "TestRootNamespace");
 
             // Act
             await RunOnForegroundAsync(() => snapshotManager.ProjectConfigurationChanged(newHostProject));
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var snapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
             var publisher = new TestProjectChangePublisher(LoggerFactory);
             publisher.Initialize(snapshotManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
 
             // Act & Assert
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     Assert.Equal(expectedPublishFilePath, publishFilePath);
                 });
             publisher.Initialize(snapshotManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             publisher.SetPublishFilePath(hostProject.FilePath, expectedPublishFilePath);
             await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
 

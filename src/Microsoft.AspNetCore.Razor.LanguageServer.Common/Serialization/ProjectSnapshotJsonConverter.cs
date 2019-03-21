@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             var project = (ProjectSnapshot)value;
-            var handle = new FullProjectSnapshotHandle(project.FilePath, project.Configuration, project.ProjectWorkspaceState);
+            var handle = new FullProjectSnapshotHandle(project.FilePath, project.Configuration, project.RootNamespace, project.ProjectWorkspaceState);
 
             FullProjectSnapshotHandleJsonConverter.Instance.WriteJson(writer, handle, serializer);
         }

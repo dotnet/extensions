@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
 
             var hostServices = TestServices.Create(workspaceServices, languageServices);
             var workspace = TestWorkspace.Create(hostServices);
-            var hostProject = new HostProject(filePath, configuration);
+            var hostProject = new HostProject(filePath, configuration, "TestRootNamespace");
             var state = ProjectState.Create(workspace.Services, hostProject);
             foreach (var documentFilePath in documentFilePaths)
             {

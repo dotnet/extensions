@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 return false;
             }
 
-            configuration = new ProjectConfiguration(UnsupportedRazorConfiguration.Instance, Array.Empty<OmniSharpHostDocument>());
+            configuration = new ProjectConfiguration(UnsupportedRazorConfiguration.Instance, Array.Empty<OmniSharpHostDocument>(), rootNamespace: null);
             return true;
         }
     }
