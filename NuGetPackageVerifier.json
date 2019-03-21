@@ -13,6 +13,27 @@
             "lib/net461/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll": "Underlying omnisharp dependency is not strong-named."
           }
         }
+      },
+      "Microsoft.AspNetCore.Razor.LanguageServer.Common": {
+        "Exclusions": {
+          "PACKAGE_MISSING_REPO_COMMIT": {
+            "*": "Not shipping this package"
+          }
+        }
+      },
+      "Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed": {
+        "Exclusions": {
+          "PACKAGE_MISSING_REPO_COMMIT": {
+            "*": "Not shipping this package"
+          }
+        }
+      },
+      "rzls": {
+        "Exclusions": {
+          "PACKAGE_MISSING_REPO_COMMIT": {
+            "*": "Not shipping this package"
+          }
+        }
       }
     }
   },
