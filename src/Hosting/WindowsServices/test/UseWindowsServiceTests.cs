@@ -7,13 +7,13 @@ using Xunit;
 
 namespace Microsoft.Extensions.Hosting
 {
-    public class UseServiceBaseLifetimeTests
+    public class UseWindowsServiceTests
     {
         [Fact]
         public void DefaultsToOffOutsideOfService()
         {
             var host = new HostBuilder()
-                .UseServiceBaseLifetime()
+                .UseWindowsService()
                 .Build();
 
             using (host)

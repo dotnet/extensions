@@ -3,16 +3,16 @@
 
 namespace Microsoft.Extensions.Hosting
 {
-    public static partial class ServiceBaseLifetimeHostBuilderExtensions
+    public static partial class WindowsServiceLifetimeHostBuilderExtensions
     {
-        public static Microsoft.Extensions.Hosting.IHostBuilder UseServiceBaseLifetime(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder) { throw null; }
+        public static Microsoft.Extensions.Hosting.IHostBuilder UseWindowsService(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder) { throw null; }
     }
 }
 namespace Microsoft.Extensions.Hosting.WindowsServices
 {
-    public partial class ServiceBaseLifetime : System.ServiceProcess.ServiceBase, Microsoft.Extensions.Hosting.IHostLifetime
+    public partial class WindowsServiceLifetime : System.ServiceProcess.ServiceBase, Microsoft.Extensions.Hosting.IHostLifetime
     {
-        public ServiceBaseLifetime(Microsoft.Extensions.Hosting.IHostEnvironment environment, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public WindowsServiceLifetime(Microsoft.Extensions.Hosting.IHostEnvironment environment, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         protected override void OnStart(string[] args) { }
         protected override void OnStop() { }
         public System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
