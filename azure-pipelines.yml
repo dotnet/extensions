@@ -31,9 +31,11 @@ jobs:
       pool:
         # agent pool can't be read from a user-defined variable (Azure DevOps limitation)
         ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: dotnet-external-vs2019-preview
+          name: NetCorePublic-Int-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2019.BT.Open
         ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          name: dotnet-internal-vs2019-preview
+          name: NetCoreInternal-Int-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2019.BT
       steps:
       - powershell: ./restore.cmd -ci; ./eng/scripts/CodeCheck.ps1 -ci
         displayName: Run eng/scripts/CodeCheck.ps1
@@ -132,7 +134,10 @@ jobs:
 
     - job: macOS
       pool:
-        name: Hosted macOS
+        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+          name: Hosted macOS
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          name: Hosted Mac Internal
       strategy:
         matrix:
           debug:
