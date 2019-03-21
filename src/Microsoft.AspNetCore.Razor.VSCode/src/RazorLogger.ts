@@ -79,7 +79,7 @@ ${error.stack}`;
 
         this.log(
             '--------------------------------------------------------------------------------');
-        this.log(`Razor.VSCode version ${packageJsonContents.version}`);
+        this.log(`Razor.VSCode version ${packageJsonContents.defaults.razor}`);
         this.log(
             '--------------------------------------------------------------------------------');
         this.log(`Razor's trace level is currently set to '${Trace[this.trace]}'`);
@@ -97,7 +97,7 @@ ${error.stack}`;
 
 function readOwnPackageJson() {
     const packageJsonPath = findInDirectoryOrAncestor(__dirname, 'package.json');
-    return require(packageJsonPath);
+    return JSON.parse(fs.readFileSync(packageJsonPath).toString());
 }
 
 function findInDirectoryOrAncestor(dir: string, filename: string) {

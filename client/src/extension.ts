@@ -5,7 +5,7 @@
 
 import * as fs from 'fs';
 import * as razorExtensionPackage from 'microsoft.aspnetcore.razor.vscode';
-import { TelemetryEvent } from 'microsoft.aspnetcore.razor.vscode/dist/HostEventStream';
+import { EventType } from 'microsoft.aspnetcore.razor.vscode/dist/HostEventStream';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -28,7 +28,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const hostEventStream = {
         post: (event: any) => {
-            if (event.constructor.name === TelemetryEvent.name) {
+            if (event.type === EventType.TelemetryEvent) {
                 console.log(`Telemetry Event: ${event.eventName}.`);
                 if (event.properties) {
                     const propertiesString = JSON.stringify(event.properties, null, 2);
