@@ -80,9 +80,9 @@
     <MicrosoftBuildFrameworkPackageVersion>15.8.166</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildPackageVersion>15.8.166</MicrosoftBuildPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MicrosoftCodeAnalysisCommonPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisCommonPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.11.0-beta1-final</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftCodeAnalysisCommonPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp30PackageVersion>$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp30PackageVersion>
     <MicrosoftNETFrameworkReferenceAssemblies>1.0.0-alpha-5</MicrosoftNETFrameworkReferenceAssemblies>
@@ -116,17 +116,17 @@
     <VSMAC_NewtonsoftJsonPackageVersion>10.0.3</VSMAC_NewtonsoftJsonPackageVersion>
     <TEST_NewtonsoftJsonPackageVersion>11.0.1</TEST_NewtonsoftJsonPackageVersion>
     <StreamJsonRpcPackageVersion>1.3.23</StreamJsonRpcPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
-    <VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>
-    <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>3.0.0-beta2-18612-05</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftCodeAnalysisPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>
+    <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>3.1.0-beta1-19156-03</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitVersion>2.4.1</XunitVersion>
   </PropertyGroup>

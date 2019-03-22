@@ -126,7 +126,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             else
             {
                 ConfigurationVersion = Version;
-            }   
+            }
 
             if ((difference & ClearProjectWorkspaceStateVersionMask) == 0 ||
                 ProjectWorkspaceState == older.ProjectWorkspaceState ||
@@ -137,6 +137,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             else
             {
                 ProjectWorkspaceStateVersion = Version;
+            }
+
+            if ((difference & ClearProjectWorkspaceStateVersionMask) != 0 &&
+                CSharpLanguageVersion != older.CSharpLanguageVersion)
+            {
+                // C# language version changed. This impacts the ProjectEngine, reset it.
+                _projectEngine = null;
+                ConfigurationVersion = Version;
             }
         }
 

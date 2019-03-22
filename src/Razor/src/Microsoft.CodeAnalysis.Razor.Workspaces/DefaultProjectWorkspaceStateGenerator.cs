@@ -115,19 +115,18 @@ namespace Microsoft.CodeAnalysis.Razor
                 var workspaceState = ProjectWorkspaceState.Default;
                 try
                 {
-                    var csharpLanguageVersion = LanguageVersion.Default;
-                    var csharpParseOptions = (CSharpParseOptions)workspaceProject.ParseOptions;
-                    if (csharpParseOptions == null)
-                    {
-                        Debug.Fail("Workspace project should always have CSharp parse options.");
-                    }
-                    else
-                    {
-                        csharpLanguageVersion = csharpParseOptions.LanguageVersion;
-                    }
-
                     if (workspaceProject != null)
                     {
+                        var csharpLanguageVersion = LanguageVersion.Default;
+                        var csharpParseOptions = (CSharpParseOptions)workspaceProject.ParseOptions;
+                        if (csharpParseOptions == null)
+                        {
+                            Debug.Fail("Workspace project should always have CSharp parse options.");
+                        }
+                        else
+                        {
+                            csharpLanguageVersion = csharpParseOptions.LanguageVersion;
+                        }
                         var tagHelperResolutionResult = await _tagHelperResolver.GetTagHelpersAsync(workspaceProject, projectSnapshot, cancellationToken);
                         workspaceState = new ProjectWorkspaceState(tagHelperResolutionResult.Descriptors, csharpLanguageVersion);
                     }
