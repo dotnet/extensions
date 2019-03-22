@@ -4,14 +4,20 @@
 using System;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting.WindowsServices;
+using Microsoft.Extensions.Logging.EventLog;
 
 namespace Microsoft.Extensions.Hosting
 {
+    /// <summary>
+    /// Extension methods for setting up WindowsServiceLifetime.
+    /// </summary>
     public static class WindowsServiceLifetimeHostBuilderExtensions
     {
         /// <summary>
-        /// Sets the host lifetime to WindowsServiceLifetime and sets the Content Root.
+        /// Sets the host lifetime to WindowsServiceLifetime, sets the Content Root,
+        /// and enables logging to the event log with the application name as the default source name.
         /// </summary>
         /// <remarks>
         /// This is context aware and will only activate if it detects the process is running
@@ -21,11 +27,41 @@ namespace Microsoft.Extensions.Hosting
         /// <returns></returns>
         public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder)
         {
+            return hostBuilder.UseWindowsService((context, settings) =>
+            {
+                settings.SourceName = context.HostingEnvironment.ApplicationName;
+            });
+        }
+
+        /// <summary>
+        /// Sets the host lifetime to WindowsServiceLifetime, sets the Content Root,
+        /// and enables logging to the event log.
+        /// </summary>
+        /// <remarks>
+        /// This is context aware and will only activate if it detects the process is running
+        /// as a Windows Service.
+        /// </remarks>
+        /// <param name="hostBuilder"></param>
+        /// <param name="configureEventLog"></param>
+        /// <returns></returns>
+        public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder, Action<HostBuilderContext, EventLogSettings> configureEventLog)
+        {
+            if (configureEventLog == null)
+            {
+                throw new ArgumentNullException(nameof(configureEventLog));
+            }
+
             if (IsWindowsService())
             {
-                // CurrentDirectory for services is c:\Windows\System32, but that's what Host.CreateDefaultBuilder uses for VS scenarios.
+                // Host.CreateDefaultBuilder uses CurrentDirectory for VS scenarios, but CurrentDirectory for services is c:\Windows\System32.
                 hostBuilder.UseContentRoot(AppContext.BaseDirectory);
-                return hostBuilder.ConfigureServices((hostContext, services) =>
+                hostBuilder.ConfigureLogging((hostingContext, logging) =>
+                {
+                    var settings = new EventLogSettings();
+                    configureEventLog(hostingContext, settings);
+                    logging.AddEventLog(settings);
+                })
+                .ConfigureServices((hostContext, services) =>
                 {
                     services.AddSingleton<IHostLifetime, WindowsServiceLifetime>();
                 });
