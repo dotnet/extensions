@@ -9,19 +9,19 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                MarkupElement - (31:1,0 [63] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                MarkupElement - (0:0,0 [63] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
-                        HtmlAttributeValue - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
-                    HtmlAttribute - (56:1,25 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
+                        HtmlAttributeValue - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
+                    HtmlAttribute - (25:0,25 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (57:1,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
+                            IntermediateToken - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
                             IntermediateToken -  - CSharp - , 
-                            IntermediateToken - (85:1,54 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Format
+                            IntermediateToken - (54:0,54 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Format
                             IntermediateToken -  - CSharp - )
-                    HtmlAttribute - (56:1,25 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
+                    HtmlAttribute - (25:0,25 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, Format)
-            CSharpCode - (108:2,12 [135] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (108:2,12 [135] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n\n    public string Format { get; set; } = "MM/dd/yyyy";\n
+            CSharpCode - (77:1,12 [135] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (77:1,12 [135] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n\n    public string Format { get; set; } = "MM/dd/yyyy";\n

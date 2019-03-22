@@ -12,14 +12,6 @@ namespace Test
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
-        ((System.Action)(() => {
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-global::System.Object __typeHelper = "*, TestAssembly";
-
-#line default
-#line hidden
-        }
-        ))();
         }
         #pragma warning restore 219
         #pragma warning disable 0414
@@ -33,7 +25,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, Enabled);
         }
         #pragma warning restore 1998
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     public bool Enabled { get; set; }
 

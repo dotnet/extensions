@@ -15,7 +15,7 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 3, 2, (__value) => {
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                            _my = __value;
 
 #line default
@@ -24,7 +24,7 @@ namespace Test
             );
         }
         #pragma warning restore 1998
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private MyComponent<int> _my;
     public void Foo() { System.GC.KeepAlive(_my); }

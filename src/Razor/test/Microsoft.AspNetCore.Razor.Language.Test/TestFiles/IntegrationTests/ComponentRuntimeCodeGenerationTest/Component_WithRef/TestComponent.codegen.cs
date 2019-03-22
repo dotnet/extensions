@@ -18,7 +18,7 @@ namespace Test
             builder.AddAttribute(1, "ParamBefore", "before");
             builder.AddAttribute(2, "ParamAfter", "after");
             builder.AddComponentReferenceCapture(3, (__value) => {
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                        myInstance = (Test.MyComponent)__value;
 
 #line default
@@ -28,7 +28,7 @@ namespace Test
             builder.CloseComponent();
         }
         #pragma warning restore 1998
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Test.MyComponent myInstance;
     public void Foo() { System.GC.KeepAlive(myInstance); }

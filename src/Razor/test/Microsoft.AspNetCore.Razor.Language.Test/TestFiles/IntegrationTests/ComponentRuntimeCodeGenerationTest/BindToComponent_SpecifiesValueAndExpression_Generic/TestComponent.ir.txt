@@ -9,20 +9,20 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                Component - (31:1,0 [44] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (60:1,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParam - AttributeStructure.DoubleQuotes
+                Component - (0:0,0 [44] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (29:0,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParam - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (60:1,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            IntermediateToken - (29:0,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (60:1,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (29:0,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => ParentValue = __value
-                    ComponentAttribute - (60:1,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamExpression - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (29:0,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => ParentValue
-            CSharpCode - (89:2,12 [65] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (89:2,12 [65] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime ParentValue { get; set; } = DateTime.Now;\n
+            CSharpCode - (58:1,12 [65] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (58:1,12 [65] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime ParentValue { get; set; } = DateTime.Now;\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

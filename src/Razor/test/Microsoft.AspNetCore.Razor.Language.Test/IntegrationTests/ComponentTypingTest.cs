@@ -43,7 +43,6 @@ namespace Test
 }
 "));
             var text = @"
-@addTagHelper *, TestAssembly
 <div>
   <MyComponent bind-Value=""myValue"" AnotherValue=""hi""/>
   <input type=""text"" bind=""@this.ModelState.Bind(x => x)"" />
@@ -118,7 +117,6 @@ namespace Test
 }
 "));
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
   <MyComponent Value=10 Something=@for
 
   <button disabled=@form.IsSubmitting type=""submit"" class=""btn btn-primary mt-3 mr-3 has-spinner @(form.IsSubmitting ? ""active"" :"""")"" onclick=@(async () => await SaveAsync(false))>

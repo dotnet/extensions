@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9994", diagnostic.Id);
+            Assert.Equal("RZ9994", diagnostic.Id);
         }
 
         // Razor doesn't parse this as a template, we don't need much special handling for
@@ -81,7 +81,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9994", diagnostic.Id);
+            Assert.Equal("RZ9994", diagnostic.Id);
         }
 
         [Fact]
@@ -94,7 +94,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9994", diagnostic.Id);
+            Assert.Equal("RZ9994", diagnostic.Id);
         }
 
 
@@ -108,7 +108,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9994", diagnostic.Id);
+            Assert.Equal("RZ9994", diagnostic.Id);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9994", diagnostic.Id);
+            Assert.Equal("RZ9994", diagnostic.Id);
         }
     }
 }

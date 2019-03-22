@@ -1,4 +1,4 @@
-Source Location: (107:3,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (76:2,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public string UserName { get; set; }
     public bool UserIsActive { get; set; }

@@ -22,7 +22,7 @@ namespace Test
             }
             ));
             builder.AddComponentReferenceCapture(5, (__value) => {
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                   myInstance = (Test.MyComponent)__value;
 
 #line default
@@ -32,7 +32,7 @@ namespace Test
             builder.CloseComponent();
         }
         #pragma warning restore 1998
-#line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Test.MyComponent myInstance;
     public void Foo() { System.GC.KeepAlive(myInstance); }

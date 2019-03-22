@@ -17,7 +17,7 @@ namespace Test
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, Microsoft.AspNetCore.Components.BindMethods.GetValue(ParentValue), 2, __value => ParentValue = __value, 3, () => ParentValue);
         }
         #pragma warning restore 1998
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     public DateTime ParentValue { get; set; } = DateTime.Now;
 

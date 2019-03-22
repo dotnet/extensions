@@ -1,19 +1,14 @@
-Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
-|*, TestAssembly|
-Generated Location: (554:16,38 [15] )
-|*, TestAssembly|
-
-Source Location: (70:1,39 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (39:0,39 [10] x:\dir\subdir\Test\TestComponent.cshtml)
 |myInstance|
-Generated Location: (1303:37,39 [10] )
+Generated Location: (1104:29,39 [10] )
 |myInstance|
 
-Source Location: (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (88:2,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Test.MyComponent myInstance;
     public void Foo() { System.GC.KeepAlive(myInstance); }
 |
-Generated Location: (1487:44,12 [104] )
+Generated Location: (1398:41,12 [104] )
 |
     private Test.MyComponent myInstance;
     public void Foo() { System.GC.KeepAlive(myInstance); }

@@ -1,4 +1,4 @@
-Source Location: (111:2,12 [77] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (80:1,12 [77] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 |

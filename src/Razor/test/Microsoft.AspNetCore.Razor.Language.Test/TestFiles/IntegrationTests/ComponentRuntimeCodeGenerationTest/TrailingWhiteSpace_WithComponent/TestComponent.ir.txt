@@ -10,4 +10,4 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 MarkupBlock -  - <h1>Hello</h1>\n\n
-                Component - (49:3,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent
+                Component - (18:2,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent

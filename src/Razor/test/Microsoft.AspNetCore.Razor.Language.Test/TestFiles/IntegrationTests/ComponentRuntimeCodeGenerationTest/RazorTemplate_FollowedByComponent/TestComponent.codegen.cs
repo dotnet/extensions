@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
   
     RenderFragment<Person> p = (person) => 
 
@@ -27,7 +27,7 @@ namespace Test
                 builder2.CloseComponent();
                 builder2.CloseElement();
             }
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                                          ;
 
 #line default
@@ -42,7 +42,7 @@ namespace Test
             builder.CloseComponent();
         }
         #pragma warning restore 1998
-#line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 8 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     class Person
     {

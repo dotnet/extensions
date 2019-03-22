@@ -9,15 +9,15 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                CSharpCode - (35:1,2 [47] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (35:1,2 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment<Person> template = (person) => 
-                Template - (83:1,50 [23] x:\dir\subdir\Test\TestComponent.cshtml)
-                    MarkupElement - (83:1,50 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                        CSharpExpression - (89:1,56 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (89:1,56 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
-                CSharpCode - (106:1,73 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (106:1,73 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
-                Component - (111:2,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (140:2,29 [9] x:\dir\subdir\Test\TestComponent.cshtml) - PersonTemplate - AttributeStructure.DoubleQuotes
-                        CSharpExpression - (141:2,30 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (141:2,30 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template
+                CSharpCode - (2:0,2 [47] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (2:0,2 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment<Person> template = (person) => 
+                Template - (50:0,50 [23] x:\dir\subdir\Test\TestComponent.cshtml)
+                    MarkupElement - (50:0,50 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                        CSharpExpression - (56:0,56 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (56:0,56 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
+                CSharpCode - (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
+                Component - (78:1,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (107:1,29 [9] x:\dir\subdir\Test\TestComponent.cshtml) - PersonTemplate - AttributeStructure.DoubleQuotes
+                        CSharpExpression - (108:1,30 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (108:1,30 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template

@@ -15,7 +15,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
   
     void RenderChildComponent()
     {
@@ -26,13 +26,13 @@ namespace Test
             builder.OpenComponent<Test.MyComponent>(1);
             builder.CloseComponent();
             builder.AddContent(2, "\r\n");
-#line 7 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
     }
 
 #line default
 #line hidden
             builder.AddContent(3, "\r\n");
-#line 10 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderChildComponent(); 
 
 #line default

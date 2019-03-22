@@ -91,7 +91,6 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <GenericContext />");
 
             // Assert
@@ -111,7 +110,6 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <MultipleGenericParameter TItem1=int />");
 
             // Assert

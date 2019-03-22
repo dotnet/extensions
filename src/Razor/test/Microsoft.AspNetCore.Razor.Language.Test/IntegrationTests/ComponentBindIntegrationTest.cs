@@ -32,7 +32,6 @@ namespace Test
 
             // Act
             var result = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <div bind-value=""@ParentValue"" />
 @functions {
     public string ParentValue { get; set; } = ""hi"";
@@ -40,7 +39,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(result.Diagnostics);
-            Assert.Equal("BL9989", diagnostic.Id);
+            Assert.Equal("RZ9989", diagnostic.Id);
             Assert.Equal(
                 "The attribute 'bind-value' was matched by multiple bind attributes. Duplicates:" + Environment.NewLine +
                 "Test.BindAttributes" + Environment.NewLine +
@@ -53,7 +52,6 @@ namespace Test
         {
             // Arrange & Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <input type=""text"" bind-first-second-third=""Text"" />
 @functions {
     public string Text { get; set; } = ""text"";
@@ -61,7 +59,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9991", diagnostic.Id);
+            Assert.Equal("RZ9991", diagnostic.Id);
         }
 
         [Fact]
@@ -69,7 +67,6 @@ namespace Test
         {
             // Arrange & Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <input type=""text"" bind-first-=""Text"" />
 @functions {
     public string Text { get; set; } = ""text"";
@@ -77,14 +74,13 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9991", diagnostic.Id);
+            Assert.Equal("RZ9991", diagnostic.Id);
         }
 
         [Fact]
         public void Bind_InvalidUseOfDirective_DoesNotThrow()
         {
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <input type=""text"" bind=""@page"" />
 @functions {
     public string page { get; set; } = ""text"";

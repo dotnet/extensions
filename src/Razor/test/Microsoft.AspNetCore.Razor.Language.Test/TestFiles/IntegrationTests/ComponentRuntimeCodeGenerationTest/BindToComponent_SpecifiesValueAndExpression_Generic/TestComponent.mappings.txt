@@ -1,4 +1,4 @@
-Source Location: (89:2,12 [65] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (58:1,12 [65] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public DateTime ParentValue { get; set; } = DateTime.Now;
 |

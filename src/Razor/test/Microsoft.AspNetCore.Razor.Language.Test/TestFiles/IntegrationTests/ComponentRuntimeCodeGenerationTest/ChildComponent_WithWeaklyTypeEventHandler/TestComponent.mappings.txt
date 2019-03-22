@@ -1,4 +1,4 @@
-Source Location: (84:3,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (53:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Action<UIMouseEventArgs> OnClick { get; set; }
 |

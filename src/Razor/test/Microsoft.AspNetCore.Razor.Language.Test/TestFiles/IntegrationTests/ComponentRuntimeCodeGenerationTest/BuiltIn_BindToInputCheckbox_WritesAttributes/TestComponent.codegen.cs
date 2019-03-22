@@ -21,7 +21,7 @@ namespace Test
             builder.CloseElement();
         }
         #pragma warning restore 1998
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     public bool Enabled { get; set; }
 

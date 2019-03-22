@@ -1,4 +1,4 @@
-Source Location: (138:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (107:2,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private int counter;
     private void Increment() {

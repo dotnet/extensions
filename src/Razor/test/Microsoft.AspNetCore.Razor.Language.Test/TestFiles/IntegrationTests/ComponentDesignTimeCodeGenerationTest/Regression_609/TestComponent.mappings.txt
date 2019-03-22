@@ -1,24 +1,19 @@
-Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
-|*, TestAssembly|
-Generated Location: (554:16,38 [15] )
-|*, TestAssembly|
-
-Source Location: (49:1,18 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (18:0,18 [8] x:\dir\subdir\Test\TestComponent.cshtml)
 |UserName|
-Generated Location: (1158:33,18 [8] )
+Generated Location: (959:25,18 [8] )
 |UserName|
 
-Source Location: (75:1,44 [12] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (44:0,44 [12] x:\dir\subdir\Test\TestComponent.cshtml)
 |UserIsActive|
-Generated Location: (1517:41,44 [12] )
+Generated Location: (1318:33,44 [12] )
 |UserIsActive|
 
-Source Location: (107:3,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (76:2,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public string UserName { get; set; }
     public bool UserIsActive { get; set; }
 |
-Generated Location: (1983:53,12 [88] )
+Generated Location: (1887:50,12 [88] )
 |
     public string UserName { get; set; }
     public bool UserIsActive { get; set; }

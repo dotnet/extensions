@@ -9,10 +9,10 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                Component - (31:1,0 [87] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentChildContent - (50:2,4 [20] x:\dir\subdir\Test\TestComponent.cshtml) - Header - context
-                        HtmlContent - (58:2,12 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (58:2,12 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hi!
-                    ComponentChildContent - (76:3,4 [26] x:\dir\subdir\Test\TestComponent.cshtml) - Footer - context
-                        CSharpExpression - (86:3,14 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (86:3,14 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "bye!"
+                Component - (0:0,0 [87] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentChildContent - (19:1,4 [20] x:\dir\subdir\Test\TestComponent.cshtml) - Header - context
+                        HtmlContent - (27:1,12 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (27:1,12 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hi!
+                    ComponentChildContent - (45:2,4 [26] x:\dir\subdir\Test\TestComponent.cshtml) - Footer - context
+                        CSharpExpression - (55:2,14 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (55:2,14 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "bye!"

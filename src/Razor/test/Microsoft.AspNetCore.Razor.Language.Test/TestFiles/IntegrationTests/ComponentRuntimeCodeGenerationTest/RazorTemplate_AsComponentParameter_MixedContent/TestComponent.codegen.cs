@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderFragment<Test.Context> template = (context) => 
 
 #line default
@@ -27,7 +27,7 @@ namespace Test
                 builder2.AddContent(4, context.Item.ToLower());
                 builder2.CloseElement();
             }
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                                                            ; 
 
 #line default

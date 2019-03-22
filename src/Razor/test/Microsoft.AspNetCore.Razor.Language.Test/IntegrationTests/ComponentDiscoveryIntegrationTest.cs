@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -27,11 +28,11 @@ namespace Test
 "));
 
             // Act
-            var result = CompileToCSharp("@addTagHelper *, TestAssembly");
+            var result = CompileToCSharp(string.Empty);
 
             // Assert
             var bindings = result.CodeDocument.GetTagHelperContext();
-            Assert.Single(bindings.TagHelpers, t => t.Name == "Test.MyComponent");
+            Assert.Contains(bindings.TagHelpers, t => t.Name == "Test.MyComponent");
         }
 
         [Fact]
@@ -50,11 +51,22 @@ namespace Test.AnotherNamespace
 "));
 
             // Act
-            var result = CompileToCSharp("@addTagHelper *, TestAssembly");
+            var result = CompileToCSharp(string.Empty);
 
             // Assert
             var bindings = result.CodeDocument.GetTagHelperContext();
-            Assert.Single(bindings.TagHelpers, t => t.Name == "Test.AnotherNamespace.MyComponent");
+
+            Assert.Contains(bindings.TagHelpers, t =>
+            {
+                return t.Name == "Test.AnotherNamespace.MyComponent" &&
+                    t.IsComponentFullyQualifiedNameMatch();
+            });
+
+            Assert.DoesNotContain(bindings.TagHelpers, t =>
+            {
+                return t.Name == "Test.AnotherNamespace.MyComponent" &&
+                    !t.IsComponentFullyQualifiedNameMatch();
+            });
         }
 
         [Fact]
@@ -63,11 +75,11 @@ namespace Test.AnotherNamespace
             // Arrange
 
             // Act
-            var result = CompileToCSharp("UniqueName.cshtml", "@addTagHelper *, TestAssembly");
+            var result = CompileToCSharp("UniqueName.cshtml", string.Empty);
 
             // Assert
             var bindings = result.CodeDocument.GetTagHelperContext();
-            Assert.Single(bindings.TagHelpers, t => t.Name == "Test.UniqueName");
+            Assert.Contains(bindings.TagHelpers, t => t.Name == "Test.UniqueName");
         }
 
         [Fact]
@@ -77,7 +89,6 @@ namespace Test.AnotherNamespace
 
             // Act
             var result = CompileToCSharp("UniqueName.cshtml", @"
-@addTagHelper *, TestAssembly
 @typeparam TItem
 @functions {
     [Parameter] TItem Item { get; set; }
@@ -85,7 +96,7 @@ namespace Test.AnotherNamespace
 
             // Assert
             var bindings = result.CodeDocument.GetTagHelperContext();
-            Assert.Single(bindings.TagHelpers, t => t.Name == "Test.UniqueName<TItem>");
+            Assert.Contains(bindings.TagHelpers, t => t.Name == "Test.UniqueName<TItem>");
         }
 
         [Fact]
@@ -95,7 +106,6 @@ namespace Test.AnotherNamespace
 
             // Act
             var result = CompileToCSharp("UniqueName.cshtml", @"
-@addTagHelper *, TestAssembly
 @typeparam TItem1
 @typeparam TItem2
 @typeparam TItem3
@@ -105,7 +115,7 @@ namespace Test.AnotherNamespace
 
             // Assert
             var bindings = result.CodeDocument.GetTagHelperContext();
-            Assert.Single(bindings.TagHelpers, t => t.Name == "Test.UniqueName<TItem1, TItem2, TItem3>");
+            Assert.Contains(bindings.TagHelpers, t => t.Name == "Test.UniqueName<TItem1, TItem2, TItem3>");
         }
     }
 }

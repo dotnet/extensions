@@ -9,21 +9,21 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                CSharpCode - (35:1,2 [54] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (35:1,2 [54] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment<Test.Context> template = (context) => 
-                Template - (90:1,57 [50] x:\dir\subdir\Test\TestComponent.cshtml)
-                    MarkupElement - (90:1,57 [50] x:\dir\subdir\Test\TestComponent.cshtml) - li
-                        HtmlContent - (94:1,61 [1] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (94:1,61 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - #
-                        CSharpExpression - (96:1,63 [13] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (96:1,63 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Index
-                        HtmlContent - (109:1,76 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (109:1,76 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \-
-                        CSharpExpression - (113:1,80 [22] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (113:1,80 [22] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Item.ToLower()
-                CSharpCode - (140:1,107 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (140:1,107 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
-                Component - (145:2,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (168:2,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Template - AttributeStructure.DoubleQuotes
-                        CSharpExpression - (169:2,24 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (169:2,24 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template
+                CSharpCode - (2:0,2 [54] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (2:0,2 [54] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment<Test.Context> template = (context) => 
+                Template - (57:0,57 [50] x:\dir\subdir\Test\TestComponent.cshtml)
+                    MarkupElement - (57:0,57 [50] x:\dir\subdir\Test\TestComponent.cshtml) - li
+                        HtmlContent - (61:0,61 [1] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (61:0,61 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - #
+                        CSharpExpression - (63:0,63 [13] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (63:0,63 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Index
+                        HtmlContent - (76:0,76 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (76:0,76 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \-
+                        CSharpExpression - (80:0,80 [22] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (80:0,80 [22] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Item.ToLower()
+                CSharpCode - (107:0,107 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (107:0,107 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
+                Component - (112:1,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (135:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Template - AttributeStructure.DoubleQuotes
+                        CSharpExpression - (136:1,24 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (136:1,24 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template

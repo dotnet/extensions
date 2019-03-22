@@ -1,10 +1,5 @@
-Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
-|*, TestAssembly|
-Generated Location: (554:16,38 [15] )
-|*, TestAssembly|
-
-Source Location: (59:1,28 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (28:0,28 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |context|
-Generated Location: (1242:33,28 [7] )
+Generated Location: (1043:25,28 [7] )
 |context|
 

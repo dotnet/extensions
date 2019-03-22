@@ -7,9 +7,6 @@ Document -
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
-                DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
-                DirectiveToken - (14:0,14 [9] ) - "*, Test"
-                DirectiveToken - (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml) - *, TestAssembly
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
             CSharpCode - 
@@ -19,15 +16,13 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                Component - (31:1,0 [132] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (63:2,17 [3] x:\dir\subdir\Test\TestComponent.cshtml) - IntProperty - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (63:2,17 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 123
-                    ComponentAttribute - (87:3,18 [4] x:\dir\subdir\Test\TestComponent.cshtml) - BoolProperty - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (87:3,18 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true
-                    ComponentAttribute - (114:4,20 [9] x:\dir\subdir\Test\TestComponent.cshtml) - StringProperty - AttributeStructure.DoubleQuotes
-                        HtmlContent - (114:4,20 [9] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (114:4,20 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - My string
-                    ComponentAttribute - (146:5,20 [14] x:\dir\subdir\Test\TestComponent.cshtml) - ObjectProperty - AttributeStructure.DoubleQuotes
-                        IntermediateToken - (146:5,20 [14] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - new SomeType()
+                Component - (0:0,0 [132] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (32:1,17 [3] x:\dir\subdir\Test\TestComponent.cshtml) - IntProperty - AttributeStructure.DoubleQuotes
+                        IntermediateToken - (32:1,17 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 123
+                    ComponentAttribute - (56:2,18 [4] x:\dir\subdir\Test\TestComponent.cshtml) - BoolProperty - AttributeStructure.DoubleQuotes
+                        IntermediateToken - (56:2,18 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - true
+                    ComponentAttribute - (83:3,20 [9] x:\dir\subdir\Test\TestComponent.cshtml) - StringProperty - AttributeStructure.DoubleQuotes
+                        HtmlContent - (83:3,20 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (83:3,20 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - My string
+                    ComponentAttribute - (115:4,20 [14] x:\dir\subdir\Test\TestComponent.cshtml) - ObjectProperty - AttributeStructure.DoubleQuotes
+                        IntermediateToken - (115:4,20 [14] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - new SomeType()

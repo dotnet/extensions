@@ -9,14 +9,14 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                Component - (31:1,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
-                    ComponentAttribute - (48:1,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v - AttributeStructure.DoubleQuotes
+                Component - (0:0,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
+                    ComponentAttribute - (17:0,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (48:1,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - y
+                            IntermediateToken - (17:0,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - y
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (48:1,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (17:0,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => y = __value, y)
-            CSharpCode - (67:2,12 [24] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (67:2,12 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n
+            CSharpCode - (36:1,12 [24] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (36:1,12 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n

@@ -7,8 +7,6 @@ Document -
         UsingDirective - (1:0,1 [38] x:\dir\subdir\Test\TestComponent.cshtml) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase -  - TItem1, TItem2
             DesignTimeDirective - 
-                DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
-                DirectiveToken - (14:0,14 [9] ) - "*, Test"
                 DirectiveToken - (52:1,11 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem1
                 DirectiveToken - (71:2,11 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem2
             CSharpCode - 

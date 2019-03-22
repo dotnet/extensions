@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
@@ -37,7 +38,8 @@ namespace Microsoft.CodeAnalysis.Razor
         // Internal for testing
         internal static List<RazorCompletionItem> GetDirectiveCompletionItems(RazorSyntaxTree syntaxTree)
         {
-            var directives = syntaxTree.Options.Directives.Concat(DefaultDirectives);
+            var defaultDirectives = FileKinds.IsComponent(syntaxTree.Options.FileKind) ? Array.Empty<DirectiveDescriptor>() : DefaultDirectives;
+            var directives = syntaxTree.Options.Directives.Concat(defaultDirectives);
             var completionItems = new List<RazorCompletionItem>();
             foreach (var directive in directives)
             {

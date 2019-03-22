@@ -9,9 +9,9 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                Component - (31:1,0 [91] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (53:1,22 [66] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - AttributeStructure.DoubleQuotes
-                        CSharpExpression - (54:1,23 [65] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (55:1,24 [63] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - EventCallback.Factory.Create<UIMouseEventArgs>(this, Increment)
-            CSharpCode - (138:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (138:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment() {\n        counter++;\n    }\n
+                Component - (0:0,0 [91] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (22:0,22 [66] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - AttributeStructure.DoubleQuotes
+                        CSharpExpression - (23:0,23 [65] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (24:0,24 [63] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - EventCallback.Factory.Create<UIMouseEventArgs>(this, Increment)
+            CSharpCode - (107:2,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (107:2,12 [87] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment() {\n        counter++;\n    }\n

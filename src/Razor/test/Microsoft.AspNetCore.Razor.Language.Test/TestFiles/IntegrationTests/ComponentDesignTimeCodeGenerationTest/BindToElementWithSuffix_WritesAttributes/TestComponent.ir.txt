@@ -7,9 +7,6 @@ Document -
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
-                DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
-                DirectiveToken - (14:0,14 [9] ) - "*, Test"
-                DirectiveToken - (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml) - *, TestAssembly
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
             CSharpCode - 
@@ -19,18 +16,16 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                MarkupElement - (31:1,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                    HtmlAttribute - (48:1,17 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myvalue=" - "
+                MarkupElement - (0:0,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                    HtmlAttribute - (17:0,17 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myvalue=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (49:1,18 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            IntermediateToken - (18:0,18 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
-                    HtmlAttribute - (48:1,17 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myevent=" - "
+                    HtmlAttribute - (17:0,17 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myevent=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue)
-                HtmlContent - (64:1,33 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (64:1,33 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (78:2,12 [55] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (78:2,12 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n
+                HtmlContent - (33:0,33 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (33:0,33 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (47:1,12 [55] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (47:1,12 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n

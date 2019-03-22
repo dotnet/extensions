@@ -15,14 +15,14 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderChildComponent(builder); 
 
 #line default
 #line hidden
         }
         #pragma warning restore 1998
-#line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     void RenderChildComponent(RenderTreeBuilder builder)
     {
@@ -33,7 +33,7 @@ namespace Test
         builder.OpenComponent<Test.MyComponent>(1);
         builder.CloseComponent();
         builder.AddContent(2, "\r\n");
-#line 10 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
     }
 
 #line default

@@ -1,4 +1,4 @@
-Source Location: (67:2,12 [24] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (36:1,12 [24] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     string y = null;
 |

@@ -12,14 +12,6 @@ namespace Test
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
-        ((System.Action)(() => {
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-global::System.Object __typeHelper = "*, TestAssembly";
-
-#line default
-#line hidden
-        }
-        ))();
         }
         #pragma warning restore 219
         #pragma warning disable 0414
@@ -33,14 +25,19 @@ global::System.Object __typeHelper = "*, TestAssembly";
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                   myInstance = default(Test.MyComponent);
+
+#line default
+#line hidden
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(MyComponent);
 
 #line default
 #line hidden
         }
         #pragma warning restore 1998
-#line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Test.MyComponent myInstance;
     public void Foo() { System.GC.KeepAlive(myInstance); }

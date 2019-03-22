@@ -8,7 +8,7 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 using Microsoft.AspNetCore.Components.RenderTree;
 
 #line default
@@ -17,14 +17,6 @@ using Microsoft.AspNetCore.Components.RenderTree;
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
-        ((System.Action)(() => {
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-global::System.Object __typeHelper = "*, TestAssembly";
-
-#line default
-#line hidden
-        }
-        ))();
         }
         #pragma warning restore 219
         #pragma warning disable 0414
@@ -34,14 +26,14 @@ global::System.Object __typeHelper = "*, TestAssembly";
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderChildComponent(builder); 
 
 #line default
 #line hidden
         }
         #pragma warning restore 1998
-#line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     void RenderChildComponent(RenderTreeBuilder builder)
     {
@@ -52,7 +44,12 @@ global::System.Object __typeHelper = "*, TestAssembly";
         builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
         }
         ));
-#line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 8 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(MyComponent);
+
+#line default
+#line hidden
+#line 8 "x:\dir\subdir\Test\TestComponent.cshtml"
                        
     }
 

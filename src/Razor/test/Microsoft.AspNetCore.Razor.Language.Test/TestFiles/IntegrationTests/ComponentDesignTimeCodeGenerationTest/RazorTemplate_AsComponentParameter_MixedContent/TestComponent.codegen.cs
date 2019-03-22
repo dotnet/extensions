@@ -12,14 +12,6 @@ namespace Test
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
-        ((System.Action)(() => {
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-global::System.Object __typeHelper = "*, TestAssembly";
-
-#line default
-#line hidden
-        }
-        ))();
         }
         #pragma warning restore 219
         #pragma warning disable 0414
@@ -29,30 +21,30 @@ global::System.Object __typeHelper = "*, TestAssembly";
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderFragment<Test.Context> template = (context) => 
 
 #line default
 #line hidden
             (builder2) => {
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                          __o = context.Index;
 
 #line default
 #line hidden
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                           __o = context.Item.ToLower();
 
 #line default
 #line hidden
             }
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                                                            ; 
 
 #line default
 #line hidden
             __o = new Microsoft.AspNetCore.Components.RenderFragment<Test.Context>(
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                         template
 
 #line default
@@ -61,6 +53,11 @@ global::System.Object __typeHelper = "*, TestAssembly";
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(MyComponent);
+
+#line default
+#line hidden
         }
         #pragma warning restore 1998
     }

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorProjectEngine.CreateEmpty(builder =>
             {
                 builder.Phases.Add(phase);
-                builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorLanguageVersion.Latest));
+                builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorLanguageVersion.Latest, fileKind: null));
             });
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorProjectEngine.CreateEmpty((builder) =>
             {
                 builder.Phases.Add(phase);
-                builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorLanguageVersion.Latest));
+                builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorLanguageVersion.Latest, fileKind: null));
                 builder.Features.Add(new MyParserOptionsFeature());
             });
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorProjectEngine.CreateEmpty((builder) =>
             {
                 builder.Phases.Add(phase);
-                builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorLanguageVersion.Latest));
+                builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorLanguageVersion.Latest, fileKind: null));
                 builder.Features.Add(new MyParserOptionsFeature());
             });
 

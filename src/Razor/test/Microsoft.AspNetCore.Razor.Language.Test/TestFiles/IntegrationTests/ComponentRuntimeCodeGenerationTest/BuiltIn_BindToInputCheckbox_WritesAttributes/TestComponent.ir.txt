@@ -9,17 +9,17 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                MarkupElement - (31:1,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                MarkupElement - (0:0,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
-                        HtmlAttributeValue - (44:1,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (44:1,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - checkbox
-                    HtmlAttribute - (60:1,29 [8] x:\dir\subdir\Test\TestComponent.cshtml) - checked=" - "
+                        HtmlAttributeValue - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - checkbox
+                    HtmlAttribute - (29:0,29 [8] x:\dir\subdir\Test\TestComponent.cshtml) - checked=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (61:1,30 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Enabled
+                            IntermediateToken - (30:0,30 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Enabled
                             IntermediateToken -  - CSharp - )
-                    HtmlAttribute - (60:1,29 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
+                    HtmlAttribute - (29:0,29 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, Enabled)
-            CSharpCode - (86:2,12 [41] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (86:2,12 [41] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public bool Enabled { get; set; }\n
+            CSharpCode - (55:1,12 [41] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (55:1,12 [41] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public bool Enabled { get; set; }\n

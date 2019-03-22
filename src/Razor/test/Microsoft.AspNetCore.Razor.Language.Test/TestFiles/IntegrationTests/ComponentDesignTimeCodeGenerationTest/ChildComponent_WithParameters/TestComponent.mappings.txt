@@ -1,20 +1,15 @@
-Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
-|*, TestAssembly|
-Generated Location: (554:16,38 [15] )
-|*, TestAssembly|
-
-Source Location: (63:2,17 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (32:1,17 [3] x:\dir\subdir\Test\TestComponent.cshtml)
 |123|
-Generated Location: (1175:33,17 [3] )
+Generated Location: (976:25,17 [3] )
 |123|
 
-Source Location: (87:3,18 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (56:2,18 [4] x:\dir\subdir\Test\TestComponent.cshtml)
 |true|
-Generated Location: (1389:40,18 [4] )
+Generated Location: (1190:32,18 [4] )
 |true|
 
-Source Location: (146:5,20 [14] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (115:4,20 [14] x:\dir\subdir\Test\TestComponent.cshtml)
 |new SomeType()|
-Generated Location: (1628:48,20 [14] )
+Generated Location: (1429:40,20 [14] )
 |new SomeType()|
 

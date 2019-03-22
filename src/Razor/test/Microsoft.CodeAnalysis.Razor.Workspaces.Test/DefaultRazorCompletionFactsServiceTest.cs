@@ -82,6 +82,19 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         [Fact]
+        public void GetDirectiveCompletionItems_ComponentDocument_DoesNotReturnsDefaultDirectivesAsCompletionItems()
+        {
+            // Arrange
+            var syntaxTree = CreateSyntaxTree("@addTag", FileKinds.Component);
+
+            // Act
+            var completionItems = DefaultRazorCompletionFactsService.GetDirectiveCompletionItems(syntaxTree);
+
+            // Assert
+            Assert.Empty(completionItems);
+        }
+
+        [Fact]
         public void AtDirectiveCompletionPoint_ReturnsFalseIfSyntaxTreeNull()
         {
             // Act
@@ -225,6 +238,11 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private static RazorSyntaxTree CreateSyntaxTree(string text, params DirectiveDescriptor[] directives)
         {
+            return CreateSyntaxTree(text, FileKinds.Legacy, directives);
+        }
+
+        private static RazorSyntaxTree CreateSyntaxTree(string text, string fileKind, params DirectiveDescriptor[] directives)
+        {
             var sourceDocument = TestRazorSourceDocument.Create(text);
             var options = RazorParserOptions.Create(builder =>
             {
@@ -232,7 +250,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     builder.Directives.Add(directive);
                 }
-            });
+            }, fileKind);
             var syntaxTree = RazorSyntaxTree.Parse(sourceDocument, options);
             return syntaxTree;
         }

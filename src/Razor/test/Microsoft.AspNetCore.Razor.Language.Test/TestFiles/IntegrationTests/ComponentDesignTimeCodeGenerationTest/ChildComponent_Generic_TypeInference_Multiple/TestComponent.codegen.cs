@@ -12,14 +12,6 @@ namespace Test
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
-        ((System.Action)(() => {
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-global::System.Object __typeHelper = "*, TestAssembly";
-
-#line default
-#line hidden
-        }
-        ))();
         }
         #pragma warning restore 219
         #pragma warning disable 0414
@@ -30,26 +22,41 @@ global::System.Object __typeHelper = "*, TestAssembly";
         {
             base.BuildRenderTree(builder);
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, -1, -1, 
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                      "hi"
 
 #line default
 #line hidden
             );
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(MyComponent<>);
+
+#line default
+#line hidden
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_1(builder, -1, -1, 
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                      "how are you?"
 
 #line default
 #line hidden
             );
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(MyComponent<>);
+
+#line default
+#line hidden
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_2(builder, -1, -1, 
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                      "bye!"
 
 #line default
 #line hidden
             );
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(MyComponent<>);
+
+#line default
+#line hidden
         }
         #pragma warning restore 1998
     }

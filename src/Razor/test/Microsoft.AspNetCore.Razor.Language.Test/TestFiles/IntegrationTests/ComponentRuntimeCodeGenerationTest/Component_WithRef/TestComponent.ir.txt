@@ -9,13 +9,13 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                Component - (31:1,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                Component - (0:0,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute -  - ParamBefore - AttributeStructure.DoubleQuotes
-                        HtmlContent - (57:1,26 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (57:1,26 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
-                    ReferenceCapture - (70:1,39 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance
+                        HtmlContent - (26:0,26 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (26:0,26 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
+                    ReferenceCapture - (39:0,39 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance
                     ComponentAttribute -  - ParamAfter - AttributeStructure.DoubleQuotes
-                        HtmlContent - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-            CSharpCode - (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n
+                        HtmlContent - (63:0,63 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (63:0,63 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
+            CSharpCode - (88:2,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (88:2,12 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n

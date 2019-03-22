@@ -19,7 +19,7 @@ namespace Test
             builder.CloseComponent();
         }
         #pragma warning restore 1998
-#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private int counter;
     private void Increment(object e) {

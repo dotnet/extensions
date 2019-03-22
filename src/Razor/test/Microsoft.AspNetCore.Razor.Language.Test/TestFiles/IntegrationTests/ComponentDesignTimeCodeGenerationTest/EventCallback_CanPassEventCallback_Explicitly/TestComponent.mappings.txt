@@ -1,21 +1,16 @@
-Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
-|*, TestAssembly|
-Generated Location: (554:16,38 [15] )
-|*, TestAssembly|
-
-Source Location: (55:1,24 [45] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (24:0,24 [45] x:\dir\subdir\Test\TestComponent.cshtml)
 |EventCallback.Factory.Create(this, Increment)|
-Generated Location: (1282:33,24 [45] )
+Generated Location: (1083:25,24 [45] )
 |EventCallback.Factory.Create(this, Increment)|
 
-Source Location: (120:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (89:2,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private int counter;
     private void Increment() {
         counter++;
     }
 |
-Generated Location: (1640:44,12 [87] )
+Generated Location: (1551:41,12 [87] )
 |
     private int counter;
     private void Increment() {

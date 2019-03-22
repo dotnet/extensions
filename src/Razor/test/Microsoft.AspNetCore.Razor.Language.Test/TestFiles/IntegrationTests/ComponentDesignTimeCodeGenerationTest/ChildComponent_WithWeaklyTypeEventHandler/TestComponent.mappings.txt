@@ -1,18 +1,13 @@
-Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
-|*, TestAssembly|
-Generated Location: (554:16,38 [15] )
-|*, TestAssembly|
-
-Source Location: (57:1,26 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (26:0,26 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |OnClick|
-Generated Location: (1230:33,26 [7] )
+Generated Location: (1031:25,26 [7] )
 |OnClick|
 
-Source Location: (84:3,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (53:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Action<UIMouseEventArgs> OnClick { get; set; }
 |
-Generated Location: (1549:44,12 [62] )
+Generated Location: (1463:41,12 [62] )
 |
     private Action<UIMouseEventArgs> OnClick { get; set; }
 |

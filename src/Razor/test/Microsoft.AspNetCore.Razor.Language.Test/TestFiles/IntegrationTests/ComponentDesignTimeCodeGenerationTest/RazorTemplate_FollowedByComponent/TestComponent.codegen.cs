@@ -12,14 +12,6 @@ namespace Test
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
-        ((System.Action)(() => {
-#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-global::System.Object __typeHelper = "*, TestAssembly";
-
-#line default
-#line hidden
-        }
-        ))();
         }
         #pragma warning restore 219
         #pragma warning disable 0414
@@ -29,7 +21,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
   
     RenderFragment<Person> p = (person) => 
 
@@ -37,7 +29,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line hidden
             (builder2) => {
                 __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                      person.Name
 
 #line default
@@ -46,23 +38,33 @@ global::System.Object __typeHelper = "*, TestAssembly";
                 builder2.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder3) => {
                 }
                 ));
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(MyComponent);
+
+#line default
+#line hidden
             }
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                                          ;
 
 #line default
 #line hidden
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
-#line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = "hello, world!";
 
 #line default
 #line hidden
             }
             ));
+#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+__o = typeof(MyComponent);
+
+#line default
+#line hidden
         }
         #pragma warning restore 1998
-#line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 8 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     class Person
     {

@@ -9,7 +9,7 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                Component - (36:2,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent
-                HtmlContent - (58:2,22 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (58:2,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                Component - (0:0,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent
+                HtmlContent - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
                 MarkupBlock -  - <h1>Hello</h1>

@@ -93,7 +93,6 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 @{ RenderFragment<string> template = @<div>@context.ToLowerInvariant()</div>; }
 <RenderChildContent ChildContent=""@template.WithValue(""HI"")"">
 Some Content
@@ -112,7 +111,6 @@ Some Content
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 @{ RenderFragment<string> template = @<div>@context.ToLowerInvariant()</div>; }
 <RenderChildContent ChildContent=""@template.WithValue(""HI"")"">
 <ChildContent>
@@ -133,7 +131,6 @@ Some Content
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <RenderChildContent>
 <ChildContent>
 </ChildContent>
@@ -157,7 +154,6 @@ Some Content
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <RenderChildContent>
 <ChildContent>
 </ChildContent>
@@ -177,7 +173,6 @@ Some Content
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <RenderChildContent>
 <ChildContent attr>
 </ChildContent>
@@ -196,7 +191,6 @@ Some Content
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <RenderChildContentString>
 <ChildContent Context=""@(""HI"")"">
 </ChildContent>
@@ -215,7 +209,6 @@ Some Content
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <RenderChildContentString>
 <ChildContent>
 <RenderChildContentString>
@@ -242,7 +235,6 @@ Some Content
 
             // Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <RenderChildContentString Context=""@Foo()"">
 </RenderChildContentString>");
 
