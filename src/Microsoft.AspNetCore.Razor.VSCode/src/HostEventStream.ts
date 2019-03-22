@@ -22,6 +22,8 @@ export class TelemetryEvent implements BaseEvent {
 interface BaseEvent {
     type: any;
 }
+
+// This is a sub-copied portion of OmniSharp's EventType class.
 enum EventType {
     TelemetryEvent = 1,
 }

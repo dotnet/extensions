@@ -5,7 +5,6 @@
 
 import * as fs from 'fs';
 import * as razorExtensionPackage from 'microsoft.aspnetcore.razor.vscode';
-import { EventType } from 'microsoft.aspnetcore.razor.vscode/dist/HostEventStream';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -28,7 +27,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const hostEventStream = {
         post: (event: any) => {
-            if (event.type === EventType.TelemetryEvent) {
+            // 1 corresponds to the telemetry event type from OmniSharp
+            if (event.type === 1) {
                 console.log(`Telemetry Event: ${event.eventName}.`);
                 if (event.properties) {
                     const propertiesString = JSON.stringify(event.properties, null, 2);
