@@ -27,43 +27,24 @@ namespace Microsoft.Extensions.Hosting
         /// <returns></returns>
         public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder)
         {
-            return hostBuilder.UseWindowsService((context, settings) =>
-            {
-                settings.SourceName = context.HostingEnvironment.ApplicationName;
-            });
-        }
-
-        /// <summary>
-        /// Sets the host lifetime to WindowsServiceLifetime, sets the Content Root,
-        /// and enables logging to the event log.
-        /// </summary>
-        /// <remarks>
-        /// This is context aware and will only activate if it detects the process is running
-        /// as a Windows Service.
-        /// </remarks>
-        /// <param name="hostBuilder"></param>
-        /// <param name="configureEventLog"></param>
-        /// <returns></returns>
-        public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder, Action<HostBuilderContext, EventLogSettings> configureEventLog)
-        {
-            if (configureEventLog == null)
-            {
-                throw new ArgumentNullException(nameof(configureEventLog));
-            }
-
             if (IsWindowsService())
             {
                 // Host.CreateDefaultBuilder uses CurrentDirectory for VS scenarios, but CurrentDirectory for services is c:\Windows\System32.
                 hostBuilder.UseContentRoot(AppContext.BaseDirectory);
                 hostBuilder.ConfigureLogging((hostingContext, logging) =>
                 {
-                    var settings = new EventLogSettings();
-                    configureEventLog(hostingContext, settings);
-                    logging.AddEventLog(settings);
+                    logging.AddEventLog();
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddSingleton<IHostLifetime, WindowsServiceLifetime>();
+                    services.Configure<EventLogSettings>(settings =>
+                    {
+                        if (string.IsNullOrEmpty(settings.SourceName))
+                        {
+                            settings.SourceName = hostContext.HostingEnvironment.ApplicationName;
+                        }
+                    });
                 });
             }
 
