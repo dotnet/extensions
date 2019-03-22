@@ -106,12 +106,12 @@ namespace Microsoft.Extensions.Logging
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging(builder => builder.AddEventLog());
-            serviceCollection.Configure<EventLogSettings>(settings =>
+            serviceCollection.Configure<EventLogSettings>(options =>
             {
-                settings.SourceName = "foo";
-                settings.LogName = "bar";
-                settings.MachineName = "blah";
-                settings.EventLog = null;
+                options.SourceName = "foo";
+                options.LogName = "bar";
+                options.MachineName = "blah";
+                options.EventLog = null;
             });
 
             var services = serviceCollection.BuildServiceProvider();
