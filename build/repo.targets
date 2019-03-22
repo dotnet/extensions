@@ -11,7 +11,7 @@
 
   <Target Name="CodeSign" AfterTargets="Package" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">
     <PropertyGroup>
-        <RidsPublishDir>$(RepositoryRoot)src\Microsoft.AspNetCore.Razor.LanguageServer\bin\$(Configuration)\netcoreapp2.0\publish\</RidsPublishDir>
+        <RidsPublishDir>$(RepositoryRoot)src\Microsoft.AspNetCore.Razor.LanguageServer\bin\$(Configuration)\netcoreapp2.2\publish\</RidsPublishDir>
     </PropertyGroup>
     <MSBuild Projects="$(MSBuildThisFileDirectory)sign.proj"
              Targets="Restore;CodeSign"

@@ -18,7 +18,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // we know the Razor Language Server is at a specific path within this repo
     const languageServerDir = path.join(
         __dirname, '..', '..', '..', 'src', 'Microsoft.AspNetCore.Razor.LanguageServer',
-        'bin', 'Debug', 'netcoreapp2.0');
+        'bin', 'Debug', 'netcoreapp2.2');
 
     if (!fs.existsSync(languageServerDir)) {
         throw new Error('The Razor Language Server project has not yet been built - '
