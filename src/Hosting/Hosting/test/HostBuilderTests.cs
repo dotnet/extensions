@@ -143,7 +143,7 @@ namespace Microsoft.Extensions.Hosting
                 {
                     var env = hostContext.HostingEnvironment;
                     Assert.Equal(Environments.Production, env.EnvironmentName);
-                    Assert.Null(env.ApplicationName);
+                    Assert.Equal("testhost", env.ApplicationName);
                     Assert.Equal(AppContext.BaseDirectory, env.ContentRootPath);
                     Assert.IsAssignableFrom<PhysicalFileProvider>(env.ContentRootFileProvider);
                 });
@@ -152,7 +152,7 @@ namespace Microsoft.Extensions.Hosting
             {
                 var env = host.Services.GetRequiredService<IHostEnvironment>();
                 Assert.Equal(Environments.Production, env.EnvironmentName);
-                Assert.Null(env.ApplicationName);
+                Assert.Equal("testhost", env.ApplicationName);
                 Assert.Equal(AppContext.BaseDirectory, env.ContentRootPath);
                 Assert.IsAssignableFrom<PhysicalFileProvider>(env.ContentRootFileProvider);
             }
