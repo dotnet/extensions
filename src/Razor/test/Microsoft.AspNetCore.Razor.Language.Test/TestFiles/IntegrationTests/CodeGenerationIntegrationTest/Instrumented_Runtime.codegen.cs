@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
   
     int i = 1;
@@ -18,125 +19,162 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+#nullable disable
             item => new Template(async(__razor_template_writer) => {
                 PushWriter(__razor_template_writer);
                 WriteLiteral("<p>Bar</p>");
                 PopWriter();
             }
             )
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
                          ;
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("    ");
             WriteLiteral("Hello, World\r\n    <p>Hello, World</p>\r\n");
             WriteLiteral("\r\n");
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  while(i <= 10) {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("    <p>Hello from C#, #");
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
                    Write(i);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</p>\r\n");
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
     i += 1;
 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
+#nullable restore
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  if(i == 11) {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("    <p>We wrote 10 lines!</p>\r\n");
+#nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
+#nullable restore
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  switch(i) {
     case 11:
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("        <p>No really, we wrote 10 lines!</p>\r\n");
+#nullable restore
 #line 20 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
         break;
     default:
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("        <p>Actually, we didn\'t...</p>\r\n");
+#nullable restore
 #line 23 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
         break;
 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
+#nullable restore
 #line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  for(int j = 1; j <= 10; j += 2) {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("    <p>Hello again from C#, #");
+#nullable restore
 #line 27 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
                          Write(j);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</p>\r\n");
+#nullable restore
 #line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
+#nullable restore
 #line 30 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  try {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("    <p>That time, we wrote 5 lines!</p>\r\n");
+#nullable restore
 #line 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
 } catch(Exception ex) {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("    <p>Oh no! An error occurred: ");
+#nullable restore
 #line 33 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
                              Write(ex.Message);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</p>\r\n");
+#nullable restore
 #line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
+#nullable restore
 #line 36 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  lock(new object()) {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("    <p>This block is locked, for your security!</p>\r\n");
+#nullable restore
 #line 38 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
 }
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

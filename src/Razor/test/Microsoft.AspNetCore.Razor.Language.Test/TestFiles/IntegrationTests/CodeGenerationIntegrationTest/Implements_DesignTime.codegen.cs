@@ -8,11 +8,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Implements.cshtml"
 IDisposable __typeHelper = default(IDisposable);
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -25,12 +27,14 @@ IDisposable __typeHelper = default(IDisposable);
         {
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Implements.cshtml"
             
     void IDisposable.Dispose() { }
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

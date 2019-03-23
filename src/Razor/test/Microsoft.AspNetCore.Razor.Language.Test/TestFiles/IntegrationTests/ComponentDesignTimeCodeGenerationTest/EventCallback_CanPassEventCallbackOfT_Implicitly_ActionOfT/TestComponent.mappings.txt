@@ -1,6 +1,6 @@
 Source Location: (23:0,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
 |Increment|
-Generated Location: (1182:25,23 [9] )
+Generated Location: (1201:26,23 [9] )
 |Increment|
 
 Source Location: (51:2,12 [105] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -10,7 +10,7 @@ Source Location: (51:2,12 [105] x:\dir\subdir\Test\TestComponent.cshtml)
         counter++;
     }
 |
-Generated Location: (1614:41,12 [105] )
+Generated Location: (1709:46,12 [105] )
 |
     private int counter;
     private void Increment(UIMouseEventArgs e) {

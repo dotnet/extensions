@@ -1,6 +1,6 @@
 Source Location: (1:0,1 [32] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
 |using System.Collections.Generic|
-Generated Location: (230:6,0 [32] )
+Generated Location: (249:7,0 [32] )
 |using System.Collections.Generic|
 
 Source Location: (39:2,2 [158] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
@@ -15,7 +15,7 @@ Source Location: (39:2,2 [158] TestFiles/IntegrationTests/CodeGenerationIntegrat
 
     }
 |
-Generated Location: (864:23,2 [158] )
+Generated Location: (921:26,2 [158] )
 |
     IAsyncEnumerable<bool> GetAsyncEnumerable()
     {
@@ -33,7 +33,7 @@ Source Location: (203:14,1 [55] TestFiles/IntegrationTests/CodeGenerationIntegra
 {
 
 }|
-Generated Location: (1138:37,1 [55] )
+Generated Location: (1233:42,1 [55] )
 |await foreach (var val in GetAsyncEnumerable())
 {
 

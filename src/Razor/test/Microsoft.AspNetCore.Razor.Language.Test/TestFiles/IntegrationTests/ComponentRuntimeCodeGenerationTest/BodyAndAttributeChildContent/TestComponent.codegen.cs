@@ -14,21 +14,25 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderFragment<string> header = (context) => 
 
 #line default
 #line hidden
+#nullable disable
             (builder2) => {
                 builder2.OpenElement(0, "div");
                 builder2.AddContent(1, context.ToLowerInvariant());
                 builder2.CloseElement();
             }
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                                        ; 
 
 #line default
 #line hidden
+#nullable disable
             builder.OpenComponent<Test.MyComponent>(2);
             builder.AddAttribute(3, "Header", new Microsoft.AspNetCore.Components.RenderFragment<System.String>(header));
             builder.AddAttribute(4, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {

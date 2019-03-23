@@ -14,12 +14,14 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
    
   var myValue = "Expression value";
 
 #line default
 #line hidden
+#nullable disable
             builder.OpenElement(0, "div");
             builder.AddContent(1, myValue);
             builder.AddMarkupContent(2, "  ");

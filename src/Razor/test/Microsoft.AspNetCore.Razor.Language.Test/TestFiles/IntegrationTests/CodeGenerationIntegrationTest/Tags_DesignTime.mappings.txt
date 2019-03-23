@@ -1,19 +1,19 @@
 Source Location: (2:0,2 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Tags.cshtml)
 |
     |
-Generated Location: (709:18,2 [6] )
+Generated Location: (728:19,2 [6] )
 |
     |
 
 Source Location: (41:1,37 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Tags.cshtml)
 ||
-Generated Location: (865:24,37 [0] )
+Generated Location: (922:27,37 [0] )
 ||
 
 Source Location: (59:1,55 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Tags.cshtml)
 |
 |
-Generated Location: (1033:29,55 [2] )
+Generated Location: (1128:34,55 [2] )
 |
 |
 

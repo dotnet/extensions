@@ -22,28 +22,34 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                           OnClick
 
 #line default
 #line hidden
+#nullable disable
             );
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(DynamicElement);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Action<UIMouseEventArgs> OnClick { get; set; }
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

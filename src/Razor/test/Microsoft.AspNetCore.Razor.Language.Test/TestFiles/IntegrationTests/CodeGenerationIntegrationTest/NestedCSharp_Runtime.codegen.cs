@@ -11,24 +11,30 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml"
      foreach (var result in (dynamic)Url)
     {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("        <div>\r\n            ");
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml"
        Write(result.SomeValue);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral(".\r\n        </div>\r\n");
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml"
     }
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

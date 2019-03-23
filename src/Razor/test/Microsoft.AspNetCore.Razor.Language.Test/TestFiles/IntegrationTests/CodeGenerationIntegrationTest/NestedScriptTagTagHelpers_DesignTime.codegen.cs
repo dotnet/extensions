@@ -11,11 +11,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml"
 global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -26,32 +28,40 @@ global::System.Object __typeHelper = "*, TestAssembly";
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml"
              for(var i = 0; i < 5; i++) {
                 
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml"
                                             __o = ViewBag.DefaultInterval;
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_InputTagHelper.Type = "text";
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml"
                                                           __TestNamespace_InputTagHelper2.Checked = true;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml"
                          
             }
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
         }
         #pragma warning restore 1998

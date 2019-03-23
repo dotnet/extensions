@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp7.cshtml"
       
         var nameLookup = new Dictionary<string, (string FirstName, string LastName, object Extra)>()
@@ -26,6 +27,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp7.cshtml"
                                                      
 
@@ -37,6 +40,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp7.cshtml"
      if (nameLookup.TryGetValue("John Doe", out var entry))
     {
@@ -48,16 +53,22 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 24 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp7.cshtml"
                                  __o = 1.618_033_988_749_894_848_204_586_834_365_638_117_720_309_179M;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp7.cshtml"
     __o = (First: "John", Last: "Doe").First;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 31 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp7.cshtml"
      switch (entry.Extra)
     {
@@ -74,6 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

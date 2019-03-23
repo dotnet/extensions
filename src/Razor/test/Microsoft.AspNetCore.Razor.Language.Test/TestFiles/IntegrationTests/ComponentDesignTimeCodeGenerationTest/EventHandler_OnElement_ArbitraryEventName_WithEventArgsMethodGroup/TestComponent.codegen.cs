@@ -24,6 +24,7 @@ namespace Test
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, OnClick);
         }
         #pragma warning restore 1998
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     void OnClick(UIEventArgs e) {
@@ -31,6 +32,7 @@ namespace Test
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

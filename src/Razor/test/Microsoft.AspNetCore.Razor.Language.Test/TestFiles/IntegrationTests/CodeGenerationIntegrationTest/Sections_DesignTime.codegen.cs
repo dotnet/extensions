@@ -8,27 +8,33 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object Section2 = null;
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object Section1 = null;
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object NestedDelegates = null;
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -39,42 +45,52 @@ global::System.Object NestedDelegates = null;
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
   
     Layout = "_SectionTestLayout.cshtml"
 
 #line default
 #line hidden
+#nullable disable
             DefineSection("Section2", async(__razor_section_writer) => {
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                 __o = thing;
 
 #line default
 #line hidden
+#nullable disable
             }
             );
             DefineSection("Section1", async(__razor_section_writer) => {
             }
             );
             DefineSection("NestedDelegates", async(__razor_section_writer) => {
+#nullable restore
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
        Func<dynamic, object> f = 
 
 #line default
 #line hidden
+#nullable disable
                 item => new Template(async(__razor_template_writer) => {
+#nullable restore
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                                    __o = item;
 
 #line default
 #line hidden
+#nullable disable
                 }
                 )
+#nullable restore
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                                                     ; 
 
 #line default
 #line hidden
+#nullable disable
             }
             );
         }

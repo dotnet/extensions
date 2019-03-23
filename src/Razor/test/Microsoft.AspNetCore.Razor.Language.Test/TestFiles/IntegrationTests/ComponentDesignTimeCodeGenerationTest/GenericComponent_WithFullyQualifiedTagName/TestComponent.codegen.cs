@@ -22,24 +22,30 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __Blazor.Test.TestComponent.TypeInference.CreateTest_MyComponent_0(builder, -1, -1, 
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                           "hi"
 
 #line default
 #line hidden
+#nullable disable
             , -1, (context) => (builder2) => {
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
   __o = context.ToLower();
 
 #line default
 #line hidden
+#nullable disable
             }
             );
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Test.MyComponent<>);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

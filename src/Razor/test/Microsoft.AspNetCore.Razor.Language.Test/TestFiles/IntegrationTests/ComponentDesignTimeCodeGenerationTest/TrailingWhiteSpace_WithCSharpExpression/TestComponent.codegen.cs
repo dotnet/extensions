@@ -21,11 +21,13 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = "My value";
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

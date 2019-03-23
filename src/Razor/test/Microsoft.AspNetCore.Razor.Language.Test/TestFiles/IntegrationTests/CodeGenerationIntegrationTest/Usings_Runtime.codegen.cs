@@ -5,36 +5,48 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
 using System.IO;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
 using Foo = System.Text.Encoding;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
 using System;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
 using static System;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
 using static System.Console;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
 using static global::System.Text.Encoding;
 
 #line default
 #line hidden
+#nullable disable
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"6728cb5a1a2e5cec8b292fc113ea456ed9043ddc", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Usings_Runtime
     {
@@ -43,17 +55,21 @@ using static global::System.Text.Encoding;
         {
             WriteLiteral("\r\n");
             WriteLiteral("\r\n<p>Path\'s full type name is ");
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
                        Write(typeof(Path).FullName);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</p>\r\n<p>Foo\'s actual full type name is ");
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
                              Write(typeof(Foo).FullName);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</p>");
         }
         #pragma warning restore 1998

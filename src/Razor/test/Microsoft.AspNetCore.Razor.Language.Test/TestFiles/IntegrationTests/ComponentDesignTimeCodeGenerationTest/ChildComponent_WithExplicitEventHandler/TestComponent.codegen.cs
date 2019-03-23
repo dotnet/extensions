@@ -22,22 +22,27 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __o = new System.Action<Microsoft.AspNetCore.Components.UIEventArgs>(
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                        Increment
 
 #line default
 #line hidden
+#nullable disable
             );
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private int counter;
@@ -47,6 +52,7 @@ __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

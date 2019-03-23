@@ -14,11 +14,13 @@ namespace Test
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 global::System.Object __typeHelper = "/";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -34,11 +36,13 @@ global::System.Object __typeHelper = "/";
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 7 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(SurveyPrompt);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

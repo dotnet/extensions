@@ -11,22 +11,26 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
   
     Layout = "_SectionTestLayout.cshtml"
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n<div>This is in the Body>\r\n\r\n");
             DefineSection("Section2", async() => {
                 WriteLiteral("\r\n    <div");
                 BeginWriteAttribute("class", " class=\"", 109, "\"", 128, 2);
                 WriteAttributeValue("", 117, "some", 117, 4, true);
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 WriteAttributeValue(" ", 121, thing, 122, 6, false);
 
 #line default
 #line hidden
+#nullable disable
                 EndWriteAttribute();
                 WriteLiteral(">This is in Section 2</div>\r\n");
             }
@@ -39,28 +43,34 @@ WriteAttributeValue(" ", 121, thing, 122, 6, false);
             WriteLiteral("\r\n");
             DefineSection("NestedDelegates", async() => {
                 WriteLiteral("\r\n");
+#nullable restore
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
        Func<dynamic, object> f = 
 
 #line default
 #line hidden
+#nullable disable
                 item => new Template(async(__razor_template_writer) => {
                     PushWriter(__razor_template_writer);
                     WriteLiteral("<span>");
+#nullable restore
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                                    Write(item);
 
 #line default
 #line hidden
+#nullable disable
                     WriteLiteral("</span>");
                     PopWriter();
                 }
                 )
+#nullable restore
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                                                     ; 
 
 #line default
 #line hidden
+#nullable disable
             }
             );
         }

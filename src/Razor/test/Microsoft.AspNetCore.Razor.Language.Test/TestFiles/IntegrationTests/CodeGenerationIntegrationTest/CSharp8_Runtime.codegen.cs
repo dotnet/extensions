@@ -5,11 +5,13 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
 using System.Collections.Generic;
 
 #line default
 #line hidden
+#nullable disable
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"c864b6d1b325fe7fa9cbc46b476adaf97ea01783", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CSharp8_Runtime
     {
@@ -17,6 +19,7 @@ using System.Collections.Generic;
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral("\r\n");
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
   
     IAsyncEnumerable<bool> GetAsyncEnumerable()
@@ -31,7 +34,9 @@ using System.Collections.Generic;
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
+#nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
  await foreach (var val in GetAsyncEnumerable())
 {
@@ -40,6 +45,7 @@ using System.Collections.Generic;
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

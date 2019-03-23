@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
   
     var ch = true;
@@ -23,121 +24,164 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                     
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
          __o = cls;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                       
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
              __o = cls;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                           
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
          __o = cls;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                           
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                __o = ch;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                            
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                    __o = ch;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                                
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                if(cls != null) { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                             __o = cls;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                       }
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                            
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                       
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
             __o = Url.Content("~/Scripts/jquery-1.6.2.min.js");
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                                                                                 
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
             __o = Url.Content("~/Scripts/modernizr-2.0.6-development-only.js");
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                                                                                                 
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                                                                                                                    
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

@@ -1,15 +1,15 @@
 Source Location: (32:1,17 [3] x:\dir\subdir\Test\TestComponent.cshtml)
 |123|
-Generated Location: (976:25,17 [3] )
+Generated Location: (995:26,17 [3] )
 |123|
 
 Source Location: (56:2,18 [4] x:\dir\subdir\Test\TestComponent.cshtml)
 |true|
-Generated Location: (1190:32,18 [4] )
+Generated Location: (1247:35,18 [4] )
 |true|
 
 Source Location: (115:4,20 [14] x:\dir\subdir\Test\TestComponent.cshtml)
 |new SomeType()|
-Generated Location: (1429:40,20 [14] )
+Generated Location: (1524:45,20 [14] )
 |new SomeType()|
 

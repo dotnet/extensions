@@ -9,11 +9,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelper.cshtml"
 global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -25,11 +27,13 @@ global::System.Object __typeHelper = "*, TestAssembly";
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelper.cshtml"
 __TestNamespace_PTagHelper.Age = 1337;
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

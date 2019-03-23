@@ -12,11 +12,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral("1 + 1 = ");
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExplicitExpression.cshtml"
     Write(1+1);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

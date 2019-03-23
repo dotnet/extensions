@@ -22,31 +22,38 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                   UserName
 
 #line default
 #line hidden
+#nullable disable
             );
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserName = __value, UserName);
             __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                             UserIsActive
 
 #line default
 #line hidden
+#nullable disable
             );
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, UserIsActive);
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(User);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     public string UserName { get; set; }
@@ -54,6 +61,7 @@ __o = typeof(User);
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

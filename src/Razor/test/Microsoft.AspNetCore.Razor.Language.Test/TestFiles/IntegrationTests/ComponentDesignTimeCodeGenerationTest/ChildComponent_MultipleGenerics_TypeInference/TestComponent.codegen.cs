@@ -22,37 +22,47 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, -1, -1, 
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                      "hi"
 
 #line default
 #line hidden
+#nullable disable
             , -1, 
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                     new List<long>()
 
 #line default
 #line hidden
+#nullable disable
             , -1, (context) => (builder2) => {
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                 __o = context.ToLower();
 
 #line default
 #line hidden
+#nullable disable
             }
             , -1, (item) => (builder2) => {
+#nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = System.Math.Max(0, item.Item);
 
 #line default
 #line hidden
+#nullable disable
             }
             );
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent<,>);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

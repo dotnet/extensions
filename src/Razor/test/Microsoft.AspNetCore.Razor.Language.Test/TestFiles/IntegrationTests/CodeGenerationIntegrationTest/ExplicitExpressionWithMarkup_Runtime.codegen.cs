@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral("<div>");
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExplicitExpressionWithMarkup.cshtml"
   Write(item => new Template(async(__razor_template_writer) => {
     PushWriter(__razor_template_writer);
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

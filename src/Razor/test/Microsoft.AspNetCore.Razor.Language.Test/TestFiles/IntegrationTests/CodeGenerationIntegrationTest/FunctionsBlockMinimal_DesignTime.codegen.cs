@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         {
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlockMinimal.cshtml"
                
 string foo(string input) {
@@ -25,6 +26,7 @@ string foo(string input) {
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

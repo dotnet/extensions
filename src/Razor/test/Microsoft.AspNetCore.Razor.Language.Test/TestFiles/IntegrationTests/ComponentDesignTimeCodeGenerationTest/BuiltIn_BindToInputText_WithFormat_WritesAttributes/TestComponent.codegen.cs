@@ -25,12 +25,14 @@ namespace Test
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, "MM/dd/yyyy");
         }
         #pragma warning restore 1998
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

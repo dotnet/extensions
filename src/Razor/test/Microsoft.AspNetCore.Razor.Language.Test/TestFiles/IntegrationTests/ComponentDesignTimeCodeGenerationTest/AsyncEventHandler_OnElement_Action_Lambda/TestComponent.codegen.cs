@@ -7,11 +7,13 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using Microsoft.AspNetCore.Components;
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 using System.Threading.Tasks;
 
 #line default
 #line hidden
+#nullable disable
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219

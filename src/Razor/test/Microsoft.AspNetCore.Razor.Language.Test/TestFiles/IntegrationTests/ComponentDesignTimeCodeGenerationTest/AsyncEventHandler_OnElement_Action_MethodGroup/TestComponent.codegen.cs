@@ -7,11 +7,13 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using Microsoft.AspNetCore.Components;
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 using System.Threading.Tasks;
 
 #line default
 #line hidden
+#nullable disable
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
@@ -28,6 +30,7 @@ using System.Threading.Tasks;
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, OnClick);
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     Task OnClick() 
@@ -37,6 +40,7 @@ using System.Threading.Tasks;
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

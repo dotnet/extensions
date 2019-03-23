@@ -14,12 +14,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             WriteLiteral("\r\n");
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Implements.cshtml"
             
     void IDisposable.Dispose() { }
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

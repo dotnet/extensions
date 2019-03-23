@@ -104,11 +104,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "href", 3, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 153, "~/", 153, 2, true);
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CssSelectorTagHelperAttributes.cshtml"
 AddHtmlAttributeValue("", 155, false, 155, 6, false);
 
 #line default
 #line hidden
+#nullable disable
             AddHtmlAttributeValue("", 161, "?hello=world", 161, 12, true);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
@@ -127,11 +129,13 @@ AddHtmlAttributeValue("", 155, false, 155, 6, false);
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "href", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 234, "~/", 234, 2, true);
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CssSelectorTagHelperAttributes.cshtml"
 AddHtmlAttributeValue("", 236, false, 236, 6, false);
 
 #line default
 #line hidden
+#nullable disable
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
@@ -164,11 +168,13 @@ AddHtmlAttributeValue("", 236, false, 236, 6, false);
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "href", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.SingleQuotes);
             AddHtmlAttributeValue("", 317, "~/?hello=world", 317, 14, true);
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CssSelectorTagHelperAttributes.cshtml"
 AddHtmlAttributeValue(" ", 331, false, 332, 6, false);
 
 #line default
 #line hidden
+#nullable disable
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)

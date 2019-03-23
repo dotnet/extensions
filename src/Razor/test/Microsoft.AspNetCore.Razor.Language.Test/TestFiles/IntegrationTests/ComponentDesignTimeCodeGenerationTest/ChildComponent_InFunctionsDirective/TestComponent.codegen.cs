@@ -8,11 +8,13 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 using Microsoft.AspNetCore.Components.RenderTree;
 
 #line default
 #line hidden
+#nullable disable
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
@@ -26,13 +28,16 @@ using Microsoft.AspNetCore.Components.RenderTree;
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderChildComponent(builder); 
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     void RenderChildComponent(RenderTreeBuilder builder)
@@ -41,20 +46,25 @@ using Microsoft.AspNetCore.Components.RenderTree;
 
 #line default
 #line hidden
+#nullable disable
         builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
         }
         ));
+#nullable restore
 #line 8 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "x:\dir\subdir\Test\TestComponent.cshtml"
                        
     }
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

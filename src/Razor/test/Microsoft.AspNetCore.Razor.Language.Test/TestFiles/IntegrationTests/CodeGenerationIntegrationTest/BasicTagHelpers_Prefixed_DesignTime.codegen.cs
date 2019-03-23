@@ -11,19 +11,23 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers_Prefixed.cshtml"
 global::System.Object __typeHelper = "THS";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers_Prefixed.cshtml"
 global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -38,11 +42,13 @@ global::System.Object __typeHelper = "*, TestAssembly";
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
             __TestNamespace_InputTagHelper.Type = "checkbox";
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers_Prefixed.cshtml"
  __TestNamespace_InputTagHelper2.Checked = true;
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
         }
         #pragma warning restore 1998

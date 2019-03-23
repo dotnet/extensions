@@ -9,11 +9,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
 global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -24,6 +26,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
   
     var people = new Person[]
@@ -37,30 +40,40 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
         __o = person.Name;
 
 #line default
 #line hidden
+#nullable disable
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
                                
     }
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
    PrintName(people[0]); 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
    await AnnounceBirthday(people[0]); 
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
             
     Task AnnounceBirthday(Person person)
@@ -70,12 +83,16 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
                            __o = formatted;
 
 #line default
 #line hidden
+#nullable disable
         __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+#nullable restore
 #line 23 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
               
 
@@ -83,6 +100,8 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
          for (var i = 0; i < person.Age / 10; i++)
         {
@@ -90,17 +109,23 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
             __o = i;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
                                          
         }
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 30 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
              
 
@@ -113,6 +138,8 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 37 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
                                
         return Task.CompletedTask;
@@ -127,6 +154,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

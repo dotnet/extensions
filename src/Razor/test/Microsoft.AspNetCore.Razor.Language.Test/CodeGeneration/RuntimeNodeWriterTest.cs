@@ -57,11 +57,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 1 ""test.cshtml""
+@"
+#nullable restore
+#line 1 ""test.cshtml""
 using System;
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -126,11 +129,14 @@ using System;
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 1 ""test.cshtml""
+@"
+#nullable restore
+#line 1 ""test.cshtml""
 Test(i++);
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -208,12 +214,15 @@ Test(i++);
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 1 ""test.cshtml""
+@"
+#nullable restore
+#line 1 ""test.cshtml""
    Test(iRender Children
 ++);
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -296,11 +305,14 @@ Test(i++);
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 1 ""test.cshtml""
+@"
+#nullable restore
+#line 1 ""test.cshtml""
 if (true) { }
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -331,11 +343,14 @@ if (true) { }
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 1 ""test.cshtml""
+@"
+#nullable restore
+#line 1 ""test.cshtml""
     if (true) { }
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -553,11 +568,14 @@ EndWriteAttribute();
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 1 ""test.cshtml""
+@"
+#nullable restore
+#line 1 ""test.cshtml""
 WriteAttributeValue("" "", 27, false, 28, 6, false);
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -585,11 +603,13 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
             Assert.Equal(
 @"WriteAttributeValue("" "", 27, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
     PushWriter(__razor_attribute_value_writer);
+#nullable restore
 #line 1 ""test.cshtml""
                              if(@true){ }
 
 #line default
 #line hidden
+#nullable disable
     PopWriter();
 }
 ), 28, 13, false);

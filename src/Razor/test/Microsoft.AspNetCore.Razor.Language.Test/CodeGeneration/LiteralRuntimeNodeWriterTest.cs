@@ -32,11 +32,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 1 ""test.cshtml""
+@"
+#nullable restore
+#line 1 ""test.cshtml""
 WriteLiteral(i++);
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);

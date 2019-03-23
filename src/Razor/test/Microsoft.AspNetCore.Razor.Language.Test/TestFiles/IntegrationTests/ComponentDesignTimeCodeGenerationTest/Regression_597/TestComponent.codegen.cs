@@ -22,29 +22,35 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                  y
 
 #line default
 #line hidden
+#nullable disable
             );
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => y = __value, y);
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(Counter);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     string y = null;
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

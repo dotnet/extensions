@@ -15,19 +15,23 @@ namespace Test
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 global::System.Object __typeHelper = "/MyPage";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
 global::System.Object __typeHelper = "/AnotherRoute/{id}";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -42,11 +46,13 @@ global::System.Object __typeHelper = "/AnotherRoute/{id}";
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

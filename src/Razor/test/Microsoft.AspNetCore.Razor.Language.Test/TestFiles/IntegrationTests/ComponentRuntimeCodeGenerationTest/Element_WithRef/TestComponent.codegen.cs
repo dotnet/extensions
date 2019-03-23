@@ -18,17 +18,20 @@ namespace Test
             builder.AddAttribute(1, "attributebefore", "before");
             builder.AddAttribute(2, "attributeafter", "after");
             builder.AddElementReferenceCapture(3, (__value) => {
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                     myElem = __value;
 
 #line default
 #line hidden
+#nullable disable
             }
             );
             builder.AddContent(4, "Hello");
             builder.CloseElement();
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Microsoft.AspNetCore.Components.ElementRef myElem;
@@ -36,6 +39,7 @@ namespace Test
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

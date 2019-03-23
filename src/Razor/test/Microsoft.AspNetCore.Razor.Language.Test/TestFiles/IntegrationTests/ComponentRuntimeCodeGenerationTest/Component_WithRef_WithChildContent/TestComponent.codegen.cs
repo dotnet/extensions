@@ -22,16 +22,19 @@ namespace Test
             }
             ));
             builder.AddComponentReferenceCapture(5, (__value) => {
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                   myInstance = (Test.MyComponent)__value;
 
 #line default
 #line hidden
+#nullable disable
             }
             );
             builder.CloseComponent();
         }
         #pragma warning restore 1998
+#nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Test.MyComponent myInstance;
@@ -39,6 +42,7 @@ namespace Test
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

@@ -11,11 +11,13 @@ namespace Microsoft.AspNetCore.TestGenerated
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             WriteLiteral("The time is ");
+#nullable restore
 #line 1 "TestView.cshtml"
        Write(DateTime.UtcNow);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\nwindow.alert(\"Hello world\");\r\nFooter goes here.");
         }
         #pragma warning restore 1998

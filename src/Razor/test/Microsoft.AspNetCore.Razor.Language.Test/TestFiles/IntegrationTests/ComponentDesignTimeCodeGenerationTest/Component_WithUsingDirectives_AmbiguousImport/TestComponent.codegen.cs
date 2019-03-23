@@ -8,16 +8,20 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 using Test2;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
 using Test3;
 
 #line default
 #line hidden
+#nullable disable
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
@@ -34,19 +38,23 @@ using Test3;
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(SomeComponent);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

@@ -21,13 +21,16 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                     myElem = default(Microsoft.AspNetCore.Components.ElementRef);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Microsoft.AspNetCore.Components.ElementRef myElem;
@@ -35,6 +38,7 @@ namespace Test
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

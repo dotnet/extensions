@@ -21,33 +21,41 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderFragment template = 
 
 #line default
 #line hidden
+#nullable disable
             (builder2) => {
             }
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                              ; 
 
 #line default
 #line hidden
+#nullable disable
             __o = 
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                       template
 
 #line default
 #line hidden
+#nullable disable
             ;
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

@@ -1,20 +1,20 @@
 Source Location: (2:0,2 [47] x:\dir\subdir\Test\TestComponent.cshtml)
 | RenderFragment<Person> template = (person) => |
-Generated Location: (870:24,2 [47] )
+Generated Location: (889:25,2 [47] )
 | RenderFragment<Person> template = (person) => |
 
 Source Location: (56:0,56 [11] x:\dir\subdir\Test\TestComponent.cshtml)
 |person.Name|
-Generated Location: (1086:30,56 [11] )
+Generated Location: (1143:33,56 [11] )
 |person.Name|
 
 Source Location: (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml)
 |; |
-Generated Location: (1270:36,73 [2] )
+Generated Location: (1365:41,73 [2] )
 |; |
 
 Source Location: (108:1,30 [8] x:\dir\subdir\Test\TestComponent.cshtml)
 |template|
-Generated Location: (1470:42,30 [8] )
+Generated Location: (1603:49,30 [8] )
 |template|
 

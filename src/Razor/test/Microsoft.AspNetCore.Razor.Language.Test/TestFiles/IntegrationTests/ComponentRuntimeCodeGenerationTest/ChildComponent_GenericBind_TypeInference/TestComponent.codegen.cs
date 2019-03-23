@@ -17,12 +17,14 @@ namespace Test
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, Microsoft.AspNetCore.Components.BindMethods.GetValue(Value), 2, __value => Value = __value);
         }
         #pragma warning restore 1998
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     string Value;
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 namespace __Blazor.Test.TestComponent

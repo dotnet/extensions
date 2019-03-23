@@ -9,11 +9,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
 global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -25,163 +27,223 @@ global::System.Object __typeHelper = "*, TestAssembly";
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                   __o = DateTime.Now;
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                         __o = string.Empty;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                            } else { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                __o = false;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                            }
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                 __o = DateTime.Now;
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_InputTagHelper.Bound = string.Empty;
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                       __o = DateTime.Now;
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
          __o = long.MinValue;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                               if (true) { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                      __o = string.Empty;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                         } else { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                             __o = false;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                                         }
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                                      __o = int.MaxValue;
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_InputTagHelper.Bound = string.Empty;
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
            __o = long.MinValue;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                 if (true) { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                        __o = string.Empty;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                           } else { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                               __o = false;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                                           }
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                                        __o = int.MaxValue;
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+#nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
            __o = long.MinValue;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                           __o = DateTime.Now;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                           __o = int.MaxValue;
 
 #line default
 #line hidden
+#nullable disable
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                         __o = string.Empty;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                            } else { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                __o = false;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                                            }
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

@@ -21,26 +21,33 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
   
     RenderFragment<Person> p = (person) => 
 
 #line default
 #line hidden
+#nullable disable
             (builder2) => {
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                             __o = person.Name;
 
 #line default
 #line hidden
+#nullable disable
             }
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                    ;
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     class Person
@@ -50,6 +57,7 @@ namespace Test
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

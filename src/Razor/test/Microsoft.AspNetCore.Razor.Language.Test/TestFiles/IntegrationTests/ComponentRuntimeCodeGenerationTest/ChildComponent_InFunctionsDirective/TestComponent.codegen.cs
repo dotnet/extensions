@@ -15,13 +15,16 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderChildComponent(builder); 
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     void RenderChildComponent(RenderTreeBuilder builder)
@@ -29,15 +32,18 @@ namespace Test
 
 #line default
 #line hidden
+#nullable disable
         builder.AddContent(0, "        ");
         builder.OpenComponent<Test.MyComponent>(1);
         builder.CloseComponent();
         builder.AddContent(2, "\r\n");
+#nullable restore
 #line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
     }
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

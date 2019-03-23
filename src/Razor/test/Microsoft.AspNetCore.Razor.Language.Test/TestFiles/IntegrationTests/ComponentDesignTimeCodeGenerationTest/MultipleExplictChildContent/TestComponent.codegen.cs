@@ -25,18 +25,22 @@ namespace Test
             }
             ));
             builder.AddAttribute(-1, "Footer", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
         __o = "bye!";
 
 #line default
 #line hidden
+#nullable disable
             }
             ));
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

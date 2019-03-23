@@ -26,18 +26,23 @@ namespace Test
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                        myInstance = default(Test.MyComponent);
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private Test.MyComponent myInstance;
@@ -45,6 +50,7 @@ __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

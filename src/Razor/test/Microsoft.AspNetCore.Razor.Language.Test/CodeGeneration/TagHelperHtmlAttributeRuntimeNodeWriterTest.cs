@@ -54,11 +54,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 1 ""test.cshtml""
+@"
+#nullable restore
+#line 1 ""test.cshtml""
 AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -85,11 +88,13 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
             Assert.Equal(
 @"AddHtmlAttributeValue("" "", 27, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
     PushWriter(__razor_attribute_value_writer);
+#nullable restore
 #line 1 ""test.cshtml""
                              if(@true){ }
 
 #line default
 #line hidden
+#nullable disable
     PopWriter();
 }
 ), 28, 13, false);

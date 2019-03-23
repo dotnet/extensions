@@ -13,12 +13,15 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         {
             WriteLiteral("<p>This should ");
             WriteLiteral(" be shown</p>\r\n\r\n");
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
                                        
     Exception foo = 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
                                                   null;
     if(foo != null) {
@@ -27,24 +30,31 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
+#nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
    var bar = "@* bar *@"; 
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("<p>But this should show the comment syntax: ");
+#nullable restore
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
                                        Write(bar);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</p>\r\n\r\n");
+#nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
 Write(ab);
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n\r\n<input value=\"@*this razor comment is the actual value*@\" type=\"text\" />\r\n<input ");
             WriteLiteral(" type=\"text\" />\r\n");
         }

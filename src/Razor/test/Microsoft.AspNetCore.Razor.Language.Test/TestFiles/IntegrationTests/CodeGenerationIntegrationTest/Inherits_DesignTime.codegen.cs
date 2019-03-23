@@ -8,11 +8,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
 foo.bar<baz<biz>>.boz __typeHelper = default(foo.bar<baz<biz>>.boz);
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -23,11 +25,13 @@ foo.bar<baz<biz>>.boz __typeHelper = default(foo.bar<baz<biz>>.boz);
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
 __o = foo();
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

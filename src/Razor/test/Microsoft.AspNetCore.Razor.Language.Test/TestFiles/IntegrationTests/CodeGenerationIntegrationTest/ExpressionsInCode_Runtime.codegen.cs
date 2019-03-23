@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
   
     object foo = null;
@@ -18,48 +19,63 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
  if(foo != null) {
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
 Write(foo);
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
         
 } else {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("    <p>Foo is Null!</p>\r\n");
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n<p>\r\n");
+#nullable restore
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
  if(!String.IsNullOrEmpty(bar)) {
     
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
 Write(bar.Replace("F", "B"));
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
                             
 }
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</p>");
         }
         #pragma warning restore 1998

@@ -8,11 +8,13 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
 using Test2;
 
 #line default
 #line hidden
+#nullable disable
     [Microsoft.AspNetCore.Components.RouteAttribute("/MyPage")]
     [Microsoft.AspNetCore.Components.RouteAttribute("/AnotherRoute/{id}")]
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
@@ -20,19 +22,23 @@ using Test2;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 global::System.Object __typeHelper = "/MyPage";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
 global::System.Object __typeHelper = "/AnotherRoute/{id}";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -47,19 +53,23 @@ global::System.Object __typeHelper = "/AnotherRoute/{id}";
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent2);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

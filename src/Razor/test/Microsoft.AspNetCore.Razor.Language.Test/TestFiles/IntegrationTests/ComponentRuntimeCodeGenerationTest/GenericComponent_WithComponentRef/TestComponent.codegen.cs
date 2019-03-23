@@ -17,16 +17,19 @@ namespace Test
             builder.OpenComponent<Test.MyComponent<int>>(0);
             builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<int>(3));
             builder.AddComponentReferenceCapture(2, (__value) => {
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                      _my = (Test.MyComponent<int>)__value;
 
 #line default
 #line hidden
+#nullable disable
             }
             );
             builder.CloseComponent();
         }
         #pragma warning restore 1998
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     private MyComponent<int> _my;
@@ -34,6 +37,7 @@ namespace Test
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

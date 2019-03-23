@@ -15,12 +15,14 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             builder.AddMarkupContent(0, "<h1>Item1</h1>\r\n");
+#nullable restore
 #line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
  foreach (var item2 in Items2)
 {
 
 #line default
 #line hidden
+#nullable disable
             builder.AddContent(1, "    ");
             builder.OpenElement(2, "p");
             builder.AddContent(3, "\r\n    ");
@@ -28,13 +30,16 @@ namespace Test
             builder.AddContent(5, ";\r\n    ");
             builder.CloseElement();
             builder.AddContent(6, "\r\n");
+#nullable restore
 #line 11 "x:\dir\subdir\Test\TestComponent.cshtml"
 }
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 12 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     [Parameter] TItem1 Item1 { get; set; }
@@ -43,6 +48,7 @@ namespace Test
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

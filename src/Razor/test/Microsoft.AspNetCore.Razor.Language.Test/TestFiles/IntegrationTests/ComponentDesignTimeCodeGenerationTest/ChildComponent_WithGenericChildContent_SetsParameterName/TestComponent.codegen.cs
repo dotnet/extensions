@@ -23,18 +23,22 @@ namespace Test
             base.BuildRenderTree(builder);
             __o = "";
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment<System.String>)((item) => (builder2) => {
+#nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                           __o = item.ToLowerInvariant();
 
 #line default
 #line hidden
+#nullable disable
             }
             ));
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

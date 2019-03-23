@@ -10,27 +10,33 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
 global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
 global::System.Object MySection = null;
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
 global::System.Object nestedsection = null;
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -41,31 +47,39 @@ global::System.Object nestedsection = null;
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
   
     var code = "some code";
 
 #line default
 #line hidden
+#nullable disable
             DefineSection("MySection", async(__razor_section_writer) => {
+#nullable restore
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
                                                   __o = code;
 
 #line default
 #line hidden
+#nullable disable
                 __TestNamespace_NestedTagHelper = CreateTagHelper<global::TestNamespace.NestedTagHelper>();
                 __TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
                                              __o = DateTime.Now;
 
 #line default
 #line hidden
+#nullable disable
                 __TestNamespace_MyTagHelper.BoundProperty = string.Empty;
+#nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
                                                                                            __o = DateTime.Now;
 
 #line default
 #line hidden
+#nullable disable
                 __TestNamespace_NestedTagHelper = CreateTagHelper<global::TestNamespace.NestedTagHelper>();
             }
             );

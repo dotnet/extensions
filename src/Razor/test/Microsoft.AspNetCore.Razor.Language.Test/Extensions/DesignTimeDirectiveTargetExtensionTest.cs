@@ -58,11 +58,13 @@ private void __RazorDirectiveTokenHelpers__() {
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
 ((System.Action)(() => {
+#nullable restore
 #line 1 ""test.cshtml""
 System.String __typeHelper = default(System.String);
 
 #line default
 #line hidden
+#nullable disable
 }
 ))();
 }
@@ -97,11 +99,13 @@ System.String __typeHelper = default(System.String);
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
 ((System.Action)(() => {
+#nullable restore
 #line 1 ""test.cshtml""
 global::System.Object __typeHelper = nameof(System.Collections.Generic);
 
 #line default
 #line hidden
+#nullable disable
 }
 ))();
 }
@@ -136,11 +140,13 @@ global::System.Object __typeHelper = nameof(System.Collections.Generic);
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
 ((System.Action)(() => {
+#nullable restore
 #line 1 ""test.cshtml""
 global::System.Object Foo = null;
 
 #line default
 #line hidden
+#nullable disable
 }
 ))();
 }
@@ -182,19 +188,23 @@ global::System.Object Foo = null;
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
 ((System.Action)(() => {
+#nullable restore
 #line 1 ""test.cshtml""
 global::System.Object __typeHelper = ""Value"";
 
 #line default
 #line hidden
+#nullable disable
 }
 ))();
 ((System.Action)(() => {
+#nullable restore
 #line 1 ""test.cshtml""
 global::System.Object __typeHelper = ""Value"";
 
 #line default
 #line hidden
+#nullable disable
 }
 ))();
 }

@@ -546,11 +546,14 @@ __InputTagHelper.StringProp = string.Empty;
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 3 ""test.cshtml""
+@"
+#nullable restore
+#line 3 ""test.cshtml""
 __InputTagHelper.IntProp = 32;
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -675,11 +678,14 @@ __InputTagHelper.IntProp = 32;
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 3 ""test.cshtml""
+@"
+#nullable restore
+#line 3 ""test.cshtml""
 __InputTagHelper.IntIndexer[""bound""] = 32;
 
 #line default
 #line hidden
+#nullable disable
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -806,11 +812,14 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.St
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 3 ""test.cshtml""
+@"
+#nullable restore
+#line 3 ""test.cshtml""
 __InputTagHelper.IntProp = 32;
 
 #line default
 #line hidden
+#nullable disable
 __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.IntProp, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 ",
                 csharp,
@@ -941,11 +950,13 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
 {
     throw new InvalidOperationException(InvalidTagHelperIndexerAssignment(""foo-bound"", ""InputTagHelper"", ""IntIndexer""));
 }
+#nullable restore
 #line 3 ""test.cshtml""
 __InputTagHelper.IntIndexer[""bound""] = 32;
 
 #line default
 #line hidden
+#nullable disable
 __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelper.IntIndexer[""bound""], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 ",
                 csharp,
@@ -1006,11 +1017,14 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"#line 3 ""test.cshtml""
+@"
+#nullable restore
+#line 3 ""test.cshtml""
 __InputTagHelper.IntIndexer[""bound""] = 32;
 
 #line default
 #line hidden
+#nullable disable
 __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelper.IntIndexer[""bound""], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 ",
                 csharp,

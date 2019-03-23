@@ -22,20 +22,24 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                42.ToString()
 
 #line default
 #line hidden
+#nullable disable
             );
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

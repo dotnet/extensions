@@ -11,25 +11,31 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml"
   
     var a = 1; 
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("foo");
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml"
                                 		
     var b = 1;			
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("bar ");
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml"
                                 Write(a+b);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

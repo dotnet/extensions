@@ -2,7 +2,7 @@ Source Location: (55:1,12 [41] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public bool Enabled { get; set; }
 |
-Generated Location: (1077:24,12 [41] )
+Generated Location: (1096:25,12 [41] )
 |
     public bool Enabled { get; set; }
 |

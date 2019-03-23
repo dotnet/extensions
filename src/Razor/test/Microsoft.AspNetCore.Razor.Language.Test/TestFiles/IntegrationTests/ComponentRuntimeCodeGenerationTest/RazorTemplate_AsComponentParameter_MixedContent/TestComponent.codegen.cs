@@ -14,11 +14,13 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderFragment<Test.Context> template = (context) => 
 
 #line default
 #line hidden
+#nullable disable
             (builder2) => {
                 builder2.OpenElement(0, "li");
                 builder2.AddContent(1, "#");
@@ -27,11 +29,13 @@ namespace Test
                 builder2.AddContent(4, context.Item.ToLower());
                 builder2.CloseElement();
             }
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                                                            ; 
 
 #line default
 #line hidden
+#nullable disable
             builder.OpenComponent<Test.MyComponent>(5);
             builder.AddAttribute(6, "Template", new Microsoft.AspNetCore.Components.RenderFragment<Test.Context>(template));
             builder.CloseComponent();

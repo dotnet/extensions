@@ -22,26 +22,32 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, -1, -1, Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                              ParentValue
 
 #line default
 #line hidden
+#nullable disable
             ), -1, Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, 
             Microsoft.AspNetCore.Components.EventCallback.Factory.CreateInferred(this, __value => ParentValue = __value, ParentValue)), -1, () => ParentValue);
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent<>);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     public DateTime ParentValue { get; set; } = DateTime.Now;
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 namespace __Blazor.Test.TestComponent

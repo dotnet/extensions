@@ -3,11 +3,13 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
 using System.Collections.Generic;
 
 #line default
 #line hidden
+#nullable disable
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CSharp8_DesignTime
     {
         #pragma warning disable 219
@@ -20,6 +22,7 @@ using System.Collections.Generic;
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
   
     IAsyncEnumerable<bool> GetAsyncEnumerable()
@@ -34,6 +37,8 @@ using System.Collections.Generic;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
  await foreach (var val in GetAsyncEnumerable())
 {
@@ -42,6 +47,7 @@ using System.Collections.Generic;
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

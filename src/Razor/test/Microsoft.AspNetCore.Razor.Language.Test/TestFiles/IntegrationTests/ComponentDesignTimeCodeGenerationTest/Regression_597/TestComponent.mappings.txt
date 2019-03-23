@@ -1,13 +1,13 @@
 Source Location: (17:0,17 [1] x:\dir\subdir\Test\TestComponent.cshtml)
 |y|
-Generated Location: (958:25,17 [1] )
+Generated Location: (977:26,17 [1] )
 |y|
 
 Source Location: (36:1,12 [24] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     string y = null;
 |
-Generated Location: (1497:42,12 [24] )
+Generated Location: (1592:47,12 [24] )
 |
     string y = null;
 |

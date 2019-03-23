@@ -11,24 +11,30 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MarkupInCodeBlock.cshtml"
   
     for(int i = 1; i <= 10; i++) {
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("        <p>Hello from C#, #");
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MarkupInCodeBlock.cshtml"
                        Write(i.ToString());
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("</p>\r\n");
+#nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MarkupInCodeBlock.cshtml"
     }
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

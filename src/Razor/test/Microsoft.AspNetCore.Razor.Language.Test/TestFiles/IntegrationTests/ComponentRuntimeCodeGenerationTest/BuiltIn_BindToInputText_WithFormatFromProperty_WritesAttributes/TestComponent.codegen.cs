@@ -21,6 +21,7 @@ namespace Test
             builder.CloseElement();
         }
         #pragma warning restore 1998
+#nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
             
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
@@ -29,6 +30,7 @@ namespace Test
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591
