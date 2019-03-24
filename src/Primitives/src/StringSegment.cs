@@ -136,8 +136,8 @@ namespace Microsoft.Extensions.Primitives
         /// Compares substrings of two specified <see cref="StringSegment"/> objects using the specified rules,
         /// and returns an integer that indicates their relative position in the sort order.
         /// </summary>
-        /// <param name="a">The first StringSegment to compare.</param>
-        /// <param name="b">The second StringSegment to compare.</param>
+        /// <param name="a">The first <see cref="StringSegment"/> to compare.</param>
+        /// <param name="b">The second <see cref="StringSegment"/> to compare.</param>
         /// <param name="comparisonType">One of the enumeration values that specifies the rules for the comparison.</param>
         /// <returns>
         /// A 32-bit signed integer indicating the lexical relationship between the two comparands.
@@ -193,11 +193,11 @@ namespace Microsoft.Extensions.Primitives
         // This handles StringSegment.Equals(string, StringSegment, StringComparison) and StringSegment.Equals(StringSegment, string, StringComparison)
         // via the implicit type converter
         /// <summary>
-        /// Determines whether two specified StringSegment objects have the same value. A parameter specifies the culture, case, and
+        /// Determines whether two specified <see cref="StringSegment"/> objects have the same value. A parameter specifies the culture, case, and
         /// sort rules used in the comparison.
         /// </summary>
-        /// <param name="a">The first StringSegment to compare.</param>
-        /// <param name="b">The second StringSegment to compare.</param>
+        /// <param name="a">The first <see cref="StringSegment"/> to compare.</param>
+        /// <param name="b">The second <see cref="StringSegment"/> to compare.</param>
         /// <param name="comparisonType">One of the enumeration values that specifies the rules for the comparison.</param>
         /// <returns><code>true</code> if the objects are equal; otherwise, <code>false</code>.</returns>
         public static bool Equals(StringSegment a, StringSegment b, StringComparison comparisonType)
@@ -481,8 +481,8 @@ namespace Microsoft.Extensions.Primitives
         /// <param name="anyOf">A Unicode character array containing one or more characters to seek.</param>
         /// <param name="startIndex">The search starting position.</param>
         /// <param name="count">The number of character positions to examine.</param>
-        /// <returns>The zero-based index position of the first occurrence in this instance where any character in anyOf
-        /// was found; -1 if no character in anyOf was found.</returns>
+        /// <returns>The zero-based index position of the first occurrence in this instance where any character in <paramref name="anyOf"/>
+        /// was found; -1 if no character in <paramref name="anyOf"/> was found.</returns>
         /// <exception cref="ArgumentNullException">
         /// <paramref name="anyOf"/> is <code>null</code>.
         /// </exception>
@@ -523,8 +523,8 @@ namespace Microsoft.Extensions.Primitives
         /// </summary>
         /// <param name="anyOf">A Unicode character array containing one or more characters to seek.</param>
         /// <param name="startIndex">The search starting position.</param>
-        /// <returns>The zero-based index position of the first occurrence in this instance where any character in anyOf
-        /// was found; -1 if no character in anyOf was found.</returns>
+        /// <returns>The zero-based index position of the first occurrence in this instance where any character in <paramref name="anyOf"/>
+        /// was found; -1 if no character in <paramref name="anyOf"/> was found.</returns>
         /// <exception cref="ArgumentOutOfRangeException">
         /// <paramref name="startIndex"/> is greater than or equal to <see cref="Length"/> or less than zero.
         /// </exception>
@@ -538,8 +538,8 @@ namespace Microsoft.Extensions.Primitives
         /// of Unicode characters.
         /// </summary>
         /// <param name="anyOf">A Unicode character array containing one or more characters to seek.</param>
-        /// <returns>The zero-based index position of the first occurrence in this instance where any character in anyOf
-        /// was found; -1 if no character in anyOf was found.</returns>
+        /// <returns>The zero-based index position of the first occurrence in this instance where any character in <paramref name="anyOf"/>
+        /// was found; -1 if no character in <paramref name="anyOf"/> was found.</returns>
         public int IndexOfAny(char[] anyOf)
         {
             return IndexOfAny(anyOf, 0, Length);
@@ -627,21 +627,21 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <summary>
-        /// Splits a string into StringSegments that are based on the characters in an array.
+        /// Splits a string into <see cref="StringSegment"/>s that are based on the characters in an array.
         /// </summary>
         /// <param name="chars">A character array that delimits the substrings in this string, an empty array that
         /// contains no delimiters, or null.</param>
-        /// <returns>An <see cref="StringTokenizer"/> whose elements contain the StringSegmeents from this instance
-        /// that are delimited by one or more characters in separator.</returns>
+        /// <returns>An <see cref="StringTokenizer"/> whose elements contain the <see cref="StringSegment"/>s from this instance
+        /// that are delimited by one or more characters in <paramref name="chars"/>.</returns>
         public StringTokenizer Split(char[] chars)
         {
             return new StringTokenizer(this, chars);
         }
 
         /// <summary>
-        /// Indicates whether the specified StringSegment is null or an Empty string.
+        /// Indicates whether the specified <see cref="StringSegment"/> is null or an Empty string.
         /// </summary>
-        /// <param name="value">The StringSegment to test.</param>
+        /// <param name="value">The <see cref="StringSegment"/> to test.</param>
         /// <returns></returns>
         public static bool IsNullOrEmpty(StringSegment value)
         {
