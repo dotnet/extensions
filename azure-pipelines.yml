@@ -98,10 +98,6 @@ jobs:
       - powershell: eng\scripts\KillProcesses.ps1
         displayName: Kill processes
         condition: always()
-      # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
-      - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-        displayName: Detect components
-        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
       - task: PublishTestResults@2
         displayName: Publish Flaky Test Results
         inputs:
