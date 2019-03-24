@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Options
         public Action<TOptions> Action { get; }
 
         /// <summary>
-        /// Invokes the registered configure Action if the name matches.
+        /// Invokes the registered configure Action.
         /// </summary>
         /// <param name="options"></param>
         public virtual void Configure(TOptions options)
