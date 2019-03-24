@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Creates <see cref="IChangeToken"/> so that <see cref="IOptionsMonitor{TOptions}"/> gets
+    /// Creates <see cref="IChangeToken"/>s so that <see cref="IOptionsMonitor{TOptions}"/> gets
     /// notified when <see cref="IConfiguration"/> changes.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
