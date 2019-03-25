@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Logging.EventLog" />
     <Reference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
 
