@@ -146,7 +146,8 @@ namespace Microsoft.Extensions.Hosting
 
             if (string.IsNullOrEmpty(_hostingEnvironment.ApplicationName))
             {
-                _hostingEnvironment.ApplicationName = Assembly.GetEntryAssembly().GetName().Name;
+                // Note GetEntryAssembly returns null for the net4x console test runner.
+                _hostingEnvironment.ApplicationName = Assembly.GetEntryAssembly()?.GetName().Name;
             }
 
             _hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(_hostingEnvironment.ContentRootPath);
