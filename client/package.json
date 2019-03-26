@@ -8,7 +8,7 @@
     },
     "publisher": "ms-vscode",
     "engines": {
-        "vscode": "^1.25.0"
+        "vscode": "^1.31.0"
     },
     "categories": [
         "Other"
@@ -143,6 +143,6 @@
     },
     "dependencies": {
         "microsoft.aspnetcore.razor.vscode": "file:../src/Microsoft.AspNetCore.Razor.VSCode",
-        "vscode": "^1.1.22"
+        "vscode": "1.1.33"
     }
 }

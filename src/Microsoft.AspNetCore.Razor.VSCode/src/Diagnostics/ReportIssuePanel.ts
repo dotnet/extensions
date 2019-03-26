@@ -3,7 +3,6 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as clipboardy from 'clipboardy';
 import * as vscode from 'vscode';
 import { Trace } from 'vscode-jsonrpc';
 import { RazorLogger } from '../RazorLogger';
@@ -67,7 +66,7 @@ export class ReportIssuePanel {
                         this.dataCollector = undefined;
                     }
 
-                    await clipboardy.write(this.issueContent);
+                    await vscode.env.clipboard.writeText(this.issueContent);
                     vscode.window.showInformationMessage('Razor issue copied to clipboard');
                     return;
                 case 'startIssue':

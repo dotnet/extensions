@@ -19,7 +19,7 @@
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
     <Exec Command="node -v" />
     <Exec Command="npm -v" />
-    <Exec Command="npm ci" />
+    <Exec Command="npm install" />
   </Target>
 
   <Target Name="RunNpmCompile" AfterTargets="Build" DependsOnTargets="EnsureNpmRestored">
