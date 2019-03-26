@@ -22,30 +22,36 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                        person.Name
 
 #line default
 #line hidden
+#nullable disable
             ));
             __o = new System.Action<System.String>(
             __value => person.Name = __value);
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
+#nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(InputText);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
  
     Person person = new Person();
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591
