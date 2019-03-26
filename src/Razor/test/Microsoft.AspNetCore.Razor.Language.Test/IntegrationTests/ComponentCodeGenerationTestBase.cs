@@ -389,6 +389,53 @@ namespace Test
         }
 
         [Fact]
+        public void BindToComponent_WithStringAttribute_DoesNotUseStringSyntax()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class InputText : ComponentBase
+    {
+        [Parameter]
+        string Value { get; set; }
+
+        [Parameter]
+        Action<string> ValueChanged { get; set; }
+    }
+}"));
+
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+
+namespace Test
+{
+    public class Person
+    {
+        public string Name { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<InputText bind-Value=""person.Name"" />
+
+@functions 
+{
+    Person person = new Person();
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void BindToComponent_TypeChecked_WithMatchingProperties()
         {
             // Arrange
@@ -798,6 +845,34 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <div bind=""@ParentValue"" />
+@functions {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToElement_WithStringAttribute_WritesAttributes()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", ""value"", ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+<div bind-value=""ParentValue"" />
 @functions {
     public string ParentValue { get; set; } = ""hi"";
 }");
