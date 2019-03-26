@@ -10,6 +10,7 @@ import {
     LanguageClient,
     LanguageClientOptions,
     ServerOptions,
+    State,
 } from 'vscode-languageclient/lib/main';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
 import { RazorLogger } from './RazorLogger';
@@ -103,34 +104,66 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         }
 
         let resolve: () => void = Function;
-        let reject: () => void = Function;
+        let reject: (reason: any) => void = Function;
         this.startHandle = new Promise<void>((resolver, rejecter) => {
             resolve = resolver;
             reject = rejecter;
         });
 
+        // Workaround https://github.com/Microsoft/vscode-languageserver-node/issues/472 by tying into state
+        // change events to detect when restarts are occuring and then properly reject the Language Server
+        // start listeners.
+        let restartCount = 0;
+        let currentState = State.Starting;
+        const didChangeStateDisposable = this.client.onDidChangeState((stateChangeEvent) => {
+            currentState = stateChangeEvent.newState;
+
+            if (stateChangeEvent.oldState === State.Starting && stateChangeEvent.newState === State.Stopped) {
+                restartCount++;
+
+                if (restartCount === 5) {
+                    // Timeout, the built-in LanguageClient retries a hardcoded 5 times before giving up. We tie into that
+                    // and then given up on starting the language server if we can't start by then.
+                    reject('Server failed to start after retrying 5 times.');
+                }
+            } else if (stateChangeEvent.newState === State.Running) {
+                restartCount = 0;
+            }
+        });
+
         try {
             this.logger.logMessage('Starting Razor Language Server...');
-            this.startDisposable = await this.client.start();
+            const startDisposable = this.client.start();
+            this.startDisposable = vscode.Disposable.from(startDisposable, didChangeStateDisposable);
             this.logger.logMessage('Server started, waiting for client to be ready...');
-            await this.client.onReady();
+            this.client.onReady().then(async () => {
+                if (currentState !== State.Running) {
+                    // Unexpected scenario, if we fall into this scenario the above onDidChangeState
+                    // handling will kill the start promise if we reach a certain retry threshold.
+                    return;
+                }
+                this.isStarted = true;
+                this.logger.logMessage('Server started and ready!');
+                this.eventBus.emit(events.ServerStart);
 
-            this.isStarted = true;
-            this.logger.logMessage('Server started and ready!');
-            this.eventBus.emit(events.ServerStart);
+                for (const listener of this.onStartedListeners) {
+                    await listener();
+                }
 
-            for (const listener of this.onStartedListeners) {
-                await listener();
-            }
+                // We don't want to track restart management after the server has been initially started,
+                // the langauge client will handle that.
+                didChangeStateDisposable.dispose();
 
-            resolve();
+                // Succesfully started, notify listeners.
+                resolve();
+            });
         } catch (error) {
             vscode.window.showErrorMessage(
                 'Razor Language Server failed to start unexpectedly, ' +
                 'please check the \'Razor Log\' and report an issue.');
 
             this.telemetryReporter.reportErrorOnServerStart(error);
-            reject();
+            reject(error);
         }
 
         return this.startHandle;
