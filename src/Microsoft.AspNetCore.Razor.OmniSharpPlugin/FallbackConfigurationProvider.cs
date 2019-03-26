@@ -29,13 +29,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             foreach (var compilationReference in compilationReferences)
             {
                 var assemblyFullPath = compilationReference.EvaluatedInclude;
-                if (assemblyFullPath.EndsWith(MvcAssemblyFileName, StringComparison.OrdinalIgnoreCase))
+                if (assemblyFullPath.EndsWith(MvcAssemblyFileName, FilePathComparison.Instance))
                 {
-                    if (assemblyFullPath.Length == MvcAssemblyFileName.Length)
-                    {
-                        continue;
-                    }
-
                     var potentialPathSeparator = assemblyFullPath[assemblyFullPath.Length - MvcAssemblyFileName.Length - 1];
                     if (potentialPathSeparator == '/' || potentialPathSeparator == '\\')
                     {

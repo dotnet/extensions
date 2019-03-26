@@ -3,7 +3,6 @@
 
 using System;
 using System.Composition;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
@@ -16,8 +15,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         internal const string ReferencePathWithRefAssembliesItemType = "ReferencePathWithRefAssemblies";
         internal const string SystemWebRazorAssemblyFileName = "System.Web.Razor.dll";
 
-        private const string LegacyRazorAssemblyName = "System.Web.Razor";
-
         public override bool TryResolveConfiguration(ProjectConfigurationProviderContext context, out ProjectConfiguration configuration)
         {
             if (HasRazorCoreCapability(context))
@@ -27,31 +24,22 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             }
 
             var compilationReferences = context.ProjectInstance.GetItems(ReferencePathWithRefAssembliesItemType);
-            string systemWebRazorReferenceFullPath = null;
             foreach (var compilationReference in compilationReferences)
             {
                 var assemblyFullPath = compilationReference.EvaluatedInclude;
-                if (assemblyFullPath.Length == SystemWebRazorAssemblyFileName.Length)
+                if (assemblyFullPath.EndsWith(SystemWebRazorAssemblyFileName, FilePathComparison.Instance))
                 {
-                    continue;
-                }
-
-                var potentialPathSeparator = assemblyFullPath[assemblyFullPath.Length - SystemWebRazorAssemblyFileName.Length - 1];
-                if (potentialPathSeparator == '/' || potentialPathSeparator == '\\')
-                {
-                    systemWebRazorReferenceFullPath = assemblyFullPath;
-                    break;
+                    var potentialPathSeparator = assemblyFullPath[assemblyFullPath.Length - SystemWebRazorAssemblyFileName.Length - 1];
+                    if (potentialPathSeparator == '/' || potentialPathSeparator == '\\')
+                    {
+                        configuration = new ProjectConfiguration(UnsupportedRazorConfiguration.Instance, Array.Empty<OmniSharpHostDocument>(), rootNamespace: null);
+                        return true;
+                    }
                 }
             }
 
-            if (systemWebRazorReferenceFullPath == null)
-            {
-                configuration = null;
-                return false;
-            }
-
-            configuration = new ProjectConfiguration(UnsupportedRazorConfiguration.Instance, Array.Empty<OmniSharpHostDocument>(), rootNamespace: null);
-            return true;
+            configuration = null;
+            return false;
         }
     }
 }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
@@ -37,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public void TryResolveConfiguration_NoSystemWebRazorReference_ReturnsFalse()
         {
             // Arrange
-            var context = BuildContext("/some/path/to/some.dll");
+            var context = BuildContext("/some/path/to/System.Foo.Razor.dll");
             var provider = new SystemWebConfigurationProvider();
 
             // Act
