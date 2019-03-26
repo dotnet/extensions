@@ -173,6 +173,18 @@ C();
         }
 
         [Fact]
+        public void Using_VariableDeclaration_Simple()
+        {
+            ParseDocumentTest("@{ using var foo = someDisposable; }");
+        }
+
+        [Fact]
+        public void Using_VariableDeclaration_Complex()
+        {
+            ParseDocumentTest("@{ using Some.Disposable.TypeName foo = GetDisposable<Some.Disposable.TypeName>(() => { using var bar = otherDisposable; }); }");
+        }
+
+        [Fact]
         public void StaticUsing_NoUsing()
         {
             ParseDocumentTest("@using static");

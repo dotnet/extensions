@@ -35,14 +35,64 @@ using System.Collections.Generic;
 
     }
 
+    Range range = 1..5;
+    using var disposable = GetLastDisposableInRange(range);
+
+    var words = Array.Empty<string>();
+    var testEnum = GetEnum();
+    static TestEnum GetEnum()
+    {
+        return TestEnum.First;
+    }
+
 #line default
 #line hidden
 #nullable disable
 #nullable restore
-#line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+#line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+__o = words[1..2];
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+__o = words[^2..^0];
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+__o = testEnum switch
+{
+    TestEnum.First => "The First!",
+    TestEnum.Second => "The Second!",
+    _ => "The others",
+};
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
  await foreach (var val in GetAsyncEnumerable())
 {
+    
 
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 37 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+__o = val;
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 37 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+        
 }
 
 #line default
@@ -50,6 +100,24 @@ using System.Collections.Generic;
 #nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
+#line 40 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+            
+    enum TestEnum
+    {
+        First,
+        Second
+    }
+
+    IDisposable GetLastDisposableInRange(Range range)
+    {
+        var disposables = (IDisposable[])ViewData["disposables"];
+        return disposables[range][^1];
+    }
+
+#line default
+#line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

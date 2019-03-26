@@ -9,18 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpSpecialBlockTest : ParserTestBase
     {
         [Fact]
-        public void NamespaceImportInsideCodeBlockCausesError()
-        {
-            ParseDocumentTest("@{ using Foo.Bar.Baz; var foo = bar; }");
-        }
-
-        [Fact]
-        public void TypeAliasInsideCodeBlockIsNotHandledSpecially()
-        {
-            ParseDocumentTest("@{ using Foo = Bar.Baz; var foo = bar; }");
-        }
-
-        [Fact]
         public void NonKeywordStatementInCodeBlockIsHandledCorrectly()
         {
             ParseDocumentTest(

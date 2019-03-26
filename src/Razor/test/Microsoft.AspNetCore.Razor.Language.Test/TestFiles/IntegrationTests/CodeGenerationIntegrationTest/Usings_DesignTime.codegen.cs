@@ -59,13 +59,22 @@ using static global::System.Text.Encoding;
         {
 #nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+   
+    using var disposable = (IDisposable)ViewData["disposable"];
+    using System.IDisposable otherDisposable = (IDisposable)ViewData["otherdisposable"];
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
                        __o = typeof(Path).FullName;
 
 #line default
 #line hidden
 #nullable disable
 #nullable restore
-#line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+#line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
                              __o = typeof(Foo).FullName;
 
 #line default
