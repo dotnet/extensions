@@ -2,6 +2,7 @@
     "name": "razor-vscode",
     "displayName": "Razor",
     "description": "Razor tooling support for VS Code",
+    "version": "0.0.1",
     "defaults": {
         "razor": "0.0.1"
     },

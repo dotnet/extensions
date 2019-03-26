@@ -42,6 +42,12 @@ export class ReportIssueCreator {
             dotnetInfo = `A valid dotnet installation could not be found: ${error}`;
         }
         const extensionTable = this.generateExtensionTable();
+
+        const sanitizedLogOutput = this.sanitize(collectionResult.logOutput);
+        const sanitizedRazorContent = this.sanitize(razorContent);
+        const sanitizedCSharpContent = this.sanitize(csharpContent);
+        const sanitizedHtmlContent = this.sanitize(htmlContent);
+        const sanitizedDotnetInfo = this.sanitize(dotnetInfo);
         return `## Is this a Bug or Feature request?:
 Bug
 
@@ -66,7 +72,7 @@ To find the OmniSharp log, open VS Code's "Output" pane, then in the dropdown ch
 <p>
 
 \`\`\`
-${collectionResult.logOutput}
+${sanitizedLogOutput}
 \`\`\`
 
 </p>
@@ -79,7 +85,7 @@ ${collectionResult.logOutput}
 <p>
 
 \`\`\`Razor
-${razorContent}
+${sanitizedRazorContent}
 \`\`\`
 
 </p>
@@ -90,7 +96,7 @@ ${razorContent}
 <p>
 
 \`\`\`C#
-${csharpContent}
+${sanitizedCSharpContent}
 \`\`\`
 
 </p>
@@ -101,7 +107,7 @@ ${csharpContent}
 <p>
 
 \`\`\`Html
-${htmlContent}
+${sanitizedHtmlContent}
 \`\`\`
 
 </p>
@@ -118,7 +124,7 @@ ${htmlContent}
 <p>
 
 \`\`\`
-${dotnetInfo}
+${sanitizedDotnetInfo}
 \`\`\`
 
 </p>
@@ -132,6 +138,20 @@ ${extensionTable}
 
 </p>
 </details>`;
+    }
+
+    // Protected for testing
+    protected sanitize(content: string) {
+        const user = process.env.USERNAME === undefined ? process.env.USER : process.env.USERNAME;
+
+        if (user === undefined) {
+            // Couldn't determine user, therefore can't truly sanitize the content.
+            return content;
+        }
+
+        const replacer = new RegExp(user, 'g');
+        const sanitizedContent = content.replace(replacer, 'anonymous');
+        return sanitizedContent;
     }
 
     // Protected for testing

@@ -106,8 +106,9 @@ export class ReportIssuePanel {
     <li><a href="https://github.com/aspnet/Razor.VSCode/issues/new">Go to GitHub</a>, paste your issue contents as the body of the issue. Don't forget to fill out any details left unfilled.</li>
 </ol>
 
-<p><em>Note: the contents copied to your clipboard may contain personally identifiable information. Be sure to remove any information you don't feel
-fit to exist on GitHub from the issue prior to submitting it.</em></p>
+<p><em>Privacy Alert! The contents copied to your clipboard may contain personal data. Prior to posting to
+GitHub, please remove any personal data which should not be publicly viewable.
+<a href="https://privacy.microsoft.com/en-US/privacystatement">https://privacy.microsoft.com/en-US/privacystatement</a></em></p>
 
 <button onclick="copyIssue()">Copy issue content again</button>`;
         } else {

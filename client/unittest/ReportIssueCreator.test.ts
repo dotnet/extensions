@@ -22,6 +22,53 @@ describe('ReportIssueCreator', () => {
         return issueCreator;
     }
 
+    it('sanitize replaces USERNAME with anonymous', () => {
+        // Arrange
+        const api = createTestVSCodeApi();
+        const issueCreator = getReportIssueCreator(api);
+        const user = 'JohnDoe';
+        const content = `Hello ${user} World ${user}`;
+        delete process.env.USER;
+        process.env.USERNAME = user;
+
+        // Act
+        const sanitizedContent = issueCreator.sanitize(content);
+
+        // Assert
+        assert.equal('Hello anonymous World anonymous', sanitizedContent);
+    });
+
+    it('sanitize replaces USER with anonymous', () => {
+        // Arrange
+        const api = createTestVSCodeApi();
+        const issueCreator = getReportIssueCreator(api);
+        const user = 'JohnDoe';
+        const content = `Hello ${user} World ${user}`;
+        process.env.USER = user;
+        delete process.env.USERNAME;
+
+        // Act
+        const sanitizedContent = issueCreator.sanitize(content);
+
+        // Assert
+        assert.equal('Hello anonymous World anonymous', sanitizedContent);
+    });
+
+    it('sanitize returns original content when no user', () => {
+        // Arrange
+        const api = createTestVSCodeApi();
+        const issueCreator = getReportIssueCreator(api);
+        const content = 'original content';
+        delete process.env.USER;
+        delete process.env.USERNAME;
+
+        // Act
+        const sanitizedContent = issueCreator.sanitize(content);
+
+        // Assert
+        assert.equal(sanitizedContent, content);
+    });
+
     it('create can operate when no content is available', async () => {
         // Arrange
         const api = createTestVSCodeApi();
@@ -247,5 +294,9 @@ class TestReportIssueCreator extends ReportIssueCreator {
 
     public generateExtensionTable() {
         return super.generateExtensionTable();
+    }
+
+    public sanitize(content: string) {
+        return super.sanitize(content);
     }
 }
