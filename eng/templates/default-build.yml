@@ -43,17 +43,11 @@ jobs:
   # See https://github.com/dotnet/arcade/blob/master/Documentation/ChoosingAMachinePool.md
   pool:
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'macOS')) }}:
-      name: Hosted macOS
       vmImage: macOS-10.13
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Linux')) }}:
-      name: Hosted Ubuntu 1604
       vmImage: ubuntu-16.04
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Windows')) }}:
-      ${{ if ne(variables['System.TeamProject'], 'internal') }}:
-        name: Hosted VS2017
-        vmImage: vs2017-win2016
-      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        name: dotnet-internal-temp
+      vmImage: vs2017-win2016
   variables:
     AgentOsName: ${{ parameters.agentOs }}
     ASPNETCORE_TEST_LOG_MAXPATH: "200" # Keep test log file name length low enough for artifact zipping
