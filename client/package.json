@@ -139,7 +139,8 @@
         "cross-env": "^5.2.0",
         "ts-node": "^7.0.1",
         "tslint": "^5.11.0",
-        "typescript": "2.6.1"
+        "typescript": "3.3.4000",
+        "rimraf": "2.6.3"
     },
     "dependencies": {
         "microsoft.aspnetcore.razor.vscode": "file:../src/Microsoft.AspNetCore.Razor.VSCode",
