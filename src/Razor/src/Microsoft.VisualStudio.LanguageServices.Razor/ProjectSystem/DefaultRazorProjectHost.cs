@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.ProjectSystem;
@@ -351,7 +352,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                         !string.IsNullOrWhiteSpace(targetPath))
                     {
                         var filePath = CommonServices.UnconfiguredProject.MakeRooted(kvp.Key);
-                        documents.Add(new HostDocument(filePath, targetPath, FileKinds.Component));
+                        var fileKind = FileKinds.GetComponentFileKindFromFilePath(filePath);
+
+                        documents.Add(new HostDocument(filePath, targetPath, fileKind));
                     }
                 }
             }
@@ -389,7 +392,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                             !string.IsNullOrWhiteSpace(targetPath))
                         {
                             var filePath = CommonServices.UnconfiguredProject.MakeRooted(key);
-                            documents.Add(new HostDocument(filePath, targetPath, FileKinds.Component));
+                            var fileKind = FileKinds.GetComponentFileKindFromFilePath(filePath);
+
+                            documents.Add(new HostDocument(filePath, targetPath, fileKind));
                         }
                     }
                 }

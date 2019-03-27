@@ -3244,6 +3244,71 @@ namespace Test
 
         #endregion
 
+        #region Imports
+        [Fact]
+        public void Component_WithImportsFile()
+        {
+            // Arrange
+            var importContent = @"
+@using System.Text
+@using System.Reflection
+";
+            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+            ImportItems.Add(importItem);
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class Counter : ComponentBase
+    {
+        public int Count { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Counter />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ComponentImports()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+namespace Test
+{
+    public class MainLayout : ComponentBase, ILayoutComponent
+    {
+        public RenderFragment Body { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp("_Imports.razor", @"
+@using System.Text
+@using System.Reflection
+
+@layout MainLayout
+@Foo
+<div>Hello</div>
+", throwOnFailure: false, fileKind: FileKinds.ComponentImport);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated, throwOnFailure: false);
+        }
+        #endregion
+
         #region Misc
 
         [Fact] // We don't process <!DOCTYPE ...> - we just skip them

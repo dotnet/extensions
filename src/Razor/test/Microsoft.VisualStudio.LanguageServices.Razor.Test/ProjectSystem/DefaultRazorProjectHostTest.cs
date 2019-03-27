@@ -781,7 +781,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("Another-Thing");
 
             RazorComponentWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath));
-            RazorComponentWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectComponentFile1.TargetPath);
+            RazorComponentWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath), Rules.RazorComponentWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectComponentFile1.TargetPath);
+
+            RazorComponentWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectComponentImportFile1.FilePath));
+            RazorComponentWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectComponentImportFile1.FilePath), Rules.RazorComponentWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectComponentImportFile1.TargetPath);
 
             RazorGenerateWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
             RazorGenerateWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
@@ -818,6 +821,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             Assert.Collection(
                 snapshot.DocumentFilePaths.OrderBy(d => d),
+                d =>
+                {
+                    var document = snapshot.GetDocument(d);
+                    Assert.Equal(TestProjectData.SomeProjectComponentImportFile1.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.SomeProjectComponentImportFile1.TargetPath, document.TargetPath);
+                    Assert.Equal(FileKinds.ComponentImport, document.FileKind);
+                },
                 d => 
                 {
                     var document = snapshot.GetDocument(d);
@@ -884,6 +894,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     Assert.Equal(TestProjectData.AnotherProjectNestedComponentFile3.FilePath, document.FilePath);
                     Assert.Equal(TestProjectData.AnotherProjectNestedComponentFile3.TargetPath, document.TargetPath);
                     Assert.Equal(FileKinds.Component, document.FileKind);
+                },
+                d =>
+                {
+                    var document = snapshot.GetDocument(d);
+                    Assert.Equal(TestProjectData.SomeProjectComponentImportFile1.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.SomeProjectComponentImportFile1.TargetPath, document.TargetPath);
+                    Assert.Equal(FileKinds.ComponentImport, document.FileKind);
                 },
                 d =>
                 {
