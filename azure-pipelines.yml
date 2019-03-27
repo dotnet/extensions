@@ -89,7 +89,7 @@ jobs:
         clean: true
       - powershell: eng\scripts\azpbuild.ps1 -configuration $(_BuildConfig) $(_BuildArgs)
         displayName: Build and Publish
-      - script: eng\scripts\ci-flaky-tests.cmd
+      - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
         displayName: Run Flaky Tests
         continueOnError: true
       - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
@@ -137,7 +137,7 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
-      - script: eng/scripts/ci-flaky-tests.sh
+      - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
         displayName: Run Flaky Tests
         continueOnError: true
       - script: eng/scripts/KillProcesses.sh
@@ -178,7 +178,7 @@ jobs:
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
-      - script: eng/scripts/ci-flaky-tests.sh
+      - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
         displayName: Run Flaky Tests
         continueOnError: true
       - script: eng/scripts/KillProcesses.sh
