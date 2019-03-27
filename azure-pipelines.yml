@@ -118,7 +118,7 @@ jobs:
     - job: Ubuntu_16_04
       displayName: 'Ubuntu 16.04'
       pool:
-        name: Hosted Ubuntu 1604
+        vmImage: ubuntu-16.04
       strategy:
         matrix:
           ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
@@ -155,10 +155,6 @@ jobs:
     - job: OSX_10_13
       displayName: 'OSX'
       pool:
-        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: Hosted macOS
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          name: Hosted Mac Internal
         vmImage: macOS-10.13
       strategy:
         matrix:
