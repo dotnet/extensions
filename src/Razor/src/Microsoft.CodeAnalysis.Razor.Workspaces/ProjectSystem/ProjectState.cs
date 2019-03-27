@@ -346,7 +346,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             foreach (var document in documents)
             {
                 var importTargetPaths = GetImportDocumentTargetPaths(document.Value.HostDocument.TargetPath);
-                importsToRelatedDocuments = AddToImportsToRelatedDocuments(ImportsToRelatedDocuments, document.Value.HostDocument, importTargetPaths);
+                importsToRelatedDocuments = AddToImportsToRelatedDocuments(importsToRelatedDocuments, document.Value.HostDocument, importTargetPaths);
             }
 
             var state = new ProjectState(this, ProjectDifference.ConfigurationChanged, hostProject, ProjectWorkspaceState, documents, importsToRelatedDocuments);

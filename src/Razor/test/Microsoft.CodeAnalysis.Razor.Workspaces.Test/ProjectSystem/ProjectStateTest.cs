@@ -582,6 +582,22 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
+        public void ProjectState_WithHostProject_ResetsImportedDocuments()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState);
+            original = original.WithAddedHostDocument(TestProjectData.SomeProjectFile1, DocumentState.EmptyLoader);
+
+            // Act
+            var state = original.WithHostProject(HostProjectWithConfigurationChange);
+
+            // Assert
+            var importMap = Assert.Single(state.ImportsToRelatedDocuments);
+            var documentFilePath = Assert.Single(importMap.Value);
+            Assert.Equal(TestProjectData.SomeProjectFile1.FilePath, documentFilePath);
+        }
+
+        [Fact]
         public void ProjectState_WithProjectWorkspaceState_Removed()
         {
             // Arrange
