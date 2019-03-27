@@ -2,10 +2,12 @@
   "adx-nonshipping": {
     "rules": [],
     "packages": {
+      "Microsoft.AspNetCore.Analyzer.Testing": {},
       "Microsoft.AspNetCore.BenchmarkRunner.Sources": {},
       "Microsoft.Extensions.ActivatorUtilities.Sources": {},
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
       "Microsoft.Extensions.HashCodeCombiner.Sources": {},
+      "Microsoft.Extensions.NonCapturingTimer.Sources": {},
       "Microsoft.Extensions.ParameterDefaultValue.Sources": {},
       "Microsoft.Extensions.TypeNameHelper.Sources": {},
       "Microsoft.Extensions.ValueStopwatch.Sources": {}
@@ -22,7 +24,37 @@
             "*": "Props file intentionally targets any framework since the content is the same for both netstandard2.0 and net461."
           }
         }
-      }
+      },
+      "Microsoft.Extensions.Configuration.Binder": {
+        "Exclusions": {
+          "ASSEMBLY_FILE_VERSION_MISMATCH": {
+            "lib/netstandard2.0/Microsoft.Extensions.Configuration.Binder.dll": "Enter justification"
+          },
+          "ASSEMBLY_VERSION_MISMATCH": {
+            "lib/netstandard2.0/Microsoft.Extensions.Configuration.Binder.dll": "Enter justification"
+          }
+        }
+      },
+      "Microsoft.Extensions.Configuration.EnvironmentVariables": {
+       "Exclusions": {
+          "ASSEMBLY_FILE_VERSION_MISMATCH": {
+            "lib/netstandard2.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll": "Enter justification"
+          },
+          "ASSEMBLY_VERSION_MISMATCH": {
+            "lib/netstandard2.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll": "Enter justification"
+          }
+        }
+      },
+      "Microsoft.Extensions.Configuration.KeyPerFile": {
+        "Exclusions": {
+          "ASSEMBLY_FILE_VERSION_MISMATCH": {
+            "lib/netstandard2.0/Microsoft.Extensions.Configuration.KeyPerFile.dll": "Enter justification"
+          },
+          "ASSEMBLY_VERSION_MISMATCH": {
+            "lib/netstandard2.0/Microsoft.Extensions.Configuration.KeyPerFile.dll": "Enter justification"
+          }
+        }
+      }      
     }
   }
 }

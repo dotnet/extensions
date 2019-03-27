@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <TestGroupName>LoggingAnalyzers</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-    <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Analyzers" />
-    <Reference Include="System.Reflection.Metadata" />
+    <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
   </ItemGroup>
 
   <ItemGroup>

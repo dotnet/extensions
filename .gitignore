@@ -33,6 +33,7 @@ _ReSharper.*
 node_modules/
 **/[Cc]ompiler/[Rr]esources/**/*.js
 .vscode/
+.testPublish/
 global.json
 BenchmarkDotNet.Artifacts/
 *.binlog

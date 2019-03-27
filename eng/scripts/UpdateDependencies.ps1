@@ -24,7 +24,7 @@ if (-not $NoCommit) {
 }
 
 $repoRoot = Resolve-Path "$PSScriptRoot/../../"
-$depsPath = Resolve-Path "$repoRoot/build/dependencies.props"
+$depsPath = Resolve-Path "$repoRoot/eng/Dependencies.props"
 [xml] $dependencies = LoadXml $depsPath
 
 if ($BuildXml -like 'http*') {
