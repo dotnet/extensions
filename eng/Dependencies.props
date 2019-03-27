@@ -64,8 +64,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <LatestPackageReference Include="Polly.Extensions.Http" Version="2.0.1" />
-    <LatestPackageReference Include="Polly" Version="6.0.1" />
+    <LatestPackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
+    <LatestPackageReference Include="Polly" Version="7.1.0" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
     <LatestPackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
     <LatestPackageReference Include="StackExchange.Redis" Version="2.0.513" />
