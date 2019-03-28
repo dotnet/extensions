@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                                                             "Stopped firing\n" +
                                                             "Stopped end";
 
-        public ShutdownTests(ITestOutputHelper output) : base(output) { }
-
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
         public async Task ShutdownTestRun()
