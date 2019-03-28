@@ -64,6 +64,7 @@ export class RazorLanguageServiceClient {
             projectWorkspaceState: project.configuration ? project.configuration.projectWorkspaceState : null,
             configuration: project.configuration ? project.configuration.configuration : undefined,
             rootNamespace: project.configuration ? project.configuration.rootNamespace : undefined,
+            documents: project.configuration ? project.configuration.documents : undefined,
         };
         await this.serverClient.sendRequest<UpdateProjectRequest>('projects/updateProject', request);
     }

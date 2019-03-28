@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using OmniSharp.Extensions.Embedded.MediatR;
 
@@ -17,5 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         public string RootNamespace { get; set; }
 
         public ProjectWorkspaceState ProjectWorkspaceState { get; set; }
+
+        public DocumentSnapshotHandle[] Documents { get; set; }
     }
 }

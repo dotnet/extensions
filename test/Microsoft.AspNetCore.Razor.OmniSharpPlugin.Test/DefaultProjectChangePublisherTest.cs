@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
@@ -13,6 +12,91 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     public class DefaultProjectChangePublisherTest : OmniSharpTestBase
     {
+        [Theory]
+        [InlineData(OmniSharpProjectChangeKind.DocumentAdded)]
+        [InlineData(OmniSharpProjectChangeKind.DocumentRemoved)]
+        [InlineData(OmniSharpProjectChangeKind.ProjectChanged)]
+        public async Task ProjectManager_Changed_EnqueuesPublish(OmniSharpProjectChangeKind changeKind)
+        {
+            // Arrange
+            var serializationSuccessful = false;
+            var projectSnapshot = CreateProjectSnapshot("/path/to/project.csproj");
+            var expectedPublishFilePath = "/path/to/obj/bin/Debug/project.razor.json";
+            var publisher = new TestProjectChangePublisher(
+                LoggerFactory,
+                onSerializeToFile: (snapshot, publishFilePath) =>
+                {
+                    Assert.Same(projectSnapshot, snapshot);
+                    Assert.Equal(expectedPublishFilePath, publishFilePath);
+                    serializationSuccessful = true;
+                });
+            publisher.EnqueueDelay = 10;
+            publisher.SetPublishFilePath(projectSnapshot.FilePath, expectedPublishFilePath);
+            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, projectSnapshot, changeKind);
+
+            // Act
+            publisher.ProjectManager_Changed(null, args);
+
+            // Assert
+            var kvp = Assert.Single(publisher._deferredPublishTasks);
+            await kvp.Value;
+            Assert.True(serializationSuccessful);
+        }
+
+        [Fact]
+        public async Task ProjectManager_Changed_ProjectRemoved_AfterEnqueuedPublish()
+        {
+            // Arrange
+            var attemptedToSerialize = false;
+            var projectSnapshot = CreateProjectSnapshot("/path/to/project.csproj");
+            var expectedPublishFilePath = "/path/to/obj/bin/Debug/project.razor.json";
+            var publisher = new TestProjectChangePublisher(
+                LoggerFactory,
+                onSerializeToFile: (snapshot, publishFilePath) => attemptedToSerialize = true,
+                onDeleteFile: (path) => { });
+            publisher.EnqueueDelay = 10;
+            publisher.SetPublishFilePath(projectSnapshot.FilePath, expectedPublishFilePath);
+            publisher.EnqueuePublish(projectSnapshot);
+            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, newer: null, OmniSharpProjectChangeKind.ProjectRemoved);
+
+            // Act
+            publisher.ProjectManager_Changed(null, args);
+
+            // Assert
+            await Task.Delay(publisher.EnqueueDelay * 3);
+
+            Assert.False(attemptedToSerialize);
+        }
+
+        [Fact]
+        public async Task EnqueuePublish_BatchesPublishRequests()
+        {
+            // Arrange
+            var serializationSuccessful = false;
+            var firstSnapshot = CreateProjectSnapshot("/path/to/project.csproj");
+            var secondSnapshot = CreateProjectSnapshot("/path/to/project.csproj", new[] { "/path/to/file.cshtml" });
+            var expectedPublishFilePath = "/path/to/obj/bin/Debug/project.razor.json";
+            var publisher = new TestProjectChangePublisher(
+                LoggerFactory,
+                onSerializeToFile: (snapshot, publishFilePath) =>
+                {
+                    Assert.Same(secondSnapshot, snapshot);
+                    Assert.Equal(expectedPublishFilePath, publishFilePath);
+                    serializationSuccessful = true;
+                });
+            publisher.EnqueueDelay = 10;
+            publisher.SetPublishFilePath(firstSnapshot.FilePath, expectedPublishFilePath);
+
+            // Act
+            publisher.EnqueuePublish(firstSnapshot);
+            publisher.EnqueuePublish(secondSnapshot);
+
+            // Assert
+            var kvp = Assert.Single(publisher._deferredPublishTasks);
+            await kvp.Value;
+            Assert.True(serializationSuccessful);
+        }
+
         [Fact]
         public void Publish_UnsetPublishFilePath_Noops()
         {
@@ -28,17 +112,16 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public void Publish_PublishesToSetPublishFilePath()
         {
             // Arrange
-            var attemptedToSerialize = false;
+            var serializationSuccessful = false;
             var omniSharpProjectSnapshot = CreateProjectSnapshot("/path/to/project.csproj");
             var expectedPublishFilePath = "/path/to/obj/bin/Debug/project.razor.json";
             var publisher = new TestProjectChangePublisher(
                 LoggerFactory,
                 onSerializeToFile: (snapshot, publishFilePath) =>
                 {
-                    attemptedToSerialize = true;
-
                     Assert.Same(omniSharpProjectSnapshot, snapshot);
                     Assert.Equal(expectedPublishFilePath, publishFilePath);
+                    serializationSuccessful = true;
                 });
             publisher.SetPublishFilePath(omniSharpProjectSnapshot.FilePath, expectedPublishFilePath);
 
@@ -46,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             publisher.Publish(omniSharpProjectSnapshot);
 
             // Assert
-            Assert.True(attemptedToSerialize);
+            Assert.True(serializationSuccessful);
         }
 
         [Fact]
@@ -54,15 +137,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         {
             // Arrange
             var snapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
-            var attemptedToSerialize = false;
+            var serializationSuccessful = false;
             var expectedPublishFilePath = "/path/to/obj/bin/Debug/project.razor.json";
             var publisher = new TestProjectChangePublisher(
                 LoggerFactory,
                 onSerializeToFile: (snapshot, publishFilePath) =>
                 {
-                    attemptedToSerialize = true;
-
                     Assert.Equal(expectedPublishFilePath, publishFilePath);
+                    serializationSuccessful = true;
                 });
             publisher.Initialize(snapshotManager);
             var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
@@ -72,36 +154,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
 
             // Assert
-            Assert.True(attemptedToSerialize);
-        }
-
-        [Fact]
-        public async Task ProjectChanged_PublishesToCorrectFilePath()
-        {
-            // Arrange
-            var snapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
-            var attemptsToSerialize = 0;
-            var expectedPublishFilePath = "/path/to/obj/bin/Debug/project.razor.json";
-            var publisher = new TestProjectChangePublisher(
-                LoggerFactory,
-                onSerializeToFile: (snapshot, publishFilePath) =>
-                {
-                    attemptsToSerialize++;
-
-                    Assert.Equal(expectedPublishFilePath, publishFilePath);
-                });
-            publisher.Initialize(snapshotManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
-            publisher.SetPublishFilePath(hostProject.FilePath, expectedPublishFilePath);
-            await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
-            var newConfiguration = RazorConfiguration.Create(RazorLanguageVersion.Experimental, "Custom", Enumerable.Empty<RazorExtension>());
-            var newHostProject = new OmniSharpHostProject(hostProject.FilePath, newConfiguration, "TestRootNamespace");
-
-            // Act
-            await RunOnForegroundAsync(() => snapshotManager.ProjectConfigurationChanged(newHostProject));
-
-            // Assert
-            Assert.Equal(2, attemptsToSerialize);
+            Assert.True(serializationSuccessful);
         }
 
         [Fact]

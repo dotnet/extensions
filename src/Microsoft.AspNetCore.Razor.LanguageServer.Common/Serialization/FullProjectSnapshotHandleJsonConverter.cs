@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Newtonsoft.Json;
@@ -30,8 +31,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             var configuration = obj[nameof(FullProjectSnapshotHandle.Configuration)].ToObject<RazorConfiguration>(serializer);
             var rootNamespace = obj[nameof(FullProjectSnapshotHandle.RootNamespace)].ToObject<string>(serializer);
             var projectWorkspaceState = obj[nameof(FullProjectSnapshotHandle.ProjectWorkspaceState)].ToObject<ProjectWorkspaceState>(serializer);
+            var documents = obj[nameof(FullProjectSnapshotHandle.Documents)].ToObject<DocumentSnapshotHandle[]>(serializer);
 
-            return new FullProjectSnapshotHandle(filePath, configuration, rootNamespace, projectWorkspaceState);
+            return new FullProjectSnapshotHandle(filePath, configuration, rootNamespace, projectWorkspaceState, documents);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -67,6 +69,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
 
             writer.WritePropertyName(nameof(FullProjectSnapshotHandle.RootNamespace));
             writer.WriteValue(handle.RootNamespace);
+
+            writer.WritePropertyName(nameof(FullProjectSnapshotHandle.Documents));
+            serializer.Serialize(writer, handle.Documents);
 
             writer.WriteEndObject();
         }

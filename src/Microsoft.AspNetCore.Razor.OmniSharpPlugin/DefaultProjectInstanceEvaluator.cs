@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         private static readonly IEnumerable<ILogger> EmptyMSBuildLoggers = Enumerable.Empty<ILogger>();
         private readonly OmniSharpForegroundDispatcher _foregroundDispatcher;
         private readonly object _evaluationLock = new object();
-        private ProjectCollection _projectCollection;
 
         [ImportingConstructor]
         public DefaultProjectInstanceEvaluator(OmniSharpForegroundDispatcher foregroundDispatcher)
@@ -80,13 +79,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
                 if (refreshTargets.Count > 2)
                 {
-                    EnsureProjectCollection(projectInstance.GlobalProperties);
-
+                    var _projectCollection = new ProjectCollection(projectInstance.GlobalProperties);
                     var project = _projectCollection.LoadProject(projectInstance.ProjectFileLocation.File, projectInstance.ToolsVersion);
                     SetTargetFrameworkIfNeeded(project);
-
-                    // Force re-evaluation of project inputs so the Razor re-compile below doesn't no-op.
-                    project.MarkDirty();
 
                     var refreshedProjectInstance = project.CreateProjectInstance();
 
@@ -97,14 +92,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 }
 
                 return projectInstance;
-            }
-        }
-
-        private void EnsureProjectCollection(IDictionary<string, string> globalProperties)
-        {
-            if (_projectCollection == null)
-            {
-                _projectCollection = new ProjectCollection(globalProperties);
             }
         }
 

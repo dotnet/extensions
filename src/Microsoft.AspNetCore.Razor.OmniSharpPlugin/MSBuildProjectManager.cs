@@ -199,22 +199,22 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             foreach (var documentFilePath in projectSnapshot.DocumentFilePaths)
             {
                 OmniSharpHostDocument associatedHostDocument = null;
+                var currentHostDocument = projectSnapshot.GetDocument(documentFilePath).HostDocument;
 
                 for (var i = 0; i < configuredHostDocuments.Count; i++)
                 {
-                    var hostDocument = configuredHostDocuments[i];
-                    if (FilePathComparer.Instance.Equals(hostDocument.FilePath, documentFilePath))
+                    var configuredHostDocument = configuredHostDocuments[i];
+                    if (OmniSharpHostDocumentComparer.Instance.Equals(configuredHostDocument, currentHostDocument))
                     {
-                        associatedHostDocument = hostDocument;
+                        associatedHostDocument = configuredHostDocument;
+                        break;
                     }
                 }
 
                 if (associatedHostDocument == null)
                 {
                     // Document was removed
-                    var removedDocumentSnapshot = projectSnapshot.GetDocument(documentFilePath);
-                    var removedHostDocument = new OmniSharpHostDocument(removedDocumentSnapshot.FilePath, removedDocumentSnapshot.TargetPath, removedDocumentSnapshot.FileKind);
-                    _projectManager.DocumentRemoved(hostProject, removedHostDocument);
+                    _projectManager.DocumentRemoved(hostProject, currentHostDocument);
                 }
             }
 

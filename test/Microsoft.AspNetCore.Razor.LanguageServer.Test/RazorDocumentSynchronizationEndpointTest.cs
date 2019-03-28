@@ -21,13 +21,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private RazorProjectService ProjectService => Mock.Of<RazorProjectService>();
 
-        private RemoteTextLoaderFactory TextLoaderFactory => Mock.Of<RemoteTextLoaderFactory>(factory => factory.Create(It.IsAny<string>()) == Mock.Of<TextLoader>());
-
         [Fact]
         public void ApplyContentChanges_SingleChange()
         {
             // Arrange
-            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, TextLoaderFactory, ProjectService, LoggerFactory);
+            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, ProjectService, LoggerFactory);
             var sourceText = SourceText.From("Hello World");
             var change = new TextDocumentContentChangeEvent()
             {
@@ -48,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ApplyContentChanges_MultipleChanges()
         {
             // Arrange
-            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, TextLoaderFactory, ProjectService, LoggerFactory);
+            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, ProjectService, LoggerFactory);
             var sourceText = SourceText.From("Hello World");
             var changes = new[] {
                 new TextDocumentContentChangeEvent()
@@ -107,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.Equal(documentPath, path);
                     Assert.Equal(1337, version);
                 });
-            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, documentResolver, TextLoaderFactory, projectService.Object, LoggerFactory);
+            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, documentResolver, projectService.Object, LoggerFactory);
             var change = new TextDocumentContentChangeEvent()
             {
                 Range = new Range(new Position(0, 3), new Position(0, 3)),
@@ -146,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.Equal(documentPath, path);
                     Assert.Equal(1337, version);
                 });
-            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, TextLoaderFactory, projectService.Object, LoggerFactory);
+            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, projectService.Object, LoggerFactory);
             var request = new DidOpenTextDocumentParams()
             {
                 TextDocument = new TextDocumentItem()
@@ -171,13 +169,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
-            projectService.Setup(service => service.CloseDocument(It.IsAny<string>(), It.IsAny<TextLoader>()))
-                .Callback<string, TextLoader>((path, loader) =>
+            projectService.Setup(service => service.CloseDocument(It.IsAny<string>()))
+                .Callback<string>((path) =>
                 {
                     Assert.Equal(documentPath, path);
-                    Assert.NotNull(loader);
                 });
-            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, TextLoaderFactory, projectService.Object, LoggerFactory);
+            var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, projectService.Object, LoggerFactory);
             var request = new DidCloseTextDocumentParams()
             {
                 TextDocument = new TextDocumentIdentifier()

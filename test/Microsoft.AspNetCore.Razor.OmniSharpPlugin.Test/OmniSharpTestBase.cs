@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     public class OmniSharpTestBase : TestBase
     {
         private readonly MethodInfo _createTestProjectSnapshotMethod;
+        private readonly MethodInfo _createWithDocumentsTestProjectSnapshotMethod;
         private readonly MethodInfo _createProjectSnapshotManagerMethod;
         private readonly PropertyInfo _allowNotifyListenersProperty;
         private readonly PropertyInfo _dispatcherProperty;
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var defaultSnapshotManagerType = strongNamedAssembly.GetType("Microsoft.AspNetCore.Razor.OmniSharpPlugin.DefaultOmniSharpProjectSnapshotManager");
 
             _createTestProjectSnapshotMethod = testProjectSnapshotType.GetMethod("Create", new[] { typeof(string) });
+            _createWithDocumentsTestProjectSnapshotMethod = testProjectSnapshotType.GetMethod("Create", new[] { typeof(string), typeof(string[]) });
             _createProjectSnapshotManagerMethod = testProjectSnapshotManagerType.GetMethod("Create");
             _allowNotifyListenersProperty = testProjectSnapshotManagerType.GetProperty("AllowNotifyListeners");
             _dispatcherProperty = typeof(OmniSharpForegroundDispatcher).GetProperty("InternalDispatcher", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -42,6 +44,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         protected OmniSharpProjectSnapshot CreateProjectSnapshot(string projectFilePath)
         {
             var projectSnapshot = _createTestProjectSnapshotMethod.Invoke(null, new[] { projectFilePath });
+            var omniSharpProjectSnapshot = (OmniSharpProjectSnapshot)_omniSharpSnapshotConstructor.Invoke(new[] { projectSnapshot });
+
+            return omniSharpProjectSnapshot;
+        }
+
+        protected OmniSharpProjectSnapshot CreateProjectSnapshot(string projectFilePath, string[] documentFilePaths)
+        {
+            var projectSnapshot = _createWithDocumentsTestProjectSnapshotMethod.Invoke(null, new object[] { projectFilePath, documentFilePaths });
             var omniSharpProjectSnapshot = (OmniSharpProjectSnapshot)_omniSharpSnapshotConstructor.Invoke(new[] { projectSnapshot });
 
             return omniSharpProjectSnapshot;

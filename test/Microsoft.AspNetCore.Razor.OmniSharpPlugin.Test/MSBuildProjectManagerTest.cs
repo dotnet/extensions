@@ -39,6 +39,50 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         public RazorConfiguration CustomConfiguration { get; }
 
         [Fact]
+        public async Task SynchronizeDocuments_UpdatesDocumentKinds()
+        {
+            // Arrange
+            var msbuildProjectManager = new MSBuildProjectManager(
+                Enumerable.Empty<ProjectConfigurationProvider>(),
+                ProjectInstanceEvaluator,
+                Mock.Of<ProjectChangePublisher>(),
+                Dispatcher,
+                LoggerFactory);
+            var projectManager = CreateProjectSnapshotManager();
+            msbuildProjectManager.Initialize(projectManager);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", CustomConfiguration, "TestRootNamespace");
+            var configuredHostDocuments = new[]
+            {
+                new OmniSharpHostDocument("file.cshtml", "file.cshtml", FileKinds.Component),
+            };
+            var projectSnapshot = await RunOnForegroundAsync(() =>
+            {
+                projectManager.ProjectAdded(hostProject);
+                var hostDocument = new OmniSharpHostDocument("file.cshtml", "file.cshtml", FileKinds.Legacy);
+                projectManager.DocumentAdded(hostProject, hostDocument);
+                return projectManager.GetLoadedProject(hostProject.FilePath);
+            });
+
+            // Act
+            await RunOnForegroundAsync(() =>
+                msbuildProjectManager.SynchronizeDocuments(
+                    configuredHostDocuments,
+                    projectSnapshot,
+                    hostProject));
+
+            // Assert
+            await RunOnForegroundAsync(() =>
+            {
+                var refreshedProject = projectManager.GetLoadedProject(hostProject.FilePath);
+                var documentFilePath = Assert.Single(refreshedProject.DocumentFilePaths);
+                var document = refreshedProject.GetDocument(documentFilePath);
+                Assert.Equal("file.cshtml", document.FilePath);
+                Assert.Equal("file.cshtml", document.TargetPath);
+                Assert.Equal(FileKinds.Component, document.FileKind);
+            });
+        }
+
+        [Fact]
         public async Task SynchronizeDocuments_RemovesTrackedDocuments()
         {
             // Arrange

@@ -41,11 +41,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         public void FullProjectSnapshotHandle_CanRoundTrip()
         {
             // Arrange
+            var legacyDocument = new DocumentSnapshotHandle("/path/to/file.cshtml", "file.cshtml", FileKinds.Legacy);
+            var componentDocument = new DocumentSnapshotHandle("/path/to/otherfile.razor", "otherfile.razor", FileKinds.Component);
             var handle = new FullProjectSnapshotHandle(
-                "/path/to/project.csproj", 
-                Configuration, 
-                rootNamespace: "TestProject", 
-                ProjectWorkspaceState);
+                "/path/to/project.csproj",
+                Configuration,
+                rootNamespace: "TestProject",
+                ProjectWorkspaceState,
+                new[] { legacyDocument, componentDocument });
             var serializedHandle = JsonConvert.SerializeObject(handle, Converters);
 
             // Act
@@ -56,13 +59,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             Assert.Equal(handle.Configuration, deserializedHandle.Configuration);
             Assert.Equal(handle.RootNamespace, deserializedHandle.RootNamespace);
             Assert.Equal(handle.ProjectWorkspaceState, deserializedHandle.ProjectWorkspaceState);
+            Assert.Collection(handle.Documents,
+                document =>
+                {
+                    Assert.Equal(legacyDocument.FilePath, document.FilePath);
+                    Assert.Equal(legacyDocument.TargetPath, document.TargetPath);
+                    Assert.Equal(legacyDocument.FileKind, document.FileKind);
+                },
+                document =>
+                {
+                    Assert.Equal(componentDocument.FilePath, document.FilePath);
+                    Assert.Equal(componentDocument.TargetPath, document.TargetPath);
+                    Assert.Equal(componentDocument.FileKind, document.FileKind);
+                });
         }
 
         [Fact]
         public void ProjectSnapshot_CanKindOfRoundTrip()
         {
             // Arrange
-            var projectSnapshot = TestProjectSnapshot.Create("/path/to/project.csproj", Array.Empty<string>(), Configuration, ProjectWorkspaceState);
+            var projectSnapshot = TestProjectSnapshot.Create(
+                "/path/to/project.csproj",
+                new[]
+                {
+                    "/path/to/file.cshtml",
+                    "/path/to/component.razor",
+                },
+                Configuration,
+                ProjectWorkspaceState);
             var serializedHandle = JsonConvert.SerializeObject(projectSnapshot, Converters);
 
             // Act
@@ -72,6 +96,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             Assert.Equal(projectSnapshot.FilePath, deserializedHandle.FilePath);
             Assert.Equal(projectSnapshot.Configuration, deserializedHandle.Configuration);
             Assert.Equal(projectSnapshot.ProjectWorkspaceState, deserializedHandle.ProjectWorkspaceState);
+            Assert.Collection(deserializedHandle.Documents,
+                document => Assert.Equal("/path/to/file.cshtml", document.FilePath),
+                document => Assert.Equal("/path/to/component.razor", document.FilePath));
         }
 
         [Fact]

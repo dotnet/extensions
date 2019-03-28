@@ -85,6 +85,12 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 documentWatcher.Created += (sender, args) => FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Added);
                 documentWatcher.Deleted += (sender, args) => FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Removed);
                 documentWatcher.Changed += (sender, args) => FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Changed);
+                documentWatcher.Renamed += (sender, args) =>
+                {
+                    // Translate file renames into remove->add
+                    FileSystemWatcher_RazorDocumentEvent(args.OldFullPath, projectDirectory, projectInstance, RazorFileChangeKind.Removed);
+                    FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Added);
+                };
                 watchers.Add(documentWatcher);
 
 
@@ -97,6 +103,12 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 documentOutputWatcher.Created += (sender, args) => FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Added);
                 documentOutputWatcher.Deleted += (sender, args) => FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Removed);
                 documentOutputWatcher.Changed += (sender, args) => FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Changed);
+                documentOutputWatcher.Renamed += (sender, args) =>
+                {
+                    // Translate file renames into remove->add
+                    FileSystemWatcher_RazorDocumentOutputEvent(args.OldFullPath, projectDirectory, projectInstance, RazorFileChangeKind.Removed);
+                    FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Added);
+                };
                 watchers.Add(documentOutputWatcher);
 
                 documentWatcher.EnableRaisingEvents = true;

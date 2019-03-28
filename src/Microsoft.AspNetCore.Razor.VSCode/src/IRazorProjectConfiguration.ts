@@ -14,4 +14,5 @@ export interface IRazorProjectConfiguration {
     readonly rootNamespace: string;
     readonly projectWorkspaceState: any;
     readonly lastUpdated: Date;
+    readonly documents: any;
 }

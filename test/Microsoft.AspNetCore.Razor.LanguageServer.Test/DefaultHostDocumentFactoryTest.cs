@@ -25,27 +25,36 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private DefaultHostDocumentFactory Factory { get; }
 
         [Fact]
-        public void Create_GeneratesProjectRelativeHostDocument()
+        public void Create_NoFileKind_CreatesHostDocumentProperly()
         {
             // Arrange
-            var documentFilePath = "/C:/path/to/file.cshtml";
-            var relativeDocumentFilePath = "file.cshtml";
-            var projectItem = Mock.Of<RazorProjectItem>(
-                pi => pi.PhysicalPath == documentFilePath && pi.FilePath == relativeDocumentFilePath);
-            var fileSystem = new Mock<RazorProjectFileSystem>();
-            fileSystem.Setup(fs => fs.GetItem(documentFilePath))
-                .Returns(projectItem);
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem.Object);
-            var projectSnapshot = new Mock<ProjectSnapshot>();
-            projectSnapshot.Setup(project => project.GetProjectEngine())
-                .Returns(projectEngine);
+            var filePath = "/path/to/file.razor";
+            var targetPath = "file.razor";
 
             // Act
-            var hostDocument = Factory.Create(documentFilePath, projectSnapshot.Object);
+            var hostDocument = Factory.Create(filePath, targetPath);
 
             // Assert
-            Assert.Equal(documentFilePath, hostDocument.FilePath);
-            Assert.Equal(relativeDocumentFilePath, hostDocument.TargetPath);
+            Assert.Equal(filePath, hostDocument.FilePath);
+            Assert.Equal(targetPath, hostDocument.TargetPath);
+            Assert.Equal(FileKinds.Component, hostDocument.FileKind);
+        }
+
+        [Fact]
+        public void Create_WithFileKind_CreatesHostDocumentProperly()
+        {
+            // Arrange
+            var filePath = "/path/to/file.cshtml";
+            var targetPath = "file.cshtml";
+            var fileKind = FileKinds.Component;
+
+            // Act
+            var hostDocument = Factory.Create(filePath, targetPath, fileKind);
+
+            // Assert
+            Assert.Equal(filePath, hostDocument.FilePath);
+            Assert.Equal(targetPath, hostDocument.TargetPath);
+            Assert.Equal(fileKind, hostDocument.FileKind);
         }
     }
 }

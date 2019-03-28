@@ -24,13 +24,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
-        private readonly RemoteTextLoaderFactory _remoteTextLoaderFactory;
         private readonly RazorProjectService _projectService;
 
         public RazorDocumentSynchronizationEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
-            RemoteTextLoaderFactory remoteTextLoaderFactory,
             RazorProjectService projectService,
             ILoggerFactory loggerFactory)
         {
@@ -42,11 +40,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (documentResolver == null)
             {
                 throw new ArgumentNullException(nameof(documentResolver));
-            }
-
-            if (remoteTextLoaderFactory == null)
-            {
-                throw new ArgumentNullException(nameof(remoteTextLoaderFactory));
             }
 
             if (projectService == null)
@@ -61,7 +54,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
-            _remoteTextLoaderFactory = remoteTextLoaderFactory;
             _projectService = projectService;
             _logger = loggerFactory.CreateLogger<RazorDocumentSynchronizationEndpoint>();
         }
@@ -115,9 +107,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             _foregroundDispatcher.AssertBackgroundThread();
 
-            var textLoader = _remoteTextLoaderFactory.Create(notification.TextDocument.Uri.AbsolutePath);
             await Task.Factory.StartNew(
-                () => _projectService.CloseDocument(notification.TextDocument.Uri.AbsolutePath, textLoader),
+                () => _projectService.CloseDocument(notification.TextDocument.Uri.AbsolutePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);

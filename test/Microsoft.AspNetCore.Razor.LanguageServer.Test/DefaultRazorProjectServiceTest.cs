@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
@@ -18,6 +20,99 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class DefaultRazorProjectServiceTest : TestBase
     {
+        private IReadOnlyList<DocumentSnapshotHandle> EmptyDocuments { get; } = Array.Empty<DocumentSnapshotHandle>();
+
+        [Fact]
+        public void UpdateProject_UpdatingDocument_MapsRelativeFilePathToActualDocument()
+        {
+            // Arrange
+            var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
+            var hostProject = new HostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            projectManager.ProjectAdded(hostProject);
+            var hostDocument = new HostDocument("/path/to/file.cshtml", "file.cshtml", FileKinds.Legacy);
+            projectManager.DocumentAdded(hostProject, hostDocument, Mock.Of<TextLoader>());
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectManager);
+            var newDocument = new DocumentSnapshotHandle("file.cshtml", "file.cshtml", FileKinds.Component);
+
+            // Act
+            projectService.UpdateProject(hostProject.FilePath, hostProject.Configuration, hostProject.RootNamespace, ProjectWorkspaceState.Default, new[] { newDocument });
+
+            // Assert
+            var project = projectManager.GetLoadedProject(hostProject.FilePath);
+            var document = project.GetDocument(hostDocument.FilePath);
+            Assert.NotNull(document);
+            Assert.Equal(FileKinds.Component, document.FileKind);
+        }
+
+        [Fact]
+        public void UpdateProject_DoesNotRemoveOrAddDocuments()
+        {
+            // Arrange
+            var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
+            var hostProject = new HostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            projectManager.ProjectAdded(hostProject);
+            var hostDocument = new HostDocument("/path/to/file.cshtml", "file.cshtml", FileKinds.Legacy);
+            projectManager.DocumentAdded(hostProject, hostDocument, Mock.Of<TextLoader>());
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectManager);
+            var unknownDocument = new DocumentSnapshotHandle("/path/to/other/file.cshtml", "file.cshtml", FileKinds.Legacy);
+
+            // Act
+            projectService.UpdateProject(hostProject.FilePath, hostProject.Configuration, hostProject.RootNamespace, ProjectWorkspaceState.Default, new[] { unknownDocument });
+
+            // Assert
+            var project = projectManager.GetLoadedProject(hostProject.FilePath);
+            var documentFilePath = Assert.Single(project.DocumentFilePaths);
+            Assert.Equal(hostDocument.FilePath, documentFilePath);
+        }
+
+        [Fact]
+        public void UpdateProject_KnownDocuments()
+        {
+            // Arrange
+            var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
+            var hostProject = new HostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            projectManager.ProjectAdded(hostProject);
+            var document = new HostDocument("/path/to/file.cshtml", "file.cshtml", FileKinds.Legacy);
+            projectManager.DocumentAdded(hostProject, document, Mock.Of<TextLoader>());
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectManager);
+            var newDocument = new DocumentSnapshotHandle(document.FilePath, document.TargetPath, document.FileKind);
+            projectManager.AllowNotifyListeners = true;
+            projectManager.Changed += (sender, args) =>
+            {
+                if (args.Kind == ProjectChangeKind.DocumentRemoved ||
+                    args.Kind == ProjectChangeKind.DocumentChanged ||
+                    args.Kind == ProjectChangeKind.DocumentAdded)
+                {
+                    throw new XunitException("Should have nooped");
+                }
+            };
+
+            // Act & Assert
+            projectService.UpdateProject(hostProject.FilePath, hostProject.Configuration, hostProject.RootNamespace, ProjectWorkspaceState.Default, new[] { newDocument });
+        }
+
+        [Fact]
+        public void UpdateProject_UpdatesLegacyDocumentsAsComponents()
+        {
+            // Arrange
+            var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
+            var hostProject = new HostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            projectManager.ProjectAdded(hostProject);
+            var legacyDocument = new HostDocument("/path/to/file.cshtml", "file.cshtml", FileKinds.Legacy);
+            projectManager.DocumentAdded(hostProject, legacyDocument, Mock.Of<TextLoader>());
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectManager);
+            var newDocument = new DocumentSnapshotHandle(legacyDocument.FilePath, legacyDocument.TargetPath, FileKinds.Component);
+
+            // Act
+            projectService.UpdateProject(hostProject.FilePath, hostProject.Configuration, hostProject.RootNamespace, ProjectWorkspaceState.Default, new[] { newDocument });
+
+            // Assert
+            var project = projectManager.GetLoadedProject(hostProject.FilePath);
+            var document = project.GetDocument(newDocument.FilePath);
+            Assert.NotNull(document);
+            Assert.Equal(FileKinds.Component, document.FileKind);
+        }
+
         [Fact]
         public void UpdateProject_SameConfigurationDifferentRootNamespace_UpdatesRootNamespace()
         {
@@ -37,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act
-            projectService.UpdateProject(projectFilePath, ownerProject.Configuration, expectedRootNamespace, ProjectWorkspaceState.Default);
+            projectService.UpdateProject(projectFilePath, ownerProject.Configuration, expectedRootNamespace, ProjectWorkspaceState.Default, EmptyDocuments);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -58,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act & Assert
-            projectService.UpdateProject(projectFilePath, ownerProject.Configuration, "TestRootNamespace", ProjectWorkspaceState.Default);
+            projectService.UpdateProject(projectFilePath, ownerProject.Configuration, "TestRootNamespace", ProjectWorkspaceState.Default, EmptyDocuments);
         }
 
         [Fact]
@@ -80,7 +175,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act
-            projectService.UpdateProject(projectFilePath, configuration: null, "TestRootNamespace", ProjectWorkspaceState.Default);
+            projectService.UpdateProject(projectFilePath, configuration: null, "TestRootNamespace", ProjectWorkspaceState.Default, EmptyDocuments);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -105,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act
-            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, "TestRootNamespace", ProjectWorkspaceState.Default);
+            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, "TestRootNamespace", ProjectWorkspaceState.Default, EmptyDocuments);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -124,7 +219,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
 
             // Act & Assert
-            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, "TestRootNamespace", ProjectWorkspaceState.Default);
+            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1, "TestRootNamespace", ProjectWorkspaceState.Default, EmptyDocuments);
         }
 
         [Fact]
@@ -148,10 +243,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.NotNull(text);
                 });
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
-            var textLoader = CreateTextLoader("Hello World");
 
             // Act
-            projectService.CloseDocument(expectedDocumentFilePath, textLoader);
+            projectService.CloseDocument(expectedDocumentFilePath);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -175,10 +269,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.NotNull(text);
                 });
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
-            var textLoader = CreateTextLoader("Hello World");
 
             // Act
-            projectService.CloseDocument(expectedDocumentFilePath, textLoader);
+            projectService.CloseDocument(expectedDocumentFilePath);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -267,7 +360,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 {
                     Assert.Same(ownerProject.HostProject, hostProject);
                     Assert.Equal(expectedDocumentFilePath, hostDocument.FilePath);
-                    Assert.Null(loader);
+                    Assert.NotNull(loader);
                 });
             projectSnapshotManager.Setup(manager => manager.DocumentOpened(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SourceText>()))
                 .Callback<string, string, SourceText>((projectFilePath, documentFilePath, text) =>
@@ -301,10 +394,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectSnapshotManager.Setup(manager => manager.DocumentAdded(It.IsAny<HostProject>(), It.IsAny<HostDocument>(), It.IsAny<TextLoader>()))
                 .Throws(new InvalidOperationException("This should not have been called."));
             var projectService = CreateProjectService(projectResolver.Object, projectSnapshotManager.Object, documentResolver);
-            var textLoader = CreateTextLoader("Hello World");
 
             // Act & Assert
-            projectService.AddDocument(documentFilePath, textLoader);
+            projectService.AddDocument(documentFilePath);
         }
 
         [Fact]
@@ -328,10 +420,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.NotNull(loader);
                 });
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
-            var textLoader = CreateTextLoader("Hello World");
 
             // Act
-            projectService.AddDocument(documentFilePath, textLoader);
+            projectService.AddDocument(documentFilePath);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -353,10 +444,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.NotNull(loader);
                 });
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
-            var textLoader = CreateTextLoader("Hello World");
 
             // Act
-            projectService.AddDocument(documentFilePath, textLoader);
+            projectService.AddDocument(documentFilePath);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -762,15 +852,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 document => Assert.Equal(documentFilePath2, document.FilePath));
         }
 
-        private static TextLoader CreateTextLoader(string content)
-        {
-            var sourceText = SourceText.From(content);
-            var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
-            var textLoader = TextLoader.From(textAndVersion);
-
-            return textLoader;
-        }
-
         private DefaultRazorProjectService CreateProjectService(
             ProjectResolver projectResolver,
             ProjectSnapshotManagerBase projectSnapshotManager,
@@ -782,9 +863,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var accessor = Mock.Of<ProjectSnapshotManagerAccessor>(a => a.Instance == projectSnapshotManager);
             documentResolver = documentResolver ?? Mock.Of<DocumentResolver>();
             var hostDocumentFactory = new TestHostDocumentFactory();
+            var remoteTextLoaderFactory = Mock.Of<RemoteTextLoaderFactory>(factory => factory.Create(It.IsAny<string>()) == Mock.Of<TextLoader>());
             var projectService = new DefaultRazorProjectService(
                 Dispatcher,
                 hostDocumentFactory,
+                remoteTextLoaderFactory,
                 documentResolver,
                 projectResolver,
                 documentVersionCache,
@@ -816,9 +899,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private class TestHostDocumentFactory : HostDocumentFactory
         {
-            public override HostDocument Create(string documentFilePath, ProjectSnapshot projectSnapshot)
+            public override HostDocument Create(string filePath, string targetFilePath) => Create(filePath, targetFilePath, fileKind: null);
+
+            public override HostDocument Create(string filePath, string targetFilePath, string fileKind)
             {
-                return new HostDocument(documentFilePath, documentFilePath);
+                return new HostDocument(filePath, targetFilePath, fileKind);
             }
         }
     }

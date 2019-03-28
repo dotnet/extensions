@@ -8,4 +8,5 @@ export interface UpdateProjectRequest {
     readonly configuration?: any;
     readonly rootNamespace?: string;
     readonly projectWorkspaceState?: any;
+    readonly documents?: any;
 }

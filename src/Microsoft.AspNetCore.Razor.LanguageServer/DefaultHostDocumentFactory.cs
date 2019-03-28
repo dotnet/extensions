@@ -5,8 +5,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -33,19 +33,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _generatedCodeContainerStore = generatedCodeContainerStore;
         }
 
-        public override HostDocument Create(string documentFilePath, ProjectSnapshot projectSnapshot)
-        {
-            var engine = projectSnapshot.GetProjectEngine();
-            var fileSystem = engine.FileSystem;
-            var documentItem = fileSystem.GetItem(documentFilePath);
-            var targetPath = documentItem.FilePath;
+        public override HostDocument Create(string filePath, string targetFilePath)
+            => Create(filePath, targetFilePath, fileKind: null);
 
-            // Representing all of our host documents with a re-normalized target path to workaround GetRelatedDocument limitations.
-            var normalizedTargetPath = targetPath.Replace('/', '\\').TrimStart('\\');
-            var hostDocument = new HostDocument(documentItem.PhysicalPath, normalizedTargetPath);
+        public override HostDocument Create(string filePath, string targetFilePath, string fileKind)
+        {
+            if (filePath == null)
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            if (targetFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(targetFilePath));
+            }
+
+            var hostDocument = new HostDocument(filePath, targetFilePath, fileKind);
             hostDocument.GeneratedCodeContainer.GeneratedCodeChanged += (sender, args) =>
             {
-                var sharedContainer = _generatedCodeContainerStore.Get(documentItem.PhysicalPath);
+                var sharedContainer = _generatedCodeContainerStore.Get(filePath);
                 var container = (GeneratedCodeContainer)sender;
                 var latestDocument = (DefaultDocumentSnapshot)container.LatestDocument;
                 Task.Factory.StartNew(async () =>

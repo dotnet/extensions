@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
@@ -16,17 +17,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             string filePath,
             RazorConfiguration configuration,
             string rootNamespace,
-            ProjectWorkspaceState projectWorkspaceState)
+            ProjectWorkspaceState projectWorkspaceState,
+            IReadOnlyList<DocumentSnapshotHandle> documents)
         {
             if (filePath == null)
             {
                 throw new ArgumentNullException(nameof(filePath));
             }
 
+            if (documents == null)
+            {
+                throw new ArgumentNullException(nameof(documents));
+            }
+
             FilePath = filePath;
             Configuration = configuration;
             RootNamespace = rootNamespace;
             ProjectWorkspaceState = projectWorkspaceState;
+            Documents = documents;
         }
 
         public string FilePath { get; }
@@ -36,5 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
         public string RootNamespace { get; }
 
         public ProjectWorkspaceState ProjectWorkspaceState { get; }
+
+        public IReadOnlyList<DocumentSnapshotHandle> Documents { get; }
     }
 }

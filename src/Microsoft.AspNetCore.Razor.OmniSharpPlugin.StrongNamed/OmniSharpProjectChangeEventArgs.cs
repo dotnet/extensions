@@ -41,5 +41,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public string DocumentFilePath { get; }
 
         public OmniSharpProjectChangeKind Kind { get; }
+
+        public static OmniSharpProjectChangeEventArgs CreateTestInstance(OmniSharpProjectSnapshot older, OmniSharpProjectSnapshot newer, OmniSharpProjectChangeKind kind) =>
+            new OmniSharpProjectChangeEventArgs(older, newer, kind);
     }
 }

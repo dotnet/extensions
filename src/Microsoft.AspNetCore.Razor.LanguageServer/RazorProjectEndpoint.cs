@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -20,24 +22,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         IRazorRemoveDocumentHandler
     {
         private readonly RazorProjectService _projectService;
-        private readonly RemoteTextLoaderFactory _remoteTextLoaderFactory;
         private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly ILogger _logger;
 
         public RazorProjectEndpoint(
             ForegroundDispatcher foregroundDispatcher,
-            RemoteTextLoaderFactory remoteTextLoaderFactory,
             RazorProjectService projectService,
             ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
-            }
-
-            if (remoteTextLoaderFactory == null)
-            {
-                throw new ArgumentNullException(nameof(remoteTextLoaderFactory));
             }
 
             if (projectService == null)
@@ -51,9 +45,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             _foregroundDispatcher = foregroundDispatcher;
-            _remoteTextLoaderFactory = remoteTextLoaderFactory;
             _projectService = projectService;
-            _logger = loggerFactory.CreateLogger<RazorProjectEndpoint>();
         }
 
         public async Task<Unit> Handle(RazorAddProjectParams request, CancellationToken cancellationToken)
@@ -100,7 +92,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     request.FilePath,
                     request.Configuration,
                     request.RootNamespace,
-                    request.ProjectWorkspaceState ?? ProjectWorkspaceState.Default),
+                    request.ProjectWorkspaceState ?? ProjectWorkspaceState.Default,
+                    request.Documents ?? Array.Empty<DocumentSnapshotHandle>()),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
@@ -112,9 +105,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             _foregroundDispatcher.AssertBackgroundThread();
 
-            var textLoader = _remoteTextLoaderFactory.Create(request.FilePath);
             await Task.Factory.StartNew(
-                () => _projectService.AddDocument(request.FilePath, textLoader),
+                () => _projectService.AddDocument(request.FilePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
