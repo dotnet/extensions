@@ -53,6 +53,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 #if !SIMPLE_JSON_NO_LINQ_EXPRESSION
 using System.Linq.Expressions;
@@ -2070,7 +2071,7 @@ namespace SimpleJson
             {
                 private readonly object _lock = new object();
                 private readonly ThreadSafeDictionaryValueFactory<TKey, TValue> _valueFactory;
-                private Dictionary<TKey, TValue> _dictionary;
+                private ConcurrentDictionary<TKey, TValue> _dictionary;
 
                 public ThreadSafeDictionary(ThreadSafeDictionaryValueFactory<TKey, TValue> valueFactory)
                 {
@@ -2094,7 +2095,7 @@ namespace SimpleJson
                     {
                         if (_dictionary == null)
                         {
-                            _dictionary = new Dictionary<TKey, TValue>();
+                            _dictionary = new ConcurrentDictionary<TKey, TValue>();
                             _dictionary[key] = value;
                         }
                         else
@@ -2102,7 +2103,7 @@ namespace SimpleJson
                             TValue val;
                             if (_dictionary.TryGetValue(key, out val))
                                 return val;
-                            Dictionary<TKey, TValue> dict = new Dictionary<TKey, TValue>(_dictionary);
+                            ConcurrentDictionary<TKey, TValue> dict = new ConcurrentDictionary<TKey, TValue>(_dictionary);
                             dict[key] = value;
                             _dictionary = dict;
                         }
