@@ -14,8 +14,6 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 Component - (0:0,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (22:0,22 [10] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - AttributeStructure.DoubleQuotes
                         CSharpExpression - (23:0,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)

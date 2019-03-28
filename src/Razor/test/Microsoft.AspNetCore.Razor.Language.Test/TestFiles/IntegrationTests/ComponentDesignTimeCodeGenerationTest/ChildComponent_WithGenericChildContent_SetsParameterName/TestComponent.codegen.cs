@@ -20,7 +20,6 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             __o = "";
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment<System.String>)((item) => (builder2) => {
 #nullable restore

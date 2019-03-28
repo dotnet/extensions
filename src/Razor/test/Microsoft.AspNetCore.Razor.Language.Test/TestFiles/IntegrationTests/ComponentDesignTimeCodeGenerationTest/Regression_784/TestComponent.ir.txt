@@ -14,8 +14,6 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 MarkupElement - (0:0,0 [73] x:\dir\subdir\Test\TestComponent.cshtml) - p
                     HtmlAttribute - (16:0,16 [17] x:\dir\subdir\Test\TestComponent.cshtml) - onmouseover=" - "
                         CSharpExpressionAttributeValue -  - 

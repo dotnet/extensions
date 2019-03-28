@@ -13,7 +13,6 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, "ParamBefore", "before");
             builder.AddAttribute(2, "ParamAfter", "after");

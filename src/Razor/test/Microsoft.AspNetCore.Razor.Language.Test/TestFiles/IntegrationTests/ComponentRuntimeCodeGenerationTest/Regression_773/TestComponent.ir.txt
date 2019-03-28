@@ -8,8 +8,6 @@ Document -
         RouteAttributeExtensionNode -  - /
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 MarkupBlock -  - <h1>Hello, world!</h1>\n\nWelcome to your new app.\n\n
                 Component - (67:6,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - SurveyPrompt
                     ComponentAttribute - (88:6,21 [16] x:\dir\subdir\Test\TestComponent.cshtml) - Title - AttributeStructure.DoubleQuotes

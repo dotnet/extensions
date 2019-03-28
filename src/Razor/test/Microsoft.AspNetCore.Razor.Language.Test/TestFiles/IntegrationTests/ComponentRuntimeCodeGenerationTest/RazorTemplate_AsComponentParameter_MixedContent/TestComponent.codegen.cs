@@ -13,7 +13,6 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderFragment<Test.Context> template = (context) => 

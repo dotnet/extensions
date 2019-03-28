@@ -14,8 +14,6 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 CSharpCode - (2:0,2 [40] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (2:0,2 [40] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  \n  var myValue = "Expression value";\n
                 MarkupElement - (45:3,0 [53] x:\dir\subdir\Test\TestComponent.cshtml) - elem

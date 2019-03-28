@@ -31,7 +31,6 @@ global::System.Object __typeHelper = "/my/url";
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
         }
         #pragma warning restore 1998
     }

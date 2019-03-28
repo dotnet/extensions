@@ -13,7 +13,6 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "text");
             builder.AddAttribute(2, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(CurrentDate, "MM/dd/yyyy"));

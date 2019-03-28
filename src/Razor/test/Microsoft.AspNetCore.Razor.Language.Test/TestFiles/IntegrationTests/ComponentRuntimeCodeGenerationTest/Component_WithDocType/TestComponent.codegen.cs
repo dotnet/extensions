@@ -13,7 +13,6 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.AddContent(0, "<!DOCTYPE html>\r\n");
             builder.AddMarkupContent(1, "<div>\r\n</div>");
         }

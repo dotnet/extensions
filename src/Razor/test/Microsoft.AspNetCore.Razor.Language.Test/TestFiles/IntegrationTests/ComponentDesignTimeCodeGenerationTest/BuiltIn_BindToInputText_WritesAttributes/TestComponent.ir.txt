@@ -14,8 +14,6 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 MarkupElement - (0:0,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
                         HtmlAttributeValue - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 

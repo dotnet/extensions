@@ -13,7 +13,6 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.OpenComponent<Test.InputText>(0);
             builder.AddAttribute(1, "Value", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(Microsoft.AspNetCore.Components.BindMethods.GetValue(person.Name)));
             builder.AddAttribute(2, "ValueChanged", new System.Action<System.String>(__value => person.Name = __value));

@@ -13,7 +13,6 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.AddContent(0, RenderPerson((person) => (builder2) => {
                 builder2.OpenElement(1, "div");
                 builder2.AddContent(2, person.Name);

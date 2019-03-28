@@ -27,7 +27,6 @@ using Microsoft.AspNetCore.Components.RenderTree;
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
   

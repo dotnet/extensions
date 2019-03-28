@@ -46,7 +46,6 @@ global::System.Object TItem2 = null;
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
 #nullable restore
 #line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
  foreach (var item2 in Items2)
