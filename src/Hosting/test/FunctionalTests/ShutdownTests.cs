@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                         if (!string.IsNullOrEmpty(args.Data) && args.Data.StartsWith(StartedMessage))
                         {
                             output += args.Data.Substring(StartedMessage.Length) + '\n';
-                            started.SetResult(0);
+                            started.TrySetResult(0);
                         }
                         else
                         {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
                         if (output.Contains(CompletionMessage))
                         {
-                            completed.SetResult(0);
+                            completed.TrySetResult(0);
                         }
                     };
 
