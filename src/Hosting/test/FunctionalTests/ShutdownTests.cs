@@ -66,15 +66,15 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                 {
                     var result = await deployer.DeployAsync();
 
-                    var started = new ManualResetEventSlim();
-                    var completed = new ManualResetEventSlim();
+                    var started = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var completed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                     var output = string.Empty;
                     deployer.HostProcess.OutputDataReceived += (sender, args) =>
                     {
                         if (!string.IsNullOrEmpty(args.Data) && args.Data.StartsWith(StartedMessage))
                         {
-                            started.Set();
                             output += args.Data.Substring(StartedMessage.Length) + '\n';
+                            started.SetResult(0);
                         }
                         else
                         {
@@ -83,27 +83,17 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
                         if (output.Contains(CompletionMessage))
                         {
-                            completed.Set();
+                            completed.SetResult(0);
                         }
                     };
 
-                    started.Wait(50000);
-
-                    if (!started.IsSet)
-                    {
-                        throw new InvalidOperationException("Application did not start successfully");
-                    }
+                    await started.Task.TimeoutAfter(TimeSpan.FromSeconds(60));
 
                     SendShutdownSignal(deployer.HostProcess);
 
-                    completed.Wait(50000);
+                    await completed.Task.TimeoutAfter(TimeSpan.FromSeconds(60));
 
                     WaitForExitOrKill(deployer.HostProcess);
-
-                    if (!started.IsSet)
-                    {
-                        throw new InvalidOperationException($"Application did not write the expected output. The received output is: {output}");
-                    }
 
                     output = output.Trim('\n');
 
