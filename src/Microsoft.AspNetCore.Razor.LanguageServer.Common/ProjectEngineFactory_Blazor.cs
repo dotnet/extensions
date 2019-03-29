@@ -20,8 +20,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                 configure?.Invoke(b);
                 new BlazorExtensionInitializer().Initialize(b);
 
-                var classifier = b.Features.OfType<ComponentDocumentClassifierPass>().Single();
-                classifier.MangleClassNames = true;
+                var classifier = b.Features.OfType<ComponentDocumentClassifierPass>().FirstOrDefault();
+                if (classifier != null)
+                {
+                    classifier.MangleClassNames = true;
+                }
             });
         }
     }

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
@@ -21,6 +22,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DefaultRazorProjectServiceTest : TestBase
     {
         private IReadOnlyList<DocumentSnapshotHandle> EmptyDocuments { get; } = Array.Empty<DocumentSnapshotHandle>();
+
+        [Fact]
+        public void UpdateProject_UpdatesProjectWorkspaceState()
+        {
+            // Arrange
+            var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
+            var hostProject = new HostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            projectManager.ProjectAdded(hostProject);
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectManager);
+            var projectWorkspaceState = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>(), LanguageVersion.LatestMajor);
+
+            // Act
+            projectService.UpdateProject(hostProject.FilePath, hostProject.Configuration, hostProject.RootNamespace, projectWorkspaceState, EmptyDocuments);
+
+            // Assert
+            var project = projectManager.GetLoadedProject(hostProject.FilePath);
+            Assert.Same(projectWorkspaceState, project.ProjectWorkspaceState);
+        }
 
         [Fact]
         public void UpdateProject_UpdatingDocument_MapsRelativeFilePathToActualDocument()

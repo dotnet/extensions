@@ -189,7 +189,7 @@ export class RazorDocumentManager implements IRazorDocumentManager {
         if (!projectedDocument.hostDocumentSyncVersion ||
             projectedDocument.hostDocumentSyncVersion <= updateBufferRequest.hostDocumentVersion) {
             // We allow re-setting of the updated content from the same doc sync version in the case
-            // of project or _ViewImports.cshtml changes.
+            // of project or file import changes.
             const csharpProjectedDocument = projectedDocument as CSharpProjectedDocument;
             csharpProjectedDocument.update(updateBufferRequest.changes, updateBufferRequest.hostDocumentVersion);
 

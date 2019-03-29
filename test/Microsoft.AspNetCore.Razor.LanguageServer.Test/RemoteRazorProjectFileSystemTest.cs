@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentFilePath = "file.cshtml";
 
             // Act
-            var item = fileSystem.GetItem(documentFilePath);
+            var item = fileSystem.GetItem(documentFilePath, fileKind: null);
 
             // Assert
             Assert.Equal(documentFilePath, item.FilePath);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentFilePath = "/C:/path/to/file.cshtml";
 
             // Act
-            var item = fileSystem.GetItem(documentFilePath);
+            var item = fileSystem.GetItem(documentFilePath, fileKind: null);
 
             // Assert
             Assert.Equal("file.cshtml", item.FilePath);
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentFilePath = "/C:/otherpath/to/file.cshtml";
 
             // Act
-            var item = fileSystem.GetItem(documentFilePath);
+            var item = fileSystem.GetItem(documentFilePath, fileKind: null);
 
             // Assert
             Assert.Equal(documentFilePath, item.FilePath);

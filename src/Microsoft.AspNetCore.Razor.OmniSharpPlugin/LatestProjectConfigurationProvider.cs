@@ -119,7 +119,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 {
                     var filePath = item.EvaluatedInclude;
                     var targetPath = item.GetMetadataValue(RazorTargetPathMetadataName);
-                    var hostDocument = new OmniSharpHostDocument(filePath, targetPath, FileKinds.Component);
+                    var fileKind = FileKinds.GetComponentFileKindFromFilePath(filePath);
+                    var hostDocument = new OmniSharpHostDocument(filePath, targetPath, fileKind);
                     hostDocuments.Add(hostDocument);
                 }
             }

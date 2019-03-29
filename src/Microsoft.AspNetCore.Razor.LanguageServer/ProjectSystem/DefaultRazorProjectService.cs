@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             if (!projectWorkspaceState.Equals(ProjectWorkspaceState.Default))
             {
-                _logger.LogInformation($"Updating project '{filePath}' TagHelpers ({projectWorkspaceState.TagHelpers.Count}).");
+                _logger.LogInformation($"Updating project '{filePath}' TagHelpers ({projectWorkspaceState.TagHelpers.Count}) and C# Language Version ({projectWorkspaceState.CSharpLanguageVersion}).");
             }
 
             _projectSnapshotManagerAccessor.Instance.ProjectWorkspaceStateChanged(project.FilePath, projectWorkspaceState);

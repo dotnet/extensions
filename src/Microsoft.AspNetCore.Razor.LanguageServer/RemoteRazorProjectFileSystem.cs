@@ -38,7 +38,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             throw new NotImplementedException();
         }
 
+        [Obsolete]
         public override RazorProjectItem GetItem(string path)
+        {
+            return GetItem(path, fileKind: null);
+        }
+
+        public override RazorProjectItem GetItem(string path, string fileKind)
         {
             if (path == null)
             {
@@ -49,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (FilePathRootedBy(physicalPath, _root))
             {
                 var filePath = physicalPath.Substring(_root.Length + 1 /* / */);
-                return new RemoteProjectItem(filePath, physicalPath);
+                return new RemoteProjectItem(filePath, physicalPath, fileKind);
             }
             else
             {
@@ -57,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 // In practice this should never happen, the systems above this should have routed the
                 // file request to the appropriate file system. Return something reasonable so a higher
                 // layer falls over to provide a better error.
-                return new RemoteProjectItem(physicalPath, physicalPath);
+                return new RemoteProjectItem(physicalPath, physicalPath, fileKind);
             }
         }
 
