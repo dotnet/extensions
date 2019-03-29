@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Composition;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed;
 using OmniSharp;
 
@@ -12,6 +13,12 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     // to make those services available via MEF. This isn't an issue for Roslyn based services because
     // we're able to hook into OmniSharp's Roslyn service aggregator to allow it to inspect the strong
     // named plugin assembly.
+
+    [Shared]
+    [Export(typeof(FilePathNormalizer))]
+    public class ExportedFilePathNormalizer : FilePathNormalizer
+    {
+    }
 
     [Shared]
     [Export(typeof(OmniSharpForegroundDispatcher))]

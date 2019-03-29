@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Composition;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Build.Execution;
 using Microsoft.Extensions.Logging;
 using OmniSharp;
@@ -21,32 +24,27 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     [Export(typeof(IOmniSharpProjectSnapshotManagerChangeTrigger))]
     internal class ComponentRefreshTrigger : IRazorDocumentChangeListener, IRazorDocumentOutputChangeListener, IOmniSharpProjectSnapshotManagerChangeTrigger
     {
+        // Internal for testing
+        internal readonly Dictionary<string, Task> _deferredRefreshTasks;
+
         private const string CompileItemType = "Compile";
+
+        private readonly object _refreshLock = new object();
+        private readonly Dictionary<string, OutputRefresh> _pendingOutputRefreshes;
+        private readonly Dictionary<string, bool> _lastSeenCompileItems;
         private readonly OmniSharpForegroundDispatcher _foregroundDispatcher;
+        private readonly FilePathNormalizer _filePathNormalizer;
         private readonly ProjectInstanceEvaluator _projectInstanceEvaluator;
-        private readonly BufferManager _bufferManager;
+        private readonly UpdateBufferDispatcher _updateBufferDispatcher;
         private readonly ILogger<ComponentRefreshTrigger> _logger;
         private OmniSharpProjectSnapshotManagerBase _projectManager;
 
         [ImportingConstructor]
         public ComponentRefreshTrigger(
             OmniSharpForegroundDispatcher foregroundDispatcher,
+            FilePathNormalizer filePathNormalizer,
             ProjectInstanceEvaluator projectInstanceEvaluator,
-            OmniSharpWorkspace omniSharpWorkspace,
-            ILoggerFactory loggerFactory) : this(foregroundDispatcher, projectInstanceEvaluator, loggerFactory)
-        {
-            if (omniSharpWorkspace == null)
-            {
-                throw new ArgumentNullException(nameof(omniSharpWorkspace));
-            }
-
-            _bufferManager = omniSharpWorkspace.BufferManager;
-        }
-
-        // Internal constructor for testing
-        internal ComponentRefreshTrigger(
-            OmniSharpForegroundDispatcher foregroundDispatcher,
-            ProjectInstanceEvaluator projectInstanceEvaluator,
+            UpdateBufferDispatcher updateBufferDispatcher,
             ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
@@ -54,9 +52,19 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
+            if (filePathNormalizer == null)
+            {
+                throw new ArgumentNullException(nameof(filePathNormalizer));
+            }
+
             if (projectInstanceEvaluator == null)
             {
                 throw new ArgumentNullException(nameof(projectInstanceEvaluator));
+            }
+
+            if (updateBufferDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(updateBufferDispatcher));
             }
 
             if (loggerFactory == null)
@@ -65,8 +73,48 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             }
 
             _foregroundDispatcher = foregroundDispatcher;
+            _filePathNormalizer = filePathNormalizer;
             _projectInstanceEvaluator = projectInstanceEvaluator;
+            _updateBufferDispatcher = updateBufferDispatcher;
             _logger = loggerFactory.CreateLogger<ComponentRefreshTrigger>();
+            _deferredRefreshTasks = new Dictionary<string, Task>(FilePathComparer.Instance);
+            _pendingOutputRefreshes = new Dictionary<string, OutputRefresh>(FilePathComparer.Instance);
+            _lastSeenCompileItems = new Dictionary<string, bool>(FilePathComparer.Instance);
+        }
+
+        // Internal settable for testing
+        // 250ms between publishes to prevent bursts of changes yet still be responsive to changes.
+        internal int EnqueueDelay { get; set; } = 250;
+
+        // Used in unit tests to ensure we can know when refreshes start.
+        public ManualResetEventSlim NotifyRefreshWorkStarting { get; set; }
+
+        // Used in unit tests to ensure we can control when refresh work starts.
+        public ManualResetEventSlim BlockRefreshWorkStarting { get; set; }
+
+        // Used in unit tests to ensure we can know when refreshes completes.
+        public ManualResetEventSlim NotifyRefreshWorkCompleting { get; set; }
+
+        private void OnStartingRefreshWork()
+        {
+            if (BlockRefreshWorkStarting != null)
+            {
+                BlockRefreshWorkStarting.Wait();
+                BlockRefreshWorkStarting.Reset();
+            }
+
+            if (NotifyRefreshWorkStarting != null)
+            {
+                NotifyRefreshWorkStarting.Set();
+            }
+        }
+
+        private void OnRefreshWorkCompleting()
+        {
+            if (NotifyRefreshWorkCompleting != null)
+            {
+                NotifyRefreshWorkCompleting.Set();
+            }
         }
 
         public void Initialize(OmniSharpProjectSnapshotManagerBase projectManager)
@@ -91,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             }
         }
 
-        public async void RazorDocumentOutputChanged(RazorFileChangeEventArgs args)
+        public void RazorDocumentOutputChanged(RazorFileChangeEventArgs args)
         {
             if (args == null)
             {
@@ -105,56 +153,101 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // we need to play that part and force buffer updates to indirectly update their workspace to include our Razor
             // declaration files.
 
-
-            // Re-evaluate project instance so we can determine compile items properly.
-            var projectInstance = _projectInstanceEvaluator.Evaluate(args.UnevaluatedProjectInstance);
-
-            // Not all Razor output files are compile items
-            if (!IsCompileItem(args.RelativeFilePath, projectInstance))
+            lock (_refreshLock)
             {
-                return;
-            }
-
-            try
-            {
-                // Force update the OmniSharp Workspace for component declaration changes.
-
-                var componentDeclarationLocation = args.FilePath;
-                Request request = null;
-
-                if (args.Kind == RazorFileChangeKind.Removed)
+                var projectFilePath = args.UnevaluatedProjectInstance.ProjectFileLocation.File;
+                if (!_pendingOutputRefreshes.TryGetValue(projectFilePath, out var outputRefresh))
                 {
-                    // Document was deleted, clear the workspace content for it.
-                    request = new Request()
-                    {
-                        FileName = componentDeclarationLocation,
-                        Buffer = string.Empty,
-                    };
-                }
-                else
-                {
-                    request = new UpdateBufferRequest()
-                    {
-                        FileName = componentDeclarationLocation,
-                        FromDisk = true,
-                    };
+                    outputRefresh = new OutputRefresh();
+                    _pendingOutputRefreshes[projectFilePath] = outputRefresh;
                 }
 
-                await _bufferManager.UpdateBufferAsync(request);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Unexpected error when determining if file " + args.FilePath + " was a Razor component or not: " + ex);
+                outputRefresh.UpdateWithChange(args);
+
+                if (!_deferredRefreshTasks.TryGetValue(projectFilePath, out var update) || update.IsCompleted)
+                {
+                    _deferredRefreshTasks[projectFilePath] = RefreshAfterDelay(projectFilePath);
+                }
             }
         }
 
+        private async Task RefreshAfterDelay(string projectFilePath)
+        {
+            await Task.Delay(EnqueueDelay).ConfigureAwait(false);
+
+            OnStartingRefreshWork();
+
+            OutputRefresh outputRefresh;
+            lock (_refreshLock)
+            {
+                if (!_pendingOutputRefreshes.TryGetValue(projectFilePath, out outputRefresh))
+                {
+                    return;
+                }
+
+                _pendingOutputRefreshes.Remove(projectFilePath);
+            }
+
+            await RefreshAsync(outputRefresh);
+        }
+
+        private async Task RefreshAsync(OutputRefresh refresh)
+        {
+            // Re-evaluate project instance so we can determine compile items properly.
+            var projectInstance = _projectInstanceEvaluator.Evaluate(refresh.ProjectInstance);
+
+            foreach (var documentChangeInfo in refresh.DocumentChangeInfos.Values)
+            {
+                try
+                {
+                    // Force update the OmniSharp Workspace for component declaration changes.
+
+                    var componentDeclarationLocation = documentChangeInfo.FilePath;
+                    var isCompileItem = IsCompileItem(documentChangeInfo.RelativeFilePath, projectInstance);
+                    var wasACompileItem = false;
+                    lock (_lastSeenCompileItems)
+                    {
+                        _lastSeenCompileItems.TryGetValue(documentChangeInfo.FilePath, out wasACompileItem);
+                        _lastSeenCompileItems[documentChangeInfo.FilePath] = isCompileItem;
+                    }
+
+                    if (!isCompileItem && wasACompileItem)
+                    {
+                        // Output document should no longer be considered as a compile item, clear the workspace content for it.
+                        var request = new Request()
+                        {
+                            FileName = componentDeclarationLocation,
+                            Buffer = string.Empty,
+                        };
+                        await _updateBufferDispatcher.UpdateBufferAsync(request);
+                    }
+                    else if (isCompileItem)
+                    {
+                        // Force update the OmniSharp Workspace for component declaration changes.
+                        var request = new UpdateBufferRequest()
+                        {
+                            FileName = componentDeclarationLocation,
+                            FromDisk = true,
+                        };
+                        await _updateBufferDispatcher.UpdateBufferAsync(request);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Unexpected error when updating workspace representation of '" + documentChangeInfo.FilePath + "': " + ex);
+                }
+            }
+
+            OnRefreshWorkCompleting();
+        }
+
         // Internal for testing
-        internal static bool IsCompileItem(string filePath, ProjectInstance projectInstance)
+        internal bool IsCompileItem(string filePath, ProjectInstance projectInstance)
         {
             var compileItems = projectInstance.GetItems(CompileItemType);
             foreach (var item in compileItems)
             {
-                if (FilePathComparer.Instance.Equals(item.EvaluatedInclude, filePath))
+                if (_filePathNormalizer.FilePathsEquivalent(item.EvaluatedInclude, filePath))
                 {
                     return true;
                 }
@@ -190,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 }
             }
         }
-        
+
         // Internal for testing
         internal bool IsComponentFile(string relativeDocumentFilePath, string projectFilePath)
         {
@@ -210,6 +303,49 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             var isComponentKind = FileKinds.IsComponent(documentSnapshot.FileKind);
             return isComponentKind;
+        }
+
+        private class OutputRefresh
+        {
+            private readonly Dictionary<string, DocumentChangeInfo> _documentChangeInfos;
+            private ProjectInstance _projectInstance;
+
+            public OutputRefresh()
+            {
+                _documentChangeInfos = new Dictionary<string, DocumentChangeInfo>(FilePathComparer.Instance);
+            }
+
+            public ProjectInstance ProjectInstance => _projectInstance;
+
+            public IReadOnlyDictionary<string, DocumentChangeInfo> DocumentChangeInfos => _documentChangeInfos;
+
+            public void UpdateWithChange(RazorFileChangeEventArgs change)
+            {
+                if (change == null)
+                {
+                    throw new ArgumentNullException(nameof(change));
+                }
+
+                // Always take latest project instance.
+                _projectInstance = change.UnevaluatedProjectInstance;
+                _documentChangeInfos[change.FilePath] = new DocumentChangeInfo(change.FilePath, change.RelativeFilePath, change.Kind);
+            }
+        }
+
+        private struct DocumentChangeInfo
+        {
+            public DocumentChangeInfo(string filePath, string relativeFilePath, RazorFileChangeKind changeKind)
+            {
+                FilePath = filePath;
+                RelativeFilePath = relativeFilePath;
+                ChangeKind = changeKind;
+            }
+
+            public string FilePath { get; }
+
+            public string RelativeFilePath { get; }
+
+            public RazorFileChangeKind ChangeKind { get; }
         }
     }
 }

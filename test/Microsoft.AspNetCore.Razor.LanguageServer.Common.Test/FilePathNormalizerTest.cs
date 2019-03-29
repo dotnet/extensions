@@ -8,6 +8,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
     public class FilePathNormalizerTest
     {
         [Fact]
+        public void FilePathsEquivalent_NotEqualPaths_ReturnsFalse()
+        {
+            // Arrange
+            var filePathNormalizer = new FilePathNormalizer();
+            var filePath1 = "path/to/document.cshtml";
+            var filePath2 = "path\\to\\different\\document.cshtml";
+
+            // Act
+            var result = filePathNormalizer.FilePathsEquivalent(filePath1, filePath2);
+
+            // Assert
+            Assert.False(result);
+        }
+        [Fact]
+        public void FilePathsEquivalent_NormalizesPathsBeforeComparison_ReturnsTrue()
+        {
+            // Arrange
+            var filePathNormalizer = new FilePathNormalizer();
+            var filePath1 = "path/to/document.cshtml";
+            var filePath2 = "path\\to\\document.cshtml";
+
+            // Act
+            var result = filePathNormalizer.FilePathsEquivalent(filePath1, filePath2);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
         public void GetDirectory_IncludesTrailingSlash()
         {
             // Arrange

@@ -3,10 +3,11 @@
 
 using System;
 using System.Net;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
-    public sealed class FilePathNormalizer
+    public class FilePathNormalizer
     {
         public string Normalize(string filePath)
         {
@@ -38,6 +39,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
             var directory = normalizedPath.Substring(0, lastSeparatorIndex + 1);
             return directory;
+        }
+
+        public bool FilePathsEquivalent(string filePath1, string filePath2)
+        {
+            var normalizedFilePath1 = Normalize(filePath1);
+            var normalizedFilePath2 = Normalize(filePath2);
+
+            return FilePathComparer.Instance.Equals(normalizedFilePath1, normalizedFilePath2);
         }
     }
 }
