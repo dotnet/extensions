@@ -16,12 +16,12 @@ namespace Test
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, "MyAttr", "abc");
             builder.AddAttribute(2, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment<System.String>)((item) => (builder2) => {
-                builder2.AddContent(3, "\r\n    Some text");
+                builder2.AddMarkupContent(3, "\r\n    Some text");
                 builder2.OpenElement(4, "some-child");
                 builder2.AddAttribute(5, "a", "1");
                 builder2.AddContent(6, item.ToLowerInvariant());
                 builder2.CloseElement();
-                builder2.AddContent(7, "\r\n  ");
+                builder2.AddMarkupContent(7, "\r\n  ");
             }
             ));
             builder.CloseComponent();

@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
                 feature => Assert.IsType<ComponentLayoutDirectivePass>(feature),
                 feature => Assert.IsType<ComponentLoweringPass>(feature),
                 feature => Assert.IsType<ComponentMarkupBlockPass>(feature),
+                feature => Assert.IsType<ComponentMarkupEncodingPass>(feature),
                 feature => Assert.IsType<ComponentPageDirectivePass>(feature),
                 feature => Assert.IsType<ComponentReferenceCaptureLoweringPass>(feature),
                 feature => Assert.IsType<ComponentScriptTagPass>(feature),

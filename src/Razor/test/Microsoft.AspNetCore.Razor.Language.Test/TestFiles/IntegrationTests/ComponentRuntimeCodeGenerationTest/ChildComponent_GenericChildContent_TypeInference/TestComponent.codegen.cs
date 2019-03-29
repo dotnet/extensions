@@ -14,11 +14,11 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, "hi", 2, (context) => (builder2) => {
-                builder2.AddContent(3, "\r\n  ");
+                builder2.AddMarkupContent(3, "\r\n  ");
                 builder2.OpenElement(4, "div");
                 builder2.AddContent(5, context.ToLower());
                 builder2.CloseElement();
-                builder2.AddContent(6, "\r\n");
+                builder2.AddMarkupContent(6, "\r\n");
             }
             );
         }

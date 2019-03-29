@@ -15,7 +15,7 @@ namespace Test
         {
             builder.OpenComponent<Test.SomeOtherComponent>(0);
             builder.CloseComponent();
-            builder.AddContent(1, "\r\n\r\n");
+            builder.AddMarkupContent(1, "\r\n\r\n");
             builder.AddMarkupContent(2, "<h1>Hello</h1>");
         }
         #pragma warning restore 1998

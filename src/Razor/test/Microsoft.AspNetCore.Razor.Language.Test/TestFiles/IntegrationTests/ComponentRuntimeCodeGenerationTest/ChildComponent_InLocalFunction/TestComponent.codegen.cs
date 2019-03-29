@@ -26,7 +26,7 @@ namespace Test
             builder.AddContent(0, "        ");
             builder.OpenComponent<Test.MyComponent>(1);
             builder.CloseComponent();
-            builder.AddContent(2, "\r\n");
+            builder.AddMarkupContent(2, "\r\n");
 #nullable restore
 #line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
     }
@@ -34,7 +34,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            builder.AddContent(3, "\r\n");
+            builder.AddMarkupContent(3, "\r\n");
 #nullable restore
 #line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
    RenderChildComponent(); 

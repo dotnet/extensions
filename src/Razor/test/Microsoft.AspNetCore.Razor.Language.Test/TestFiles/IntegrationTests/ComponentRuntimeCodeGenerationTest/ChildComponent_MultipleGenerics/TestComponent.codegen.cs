@@ -22,9 +22,9 @@ namespace Test
             }
             ));
             builder.AddAttribute(5, "AnotherChildContent", (Microsoft.AspNetCore.Components.RenderFragment<Test.MyComponent<string, int>.Context>)((item) => (builder2) => {
-                builder2.AddContent(6, "\r\n  ");
+                builder2.AddMarkupContent(6, "\r\n  ");
                 builder2.AddContent(7, System.Math.Max(0, item.Item));
-                builder2.AddContent(8, ";\r\n");
+                builder2.AddMarkupContent(8, ";\r\n");
             }
             ));
             builder.CloseComponent();

@@ -19,7 +19,7 @@ Source Location: (164:7,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
         public string Name { get; set; }
     }
 |
-Generated Location: (1797:49,12 [76] )
+Generated Location: (1809:49,12 [76] )
 |
     class Person
     {

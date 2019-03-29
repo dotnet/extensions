@@ -17,7 +17,7 @@ namespace Test
         {
             builder.OpenComponent<Test.MyComponent>(0);
             builder.CloseComponent();
-            builder.AddContent(1, "\r\n");
+            builder.AddMarkupContent(1, "\r\n");
             builder.OpenComponent<Test2.SomeComponent>(2);
             builder.CloseComponent();
         }

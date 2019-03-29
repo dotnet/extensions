@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.AddContent(0, "My value");
-            builder.AddContent(1, "\r\n\r\n");
+            builder.AddMarkupContent(1, "\r\n\r\n");
             builder.AddMarkupContent(2, "<h1>Hello</h1>");
         }
         #pragma warning restore 1998
