@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             Assert.Equal(handle.Configuration, deserializedHandle.Configuration);
             Assert.Equal(handle.RootNamespace, deserializedHandle.RootNamespace);
             Assert.Equal(handle.ProjectWorkspaceState, deserializedHandle.ProjectWorkspaceState);
-            Assert.Collection(handle.Documents,
+            Assert.Collection(handle.Documents.OrderBy(doc => doc.FilePath),
                 document =>
                 {
                     Assert.Equal(legacyDocument.FilePath, document.FilePath);
@@ -82,8 +82,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                 "/path/to/project.csproj",
                 new[]
                 {
-                    "/path/to/file.cshtml",
                     "/path/to/component.razor",
+                    "/path/to/file.cshtml",
                 },
                 Configuration,
                 ProjectWorkspaceState);
@@ -96,9 +96,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             Assert.Equal(projectSnapshot.FilePath, deserializedHandle.FilePath);
             Assert.Equal(projectSnapshot.Configuration, deserializedHandle.Configuration);
             Assert.Equal(projectSnapshot.ProjectWorkspaceState, deserializedHandle.ProjectWorkspaceState);
-            Assert.Collection(deserializedHandle.Documents,
-                document => Assert.Equal("/path/to/file.cshtml", document.FilePath),
-                document => Assert.Equal("/path/to/component.razor", document.FilePath));
+            Assert.Collection(deserializedHandle.Documents.OrderBy(doc => doc.FilePath),
+                document => Assert.Equal("/path/to/component.razor", document.FilePath),
+                document => Assert.Equal("/path/to/file.cshtml", document.FilePath));
         }
 
         [Fact]
