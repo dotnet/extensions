@@ -2,10 +2,10 @@
 # See https://help.github.com/articles/about-code-owners/
 
 /eng/ @dougbu
-/src/Caching/ @tratcher
-/src/Configuration/ @tratcher
+/src/Caching/ @tratcher @anurse
+/src/Configuration/ @tratcher @anurse
 /src/DependencyInjection/ @pakrym
-/src/Hosting/ @tratcher
+/src/Hosting/ @tratcher @anurse
 /src/Logging/ @pakrym
-/src/Primitives/ @tratcher
-/src/Shared/src/HostFactoryResolver/ @tratcher
+/src/Primitives/ @tratcher @anurse
+/src/Shared/src/HostFactoryResolver/ @tratcher @anurse
