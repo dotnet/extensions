@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
             Assert.Equal("RZ9979", diagnostic.Id);
+            Assert.NotNull(diagnostic.GetMessage());
+
         }
 
         [Fact]
