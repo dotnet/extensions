@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Act
             projectSystem.Add(new TestRazorProjectItem("/different-file.cshtml"));
-            var result = projectSystem.GetItem(path);
+            var result = projectSystem.GetItem(path, fileKind: null);
 
             // Assert
             Assert.False(result.Exists);
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Act
             projectSystem.Add(projectItem);
-            var actual = projectSystem.GetItem(path);
+            var actual = projectSystem.GetItem(path, fileKind: null);
 
             // Assert
             Assert.Same(projectItem, actual);
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Act
             projectSystem.Add(projectItem);
-            var actual = projectSystem.GetItem(path);
+            var actual = projectSystem.GetItem(path, fileKind: null);
 
             // Assert
             Assert.Same(projectItem, actual);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var projectSystem = new VirtualRazorProjectFileSystem();
 
             // Act
-            var actual = projectSystem.GetItem("/subDirectory/dir3/file.cshtml");
+            var actual = projectSystem.GetItem("/subDirectory/dir3/file.cshtml", fileKind: null);
 
             // Assert
             Assert.False(actual.Exists);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Act
             projectSystem.Add(projectItem);
-            var actual = projectSystem.GetItem("/subDirectory/dir3/file.cshtml");
+            var actual = projectSystem.GetItem("/subDirectory/dir3/file.cshtml", fileKind: null);
 
             // Assert
             Assert.False(actual.Exists);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Act
             projectSystem.Add(projectItem);
-            var actual = projectSystem.GetItem("/subDirectory/dir2/file2.cshtml");
+            var actual = projectSystem.GetItem("/subDirectory/dir2/file2.cshtml", fileKind: null);
 
             // Assert
             Assert.False(actual.Exists);

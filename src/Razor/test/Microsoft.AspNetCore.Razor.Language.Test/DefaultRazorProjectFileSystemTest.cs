@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileSystem = new DefaultRazorProjectFileSystem(TestFolder);
 
             // Act
-            var item = fileSystem.GetItem(filePath);
+            var item = fileSystem.GetItem(filePath, fileKind: null);
 
             // Assert
             Assert.True(item.Exists);
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileSystem = new DefaultRazorProjectFileSystem(TestFolder);
 
             // Act
-            var item = fileSystem.GetItem(path);
+            var item = fileSystem.GetItem(path, fileKind: null);
 
             // Assert
             Assert.False(item.Exists);
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(
-                () => fileSystem.GetItem(path),
+                () => fileSystem.GetItem(path, fileKind: null),
                 $"The file '{path.Replace('\\', '/')}' is not a descendent of the base path '{rootPath}'.");
         }
 

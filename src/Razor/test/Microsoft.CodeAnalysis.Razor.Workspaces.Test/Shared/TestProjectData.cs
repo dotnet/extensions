@@ -32,6 +32,7 @@ namespace Microsoft.CodeAnalysis.Razor
             SomeProjectComponentImportFile1 = new HostDocument(Path.Combine(baseDirectory, "SomeProject", "_Imports.razor"), "_Imports.razor", FileKinds.Component);
             SomeProjectNestedComponentFile3 = new HostDocument(Path.Combine(baseDirectory, "SomeProject", "Nested", "File3.razor"), "Nested\\File1.razor", FileKinds.Component);
             SomeProjectNestedComponentFile4 = new HostDocument(Path.Combine(baseDirectory, "SomeProject", "Nested", "File4.razor"), "Nested\\File2.razor", FileKinds.Component);
+            SomeProjectCshtmlComponentFile5 = new HostDocument(Path.Combine(baseDirectory, "SomeProject", "File5.cshtml"), "File5.cshtml", FileKinds.Component);
 
             AnotherProject = new HostProject(Path.Combine(baseDirectory, "AnotherProject", "AnotherProject.csproj"), RazorConfiguration.Default, "AnotherProject");
             AnotherProjectFile1 = new HostDocument(Path.Combine(baseDirectory, "AnotherProject", "File1.cshtml"), "File1.cshtml", FileKinds.Legacy);
@@ -58,6 +59,7 @@ namespace Microsoft.CodeAnalysis.Razor
         public static readonly HostDocument SomeProjectComponentImportFile1;
         public static readonly HostDocument SomeProjectNestedComponentFile3;
         public static readonly HostDocument SomeProjectNestedComponentFile4;
+        public static readonly HostDocument SomeProjectCshtmlComponentFile5;
 
         public static readonly HostProject AnotherProject;
         public static readonly HostDocument AnotherProjectFile1;

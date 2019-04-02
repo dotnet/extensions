@@ -238,7 +238,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             var projectEngine = project.GetProjectEngine();
             var importFeatures = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>();
-            var projectItem = projectEngine.FileSystem.GetItem(HostDocument.FilePath);
+            var projectItem = projectEngine.FileSystem.GetItem(HostDocument.FilePath, HostDocument.FileKind);
             var importItems = importFeatures.SelectMany(f => f.GetImports(projectItem));
             if (importItems == null)
             {
@@ -379,12 +379,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 var projectEngine = project.GetProjectEngine();
                 foreach (var item in imports)
                 {
-                    var importProjectItem = item.FilePath == null ? null : projectEngine.FileSystem.GetItem(item.FilePath);
+                    var importProjectItem = item.FilePath == null ? null : projectEngine.FileSystem.GetItem(item.FilePath, item.FileKind);
                     var sourceDocument = await GetRazorSourceDocumentAsync(item.Document, importProjectItem).ConfigureAwait(false);
                     importSources.Add(sourceDocument);
                 }
 
-                var projectItem = document.FilePath == null ? null : projectEngine.FileSystem.GetItem(document.FilePath);
+                var projectItem = document.FilePath == null ? null : projectEngine.FileSystem.GetItem(document.FilePath, document.FileKind);
                 var documentSource = await GetRazorSourceDocumentAsync(document, projectItem).ConfigureAwait(false);
 
 
@@ -464,6 +464,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
 
                 public string FilePath { get; }
+
+                public string FileKind => Document.FileKind;
 
                 public VersionStamp Version { get; }
 

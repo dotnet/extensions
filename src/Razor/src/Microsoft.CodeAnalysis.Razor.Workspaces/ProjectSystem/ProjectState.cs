@@ -225,7 +225,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var documents = Documents.Add(hostDocument.FilePath, DocumentState.Create(Services, hostDocument, loader));
 
             // Compute the effect on the import map
-            var importTargetPaths = GetImportDocumentTargetPaths(hostDocument.TargetPath);
+            var importTargetPaths = GetImportDocumentTargetPaths(hostDocument);
             var importsToRelatedDocuments = AddToImportsToRelatedDocuments(ImportsToRelatedDocuments, hostDocument, importTargetPaths);
 
             // Now check if the updated document is an import - it's important this this happens after
@@ -267,7 +267,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             // Compute the effect on the import map
-            var importTargetPaths = GetImportDocumentTargetPaths(hostDocument.TargetPath);
+            var importTargetPaths = GetImportDocumentTargetPaths(hostDocument);
             var importsToRelatedDocuments = RemoveFromImportsToRelatedDocuments(ImportsToRelatedDocuments, hostDocument, importTargetPaths);
 
             var state = new ProjectState(this, ProjectDifference.DocumentRemoved, HostProject, ProjectWorkspaceState, documents, importsToRelatedDocuments);
@@ -345,7 +345,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             foreach (var document in documents)
             {
-                var importTargetPaths = GetImportDocumentTargetPaths(document.Value.HostDocument.TargetPath);
+                var importTargetPaths = GetImportDocumentTargetPaths(document.Value.HostDocument);
                 importsToRelatedDocuments = AddToImportsToRelatedDocuments(importsToRelatedDocuments, document.Value.HostDocument, importTargetPaths);
             }
 
@@ -418,11 +418,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 });
         }
 
-        public List<string> GetImportDocumentTargetPaths(string targetPath)
+        public List<string> GetImportDocumentTargetPaths(HostDocument hostDocument)
         {
             var projectEngine = ProjectEngine;
             var importFeatures = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>();
-            var projectItem = projectEngine.FileSystem.GetItem(targetPath);
+            var projectItem = projectEngine.FileSystem.GetItem(hostDocument.TargetPath, hostDocument.FileKind);
             var importItems = importFeatures.SelectMany(f => f.GetImports(projectItem)).Where(i => i.FilePath != null);
 
             // Target path looks like `Foo\\Bar.cshtml`

@@ -18,6 +18,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Version = VersionStamp.Create();
 
             // Create a new HostDocument to avoid mutating the code container
+            ComponentCshtmlHostDocument = new HostDocument(TestProjectData.SomeProjectCshtmlComponentFile5);
             ComponentHostDocument = new HostDocument(TestProjectData.SomeProjectComponentFile1);
             LegacyHostDocument = new HostDocument(TestProjectData.SomeProjectFile1);
             NestedComponentHostDocument = new HostDocument(TestProjectData.SomeProjectNestedComponentFile3);
@@ -33,6 +34,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             documentState = DocumentState.Create(Workspace.Services, ComponentHostDocument, () => Task.FromResult(textAndVersion));
             ComponentDocument = new DefaultDocumentSnapshot(project, documentState);
 
+            documentState = DocumentState.Create(Workspace.Services, ComponentCshtmlHostDocument, () => Task.FromResult(textAndVersion));
+            ComponentCshtmlDocument = new DefaultDocumentSnapshot(project, documentState);
+
             documentState = DocumentState.Create(Workspace.Services, NestedComponentHostDocument, () => Task.FromResult(textAndVersion));
             NestedComponentDocument = new DefaultDocumentSnapshot(project, documentState);
         }
@@ -43,9 +47,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private HostDocument ComponentHostDocument { get; }
 
+        private HostDocument ComponentCshtmlHostDocument { get; }
+
         private HostDocument LegacyHostDocument { get; }
 
         private DefaultDocumentSnapshot ComponentDocument { get; }
+
+        private DefaultDocumentSnapshot ComponentCshtmlDocument { get; }
 
         private DefaultDocumentSnapshot LegacyDocument { get; }
 
@@ -71,6 +79,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         // This is a sanity test that we invoke component codegen for components. It's a little fragile but
         // necessary.
+
+        [Fact]
+        public async Task GetGeneratedOutputAsync_CshtmlComponent_ContainsComponentImports()
+        {
+            // Act
+            await ComponentCshtmlDocument.GetGeneratedOutputAsync();
+
+            // Assert
+            Assert.NotNull(ComponentCshtmlHostDocument.GeneratedCodeContainer.Output);
+            Assert.Contains("using Microsoft.AspNetCore.Components", ComponentCshtmlHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
+        }
         [Fact]
         public async Task GetGeneratedOutputAsync_Component()
         {
