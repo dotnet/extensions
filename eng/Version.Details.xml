@@ -13,28 +13,28 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>898f0947fa4271d08e88daea503be6fd8ffb3c4f</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview4.19179.4" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview4.19201.9" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>7de3b64e231b1b2d74c1fb7dadb753a40c1a949e</Sha>
+      <Sha>85cec01822bc70fbc45a25001997b0c1e71b1d22</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview4.19179.4" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview4.19201.9" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>7de3b64e231b1b2d74c1fb7dadb753a40c1a949e</Sha>
+      <Sha>85cec01822bc70fbc45a25001997b0c1e71b1d22</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview4-27529-11" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview4-27602-01" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>cbf050750a3e74f8877ebf0f817aef906a94240c</Sha>
+      <Sha>44d2cf6db601c5f7303d614cfca201023645021f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview4-27529-11">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview4-27602-01">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>cbf050750a3e74f8877ebf0f817aef906a94240c</Sha>
+      <Sha>44d2cf6db601c5f7303d614cfca201023645021f</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed as a dependency to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview4.19179.4" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview4.19201.9" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>7de3b64e231b1b2d74c1fb7dadb753a40c1a949e</Sha>
+      <Sha>85cec01822bc70fbc45a25001997b0c1e71b1d22</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.0.0-preview4.19180.2">
       <Uri>https://github.com/aspnet/Extensions</Uri>
