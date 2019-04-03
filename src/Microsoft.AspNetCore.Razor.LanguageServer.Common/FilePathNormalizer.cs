@@ -9,6 +9,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
     public class FilePathNormalizer
     {
+        public string NormalizeDirectory(string directoryFilePath)
+        {
+            var normalized = Normalize(directoryFilePath);
+
+            if (!normalized.EndsWith("/"))
+            {
+                normalized += '/';
+            }
+
+            return normalized;
+        }
+
         public string Normalize(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))

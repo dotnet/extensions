@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(filePathNormalizer));
             }
 
-            _root = filePathNormalizer.Normalize(root);
+            _root = filePathNormalizer.NormalizeDirectory(root);
+
             _filePathNormalizer = filePathNormalizer;
         }
 
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var physicalPath = NormalizeAndEnsureValidPath(path);
             if (FilePathRootedBy(physicalPath, _root))
             {
-                var filePath = physicalPath.Substring(_root.Length + 1 /* / */);
+                var filePath = physicalPath.Substring(_root.Length);
                 return new RemoteProjectItem(filePath, physicalPath, fileKind);
             }
             else
@@ -72,12 +73,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var absolutePath = path;
             if (!FilePathRootedBy(absolutePath, _root))
             {
+                if (Path.IsPathRooted(absolutePath))
+                {
+                    // Existing path is already rooted, can't translate from relative to absolute.
+                    return absolutePath;
+                }
+
                 if (path[0] == '/' || path[0] == '\\')
                 {
                     path = path.Substring(1);
                 }
 
-                absolutePath = Path.Combine(_root, path);
+                absolutePath = _root + path;
             }
 
             absolutePath = _filePathNormalizer.Normalize(absolutePath);

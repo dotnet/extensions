@@ -8,6 +8,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
     public class FilePathNormalizerTest
     {
         [Fact]
+        public void NormalizeDirectory_EndsWithSlash()
+        {
+            // Arrange
+            var filePathNormalizer = new FilePathNormalizer();
+            var directory = "\\path\\to\\directory\\";
+
+            // Act
+            var normalized = filePathNormalizer.NormalizeDirectory(directory);
+
+            // Assert
+            Assert.Equal("/path/to/directory/", normalized);
+        }
+
+        [Fact]
+        public void NormalizeDirectory_EndsWithoutSlash()
+        {
+            // Arrange
+            var filePathNormalizer = new FilePathNormalizer();
+            var directory = "\\path\\to\\directory";
+
+            // Act
+            var normalized = filePathNormalizer.NormalizeDirectory(directory);
+
+            // Assert
+            Assert.Equal("/path/to/directory/", normalized);
+        }
+
+        [Fact]
         public void FilePathsEquivalent_NotEqualPaths_ReturnsFalse()
         {
             // Arrange
@@ -21,6 +49,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             // Assert
             Assert.False(result);
         }
+
         [Fact]
         public void FilePathsEquivalent_NormalizesPathsBeforeComparison_ReturnsTrue()
         {
