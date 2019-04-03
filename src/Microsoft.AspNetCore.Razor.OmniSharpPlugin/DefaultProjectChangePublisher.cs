@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed.Serialization;
@@ -185,7 +184,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             if (!_pendingProjectPublishes.TryGetValue(projectFilePath, out var projectSnapshot))
             {
                 // Project was removed while waiting for the publish delay.
-                Debug.Assert(!_pendingProjectPublishes.ContainsKey(projectFilePath));
                 return;
             }
 
