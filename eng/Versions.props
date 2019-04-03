@@ -36,7 +36,7 @@
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview4.19201.9</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19201.12</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19202.13</MicrosoftDotNetGenAPIPackageVersion>
   </PropertyGroup>
   <!--
 
