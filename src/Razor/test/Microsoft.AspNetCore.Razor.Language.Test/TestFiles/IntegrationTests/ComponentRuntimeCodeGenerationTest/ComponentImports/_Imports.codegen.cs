@@ -16,6 +16,7 @@ namespace Test
         #pragma warning disable 1998
         protected void Execute()
         {
+            builder.AddContent(0, Foo);
         }
         #pragma warning restore 1998
     }

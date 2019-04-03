@@ -45,6 +45,13 @@ MainLayout __typeHelper = default(MainLayout);
         #pragma warning disable 1998
         protected void Execute()
         {
+#nullable restore
+#line 5 "x:\dir\subdir\Test\_Imports.razor"
+__o = Foo;
+
+#line default
+#line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }
