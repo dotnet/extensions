@@ -14,7 +14,8 @@ namespace Microsoft.Extensions.Logging.EventSource
     /// <summary>
     /// The LoggingEventSource is the bridge form all ILogger based logging to EventSource/EventListener logging.
     ///
-    /// You turn this logging on by enabling the EvenSource called
+    /// You turn this logging on by enabling the name provided in the LoggingEventSourceOptions.  The default EvenSource
+    /// is called
     ///
     ///      Microsoft-Extensions-Logging
     ///
@@ -74,9 +75,10 @@ namespace Microsoft.Extensions.Logging.EventSource
     ///     }
     /// }
     /// </summary>
-    [EventSource(Name = "Microsoft-Extensions-Logging")]
     public sealed class LoggingEventSource : System.Diagnostics.Tracing.EventSource
     {
+        public const string DefaultProviderName = "Microsoft-Extensions-Logging";
+
         /// <summary>
         /// This is public from an EventSource consumer point of view, but since these defintions
         /// are not needed outside this class
@@ -101,20 +103,18 @@ namespace Microsoft.Extensions.Logging.EventSource
             public const EventKeywords JsonMessage = (EventKeywords)8;
         }
 
-        /// <summary>
-        ///  The one and only instance of the LoggingEventSource.
-        /// </summary>
-        internal static readonly LoggingEventSource Instance = new LoggingEventSource();
-
         // It's important to have _filterSpec initialization here rather than in ctor
         // base ctor might call OnEventCommand and set filter spec
         // having assingment in ctor would overwrite the value
         private LoggerFilterRule[] _filterSpec = new LoggerFilterRule[0];
         private CancellationTokenSource _cancellationTokenSource;
 
-        private LoggingEventSource() : base(EventSourceSettings.EtwSelfDescribingEventFormat)
+        public LoggingEventSource() : this(DefaultProviderName) { }
+
+        public LoggingEventSource(string providerName) : base(providerName ?? DefaultProviderName, EventSourceSettings.EtwSelfDescribingEventFormat)
         {
         }
+
 
         /// <summary>
         /// FormattedMessage() is called when ILogger.Log() is called. and the FormattedMessage keyword is active

@@ -22,6 +22,15 @@ namespace Microsoft.Extensions.Logging.Test
             return _loggerFactory = LoggerFactory.Create(builder => builder.AddEventSourceLogger());
         }
 
+        protected ILoggerFactory CreateLoggerFactory(string providerName)
+        {
+            return _loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddEventSourceLogger(providerName);
+            });
+
+        }
+
         public void Dispose()
         {
             _loggerFactory?.Dispose();
@@ -427,6 +436,74 @@ namespace Microsoft.Extensions.Logging.Test
             }
         }
 
+        [Fact]
+        public void Logs_Using_Provided_ProviderName()
+        {
+            const string ProviderName = nameof(Logs_Using_Provided_ProviderName);
+
+            using (var testListener = new TestEventListener(ProviderName))
+            {
+                var factory = CreateLoggerFactory(ProviderName);
+
+                var listenerSettings = new TestEventListener.ListenerSettings();
+                listenerSettings.Keywords = (EventKeywords)(-1);
+                listenerSettings.FilterSpec = null;
+                listenerSettings.Level = default(EventLevel);
+                testListener.EnableEvents(listenerSettings);
+
+                LogStuff(factory);
+
+                // Use testListener.DumpEvents as necessary to examine what exactly the listener received
+
+                VerifyEvents(testListener,
+                    "E1FM", "E1MSG", "E1JS",
+                    // Second event is omitted because default LogLevel == Debug
+                    "E3FM", "E3MSG", "E3JS",
+                    "OuterScopeJsonStart",
+                    "E4FM", "E4MSG", "E4JS",
+                    "E5FM", "E5MSG", "E5JS",
+                    "InnerScopeJsonStart",
+                    "E6FM", "E6MSG", "E6JS",
+                    "InnerScopeJsonStop",
+                    "E7FM", "E7MSG", "E7JS",
+                    "OuterScopeJsonStop",
+                    "E8FM", "E8MSG", "E8JS");
+            }
+        }
+
+        [Fact]
+        public void Logs_Using_Default_ProviderName_If_Not_Provided()
+        {
+            using (var testListener = new TestEventListener("Microsoft-Extensions-Logging"))
+            {
+                var factory = CreateLoggerFactory();
+
+                var listenerSettings = new TestEventListener.ListenerSettings();
+                listenerSettings.Keywords = (EventKeywords)(-1);
+                listenerSettings.FilterSpec = null;
+                listenerSettings.Level = default(EventLevel);
+                testListener.EnableEvents(listenerSettings);
+
+                LogStuff(factory);
+
+                // Use testListener.DumpEvents as necessary to examine what exactly the listener received
+
+                VerifyEvents(testListener,
+                    "E1FM", "E1MSG", "E1JS",
+                    // Second event is omitted because default LogLevel == Debug
+                    "E3FM", "E3MSG", "E3JS",
+                    "OuterScopeJsonStart",
+                    "E4FM", "E4MSG", "E4JS",
+                    "E5FM", "E5MSG", "E5JS",
+                    "InnerScopeJsonStart",
+                    "E6FM", "E6MSG", "E6JS",
+                    "InnerScopeJsonStop",
+                    "E7FM", "E7MSG", "E7JS",
+                    "OuterScopeJsonStop",
+                    "E8FM", "E8MSG", "E8JS");
+            }
+        }
+
         private void LogStuff(ILoggerFactory factory)
         {
             var logger1 = factory.CreateLogger("Logger1");
@@ -499,8 +576,20 @@ namespace Microsoft.Extensions.Logging.Test
 
             private ListenerSettings _enableWhenCreated;
 
-            public TestEventListener()
+            private readonly string _providerName;
+
+            public TestEventListener() : this("Microsoft-Extensions-Logging")
             {
+            }
+
+            public TestEventListener(string providerName)
+            {
+                if(string.IsNullOrEmpty(providerName))
+                {
+                    throw new ArgumentException("The provider name must not be null or empty");
+                }
+                _providerName = providerName;
+
                 Events = new List<string>();
             }
 
@@ -531,7 +620,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             protected override void OnEventSourceCreated(System.Diagnostics.Tracing.EventSource eventSource)
             {
-                if (eventSource.Name == "Microsoft-Extensions-Logging")
+                if (eventSource.Name == _providerName)
                 {
                     _loggingEventSource = eventSource;
                 }

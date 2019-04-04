@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Logging.EventSource
     /// The provider for the <see cref="EventSourceLogger"/>.
     /// </summary>
     [ProviderAlias("EventSource")]
-    public class EventSourceLoggerProvider : ILoggerProvider
+    internal class EventSourceLoggerProvider : ILoggerProvider
     {
         private static int _globalFactoryID;
 

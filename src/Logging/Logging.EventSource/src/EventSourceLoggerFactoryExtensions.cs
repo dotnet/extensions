@@ -20,16 +20,28 @@ namespace Microsoft.Extensions.Logging
         /// <param name="builder">The extension method argument.</param>
         public static ILoggingBuilder AddEventSourceLogger(this ILoggingBuilder builder)
         {
+            return AddEventSourceLogger(builder, null);
+        }
+
+        /// <summary>
+        /// Adds an event logger named 'EventSource' to the factory.
+        /// </summary>
+        /// <param name="builder">The extension method argument.</param>
+        /// <param name="providerName">Events will be logged using the specified provider name</param>
+        public static ILoggingBuilder AddEventSourceLogger(this ILoggingBuilder builder, string providerName)
+        {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.TryAddSingleton(LoggingEventSource.Instance);
+            builder.Services.TryAddSingleton((_) => new LoggingEventSource(providerName));
+            builder.Services.TryAddSingleton(ServiceDescriptor.Singleton<EventSourceLogger, EventSourceLogger>());
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, EventSourceLoggerProvider>());
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<LoggerFilterOptions>, EventLogFiltersConfigureOptions>());
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IOptionsChangeTokenSource<LoggerFilterOptions>, EventLogFiltersConfigureOptionsChangeSource>());
             return builder;
         }
+
     }
 }
