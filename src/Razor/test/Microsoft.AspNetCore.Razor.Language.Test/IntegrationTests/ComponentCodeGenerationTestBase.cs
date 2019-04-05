@@ -1519,6 +1519,57 @@ namespace Test3
             var result = CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void ChildContent_FromAnotherNamespace()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class HeaderComponent : ComponentBase
+    {
+        [Parameter]
+        RenderFragment Header { get; set; }
+    }
+}
+
+namespace AnotherTest
+{
+    public class FooterComponent : ComponentBase
+    {
+        [Parameter]
+        RenderFragment<DateTime> Footer { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using AnotherTest
+
+<HeaderComponent>
+    <Header>Hi!</Header>
+</HeaderComponent>
+<FooterComponent>
+    <Footer>@context</Footer>
+</FooterComponent>
+<Test.HeaderComponent>
+    <Header>Hi!</Header>
+</Test.HeaderComponent>
+<AnotherTest.FooterComponent>
+    <Footer>@context</Footer>
+</AnotherTest.FooterComponent>
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region EventCallback
