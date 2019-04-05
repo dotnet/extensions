@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Configuration.AzureTableStorage
@@ -9,8 +10,9 @@ namespace Microsoft.Extensions.Configuration.AzureTableStorage
         private readonly ITableStore<ConfigurationEntry> _configurationEntityStore;
         private readonly string _tableName;
         private readonly string _partitionKey;
+        private readonly CancellationToken _cancellationToken;
 
-        public AzureTableStorageConfigurationProvider(ITableStore<ConfigurationEntry> configurationEntityStore, string tableName, string partitionKey)
+        public AzureTableStorageConfigurationProvider(ITableStore<ConfigurationEntry> configurationEntityStore, string tableName, string partitionKey, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
@@ -25,13 +27,14 @@ namespace Microsoft.Extensions.Configuration.AzureTableStorage
             _configurationEntityStore = configurationEntityStore ?? throw new ArgumentNullException(nameof(configurationEntityStore));
             _tableName = tableName;
             _partitionKey = partitionKey;
+            _cancellationToken = cancellationToken;
         }
 
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-
+        
         private async Task LoadAsync()
         {
-            var allItems = await _configurationEntityStore.GetAllByPartitionKey(_tableName, _partitionKey).ConfigureAwait(false);
+            var allItems = await _configurationEntityStore.GetAllByPartitionKey(_tableName, _partitionKey, _cancellationToken).ConfigureAwait(false);
             Data = allItems.Where(x => x.IsActive).ToDictionary(x => x.RowKey, x => x.Value, StringComparer.OrdinalIgnoreCase);
         }
     }

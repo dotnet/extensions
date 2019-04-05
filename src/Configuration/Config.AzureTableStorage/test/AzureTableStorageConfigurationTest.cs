@@ -4,17 +4,28 @@ using Microsoft.Extensions.Configuration.AzureTableStorage;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Threading;
 
 namespace AzureTableStorageConfiguration.Tests
 {
     [Trait("Category", "Unit Tests")]
     public class AzureTableStorageConfigurationTest
     {
+        private readonly Mock<ITableStore<ConfigurationEntry>> _tableStore;
+        private readonly CancellationToken _noCancelToken;
+        private readonly CancellationToken _cancelToken;
+
+        public AzureTableStorageConfigurationTest()
+        {
+            _tableStore = new Mock<ITableStore<ConfigurationEntry>>();
+            _noCancelToken = CancellationToken.None;
+            _cancelToken = new CancellationToken(true);
+        }
+
         [Fact]
-        public void LoadsAllConfigFromTableStorage()
-        {         
-            var tableStore = new Mock<ITableStore<ConfigurationEntry>>();
-            tableStore.Setup(x => x.GetAllByPartitionKey("ConfigTableName", "ConfigPartitionKey")).ReturnsAsync(new List<ConfigurationEntry> 
+        public void Should_Load_Correctly_Without_Cancellation_Token()
+        {                     
+            _tableStore.Setup(x => x.GetAllByPartitionKey("ConfigTableName", "ConfigPartitionKey", _noCancelToken)).ReturnsAsync(new List<ConfigurationEntry> 
             {
                 new ConfigurationEntry { PartitionKey = "ConfigPartitionKey", RowKey = "Config1", Value = "ConfigValue1", IsActive = true },
                 new ConfigurationEntry { PartitionKey = "ConfigPartitionKey", RowKey = "Config2", Value = "ConfigValue2", IsActive = false },
@@ -22,11 +33,11 @@ namespace AzureTableStorageConfiguration.Tests
                 new ConfigurationEntry { PartitionKey = "ConfigPartitionKey", RowKey = "Config4", Value = "ConfigValue4", IsActive = false }
             });
 
-            var provider = new AzureTableStorageConfigurationProvider(tableStore.Object, "ConfigTableName", "ConfigPartitionKey");
+            var provider = new AzureTableStorageConfigurationProvider(_tableStore.Object, "ConfigTableName", "ConfigPartitionKey", _noCancelToken);
 
             provider.Load();
 
-            tableStore.VerifyAll();
+            _tableStore.VerifyAll();
 
             var childKeys = provider.GetChildKeys(Enumerable.Empty<string>(), null).ToArray();
 

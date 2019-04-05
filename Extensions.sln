@@ -309,6 +309,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Config
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.AzureTableStorage.Tests", "src\Configuration\Config.AzureTableStorage\test\Microsoft.Extensions.Configuration.AzureTableStorage.Tests.csproj", "{ACB6B664-A53F-4C1B-A820-A296C12ED4F7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableStorageSample", "src\Configuration\Config.AzureTableStorage\samples\TableStorageSample.csproj", "{490BA786-0F0D-4A02-8509-06FE335425CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1855,6 +1857,18 @@ Global
 		{ACB6B664-A53F-4C1B-A820-A296C12ED4F7}.Release|x64.Build.0 = Release|Any CPU
 		{ACB6B664-A53F-4C1B-A820-A296C12ED4F7}.Release|x86.ActiveCfg = Release|Any CPU
 		{ACB6B664-A53F-4C1B-A820-A296C12ED4F7}.Release|x86.Build.0 = Release|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Debug|x64.Build.0 = Debug|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Debug|x86.Build.0 = Debug|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Release|x64.ActiveCfg = Release|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Release|x64.Build.0 = Release|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Release|x86.ActiveCfg = Release|Any CPU
+		{490BA786-0F0D-4A02-8509-06FE335425CA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1994,6 +2008,7 @@ Global
 		{2FEE9416-E709-4EA7-82A3-4A34816F75FD} = {0ACE94D2-2AA1-4067-BAE1-5F9D2544FD3C}
 		{3100D748-EB46-435C-807E-35F305CB7003} = {0ACE94D2-2AA1-4067-BAE1-5F9D2544FD3C}
 		{ACB6B664-A53F-4C1B-A820-A296C12ED4F7} = {0ACE94D2-2AA1-4067-BAE1-5F9D2544FD3C}
+		{490BA786-0F0D-4A02-8509-06FE335425CA} = {D635A77C-C3AE-4F97-AAFF-5538F552AA51}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {814BFC88-0867-451F-AC8F-20FE107809B4}

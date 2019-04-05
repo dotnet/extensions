@@ -3,6 +3,7 @@ using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Configuration.AzureTableStorage
@@ -33,7 +34,7 @@ namespace Microsoft.Extensions.Configuration.AzureTableStorage
             _cloudTableClient.DefaultRequestOptions = requestOptions;
         }
 
-        public async Task<IEnumerable<ConfigurationEntry>> GetAllByPartitionKey(string tableName, string partitionKey)
+        public async Task<IEnumerable<ConfigurationEntry>> GetAllByPartitionKey(string tableName, string partitionKey, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
@@ -52,7 +53,7 @@ namespace Microsoft.Extensions.Configuration.AzureTableStorage
 
             var cloudTable = _cloudTableClient.GetTableReference(tableName);
 
-            await cloudTable.CreateIfNotExistsAsync().ConfigureAwait(false);
+            await cloudTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
 
             var query = new TableQuery<ConfigurationEntry>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
             var allItems = new List<ConfigurationEntry>();
@@ -61,7 +62,7 @@ namespace Microsoft.Extensions.Configuration.AzureTableStorage
 
             do
             {
-                var items = await cloudTable.ExecuteQuerySegmentedAsync(query, continuationToken).ConfigureAwait(false);
+                var items = await cloudTable.ExecuteQuerySegmentedAsync(query, continuationToken, null, null, cancellationToken).ConfigureAwait(false);
                 continuationToken = items.ContinuationToken;
                 allItems.AddRange(items);
             } while (continuationToken != null);

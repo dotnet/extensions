@@ -6,5 +6,6 @@ namespace Microsoft.Extensions.Configuration
     public static partial class AzureTableStorageConfigurationExtensions
     {
         public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddAzureTableStorage(this Microsoft.Extensions.Configuration.IConfigurationBuilder configurationBuilder, string connectionString, string tableName = null, string partitionKey = null) { throw null; }
+        public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddAzureTableStorage(this Microsoft.Extensions.Configuration.IConfigurationBuilder configurationBuilder, string connectionString, System.Threading.CancellationToken cancellationToken, string tableName = null, string partitionKey = null) { throw null; }
     }
 }
