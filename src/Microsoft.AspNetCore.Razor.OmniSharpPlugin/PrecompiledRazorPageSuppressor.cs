@@ -47,9 +47,10 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                         break;
                     }
 
-                    if (document.FilePath.EndsWith(".RazorTargetAssemblyInfo.cs", StringComparison.Ordinal))
+                    if (document.FilePath.EndsWith(".RazorTargetAssemblyInfo.cs", StringComparison.Ordinal) ||
+                        document.FilePath.EndsWith(".RazorAssemblyInfo.cs", StringComparison.Ordinal))
                     {
-                        // Razor declaration assembly info. This doesn't catch cases when users have customized their target assembly info but captures all of the
+                        // Razor assembly info. This doesn't catch cases when users have customized their assembly info but captures all of the
                         // default cases for now. Once the omnisharp-roslyn bug has been fixed this entire class can go awy so we're hacking for now.
                         _workspace.RemoveDocument(document.Id);
                         break;
