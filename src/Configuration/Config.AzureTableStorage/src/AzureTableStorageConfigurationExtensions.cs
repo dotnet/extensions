@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration.AzureTableStorage;
+using Microsoft.Extensions.Configuration.AzureTableStorage;
 using System;
 
 namespace Microsoft.Extensions.Configuration
@@ -8,11 +8,15 @@ namespace Microsoft.Extensions.Configuration
     /// </summary>
     public static class AzureTableStorageConfigurationExtensions
     {
+        private const string DefaultTableName = "AzureTableStorageConfiguration";
+        private const string DefaultPartitionKey = "AzureTableStorageConfigurationPartition";
+
         /// <summary>
-        /// Adds AzureTableStorage configuration to the configuration builder
+        ///   Adds a <see cref="AzureTableStorageConfigurationProvider"/> <see cref="IConfigurationProvider"/> 
+        ///   that reads configuration values from the Azure Table Storage.
         /// </summary>
-        /// <param name="configurationBuilder"></param>
-        /// <param name="connectionString">Connection string to the storage account with table storage enabled</param>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="connectionString">Connection string to the storage account with table storage enabled.</param>
         /// <param name="tableName">Table name to retreive values from</param>
         /// <param name="partitionKey">Partition key to retreieve values from</param>
         /// <returns></returns>
@@ -25,12 +29,12 @@ namespace Microsoft.Extensions.Configuration
 
             if (string.IsNullOrWhiteSpace(tableName))
             {
-                tableName = "AzureTableStorageConfiguration";
+                tableName = DefaultTableName;
             }
 
             if (string.IsNullOrWhiteSpace(partitionKey))
             {
-                partitionKey = "AzureTableStorageConfigurationPartition";
+                partitionKey = DefaultPartitionKey;
             }
 
             return configurationBuilder.Add(new AzureTableStorageConfigurationSource

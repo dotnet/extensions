@@ -1,4 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Configuration.AzureTableStorage
     {
         private const int RetryBackOffSeconds = 1;
         private const int RetryMaxAttempts = 3;
-        private readonly CloudTableClient cloudTableClient;
+        private readonly CloudTableClient _cloudTableClient;
 
         public ConfigurationTableStore(string connectionString)
         {
@@ -29,8 +29,8 @@ namespace Microsoft.Extensions.Configuration.AzureTableStorage
 
 
             // Create table client
-            cloudTableClient = cloudStorageAccount.CreateCloudTableClient();
-            cloudTableClient.DefaultRequestOptions = requestOptions;
+            _cloudTableClient = cloudStorageAccount.CreateCloudTableClient();
+            _cloudTableClient.DefaultRequestOptions = requestOptions;
         }
 
         public async Task<IEnumerable<ConfigurationEntry>> GetAllByPartitionKey(string tableName, string partitionKey)
@@ -45,14 +45,14 @@ namespace Microsoft.Extensions.Configuration.AzureTableStorage
                 throw new ArgumentException($"{nameof(partitionKey)} cannot be null or white space.", nameof(partitionKey));
             }
 
-            if (cloudTableClient == null)
+            if (_cloudTableClient == null)
             {
-                throw new Exception($"{nameof(cloudTableClient)} hasn't been initialized correctly.");
+                throw new Exception($"{nameof(_cloudTableClient)} hasn't been initialized correctly.");
             }
 
-            var cloudTable = cloudTableClient.GetTableReference(tableName);
+            var cloudTable = _cloudTableClient.GetTableReference(tableName);
 
-            await cloudTable.CreateIfNotExistsAsync();
+            await cloudTable.CreateIfNotExistsAsync().ConfigureAwait(false);
 
             var query = new TableQuery<ConfigurationEntry>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
             var allItems = new List<ConfigurationEntry>();
