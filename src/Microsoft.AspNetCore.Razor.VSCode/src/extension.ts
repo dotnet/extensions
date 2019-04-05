@@ -31,12 +31,12 @@ import { TelemetryReporter } from './TelemetryReporter';
 
 export async function activate(context: ExtensionContext, languageServerDir: string, eventStream: HostEventStream) {
     const telemetryReporter = new TelemetryReporter(eventStream);
+    const eventEmitterFactory: IEventEmitterFactory = {
+        create: <T>() => new vscode.EventEmitter<T>(),
+    };
+    const languageServerTrace = resolveRazorLanguageServerTrace(vscode);
+    const logger = new RazorLogger(vscode, eventEmitterFactory, languageServerTrace);
     try {
-        const eventEmitterFactory: IEventEmitterFactory = {
-            create: <T>() => new vscode.EventEmitter<T>(),
-        };
-        const languageServerTrace = resolveRazorLanguageServerTrace(vscode);
-        const logger = new RazorLogger(vscode, eventEmitterFactory, languageServerTrace);
         const languageServerOptions = resolveRazorLanguageServerOptions(vscode, languageServerDir, languageServerTrace, logger);
         const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
         const languageServiceClient = new RazorLanguageServiceClient(languageServerClient, logger);
@@ -45,8 +45,8 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const projectManager = new RazorProjectManager(logger);
         reportTelemetryForProjects(projectManager, telemetryReporter);
         const languageConfiguration = new RazorLanguageConfiguration();
-        const csharpFeature = new RazorCSharpFeature(documentManager);
-        const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient);
+        const csharpFeature = new RazorCSharpFeature(documentManager, eventEmitterFactory, logger);
+        const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient, eventEmitterFactory, logger);
         const projectTracker = new RazorProjectTracker(projectManager, languageServiceClient);
         const documentTracker = new RazorDocumentTracker(documentManager, languageServiceClient);
         const localRegistrations: vscode.Disposable[] = [];
@@ -105,6 +105,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
 
         context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration, logger);
     } catch (error) {
+        logger.logError('Failed when activating Razor VSCode.', error);
         telemetryReporter.reportErrorOnActivation(error);
     }
 }

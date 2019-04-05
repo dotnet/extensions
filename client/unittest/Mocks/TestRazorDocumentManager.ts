@@ -7,14 +7,18 @@ import { IRazorDocument } from 'microsoft.aspnetcore.razor.vscode/dist/IRazorDoc
 import { IRazorDocumentChangeEvent } from 'microsoft.aspnetcore.razor.vscode/dist/IRazorDocumentChangeEvent';
 import { IRazorDocumentManager } from 'microsoft.aspnetcore.razor.vscode/dist/IRazorDocumentManager';
 import * as vscode from 'microsoft.aspnetcore.razor.vscode/dist/vscodeAdapter';
+import { TestEventEmitter } from './TestEventEmitter';
 
 export class TestRazorDocumentManager implements IRazorDocumentManager {
+    // tslint:disable-next-line:variable-name
+    private readonly _onChange = new TestEventEmitter<IRazorDocumentChangeEvent>();
+
     public get onChange(): vscode.Event<IRazorDocumentChangeEvent> {
-        throw new Error('Not implemented');
+        return this._onChange.event;
     }
 
     public get documents(): IRazorDocument[] {
-        throw new Error('Not implemented');
+        return [];
     }
 
     public getDocument(uri: vscode.Uri): Promise<IRazorDocument> {

@@ -4,8 +4,10 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { IEventEmitterFactory } from '../IEventEmitterFactory';
 import { RazorDocumentManager } from '../RazorDocumentManager';
 import { RazorLanguageServiceClient } from '../RazorLanguageServiceClient';
+import { RazorLogger } from '../RazorLogger';
 import { HtmlPreviewDocumentContentProvider } from './HtmlPreviewDocumentContentProvider';
 import { HtmlProjectedDocumentContentProvider } from './HtmlProjectedDocumentContentProvider';
 import { HtmlTagCompletionProvider } from './HtmlTagCompletionProvider';
@@ -17,8 +19,10 @@ export class RazorHtmlFeature {
 
     constructor(
         documentManager: RazorDocumentManager,
-        serviceClient: RazorLanguageServiceClient) {
-        this.projectionProvider = new HtmlProjectedDocumentContentProvider(documentManager);
+        serviceClient: RazorLanguageServiceClient,
+        eventEmitterFactory: IEventEmitterFactory,
+        logger: RazorLogger) {
+        this.projectionProvider = new HtmlProjectedDocumentContentProvider(documentManager, eventEmitterFactory, logger);
         this.previewProvider = new HtmlPreviewDocumentContentProvider(documentManager);
         this.htmlTagCompletionProvider = new HtmlTagCompletionProvider(serviceClient);
     }
