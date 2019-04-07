@@ -3572,6 +3572,37 @@ Welcome to your new app.
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void Component_TextTagsAreNotRendered()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class Counter : ComponentBase
+    {
+        public int Count { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Counter />
+@if (true)
+{
+    <text>This text is rendered</text>
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
     }
 }
