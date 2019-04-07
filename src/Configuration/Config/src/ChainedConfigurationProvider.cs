@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.Configuration
     public class ChainedConfigurationProvider : IConfigurationProvider, IDisposable
     {
         private readonly IConfiguration _config;
+        private readonly bool _shouldDisposeConfig;
 
         /// <summary>
         /// Initialize a new instance from the source configuration.
@@ -31,6 +32,7 @@ namespace Microsoft.Extensions.Configuration
             }
 
             _config = source.Configuration;
+            _shouldDisposeConfig = source.ShouldDisposeConfiguration;
         }
 
         /// <summary>
@@ -86,7 +88,10 @@ namespace Microsoft.Extensions.Configuration
         /// <inheritdoc />
         public void Dispose()
         {
-            (_config as IDisposable)?.Dispose();
+            if (_shouldDisposeConfig)
+            {
+                (_config as IDisposable)?.Dispose();
+            }
         }
     }
 }

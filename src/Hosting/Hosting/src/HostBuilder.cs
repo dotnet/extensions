@@ -179,7 +179,7 @@ namespace Microsoft.Extensions.Hosting
         {
             var configBuilder = new ConfigurationBuilder()
                 .SetBasePath(_hostingEnvironment.ContentRootPath)
-                .AddConfiguration(_hostConfiguration);
+                .AddConfiguration(_hostConfiguration, shouldDisposeConfiguration: true);
 
             foreach (var buildAction in _configureAppConfigActions)
             {
