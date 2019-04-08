@@ -2228,7 +2228,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input onclick=""async (e) => await Task.Delay(10)"" />
+<input onclick=""@(async () => await Task.Delay(10))"" />
 ");
 
             // Assert
@@ -2245,7 +2245,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input onclick=""async (e) => await Task.Delay(10)"" />
+<input onclick=""@(async (e) => await Task.Delay(10))"" />
 ");
 
             // Assert

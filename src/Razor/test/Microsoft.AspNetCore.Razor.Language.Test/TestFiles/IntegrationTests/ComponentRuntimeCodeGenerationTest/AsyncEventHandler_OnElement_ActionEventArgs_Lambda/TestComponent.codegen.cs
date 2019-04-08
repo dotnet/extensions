@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, "async (e) => await Task.Delay(10)"));
+            builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, async (e) => await Task.Delay(10)));
             builder.CloseElement();
         }
         #pragma warning restore 1998
