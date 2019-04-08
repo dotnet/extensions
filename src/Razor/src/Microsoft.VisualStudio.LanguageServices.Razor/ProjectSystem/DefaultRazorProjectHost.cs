@@ -163,12 +163,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 return false;
             }
 
-            if (!TryGetExtensionNames(configurationItem, out var extensionNames))
-            {
-                configuration = null;
-                return false;
-            }
-
+            var extensionNames = GetExtensionNames(configurationItem);
             if (!TryGetExtensions(extensionNames, state, out var extensions))
             {
                 configuration = null;
@@ -264,24 +259,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         // Internal for testing
-        internal static bool TryGetExtensionNames(
-            Item configurationItem, 
-            out string[] configuredExtensionNames)
+        internal static string[] GetExtensionNames(Item configurationItem)
         {
-            if (!configurationItem.Value.TryGetValue(Rules.RazorConfiguration.ExtensionsProperty, out var extensionNames))
-            {
-                configuredExtensionNames = null;
-                return false;
-            }
-
+            // The list of extension names might not be present, because the configuration may not have any.
+            configurationItem.Value.TryGetValue(Rules.RazorConfiguration.ExtensionsProperty, out var extensionNames);
             if (string.IsNullOrEmpty(extensionNames))
             {
-                configuredExtensionNames = null;
-                return false;
+                return Array.Empty<string>();
             }
 
-            configuredExtensionNames = extensionNames.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            return true;
+            return extensionNames.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         // Internal for testing
@@ -290,13 +277,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             IImmutableDictionary<string, IProjectRuleSnapshot> state, 
             out ProjectSystemRazorExtension[] extensions)
         {
-            if (!state.TryGetValue(Rules.RazorExtension.PrimaryDataSourceItemType, out var rule))
-            {
-                extensions = null;
-                return false;
-            }
+            // The list of extensions might not be present, because the configuration may not have any.
+            state.TryGetValue(Rules.RazorExtension.PrimaryDataSourceItemType, out var rule);
 
-            var items = rule.Items;
+            var items = rule?.Items ?? ImmutableDictionary<string, IImmutableDictionary<string, string>>.Empty;
             var extensionList = new List<ProjectSystemRazorExtension>();
             foreach (var item in items)
             {

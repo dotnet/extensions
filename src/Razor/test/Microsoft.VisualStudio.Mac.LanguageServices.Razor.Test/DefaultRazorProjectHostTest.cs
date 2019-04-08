@@ -176,36 +176,34 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_FailsIfNoExtensions()
+        public void GetExtensionNames_FailsIfNoExtensions()
         {
             // Arrange
             var configurationItem = new TestMSBuildItem("RazorConfiguration");
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionnames);
+            var extensionNames = DefaultRazorProjectHost.GetExtensionNames(configurationItem);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuredExtensionnames);
+            Assert.Empty(extensionNames);
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_FailsIfEmptyExtensions()
+        public void GetExtensionNames_FailsIfEmptyExtensions()
         {
             // Arrange
             var configurationItem = new TestMSBuildItem("RazorConfiguration");
             configurationItem.TestMetadata.SetValue("Extensions", string.Empty);
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+            var extensionNames = DefaultRazorProjectHost.GetExtensionNames(configurationItem);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuredExtensionNames);
+            Assert.Empty(extensionNames);
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_SucceedsIfSingleExtension()
+        public void GetExtensionNames_SucceedsIfSingleExtension()
         {
             // Arrange
             var expectedExtensionName = "SomeExtensionName";
@@ -213,28 +211,26 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             configurationItem.TestMetadata.SetValue("Extensions", expectedExtensionName);
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+            var extensionNames = DefaultRazorProjectHost.GetExtensionNames(configurationItem);
 
             // Assert
-            Assert.True(result);
-            var extensionName = Assert.Single(configuredExtensionNames);
+            var extensionName = Assert.Single(extensionNames);
             Assert.Equal(expectedExtensionName, extensionName);
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_SucceedsIfMultipleExtensions()
+        public void GetExtensionNames_SucceedsIfMultipleExtensions()
         {
             // Arrange
             var configurationItem = new TestMSBuildItem("RazorConfiguration");
             configurationItem.TestMetadata.SetValue("Extensions", "SomeExtensionName;SomeOtherExtensionName");
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+            var extensionNames = DefaultRazorProjectHost.GetExtensionNames(configurationItem);
 
             // Assert
-            Assert.True(result);
             Assert.Collection(
-                configuredExtensionNames,
+                extensionNames,
                 name => Assert.Equal("SomeExtensionName", name),
                 name => Assert.Equal("SomeOtherExtensionName", name));
         }
@@ -358,7 +354,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         }
 
         [Fact]
-        public void TryGetConfiguration_FailsIfNoConfiguredExtensionNames()
+        public void TryGetConfiguration_SucceedsWithoutConfiguredExtensionNames()
         {
             // Arrange
             var projectProperties = new MSBuildPropertyGroup();
@@ -376,8 +372,8 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             var result = DefaultRazorProjectHost.TryGetConfiguration(projectProperties, projectItems, out var configuration);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuration);
+            Assert.True(result);
+            Assert.Empty(configuration.Extensions);
         }
 
         // This is more of an integration test but is here to test the overall flow/functionality

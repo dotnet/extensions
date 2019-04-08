@@ -77,13 +77,8 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
                 return false;
             }
 
-            if (!TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames))
-            {
-                configuration = null;
-                return false;
-            }
-
-            var extensions = GetExtensions(configuredExtensionNames, projectItems);
+            var extensionNames = GetExtensionNames(configurationItem);
+            var extensions = GetExtensions(extensionNames, projectItems);
             configuration = new ProjectSystemRazorConfiguration(languageVersion, configurationItem.Include, extensions);
             return true;
         }
@@ -140,18 +135,16 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         }
 
         // Internal for testing
-        internal static bool TryGetConfiguredExtensionNames(IMSBuildItemEvaluated configurationItem, out string[] configuredExtensionNames)
+        internal static string[] GetExtensionNames(IMSBuildItemEvaluated configurationItem)
         {
             var extensionNamesValue = configurationItem.Metadata.GetValue(RazorConfigurationItemTypeExtensionsProperty);
 
             if (string.IsNullOrEmpty(extensionNamesValue))
             {
-                configuredExtensionNames = null;
-                return false;
+                return Array.Empty<string>();
             }
             
-            configuredExtensionNames = extensionNamesValue.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            return true;
+            return extensionNamesValue.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         // Internal for testing

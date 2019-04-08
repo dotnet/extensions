@@ -295,7 +295,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_FailsIfNoExtensions()
+        public void GetExtensionNames_SucceedsWithNoExtensions()
         {
             // Arrange
             var items = new ItemCollection(Rules.RazorConfiguration.SchemaName);
@@ -304,15 +304,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var item = items.ToSnapshot().Items.Single();
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetExtensionNames(item, out var configuredExtensionnames);
+            var extensionNames = DefaultRazorProjectHost.GetExtensionNames(item);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuredExtensionnames);
+            Assert.Empty(extensionNames);
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_FailsIfEmptyExtensions()
+        public void GetExtensionNames_SucceedsWithEmptyExtensions()
         {
             // Arrange
             var items = new ItemCollection(Rules.RazorConfiguration.SchemaName);
@@ -322,15 +321,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var item = items.ToSnapshot().Items.Single();
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetExtensionNames(item, out var configuredExtensionNames);
+            var extensionNames = DefaultRazorProjectHost.GetExtensionNames(item);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuredExtensionNames);
+            Assert.Empty(extensionNames);
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_SucceedsIfSingleExtension()
+        public void GetExtensionNames_SucceedsIfSingleExtension()
         {
             // Arrange
             var expectedExtensionName = "SomeExtensionName";
@@ -342,16 +340,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var item = items.ToSnapshot().Items.Single();
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetExtensionNames(item, out var configuredExtensionNames);
+            var extensionNames = DefaultRazorProjectHost.GetExtensionNames(item);
 
             // Assert
-            Assert.True(result);
-            var extensionName = Assert.Single(configuredExtensionNames);
+            var extensionName = Assert.Single(extensionNames);
             Assert.Equal(expectedExtensionName, extensionName);
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_SucceedsIfMultipleExtensions()
+        public void GetExtensionNames_SucceedsIfMultipleExtensions()
         {
             // Arrange
             var items = new ItemCollection(Rules.RazorConfiguration.SchemaName);
@@ -361,18 +358,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var item = items.ToSnapshot().Items.Single();
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetExtensionNames(item, out var configuredExtensionNames);
+            var extensionNames = DefaultRazorProjectHost.GetExtensionNames(item);
 
             // Assert
-            Assert.True(result);
             Assert.Collection(
-                configuredExtensionNames,
+                extensionNames,
                 name => Assert.Equal("SomeExtensionName", name),
                 name => Assert.Equal("SomeOtherExtensionName", name));
         }
 
         [Fact]
-        public void TryGetExtensions_NoExtensions()
+        public void TryGetExtensions_SucceedsWhenExtensionsNotFound()
         {
             // Arrange
             var projectState = new Dictionary<string, IProjectRuleSnapshot>().ToImmutableDictionary();
@@ -381,8 +377,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var result = DefaultRazorProjectHost.TryGetExtensions(new[] { "Extension1", "Extension2" }, projectState, out var extensions);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(extensions);
+            Assert.True(result);
+            Assert.Empty(extensions);
         }
 
         [Fact]
@@ -496,7 +492,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
-        public void TryGetConfiguration_FailsIfNoConfiguredExtensionNames()
+        public void TryGetConfiguration_SucceedsWithNoConfiguredExtensionNames()
         {
             // Arrange
             var projectState = new Dictionary<string, IProjectRuleSnapshot>()
@@ -505,7 +501,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     Rules.RazorGeneral.SchemaName,
                     new Dictionary<string, string>()
                     {
-                        [Rules.RazorGeneral.RazorDefaultConfigurationProperty] = "13.37",
+                        [Rules.RazorGeneral.RazorDefaultConfigurationProperty] = "Razor-13.37",
                         [Rules.RazorGeneral.RazorLangVersionProperty] = "1.0",
                     }),
                 [Rules.RazorConfiguration.SchemaName] = TestProjectRuleSnapshot.CreateItems(
@@ -520,12 +516,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var result = DefaultRazorProjectHost.TryGetConfiguration(projectState, out var configuration);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuration);
+            Assert.True(result);
+            Assert.Equal(RazorLanguageVersion.Version_1_0, configuration.LanguageVersion);
+            Assert.Equal("Razor-13.37", configuration.ConfigurationName);
+            Assert.Empty(configuration.Extensions);
         }
 
         [Fact]
-        public void TryGetConfiguration_FailsIfNoExtensions()
+        public void TryGetConfiguration_IgnoresMissingExtension()
         {
             // Arrange
             var projectState = new Dictionary<string, IProjectRuleSnapshot>()
@@ -541,7 +539,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     Rules.RazorConfiguration.SchemaName,
                     new Dictionary<string, Dictionary<string, string>>()
                     {
-                        ["SomeExtension"] = new Dictionary<string, string>()
+                        ["13.37"] = new Dictionary<string, string>()
                         {
                             ["Extensions"] = "Razor-13.37"
                         }
@@ -552,8 +550,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var result = DefaultRazorProjectHost.TryGetConfiguration(projectState, out var configuration);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuration);
+            Assert.True(result);
+            Assert.Empty(configuration.Extensions);
         }
 
         // This is more of an integration test but is here to test the overall flow/functionality
