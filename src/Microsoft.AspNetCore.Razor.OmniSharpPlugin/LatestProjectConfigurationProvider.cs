@@ -74,12 +74,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 return false;
             }
 
-            if (!TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames))
-            {
-                configuration = null;
-                return false;
-            }
-
+            var configuredExtensionNames = GetConfiguredExtensionNames(configurationItem);
             var rootNamespace = GetRootNamespace(projectInstance);
             var extensions = GetExtensions(configuredExtensionNames, projectInstance.Items);
             var razorConfiguration = new ProjectSystemRazorConfiguration(languageVersion, configurationItem.EvaluatedInclude, extensions);
@@ -180,18 +175,17 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         // Internal for testing
-        internal static bool TryGetConfiguredExtensionNames(ProjectItemInstance configurationItem, out string[] configuredExtensionNames)
+        internal static string[] GetConfiguredExtensionNames(ProjectItemInstance configurationItem)
         {
             var extensionNamesValue = configurationItem.GetMetadataValue(RazorConfigurationItemTypeExtensionsProperty);
 
             if (string.IsNullOrEmpty(extensionNamesValue))
             {
-                configuredExtensionNames = null;
-                return false;
+                return Array.Empty<string>();
             }
 
-            configuredExtensionNames = extensionNamesValue.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            return true;
+            var configuredExtensionNames = extensionNamesValue.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            return configuredExtensionNames;
         }
 
         // Internal for testing

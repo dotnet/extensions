@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         public static readonly Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[] Factories =
             new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
             {
+                // Razor based configurations
+                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
+                    () => new DefaultProjectEngineFactory(),
+                    new ExportCustomProjectEngineFactoryAttribute("Default") { SupportsSerialization = true }),
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
                     () => new ProjectEngineFactory_1_0(),
                     new ExportCustomProjectEngineFactoryAttribute("MVC-1.0") { SupportsSerialization = true }),
@@ -26,12 +30,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
                     () => new ProjectEngineFactory_3_0(),
                     new ExportCustomProjectEngineFactoryAttribute("MVC-3.0") { SupportsSerialization = true }),
-                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                    () => new ProjectEngineFactory_Unsupported(),
-                    new ExportCustomProjectEngineFactoryAttribute(UnsupportedRazorConfiguration.Instance.ConfigurationName) { SupportsSerialization = true }),
+
+                // Blazor
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
                     () => new ProjectEngineFactory_Blazor(),
                     new ExportCustomProjectEngineFactoryAttribute("Blazor-0.1") { SupportsSerialization = false }),
+
+                // Unsupported (Legacy/System.Web.Razor)
+                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
+                    () => new ProjectEngineFactory_Unsupported(),
+                    new ExportCustomProjectEngineFactoryAttribute(UnsupportedRazorConfiguration.Instance.ConfigurationName) { SupportsSerialization = true }),
             };
     }
 }

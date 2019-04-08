@@ -345,22 +345,21 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_FailsIfNoExtensions()
+        public void GetConfiguredExtensionNames_NoExtensions()
         {
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             var configurationItem = projectInstance.AddItem("RazorConfiguration", "Razor-10.0");
 
             // Act
-            var result = LatestProjectConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionnames);
+            var configuredExtensionNames = LatestProjectConfigurationProvider.GetConfiguredExtensionNames(configurationItem);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuredExtensionnames);
+            Assert.Empty(configuredExtensionNames);
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_FailsIfEmptyExtensions()
+        public void GetConfiguredExtensionNames_EmptyExtensions()
         {
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
@@ -373,15 +372,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 });
 
             // Act
-            var result = LatestProjectConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+            var configuredExtensionNames = LatestProjectConfigurationProvider.GetConfiguredExtensionNames(configurationItem);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuredExtensionNames);
+            Assert.Empty(configuredExtensionNames);
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_SucceedsIfSingleExtension()
+        public void GetConfiguredExtensionNames_SingleExtension()
         {
             // Arrange
             var expectedExtensionName = "SomeExtensionName";
@@ -395,16 +393,15 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 });
 
             // Act
-            var result = LatestProjectConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+            var configuredExtensionNames = LatestProjectConfigurationProvider.GetConfiguredExtensionNames(configurationItem);
 
             // Assert
-            Assert.True(result);
             var extensionName = Assert.Single(configuredExtensionNames);
             Assert.Equal(expectedExtensionName, extensionName);
         }
 
         [Fact]
-        public void TryGetConfiguredExtensionNames_SucceedsIfMultipleExtensions()
+        public void GetConfiguredExtensionNames_MultipleExtensions()
         {
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
@@ -417,10 +414,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 });
 
             // Act
-            var result = LatestProjectConfigurationProvider.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+            var configuredExtensionNames = LatestProjectConfigurationProvider.GetConfiguredExtensionNames(configurationItem);
 
             // Assert
-            Assert.True(result);
             Assert.Collection(
                 configuredExtensionNames,
                 name => Assert.Equal("SomeExtensionName", name),
@@ -522,7 +518,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         [Fact]
-        public void TryGetConfiguration_FailsIfNoConfiguredExtensionNames()
+        public void TryGetConfiguration_SucceedsIfNoConfiguredExtensionNames()
         {
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
@@ -534,8 +530,10 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var result = LatestProjectConfigurationProvider.TryGetConfiguration(projectInstance, out var configuration);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(configuration);
+            Assert.True(result);
+            Assert.Equal(RazorLanguageVersion.Version_1_0, configuration.Configuration.LanguageVersion);
+            Assert.Equal("Razor-13.37", configuration.Configuration.ConfigurationName);
+            Assert.Empty(configuration.Configuration.Extensions);
         }
 
         // This is more of an integration test but is here to test the overall flow/functionality
