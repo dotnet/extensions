@@ -31,11 +31,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                     () => new ProjectEngineFactory_3_0(),
                     new ExportCustomProjectEngineFactoryAttribute("MVC-3.0") { SupportsSerialization = true }),
 
-                // Blazor
-                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                    () => new ProjectEngineFactory_Blazor(),
-                    new ExportCustomProjectEngineFactoryAttribute("Blazor-0.1") { SupportsSerialization = false }),
-
                 // Unsupported (Legacy/System.Web.Razor)
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
                     () => new ProjectEngineFactory_Unsupported(),

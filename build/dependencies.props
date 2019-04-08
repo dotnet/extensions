@@ -2,7 +2,6 @@
   <PropertyGroup Label="Package Versions">
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview3.19120.3</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181108.5</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreBlazorExtensionsPackageVersion>0.7.0</MicrosoftAspNetCoreBlazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview4.19202.2</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>3.0.0-preview4.19202.2</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>3.0.0-preview4.19202.2</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
@@ -24,9 +23,6 @@
     <MoqPackageVersion>4.9.0</MoqPackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <OmniSharpExtensionsLanguageServerPackageVersion>0.10.0</OmniSharpExtensionsLanguageServerPackageVersion>
-    <SystemRuntimeHandlesPackageVersion>4.3.0</SystemRuntimeHandlesPackageVersion>
-    <SystemIOFileSystemPrimitivesPackageVersion>4.3.0</SystemIOFileSystemPrimitivesPackageVersion>
-    <SystemTextEncodingExtensionsPackageVersion>4.3.0</SystemTextEncodingExtensionsPackageVersion>
     <SystemRuntimePackageVersion>4.3.0</SystemRuntimePackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
