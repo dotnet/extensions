@@ -54,7 +54,29 @@ namespace Microsoft.Extensions.Logging.Testing
 
             if (!typeof(LoggedTestBase).IsAssignableFrom(TestClass) || retryAttribute == null)
             {
-                return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, collectDump).RunAsync();
+                var deflakeAttribute = GetDeflakeAttribute(TestMethod);
+                if (deflakeAttribute == null)
+                {
+                    return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, collectDump).RunAsync();
+                }
+
+                var deflakeContext = new RetryContext()
+                {
+                    Limit = deflakeAttribute.RunCount
+                };
+
+                var timeTaken = 0.0M;
+                var testLogger = new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, deflakeContext, collectDump);
+                for (deflakeContext.CurrentIteration = 0; deflakeContext.CurrentIteration < deflakeContext.Limit; deflakeContext.CurrentIteration++)
+                {
+                    timeTaken = await testLogger.RunAsync();
+                    if (aggregator.HasExceptions)
+                    {
+                        return timeTaken;
+                    }
+                }
+
+                return timeTaken;
             }
 
             var retryPredicateMethodName = retryAttribute.RetryPredicateName;
@@ -125,6 +147,23 @@ namespace Microsoft.Extensions.Logging.Testing
             }
 
             return null;
+        }
+
+        private DeflakeAttribute GetDeflakeAttribute(MethodInfo methodInfo)
+        {
+            var attributeCandidate = methodInfo.GetCustomAttribute<DeflakeAttribute>();
+            if (attributeCandidate != null)
+            {
+                return attributeCandidate;
+            }
+
+            attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<DeflakeAttribute>();
+            if (attributeCandidate != null)
+            {
+                return attributeCandidate;
+            }
+
+            return methodInfo.DeclaringType.Assembly.GetCustomAttribute<DeflakeAttribute>();
         }
     }
 }
