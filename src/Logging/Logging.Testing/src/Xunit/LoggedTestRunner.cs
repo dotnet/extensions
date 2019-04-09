@@ -51,6 +51,7 @@ namespace Microsoft.Extensions.Logging.Testing
         {
             var collectDump = TestMethod.GetCustomAttribute<CollectDumpAttribute>() != null;
             var repeatAttribute = GetRepeatAttribute(TestMethod);
+            
             if (!typeof(LoggedTestBase).IsAssignableFrom(TestClass) || repeatAttribute == null)
             {
                 return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, collectDump).RunAsync();
