@@ -16,5 +16,9 @@
       Microsoft.Extensions.Configuration.KeyPerFile;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.5' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 
 </Project>

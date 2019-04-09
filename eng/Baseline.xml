@@ -1,4 +1,4 @@
-<Baseline Version="2.2.3">
+<Baseline Version="2.2.4">
   <Package Id="Microsoft.Extensions.Caching.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Caching.Redis" Version="2.2.0" />
@@ -6,13 +6,13 @@
   <Package Id="Microsoft.Extensions.Caching.StackExchangeRedis" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.2.0" />
-  <Package Id="Microsoft.Extensions.Configuration.Binder" Version="2.2.0" />
+  <Package Id="Microsoft.Extensions.Configuration.Binder" Version="2.2.4" />
   <Package Id="Microsoft.Extensions.Configuration.CommandLine" Version="2.2.0" />
-  <Package Id="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" />
+  <Package Id="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.4" />
   <Package Id="Microsoft.Extensions.Configuration.FileExtensions" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Configuration.Ini" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
-  <Package Id="Microsoft.Extensions.Configuration.KeyPerFile" Version="2.2.0" />
+  <Package Id="Microsoft.Extensions.Configuration.KeyPerFile" Version="2.2.4" />
   <Package Id="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Configuration.Xml" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Configuration" Version="2.2.0" />
