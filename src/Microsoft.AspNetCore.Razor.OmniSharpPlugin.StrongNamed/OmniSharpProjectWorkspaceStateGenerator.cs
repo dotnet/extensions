@@ -9,6 +9,11 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed
 {
     public class OmniSharpProjectWorkspaceStateGenerator : IOmniSharpProjectSnapshotManagerChangeTrigger
     {
+        // Internal for testing
+        internal OmniSharpProjectWorkspaceStateGenerator()
+        {
+        }
+
         public OmniSharpProjectWorkspaceStateGenerator(OmniSharpForegroundDispatcher foregroundDispatcher)
         {
             if (foregroundDispatcher == null)
@@ -23,6 +28,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed
 
         public void Initialize(OmniSharpProjectSnapshotManagerBase projectManager) => InternalWorkspaceStateGenerator.Initialize(projectManager.InternalProjectSnapshotManager);
 
-        public void Update(Project workspaceProject, OmniSharpProjectSnapshot projectSnapshot) => InternalWorkspaceStateGenerator.Update(workspaceProject, projectSnapshot.InternalProjectSnapshot);
+        public virtual void Update(Project workspaceProject, OmniSharpProjectSnapshot projectSnapshot) => InternalWorkspaceStateGenerator.Update(workspaceProject, projectSnapshot.InternalProjectSnapshot);
     }
 }

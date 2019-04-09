@@ -84,5 +84,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 TaskCreationOptions.None,
                 Dispatcher.ForegroundScheduler);
         }
+
+        protected Task RunOnForegroundAsync(Func<Task> action)
+        {
+            return Task.Factory.StartNew(
+                async () => await action(),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                Dispatcher.ForegroundScheduler);
+        }
     }
 }
