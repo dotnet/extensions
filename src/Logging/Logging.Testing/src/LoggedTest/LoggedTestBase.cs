@@ -28,6 +28,8 @@ namespace Microsoft.Extensions.Logging.Testing
 
         internal RetryContext RetryContext { get; set; }
 
+        internal RepeatContext RepeatContext { get; set; }
+
         public string ResolvedLogOutputDirectory { get; set; }
 
         public string ResolvedTestMethodName { get; set; }

@@ -14,21 +14,21 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         [Repeat(5)]
         public void RepeatLimitIsSetCorrectly()
         {
-            Assert.Equal(5, RetryContext.Limit);
+            Assert.Equal(5, RepeatContext.Limit);
         }
 
         [Fact]
         [Repeat(5)]
         public void RepeatRunsTestSpecifiedNumberOfTimes()
         {
-            Assert.Equal(RetryContext.CurrentIteration, _runCount);
+            Assert.Equal(RepeatContext.CurrentIteration, _runCount);
             _runCount++;
         }
 
         [Fact]
         public void RepeatCanBeSetOnClass()
         {
-            Assert.Equal(10, RetryContext.Limit);
+            Assert.Equal(10, RepeatContext.Limit);
         }
     }
 
@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         [Fact]
         public void RepeatCanBeSetOnAssembly()
         {
-            Assert.Equal(1, RetryContext.Limit);
+            Assert.Equal(1, RepeatContext.Limit);
         }
     }
 }

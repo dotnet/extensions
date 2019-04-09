@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.Logging.Testing
                     return await RunRepeatTestInvoker(aggregator, output, collectDump, repeatAttribute);
                 }
 
-                return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, collectDump).RunAsync();
+                return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, null, collectDump).RunAsync();
             }
 
             var retryPredicateMethodName = retryAttribute.RetryPredicateName;
@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.Logging.Testing
             };
 
             var retryAggregator = new ExceptionAggregator();
-            var loggedTestInvoker = new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, retryAggregator, CancellationTokenSource, output, retryContext, collectDump);
+            var loggedTestInvoker = new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, retryAggregator, CancellationTokenSource, output, retryContext, null, collectDump);
             var totalTime = 0.0M;
 
             do
@@ -105,7 +105,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
         private async Task<decimal> RunRepeatTestInvoker(ExceptionAggregator aggregator, ITestOutputHelper output, bool collectDump, RepeatAttribute repeatAttribute)
         {
-            var repeatContext = new RetryContext()
+            var repeatContext = new RepeatContext
             {
                 Limit = repeatAttribute.RunCount
             };
@@ -122,6 +122,7 @@ namespace Microsoft.Extensions.Logging.Testing
                 aggregator,
                 CancellationTokenSource,
                 output,
+                null,
                 repeatContext,
                 collectDump);
 
