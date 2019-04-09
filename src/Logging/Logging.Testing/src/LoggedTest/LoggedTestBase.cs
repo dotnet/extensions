@@ -26,8 +26,6 @@ namespace Microsoft.Extensions.Logging.Testing
         // Internal for testing
         internal string ResolvedTestClassName { get; set; }
 
-        internal RetryContext RetryContext { get; set; }
-
         internal RepeatContext RepeatContext { get; set; }
 
         public string ResolvedLogOutputDirectory { get; set; }

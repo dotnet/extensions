@@ -49,58 +49,14 @@ namespace Microsoft.Extensions.Logging.Testing
 
         private async Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator, ITestOutputHelper output)
         {
-            var retryAttribute = GetRetryAttribute(TestMethod);
             var collectDump = TestMethod.GetCustomAttribute<CollectDumpAttribute>() != null;
-
-            if (!typeof(LoggedTestBase).IsAssignableFrom(TestClass) || retryAttribute == null)
+            var repeatAttribute = GetRepeatAttribute(TestMethod);
+            if (!typeof(LoggedTestBase).IsAssignableFrom(TestClass) || repeatAttribute == null)
             {
-                var repeatAttribute = GetRepeatAttribute(TestMethod);
-                if (repeatAttribute != null)
-                {
-                    return await RunRepeatTestInvoker(aggregator, output, collectDump, repeatAttribute);
-                }
-
-                return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, null, collectDump).RunAsync();
+                return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, collectDump).RunAsync();
             }
 
-            var retryPredicateMethodName = retryAttribute.RetryPredicateName;
-            var retryPredicateMethod = TestClass.GetMethod(retryPredicateMethodName,
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static,
-                null,
-                new Type[] { typeof(Exception) },
-                null)
-                ?? throw new InvalidOperationException($"No valid static retry predicate method {retryPredicateMethodName} was found on the type {TestClass.FullName}.");
-
-            if (retryPredicateMethod.ReturnType != typeof(bool))
-            {
-                throw new InvalidOperationException($"Retry predicate method {retryPredicateMethodName} on {TestClass.FullName} does not return bool.");
-            }
-
-            var retryContext = new RetryContext()
-            {
-                Limit = retryAttribute.RetryLimit,
-                Reason = retryAttribute.RetryReason,
-            };
-
-            var retryAggregator = new ExceptionAggregator();
-            var loggedTestInvoker = new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, retryAggregator, CancellationTokenSource, output, retryContext, null, collectDump);
-            var totalTime = 0.0M;
-
-            do
-            {
-                retryAggregator.Clear();
-                totalTime += await loggedTestInvoker.RunAsync();
-                retryContext.CurrentIteration++;
-            }
-            while (retryAggregator.HasExceptions
-                && retryContext.CurrentIteration < retryContext.Limit
-                && (retryPredicateMethod.IsStatic
-                    ? (bool)retryPredicateMethod.Invoke(null, new object[] { retryAggregator.ToException() })
-                    : (bool)retryPredicateMethod.Invoke(retryContext.TestClassInstance, new object[] { retryAggregator.ToException() }))
-                );
-
-            aggregator.Aggregate(retryAggregator);
-            return totalTime;
+            return await RunRepeatTestInvoker(aggregator, output, collectDump, repeatAttribute);
         }
 
         private async Task<decimal> RunRepeatTestInvoker(ExceptionAggregator aggregator, ITestOutputHelper output, bool collectDump, RepeatAttribute repeatAttribute)
@@ -122,7 +78,6 @@ namespace Microsoft.Extensions.Logging.Testing
                 aggregator,
                 CancellationTokenSource,
                 output,
-                null,
                 repeatContext,
                 collectDump);
 
@@ -136,36 +91,6 @@ namespace Microsoft.Extensions.Logging.Testing
             }
 
             return timeTaken;
-        }
-
-        private RetryTestAttribute GetRetryAttribute(MethodInfo methodInfo)
-        {
-            var os = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? OperatingSystems.MacOSX
-                : RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? OperatingSystems.Windows
-                : OperatingSystems.Linux;
-
-            var attributeCandidate = methodInfo.GetCustomAttribute<RetryTestAttribute>();
-
-            if (attributeCandidate != null && (attributeCandidate.OperatingSystems & os) != 0)
-            {
-                return attributeCandidate;
-            }
-
-            attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<RetryTestAttribute>();
-
-            if (attributeCandidate != null && (attributeCandidate.OperatingSystems & os) != 0)
-            {
-                return attributeCandidate;
-            }
-
-            attributeCandidate = methodInfo.DeclaringType.Assembly.GetCustomAttribute<RetryTestAttribute>();
-
-            if (attributeCandidate != null && (attributeCandidate.OperatingSystems & os) != 0)
-            {
-                return attributeCandidate;
-            }
-
-            return null;
         }
 
         private RepeatAttribute GetRepeatAttribute(MethodInfo methodInfo)
