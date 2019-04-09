@@ -5,37 +5,37 @@ using Xunit;
 
 namespace Microsoft.Extensions.Logging.Testing.Tests
 {
-    [Deflake]
-    public class LoggedTestXunitDeflakeTests : LoggedTest
+    [Repeat]
+    public class LoggedTestXunitRepeatTests : LoggedTest
     {
         public static int _runCount = 0;
 
         [Fact]
-        [Deflake(5)]
-        public void DeflakeLimitIsSetCorrectly()
+        [Repeat(5)]
+        public void RepeatLimitIsSetCorrectly()
         {
             Assert.Equal(5, RetryContext.Limit);
         }
 
         [Fact]
-        [Deflake(5)]
-        public void DeflakeRunsTestSpecifiedNumberOfTimes()
+        [Repeat(5)]
+        public void RepeatRunsTestSpecifiedNumberOfTimes()
         {
             Assert.Equal(RetryContext.CurrentIteration, _runCount);
             _runCount++;
         }
 
         [Fact]
-        public void DeflakeCanBeSetOnClass()
+        public void RepeatCanBeSetOnClass()
         {
             Assert.Equal(10, RetryContext.Limit);
         }
     }
 
-    public class LoggedTestXunitDeflakeAssemblyTests : LoggedTest
+    public class LoggedTestXunitRepeatAssemblyTests : LoggedTest
     {
         [Fact]
-        public void DeflakeCanBeSetOnAssembly()
+        public void RepeatCanBeSetOnAssembly()
         {
             Assert.Equal(1, RetryContext.Limit);
         }

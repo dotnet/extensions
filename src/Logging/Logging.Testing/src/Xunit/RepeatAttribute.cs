@@ -13,9 +13,9 @@ namespace Microsoft.Extensions.Logging.Testing
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = false)]
-    public class DeflakeAttribute : Attribute
+    public class RepeatAttribute : Attribute
     {
-        public DeflakeAttribute(int runCount = 10)
+        public RepeatAttribute(int runCount = 10)
         {
             RunCount = runCount;
         }

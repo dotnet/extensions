@@ -54,10 +54,10 @@ namespace Microsoft.Extensions.Logging.Testing
 
             if (!typeof(LoggedTestBase).IsAssignableFrom(TestClass) || retryAttribute == null)
             {
-                var deflakeAttribute = GetDeflakeAttribute(TestMethod);
-                if (deflakeAttribute != null)
+                var repeatAttribute = GetRepeatAttribute(TestMethod);
+                if (repeatAttribute != null)
                 {
-                    return await RunDeflakeTestInvoker(aggregator, output, collectDump, deflakeAttribute);
+                    return await RunRepeatTestInvoker(aggregator, output, collectDump, repeatAttribute);
                 }
 
                 return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, collectDump).RunAsync();
@@ -103,11 +103,11 @@ namespace Microsoft.Extensions.Logging.Testing
             return totalTime;
         }
 
-        private async Task<decimal> RunDeflakeTestInvoker(ExceptionAggregator aggregator, ITestOutputHelper output, bool collectDump, DeflakeAttribute deflakeAttribute)
+        private async Task<decimal> RunRepeatTestInvoker(ExceptionAggregator aggregator, ITestOutputHelper output, bool collectDump, RepeatAttribute repeatAttribute)
         {
-            var deflakeContext = new RetryContext()
+            var repeatContext = new RetryContext()
             {
-                Limit = deflakeAttribute.RunCount
+                Limit = repeatAttribute.RunCount
             };
 
             var timeTaken = 0.0M;
@@ -122,10 +122,10 @@ namespace Microsoft.Extensions.Logging.Testing
                 aggregator,
                 CancellationTokenSource,
                 output,
-                deflakeContext,
+                repeatContext,
                 collectDump);
 
-            for (deflakeContext.CurrentIteration = 0; deflakeContext.CurrentIteration < deflakeContext.Limit; deflakeContext.CurrentIteration++)
+            for (repeatContext.CurrentIteration = 0; repeatContext.CurrentIteration < repeatContext.Limit; repeatContext.CurrentIteration++)
             {
                 timeTaken = await testLogger.RunAsync();
                 if (aggregator.HasExceptions)
@@ -167,21 +167,21 @@ namespace Microsoft.Extensions.Logging.Testing
             return null;
         }
 
-        private DeflakeAttribute GetDeflakeAttribute(MethodInfo methodInfo)
+        private RepeatAttribute GetRepeatAttribute(MethodInfo methodInfo)
         {
-            var attributeCandidate = methodInfo.GetCustomAttribute<DeflakeAttribute>();
+            var attributeCandidate = methodInfo.GetCustomAttribute<RepeatAttribute>();
             if (attributeCandidate != null)
             {
                 return attributeCandidate;
             }
 
-            attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<DeflakeAttribute>();
+            attributeCandidate = methodInfo.DeclaringType.GetCustomAttribute<RepeatAttribute>();
             if (attributeCandidate != null)
             {
                 return attributeCandidate;
             }
 
-            return methodInfo.DeclaringType.Assembly.GetCustomAttribute<DeflakeAttribute>();
+            return methodInfo.DeclaringType.Assembly.GetCustomAttribute<RepeatAttribute>();
         }
     }
 }
