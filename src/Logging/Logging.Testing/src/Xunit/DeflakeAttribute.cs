@@ -1,10 +1,16 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 
 namespace Microsoft.Extensions.Logging.Testing
 {
+    /// <summary>
+    /// Runs a test multiple times to stress flaky tests that are believed to be fixed.
+    /// This can be used on an assembly, class, or method name.
+    /// Requires using <see cref="LoggedTest"/> to run.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = false)]
     public class DeflakeAttribute : Attribute
@@ -14,6 +20,9 @@ namespace Microsoft.Extensions.Logging.Testing
             RunCount = runCount;
         }
 
+        /// <summary>
+        /// The number of times to run a test.
+        /// </summary>
         public int RunCount { get; }
     }
 }

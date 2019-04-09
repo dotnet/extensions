@@ -55,28 +55,12 @@ namespace Microsoft.Extensions.Logging.Testing
             if (!typeof(LoggedTestBase).IsAssignableFrom(TestClass) || retryAttribute == null)
             {
                 var deflakeAttribute = GetDeflakeAttribute(TestMethod);
-                if (deflakeAttribute == null)
+                if (deflakeAttribute != null)
                 {
-                    return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, collectDump).RunAsync();
+                    return await RunDeflakeTestInvoker(aggregator, output, collectDump, deflakeAttribute);
                 }
 
-                var deflakeContext = new RetryContext()
-                {
-                    Limit = deflakeAttribute.RunCount
-                };
-
-                var timeTaken = 0.0M;
-                var testLogger = new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, deflakeContext, collectDump);
-                for (deflakeContext.CurrentIteration = 0; deflakeContext.CurrentIteration < deflakeContext.Limit; deflakeContext.CurrentIteration++)
-                {
-                    timeTaken = await testLogger.RunAsync();
-                    if (aggregator.HasExceptions)
-                    {
-                        return timeTaken;
-                    }
-                }
-
-                return timeTaken;
+                return await new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output, null, collectDump).RunAsync();
             }
 
             var retryPredicateMethodName = retryAttribute.RetryPredicateName;
@@ -117,6 +101,40 @@ namespace Microsoft.Extensions.Logging.Testing
 
             aggregator.Aggregate(retryAggregator);
             return totalTime;
+        }
+
+        private async Task<decimal> RunDeflakeTestInvoker(ExceptionAggregator aggregator, ITestOutputHelper output, bool collectDump, DeflakeAttribute deflakeAttribute)
+        {
+            var deflakeContext = new RetryContext()
+            {
+                Limit = deflakeAttribute.RunCount
+            };
+
+            var timeTaken = 0.0M;
+            var testLogger = new LoggedTestInvoker(
+                Test,
+                MessageBus,
+                TestClass,
+                ConstructorArguments,
+                TestMethod,
+                TestMethodArguments,
+                BeforeAfterAttributes,
+                aggregator,
+                CancellationTokenSource,
+                output,
+                deflakeContext,
+                collectDump);
+
+            for (deflakeContext.CurrentIteration = 0; deflakeContext.CurrentIteration < deflakeContext.Limit; deflakeContext.CurrentIteration++)
+            {
+                timeTaken = await testLogger.RunAsync();
+                if (aggregator.HasExceptions)
+                {
+                    return timeTaken;
+                }
+            }
+
+            return timeTaken;
         }
 
         private RetryTestAttribute GetRetryAttribute(MethodInfo methodInfo)
