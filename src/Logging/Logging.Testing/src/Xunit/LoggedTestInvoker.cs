@@ -51,10 +51,17 @@ namespace Microsoft.Extensions.Logging.Testing
             if (testClass is LoggedTestBase loggedTestBase)
             {
                 // Used for testing
+
                 loggedTestBase.RetryContext = _retryContext;
 
                 if (_retryContext != null)
                 {
+                    // Log retry attempt as warning
+                    if (_retryContext.CurrentIteration > 0 && !string.IsNullOrEmpty(_retryContext.Reason))
+                    {
+                        loggedTestBase.Logger.LogWarning($"{TestMethod.Name} failed and retry conditions are met, re-executing. The reason for failure is {_retryContext.Reason}.");
+                    }
+
                     // Save the test class instance for non-static predicates
                     _retryContext.TestClassInstance = testClass;
                 }
