@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Hosting.WindowsServices
 {
-    public class ServiceHelpers
+    public static class ServiceHelpers
     {
         public static bool IsWindowsService()
         {
