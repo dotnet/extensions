@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.Caching.Redis
                 },
                 nameof(DistributedCacheEntryOptions.AbsoluteExpiration),
                 "The absolute expiration value must be in the future.",
-                expected.ToString(CultureInfo.CurrentCulture));
+                expected);
         }
 
         [Fact(Skip = SkipReason)]
