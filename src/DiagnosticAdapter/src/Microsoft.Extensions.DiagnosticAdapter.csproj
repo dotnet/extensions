@@ -6,7 +6,13 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnosticadapter;diagnosticlistener;diagnostics</PackageTags>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.DiagnosticAdapter.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="System.Diagnostics.DiagnosticSource" />

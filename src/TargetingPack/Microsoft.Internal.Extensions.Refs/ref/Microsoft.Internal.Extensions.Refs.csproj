@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <!-- Subject to change: see https://github.com/dotnet/designs/pull/50 -->
+    <PackageType>TargetingPack</PackageType>
+    <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
+
+    <!-- There are no symbols for reference assemblies. -->
+    <IncludeSymbols>false</IncludeSymbols>
+
+    <!-- The project representing the shared framework doesn't produce a .NET assembly or symbols. -->
+    <DebugType>none</DebugType>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+
+    <!-- This project should not be referenced via the `<Reference>` impementation. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+
+    <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="@(ProjectReferenceProvider)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\**\*.props" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      _ResolveTargetingPackContent;
+    </BuildDependsOn>
+  </PropertyGroup>
+
+  <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
+  <Target Name="GetTargetPath" />
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TargetDir)" />
+  </Target>
+
+  <!-- This project doesn't compile anything. -->
+  <Target Name="CoreCompile" />
+
+  <!-- Completely disable default targets for copying to output. -->
+  <Target Name="CopyFilesToOutputDirectory" />
+
+  <!-- This target finds the reference assemblies. -->
+  <Target Name="_ResolveTargetingPackContent"
+          BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <AspNetCoreReferenceAssemblyPath Include="@(ReferencePathWithRefAssemblies->WithMetadataValue('IsReferenceAssembly', 'true'))" />
+      <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
+
+      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />
+
+      <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

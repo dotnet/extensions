@@ -1,14 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.Extensions.DependencyInjection.Performance
 {
-    public class GetServiceBenchmark
+    public class GetServiceBenchmark: ServiceProviderEngineBenchmark
     {
         private const int OperationsPerInvoke = 50000;
 
@@ -18,14 +17,6 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         private IServiceProvider _serviceScopeFactoryProvider;
         private IServiceProvider _serviceScope;
         private IServiceProvider _emptyEnumerable;
-        private ServiceProviderMode _mode;
-
-        [Params("Expressions", "Dynamic", "Runtime", "ILEmit")]
-        public string Mode {
-            set {
-                _mode = (ServiceProviderMode)Enum.Parse(typeof(ServiceProviderMode), value);
-            }
-        }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
         public void NoDI()
@@ -46,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddTransient<C>();
             _transientSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = _mode
+                Mode = ServiceProviderMode
             });
         }
 
@@ -69,7 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddScoped<C>();
             _scopedSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = _mode
+                Mode = ServiceProviderMode
             }).CreateScope();
         }
 
@@ -92,7 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddSingleton<C>();
             _singletonSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = _mode
+                Mode = ServiceProviderMode
             });
         }
 
@@ -111,7 +102,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _serviceScope = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = _mode
+                Mode = ServiceProviderMode
             });
         }
 
@@ -129,7 +120,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _serviceScopeFactoryProvider = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = _mode
+                Mode = ServiceProviderMode
             });
         }
 
@@ -147,7 +138,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _emptyEnumerable = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = _mode
+                Mode = ServiceProviderMode
             });
         }
 
@@ -158,33 +149,6 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             {
                 _emptyEnumerable.GetService<IEnumerable<A>>();
             }
-        }
-
-        private class A
-        {
-            public A(B b)
-            {
-
-            }
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            public void Foo()
-            {
-
-            }
-        }
-
-        private class B
-        {
-            public B(C c)
-            {
-
-            }
-        }
-
-        private class C
-        {
-
         }
     }
 }
