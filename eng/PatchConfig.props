@@ -33,6 +33,7 @@ Later on, this will be checked using this condition:
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.5' ">
     <PackagesInPatch>
       Microsoft.Extensions.HealthChecks;
+      Microsoft.Extensions.Logging.AzureAppServices;
     </PackagesInPatch>
   </PropertyGroup>
 
