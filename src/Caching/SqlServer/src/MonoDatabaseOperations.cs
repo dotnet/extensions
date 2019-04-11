@@ -14,8 +14,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
     internal class MonoDatabaseOperations : DatabaseOperations
     {
         public MonoDatabaseOperations(
-            string connectionString, string schemaName, string tableName, ISystemClock systemClock)
-            : base(connectionString, schemaName, tableName, systemClock)
+            string connectionString, string schemaName, string tableName, Func<string> accessTokenFunc, ISystemClock systemClock)
+            : base(connectionString, schemaName, tableName, accessTokenFunc, systemClock)
         {
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             TimeSpan? slidingExpiration = null;
             DateTimeOffset? absoluteExpiration = null;
             DateTimeOffset expirationTime;
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             {
                 var command = new SqlCommand(query, connection);
                 command.Parameters
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             TimeSpan? slidingExpiration = null;
             DateTimeOffset? absoluteExpiration = null;
             DateTimeOffset expirationTime;
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             {
                 var command = new SqlCommand(SqlQueries.GetCacheItem, connection);
                 command.Parameters
@@ -152,7 +152,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
             ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             {
                 var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection);
                 upsertCommand.Parameters
@@ -192,7 +192,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
             ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             {
                 var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection);
                 upsertCommand.Parameters
@@ -227,7 +227,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             var utcNow = SystemClock.UtcNow;
 
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             {
                 var command = new SqlCommand(SqlQueries.DeleteExpiredCacheItems, connection);
                 command.Parameters.AddWithValue("UtcNow", SqlDbType.DateTime, utcNow.UtcDateTime);

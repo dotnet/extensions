@@ -43,6 +43,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
         /// </summary>
         public TimeSpan DefaultSlidingExpiration { get; set; } = TimeSpan.FromMinutes(20);
 
+        /// <summary>
+        /// A function, if provided, should return an access token for authentication
+        /// </summary>
+        public Func<string> AccessTokenFunc { get; set; }
+
         SqlServerCacheOptions IOptions<SqlServerCacheOptions>.Value
         {
             get

@@ -30,14 +30,17 @@ namespace Microsoft.Extensions.Caching.SqlServer
             "Connection string: {2}";
 
         public DatabaseOperations(
-            string connectionString, string schemaName, string tableName, ISystemClock systemClock)
+            string connectionString, string schemaName, string tableName, Func<string> accessTokenFunc, ISystemClock systemClock)
         {
             ConnectionString = connectionString;
             SchemaName = schemaName;
             TableName = tableName;
+            AccessTokenFunc = accessTokenFunc;
             SystemClock = systemClock;
             SqlQueries = new SqlQueries(schemaName, tableName);
         }
+
+        protected Func<string> AccessTokenFunc { get; }
 
         protected SqlQueries SqlQueries { get; }
 
@@ -49,9 +52,12 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
         protected ISystemClock SystemClock { get; }
 
+        protected SqlConnection CreateSqlConnection() => new SqlConnection(ConnectionString)
+            {AccessToken = AccessTokenFunc?.Invoke()};
+
         public void DeleteCacheItem(string key)
         {
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             using (var command = new SqlCommand(SqlQueries.DeleteCacheItem, connection))
             {
                 command.Parameters.AddCacheItemId(key);
@@ -66,7 +72,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             token.ThrowIfCancellationRequested();
 
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             using (var command = new SqlCommand(SqlQueries.DeleteCacheItem, connection))
             {
                 command.Parameters.AddCacheItemId(key);
@@ -98,14 +104,14 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             token.ThrowIfCancellationRequested();
 
-            await GetCacheItemAsync(key, includeValue: false, token:token);
+            await GetCacheItemAsync(key, includeValue: false, token: token);
         }
 
         public virtual void DeleteExpiredCacheItems()
         {
             var utcNow = SystemClock.UtcNow;
 
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             using (var command = new SqlCommand(SqlQueries.DeleteExpiredCacheItems, connection))
             {
                 command.Parameters.AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
@@ -123,7 +129,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
             ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             using (var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
             {
                 upsertCommand.Parameters
@@ -163,8 +169,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
             ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
-            using (var connection = new SqlConnection(ConnectionString))
-            using(var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
+            using (var connection = CreateSqlConnection())
+            using (var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
             {
                 upsertCommand.Parameters
                     .AddCacheItemId(key)
@@ -212,7 +218,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             TimeSpan? slidingExpiration = null;
             DateTimeOffset? absoluteExpiration = null;
             DateTimeOffset expirationTime;
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             using (var command = new SqlCommand(query, connection))
             {
                 command.Parameters
@@ -277,7 +283,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             TimeSpan? slidingExpiration = null;
             DateTimeOffset? absoluteExpiration = null;
             DateTimeOffset expirationTime;
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = CreateSqlConnection())
             using (var command = new SqlCommand(query, connection))
             {
                 command.Parameters
