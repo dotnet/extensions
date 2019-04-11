@@ -121,6 +121,7 @@
         }
     },
     "scripts": {
+        "setupTestApps": "node ../build/setupTestAppSettings.js",
         "vscode:prepublish": "npm run compile",
         "clean": "rimraf out",
         "compile": "npm run clean && npm run lint && tsc -p ./",
@@ -131,7 +132,7 @@
         "unittest": "npm run compile && npm run test:unitcore",
         "test:unitcore": "mocha --recursive out/unittest",
         "test:unitcore:watch": "mocha -r ts-node/register --recursive unittest/**/*.ts --watch --watch-extensions ts",
-        "test:functional": "cross-env CODE_TESTS_WORKSPACE=../test/testapps node ./node_modules/vscode/bin/test"
+        "test:functional": "npm run setupTestApps && cross-env CODE_TESTS_WORKSPACE=../test/testapps node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
         "@types/mocha": "2.2.42",

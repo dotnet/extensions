@@ -13,10 +13,11 @@
             "problemMatcher": "$tsc-watch",
             "isBackground": true,
             "presentation": {
-                "reveal": "never"
+                "reveal": "silent"
             },
             "dependsOn": [
-                "CompileClient"
+                "CompileClient",
+                "SetupTestApps"
             ]
         },
         {
@@ -26,7 +27,7 @@
             "path": "src/Microsoft.AspNetCore.Razor.VSCode/",
             "problemMatcher": "$tsc-watch",
             "presentation": {
-                "reveal": "never"
+                "reveal": "silent"
             },
             "dependsOn": [
                 "CompileClient"
@@ -39,7 +40,17 @@
             "path": "client/",
             "problemMatcher": "$tsc-watch",
             "presentation": {
-                "reveal": "never"
+                "reveal": "silent"
+            }
+        },
+        {
+            "label": "SetupTestApps",
+            "type": "npm",
+            "script": "setupTestApps",
+            "path": "client/",
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
             }
         }
     ]
