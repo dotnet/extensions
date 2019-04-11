@@ -5,6 +5,10 @@ variables:
   value: AspNetCore
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
+- name: _PublishUsingPipelines
+  value: true
+- name: _DotNetArtifactsCategory
+  value: ASPNETCORETOOLING
 
 resources:
   containers:
@@ -25,6 +29,7 @@ jobs:
   parameters:
     enablePublishBuildArtifacts: false
     enablePublishTestResults: false
+    enablePublishUsingPipelines: false
     jobs:
     - job: Code_check
       displayName: Code check
@@ -45,6 +50,7 @@ jobs:
   parameters:
     enablePublishBuildArtifacts: true
     enablePublishTestResults: true
+    enablePublishUsingPipelines: $(_PublishUsingPipelines)
     enableTelemetry: true
     helixRepo: aspnet/AspNetCore-Tooling
     helixType: build.product/
@@ -72,6 +78,8 @@ jobs:
                 /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
                 /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                 /p:PublishToAzure=true
+                /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
                 /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
                 /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
                 /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)

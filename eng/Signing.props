@@ -1,6 +1,12 @@
 <Project>
 
-  <Import Project="MPack.props" />
+  <!--
+    The `Condition` in this Import was added because publishing pipelines rely
+    on importing this file but it doesn't import MPack.props.
+    The condition can be removed once this issue is fixed: 
+    https://github.com/dotnet/arcade/issues/2371
+  -->
+  <Import Project="MPack.props" Condition="Exists('MPack.props')" />
 
   <!--
     These are third party libraries that we use in this repo. We need to sign them even if they
