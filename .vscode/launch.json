@@ -17,7 +17,7 @@
             "outFiles": [
                 "${workspaceFolder}/client/out/**/*.js"
             ],
-            "preLaunchTask": "client-npm-watch"
+            "preLaunchTask": "WatchPackageAndCompileClient"
         },
         {
             "name": "Extension Tests",
@@ -32,7 +32,7 @@
             "outFiles": [
                 "${workspaceFolder}/client/out/test/**/*.js"
             ],
-            "preLaunchTask": "client-npm-compile"
+            "preLaunchTask": "CompilePackageAndClient"
         },
         {
             "type": "node",
@@ -49,7 +49,7 @@
             ],
             "sourceMaps": true,
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "client-npm-compile"
+            "preLaunchTask": "CompilePackageAndClient"
         },
     ]
 }

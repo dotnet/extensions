@@ -4,71 +4,40 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "client-npm-compile",
-            "dependsOn": [
-                "client-npm-compile:package",
-                "client-npm-compile:shell"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "isBackground": true,
-            "problemMatcher": []
-        },
-        {
-            "label": "client-npm-compile:shell",
-            "type": "npm",
-            "script": "compile",
-            "path": "client/",
-            "problemMatcher": "$tsc-watch",
-            "isBackground": true,
-            "presentation": {
-                "reveal": "never"
-            }
-        },
-        {
-            "label": "client-npm-compile:package",
-            "type": "npm",
-            "script": "compile",
-            "path": "src/Microsoft.AspNetCore.Razor.VSCode/",
-            "problemMatcher": "$tsc-watch",
-            "isBackground": true,
-            "presentation": {
-                "reveal": "never"
-            }
-        },
-        {
-            "label": "client-npm-watch",
-            "dependsOn": [
-                "client-npm-watch:shell",
-                "client-npm-watch:package"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "isBackground": true,
-            "problemMatcher": []
-        },
-        {
-            "label": "client-npm-watch:shell",
-            "type": "npm",
-            "script": "watch",
-            "path": "client/",
-            "problemMatcher": "$tsc-watch",
-            "isBackground": true,
-            "presentation": {
-                "reveal": "never"
-            }
-        },
-        {
-            "label": "client-npm-watch:package",
+            // There's a bug in OmniSharp which prevents us from watching both the client and package simultaneously
+            // If we attempt to watch in a dependent task it hangs on launch.
+            "label": "WatchPackageAndCompileClient",
             "type": "npm",
             "script": "watch",
             "path": "src/Microsoft.AspNetCore.Razor.VSCode/",
             "problemMatcher": "$tsc-watch",
             "isBackground": true,
+            "presentation": {
+                "reveal": "never"
+            },
+            "dependsOn": [
+                "CompileClient"
+            ]
+        },
+        {
+            "label": "CompilePackageAndClient",
+            "type": "npm",
+            "script": "compile",
+            "path": "src/Microsoft.AspNetCore.Razor.VSCode/",
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "never"
+            },
+            "dependsOn": [
+                "CompileClient"
+            ]
+        },
+        {
+            "label": "CompileClient",
+            "type": "npm",
+            "script": "compile",
+            "path": "client/",
+            "problemMatcher": "$tsc-watch",
             "presentation": {
                 "reveal": "never"
             }
