@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
+    <BundledNETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
+
+    <!-- Workaround for the evaluation order in which Arcade assigns test properties. -->
+    <TestRunnerName Condition="'$(IsUnitTestProject)' == 'false'"/>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Workaround https://github.com/dotnet/sdk/issues/2976 -->
+    <PackageReference Update="Microsoft.NETCore.Platforms" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- Workaround for implicit references added by Arcade based on project name. Non-test projects should not reference these projects. -->
+  <ItemGroup Condition="'$(IsUnitTestProject)' == 'false'">
+    <PackageReference Remove="Microsoft.NET.Test.Sdk" />
+    <PackageReference Remove="xunit" />
+    <PackageReference Remove="xunit.core" />
+    <PackageReference Remove="xunit.runner.visualstudio" />
+    <PackageReference Remove="xunit.runner.console" />
+  </ItemGroup>
+</Project>

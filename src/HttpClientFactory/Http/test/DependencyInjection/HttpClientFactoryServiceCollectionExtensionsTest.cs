@@ -1,14 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Logging;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -768,6 +773,50 @@ namespace Microsoft.Extensions.DependencyInjection
                 Assert.NotSame(
                     client.Service,
                     request.Properties[nameof(TransientService)]);
+            }
+        }
+
+        [Fact]
+        public void AddHttpClient_GetAwaiterAndResult_InSingleThreadedSynchronizationContext_ShouldNotHangs()
+        {
+            // Arrange
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
+            {
+                var token = cts.Token;
+                token.Register(() => throw new OperationCanceledException(token));
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddHttpClient("example.com")
+                    .ConfigurePrimaryHttpMessageHandler(() =>
+                    {
+                        var mockHandler = new Mock<HttpMessageHandler>();
+                        mockHandler
+                        .Protected()
+                        .Setup<Task<HttpResponseMessage>>(
+                            "SendAsync",
+                            ItExpr.IsAny<HttpRequestMessage>(),
+                            ItExpr.IsAny<CancellationToken>()
+                        )
+                        .Returns(async () =>
+                        {
+                            await Task.Delay(1).ConfigureAwait(false);
+                            return new HttpResponseMessage(HttpStatusCode.OK);
+                        });
+                        return mockHandler.Object;
+                    });
+
+                var services = serviceCollection.BuildServiceProvider();
+                var factory = services.GetRequiredService<IHttpClientFactory>();
+                var client = factory.CreateClient("example.com");
+                var hangs = true;
+                SingleThreadedSynchronizationContext.Run(() =>
+                {
+                    // Act
+                    client.GetAsync("http://example.com", token).GetAwaiter().GetResult();
+                    hangs = false;
+                });
+
+                // Assert
+                Assert.False(hangs);
             }
         }
 
