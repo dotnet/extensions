@@ -21,11 +21,15 @@ To disable the Razor tooling in Visual Studio Code:
 
 ## Building from source
 
-Prerequisites:
+#### Win/Linux/Mac Prerequisites:
 - [Visual Studio Code](https://code.visualstudio.com) + [latest C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)
 - [Node.js](https://nodejs.org) (8.12.0 or later)
-- Clone the repo and restore Git submodules by running the following:
 
+#### Linux/Mac Prerequisites:
+- [Mono](https://www.mono-project.com/download/stable/) (5.18.1 or later)
+
+----
+Clone the repo and restore Git submodules by running the following:
   ```
   git clone https://github.com/aspnet/Razor.VSCode.git
   cd Razor.VSCode
@@ -40,6 +44,7 @@ To build at the command line, run `build.cmd` or `build.sh` from the solution di
 
 To run the built Razor tooling in Visual Studio Code: 
 
+- Ensure you've run `build.cmd` or `build.sh`.
 - In the `client` directory run the following:
 
   ```
@@ -48,7 +53,7 @@ To run the built Razor tooling in Visual Studio Code:
   ```
 
 - Open the solution folder in Visual Studio Code
-- Set the "razor.disabled" setting to true in the Visual Studio Code Workspace settings (*File* -> *Preferences* -> *Settings* -> *Workspace Settings*)
+- Set the "razor.devmode" setting to true in the Visual Studio Code Workspace settings (*File* -> *Preferences* -> *Settings* -> *Workspace Settings*)
 - Run in the debugger (F5) using the *Extension* launch profile
 - A new Visual Studio Code instance will open as an Extension Development Host
 - Try out Razor tooling features in `Pages/Index.cshtml` or any other Razor file
