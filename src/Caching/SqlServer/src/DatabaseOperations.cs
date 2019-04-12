@@ -52,8 +52,13 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
         protected ISystemClock SystemClock { get; }
 
-        protected SqlConnection CreateSqlConnection() => new SqlConnection(ConnectionString)
-            {AccessToken = AccessTokenFunc?.Invoke()};
+        protected SqlConnection CreateSqlConnection()
+        {
+            return new SqlConnection(ConnectionString)
+            {
+                AccessToken = AccessTokenFunc?.Invoke()
+            };
+        }
 
         public void DeleteCacheItem(string key)
         {
