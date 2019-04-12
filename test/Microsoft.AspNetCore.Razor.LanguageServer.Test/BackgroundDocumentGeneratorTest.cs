@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             Documents = new HostDocument[]
             {
-                new HostDocument("c:\\Test1\\Index.cshtml", "Index.cshtml"),
-                new HostDocument("c:\\Test1\\Components\\Counter.cshtml", "Components\\Counter.cshtml"),
+                new HostDocument("c:/Test1/Index.cshtml", "Index.cshtml"),
+                new HostDocument("c:/Test1/Components/Counter.cshtml", "Components/Counter.cshtml"),
             };
 
-            HostProject1 = new HostProject("c:\\Test1\\Test1.csproj", RazorConfiguration.Default, "TestRootNamespace");
-            HostProject2 = new HostProject("c:\\Test2\\Test2.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            HostProject1 = new HostProject("c:/Test1/Test1.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            HostProject2 = new HostProject("c:/Test2/Test2.csproj", RazorConfiguration.Default, "TestRootNamespace");
         }
 
         private IEnumerable<DocumentProcessedListener> Listeners => Enumerable.Empty<DocumentProcessedListener>();
