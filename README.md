@@ -45,6 +45,7 @@ To build at the command line, run `build.cmd` or `build.sh` from the solution di
 To run the built Razor tooling in Visual Studio Code: 
 
 - Ensure you've run `build.cmd` or `build.sh`.
+- Ensure the installed `dotnet` from running the build script is on your path.
 - In the `client` directory run the following:
 
   ```
