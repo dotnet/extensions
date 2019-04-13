@@ -18,7 +18,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview4-27612-09</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview4-27613-07</MicrosoftNETCoreAppPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview4.19212.13</MicrosoftBclJsonSourcesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview4.19212.13</MicrosoftWin32RegistryPackageVersion>
