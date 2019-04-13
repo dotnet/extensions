@@ -10,6 +10,10 @@ namespace Microsoft.Extensions.Hosting
 }
 namespace Microsoft.Extensions.Hosting.WindowsServices
 {
+    public static partial class ServiceHelpers
+    {
+        public static bool IsWindowsService() { throw null; }
+    }
     public partial class WindowsServiceLifetime : System.ServiceProcess.ServiceBase, Microsoft.Extensions.Hosting.IHostLifetime
     {
         public WindowsServiceLifetime(Microsoft.Extensions.Hosting.IHostEnvironment environment, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
