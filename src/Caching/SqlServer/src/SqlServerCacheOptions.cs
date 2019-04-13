@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         /// <summary>
         /// Gets or sets an access token provider that will be called to return a token for each SQL connection.
         /// </summary>
-        public Func<string> AccessTokenFunc { get; set; }
+        public Func<string> AccessTokenProvider { get; set; }
 
         SqlServerCacheOptions IOptions<SqlServerCacheOptions>.Value
         {

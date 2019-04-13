@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     cacheOptions.ConnectionString,
                     cacheOptions.SchemaName,
                     cacheOptions.TableName,
-                    cacheOptions.AccessTokenFunc,
+                    cacheOptions.AccessTokenProvider,
                     _systemClock);
             }
             else
@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     cacheOptions.ConnectionString,
                     cacheOptions.SchemaName,
                     cacheOptions.TableName,
-                    cacheOptions.AccessTokenFunc,
+                    cacheOptions.AccessTokenProvider,
                     _systemClock);
             }
         }

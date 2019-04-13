@@ -30,17 +30,17 @@ namespace Microsoft.Extensions.Caching.SqlServer
             "Connection string: {2}";
 
         public DatabaseOperations(
-            string connectionString, string schemaName, string tableName, Func<string> accessTokenFunc, ISystemClock systemClock)
+            string connectionString, string schemaName, string tableName, Func<string> accessTokenProvider, ISystemClock systemClock)
         {
             ConnectionString = connectionString;
             SchemaName = schemaName;
             TableName = tableName;
-            AccessTokenFunc = accessTokenFunc;
+            AccessTokenProvider = accessTokenProvider;
             SystemClock = systemClock;
             SqlQueries = new SqlQueries(schemaName, tableName);
         }
 
-        protected Func<string> AccessTokenFunc { get; }
+        protected Func<string> AccessTokenProvider { get; }
 
         protected SqlQueries SqlQueries { get; }
 
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             return new SqlConnection(ConnectionString)
             {
-                AccessToken = AccessTokenFunc?.Invoke()
+                AccessToken = AccessTokenProvider?.Invoke()
             };
         }
 
