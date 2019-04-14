@@ -21,7 +21,7 @@
 #       This build definition is enabled for code signing. (Only applies to Windows)
 
 #
-# See https://docs.microsoft.com/en-us/vsts/pipelines/yaml-schema for details
+# See https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 #
 
 parameters:
@@ -50,7 +50,7 @@ jobs:
       vmImage: ubuntu-16.04
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Windows')) }}:
       vmImage: vs2017-win2016
-      ${{ if and(eq(parameters.codeSign, 'true'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      ${{ if ne(variables['System.TeamProject'], 'public') }}:
         # This override makes the specified vmImage irrelevant.
         name: NetCoreInternal-Int-Pool
         queue: BuildPool.Windows.10.Amd64.VS2017
@@ -60,10 +60,9 @@ jobs:
     DOTNET_HOME: $(Agent.WorkFolder)/.dotnet
     BuildScriptArgs: ${{ parameters.buildArgs }}
     BuildConfiguration: ${{ parameters.configuration }}
-    VSTS_OVERWRITE_TEMP: false # Workaround for https://github.com/dotnet/core-eng/issues/2812
-    ${{ if or(ne(parameters.codeSign, 'true'), ne(variables['System.TeamProject'], 'internal')) }}:
+    ${{ if or(ne(parameters.codeSign, 'true'), ne(variables['System.TeamProject'], 'internal'), in(variables['Build.Reason'], 'PullRequest')) }}:
       _SignType:
-    ${{ if and(eq(parameters.codeSign, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
+    ${{ if and(eq(parameters.codeSign, 'true'), eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
       TeamName: AspNetCore
       _SignType: real
   steps:
