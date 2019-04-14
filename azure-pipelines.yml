@@ -35,10 +35,10 @@ jobs:
       displayName: Code check
       pool:
         # agent pool can't be read from a user-defined variable (Azure DevOps limitation)
-        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
           name: NetCorePublic-Int-Pool
           queue: BuildPool.Windows.10.Amd64.VS2019.BT.Open
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        ${{ if ne(variables['System.TeamProject'], 'public') }}:
           name: NetCoreInternal-Int-Pool
           queue: BuildPool.Windows.10.Amd64.VS2019.BT
       steps:
@@ -62,9 +62,9 @@ jobs:
     - job: Windows
       pool:
         # agent pool can't be read from a user-defined variable (Azure DevOps limitation)
-        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
           name: dotnet-external-vs2019-preview
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        ${{ if ne(variables['System.TeamProject'], 'public') }}:
           name: dotnet-internal-vs2019-preview
       strategy:
         matrix:
@@ -88,13 +88,12 @@ jobs:
       - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json
       - _PublishArgs: '/p:PublishToSymbolServer=false /p:PublishToAzure=false'
       - _BuildArgs: ''
-      - _OfficialBuildIdArgs: ''
-      
+
       # Variables for internal Official builds
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - _SignType: real
         - _BuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-            /p:OfficialBuildId=$(Build.BuildNumber) 
+            /p:OfficialBuildId=$(Build.BuildNumber)
             /p:ManifestBuildBranch=$(Build.SourceBranchName)
             /p:ManifestBuildNumber=$(Build.BuildNumber)
             /p:VisualStudioDropName=Products/AspNet/AspNetCore-Tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
@@ -103,7 +102,7 @@ jobs:
         - group: DotNet-Blob-Feed
         - group: DotNet-Symbol-Server-Pats
       steps:
-      - script: eng\common\cibuild.cmd 
+      - script: eng\common\cibuild.cmd
           -configuration $(_BuildConfig)
           -prepareMachine
           $(_BuildArgs)
