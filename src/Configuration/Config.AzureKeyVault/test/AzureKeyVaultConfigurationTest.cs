@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
     public class AzureKeyVaultConfigurationTest: ConfigurationProviderTestBase
     {
         private const string VaultUri = "https://vault";
+        private static readonly TimeSpan NoReloadDelay = TimeSpan.FromMilliseconds(1);
 
         [Fact]
         public void LoadsAllSecretsFromVault()
@@ -167,7 +168,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -212,7 +213,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -250,7 +251,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -295,7 +296,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -340,7 +341,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
