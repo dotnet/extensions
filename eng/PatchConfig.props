@@ -34,6 +34,7 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
       Microsoft.Extensions.HealthChecks;
       Microsoft.Extensions.Logging.AzureAppServices;
+      Microsoft.Extensions.Caching.StackExchangeRedis;
     </PackagesInPatch>
   </PropertyGroup>
 

@@ -70,7 +70,7 @@
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
     <LatestPackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
     <LatestPackageReference Include="StackExchange.Redis.StrongName" Version="1.2.6" />
-    <LatestPackageReference Include="StackExchange.Redis" Version="2.0.513" />
+    <LatestPackageReference Include="StackExchange.Redis" Version="2.0.593" />
     <LatestPackageReference Include="xunit.abstractions" Version="2.0.1" />
     <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
     <LatestPackageReference Include="xunit.assert" Version="2.3.1" />
