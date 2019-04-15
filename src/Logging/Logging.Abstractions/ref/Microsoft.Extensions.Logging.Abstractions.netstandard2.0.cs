@@ -42,6 +42,10 @@ namespace Microsoft.Extensions.Logging
     public partial interface ILogger<out TCategoryName> : Microsoft.Extensions.Logging.ILogger
     {
     }
+    public partial interface IScopeFuncLogger
+    {
+        System.IDisposable BeginScope<TState, TScopeState>(System.Func<TState, TScopeState> scopeCreator, in TState state);
+    }
     public partial interface ISupportExternalScope
     {
         void SetScopeProvider(Microsoft.Extensions.Logging.IExternalScopeProvider scopeProvider);
@@ -49,6 +53,8 @@ namespace Microsoft.Extensions.Logging
     public static partial class LoggerExtensions
     {
         public static System.IDisposable BeginScope(this Microsoft.Extensions.Logging.ILogger logger, string messageFormat, params object[] args) { throw null; }
+        public static System.IDisposable BeginScope<TState, TScopeState>(this Microsoft.Extensions.Logging.ILogger logger, System.Func<TState, TScopeState> scopeCreator, in TState state) { throw null; }
+        public static bool IsNullScope(this System.IDisposable disposable) { throw null; }
         public static void Log(this Microsoft.Extensions.Logging.ILogger logger, Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, System.Exception exception, string message, params object[] args) { }
         public static void Log(this Microsoft.Extensions.Logging.ILogger logger, Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string message, params object[] args) { }
         public static void Log(this Microsoft.Extensions.Logging.ILogger logger, Microsoft.Extensions.Logging.LogLevel logLevel, System.Exception exception, string message, params object[] args) { }
@@ -103,12 +109,14 @@ namespace Microsoft.Extensions.Logging
         public static System.Action<Microsoft.Extensions.Logging.ILogger, T1, T2, T3, T4, T5, System.Exception> Define<T1, T2, T3, T4, T5>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string formatString) { throw null; }
         public static System.Action<Microsoft.Extensions.Logging.ILogger, T1, T2, T3, T4, T5, T6, System.Exception> Define<T1, T2, T3, T4, T5, T6>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string formatString) { throw null; }
     }
-    public partial class Logger<T> : Microsoft.Extensions.Logging.ILogger, Microsoft.Extensions.Logging.ILogger<T>
+    public partial class Logger<T> : Microsoft.Extensions.Logging.ILogger, Microsoft.Extensions.Logging.ILogger<T>, Microsoft.Extensions.Logging.IScopeFuncLogger
     {
         public Logger(Microsoft.Extensions.Logging.ILoggerFactory factory) { }
+        public System.IDisposable BeginScope<TState, TScopeState>(System.Func<TState, TScopeState> scopeCreator, in TState state) { throw null; }
         System.IDisposable Microsoft.Extensions.Logging.ILogger.BeginScope<TState>(TState state) { throw null; }
         bool Microsoft.Extensions.Logging.ILogger.IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) { throw null; }
         void Microsoft.Extensions.Logging.ILogger.Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, System.Exception exception, System.Func<TState, System.Exception, string> formatter) { }
+        System.IDisposable Microsoft.Extensions.Logging.IScopeFuncLogger.BeginScope<TState, TScopeState>(System.Func<TState, TScopeState> scopeCreator, in TState state) { throw null; }
     }
     public enum LogLevel
     {
@@ -123,13 +131,15 @@ namespace Microsoft.Extensions.Logging
 }
 namespace Microsoft.Extensions.Logging.Abstractions
 {
-    public partial class NullLogger : Microsoft.Extensions.Logging.ILogger
+    public partial class NullLogger : Microsoft.Extensions.Logging.ILogger, Microsoft.Extensions.Logging.IScopeFuncLogger
     {
         internal NullLogger() { }
         public static Microsoft.Extensions.Logging.Abstractions.NullLogger Instance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.IDisposable BeginScope<TState>(TState state) { throw null; }
+        public System.IDisposable BeginScope<TState, TScopeState>(System.Func<TState, TScopeState> scopeCreator, in TState state) { throw null; }
         public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) { throw null; }
         public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, System.Exception exception, System.Func<TState, System.Exception, string> formatter) { }
+        System.IDisposable Microsoft.Extensions.Logging.IScopeFuncLogger.BeginScope<TState, TScopeState>(System.Func<TState, TScopeState> scopeCreator, in TState state) { throw null; }
     }
     public partial class NullLoggerFactory : Microsoft.Extensions.Logging.ILoggerFactory, System.IDisposable
     {

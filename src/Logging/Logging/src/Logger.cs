@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Logging
 {
-    internal class Logger : ILogger
+    internal class Logger : ILogger, IScopeFuncLogger
     {
         public LoggerInformation[] Loggers { get; set; }
         public MessageLogger[] MessageLoggers { get; set; }
@@ -92,6 +92,19 @@ namespace Microsoft.Extensions.Logging
             }
 
             return false;
+        }
+
+        /// <inheritdoc />
+        public IDisposable BeginScope<TState, TScopeState>(Func<TState, TScopeState> scopeCreator, in TState state)
+        {
+            var loggers = ScopeLoggers;
+
+            if (loggers == null)
+            {
+                return NullScope.Instance;
+            }
+
+            return BeginScope(scopeCreator(state));
         }
 
         public IDisposable BeginScope<TState>(TState state)

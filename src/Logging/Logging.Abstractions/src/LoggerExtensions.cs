@@ -12,6 +12,20 @@ namespace Microsoft.Extensions.Logging
     {
         private static readonly Func<FormattedLogValues, Exception, string> _messageFormatter = MessageFormatter;
 
+        public static IDisposable BeginScope<TState, TScopeState>(this ILogger logger, Func<TState, TScopeState> scopeCreator, in TState state)
+        {
+            if (logger is IScopeFuncLogger funcLogger)
+            {
+                return funcLogger.BeginScope(scopeCreator, in state);
+            }
+            else
+            {
+                return logger.BeginScope(scopeCreator(state));
+            }
+        }
+
+        public static bool IsNullScope(this IDisposable disposable) => disposable is null || ReferenceEquals(disposable, NullScope.Instance);
+
         //------------------------------------------DEBUG------------------------------------------//
 
         /// <summary>

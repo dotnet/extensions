@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Logging.Abstractions
     /// <summary>
     /// Minimalistic logger that does nothing.
     /// </summary>
-    public class NullLogger : ILogger
+    public class NullLogger : ILogger, IScopeFuncLogger
     {
         public static NullLogger Instance { get; } = new NullLogger();
 
@@ -18,6 +18,12 @@ namespace Microsoft.Extensions.Logging.Abstractions
 
         /// <inheritdoc />
         public IDisposable BeginScope<TState>(TState state)
+        {
+            return NullScope.Instance;
+        }
+
+        /// <inheritdoc />
+        public IDisposable BeginScope<TState, TScopeState>(Func<TState, TScopeState> scopeCreator, in TState state)
         {
             return NullScope.Instance;
         }

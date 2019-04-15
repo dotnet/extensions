@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Logging
     /// provided <see cref="ILoggerFactory"/>.
     /// </summary>
     /// <typeparam name="T">The type.</typeparam>
-    public class Logger<T> : ILogger<T>
+    public class Logger<T> : ILogger<T>, IScopeFuncLogger
     {
         private readonly ILogger _logger;
 
@@ -32,6 +32,11 @@ namespace Microsoft.Extensions.Logging
         IDisposable ILogger.BeginScope<TState>(TState state)
         {
             return _logger.BeginScope(state);
+        }
+
+        public IDisposable BeginScope<TState, TScopeState>(Func<TState, TScopeState> scopeCreator, in TState state)
+        {
+            return _logger.BeginScope(scopeCreator, in state);
         }
 
         bool ILogger.IsEnabled(LogLevel logLevel)
