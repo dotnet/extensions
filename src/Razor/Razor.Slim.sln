@@ -14,7 +14,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPageGenerator", "src\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Language", "src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj", "{932F3C9C-A6C0-40D3-BA50-9309886242FC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Language.Test", "test\Microsoft.AspNetCore.Razor.Language.Test\Microsoft.AspNetCore.Razor.Language.Test.csproj", "{969357A4-CCF1-46D9-B002-9AA072AFC75C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Language.Test", "test\RazorLanguage.Test\Microsoft.AspNetCore.Razor.Language.Test.csproj", "{969357A4-CCF1-46D9-B002-9AA072AFC75C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razor.Workspaces", "src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj", "{0F265874-C592-448B-BC4F-3430AB03E0DC}"
 EndProject
