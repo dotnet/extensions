@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Hosting
         /// <returns></returns>
         public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder)
         {
-            if (IsWindowsService())
+            if (ServiceHelpers.IsWindowsService())
             {
                 // Host.CreateDefaultBuilder uses CurrentDirectory for VS scenarios, but CurrentDirectory for services is c:\Windows\System32.
                 hostBuilder.UseContentRoot(AppContext.BaseDirectory);
@@ -49,21 +49,6 @@ namespace Microsoft.Extensions.Hosting
             }
 
             return hostBuilder;
-        }
-
-        private static bool IsWindowsService()
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return false;
-            }
-
-            var parent = WindowsServices.Internal.Win32.GetParentProcess();
-            if (parent == null)
-            {
-                return false;
-            }
-            return parent.SessionId == 0 && string.Equals("services", parent.ProcessName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
