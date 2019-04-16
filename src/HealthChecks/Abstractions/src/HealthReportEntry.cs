@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks
 {
@@ -22,13 +23,15 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// <param name="duration">A value indicating the health execution duration.</param>
         /// <param name="exception">An <see cref="Exception"/> representing the exception that was thrown when checking for status (if any).</param>
         /// <param name="data">Additional key-value pairs describing the health of the component.</param>
-        public HealthReportEntry(HealthStatus status, string description, TimeSpan duration, Exception exception, IReadOnlyDictionary<string, object> data)
+        /// <param name="tags">Tags associated with the health check that generated the report entry.</param>
+        public HealthReportEntry(HealthStatus status, string description, TimeSpan duration, Exception exception, IReadOnlyDictionary<string, object> data, IEnumerable<string> tags = null)
         {
             Status = status;
             Description = description;
             Duration = duration;
             Exception = exception;
             Data = data ?? _emptyReadOnlyDictionary;
+            Tags = tags ?? Enumerable.Empty<string>();
         }
 
         /// <summary>
@@ -55,5 +58,10 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// Gets the health status of the component that was checked.
         /// </summary>
         public HealthStatus Status { get; }
+
+        /// <summary>
+        /// Gets the tags associated with the health check.
+        /// </summary>
+        public IEnumerable<string> Tags { get; }
     }
 }
