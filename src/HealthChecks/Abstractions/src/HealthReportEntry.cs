@@ -23,6 +23,20 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// <param name="duration">A value indicating the health execution duration.</param>
         /// <param name="exception">An <see cref="Exception"/> representing the exception that was thrown when checking for status (if any).</param>
         /// <param name="data">Additional key-value pairs describing the health of the component.</param>
+        public HealthReportEntry(HealthStatus status, string description, TimeSpan duration, Exception exception, IReadOnlyDictionary<string, object> data)
+            : this(status, description, duration, exception, data, null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="HealthReportEntry"/> with the specified values for <paramref name="status"/>, <paramref name="exception"/>,
+        /// <paramref name="description"/>, and <paramref name="data"/>.
+        /// </summary>
+        /// <param name="status">A value indicating the health status of the component that was checked.</param>
+        /// <param name="description">A human-readable description of the status of the component that was checked.</param>
+        /// <param name="duration">A value indicating the health execution duration.</param>
+        /// <param name="exception">An <see cref="Exception"/> representing the exception that was thrown when checking for status (if any).</param>
+        /// <param name="data">Additional key-value pairs describing the health of the component.</param>
         /// <param name="tags">Tags associated with the health check that generated the report entry.</param>
         public HealthReportEntry(HealthStatus status, string description, TimeSpan duration, Exception exception, IReadOnlyDictionary<string, object> data, IEnumerable<string> tags = null)
         {
@@ -33,6 +47,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             Data = data ?? _emptyReadOnlyDictionary;
             Tags = tags ?? Enumerable.Empty<string>();
         }
+
 
         /// <summary>
         /// Gets additional key-value pairs describing the health of the component.

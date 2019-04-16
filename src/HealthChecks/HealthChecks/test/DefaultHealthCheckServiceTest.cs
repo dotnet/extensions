@@ -57,9 +57,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             const string UnhealthyMessage = "Halp!";
             const string HealthyMessage = "Everything is A-OK";
             var exception = new Exception("Things are pretty bad!");
-            IEnumerable<string> healthyCheckTags = new List<string> { "healthy-check-tag" };
-            IEnumerable<string> degradedCheckTags = new List<string> { "degraded-check-tag" };
-            IEnumerable<string> unhealthyCheckTags = new List<string> { "unhealthy-check-tag" };
+            var healthyCheckTags = new List<string> { "healthy-check-tag" };
+            var degradedCheckTags = new List<string> { "degraded-check-tag" };
+            var unhealthyCheckTags = new List<string> { "unhealthy-check-tag" };
 
             // Arrange
             var data = new Dictionary<string, object>()
