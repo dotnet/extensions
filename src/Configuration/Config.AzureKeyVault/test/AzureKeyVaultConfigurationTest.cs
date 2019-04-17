@@ -442,6 +442,18 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         }
 
         [Fact]
+        public void ConstructorThrowsForZeroRefreshPeriodValue()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new AzureKeyVaultConfigurationProvider(new MockKeyVaultClient(), VaultUri, new DefaultKeyVaultSecretManager(), TimeSpan.Zero));
+        }
+
+        [Fact]
+        public void ConstructorThrowsForNegativeRefreshPeriodValue()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new AzureKeyVaultConfigurationProvider(new MockKeyVaultClient(), VaultUri, new DefaultKeyVaultSecretManager(), TimeSpan.FromMilliseconds(-1)));
+        }
+
+        [Fact]
         public override void Null_values_are_included_in_the_config()
         {
             AssertConfig(BuildConfigRoot(LoadThroughProvider(TestSection.NullsTestConfig)), expectNulls: true);
