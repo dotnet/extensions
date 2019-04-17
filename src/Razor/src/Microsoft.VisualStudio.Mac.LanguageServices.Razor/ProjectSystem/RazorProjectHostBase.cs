@@ -60,7 +60,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
 
         protected ForegroundDispatcher ForegroundDispatcher => _foregroundDispatcher;
 
-        public void Detatch()
+        public void Detach()
         {
             _foregroundDispatcher.AssertForegroundThread();
 

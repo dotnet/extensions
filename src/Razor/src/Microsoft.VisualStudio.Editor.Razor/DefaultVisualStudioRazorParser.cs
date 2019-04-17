@@ -247,7 +247,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             if (_parser != null)
             {
-                // Detatch from the text buffer until we have a new parser to handle changes.
+                // Detach from the text buffer until we have a new parser to handle changes.
                 TextBuffer.Changed -= TextBuffer_OnChanged;
 
                 _parser.ResultsReady -= OnResultsReady;

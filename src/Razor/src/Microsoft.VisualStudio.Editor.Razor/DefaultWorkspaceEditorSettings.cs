@@ -59,7 +59,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 if (_listenerCount == 0)
                 {
-                    // We detatch from the editor settings manager when no one is listening to allow us to be garbage
+                    // We detach from the editor settings manager when no one is listening to allow us to be garbage
                     // collected in the case that the workspace is tearing down.
                     DetachFromEditorSettingsManager();
                 }

@@ -96,7 +96,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             _project.ProjectCapabilitiesChanged -= Project_ProjectCapabilitiesChanged;
             _project.Disposing -= Project_Disposing;
 
-            DetatchCurrentRazorProjectHost();
+            DetachCurrentRazorProjectHost();
         }
 
         private void Project_ProjectCapabilitiesChanged(object sender, EventArgs e) => UpdateRazorHostProject();
@@ -106,7 +106,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         {
             _foregroundDispatcher.AssertForegroundThread();
 
-            DetatchCurrentRazorProjectHost();
+            DetachCurrentRazorProjectHost();
 
             if (!_projectService.IsSupportedProject(_project))
             {
@@ -146,9 +146,9 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             return true;
         }
 
-        private void DetatchCurrentRazorProjectHost()
+        private void DetachCurrentRazorProjectHost()
         {
-            _razorProjectHost?.Detatch();
+            _razorProjectHost?.Detach();
             _razorProjectHost = null;
         }
     }
