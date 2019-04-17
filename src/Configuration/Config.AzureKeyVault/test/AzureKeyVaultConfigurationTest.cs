@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
     public class AzureKeyVaultConfigurationTest: ConfigurationProviderTestBase
     {
         private const string VaultUri = "https://vault";
+        private static readonly TimeSpan NoReloadDelay = TimeSpan.FromMilliseconds(1);
 
         [Fact]
         public void LoadsAllSecretsFromVault()
@@ -167,7 +168,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -212,7 +213,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -250,7 +251,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -295,7 +296,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -340,7 +341,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: TimeSpan.Zero))
+            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -438,6 +439,18 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         public void ConstructorThrowsForNullManager()
         {
             Assert.Throws<ArgumentNullException>(() => new AzureKeyVaultConfigurationProvider(Mock.Of<IKeyVaultClient>(), VaultUri, null));
+        }
+
+        [Fact]
+        public void ConstructorThrowsForZeroRefreshPeriodValue()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new AzureKeyVaultConfigurationProvider(new MockKeyVaultClient(), VaultUri, new DefaultKeyVaultSecretManager(), TimeSpan.Zero));
+        }
+
+        [Fact]
+        public void ConstructorThrowsForNegativeRefreshPeriodValue()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new AzureKeyVaultConfigurationProvider(new MockKeyVaultClient(), VaultUri, new DefaultKeyVaultSecretManager(), TimeSpan.FromMilliseconds(-1)));
         }
 
         [Fact]

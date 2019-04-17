@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _vault = vault ?? throw new ArgumentNullException(nameof(vault));
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
-            if (_reloadInterval != null && _reloadInterval.Value <= TimeSpan.Zero)
+            if (reloadInterval != null && reloadInterval.Value <= TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException (nameof(reloadInterval), reloadInterval, nameof(reloadInterval) + " must be positive.");
             }
