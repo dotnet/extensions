@@ -57,4 +57,12 @@
           SkipNonexistentTargets="true"
           SkipNonexistentProjects="true" />
   </Target>
+
+  <Target Name="Helix">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)\helix\helix.proj"
+             Targets="Test"
+             Properties="$(BuildProperties);$(SolutionProperties);"
+             ContinueOnError="ErrorAndStop" />
+  </Target>
+
 </Project>
