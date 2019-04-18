@@ -154,6 +154,120 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         }
         
         [Fact]
+        public async Task ReloadWaits_WhenTimeSpan_Ticks()
+        {
+            var reloadSpan = TimeSpan.FromTicks(99999999); //almost 10 seconds, should not be a multiple of milliseconds
+            var confirmSpan = TimeSpan.FromMilliseconds(50);
+
+            var client = new MockKeyVaultClient();
+            client.SetPages(new[] { CreateSecret("Secret1", "Value1") });
+
+            // Act & Assert
+            using (var provider = new ReloadInspectorKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadSpan))
+            {
+                provider.Load();
+                await Task.Delay(confirmSpan);
+                Assert.True(provider.IsParentWaiting, $"Provider didn't wait at least {confirmSpan} before reload");
+                Assert.True(provider.WaitedOnce, $"Provider hasn't started reload at all");
+            }
+        }
+
+        [Fact]
+        public async Task ReloadWaits_WhenTimeSpan_Milliseconds()
+        {
+            var reloadSpan = TimeSpan.FromMilliseconds(999); //should not be a multiple of 1000
+            var confirmSpan = TimeSpan.FromMilliseconds(50);
+
+            var client = new MockKeyVaultClient();
+            client.SetPages(new[] { CreateSecret("Secret1", "Value1") });
+
+            // Act & Assert
+            using (var provider = new ReloadInspectorKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadSpan))
+            {
+                provider.Load();
+                await Task.Delay(confirmSpan);
+                Assert.True(provider.IsParentWaiting, $"Provider didn't wait at least {confirmSpan} before reload");
+                Assert.True(provider.WaitedOnce, $"Provider hasn't started reload at all");
+            }
+        }
+
+        [Fact]
+        public async Task ReloadWaits_WhenTimeSpan_Seconds()
+        {
+            var reloadSpan = TimeSpan.FromSeconds(50); //should not be a multiple of 60
+            var confirmSpan = TimeSpan.FromMilliseconds(50);
+
+            var client = new MockKeyVaultClient();
+            client.SetPages(new[] { CreateSecret("Secret1", "Value1") });
+
+            // Act & Assert
+            using (var provider = new ReloadInspectorKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadSpan))
+            {
+                provider.Load();
+                await Task.Delay(confirmSpan);
+                Assert.True(provider.IsParentWaiting, $"Provider didn't wait at least {confirmSpan} before reload");
+                Assert.True(provider.WaitedOnce, $"Provider hasn't started reload at all");
+            }
+        }
+
+        [Fact]
+        public async Task ReloadWaits_WhenTimeSpan_Minutes()
+        {
+            var reloadSpan = TimeSpan.FromMinutes(50); //should not be a multiple of 60
+            var confirmSpan = TimeSpan.FromMilliseconds(50);
+
+            var client = new MockKeyVaultClient();
+            client.SetPages(new[] { CreateSecret("Secret1", "Value1") });
+
+            // Act & Assert
+            using (var provider = new ReloadInspectorKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadSpan))
+            {
+                provider.Load();
+                await Task.Delay(confirmSpan);
+                Assert.True(provider.IsParentWaiting, $"Provider didn't wait at least {confirmSpan} before reload");
+                Assert.True(provider.WaitedOnce, $"Provider hasn't started reload at all");
+            }
+        }
+
+        [Fact]
+        public async Task ReloadWaits_WhenTimeSpan_Hours()
+        {
+            var reloadSpan = TimeSpan.FromHours(23); //should not be a multiple of 24
+            var confirmSpan = TimeSpan.FromMilliseconds(50);
+
+            var client = new MockKeyVaultClient();
+            client.SetPages(new[] { CreateSecret("Secret1", "Value1") });
+
+            // Act & Assert
+            using (var provider = new ReloadInspectorKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadSpan))
+            {
+                provider.Load();
+                await Task.Delay(confirmSpan);
+                Assert.True(provider.IsParentWaiting, $"Provider didn't wait at least {confirmSpan} before reload");
+                Assert.True(provider.WaitedOnce, $"Provider hasn't started reload at all");
+            }
+        }
+
+        [Fact]
+        public async Task ReloadWaits_WhenTimeSpan_Days()
+        {
+            var reloadSpan = TimeSpan.FromDays(10);
+            var confirmSpan = TimeSpan.FromMilliseconds(50);
+
+            var client = new MockKeyVaultClient();
+            client.SetPages(new[] { CreateSecret("Secret1", "Value1") });
+
+            // Act & Assert
+            using (var provider = new ReloadInspectorKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadSpan))
+            {
+                provider.Load();
+                await Task.Delay(confirmSpan);
+                Assert.True(provider.IsParentWaiting, $"Provider didn't wait at least {confirmSpan} before reload");
+                Assert.True(provider.WaitedOnce, $"Provider hasn't started reload at all");
+            }
+        }
+
+        [Fact]
         public async Task SupportsAutoReload()
         {
             var updated = DateTime.Now;
@@ -568,6 +682,30 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 _signalTaskCompletionSource = new TaskCompletionSource<object>();
                 releaseTaskCompletionSource.SetResult(null);
             }
+        }
+
+        private class ReloadInspectorKeyVaultProvider : AzureKeyVaultConfigurationProvider
+        {
+            private int totalCalls = 0;
+            private int isParentWaiting = 0;
+
+            public ReloadInspectorKeyVaultProvider(IKeyVaultClient client, string vault, IKeyVaultSecretManager manager, TimeSpan? reloadPollDelay = null)
+                : base(client, vault, manager, reloadPollDelay)
+            {
+            }
+
+            protected override async Task WaitForReload()
+            {
+                var calls = Interlocked.Increment(ref totalCalls);
+                if (calls > 1) throw new InvalidOperationException($"{nameof(AzureKeyVaultConfigurationProvider)} attempts to perform several reload cycles.");
+                Interlocked.Exchange(ref isParentWaiting, 1);
+                await base.WaitForReload();
+                Interlocked.Exchange(ref isParentWaiting, 0);
+            }
+
+            public bool IsParentWaiting => Interlocked.CompareExchange(ref isParentWaiting, 0, 0) == 1;
+
+            public bool WaitedOnce => Interlocked.CompareExchange(ref totalCalls, 0, 0) == 1;
         }
 
         protected override (IConfigurationProvider Provider, Action Initializer) LoadThroughProvider(TestSection testConfig)

@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         protected virtual async Task WaitForReload()
         {
-            await Task.Delay(_reloadInterval.Value.Milliseconds, _cancellationToken.Token);
+            await Task.Delay(_reloadInterval.Value, _cancellationToken.Token);
         }
 
         private async Task LoadAsync()
@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             // schedule a polling task only if none exists and a valid delay is specified
             if (_pollingTask == null && _reloadInterval != null)
             {
-                _pollingTask = PollForSecretChangesAsync();
+                _pollingTask = Task.Run(PollForSecretChangesAsync);
             }
         }
 
