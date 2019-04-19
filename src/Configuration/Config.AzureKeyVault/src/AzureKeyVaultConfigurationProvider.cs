@@ -46,7 +46,6 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                 _reloadInterval = reloadInterval.Value;
             }
 
-            _pollingTask = null;
             _cancellationToken = new CancellationTokenSource();
         }
 
