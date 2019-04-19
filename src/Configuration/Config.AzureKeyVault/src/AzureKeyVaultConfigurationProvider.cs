@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     /// </summary>
     internal class AzureKeyVaultConfigurationProvider : ConfigurationProvider, IDisposable
     {
-        private readonly TimeSpan? _reloadInterval;
+        private readonly TimeSpan _reloadInterval;
         private readonly IKeyVaultClient _client;
         private readonly string _vault;
         private readonly IKeyVaultSecretManager _manager;
@@ -36,14 +36,18 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _vault = vault ?? throw new ArgumentNullException(nameof(vault));
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
-            if (reloadInterval != null && reloadInterval.Value <= TimeSpan.Zero)
+
+            if (reloadInterval != null)
             {
-                throw new ArgumentOutOfRangeException (nameof(reloadInterval), reloadInterval, nameof(reloadInterval) + " must be positive.");
+                if (reloadInterval.Value <= TimeSpan.Zero)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(reloadInterval), reloadInterval, nameof(reloadInterval) + " must be positive.");
+                }
+                _reloadInterval = reloadInterval.Value;
             }
 
             _pollingTask = null;
             _cancellationToken = new CancellationTokenSource();
-            _reloadInterval = reloadInterval;
         }
 
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
@@ -66,7 +70,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         protected virtual async Task WaitForReload()
         {
-            await Task.Delay(_reloadInterval.Value, _cancellationToken.Token);
+            await Task.Delay(_reloadInterval, _cancellationToken.Token);
         }
 
         private async Task LoadAsync()
@@ -124,7 +128,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             }
 
             // schedule a polling task only if none exists and a valid delay is specified
-            if (_pollingTask == null && _reloadInterval != null)
+            if (_pollingTask == null && _reloadInterval > TimeSpan.Zero)
             {
                 _pollingTask = Task.Run(PollForSecretChangesAsync);
             }
