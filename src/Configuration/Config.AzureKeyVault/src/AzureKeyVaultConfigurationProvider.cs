@@ -130,7 +130,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             // schedule a polling task only if none exists and a valid delay is specified
             if (_pollingTask == null && _reloadInterval > TimeSpan.Zero)
             {
-                _pollingTask = Task.Run(PollForSecretChangesAsync);
+                _pollingTask = PollForSecretChangesAsync();
             }
         }
 
