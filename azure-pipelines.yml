@@ -115,7 +115,7 @@ jobs:
         condition: always()
       - task: PublishBuildArtifacts@1
         displayName: Upload package artifacts
-        condition: and(eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
         inputs:
           pathtoPublish: artifacts/packages/
           artifactName: artifacts
