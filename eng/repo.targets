@@ -59,9 +59,12 @@
   </Target>
 
   <Target Name="Helix">
+    <PropertyGroup>
+         <ProjectsToBuild>@(ProjectToBuild)</ProjectsToBuild>
+    </PropertyGroup>
     <MSBuild Projects="$(MSBuildThisFileDirectory)\helix\helix.proj"
              Targets="Test"
-             Properties="$(BuildProperties);$(SolutionProperties);"
+             Properties="$(BuildProperties);$(SolutionProperties);ProjectsToBuild=$(ProjectsToBuild)"
              ContinueOnError="ErrorAndStop" />
   </Target>
 

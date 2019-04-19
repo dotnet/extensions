@@ -64,4 +64,5 @@
   <Import Project="eng\targets\Csharp.Refs.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
 
   <Import Project="eng\targets\Npm.Common.props" Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+  <Import Project="eng\helix\Helix.props" Condition=" '$(IsUnitTestProject)' == 'true' "/>
 </Project>

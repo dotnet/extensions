@@ -10,6 +10,7 @@
     </ItemDefinitionGroup>
 
     <PropertyGroup>
+        <BuildHelixPayload>true</BuildHelixPayload>
         <CreateHelixPayload>true</CreateHelixPayload>
         <HelixTimeout>00:30:00</HelixTimeout>
         <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
@@ -21,18 +22,18 @@
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
         <HelixProjectPlatform Include="Windows" />
 
-        <HelixContent Include="$(RepositoryRoot)eng\helix\xunit\runtests.cmd" />
+        <HelixContent Include="$(MSBuildThisFileDirectory)\xunit\runtests.cmd" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
         <HelixProjectPlatform Include="@(HelixAvailblePlatform)" />
 
-        <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.sh" />
-        <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.cmd" />
+        <HelixContent Include="$(MSBuildThisFileDirectory)\vstest\runtests.sh" />
+        <HelixContent Include="$(MSBuildThisFileDirectory)\vstest\runtests.cmd" />
     </ItemGroup>
 
     <ItemGroup>
-        <HelixContent Include="$(RepositoryRoot)eng\scripts\RunPowershell.cmd" />
+        <HelixContent Include="$(RepoRoot)eng\scripts\RunPowershell.cmd" />
     </ItemGroup>
 
 </Project>

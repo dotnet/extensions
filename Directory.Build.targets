@@ -42,6 +42,8 @@
 
     <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true' AND '$(IsShipping)' == 'true'">true</HasReferenceAssembly>
     <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
+
+    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsUnitTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
@@ -51,4 +53,6 @@
   <Import Project="eng\Workarounds.AfterArcade.targets" />
 
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+
+  <Import Project="eng\helix\Helix.targets" Condition=" '$(IsUnitTestProject)' == 'true' "/>
 </Project>
