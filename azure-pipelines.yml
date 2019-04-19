@@ -195,3 +195,17 @@ jobs:
           searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
         continueOnError: true
         condition: always()
+
+    - job: Helix
+      pool:
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          name: NetCorePublic-Int-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2017.Open
+        ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          name: NetCoreInternal-Int-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2017
+      steps:
+      - checkout: self
+        clean: true
+      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:Helix '/p:IsHelixJob=true'
+        displayName: Run helix tests
