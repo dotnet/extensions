@@ -55,10 +55,10 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         {
             while (!_cancellationToken.IsCancellationRequested)
             {
-                await WaitForReload();
+                await WaitForReload().ConfigureAwait(false);
                 try
                 {
-                    await LoadAsync();
+                    await LoadAsync().ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         protected virtual async Task WaitForReload()
         {
-            await Task.Delay(_reloadInterval, _cancellationToken.Token);
+            await Task.Delay(_reloadInterval, _cancellationToken.Token).ConfigureAwait(false);
         }
 
         private async Task LoadAsync()
