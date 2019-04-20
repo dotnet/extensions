@@ -10,7 +10,6 @@
     </ItemDefinitionGroup>
 
     <PropertyGroup>
-        <BuildHelixPayload>true</BuildHelixPayload>
         <CreateHelixPayload>true</CreateHelixPayload>
         <HelixTimeout>00:30:00</HelixTimeout>
         <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
