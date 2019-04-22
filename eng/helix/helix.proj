@@ -28,7 +28,7 @@
   </ItemGroup>
  
   <Target Name="Gather" BeforeTargets="Build">
-    <MSBuild Projects="@(_Projects)"
+    <MSBuild Projects="$(RepoRoot)\src\Options\test\Microsoft.Extensions.Options.Tests.csproj"
               Targets="CreateHelixPayload"
               SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
