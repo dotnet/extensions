@@ -211,8 +211,9 @@ jobs:
         displayName: Run helix tests
       - task: PublishBuildArtifacts@1
         displayName: Upload helix binlog
-        continueOnError: true
         inputs:
           pathtoPublish: artifacts/logs/
           artifactType: Container
           parallel: true
+        continueOnError: true
+        condition: always()
