@@ -61,16 +61,19 @@ jobs:
     BuildScriptArgs: ${{ parameters.buildArgs }}
     BuildConfiguration: ${{ parameters.configuration }}
     VSTS_OVERWRITE_TEMP: false # Workaround for https://github.com/dotnet/core-eng/issues/2812
-    ${{ if or(ne(parameters.codeSign, 'true'), ne(variables['System.TeamProject'], 'internal'), in(variables['Build.Reason'], 'PullRequest')) }}:
+    ${{ if or(ne(parameters.codeSign, 'true'), ne(variables['System.TeamProject'], 'internal')) }}:
       _SignType:
-    ${{ if and(eq(parameters.codeSign, 'true'), eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    ${{ if and(eq(parameters.codeSign, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
       TeamName: AspNetCore
-      _SignType: real
+      ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        _SignType: test
+      ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+        _SignType: real
   steps:
   - checkout: self
     clean: true
   - ${{ if and(eq(variables['System.TeamProject'], 'internal'), eq(parameters.agentOs, 'Windows'), eq(parameters.codeSign, 'true')) }}:
-    - task: MicroBuildSigningPlugin@1
+    - task: MicroBuildSigningPlugin@2
       displayName: Install MicroBuild Signing plugin
       condition: and(succeeded(), in(variables['_SignType'], 'test', 'real'))
       inputs:
