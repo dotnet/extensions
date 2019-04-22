@@ -113,6 +113,16 @@ jobs:
           searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
         continueOnError: true
         condition: always()
+      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:Helix '/p:IsHelixJob=true' /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\logs\SendToHelix.binlog
+        displayName: Run helix tests
+      - task: PublishBuildArtifacts@1
+        displayName: Upload helix binlog
+        inputs:
+          pathtoPublish: artifacts/logs/
+          artifactType: Container
+          parallel: true
+        continueOnError: true
+        condition: always()
       - task: PublishBuildArtifacts@1
         displayName: Upload package artifacts
         condition: and(eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
@@ -193,27 +203,5 @@ jobs:
           testResultsFormat: 'xUnit'
           testResultsFiles: '*.xml' 
           searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
-        continueOnError: true
-        condition: always()
-
-    - job: Helix
-      pool:
-        ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          name: NetCorePublic-Int-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2017.Open
-        ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          name: NetCoreInternal-Int-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2017
-      steps:
-      - checkout: self
-        clean: true
-      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:Helix '/p:IsHelixJob=true' /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\logs\SendToHelix.binlog
-        displayName: Run helix tests
-      - task: PublishBuildArtifacts@1
-        displayName: Upload helix binlog
-        inputs:
-          pathtoPublish: artifacts/logs/
-          artifactType: Container
-          parallel: true
         continueOnError: true
         condition: always()
