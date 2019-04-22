@@ -1,3 +1,7 @@
+#
+# See https://docs.microsoft.com/azure/devops/pipelines/yaml-schema for details
+#
+
 variables:
   - name: _TeamName
     value: AspNetCore
@@ -109,7 +113,7 @@ jobs:
         displayName: Publish Flaky Test Results
         inputs:
           testResultsFormat: 'xUnit'
-          testResultsFiles: '*.xml' 
+          testResultsFiles: '*.xml'
           searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
         continueOnError: true
         condition: always()
@@ -154,7 +158,7 @@ jobs:
         displayName: Publish Flaky Test Results
         inputs:
           testResultsFormat: 'xUnit'
-          testResultsFiles: '*.xml' 
+          testResultsFiles: '*.xml'
           searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
         continueOnError: true
         condition: always()
@@ -191,7 +195,7 @@ jobs:
         displayName: Publish Flaky Test Results
         inputs:
           testResultsFormat: 'xUnit'
-          testResultsFiles: '*.xml' 
+          testResultsFiles: '*.xml'
           searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
         continueOnError: true
         condition: always()
