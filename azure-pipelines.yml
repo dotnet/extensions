@@ -1,5 +1,5 @@
 #
-# See https://docs.microsoft.com/en-us/vsts/pipelines/yaml-schema for details
+# See https://docs.microsoft.com/azure/devops/pipelines/yaml-schema for details
 #
 
 # Only run CI builds for these branches
