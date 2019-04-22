@@ -117,7 +117,7 @@ jobs:
           PublishLocation: Container
           ArtifactName: VSIX_$(Agent.Os)_$(Agent.JobName)
         continueOnError: true
-        condition: eq(variables['_BuildConfig'], 'Release')
+        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
       - task: PublishBuildArtifacts@1
         displayName: Publish VS for Mac Artifacts
         inputs:
@@ -125,7 +125,7 @@ jobs:
           PublishLocation: Container
           ArtifactName: MPack_$(Agent.Os)_$(Agent.JobName)
         continueOnError: true
-        condition: eq(variables['_BuildConfig'], 'Release')
+        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
       - task: PublishBuildArtifacts@1
         displayName: Publish package artifacts
         inputs:
@@ -133,7 +133,7 @@ jobs:
           PublishLocation: Container
           ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
         continueOnError: true
-        condition: eq(variables['_BuildConfig'], 'Release')
+        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
 
     - job: macOS
       pool:
