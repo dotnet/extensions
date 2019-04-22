@@ -207,5 +207,12 @@ jobs:
       steps:
       - checkout: self
         clean: true
-      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:Helix '/p:IsHelixJob=true'
+      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:Helix '/p:IsHelixJob=true' /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\logs\SendToHelix.binlog
         displayName: Run helix tests
+      - task: PublishBuildArtifacts@1
+        displayName: Upload helix binlog
+        continueOnError: true
+        inputs:
+          pathtoPublish: artifacts/logs/
+          artifactType: Container
+          parallel: true
