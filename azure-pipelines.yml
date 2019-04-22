@@ -113,7 +113,7 @@ jobs:
           searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
         continueOnError: true
         condition: always()
-      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:Helix '/p:IsHelixJob=true' /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\logs\SendToHelix.binlog
+      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:Helix '/p:IsHelixJob=true' '/p:Configuration=$(_BuildConfig)' /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\logs\SendToHelix.binlog
         displayName: Run helix tests
       - task: PublishBuildArtifacts@1
         displayName: Upload helix binlog
