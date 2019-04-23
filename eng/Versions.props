@@ -18,23 +18,23 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview6-27622-26</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview6-27623-08</MicrosoftNETCoreAppPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview6.19222.9</MicrosoftBclJsonSourcesPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview6.19222.9</MicrosoftWin32RegistryPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview6.19222.9</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDataSqlClientPackageVersion>4.7.0-preview6.19222.9</SystemDataSqlClientPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview6.19222.9</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview6.19222.9</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.6.0-preview6.19222.9</SystemIOPipelinesPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.7.0-preview6.19222.9</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview6.19222.9</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview6.19222.9</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview6.19222.9</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview6.19222.9</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.6.0-preview6.19222.9</SystemTextEncodingsWebPackageVersion>
+    <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview6.19223.2</MicrosoftBclJsonSourcesPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview6.19223.2</MicrosoftWin32RegistryPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview6.19223.2</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.7.0-preview6.19223.2</SystemDataSqlClientPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview6.19223.2</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview6.19223.2</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0-preview6.19223.2</SystemIOPipelinesPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview6.19223.2</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview6.19223.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview6.19223.2</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview6.19223.2</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview6.19223.2</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0-preview6.19223.2</SystemTextEncodingsWebPackageVersion>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
-    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview6.19222.9</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview6.19223.2</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19222.2</MicrosoftDotNetGenAPIPackageVersion>
   </PropertyGroup>
