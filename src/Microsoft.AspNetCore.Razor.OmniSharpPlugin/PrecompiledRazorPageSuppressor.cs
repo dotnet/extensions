@@ -56,7 +56,11 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                         break;
                     }
 
-                    if (!document.FilePath.EndsWith(".cshtml.g.cs", StringComparison.Ordinal) && !document.FilePath.EndsWith(".razor.g.cs", StringComparison.Ordinal))
+                    if (!document.FilePath.EndsWith(".cshtml.g.cs", StringComparison.Ordinal) && 
+                        !document.FilePath.EndsWith(".razor.g.cs", StringComparison.Ordinal) &&
+
+                        // 2.2 only extension for generated Razor files
+                        !document.FilePath.EndsWith("g.cshtml.cs", StringComparison.Ordinal))
                     {
                         break;
                     }
