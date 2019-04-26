@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview6.19225.11">
+    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview6.19225.12">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>1e48cddda54ddd1add33643983541bead0a0eac4</Sha>
+      <Sha>fa7824f07d20460e3b6592fc4ce1c12a7417dcd6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.0.0-preview6.19225.11">
+    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.0.0-preview6.19225.12">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>1e48cddda54ddd1add33643983541bead0a0eac4</Sha>
+      <Sha>fa7824f07d20460e3b6592fc4ce1c12a7417dcd6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.NonCapturingTimer.Sources" Version="3.0.0-preview6.19225.11">
+    <Dependency Name="Microsoft.Extensions.NonCapturingTimer.Sources" Version="3.0.0-preview6.19225.12">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>1e48cddda54ddd1add33643983541bead0a0eac4</Sha>
+      <Sha>fa7824f07d20460e3b6592fc4ce1c12a7417dcd6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="3.0.0-preview6.19225.11">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="3.0.0-preview6.19225.12">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>1e48cddda54ddd1add33643983541bead0a0eac4</Sha>
+      <Sha>fa7824f07d20460e3b6592fc4ce1c12a7417dcd6</Sha>
     </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview6.19225.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -25,13 +25,13 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>1638836a4e5311f23eaa0d24ace031216f94aa18</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview6-27625-11" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview6-27625-12" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>0b5aa0b4e7eefa89f5142e5783f30387b21b3ec9</Sha>
+      <Sha>7804a8632abdc4141b5b4c8bb2f670b34c57f227</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27625-11" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27625-12" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>0b5aa0b4e7eefa89f5142e5783f30387b21b3ec9</Sha>
+      <Sha>7804a8632abdc4141b5b4c8bb2f670b34c57f227</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -40,13 +40,13 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>1638836a4e5311f23eaa0d24ace031216f94aa18</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.0.0-preview6.19225.11">
+    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.0.0-preview6.19225.12">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>1e48cddda54ddd1add33643983541bead0a0eac4</Sha>
+      <Sha>fa7824f07d20460e3b6592fc4ce1c12a7417dcd6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview6.19225.11">
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview6.19225.12">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>1e48cddda54ddd1add33643983541bead0a0eac4</Sha>
+      <Sha>fa7824f07d20460e3b6592fc4ce1c12a7417dcd6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19224.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
