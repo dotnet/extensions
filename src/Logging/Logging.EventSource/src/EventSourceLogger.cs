@@ -208,8 +208,8 @@ namespace Microsoft.Extensions.Logging.EventSource
 
         private string ToJson(IReadOnlyList<KeyValuePair<string, string>> keyValues)
         {
-            var arrayBufferWriter = new ArrayBufferWriter<byte>();
-            var writer = new Utf8JsonWriter(arrayBufferWriter);
+            using var stream = new MemoryStream();
+            using var writer = new Utf8JsonWriter(stream);
 
             writer.WriteStartObject();
             foreach (var keyValue in keyValues)
@@ -220,7 +220,7 @@ namespace Microsoft.Extensions.Logging.EventSource
 
             writer.Flush();
 
-            return Encoding.UTF8.GetString(arrayBufferWriter.WrittenMemory.ToArray());
+            return Encoding.UTF8.GetString(stream.ToArray());
         }
     }
 }
