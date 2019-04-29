@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Logging;
 using Polly;
-using Polly.CircuitBreaker;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
