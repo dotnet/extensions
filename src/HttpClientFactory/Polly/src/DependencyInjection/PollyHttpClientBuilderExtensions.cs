@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -232,6 +232,56 @@ namespace Microsoft.Extensions.DependencyInjection
             var policy = configurePolicy(policyBuilder);
 
             builder.AddHttpMessageHandler(() => new PolicyHttpMessageHandler(policy));
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a <see cref="PolicyHttpMessageHandler"/> which will surround request execution with a policy returned
+        /// by executing provided key selection logic <paramref name="policySelector"/>. Based on the 
+        /// </summary>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="keySelector">To select a PolicyRegistry key based on <seealso cref="HttpRequestMessage"/>.</param>
+        /// <param name="policySelector">Selects an <see cref="IAsyncPolicy{HttpResponseMessage}"/> to apply to the current request based on key selection.</param>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
+        /// <remarks>
+        /// <para>
+        /// See the remarks on <see cref="PolicyHttpMessageHandler"/> for guidance on configuring policies.
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder AddPolicyHandler(this IHttpClientBuilder builder, Func<HttpRequestMessage, string> keySelector, Func<IServiceProvider, HttpRequestMessage, string, IAsyncPolicy<HttpResponseMessage>> policySelector)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (keySelector == null)
+            {
+                throw new ArgumentNullException(nameof(keySelector));
+            }
+
+            if (policySelector == null)
+            {
+                throw new ArgumentNullException(nameof(policySelector));
+            }
+
+            builder.AddHttpMessageHandler((services) =>
+            {
+                var registry = services.GetRequiredService<IPolicyRegistry<string>>();
+                return new PolicyHttpMessageHandler((request) =>
+                {
+                    var key = keySelector(request);
+                    
+                    if (registry.TryGet<IAsyncPolicy<HttpResponseMessage>>(key, out var policy))
+                    {
+                        return policy;
+                    }
+
+                    var newPolicy = policySelector(services, request, key);
+                    registry[key] = newPolicy;
+                    return newPolicy;
+                });
+            });
             return builder;
         }
     }
