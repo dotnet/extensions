@@ -33,9 +33,6 @@ namespace Microsoft.Extensions.DependencyInjection
         // Matches what our client handler does 
         private IAsyncPolicy<HttpResponseMessage> RetryPolicy { get; }
 
-        // Matches what our client handler does 
-        private CircuitBreakerPolicy<HttpResponseMessage> CircuitBreakerPolicy { get; }
-
         [Fact]
         public async Task AddPolicyHandler_Policy_AddsPolicyHandler()
         {
