@@ -240,7 +240,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// by executing provided key selection logic <paramref name="policySelector"/>. Based on the 
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
-        /// <param name="keySelector">To select a PolicyRegistry key based on <seealso cref="HttpRequestMessage"/>.</param>
+        /// <param name="keySelector">To select a Policy key based on <seealso cref="HttpRequestMessage"/>.</param>
         /// <param name="policySelector">Selects an <see cref="IAsyncPolicy{HttpResponseMessage}"/> to apply to the current request based on key selection.</param>
         /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
         /// <remarks>
