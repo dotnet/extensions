@@ -220,7 +220,12 @@ namespace Microsoft.Extensions.Logging.EventSource
 
             writer.Flush();
 
-            return Encoding.UTF8.GetString(stream.ToArray());
+            if (!stream.TryGetBuffer(out var buffer))
+            {
+                buffer = new ArraySegment<byte>(stream.ToArray());
+            }
+
+            return Encoding.UTF8.GetString(buffer.Array, buffer.Offset, buffer.Count);
         }
     }
 }
