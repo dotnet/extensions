@@ -20,7 +20,6 @@
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview6-27628-12</MicrosoftNETCoreAppPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview6.19222.12</MicrosoftBclJsonSourcesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview6.19227.7</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview6.19227.7</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview6.19227.7</SystemDataSqlClientPackageVersion>
@@ -33,6 +32,7 @@
     <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview6.19227.7</SystemSecurityCryptographyXmlPackageVersion>
     <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview6.19227.7</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview6.19227.7</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>4.6.0-preview6.19227.7</SystemTextJsonPackageVersion>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview6.19227.7</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->

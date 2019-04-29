@@ -10,10 +10,6 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview6.19222.12" CoherentParentDependency="Microsoft.NETCore.App">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>a78bd0c13887e26372aafdffb8f06be26563c4a8</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="4.6.0-preview6.19227.7" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>4f27d0f84c17850ef02ea7b330908fddcdf73c86</Sha>
@@ -59,6 +55,10 @@
       <Sha>4f27d0f84c17850ef02ea7b330908fddcdf73c86</Sha>
     </Dependency>
     <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview6.19227.7" CoherentParentDependency="Microsoft.NETCore.App">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>4f27d0f84c17850ef02ea7b330908fddcdf73c86</Sha>
+    </Dependency>
+    <Dependency Name="System.Text.Json" Version="4.6.0-preview6.19227.7" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>4f27d0f84c17850ef02ea7b330908fddcdf73c86</Sha>
     </Dependency>
