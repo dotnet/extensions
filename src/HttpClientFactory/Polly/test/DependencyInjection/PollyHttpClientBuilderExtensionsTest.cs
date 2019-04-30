@@ -356,13 +356,13 @@ namespace Microsoft.Extensions.DependencyInjection
             // Act1
             serviceCollection.AddHttpClient("Service")
                 .AddPolicyHandler(
-                (r) =>
-                {
-                    return r.RequestUri.Host;
-                },
                 (sp, req, key) =>
                 {
                     return RetryPolicy;
+                },
+                (r) =>
+                {
+                    return r.RequestUri.Host;
                 }
                 )
                 .ConfigureHttpMessageHandlerBuilder(b =>
