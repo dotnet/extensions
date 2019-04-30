@@ -10,6 +10,7 @@ namespace Microsoft.Extensions.Configuration
         public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddXmlFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string path) { throw null; }
         public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddXmlFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string path, bool optional) { throw null; }
         public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddXmlFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange) { throw null; }
+        public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddXmlStream(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, System.IO.Stream stream) { throw null; }
     }
 }
 namespace Microsoft.Extensions.Configuration.Xml
@@ -23,6 +24,12 @@ namespace Microsoft.Extensions.Configuration.Xml
     {
         public XmlConfigurationSource() { }
         public override Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder) { throw null; }
+    }
+    public partial class XmlConfigurationStreamLoader : Microsoft.Extensions.Configuration.IConfigurationStreamLoader
+    {
+        public XmlConfigurationStreamLoader() { }
+        public void Load(Microsoft.Extensions.Configuration.IConfigurationProvider provider, System.IO.Stream stream) { }
+        public static System.Collections.Generic.IDictionary<string, string> Read(System.IO.Stream stream, Microsoft.Extensions.Configuration.Xml.XmlDocumentDecryptor decryptor) { throw null; }
     }
     public partial class XmlDocumentDecryptor
     {

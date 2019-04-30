@@ -10,6 +10,7 @@ namespace Microsoft.Extensions.Configuration
         public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddNewtonsoftJsonFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string path) { throw null; }
         public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddNewtonsoftJsonFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string path, bool optional) { throw null; }
         public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddNewtonsoftJsonFile(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange) { throw null; }
+        public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddNewtonsoftJsonStream(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, System.IO.Stream stream) { throw null; }
     }
 }
 namespace Microsoft.Extensions.Configuration.NewtonsoftJson
@@ -23,5 +24,10 @@ namespace Microsoft.Extensions.Configuration.NewtonsoftJson
     {
         public NewtonsoftJsonConfigurationSource() { }
         public override Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder) { throw null; }
+    }
+    public partial class NewtonsoftJsonConfigurationStreamLoader : Microsoft.Extensions.Configuration.IConfigurationStreamLoader
+    {
+        public NewtonsoftJsonConfigurationStreamLoader() { }
+        public void Load(Microsoft.Extensions.Configuration.IConfigurationProvider provider, System.IO.Stream stream) { }
     }
 }
