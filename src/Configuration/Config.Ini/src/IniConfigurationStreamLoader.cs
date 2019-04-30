@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Configuration.Ini
 {
     /// <summary>
     /// An INI file based <see cref="IConfigurationStreamLoader"/>.
-    /// </examples>
+    /// </summary>
     public class IniConfigurationStreamLoader : IConfigurationStreamLoader
     {
         /// <summary>
