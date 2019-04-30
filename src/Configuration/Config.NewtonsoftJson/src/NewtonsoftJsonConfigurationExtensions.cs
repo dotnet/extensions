@@ -91,5 +91,21 @@ namespace Microsoft.Extensions.Configuration
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddNewtonsoftJsonFile(this IConfigurationBuilder builder, Action<NewtonsoftJsonConfigurationSource> configureSource)
             => builder.Add(configureSource);
+
+        /// <summary>
+        /// Adds a Newtonsoft JSON configuration source to <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="stream">The <see cref="Stream"/> to read the json configuration data from.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddNewtonsoftJsonStream(this IConfigurationBuilder builder, Stream stream)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.AddStream(new NewtonsoftJsonConfigurationStreamLoader(), stream);
+        }
     }
 }

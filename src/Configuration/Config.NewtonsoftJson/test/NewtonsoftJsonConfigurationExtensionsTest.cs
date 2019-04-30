@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Configuration.NewtonsoftJson.Test
 {
-    public class JsonConfigurationExtensionsTest
+    public class ConfigurationExtensionsTest
     {
         [Theory]
         [InlineData(null)]

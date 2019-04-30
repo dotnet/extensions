@@ -38,6 +38,12 @@ namespace Microsoft.Extensions.Configuration
         void Load();
 
         /// <summary>
+        /// Use the following values as the configuration data for this provider.
+        /// </summary>
+        /// <param name="data">The configuration data this provider should use.</param>
+        void Use(IDictionary<string, string> data);
+
+        /// <summary>
         /// Returns the immediate descendant configuration keys for a given parent path based on this
         /// <see cref="IConfigurationProvider"/>'s data and the set of keys returned by all the preceding
         /// <see cref="IConfigurationProvider"/>s.

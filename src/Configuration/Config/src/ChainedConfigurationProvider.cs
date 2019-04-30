@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Configuration
     /// </summary>
     public class ChainedConfigurationProvider : IConfigurationProvider, IDisposable
     {
-        private readonly IConfiguration _config;
+        private IConfiguration _config;
         private readonly bool _shouldDisposeConfig;
 
         /// <summary>
@@ -92,6 +92,19 @@ namespace Microsoft.Extensions.Configuration
             {
                 (_config as IDisposable)?.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Use the following values as the configuration data for this provider.
+        /// </summary>
+        /// <param name="data">The configuration data this provider should use.</param>
+        public void Use(IDictionary<string, string> data)
+        {
+            if (_shouldDisposeConfig)
+            {
+                (_config as IDisposable)?.Dispose();
+            }
+            _config = new ConfigurationBuilder().AddInMemoryCollection(data).Build();
         }
     }
 }
