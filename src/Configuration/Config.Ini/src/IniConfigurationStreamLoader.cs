@@ -8,16 +8,7 @@ using System.IO;
 namespace Microsoft.Extensions.Configuration.Ini
 {
     /// <summary>
-    /// An INI file based <see cref="ConfigurationProvider"/>.
-    /// Files are simple line structures (<a href="https://en.wikipedia.org/wiki/INI_file">INI Files on Wikipedia</a>)
-    /// </summary>
-    /// <examples>
-    /// [Section:Header]
-    /// key1=value1
-    /// key2 = " value2 "
-    /// ; comment
-    /// # comment
-    /// / comment
+    /// An INI file based <see cref="IConfigurationStreamLoader"/>.
     /// </examples>
     public class IniConfigurationStreamLoader : IConfigurationStreamLoader
     {
