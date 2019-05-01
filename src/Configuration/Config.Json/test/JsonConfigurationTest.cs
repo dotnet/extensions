@@ -39,6 +39,18 @@ namespace Microsoft.Extensions.Configuration
         }
 
         [Fact]
+        public void ReloadThrowsFromStreamProvider()
+        {
+            var json = @"
+{
+    ""firstname"": ""test""
+}";
+            var config = new ConfigurationBuilder().AddJsonStream(TestStreamHelpers.StringToStream(json)).Build();
+            Assert.Throws<InvalidOperationException>(() => config.Reload());
+        }
+
+
+        [Fact]
         public void LoadKeyValuePairsFromValidJson()
         {
             var json = @"

@@ -40,6 +40,16 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
         }
 
         [Fact]
+        public void ReloadThrowsFromStreamProvider()
+        {
+            var xml = @"
+                <settings>
+                </settings>";
+            var config = new ConfigurationBuilder().AddXmlStream(TestStreamHelpers.StringToStream(xml)).Build();
+            Assert.Throws<InvalidOperationException>(() => config.Reload());
+        }
+
+        [Fact]
         public void LoadKeyValuePairsFromValidXml()
         {
             var xml = @"

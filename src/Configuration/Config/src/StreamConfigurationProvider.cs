@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 
 namespace Microsoft.Extensions.Configuration
 {
@@ -15,6 +16,8 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         public StreamConfigurationSource Source { get; }
 
+        private bool _loaded;
+
         /// <summary>
         /// 
         /// </summary>
@@ -26,13 +29,23 @@ namespace Microsoft.Extensions.Configuration
             {
                 throw new ArgumentNullException(nameof(Source.Loader));
             }
-            // Review: should we allow null streams? Seems reasonable to defer default behavior to loader.
+            if (Source.Stream == null)
+            {
+                throw new ArgumentNullException(nameof(Source.Stream));
+            }
         }
 
         /// <summary>
         /// 
         /// </summary>
         public override void Load()
-            => Source.Loader.Load(this, Source.Stream);
+        {
+            if (_loaded)
+            {
+                throw new InvalidOperationException("StreamConfigurationProviders cannot be loaded more than once.");
+            }
+            Source.Loader.Load(this, Source.Stream);
+            _loaded = true;
+        }
     }
 }

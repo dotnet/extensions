@@ -38,6 +38,17 @@ namespace Microsoft.Extensions.Configuration.NewtonsoftJson.Test
         }
 
         [Fact]
+        public void ReloadThrowsFromStreamProvider()
+        {
+            var json = @"
+{
+    ""firstname"": ""test""
+}";
+            var config = new ConfigurationBuilder().AddNewtonsoftJsonStream(TestStreamHelpers.StringToStream(json)).Build();
+            Assert.Throws<InvalidOperationException>(() => config.Reload());
+        }
+
+        [Fact]
         public void LoadKeyValuePairsFromValidJson()
         {
             var json = @"
