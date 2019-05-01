@@ -20,6 +20,7 @@
     <Reference Include="Grace.DependencyInjection.Extensions" />
     <Reference Include="Stashbox.Extensions.Dependencyinjection" />
     <Reference Include="Unity.Microsoft.DependencyInjection" />
+    <Reference Include="Castle.Facilities.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>

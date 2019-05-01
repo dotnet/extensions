@@ -83,6 +83,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Stashbox.Extensions.Dependencyinjection" Version="2.6.3" />
     <LatestPackageReference Include="StructureMap.Microsoft.DependencyInjection" Version="1.4.0" />
     <LatestPackageReference Include="Unity.Microsoft.DependencyInjection" Version="2.1.3" />
+    <LatestPackageReference Include="Castle.Facilities.AspNetCore" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

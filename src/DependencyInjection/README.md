@@ -12,3 +12,5 @@ Contains common DI abstractions that ASP.NET Core and Entity Framework Core use.
 * [**StructureMap**](https://github.com/structuremap/StructureMap.Microsoft.DependencyInjection)
 * [**Stashbox**](https://github.com/z4kn4fein/stashbox-extensions-dependencyinjection)
 * [**Unity**](https://www.nuget.org/packages/Unity.Microsoft.DependencyInjection/)
+* [**Castle.Windsor**](https://www.nuget.org/packages/Castle.Facilities.AspNetCore/)
+
