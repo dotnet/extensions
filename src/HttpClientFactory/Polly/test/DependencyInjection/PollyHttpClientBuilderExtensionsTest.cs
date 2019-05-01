@@ -407,7 +407,7 @@ namespace Microsoft.Extensions.DependencyInjection
             request = new HttpRequestMessage(HttpMethod.Get, "http://host2/Service1/");
             response = await client.SendAsync(request);
 
-            // Assert
+            // Assert policy count
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.Equal(2, registry.Count);
             Assert.True(registry.ContainsKey("host1"));
