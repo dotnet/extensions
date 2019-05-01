@@ -44,6 +44,7 @@ namespace Microsoft.Extensions.Configuration
         void Load();
         void Set(string key, string value);
         bool TryGet(string key, out string value);
+        void Use(System.Collections.Generic.IDictionary<string, string> data);
     }
     public partial interface IConfigurationRoot : Microsoft.Extensions.Configuration.IConfiguration
     {
@@ -60,4 +61,8 @@ namespace Microsoft.Extensions.Configuration
     {
         Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder);
     }
+    public partial interface IConfigurationStreamLoader
+    {
+        void Load(Microsoft.Extensions.Configuration.IConfigurationProvider provider, System.IO.Stream stream);
+    }    
 }
