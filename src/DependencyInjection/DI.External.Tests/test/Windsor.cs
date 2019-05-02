@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
         private static readonly WindsorContainer Container = new WindsorContainer();
         private class HomeController
         { }
-        public override string[] SkippedTests => throw new NotImplementedException();
+        public override string[] SkippedTests => Array.Empty<string>();
 
 
         protected override IServiceProvider CreateServiceProviderImpl(IServiceCollection serviceCollection)
