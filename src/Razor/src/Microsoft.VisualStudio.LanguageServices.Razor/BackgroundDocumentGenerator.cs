@@ -16,11 +16,12 @@ namespace Microsoft.CodeAnalysis.Razor
     [Export(typeof(ProjectSnapshotChangeTrigger))]
     internal class BackgroundDocumentGenerator : ProjectSnapshotChangeTrigger
     {
+        // Internal for testing
+        internal readonly Dictionary<DocumentKey, (ProjectSnapshot project, DocumentSnapshot document)> _work;
+
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly RazorDynamicFileInfoProvider _infoProvider;
         private ProjectSnapshotManagerBase _projectManager;
-
-        private readonly Dictionary<DocumentKey, (ProjectSnapshot project, DocumentSnapshot document)> _work;
         private Timer _timer;
 
         [ImportingConstructor]
@@ -281,7 +282,7 @@ namespace Microsoft.CodeAnalysis.Razor
                         Enqueue(project, document);
                         foreach (var relatedDocument in project.GetRelatedDocuments(document))
                         {
-                            Enqueue(project, document);
+                            Enqueue(project, relatedDocument);
                         }
 
                         break;
@@ -295,7 +296,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                         foreach (var relatedDocument in e.Newer.GetRelatedDocuments(document))
                         {
-                            Enqueue(e.Newer, document);
+                            Enqueue(e.Newer, relatedDocument);
                         }
 
                         break;

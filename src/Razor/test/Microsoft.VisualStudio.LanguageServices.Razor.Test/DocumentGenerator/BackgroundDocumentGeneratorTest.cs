@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
 
@@ -143,6 +144,122 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
+        }
+
+        [ForegroundFact]
+        public async Task DocumentChanged_ReparsesRelatedFiles()
+        {
+            // Arrange
+            var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace)
+            {
+                AllowNotifyListeners = true,
+            };
+            var documents = new[]
+            {
+                TestProjectData.SomeProjectComponentFile1,
+                TestProjectData.SomeProjectImportFile
+            };
+            projectManager.ProjectAdded(HostProject1);
+            for (var i = 0; i < documents.Length; i++)
+            {
+                projectManager.DocumentAdded(HostProject1, documents[i], null);
+            }
+
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            {
+                Delay = TimeSpan.FromMilliseconds(1),
+                BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
+                NotifyBackgroundWorkStarting = new ManualResetEventSlim(initialState: false),
+                NotifyBackgroundCapturedWorkload = new ManualResetEventSlim(initialState: false),
+                BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: false),
+                NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
+            };
+
+            var changedSourceText = SourceText.From("@inject DateTime Time");
+            queue.Initialize(projectManager);
+
+            // Act & Assert
+            projectManager.DocumentChanged(HostProject1.FilePath, TestProjectData.SomeProjectImportFile.FilePath, changedSourceText);
+
+            Assert.True(queue.IsScheduledOrRunning, "Queue should be scheduled during Enqueue");
+            Assert.True(queue.HasPendingNotifications, "Queue should have a notification created during Enqueue");
+
+            for (var i = 0; i < documents.Length; i++)
+            {
+                var key = new DocumentKey(HostProject1.FilePath, documents[i].FilePath);
+                Assert.True(queue._work.ContainsKey(key));
+            }
+
+            // Allow the background work to start.
+            queue.BlockBackgroundWorkStart.Set();
+
+            await Task.Run(() => queue.NotifyBackgroundWorkStarting.Wait(TimeSpan.FromSeconds(1)));
+
+            Assert.True(queue.IsScheduledOrRunning, "Worker should be processing now");
+
+            await Task.Run(() => queue.NotifyBackgroundCapturedWorkload.Wait(TimeSpan.FromSeconds(1)));
+            Assert.False(queue.HasPendingNotifications, "Worker should have taken all notifications");
+
+            // Allow work to complete
+            queue.BlockBackgroundWorkCompleting.Set();
+
+            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
+
+            Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
+            Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
+        }
+
+        [ForegroundFact]
+        public async Task DocumentRemoved_ReparsesRelatedFiles()
+        {
+            // Arrange
+            var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace)
+            {
+                AllowNotifyListeners = true,
+            };
+            projectManager.ProjectAdded(HostProject1);
+            projectManager.DocumentAdded(HostProject1, TestProjectData.SomeProjectComponentFile1, null);
+            projectManager.DocumentAdded(HostProject1, TestProjectData.SomeProjectImportFile, null);
+
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            {
+                Delay = TimeSpan.FromMilliseconds(1),
+                BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
+                NotifyBackgroundWorkStarting = new ManualResetEventSlim(initialState: false),
+                NotifyBackgroundCapturedWorkload = new ManualResetEventSlim(initialState: false),
+                BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: false),
+                NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
+            };
+
+            queue.Initialize(projectManager);
+
+            // Act & Assert
+            projectManager.DocumentRemoved(HostProject1, TestProjectData.SomeProjectImportFile);
+
+            Assert.True(queue.IsScheduledOrRunning, "Queue should be scheduled during Enqueue");
+            Assert.True(queue.HasPendingNotifications, "Queue should have a notification created during Enqueue");
+
+            var kvp = Assert.Single(queue._work);
+            var expectedKey = new DocumentKey(HostProject1.FilePath, TestProjectData.SomeProjectComponentFile1.FilePath);
+            Assert.Equal(expectedKey, kvp.Key);
+
+            // Allow the background work to start.
+            queue.BlockBackgroundWorkStart.Set();
+
+            await Task.Run(() => queue.NotifyBackgroundWorkStarting.Wait(TimeSpan.FromSeconds(1)));
+
+            Assert.True(queue.IsScheduledOrRunning, "Worker should be processing now");
+
+            await Task.Run(() => queue.NotifyBackgroundCapturedWorkload.Wait(TimeSpan.FromSeconds(1)));
+            Assert.False(queue.HasPendingNotifications, "Worker should have taken all notifications");
+
+            // Allow work to complete
+            queue.BlockBackgroundWorkCompleting.Set();
+
+            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
+
+            Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
+            Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
         }
     }
 }
