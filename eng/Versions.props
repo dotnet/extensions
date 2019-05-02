@@ -55,14 +55,14 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview6.19252.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview6.19252.1</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview6.19252.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview6-27701-19</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview6.19252.1</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview6.19252.1</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview6.19252.1</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview6-27701-19</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview6.19252.2</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview6.19252.2</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview6.19252.2</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview6-27702-01</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview6.19252.2</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview6.19252.2</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview6.19252.2</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview6-27702-01</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview6.19251.9</MicrosoftNETCorePlatformsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview6.19251.9</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview6.19251.9</SystemTextEncodingsWebPackageVersion>
