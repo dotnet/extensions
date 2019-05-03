@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Testing.Tracing
 
         public void CollectFrom(string eventSourceName)
         {
-            lock(_lock)
+            lock (_lock)
             {
                 // Check if it's already been created
-                if(_existingSources.TryGetValue(eventSourceName, out var existingSource))
+                if (_existingSources.TryGetValue(eventSourceName, out var existingSource))
                 {
                     // It has, so just enable it now
                     CollectFrom(existingSource);

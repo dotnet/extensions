@@ -535,7 +535,7 @@ namespace Microsoft.Extensions.Configuration
         private static Type FindOpenGenericInterface(Type expected, Type actual)
         {
             var actualTypeInfo = actual.GetTypeInfo();
-            if(actualTypeInfo.IsGenericType && 
+            if (actualTypeInfo.IsGenericType && 
                 actual.GetGenericTypeDefinition() == expected)
             {
                 return actual;

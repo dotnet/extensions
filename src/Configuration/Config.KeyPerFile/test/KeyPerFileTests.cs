@@ -291,7 +291,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
 
         public Stream CreateReadStream()
         {
-            if(IsDirectory)
+            if (IsDirectory)
             {
                 throw new InvalidOperationException("Cannot create stream from directory");
             }

@@ -276,7 +276,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
         private void DetachTokens()
         {
-            lock(_lock)
+            lock (_lock)
             {
                 var registrations = _expirationTokenRegistrations;
                 if (registrations != null)

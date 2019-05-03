@@ -164,7 +164,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
             using (var connection = new SqlConnection(ConnectionString))
-            using(var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
+            using (var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
             {
                 upsertCommand.Parameters
                     .AddCacheItemId(key)

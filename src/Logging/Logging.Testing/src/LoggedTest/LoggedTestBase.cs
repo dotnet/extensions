@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public virtual void Dispose()
         {
-            if(_testLog == null)
+            if (_testLog == null)
             {
                 // It seems like sometimes the MSBuild goop that adds the test framework can end up in a bad state and not actually add it
                 // Not sure yet why that happens but the exception isn't clear so I'm adding this error so we can detect it better.

@@ -72,12 +72,12 @@ namespace Microsoft.AspNetCore.Testing.xunit
         /// <param name="additionalFilters">A list of additional filters that define where this test is flaky. Use values in <see cref="FlakyOn"/>.</param>
         public FlakyAttribute(string gitHubIssueUrl, string firstFilter, params string[] additionalFilters)
         {
-            if(string.IsNullOrEmpty(gitHubIssueUrl))
+            if (string.IsNullOrEmpty(gitHubIssueUrl))
             {
                 throw new ArgumentNullException(nameof(gitHubIssueUrl));
             }
 
-            if(string.IsNullOrEmpty(firstFilter))
+            if (string.IsNullOrEmpty(firstFilter))
             {
                 throw new ArgumentNullException(nameof(firstFilter));
             }
