@@ -305,6 +305,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Config
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.NewtonsoftJson.Tests", "src\Configuration\Config.NewtonsoftJson\test\Microsoft.Extensions.Configuration.NewtonsoftJson.Tests.csproj", "{2FEE9416-E709-4EA7-82A3-4A34816F75FD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{E9C6F0EE-B104-4E82-8B21-4690F9083B08}"
+	ProjectSection(SolutionItems) = preProject
+		eng\StyleCop.ruleset = eng\StyleCop.ruleset
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
