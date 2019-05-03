@@ -276,7 +276,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             private readonly object _lock;
 
             private ComputedStateTracker _older;
-            public Task<(RazorCodeDocument, VersionStamp, VersionStamp)> TaskUnsafe;
+
+            // We utilize a WeakReference here to avoid bloating committed memory. If pieces request document output inbetween GC collections
+            // then we will provide the weak referenced task; otherwise we require any state requests to be re-computed.
+            public WeakReference<Task<(RazorCodeDocument, VersionStamp, VersionStamp)>> TaskUnsafeReference;
 
             public ComputedStateTracker(DocumentState state, ComputedStateTracker older = null)
             {
@@ -284,7 +287,23 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 _older = older;
             }
 
-            public bool IsResultAvailable => TaskUnsafe?.IsCompleted == true;
+            public bool IsResultAvailable
+            {
+                get
+                {
+                    if (TaskUnsafeReference == null)
+                    {
+                        return false;
+                    }
+
+                    if (TaskUnsafeReference.TryGetTarget(out var taskUnsafe))
+                    {
+                        return taskUnsafe.IsCompleted;
+                    }
+
+                    return false;
+                }
+            }
 
             public Task<(RazorCodeDocument, VersionStamp, VersionStamp)> GetGeneratedOutputAndVersionAsync(DefaultProjectSnapshot project, DocumentSnapshot document)
             {
@@ -298,18 +317,21 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     throw new ArgumentNullException(nameof(document));
                 }
 
-                if (TaskUnsafe == null)
+                if (TaskUnsafeReference == null ||
+                    !TaskUnsafeReference.TryGetTarget(out var taskUnsafe))
                 {
                     lock (_lock)
                     {
-                        if (TaskUnsafe == null)
+                        if (TaskUnsafeReference == null ||
+                            !TaskUnsafeReference.TryGetTarget(out taskUnsafe))
                         {
-                            TaskUnsafe = GetGeneratedOutputAndVersionCoreAsync(project, document);
+                            taskUnsafe = GetGeneratedOutputAndVersionCoreAsync(project, document);
+                            TaskUnsafeReference = new WeakReference<Task<(RazorCodeDocument, VersionStamp, VersionStamp)>>(taskUnsafe);
                         }
                     }
                 }
 
-                return TaskUnsafe;
+                return taskUnsafe;
             }
 
             private async Task<(RazorCodeDocument, VersionStamp, VersionStamp)> GetGeneratedOutputAndVersionCoreAsync(DefaultProjectSnapshot project, DocumentSnapshot document)
@@ -359,15 +381,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 RazorCodeDocument olderOutput = null;
                 var olderInputVersion = default(VersionStamp);
                 var olderOutputVersion = default(VersionStamp);
-                if (_older?.TaskUnsafe != null)
+                if (_older?.TaskUnsafeReference != null &&
+                    _older.TaskUnsafeReference.TryGetTarget(out var taskUnsafe))
                 {
-                    (olderOutput, olderInputVersion, olderOutputVersion) = await _older.TaskUnsafe.ConfigureAwait(false);
+                    (olderOutput, olderInputVersion, olderOutputVersion) = await taskUnsafe.ConfigureAwait(false);
                     if (inputVersion.GetNewerVersion(olderInputVersion) == olderInputVersion)
                     {
                         // Nothing has changed, we can use the cached result.
                         lock (_lock)
                         {
-                            TaskUnsafe = _older.TaskUnsafe;
+                            TaskUnsafeReference = _older.TaskUnsafeReference;
                             _older = null;
                             return (olderOutput, olderInputVersion, olderOutputVersion);
                         }
@@ -416,8 +439,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 if (olderOutput != null)
                 {
                     if (string.Equals(
-                        olderOutput.GetCSharpDocument().GeneratedCode, 
-                        csharpDocument.GeneratedCode, 
+                        olderOutput.GetCSharpDocument().GeneratedCode,
+                        csharpDocument.GeneratedCode,
                         StringComparison.Ordinal))
                     {
                         outputVersion = olderOutputVersion;
