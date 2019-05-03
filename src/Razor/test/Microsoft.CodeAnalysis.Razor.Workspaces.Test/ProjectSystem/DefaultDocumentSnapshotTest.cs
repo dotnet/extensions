@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -64,6 +65,52 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
             services.Add(new TestTagHelperResolver());
+        }
+
+        [Fact]
+        public async Task GCCollect_OutputIsNoLongerCached()
+        {
+            // Arrange
+            await LegacyDocument.GetGeneratedOutputAsync();
+
+            // Act
+
+            // Forces collection of the cached document output
+            GC.Collect();
+
+            // Assert
+            Assert.False(LegacyDocument.TryGetGeneratedOutput(out _));
+            Assert.False(LegacyDocument.TryGetGeneratedOutputVersionAsync(out _));
+        }
+
+        [Fact]
+        public async Task GCCollect_OnRegenerationMaintainsOutputVersion()
+        {
+            // Arrange
+            var initialOutputVersion = await LegacyDocument.GetGeneratedOutputVersionAsync();
+
+            // Forces collection of the cached document output
+            GC.Collect();
+
+            // Act
+            var regeneratedOutputVersion = await LegacyDocument.GetGeneratedOutputVersionAsync();
+
+            // Assert
+            Assert.Equal(initialOutputVersion, regeneratedOutputVersion);
+        }
+
+        [Fact]
+        public async Task RegeneratingWithReference_CachesOutput()
+        {
+            // Arrange
+            var output = await LegacyDocument.GetGeneratedOutputAsync();
+
+            // Mostly doing this to ensure "var output" doesn't get optimized out
+            Assert.NotNull(output);
+
+            // Act & Assert
+            Assert.True(LegacyDocument.TryGetGeneratedOutput(out _));
+            Assert.True(LegacyDocument.TryGetGeneratedOutputVersionAsync(out _));
         }
 
         [Fact]
