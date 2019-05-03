@@ -115,7 +115,7 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
           PublishLocation: Container
-          ArtifactName: VSIX_$(Agent.Os)_$(Agent.JobName)
+          ArtifactName: VSIX_$(Agent.Os)_$(_BuildConfig)
         continueOnError: true
         condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
       - task: PublishBuildArtifacts@1
@@ -123,7 +123,7 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.SourcesDirectory)/artifacts/MPack/$(_BuildConfig)'
           PublishLocation: Container
-          ArtifactName: MPack_$(Agent.Os)_$(Agent.JobName)
+          ArtifactName: MPack_$(Agent.Os)_$(_BuildConfig)
         continueOnError: true
         condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
       - task: PublishBuildArtifacts@1
@@ -131,7 +131,7 @@ jobs:
         inputs:
           PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
           PublishLocation: Container
-          ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
+          ArtifactName: Packages_$(Agent.Os)_$(_BuildConfig)
         continueOnError: true
         condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
 
