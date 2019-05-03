@@ -37,6 +37,8 @@
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview6.19252.4</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19251.6</MicrosoftDotNetGenAPIPackageVersion>
+    <!-- Analyzers -->
+    <StyleCopAnalyzersVersion>1.1.118</StyleCopAnalyzersVersion>
   </PropertyGroup>
   <!--
 

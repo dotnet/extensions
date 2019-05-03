@@ -52,6 +52,7 @@ and are generated based on the last package release.
   </PropertyGroup>
 
   <ItemGroup Label="External dependencies">
+    <LatestPackageReference Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersVersion)" />
     <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
