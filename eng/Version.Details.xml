@@ -62,9 +62,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>dd368445da30401b9dd2290a9612fccf617063b9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27702-12">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27702-14">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>fb04004d80db66dc984f85fdd0cdcc4129f506c6</Sha>
+      <Sha>92f55dca3e257d38dc7ad273625ab10a6f703af5</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
