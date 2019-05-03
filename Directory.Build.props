@@ -26,6 +26,8 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <PublishWindowsPdb>true</PublishWindowsPdb>
+    <GenerateResxSource>true</GenerateResxSource>
+    <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
   </PropertyGroup>
 
   <PropertyGroup Label="Package and Assembly Metadata">
