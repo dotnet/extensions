@@ -17,9 +17,9 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
         private const string SqlAzureServerPrefix = "SQLAZURECONNSTR_";
         private const string SqlServerPrefix = "SQLCONNSTR_";
         private const string CustomPrefix = "CUSTOMCONNSTR_";
-
         private const string ConnStrKeyFormat = "ConnectionStrings:{0}";
         private const string ProviderKeyFormat = "ConnectionStrings:{0}_ProviderName";
+        private const string AzureOmittedDashCharacter = "-";
 
         private readonly string _prefix;
 
@@ -62,6 +62,23 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
             }
 
             Data = data;
+        }
+        /// <summary>
+        /// Attempts to find a value with the given key, returns true if one is found, false otherwise.
+        /// </summary>
+        /// <param name="key">The key to lookup.</param>
+        /// <param name="value">The value found at key if one is found.</param>
+        /// <returns>True if key has a value, false otherwise.</returns>
+        public override bool TryGet(string key, out string value)
+        {
+            var result = base.TryGet(key, out value);
+            
+            if (!result)
+            {
+                result = base.TryGet(key.Replace(AzureOmittedDashCharacter, string.Empty), out value);
+            }
+
+            return result;
         }
 
         private static string NormalizeKey(string key)

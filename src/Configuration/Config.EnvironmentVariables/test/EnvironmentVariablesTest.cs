@@ -62,6 +62,7 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables.Test
                     {"MYSQLCONNSTR_db3", "MySQLConnStr"},
                     {"SQLAZURECONNSTR_db4", "SQLAzureConnStr"},
                     {"CommonEnv", "CommonEnvValue"},
+                    {"WithDash", "WithDashValue"},
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationProvider();
 
@@ -78,6 +79,7 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables.Test
             Assert.Equal("SQLAzureConnStr", envConfigSrc.Get("ConnectionStrings:db4"));
             Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("ConnectionStrings:db4_ProviderName"));
             Assert.Equal("CommonEnvValue", envConfigSrc.Get("CommonEnv"));
+            Assert.Equal("WithDashValue", envConfigSrc.Get("With-Dash"));
         }
 
         [Fact]
