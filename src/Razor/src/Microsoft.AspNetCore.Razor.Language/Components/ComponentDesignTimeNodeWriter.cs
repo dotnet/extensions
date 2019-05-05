@@ -244,54 +244,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
-            var firstChild = node.Children[0];
-            if (firstChild.Source != null)
+            context.CodeWriter.WriteStartAssignment(DesignTimeVariable);
+            for (var i = 0; i < node.Children.Count; i++)
             {
-                using (context.CodeWriter.BuildLinePragma(firstChild.Source.Value, context))
+                if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
-                    var offset = DesignTimeVariable.Length + " = ".Length;
-                    context.CodeWriter.WritePadding(offset, firstChild.Source, context);
-                    context.CodeWriter.WriteStartAssignment(DesignTimeVariable);
-
-                    for (var i = 0; i < node.Children.Count; i++)
-                    {
-                        if (node.Children[i] is IntermediateToken token && token.IsCSharp)
-                        {
-                            context.AddSourceMappingFor(token);
-                            context.CodeWriter.Write(token.Content);
-                        }
-                        else
-                        {
-                            // There may be something else inside the expression like a Template or another extension node.
-                            context.RenderNode(node.Children[i]);
-                        }
-                    }
-
-                    context.CodeWriter.WriteLine(";");
+                    WriteCSharpToken(context, token);
+                }
+                else
+                {
+                    // There may be something else inside the expression like a Template or another extension node.
+                    context.RenderNode(node.Children[i]);
                 }
             }
-            else
-            {
-                context.CodeWriter.WriteStartAssignment(DesignTimeVariable);
-                for (var i = 0; i < node.Children.Count; i++)
-                {
-                    if (node.Children[i] is IntermediateToken token && token.IsCSharp)
-                    {
-                        if (token.Source != null)
-                        {
-                            context.AddSourceMappingFor(token);
-                        }
-
-                        context.CodeWriter.Write(token.Content);
-                    }
-                    else
-                    {
-                        // There may be something else inside the expression like a Template or another extension node.
-                        context.RenderNode(node.Children[i]);
-                    }
-                }
-                context.CodeWriter.WriteLine(";");
-            }
+            context.CodeWriter.WriteLine(";");
         }
 
         public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)
@@ -348,6 +314,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // builder.OpenComponent<MyComponent>(0);
                 // builder.AddAttribute(1, "Foo", ...);
                 // builder.AddAttribute(2, "ChildContent", ...);
+                // builder.SetKey(someValue);
                 // builder.AddElementCapture(3, (__value) => _field = __value);
                 // builder.CloseComponent();
                 foreach (var typeArgument in node.TypeArguments)
@@ -381,6 +348,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     });
                 }
 
+                foreach (var setKey in node.SetKeys)
+                {
+                    context.RenderNode(setKey);
+                }
+
                 foreach (var capture in node.Captures)
                 {
                     context.RenderNode(capture);
@@ -396,7 +368,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 var attributes = node.Attributes.ToList();
                 var childContents = node.ChildContents.ToList();
                 var captures = node.Captures.ToList();
-                var remaining = attributes.Count + childContents.Count + captures.Count;
+                var setKeys = node.SetKeys.ToList();
+                var remaining = attributes.Count + childContents.Count + captures.Count + setKeys.Count;
 
                 context.CodeWriter.Write(node.TypeInferenceNode.FullTypeName);
                 context.CodeWriter.Write(".");
@@ -432,6 +405,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     context.CodeWriter.Write(", ");
 
                     WriteComponentChildContentInnards(context, childContents[i]);
+
+                    remaining--;
+                    if (remaining > 0)
+                    {
+                        context.CodeWriter.Write(", ");
+                    }
+                }
+
+                for (var i = 0; i < setKeys.Count; i++)
+                {
+                    context.CodeWriter.Write("-1");
+                    context.CodeWriter.Write(", ");
+
+                    WriteSetKeyInnards(context, setKeys[i]);
 
                     remaining--;
                     if (remaining > 0)
@@ -749,6 +736,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             _scopeStack.OpenTemplateScope(context);
             context.RenderChildren(node);
             _scopeStack.CloseScope(context);
+        }
+
+        public override void WriteSetKey(CodeRenderingContext context, SetKeyIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // Looks like:
+            //
+            // builder.SetKey(_keyValue);
+
+            var codeWriter = context.CodeWriter;
+
+            codeWriter
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.SetKey}");
+            WriteSetKeyInnards(context, node);
+            codeWriter.WriteEndMethodInvocation();
+        }
+
+        private void WriteSetKeyInnards(CodeRenderingContext context, SetKeyIntermediateNode node)
+        {
+            WriteCSharpCode(context, new CSharpCodeIntermediateNode
+            {
+                Source = node.Source,
+                Children =
+                    {
+                        node.KeyValueToken
+                    }
+            });
         }
 
         public override void WriteReferenceCapture(CodeRenderingContext context, ReferenceCaptureIntermediateNode node)

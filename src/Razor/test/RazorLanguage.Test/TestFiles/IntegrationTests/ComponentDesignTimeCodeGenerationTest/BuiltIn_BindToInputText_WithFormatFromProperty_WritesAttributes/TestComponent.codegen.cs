@@ -20,13 +20,29 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(CurrentDate, Format);
+            __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                          CurrentDate
+
+#line default
+#line hidden
+#nullable disable
+            , 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                      Format
+
+#line default
+#line hidden
+#nullable disable
+            );
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, Format);
         }
         #pragma warning restore 1998
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 
     public string Format { get; set; } = "MM/dd/yyyy";

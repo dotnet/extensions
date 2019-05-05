@@ -117,6 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 FunctionsDirective.Register(builder);
                 ImplementsDirective.Register(builder);
                 InheritsDirective.Register(builder);
+                NamespaceDirective.Register(builder);
 
                 AddComponentFeatures(builder);
             }
@@ -210,6 +211,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Features.Add(new ComponentImportProjectFeature());
 
             // Directives (conditional on file kind)
+            ComponentCodeDirective.Register(builder);
             ComponentInjectDirective.Register(builder);
             ComponentLayoutDirective.Register(builder);
             ComponentPageDirective.Register(builder);
@@ -226,6 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Features.Add(new ComponentLoweringPass());
             builder.Features.Add(new ComponentScriptTagPass());
             builder.Features.Add(new ComponentEventHandlerLoweringPass());
+            builder.Features.Add(new ComponentKeyLoweringPass());
             builder.Features.Add(new ComponentReferenceCaptureLoweringPass());
             builder.Features.Add(new ComponentBindLoweringPass());
             builder.Features.Add(new ComponentTemplateDiagnosticPass());

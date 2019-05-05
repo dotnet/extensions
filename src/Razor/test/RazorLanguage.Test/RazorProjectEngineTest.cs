@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Test
+namespace Microsoft.AspNetCore.Razor.Language
 {
     public class RazorProjectEngineTest
     {
@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
                 feature => Assert.IsType<ComponentEventHandlerLoweringPass>(feature),
                 feature => Assert.IsType<ComponentGenericTypePass>(feature),
                 feature => Assert.IsType<ComponentInjectDirectivePass>(feature),
+                feature => Assert.IsType<ComponentKeyLoweringPass>(feature),
                 feature => Assert.IsType<ComponentLayoutDirectivePass>(feature),
                 feature => Assert.IsType<ComponentLoweringPass>(feature),
                 feature => Assert.IsType<ComponentMarkupBlockPass>(feature),
@@ -89,7 +90,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
                 feature.Directives,
                 directive => Assert.Same(FunctionsDirective.Directive, directive),
                 directive => Assert.Same(ImplementsDirective.Directive, directive),
-                directive => Assert.Same(InheritsDirective.Directive, directive));
+                directive => Assert.Same(InheritsDirective.Directive, directive),
+                directive => Assert.Same(NamespaceDirective.Directive, directive));
         }
 
         private static void AssertDefaultTargetExtensions(RazorProjectEngine engine)

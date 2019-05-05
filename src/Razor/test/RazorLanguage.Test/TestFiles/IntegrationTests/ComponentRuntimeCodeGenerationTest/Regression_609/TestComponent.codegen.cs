@@ -14,16 +14,32 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenComponent<Test.User>(0);
-            builder.AddAttribute(1, "Name", Microsoft.AspNetCore.Components.BindMethods.GetValue(UserName));
+            builder.AddAttribute(1, "Name", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                  UserName
+
+#line default
+#line hidden
+#nullable disable
+            ));
             builder.AddAttribute(2, "NameChanged", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserName = __value, UserName));
-            builder.AddAttribute(3, "IsActive", Microsoft.AspNetCore.Components.BindMethods.GetValue(UserIsActive));
+            builder.AddAttribute(3, "IsActive", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                            UserIsActive
+
+#line default
+#line hidden
+#nullable disable
+            ));
             builder.AddAttribute(4, "IsActiveChanged", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, UserIsActive));
             builder.CloseComponent();
         }
         #pragma warning restore 1998
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     public string UserName { get; set; }
     public bool UserIsActive { get; set; }
 

@@ -8,7 +8,13 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
-    using Microsoft.AspNetCore.Components.RenderTree;
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+using Microsoft.AspNetCore.Components.RenderTree;
+
+#line default
+#line hidden
+#nullable disable
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
@@ -25,7 +31,7 @@ namespace Test
         #pragma warning restore 1998
 #nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     void RenderChildComponent(RenderTreeBuilder builder)
     {
 

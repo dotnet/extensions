@@ -14,14 +14,22 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "Value", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.Int32>(Microsoft.AspNetCore.Components.BindMethods.GetValue(ParentValue)));
+            builder.AddAttribute(1, "Value", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.Int32>(Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                         ParentValue
+
+#line default
+#line hidden
+#nullable disable
+            )));
             builder.AddAttribute(2, "ValueChanged", new System.Action<System.Int32>(__value => ParentValue = __value));
             builder.CloseComponent();
         }
         #pragma warning restore 1998
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     public string ParentValue { get; set; } = "42";
 
 #line default

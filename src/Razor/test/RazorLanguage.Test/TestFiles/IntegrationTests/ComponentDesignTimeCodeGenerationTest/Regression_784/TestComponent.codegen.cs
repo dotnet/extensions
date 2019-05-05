@@ -20,19 +20,29 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, OnComponentHover);
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                 __o = ParentBgColor;
+                 OnComponentHover
 
 #line default
 #line hidden
 #nullable disable
+            );
+            __o = 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                       ParentBgColor
+
+#line default
+#line hidden
+#nullable disable
+            ;
         }
         #pragma warning restore 1998
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     public string ParentBgColor { get; set; } = "#FFFFFF";
 
     public void OnComponentHover(UIMouseEventArgs e)

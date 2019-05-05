@@ -14,14 +14,22 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(ParentValue));
+            builder.AddAttribute(1, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+              ParentValue
+
+#line default
+#line hidden
+#nullable disable
+            ));
             builder.AddAttribute(2, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue));
             builder.CloseElement();
         }
         #pragma warning restore 1998
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     public int ParentValue { get; set; } = 42;
 
 #line default

@@ -13,7 +13,15 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 3, 2, (__value) => {
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                   3
+
+#line default
+#line hidden
+#nullable disable
+            , 2, (__value) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                            _my = __value;
@@ -27,7 +35,7 @@ namespace Test
         #pragma warning restore 1998
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     private MyComponent<int> _my;
     public void Foo() { System.GC.KeepAlive(_my); }
 

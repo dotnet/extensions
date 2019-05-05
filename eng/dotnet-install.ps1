@@ -151,11 +151,10 @@ function Invoke-With-Retry([ScriptBlock]$ScriptBlock, [int]$MaxAttempts = 3, [in
 function Get-Machine-Architecture() {
     Say-Invocation $MyInvocation
 
-    # possible values: AMD64, IA64, x86
+    # possible values: amd64, x64, x86, arm64, arm
     return $ENV:PROCESSOR_ARCHITECTURE
 }
 
-# TODO: Architecture and CLIArchitecture should be unified
 function Get-CLIArchitecture-From-Architecture([string]$Architecture) {
     Say-Invocation $MyInvocation
 
@@ -163,6 +162,8 @@ function Get-CLIArchitecture-From-Architecture([string]$Architecture) {
         { $_ -eq "<auto>" } { return Get-CLIArchitecture-From-Architecture $(Get-Machine-Architecture) }
         { ($_ -eq "amd64") -or ($_ -eq "x64") } { return "x64" }
         { $_ -eq "x86" } { return "x86" }
+        { $_ -eq "arm" } { return "arm" }
+        { $_ -eq "arm64" } { return "arm64" }
         default { throw "Architecture not supported. If you think this is a bug, please report it at https://github.com/dotnet/cli/issues" }
     }
 }
@@ -546,14 +547,16 @@ if ($isAssetInstalled) {
 New-Item -ItemType Directory -Force -Path $InstallRoot | Out-Null
 
 $installDrive = $((Get-Item $InstallRoot).PSDrive.Name);
-$free = Get-CimInstance -Class win32_logicaldisk | where Deviceid -eq "${installDrive}:"
-if ($free.Freespace / 1MB -le 100 ) {
+$diskInfo = Get-PSDrive -Name $installDrive
+if ($diskInfo.Free / 1MB -le 100) {
     Say "There is not enough disk space on drive ${installDrive}:"
     exit 0
 }
 
 $ZipPath = [System.IO.Path]::combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
 Say-Verbose "Zip path: $ZipPath"
+
+$DownloadFailed = $false
 Say "Downloading link: $DownloadLink"
 try {
     DownloadFile -Uri $DownloadLink -OutPath $ZipPath
@@ -565,11 +568,21 @@ catch {
         $ZipPath = [System.IO.Path]::combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
         Say-Verbose "Legacy zip path: $ZipPath"
         Say "Downloading legacy link: $DownloadLink"
-        DownloadFile -Uri $DownloadLink -OutPath $ZipPath
+        try {
+            DownloadFile -Uri $DownloadLink -OutPath $ZipPath
+        }
+        catch {
+            Say "Cannot download: $DownloadLink"
+            $DownloadFailed = $true
+        }
     }
     else {
-        throw "Could not download $assetName version $SpecificVersion"
+        $DownloadFailed = $true
     }
+}
+
+if ($DownloadFailed) {
+    throw "Could not find/download: `"$assetName`" with version = $SpecificVersion`nRefer to: https://aka.ms/dotnet-os-lifecycle for information on .NET Core support"
 }
 
 Say "Extracting zip from $DownloadLink"
@@ -578,7 +591,7 @@ Extract-Dotnet-Package -ZipPath $ZipPath -OutPath $InstallRoot
 #  Check if the SDK version is now installed; if not, fail the installation.
 $isAssetInstalled = Is-Dotnet-Package-Installed -InstallRoot $InstallRoot -RelativePathToPackage $dotnetPackageRelativePath -SpecificVersion $SpecificVersion
 if (!$isAssetInstalled) {
-    throw "$assetName version $SpecificVersion failed to install with an unknown error."
+    throw "`"$assetName`" with version = $SpecificVersion failed to install with an unknown error."
 }
 
 Remove-Item $ZipPath

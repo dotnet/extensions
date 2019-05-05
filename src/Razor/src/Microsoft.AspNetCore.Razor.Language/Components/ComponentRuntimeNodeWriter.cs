@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
-                    context.CodeWriter.Write(token.Content);
+                    WriteCSharpToken(context, token);
                 }
                 else
                 {
@@ -190,6 +190,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 context.RenderNode(attribute);
             }
 
+            foreach (var setKey in node.SetKeys)
+            {
+                context.RenderNode(setKey);
+            }
+
             foreach (var capture in node.Captures)
             {
                 context.RenderNode(capture);
@@ -221,7 +226,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Debug.Assert(_currentAttributeValues.Count == 0);
             context.RenderChildren(node);
 
-            WriteAttribute(context.CodeWriter, node.AttributeName, _currentAttributeValues);
+            WriteAttribute(context, node.AttributeName, _currentAttributeValues);
             _currentAttributeValues.Clear();
         }
 
@@ -282,7 +287,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
-            context.CodeWriter.WriteUsing(node.Content, endLine: true);
+            if (node.Source.HasValue)
+            {
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
+                {
+                    context.CodeWriter.WriteUsing(node.Content);
+                }
+            }
+            else
+            {
+                context.CodeWriter.WriteUsing(node.Content, endLine: true);
+            }
         }
 
         public override void WriteComponent(CodeRenderingContext context, ComponentIntermediateNode node)
@@ -307,6 +322,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // builder.OpenComponent<MyComponent>(0);
                 // builder.AddAttribute(1, "Foo", ...);
                 // builder.AddAttribute(2, "ChildContent", ...);
+                // builder.SetKey(someValue);
                 // builder.AddElementCapture(3, (__value) => _field = __value);
                 // builder.CloseComponent();
 
@@ -334,6 +350,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     context.RenderNode(childContent);
                 }
 
+                foreach (var setKey in node.SetKeys)
+                {
+                    context.RenderNode(setKey);
+                }
+
                 foreach (var capture in node.Captures)
                 {
                     context.RenderNode(capture);
@@ -356,7 +377,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 var attributes = node.Attributes.ToList();
                 var childContents = node.ChildContents.ToList();
                 var captures = node.Captures.ToList();
-                var remaining = attributes.Count + childContents.Count + captures.Count;
+                var setKeys = node.SetKeys.ToList();
+                var remaining = attributes.Count + childContents.Count + captures.Count + setKeys.Count;
 
                 context.CodeWriter.Write(node.TypeInferenceNode.FullTypeName);
                 context.CodeWriter.Write(".");
@@ -400,6 +422,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     }
                 }
                 
+                for (var i = 0; i < setKeys.Count; i++)
+                {
+                    context.CodeWriter.Write((_sourceSequence++).ToString());
+                    context.CodeWriter.Write(", ");
+
+                    WriteSetKeyInnards(context, setKeys[i]);
+
+                    remaining--;
+                    if (remaining > 0)
+                    {
+                        context.CodeWriter.Write(", ");
+                    }
+                }
+
                 for (var i = 0; i < captures.Count; i++)
                 {
                     context.CodeWriter.Write((_sourceSequence++).ToString());
@@ -481,7 +517,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                     for (var i = 0; i < tokens.Count; i++)
                     {
-                        context.CodeWriter.Write(tokens[i].Content);
+                        WriteCSharpToken(context, tokens[i]);
                     }
 
                     if (canTypeCheck)
@@ -520,7 +556,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                     for (var i = 0; i < tokens.Count; i++)
                     {
-                        context.CodeWriter.Write(tokens[i].Content);
+                        WriteCSharpToken(context, tokens[i]);
                     }
 
                     context.CodeWriter.Write(")");
@@ -543,7 +579,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                     for (var i = 0; i < tokens.Count; i++)
                     {
-                        context.CodeWriter.Write(tokens[i].Content);
+                        WriteCSharpToken(context, tokens[i]);
                     }
 
                     if (canTypeCheck && NeedsTypeCheck(node))
@@ -641,6 +677,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             _scopeStack.CloseScope(context);
         }
 
+        public override void WriteSetKey(CodeRenderingContext context, SetKeyIntermediateNode node)
+        {
+            // Looks like:
+            //
+            // builder.SetKey(_keyValue);
+
+            var codeWriter = context.CodeWriter;
+
+            codeWriter
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.SetKey}");
+            WriteSetKeyInnards(context, node);
+            codeWriter.WriteEndMethodInvocation();
+        }
+
+        private void WriteSetKeyInnards(CodeRenderingContext context, SetKeyIntermediateNode node)
+        {
+            WriteCSharpCode(context, new CSharpCodeIntermediateNode
+            {
+                Source = node.Source,
+                Children =
+                    {
+                        node.KeyValueToken
+                    }
+            });
+        }
+
         public override void WriteReferenceCapture(CodeRenderingContext context, ReferenceCaptureIntermediateNode node)
         {
             // Looks like:
@@ -690,11 +752,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
         
-        private void WriteAttribute(CodeWriter codeWriter, string key, IList<IntermediateToken> value)
+        private void WriteAttribute(CodeRenderingContext context, string key, IList<IntermediateToken> value)
         {
-            BeginWriteAttribute(codeWriter, key);
-            WriteAttributeValue(codeWriter, value);
-            codeWriter.WriteEndMethodInvocation();
+            BeginWriteAttribute(context.CodeWriter, key);
+            WriteAttributeValue(context, value);
+            context.CodeWriter.WriteEndMethodInvocation();
         }
 
         protected override void BeginWriteAttribute(CodeWriter codeWriter, string key)
@@ -726,13 +788,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         // Only the mixed case is complicated, we want to turn it into code that will concatenate
         // the values into a string at runtime.
 
-        private static void WriteAttributeValue(CodeWriter writer, IList<IntermediateToken> tokens)
+        private static void WriteAttributeValue(CodeRenderingContext context, IList<IntermediateToken> tokens)
         {
             if (tokens == null)
             {
                 throw new ArgumentNullException(nameof(tokens));
             }
 
+            var writer = context.CodeWriter;
             var hasHtml = false;
             var hasCSharp = false;
             for (var i = 0; i < tokens.Count; i++)
@@ -770,7 +833,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             insideCSharp = true;
                         }
 
-                        writer.Write(token.Content);
+                        WriteCSharpToken(context, token);
                     }
                     else
                     {
@@ -796,7 +859,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
             else if (hasCSharp)
             {
-                writer.Write(string.Join("", tokens.Select(t => t.Content)));
+                foreach (var token in tokens)
+                {
+                    WriteCSharpToken(context, token);
+                }
             }
             else if (hasHtml)
             {
@@ -806,6 +872,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 // Minimized attributes always map to 'true'
                 writer.Write("true");
+            }
+        }
+
+        private static void WriteCSharpToken(CodeRenderingContext context, IntermediateToken token)
+        {
+            if (string.IsNullOrWhiteSpace(token.Content))
+            {
+                return;
+            }
+
+            if (token.Source?.FilePath == null)
+            {
+                context.CodeWriter.Write(token.Content);
+                return;
+            }
+
+            using (context.CodeWriter.BuildLinePragma(token.Source, context))
+            {
+                context.CodeWriter.WritePadding(0, token.Source.Value, context);
+                context.CodeWriter.Write(token.Content);
             }
         }
     }

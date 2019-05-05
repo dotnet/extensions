@@ -14,13 +14,21 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "OnClick", new System.Action<Microsoft.AspNetCore.Components.UIEventArgs>(e => { Increment(); }));
+            builder.AddAttribute(1, "OnClick", new System.Action<Microsoft.AspNetCore.Components.UIEventArgs>(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                        e => { Increment(); }
+
+#line default
+#line hidden
+#nullable disable
+            ));
             builder.CloseComponent();
         }
         #pragma warning restore 1998
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     private int counter;
     private void Increment() {
         counter++;

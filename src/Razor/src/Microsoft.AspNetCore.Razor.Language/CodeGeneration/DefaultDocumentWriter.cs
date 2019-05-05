@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
@@ -47,7 +46,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 cSharp,
                 _options,
                 context.Diagnostics.ToArray(),
-                context.SourceMappings.ToArray());
+                context.SourceMappings.ToArray(),
+                context.LinePragmas.ToArray());
         }
 
         private class Visitor : IntermediateNodeVisitor
@@ -295,6 +295,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             public override void VisitReferenceCapture(ReferenceCaptureIntermediateNode node)
             {
                 Context.NodeWriter.WriteReferenceCapture(Context, node);
+            }
+
+            public override void VisitSetKey(SetKeyIntermediateNode node)
+            {
+                Context.NodeWriter.WriteSetKey(Context, node);
             }
 
             public override void VisitDefault(IntermediateNode node)
