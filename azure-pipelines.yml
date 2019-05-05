@@ -35,12 +35,18 @@ jobs:
       displayName: Code check
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          name: NetCorePublic-Int-Pool
+          name: NetCorePublic-Pool
           queue: BuildPool.Windows.10.Amd64.VS2019.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          name: NetCoreInternal-Int-Pool
+          name: NetCoreInternal-Pool
           queue: BuildPool.Windows.10.Amd64.VS2019
       steps:
+      - task: NuGetCommand@2
+        displayName: 'Clear NuGet caches'
+        condition: succeeded()
+        inputs:
+          command: custom
+          arguments: 'locals all -clear'
       - powershell: ./restore.cmd -ci; ./eng/scripts/CodeCheck.ps1 -ci
         displayName: Run eng/scripts/CodeCheck.ps1
 
@@ -61,10 +67,10 @@ jobs:
     - job: Windows
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          name: NetCorePublic-Int-Pool
+          name: NetCorePublic-Pool
           queue: BuildPool.Windows.10.Amd64.VS2019.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          name: NetCoreInternal-Int-Pool
+          name: NetCoreInternal-Pool
           queue: BuildPool.Windows.10.Amd64.VS2019
       strategy:
         matrix:
@@ -102,6 +108,12 @@ jobs:
         - group: DotNet-Blob-Feed
         - group: DotNet-Symbol-Server-Pats
       steps:
+      - task: NuGetCommand@2
+        displayName: 'Clear NuGet caches'
+        condition: succeeded()
+        inputs:
+          command: custom
+          arguments: 'locals all -clear'
       - script: eng\common\cibuild.cmd
           -configuration $(_BuildConfig)
           -prepareMachine
