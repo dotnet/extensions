@@ -50,10 +50,10 @@ jobs:
     - job: Windows
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          name: NetCorePublic-Int-Pool
+          name: NetCorePublic-Pool
           queue: BuildPool.Windows.10.Amd64.VS2017.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          name: NetCoreInternal-Int-Pool
+          name: NetCoreInternal-Pool
           queue: BuildPool.Windows.10.Amd64.VS2017
       variables:
       # Only enable publishing in official builds.
@@ -98,6 +98,12 @@ jobs:
       steps:
       - checkout: self
         clean: true
+      - task: NuGetCommand@2
+        displayName: 'Clear NuGet caches'
+        condition: succeeded()
+        inputs:
+          command: custom
+          arguments: 'locals all -clear'
       - powershell: eng\scripts\azpbuild.ps1 -configuration $(_BuildConfig) $(_BuildArgs)
         displayName: Build and Publish
       - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
