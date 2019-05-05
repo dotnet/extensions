@@ -45,6 +45,10 @@
     <!-- Enables Strict mode for Roslyn compiler -->
     <Features>strict</Features>
 
+    <!-- Automatically generate source for .resx files on-build. -->
+    <GenerateResxSource>true</GenerateResxSource>
+    <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
+
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
   </PropertyGroup>
