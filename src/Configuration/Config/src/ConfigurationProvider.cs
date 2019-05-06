@@ -100,14 +100,5 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         /// <returns> The configuration name. </returns>
         public override string ToString() => $"{GetType().Name}";
-
-        /// <summary>
-        /// Use the following values as the configuration data for this provider.
-        /// </summary>
-        /// <param name="data">The configuration data this provider should use.</param>
-        public void Use(IDictionary<string, string> data)
-        {
-            Data = data;
-        }
     }
 }

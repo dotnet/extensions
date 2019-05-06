@@ -44,7 +44,6 @@ namespace Microsoft.Extensions.Configuration
         void Load();
         void Set(string key, string value);
         bool TryGet(string key, out string value);
-        void Use(System.Collections.Generic.IDictionary<string, string> data);
     }
     public partial interface IConfigurationRoot : Microsoft.Extensions.Configuration.IConfiguration
     {

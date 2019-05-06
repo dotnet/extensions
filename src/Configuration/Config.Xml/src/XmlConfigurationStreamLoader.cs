@@ -120,7 +120,13 @@ namespace Microsoft.Extensions.Configuration.Xml
         /// <param name="provider">The <see cref="IConfigurationProvider"/> to store the data.</param>
         /// <param name="stream">The <see cref="Stream"/> to load ini configuration data from.</param>
         public void Load(IConfigurationProvider provider, Stream stream)
-            => provider.Use(Read(stream, XmlDocumentDecryptor.Instance));
+        {
+            var data = Read(stream, XmlDocumentDecryptor.Instance);
+            foreach (var pair in data)
+            {
+                provider.Set(pair.Key, pair.Value);
+            }
+        }
 
         private static void SkipUntilRootElement(XmlReader reader)
         {

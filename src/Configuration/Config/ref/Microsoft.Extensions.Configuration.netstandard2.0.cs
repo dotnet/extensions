@@ -17,7 +17,6 @@ namespace Microsoft.Extensions.Configuration
         public void Load() { }
         public void Set(string key, string value) { }
         public bool TryGet(string key, out string value) { throw null; }
-        public void Use(System.Collections.Generic.IDictionary<string, string> data) { }
     }
     public partial class ChainedConfigurationSource : Microsoft.Extensions.Configuration.IConfigurationSource
     {
@@ -51,7 +50,6 @@ namespace Microsoft.Extensions.Configuration
         public virtual void Set(string key, string value) { }
         public override string ToString() { throw null; }
         public virtual bool TryGet(string key, out string value) { throw null; }
-        public void Use(System.Collections.Generic.IDictionary<string, string> data) { }
     }
     public partial class ConfigurationReloadToken : Microsoft.Extensions.Primitives.IChangeToken
     {

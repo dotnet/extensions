@@ -16,6 +16,12 @@ namespace Microsoft.Extensions.Configuration.Json
         /// <param name="provider">The <see cref="IConfigurationProvider"/> to store the data.</param>
         /// <param name="stream">The json <see cref="Stream"/> to load configuration data from.</param>
         public void Load(IConfigurationProvider provider, Stream stream)
-            => provider.Use(JsonConfigurationFileParser.Parse(stream));
+        {
+            var data = JsonConfigurationFileParser.Parse(stream);
+            foreach (var pair in data)
+            {
+                provider.Set(pair.Key, pair.Value);
+            }
+        }
     }
 }
