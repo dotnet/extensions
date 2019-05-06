@@ -130,7 +130,7 @@ function CommitUpdatedVersions(
 {
     $count = $updatedVars.Count
     if ($count -gt 0) {
-        & git add build\dependencies.props
+        & git add eng\Dependencies.props
 
         $gitConfigArgs = @()
         if ($env:GITHUB_USER) {

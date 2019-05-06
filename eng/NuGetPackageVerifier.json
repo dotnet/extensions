@@ -2,10 +2,12 @@
   "adx-nonshipping": {
     "rules": [],
     "packages": {
+      "Microsoft.AspNetCore.Analyzer.Testing": {},
       "Microsoft.AspNetCore.BenchmarkRunner.Sources": {},
       "Microsoft.Extensions.ActivatorUtilities.Sources": {},
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
       "Microsoft.Extensions.HashCodeCombiner.Sources": {},
+      "Microsoft.Extensions.NonCapturingTimer.Sources": {},
       "Microsoft.Extensions.ParameterDefaultValue.Sources": {},
       "Microsoft.Extensions.TypeNameHelper.Sources": {},
       "Microsoft.Extensions.ValueStopwatch.Sources": {}

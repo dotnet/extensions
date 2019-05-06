@@ -1,17 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging.Analyzers;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Analyzer.Test
+namespace Microsoft.Extensions.Logging.Analyzer
 {
-    public class FormatStringAnalyzerTests : DiagnosticVerifier
+    public class FormatStringAnalyzerTests
     {
+        private LoggingDiagnosticRunner Runner = new LoggingDiagnosticRunner(new LogFormatAnalyzer());
+
         [Theory]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"""{0}""", "1")]
         public void MEL0001IsProducedForNumericFormatArgument(string format)
@@ -146,7 +147,7 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
             return method;
         }
 
-        private static Diagnostic[] GetDiagnostics(string expression, params string[] additionalEnabledDiagnostics)
+        private Diagnostic[] GetDiagnostics(string expression, params string[] additionalEnabledDiagnostics)
         {
             var code = $@"
 using Microsoft.Extensions.Logging;
@@ -160,7 +161,7 @@ public class Program
     }}
 }}
 ";
-            return GetSortedDiagnosticsAsync(new[] { code }, new LogFormatAnalyzer(), additionalEnabledDiagnostics).Result;
+            return Runner.GetDiagnosticsAsync(code, additionalEnabledDiagnostics).Result;
         }
     }
 }
