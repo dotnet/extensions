@@ -110,6 +110,10 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             // Assert
             Assert.NotNull(anotherClass);
+            Assert.Equal(ConsoleColor.DarkGreen, anotherClass.Color);
+            Assert.Null(anotherClass.ColorNull);
+            Assert.Equal(12, anotherClass.Integer);
+            Assert.Null(anotherClass.IntegerNull);
         }
 
         [Theory]
@@ -244,7 +248,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void TypeActivatorThrowsOnMultipleMarkedCtors(CreateInstanceFunc createFunc)
         {
             // Act
-            var exception =  Assert.Throws<InvalidOperationException>(() => CreateInstance<ClassWithMultipleMarkedCtors>(createFunc, null, "hello"));
+            var exception = Assert.Throws<InvalidOperationException>(() => CreateInstance<ClassWithMultipleMarkedCtors>(createFunc, null, "hello"));
 
             // Assert
             Assert.Equal("Multiple constructors were marked with ActivatorUtilitiesConstructorAttribute.", exception.Message);
@@ -255,7 +259,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void TypeActivatorThrowsWhenMarkedCtorDoesntAcceptArguments(CreateInstanceFunc createFunc)
         {
             // Act
-            var exception =  Assert.Throws<InvalidOperationException>(() => CreateInstance<ClassWithAmbiguousCtorsAndAttribute>(createFunc, null, 0, "hello"));
+            var exception = Assert.Throws<InvalidOperationException>(() => CreateInstance<ClassWithAmbiguousCtorsAndAttribute>(createFunc, null, 0, "hello"));
 
             // Assert
             Assert.Equal("Constructor marked with ActivatorUtilitiesConstructorAttribute does not accept all given argument types.", exception.Message);

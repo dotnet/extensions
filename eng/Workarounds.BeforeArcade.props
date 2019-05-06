@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- Disable Arcade's Xliff tools -->
+    <UsingToolXliff>false</UsingToolXliff>
+
+    <!-- Using framework assemblies as a package breaks tests on .NET Framework on Windows. -->
+    <UsingToolNetFrameworkReferenceAssemblies Condition="'$(OS)' != 'Windows_NT'">true</UsingToolNetFrameworkReferenceAssemblies>
+  </PropertyGroup>
+</Project>

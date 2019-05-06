@@ -28,7 +28,7 @@ namespace System.Diagnostics
             Func<string, object, object, bool> isEnabled)
         {
             var adapter = new DiagnosticSourceAdapter(target, isEnabled);
-            return diagnostic.Subscribe(adapter, (Predicate<string>)adapter.IsEnabled);
+            return diagnostic.Subscribe(adapter, (Func<string, object, object, bool>)adapter.IsEnabled);
         }
     }
 }

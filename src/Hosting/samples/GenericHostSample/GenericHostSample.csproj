@@ -1,24 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
-    <StartupObject>GenericHostSample.ProgramHelloWorld</StartupObject>
+    <TargetFrameworks>netcoreapp3.0;net461</TargetFrameworks>
+    <StartupObject>GenericHostSample.WindowsServiceControlled</StartupObject>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Hosting" />
-  </ItemGroup>
-  
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System.ServiceProcess" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Microsoft.Extensions.Hosting.WindowsServices" />
+    <Reference Include="Microsoft.Extensions.Logging.EventLog" />
   </ItemGroup>
 
 </Project>

@@ -1,51 +1,71 @@
 <Project>
-  <Import
-    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
-    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
-
-  <Import Project="version.props" />
-
   <PropertyGroup>
-    <Product>Microsoft .NET Extensions</Product>
-    <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
-    <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
-    <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
-    <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
-    <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
-    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
-    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
-
-    <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
-
-    <!--
-      By default, all projects which produce packages are not intended to ship to NuGet.org as a product package.
-      Packages which are intended to ship to NuGet.org must opt-in by setting this to true in their project file.
-    -->
-    <IsProductComponent>false</IsProductComponent>
+    <!-- Set these before importing Arcade to override Arcade's defaults -->
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests')) OR $(MSBuildProjectName.EndsWith('.FunctionalTests'))">true</IsUnitTestProject>
+    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">false</IsUnitTestProject>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
-    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('samples'))">true</IsSampleProject>
 
-    <IncludeSymbols>true</IncludeSymbols>
-
-    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
+    <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
+    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
   </PropertyGroup>
+
+  <Import Project="eng\FlakyTests.BeforeArcade.props" />
+  <Import Project="eng\Workarounds.BeforeArcade.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\Workarounds.AfterArcade.props" />
+  <Import Project="eng\FlakyTests.AfterArcade.props" />
+
+  <PropertyGroup Condition="'$(CopyrightMicrosoft)' != ''">
+    <Copyright>$(CopyrightMicrosoft)</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IncludeSymbols>true</IncludeSymbols>
+    <Serviceable Condition="'$(Configuration)' == 'Release'">true</Serviceable>
+    <PackageLicenseUrl Condition="'$(PackageLicenseExpression)' == ''">https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
+    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <PackageProjectUrl>https://asp.net</PackageProjectUrl>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <LangVersion>8.0</LangVersion>
+
+    <Product>Microsoft .NET Extensions</Product>
+    <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <SignAssembly>true</SignAssembly>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Enables Strict mode for Roslyn compiler -->
+    <Features>strict</Features>
+
+    <!-- Automatically generate source for .resx files on-build. -->
+    <GenerateResxSource>true</GenerateResxSource>
+    <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
+
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
+    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
 
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
-  <Import Project="eng\Sources.props" />
+  <Import Project="eng\targets\Csharp.Refs.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
 
-  <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
-  </ItemGroup>
+  <Import Project="eng\targets\Npm.Common.props" Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 </Project>

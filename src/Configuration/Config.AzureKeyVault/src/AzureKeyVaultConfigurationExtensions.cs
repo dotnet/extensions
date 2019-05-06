@@ -1,13 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration.AzureKeyVault;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace Microsoft.Extensions.Configuration
 {
@@ -30,7 +27,7 @@ namespace Microsoft.Extensions.Configuration
             string clientId,
             string clientSecret)
         {
-            return AddAzureKeyVault(configurationBuilder, vault, clientId, clientSecret, new DefaultKeyVaultSecretManager());
+            return AddAzureKeyVault(configurationBuilder, new AzureKeyVaultConfigurationOptions(vault, clientId, clientSecret));
         }
 
         /// <summary>
@@ -49,26 +46,10 @@ namespace Microsoft.Extensions.Configuration
             string clientSecret,
             IKeyVaultSecretManager manager)
         {
-            if (clientId == null)
+            return AddAzureKeyVault(configurationBuilder, new AzureKeyVaultConfigurationOptions(vault, clientId, clientSecret)
             {
-                throw new ArgumentNullException(nameof(clientId));
-            }
-            if (clientSecret == null)
-            {
-                throw new ArgumentNullException(nameof(clientSecret));
-            }
-            KeyVaultClient.AuthenticationCallback callback =
-                (authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret);
-
-            return configurationBuilder.AddAzureKeyVault(vault, new KeyVaultClient(callback), manager);
-        }
-
-        private static async Task<string> GetTokenFromClientSecret(string authority, string resource, string clientId, string clientSecret)
-        {
-            var authContext = new AuthenticationContext(authority);
-            var clientCred = new ClientCredential(clientId, clientSecret);
-            var result = await authContext.AcquireTokenAsync(resource, clientCred);
-            return result.AccessToken;
+                Manager = manager
+            });
         }
 
         /// <summary>
@@ -85,7 +66,7 @@ namespace Microsoft.Extensions.Configuration
             string clientId,
             X509Certificate2 certificate)
         {
-            return AddAzureKeyVault(configurationBuilder, vault, clientId, certificate, new DefaultKeyVaultSecretManager());
+            return AddAzureKeyVault(configurationBuilder, new AzureKeyVaultConfigurationOptions(vault, clientId, certificate));
         }
 
         /// <summary>
@@ -104,25 +85,10 @@ namespace Microsoft.Extensions.Configuration
             X509Certificate2 certificate,
             IKeyVaultSecretManager manager)
         {
-            if (clientId == null)
+            return AddAzureKeyVault(configurationBuilder, new AzureKeyVaultConfigurationOptions(vault, clientId, certificate)
             {
-                throw new ArgumentNullException(nameof(clientId));
-            }
-            if (certificate == null)
-            {
-                throw new ArgumentNullException(nameof(certificate));
-            }
-            KeyVaultClient.AuthenticationCallback callback =
-                (authority, resource, scope) => GetTokenFromClientCertificate(authority, resource, clientId, certificate);
-
-            return configurationBuilder.AddAzureKeyVault(vault, new KeyVaultClient(callback), manager);
-        }
-
-        private static async Task<string> GetTokenFromClientCertificate(string authority, string resource, string clientId, X509Certificate2 certificate)
-        {
-            var authContext = new AuthenticationContext(authority);
-            var result = await authContext.AcquireTokenAsync(resource, new ClientAssertionCertificate(clientId, certificate));
-            return result.AccessToken;
+                Manager = manager
+            });
         }
 
         /// <summary>
@@ -135,7 +101,7 @@ namespace Microsoft.Extensions.Configuration
             this IConfigurationBuilder configurationBuilder,
             string vault)
         {
-            return AddAzureKeyVault(configurationBuilder, vault, new DefaultKeyVaultSecretManager());
+            return AddAzureKeyVault(configurationBuilder, new AzureKeyVaultConfigurationOptions(vault));
         }
 
         /// <summary>
@@ -150,11 +116,10 @@ namespace Microsoft.Extensions.Configuration
             string vault,
             IKeyVaultSecretManager manager)
         {
-            var azureServiceTokenProvider = new AzureServiceTokenProvider();
-            var authenticationCallback = new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback);
-            var keyVaultClient = new KeyVaultClient(authenticationCallback);
-            
-            return AddAzureKeyVault(configurationBuilder, vault, keyVaultClient, manager);
+            return AddAzureKeyVault(configurationBuilder, new AzureKeyVaultConfigurationOptions(vault)
+            {
+                Manager = manager
+            });
         }
 
         /// <summary>
@@ -171,29 +136,44 @@ namespace Microsoft.Extensions.Configuration
             KeyVaultClient client,
             IKeyVaultSecretManager manager)
         {
-            if (configurationBuilder == null)
-            {
-                throw new ArgumentNullException(nameof(configurationBuilder));
-            }
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-            if (vault == null)
-            {
-                throw new ArgumentNullException(nameof(vault));
-            }
-            if (manager == null)
-            {
-                throw new ArgumentNullException(nameof(manager));
-            }
-
-            configurationBuilder.Add(new AzureKeyVaultConfigurationSource()
+            return configurationBuilder.Add(new AzureKeyVaultConfigurationSource(new AzureKeyVaultConfigurationOptions()
             {
                 Client = client,
                 Vault = vault,
                 Manager = manager
-            });
+            }));
+        }
+
+        /// <summary>
+        /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
+        /// </summary>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="options">The <see cref="AzureKeyVaultConfigurationOptions"/> to use.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddAzureKeyVault(this IConfigurationBuilder configurationBuilder, AzureKeyVaultConfigurationOptions options)
+        {
+            if (configurationBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(configurationBuilder));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+            if (options.Client == null)
+            {
+                throw new ArgumentNullException(nameof(options.Client));
+            }
+            if (options.Vault == null)
+            {
+                throw new ArgumentNullException(nameof(options.Vault));
+            }
+            if (options.Manager == null)
+            {
+                throw new ArgumentNullException(nameof(options.Manager));
+            }
+
+            configurationBuilder.Add(new AzureKeyVaultConfigurationSource(options));
 
             return configurationBuilder;
         }
