@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Configuration.Xml
         /// <param name="stream">The stream to read.</param>
         public override void Load(Stream stream)
         {
-            Data = XmlConfigurationStreamLoader.Read(stream, Decryptor);
+            Data = XmlStreamConfigurationProvider.Read(stream, Decryptor);
         }
     }
 }

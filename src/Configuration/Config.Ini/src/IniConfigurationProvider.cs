@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.Extensions.Configuration.Ini
@@ -32,6 +30,6 @@ namespace Microsoft.Extensions.Configuration.Ini
         /// </summary>
         /// <param name="stream">The stream to read.</param>
         public override void Load(Stream stream)
-            => Data = IniConfigurationStreamLoader.Read(stream);
+            => Data = IniStreamConfigurationProvider.Read(stream);
     }
 }

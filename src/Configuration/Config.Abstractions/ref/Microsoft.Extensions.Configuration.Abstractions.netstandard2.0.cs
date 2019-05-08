@@ -60,8 +60,4 @@ namespace Microsoft.Extensions.Configuration
     {
         Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder);
     }
-    public partial interface IConfigurationStreamLoader
-    {
-        void Load(Microsoft.Extensions.Configuration.IConfigurationProvider provider, System.IO.Stream stream);
-    }    
 }

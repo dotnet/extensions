@@ -105,7 +105,7 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.AddStream(new IniConfigurationStreamLoader(), stream);
+            return builder.Add<IniStreamConfigurationSource>(s => s.Stream = stream);
         }
 
     }

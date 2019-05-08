@@ -10,11 +10,17 @@ using System.Xml;
 namespace Microsoft.Extensions.Configuration.Xml
 {
     /// <summary>
-    /// An XML file based <see cref="IConfigurationStreamLoader"/>.
+    /// An XML file based <see cref="IConfigurationProvider"/>.
     /// </summary>
-    public class XmlConfigurationStreamLoader : IConfigurationStreamLoader
+    public class XmlStreamConfigurationProvider : StreamConfigurationProvider
     {
         private const string NameAttributeKey = "Name";
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="source">The <see cref="XmlStreamConfigurationSource"/>.</param>
+        public XmlStreamConfigurationProvider(XmlStreamConfigurationSource source) : base(source) { }
 
         /// <summary>
         /// Read a stream of INI values into a key/value dictionary.
@@ -115,16 +121,15 @@ namespace Microsoft.Extensions.Configuration.Xml
         }
 
         /// <summary>
-        /// Loads INI configuration key/values from a stream into a provider.
+        /// Loads XML configuration key/values from a stream into a provider.
         /// </summary>
-        /// <param name="provider">The <see cref="IConfigurationProvider"/> to store the data.</param>
         /// <param name="stream">The <see cref="Stream"/> to load ini configuration data from.</param>
-        public void Load(IConfigurationProvider provider, Stream stream)
+        public override void Load(Stream stream)
         {
             var data = Read(stream, XmlDocumentDecryptor.Instance);
             foreach (var pair in data)
             {
-                provider.Set(pair.Key, pair.Value);
+                Set(pair.Key, pair.Value);
             }
         }
 

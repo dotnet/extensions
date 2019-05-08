@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Configuration
     /// <summary>
     /// Stream based <see cref="IConfigurationSource" />.
     /// </summary>
-    public class StreamConfigurationSource : IConfigurationSource
+    public abstract class StreamConfigurationSource : IConfigurationSource
     {
         /// <summary>
         /// The stream containing the configuration data.
@@ -16,16 +16,10 @@ namespace Microsoft.Extensions.Configuration
         public Stream Stream { get; set; }
 
         /// <summary>
-        /// The <see cref="IConfigurationStreamLoader"/> used to load the configuration data from the Stream.
-        /// </summary>
-        public IConfigurationStreamLoader Loader { get; set; }
-
-        /// <summary>
         /// Builds the <see cref="StreamConfigurationProvider"/> for this source.
         /// </summary>
-        /// <param name="builder"></param>
-        /// <returns></returns>
-        public IConfigurationProvider Build(IConfigurationBuilder builder)
-            => new StreamConfigurationProvider(this);
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/>.</param>
+        /// <returns>An <see cref="IConfigurationProvider"/></returns>
+        public abstract IConfigurationProvider Build(IConfigurationBuilder builder);
     }
 }

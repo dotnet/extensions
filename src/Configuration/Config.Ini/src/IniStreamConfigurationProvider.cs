@@ -8,10 +8,16 @@ using System.IO;
 namespace Microsoft.Extensions.Configuration.Ini
 {
     /// <summary>
-    /// An INI file based <see cref="IConfigurationStreamLoader"/>.
+    /// An INI file based <see cref="StreamConfigurationProvider"/>.
     /// </summary>
-    public class IniConfigurationStreamLoader : IConfigurationStreamLoader
+    public class IniStreamConfigurationProvider : StreamConfigurationProvider
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="source">The <see cref="IniStreamConfigurationSource"/>.</param>
+        public IniStreamConfigurationProvider(IniStreamConfigurationSource source) : base(source) { }
+
         /// <summary>
         /// Read a stream of INI values into a key/value dictionary.
         /// </summary>
@@ -77,14 +83,13 @@ namespace Microsoft.Extensions.Configuration.Ini
         /// <summary>
         /// Loads INI configuration key/values from a stream into a provider.
         /// </summary>
-        /// <param name="provider">The <see cref="IConfigurationProvider"/> to store the data.</param>
         /// <param name="stream">The <see cref="Stream"/> to load ini configuration data from.</param>
-        public void Load(IConfigurationProvider provider, Stream stream)
+        public override void Load(Stream stream)
         {
             var data = Read(stream);
             foreach (var pair in data)
             {
-                provider.Set(pair.Key, pair.Value);
+                Set(pair.Key, pair.Value);
             }
         }
     }

@@ -9,12 +9,12 @@ namespace Microsoft.Extensions.Configuration
     /// <summary>
     /// Stream based configuration provider
     /// </summary>
-    public class StreamConfigurationProvider : ConfigurationProvider
+    public abstract class StreamConfigurationProvider : ConfigurationProvider
     {
         /// <summary>
         /// The source settings for this provider.
         /// </summary>
-        public StreamConfigurationSource Source { get; }
+        public StreamConfigurationSource Source { get; set; }
 
         private bool _loaded;
 
@@ -25,15 +25,13 @@ namespace Microsoft.Extensions.Configuration
         public StreamConfigurationProvider(StreamConfigurationSource source)
         {
             Source = source ?? throw new ArgumentNullException(nameof(source));
-            if (Source.Loader == null)
-            {
-                throw new ArgumentNullException(nameof(Source.Loader));
-            }
-            if (Source.Stream == null)
-            {
-                throw new ArgumentNullException(nameof(Source.Stream));
-            }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stream"></param>
+        public abstract void Load(Stream stream);
 
         /// <summary>
         /// 
@@ -44,7 +42,7 @@ namespace Microsoft.Extensions.Configuration
             {
                 throw new InvalidOperationException("StreamConfigurationProviders cannot be loaded more than once.");
             }
-            Source.Loader.Load(this, Source.Stream);
+            Load(Source.Stream);
             _loaded = true;
         }
     }

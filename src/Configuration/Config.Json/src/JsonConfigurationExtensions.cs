@@ -105,7 +105,7 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.AddStream(new JsonConfigurationStreamLoader(), stream);
+            return builder.Add<JsonStreamConfigurationSource>(s => s.Stream = stream);
         }
     }
 }

@@ -3,24 +3,29 @@
 
 using System.IO;
 
-namespace Microsoft.Extensions.Configuration.Json
+namespace Microsoft.Extensions.Configuration.NewtonsoftJson
 {
     /// <summary>
     /// Loads configuration key/values from a json stream into a provider.
     /// </summary>
-    public class JsonConfigurationStreamLoader : IConfigurationStreamLoader
+    public class NewtonsoftJsonStreamConfigurationProvider : StreamConfigurationProvider
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="source"></param>
+        public NewtonsoftJsonStreamConfigurationProvider(NewtonsoftJsonStreamConfigurationSource source) : base(source) { }
+
         /// <summary>
         /// Loads json configuration key/values from a stream into a provider.
         /// </summary>
-        /// <param name="provider">The <see cref="IConfigurationProvider"/> to store the data.</param>
         /// <param name="stream">The json <see cref="Stream"/> to load configuration data from.</param>
-        public void Load(IConfigurationProvider provider, Stream stream)
+        public override void Load(Stream stream)
         {
-            var data = JsonConfigurationFileParser.Parse(stream);
+            var data = NewtonsoftJsonConfigurationFileParser.Parse(stream);
             foreach (var pair in data)
             {
-                provider.Set(pair.Key, pair.Value);
+                Set(pair.Key, pair.Value);
             }
         }
     }
