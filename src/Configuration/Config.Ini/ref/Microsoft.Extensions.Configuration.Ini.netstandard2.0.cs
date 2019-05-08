@@ -25,10 +25,15 @@ namespace Microsoft.Extensions.Configuration.Ini
         public IniConfigurationSource() { }
         public override Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder) { throw null; }
     }
-    public partial class IniConfigurationStreamLoader : Microsoft.Extensions.Configuration.IConfigurationStreamLoader
+    public partial class IniStreamConfigurationProvider : Microsoft.Extensions.Configuration.StreamConfigurationProvider
     {
-        public IniConfigurationStreamLoader() { }
-        public void Load(Microsoft.Extensions.Configuration.IConfigurationProvider provider, System.IO.Stream stream) { }
+        public IniStreamConfigurationProvider(Microsoft.Extensions.Configuration.Ini.IniStreamConfigurationSource source) : base (default(Microsoft.Extensions.Configuration.StreamConfigurationSource)) { }
+        public override void Load(System.IO.Stream stream) { }
         public static System.Collections.Generic.IDictionary<string, string> Read(System.IO.Stream stream) { throw null; }
+    }
+    public partial class IniStreamConfigurationSource : Microsoft.Extensions.Configuration.StreamConfigurationSource
+    {
+        public IniStreamConfigurationSource() { }
+        public override Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder) { throw null; }
     }
 }

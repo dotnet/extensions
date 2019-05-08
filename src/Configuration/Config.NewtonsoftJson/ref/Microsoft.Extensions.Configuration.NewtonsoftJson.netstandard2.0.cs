@@ -25,9 +25,14 @@ namespace Microsoft.Extensions.Configuration.NewtonsoftJson
         public NewtonsoftJsonConfigurationSource() { }
         public override Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder) { throw null; }
     }
-    public partial class NewtonsoftJsonConfigurationStreamLoader : Microsoft.Extensions.Configuration.IConfigurationStreamLoader
+    public partial class NewtonsoftJsonStreamConfigurationProvider : Microsoft.Extensions.Configuration.StreamConfigurationProvider
     {
-        public NewtonsoftJsonConfigurationStreamLoader() { }
-        public void Load(Microsoft.Extensions.Configuration.IConfigurationProvider provider, System.IO.Stream stream) { }
+        public NewtonsoftJsonStreamConfigurationProvider(Microsoft.Extensions.Configuration.NewtonsoftJson.NewtonsoftJsonStreamConfigurationSource source) : base (default(Microsoft.Extensions.Configuration.StreamConfigurationSource)) { }
+        public override void Load(System.IO.Stream stream) { }
+    }
+    public partial class NewtonsoftJsonStreamConfigurationSource : Microsoft.Extensions.Configuration.StreamConfigurationSource
+    {
+        public NewtonsoftJsonStreamConfigurationSource() { }
+        public override Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder) { throw null; }
     }
 }

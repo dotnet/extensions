@@ -25,17 +25,22 @@ namespace Microsoft.Extensions.Configuration.Xml
         public XmlConfigurationSource() { }
         public override Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder) { throw null; }
     }
-    public partial class XmlConfigurationStreamLoader : Microsoft.Extensions.Configuration.IConfigurationStreamLoader
-    {
-        public XmlConfigurationStreamLoader() { }
-        public void Load(Microsoft.Extensions.Configuration.IConfigurationProvider provider, System.IO.Stream stream) { }
-        public static System.Collections.Generic.IDictionary<string, string> Read(System.IO.Stream stream, Microsoft.Extensions.Configuration.Xml.XmlDocumentDecryptor decryptor) { throw null; }
-    }
     public partial class XmlDocumentDecryptor
     {
         public static readonly Microsoft.Extensions.Configuration.Xml.XmlDocumentDecryptor Instance;
         protected XmlDocumentDecryptor() { }
         public System.Xml.XmlReader CreateDecryptingXmlReader(System.IO.Stream input, System.Xml.XmlReaderSettings settings) { throw null; }
         protected virtual System.Xml.XmlReader DecryptDocumentAndCreateXmlReader(System.Xml.XmlDocument document) { throw null; }
+    }
+    public partial class XmlStreamConfigurationProvider : Microsoft.Extensions.Configuration.StreamConfigurationProvider
+    {
+        public XmlStreamConfigurationProvider(Microsoft.Extensions.Configuration.Xml.XmlStreamConfigurationSource source) : base (default(Microsoft.Extensions.Configuration.StreamConfigurationSource)) { }
+        public override void Load(System.IO.Stream stream) { }
+        public static System.Collections.Generic.IDictionary<string, string> Read(System.IO.Stream stream, Microsoft.Extensions.Configuration.Xml.XmlDocumentDecryptor decryptor) { throw null; }
+    }
+    public partial class XmlStreamConfigurationSource : Microsoft.Extensions.Configuration.StreamConfigurationSource
+    {
+        public XmlStreamConfigurationSource() { }
+        public override Microsoft.Extensions.Configuration.IConfigurationProvider Build(Microsoft.Extensions.Configuration.IConfigurationBuilder builder) { throw null; }
     }
 }
