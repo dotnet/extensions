@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
+    <!-- Workaround https://github.com/dotnet/cli/issues/10528 -->
     <BundledNETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
 
     <!-- Workaround for the evaluation order in which Arcade assigns test properties. -->
@@ -8,8 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Workaround https://github.com/dotnet/sdk/issues/2976 -->
-    <PackageReference Update="Microsoft.NETCore.Platforms" PrivateAssets="All" />
+    <!--
+      Workaround the cyclical nature of building .NET Core itself.
+
+      The SDK implies a default version of .NET Core to use, but that is typically too stale for this repo.
+      This sets the version of the NETCore.App shared framework which should be used
+    -->
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <!-- Always update the 'latest version', whether the repo is servicing or not. -->
+      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">$(MicrosoftNETCoreAppPackageVersion)</LatestRuntimeFrameworkVersion>
+      <!-- Only update the default runtime version for preview builds. -->
+      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</DefaultRuntimeFrameworkVersion>
+      <!-- Only update the targeting pack version for preview builds. -->
+      <TargetingPackVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</TargetingPackVersion>
+    </KnownFrameworkReference>
   </ItemGroup>
 
   <!-- Workaround for implicit references added by Arcade based on project name. Non-test projects should not reference these projects. -->
