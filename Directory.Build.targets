@@ -1,10 +1,5 @@
 <Project>
   <!-- Properties which should be set after the project has been evaluated -->
-  <PropertyGroup>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
-  </PropertyGroup>
-
-  <!-- Properties which should be set after the project has been evaluated -->
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <Description Condition=" '$(Description)' == ''">$(PackageId)</Description>
