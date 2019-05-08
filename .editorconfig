@@ -13,7 +13,7 @@ insert_final_newline = true
 
 [*.cs]
 indent_size = 4
-dotnet_sort_system_directives_first = true:warning
+dotnet_sort_system_directives_first = true
 
 [*.{xml,config,*proj,nuspec,props,resx,targets,yml,tasks}]
 indent_size = 2
