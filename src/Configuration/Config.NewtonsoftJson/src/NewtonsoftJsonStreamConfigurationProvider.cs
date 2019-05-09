@@ -22,11 +22,7 @@ namespace Microsoft.Extensions.Configuration.NewtonsoftJson
         /// <param name="stream">The json <see cref="Stream"/> to load configuration data from.</param>
         public override void Load(Stream stream)
         {
-            var data = NewtonsoftJsonConfigurationFileParser.Parse(stream);
-            foreach (var pair in data)
-            {
-                Set(pair.Key, pair.Value);
-            }
+            Data = NewtonsoftJsonConfigurationFileParser.Parse(stream);
         }
     }
 }
