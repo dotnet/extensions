@@ -13,11 +13,6 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
     /// </summary>
     public class EnvironmentVariablesConfigurationProvider : ConfigurationProvider
     {
-        private const string MySqlServerPrefix = "MYSQLCONNSTR_";
-        private const string SqlAzureServerPrefix = "SQLAZURECONNSTR_";
-        private const string SqlServerPrefix = "SQLCONNSTR_";
-        private const string CustomPrefix = "CUSTOMCONNSTR_";
-
         private const string ConnStrKeyFormat = "ConnectionStrings:{0}";
         private const string ProviderKeyFormat = "ConnectionStrings:{0}_ProviderName";
 
@@ -72,29 +67,9 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
         private static IEnumerable<DictionaryEntry> AzureEnvToAppEnv(DictionaryEntry entry)
         {
             var key = (string)entry.Key;
-            var prefix = string.Empty;
-            var provider = string.Empty;
+            var (prefix, provider) = GetPrefixAndProvider(key);
 
-            if (key.StartsWith(MySqlServerPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                prefix = MySqlServerPrefix;
-                provider = "MySql.Data.MySqlClient";
-            }
-            else if (key.StartsWith(SqlAzureServerPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                prefix = SqlAzureServerPrefix;
-                provider = "System.Data.SqlClient";
-            }
-            else if (key.StartsWith(SqlServerPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                prefix = SqlServerPrefix;
-                provider = "System.Data.SqlClient";
-            }
-            else if (key.StartsWith(CustomPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                prefix = CustomPrefix;
-            }
-            else
+            if (string.IsNullOrEmpty(prefix))
             {
                 entry.Key = NormalizeKey(key);
                 yield return entry;
@@ -113,6 +88,26 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
                     string.Format(ProviderKeyFormat, NormalizeKey(key.Substring(prefix.Length))),
                     provider);
             }
+        }
+
+        private static (string prefix, string provider) GetPrefixAndProvider(string key)
+        {
+            return new (string prefix, string provider)[]
+                {
+                    ("APIHUBCONNSTR_", string.Empty),
+                    ("DOCDBCONNSTR_", string.Empty),
+                    ("CUSTOMCONNSTR_", string.Empty),
+                    ("EVENTHUBCONNSTR_", string.Empty),
+                    ("NOTIFICATIONHUBCONNSTR_", string.Empty),
+                    ("MYSQLCONNSTR_", "MySql.Data.MySqlClient"),
+                    ("POSTGRESQLCONNSTR_", string.Empty),
+                    ("REDISCACHECONNSTR_", string.Empty),
+                    ("SERVICEBUSCONNSTR_", string.Empty),
+                    ("SQLAZURECONNSTR_", "System.Data.SqlClient"),
+                    ("SQLCONNSTR_", "System.Data.SqlClient")
+                }
+                .Where(t => key.StartsWith(t.prefix, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
         }
     }
 }

@@ -62,6 +62,13 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables.Test
                     {"MYSQLCONNSTR_db3", "MySQLConnStr"},
                     {"SQLAZURECONNSTR_db4", "SQLAzureConnStr"},
                     {"CommonEnv", "CommonEnvValue"},
+                    {"APIHUBCONNSTR_apihub", "ApiHubConnStr"},
+                    {"DOCDBCONNSTR_cosmos", "CosmosDbConnStr"},
+                    {"EVENTHUBCONNSTR_eventhub", "EventHubConnStr"},
+                    {"NOTIFICATIONHUBCONNSTR_notificationhub", "NotificationHubConnStr"},
+                    {"POSTGRESQLCONNSTR_db5", "PostgresqlConnStr"},
+                    {"REDISCACHECONNSTR_cache", "RedisConnStr"},
+                    {"SERVICEBUSCONNSTR_servicebus", "ServiceBusConnStr"},
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationProvider();
 
@@ -78,6 +85,13 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables.Test
             Assert.Equal("SQLAzureConnStr", envConfigSrc.Get("ConnectionStrings:db4"));
             Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("ConnectionStrings:db4_ProviderName"));
             Assert.Equal("CommonEnvValue", envConfigSrc.Get("CommonEnv"));
+            Assert.Equal("ApiHubConnStr", envConfigSrc.Get("ConnectionStrings:apihub"));
+            Assert.Equal("CosmosDbConnStr", envConfigSrc.Get("ConnectionStrings:cosmos"));
+            Assert.Equal("EventHubConnStr", envConfigSrc.Get("ConnectionStrings:eventhub"));
+            Assert.Equal("NotificationHubConnStr", envConfigSrc.Get("ConnectionStrings:notificationhub"));
+            Assert.Equal("PostgresqlConnStr", envConfigSrc.Get("ConnectionStrings:db5"));
+            Assert.Equal("RedisConnStr", envConfigSrc.Get("ConnectionStrings:cache"));
+            Assert.Equal("ServiceBusConnStr", envConfigSrc.Get("ConnectionStrings:servicebus"));
         }
 
         [Fact]
@@ -90,6 +104,13 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables.Test
                 {"MYSQLCONNSTR_db3", "MySQLConnStr"},
                 {"SQLAZURECONNSTR_db4", "SQLAzureConnStr"},
                 {"CommonEnv", "CommonEnvValue"},
+                {"APIHUBCONNSTR_apihub", "ApiHubConnStr"},
+                {"DOCDBCONNSTR_cosmos", "CosmosDbConnStr"},
+                {"EVENTHUBCONNSTR_eventhub", "EventHubConnStr"},
+                {"NOTIFICATIONHUBCONNSTR_notificationhub", "NotificationHubConnStr"},
+                {"POSTGRESQLCONNSTR_db5", "PostgresqlConnStr"},
+                {"REDISCACHECONNSTR_cache", "RedisConnStr"},
+                {"SERVICEBUSCONNSTR_servicebus", "ServiceBusConnStr"},
             };
             var envConfigSrc = new EnvironmentVariablesConfigurationProvider("ConnectionStrings:");
 
@@ -102,7 +123,13 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables.Test
             Assert.Equal("MySql.Data.MySqlClient", envConfigSrc.Get("db3_ProviderName"));
             Assert.Equal("SQLAzureConnStr", envConfigSrc.Get("db4"));
             Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("db4_ProviderName"));
-        }
+            Assert.Equal("ApiHubConnStr", envConfigSrc.Get("apihub"));
+            Assert.Equal("CosmosDbConnStr", envConfigSrc.Get("cosmos"));
+            Assert.Equal("EventHubConnStr", envConfigSrc.Get("eventhub"));
+            Assert.Equal("NotificationHubConnStr", envConfigSrc.Get("notificationhub"));
+            Assert.Equal("PostgresqlConnStr", envConfigSrc.Get("db5"));
+            Assert.Equal("RedisConnStr", envConfigSrc.Get("cache"));
+            Assert.Equal("ServiceBusConnStr", envConfigSrc.Get("servicebus"));        }
 
         [Fact]
         public void LastVariableAddedWhenKeyIsDuplicatedInAzureEnvironment()
