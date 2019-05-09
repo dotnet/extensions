@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Configuration
     /// </summary>
     public class ChainedConfigurationProvider : IConfigurationProvider, IDisposable
     {
-        private IConfiguration _config;
+        private readonly IConfiguration _config;
         private readonly bool _shouldDisposeConfig;
 
         /// <summary>
