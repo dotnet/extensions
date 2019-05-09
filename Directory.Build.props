@@ -55,6 +55,14 @@
     <Reference Include="Moq" />
   </ItemGroup>
 
+  <!-- Always copy content items into the build output directory. -->
+  <ItemDefinitionGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
+    <Content>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
