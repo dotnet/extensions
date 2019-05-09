@@ -22,11 +22,7 @@ namespace Microsoft.Extensions.Configuration.Json
         /// <param name="stream">The json <see cref="Stream"/> to load configuration data from.</param>
         public override void Load(Stream stream)
         {
-            var data = JsonConfigurationFileParser.Parse(stream);
-            foreach (var pair in data)
-            {
-                Set(pair.Key, pair.Value);
-            }
+            Data = JsonConfigurationFileParser.Parse(stream);
         }
     }
 }
