@@ -55,8 +55,8 @@
     <Reference Include="Moq" />
   </ItemGroup>
 
-  <!-- Always copy content items into the build output directory. -->
   <ItemDefinitionGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
+    <!-- Always copy content items in test projects into the build output directory. -->
     <Content>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
