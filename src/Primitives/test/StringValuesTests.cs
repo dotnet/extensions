@@ -110,7 +110,10 @@ namespace Microsoft.Extensions.Primitives
                     { new[] { "abc", "bcd", "foo" }, new[] { "abc", "bcd", "foo" } },
                     { new[] { null, "abc", "bcd", "foo" }, new[] { null, "abc", "bcd", "foo" } },
                     { new[] { "abc", null, "bcd", "foo" }, new[] { "abc", null, "bcd", "foo" } },
-                    { new[] { "abc", "bcd", "foo", null }, new[] { "abc", "bcd", "foo", null } }
+                    { new[] { "abc", "bcd", "foo", null }, new[] { "abc", "bcd", "foo", null } },
+                    { new[] { string.Empty, "abc", "bcd", "foo" }, new[] { string.Empty, "abc", "bcd", "foo" } },
+                    { new[] { "abc", string.Empty, "bcd", "foo" }, new[] { "abc", string.Empty, "bcd", "foo" } },
+                    { new[] { "abc", "bcd", "foo", string.Empty }, new[] { "abc", "bcd", "foo", string.Empty } }
                 };
             }
         }
@@ -129,13 +132,20 @@ namespace Microsoft.Extensions.Primitives
                     { new StringValues(new[] { "abc", "bcd" }), "abc,bcd" },
                     { new StringValues(new[] { "abc", "bcd", "foo" }), "abc,bcd,foo" },
                     { string.Empty, string.Empty },
+                    { (string)null, string.Empty },
                     { "abc","abc" },
                     { new[] { "abc" }, "abc" },
                     { new[] { "abc", "bcd" }, "abc,bcd" },
+                    { new[] { "abc", null, "bcd" }, "abc,bcd" },
+                    { new[] { "abc", string.Empty, "bcd" }, "abc,bcd" },
                     { new[] { "abc", "bcd", "foo" }, "abc,bcd,foo" },
                     { new[] { null, "abc", "bcd", "foo" }, "abc,bcd,foo" },
                     { new[] { "abc", null, "bcd", "foo" }, "abc,bcd,foo" },
-                    { new[] { "abc", "bcd", "foo", null }, "abc,bcd,foo" }
+                    { new[] { "abc", "bcd", "foo", null }, "abc,bcd,foo" },
+                    { new[] { string.Empty, "abc", "bcd", "foo" }, "abc,bcd,foo" },
+                    { new[] { "abc", string.Empty, "bcd", "foo" }, "abc,bcd,foo" },
+                    { new[] { "abc", "bcd", "foo", string.Empty }, "abc,bcd,foo" },
+                    { new[] { "abc", "bcd", "foo", string.Empty, null }, "abc,bcd,foo" }
                 };
             }
         }
