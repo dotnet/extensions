@@ -55,7 +55,4 @@
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <DotNetRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
-  </ItemGroup>
 </Project>
