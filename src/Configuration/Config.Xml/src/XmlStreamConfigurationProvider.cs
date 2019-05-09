@@ -126,11 +126,7 @@ namespace Microsoft.Extensions.Configuration.Xml
         /// <param name="stream">The <see cref="Stream"/> to load ini configuration data from.</param>
         public override void Load(Stream stream)
         {
-            var data = Read(stream, XmlDocumentDecryptor.Instance);
-            foreach (var pair in data)
-            {
-                Set(pair.Key, pair.Value);
-            }
+            Data = Read(stream, XmlDocumentDecryptor.Instance);
         }
 
         private static void SkipUntilRootElement(XmlReader reader)
