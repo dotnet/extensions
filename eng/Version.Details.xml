@@ -10,61 +10,61 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Win32.Registry" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="Microsoft.Win32.Registry" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.Metadata" Version="1.7.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Reflection.Metadata" Version="1.7.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Cng" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Security.Cryptography.Cng" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Xml" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Security.Cryptography.Xml" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.ServiceProcess.ServiceController" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.ServiceProcess.ServiceController" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="4.6.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Text.Json" Version="4.6.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27708-04">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27709-05">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>19ecb4847b57249bdee93d14eeea81bbc0174ff5</Sha>
+      <Sha>a8478dda1140e055651636fe35cad036f2585edd</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -80,9 +80,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>c31fac9f6899094226cb5cd77c85b8f60ecafa3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview6.19256.13" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview6.19259.4" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>28a926b5b38eefb18cd77b4cb0b74fdda99cdb26</Sha>
+      <Sha>e72c6c53baddb02a630e8e6592a59d89e30b856b</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
