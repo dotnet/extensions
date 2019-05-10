@@ -86,11 +86,7 @@ namespace Microsoft.Extensions.Configuration.Ini
         /// <param name="stream">The <see cref="Stream"/> to load ini configuration data from.</param>
         public override void Load(Stream stream)
         {
-            var data = Read(stream);
-            foreach (var pair in data)
-            {
-                Set(pair.Key, pair.Value);
-            }
+            Data = Read(stream);
         }
     }
 }
