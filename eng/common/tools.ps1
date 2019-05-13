@@ -17,6 +17,9 @@
 # our consumers. It will be deleted in the future.
 [bool]$pipelinesLog = if (Test-Path variable:pipelinesLog) { $pipelinesLog } else { $ci }
 
+# Testing to see if this is the cause of slow builds
+$pipelinesLog = $false
+
 # Turns on machine preparation/clean up code that changes the machine state (e.g. kills build processes).
 [bool]$prepareMachine = if (Test-Path variable:prepareMachine) { $prepareMachine } else { $false }
 
