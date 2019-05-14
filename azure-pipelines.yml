@@ -90,7 +90,6 @@ jobs:
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: test
               _DotNetPublishToBlobFeed: false
-              _BuildArgs:
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: real
               _DotNetPublishToBlobFeed: true
@@ -104,7 +103,7 @@ jobs:
         inputs:
           command: custom
           arguments: 'locals all -clear'
-      - powershell: eng\scripts\azpbuild.ps1 -configuration $(_BuildConfig) $(_BuildArgs)
+      - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_BuildArgs)
         displayName: Build and Publish
       - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
         displayName: Run Flaky Tests
@@ -150,7 +149,7 @@ jobs:
       steps:
       - checkout: self
         clean: true
-      - script: eng/scripts/azpbuild.sh
+      - script: eng/common/cibuild.sh
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build
@@ -187,7 +186,7 @@ jobs:
       steps:
       - checkout: self
         clean: true
-      - script: eng/scripts/azpbuild.sh
+      - script: eng/common/cibuild.sh
           --configuration $(_BuildConfig)
           --prepareMachine
         displayName: Build

@@ -11,6 +11,12 @@
 # Binary log must be enabled on CI.
 [bool]$binaryLog = if (Test-Path variable:binaryLog) { $binaryLog } else { $ci }
 
+# Set to true to use the pipelines logger which will enable Azure logging output.
+# https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
+# This flag is meant as a temporary opt-opt for the feature while validate it across
+# our consumers. It will be deleted in the future.
+[bool]$pipelinesLog = $false
+
 # Turns on machine preparation/clean up code that changes the machine state (e.g. kills build processes).
 [bool]$prepareMachine = if (Test-Path variable:prepareMachine) { $prepareMachine } else { $false }
 
@@ -29,7 +35,7 @@
 # Specifies which msbuild engine to use for build: 'vs', 'dotnet' or unspecified (determined based on presence of tools.vs in global.json).
 [string]$msbuildEngine = if (Test-Path variable:msbuildEngine) { $msbuildEngine } else { $null }
 
-# True to attempt using .NET Core already that meets requirements specified in global.json 
+# True to attempt using .NET Core already that meets requirements specified in global.json
 # installed on the machine instead of downloading one.
 [bool]$useInstalledDotNetCli = if (Test-Path variable:useInstalledDotNetCli) { $useInstalledDotNetCli } else { $true }
 
@@ -70,7 +76,7 @@ function Exec-Process([string]$command, [string]$commandArgs) {
 
   $finished = $false
   try {
-    while (-not $process.WaitForExit(100)) { 
+    while (-not $process.WaitForExit(100)) {
       # Non-blocking loop done to allow ctr-c interrupts
     }
 
@@ -184,7 +190,7 @@ function InstallDotNet([string] $dotnetRoot, [string] $version, [string] $archit
 }
 
 #
-# Locates Visual Studio MSBuild installation. 
+# Locates Visual Studio MSBuild installation.
 # The preference order for MSBuild to use is as follows:
 #
 #   1. MSBuild from an active VS command prompt
@@ -201,7 +207,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
   if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
   $vsMinVersionStr = if ($vsRequirements.version) { $vsRequirements.version } else { "15.9" }
-  $vsMinVersion = [Version]::new($vsMinVersionStr) 
+  $vsMinVersion = [Version]::new($vsMinVersionStr)
 
   # Try msbuild command available in the environment.
   if ($env:VSINSTALLDIR -ne $null) {
@@ -246,7 +252,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 function InitializeVisualStudioEnvironmentVariables([string] $vsInstallDir, [string] $vsMajorVersion) {
   $env:VSINSTALLDIR = $vsInstallDir
   Set-Item "env:VS$($vsMajorVersion)0COMNTOOLS" (Join-Path $vsInstallDir "Common7\Tools\")
-  
+
   $vsSdkInstallDir = Join-Path $vsInstallDir "VSSDK\"
   if (Test-Path $vsSdkInstallDir) {
     Set-Item "env:VSSDK$($vsMajorVersion)0Install" $vsSdkInstallDir
@@ -281,13 +287,13 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
 # Locates Visual Studio instance that meets the minimal requirements specified by tools.vs object in global.json.
 #
 # The following properties of tools.vs are recognized:
-#   "version": "{major}.{minor}"    
+#   "version": "{major}.{minor}"
 #       Two part minimal VS version, e.g. "15.9", "16.0", etc.
-#   "components": ["componentId1", "componentId2", ...] 
+#   "components": ["componentId1", "componentId2", ...]
 #       Array of ids of workload components that must be available in the VS instance.
 #       See e.g. https://docs.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-enterprise?view=vs-2017
 #
-# Returns JSON describing the located VS instance (same format as returned by vswhere), 
+# Returns JSON describing the located VS instance (same format as returned by vswhere),
 # or $null if no instance meeting the requirements is found on the machine.
 #
 function LocateVisualStudio([object]$vsRequirements = $null){
@@ -308,7 +314,7 @@ function LocateVisualStudio([object]$vsRequirements = $null){
 
   if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
   $args = @("-latest", "-prerelease", "-format", "json", "-requires", "Microsoft.Component.MSBuild")
-  
+
   if (Get-Member -InputObject $vsRequirements -Name "version") {
     $args += "-version"
     $args += $vsRequirements.version
@@ -318,7 +324,7 @@ function LocateVisualStudio([object]$vsRequirements = $null){
     foreach ($component in $vsRequirements.components) {
       $args += "-requires"
       $args += $component
-    }    
+    }
   }
 
   $vsInfo =& $vsWhereExe $args | ConvertFrom-Json
@@ -352,7 +358,7 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
 
-    $buildTool = @{ Path = Join-Path $dotnetRoot "dotnet.exe"; Command = "msbuild" }
+    $buildTool = @{ Path = Join-Path $dotnetRoot "dotnet.exe"; Command = "msbuild"; Tool = "dotnet"; Framework = "netcoreapp2.1" }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
@@ -361,7 +367,7 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
 
-    $buildTool = @{ Path = $msbuildPath; Command = "" }
+    $buildTool = @{ Path = $msbuildPath; Command = ""; Tool = "vs"; Framework = "net472" }
   } else {
     Write-Host "Unexpected value of -msbuildEngine: '$msbuildEngine'." -ForegroundColor Red
     ExitWithExitCode 1
@@ -375,7 +381,7 @@ function GetDefaultMSBuildEngine() {
   if (Get-Member -InputObject $GlobalJson.tools -Name "vs") {
     return "vs"
   }
-  
+
   if (Get-Member -InputObject $GlobalJson.tools -Name "dotnet") {
     return "dotnet"
   }
@@ -442,7 +448,7 @@ function InitializeToolset() {
 
   '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' | Set-Content $proj
 
-  MSBuild $proj $bl /t:__WriteToolsetLocation /clp:ErrorsOnly`;NoSummary /p:__ToolsetLocationOutputFile=$toolsetLocationFile
+  MSBuild-Core $proj $bl /t:__WriteToolsetLocation /clp:ErrorsOnly`;NoSummary /p:__ToolsetLocationOutputFile=$toolsetLocationFile
 
   $path = Get-Content $toolsetLocationFile -TotalCount 1
   if (!(Test-Path $path)) {
@@ -472,6 +478,23 @@ function Stop-Processes() {
 # Terminates the script if the build fails.
 #
 function MSBuild() {
+  if ($pipelinesLog) {
+    $buildTool = InitializeBuildTool
+    $toolsetBuildProject = InitializeToolset
+    $path = Split-Path -parent $toolsetBuildProject
+    $path = Join-Path $path (Join-Path $buildTool.Framework "Microsoft.DotNet.Arcade.Sdk.dll")
+    $args += "/logger:$path"
+  }
+
+  MSBuild-Core @args
+}
+
+#
+# Executes msbuild (or 'dotnet msbuild') with arguments passed to the function.
+# The arguments are automatically quoted.
+# Terminates the script if the build fails.
+#
+function MSBuild-Core() {
   if ($ci) {
     if (!$binaryLog) {
       throw "Binary log must be enabled in CI build."
@@ -486,8 +509,8 @@ function MSBuild() {
 
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
-  if ($warnAsError) { 
-    $cmdArgs += " /warnaserror /p:TreatWarningsAsErrors=true" 
+  if ($warnAsError) {
+    $cmdArgs += " /warnaserror /p:TreatWarningsAsErrors=true"
   }
 
   foreach ($arg in $args) {
@@ -495,29 +518,29 @@ function MSBuild() {
       $cmdArgs += " `"$arg`""
     }
   }
-  
+
   $exitCode = Exec-Process $buildTool.Path $cmdArgs
 
   if ($exitCode -ne 0) {
     Write-Host "Build failed." -ForegroundColor Red
 
     $buildLog = GetMSBuildBinaryLogCommandLineArgument $args
-    if ($buildLog -ne $null) {      
-      Write-Host "See log: $buildLog" -ForegroundColor DarkGray 
+    if ($buildLog -ne $null) {
+      Write-Host "See log: $buildLog" -ForegroundColor DarkGray
     }
 
     ExitWithExitCode $exitCode
   }
 }
 
-function GetMSBuildBinaryLogCommandLineArgument($arguments) {  
+function GetMSBuildBinaryLogCommandLineArgument($arguments) {
   foreach ($argument in $arguments) {
     if ($argument -ne $null) {
       $arg = $argument.Trim()
       if ($arg.StartsWith("/bl:", "OrdinalIgnoreCase")) {
         return $arg.Substring("/bl:".Length)
-      } 
-        
+      }
+
       if ($arg.StartsWith("/binaryLogger:", "OrdinalIgnoreCase")) {
         return $arg.Substring("/binaryLogger:".Length)
       }
