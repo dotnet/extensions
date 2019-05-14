@@ -81,7 +81,6 @@
     <MicrosoftCodeAnalysisCommonPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp30PackageVersion>$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp30PackageVersion>
     <MicrosoftNETFrameworkReferenceAssemblies>1.0.0-alpha-5</MicrosoftNETFrameworkReferenceAssemblies>
     <MicrosoftNetRoslynDiagnosticsPackageVersion>2.6.2</MicrosoftNetRoslynDiagnosticsPackageVersion>
@@ -128,11 +127,4 @@
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitVersion>2.4.1</XunitVersion>
   </PropertyGroup>
-  <!--
-    These items will be used to install additional dotnet runtimes during bootstrapping. See tools.props.
-  -->
-  <ItemGroup>
-    <DotNetRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
-    <DotNetRuntime Include="$(MicrosoftNETCoreApp30PackageVersion)" />
-  </ItemGroup>
 </Project>
