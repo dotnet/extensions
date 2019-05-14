@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.Configuration.Test;
 using System;
 using System.Globalization;
 using System.IO;
-using Microsoft.Extensions.Configuration.NewtonsoftJson;
-using Microsoft.Extensions.Configuration.Test;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration.NewtonsoftJson.Test
@@ -17,6 +16,36 @@ namespace Microsoft.Extensions.Configuration.NewtonsoftJson.Test
             var p = new NewtonsoftJsonConfigurationProvider(new NewtonsoftJsonConfigurationSource { Optional = true });
             p.Load(TestStreamHelpers.StringToStream(json));
             return p;
+        }
+
+        [Fact]
+        public void CanLoadValidJsonFromStreamProvider()
+        {
+            var json = @"
+{
+    ""firstname"": ""test"",
+    ""test.last.name"": ""last.name"",
+        ""residential.address"": {
+            ""street.name"": ""Something street"",
+            ""zipcode"": ""12345""
+        }
+}";
+            var config = new ConfigurationBuilder().AddNewtonsoftJsonStream(TestStreamHelpers.StringToStream(json)).Build();
+            Assert.Equal("test", config["firstname"]);
+            Assert.Equal("last.name", config["test.last.name"]);
+            Assert.Equal("Something street", config["residential.address:STREET.name"]);
+            Assert.Equal("12345", config["residential.address:zipcode"]);
+        }
+
+        [Fact]
+        public void ReloadThrowsFromStreamProvider()
+        {
+            var json = @"
+{
+    ""firstname"": ""test""
+}";
+            var config = new ConfigurationBuilder().AddNewtonsoftJsonStream(TestStreamHelpers.StringToStream(json)).Build();
+            Assert.Throws<InvalidOperationException>(() => config.Reload());
         }
 
         [Fact]
