@@ -2,7 +2,10 @@
   "tools": {
     "dotnet": "3.0.100-preview5-011568",
     "runtimes": {
-      "dotnet": [ "2.1.10", "$(MicrosoftNETCoreAppPackageVersion)" ]
+      "dotnet": [
+        "2.1.10",
+        "$(MicrosoftNETCoreAppPackageVersion)"
+      ]
     },
     "vs": {
       "version": "16.0",
