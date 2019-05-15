@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Core abstractions
             //
             services.TryAddTransient<HttpMessageHandlerBuilder, DefaultHttpMessageHandlerBuilder>();
-            services.AddSingleton<DefaultHttpClientFactory>();
+            services.TryAddSingleton<DefaultHttpClientFactory>();
             services.TryAddSingleton<IHttpClientFactory>(serviceProvider => serviceProvider.GetRequiredService<DefaultHttpClientFactory>());
             services.TryAddSingleton<IHttpMessageHandlerFactory>(serviceProvider => serviceProvider.GetRequiredService<DefaultHttpClientFactory>());
 
@@ -47,6 +47,10 @@ namespace Microsoft.Extensions.DependencyInjection
             // Misc infrastructure
             //
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, LoggingHttpMessageHandlerBuilderFilter>());
+
+            // This is used to track state and report errors **DURING** service registration. This has to be an instance
+            // because we access it by reaching into the service collection.
+            services.TryAddSingleton(new HttpClientMappingRegistry());
 
             return services;
         }

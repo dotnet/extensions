@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using Microsoft.Extensions.Http;
@@ -145,7 +147,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </typeparam>
         /// <remarks>
         /// <para>
-        /// The <typeparamref name="THandler"/> will be resolved from a scoped service provider that shares 
+        /// The <typeparamref name="THandler"/> will be resolved from a scoped service provider that shares
         /// the lifetime of the handler being constructed.
         /// </para>
         /// </remarks>
@@ -166,7 +168,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a delegate that will be used to configure the primary <see cref="HttpMessageHandler"/> for a 
+        /// Adds a delegate that will be used to configure the primary <see cref="HttpMessageHandler"/> for a
         /// named <see cref="HttpClient"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -197,7 +199,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a delegate that will be used to configure the primary <see cref="HttpMessageHandler"/> for a 
+        /// Adds a delegate that will be used to configure the primary <see cref="HttpMessageHandler"/> for a
         /// named <see cref="HttpClient"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -244,7 +246,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </typeparam>
         /// <remarks>
         /// <para>
-        /// The <typeparamref name="THandler"/> will be resolved from a scoped service provider that shares 
+        /// The <typeparamref name="THandler"/> will be resolved from a scoped service provider that shares
         /// the lifetime of the handler being constructed.
         /// </para>
         /// </remarks>
@@ -256,7 +258,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.Configure<HttpClientFactoryOptions>(options =>
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
             {
                 options.HttpMessageHandlerBuilderActions.Add(b => b.PrimaryHandler = b.Services.GetRequiredService<THandler>());
             });
@@ -265,7 +267,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a delegate that will be used to configure message handlers using <see cref="HttpMessageHandlerBuilder"/> 
+        /// Adds a delegate that will be used to configure message handlers using <see cref="HttpMessageHandlerBuilder"/>
         /// for a named <see cref="HttpClient"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -301,7 +303,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <para>
         /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
         /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
-        /// <typeparamref name="TClient"/> as the service type. 
+        /// <typeparamref name="TClient"/> as the service type.
         /// </para>
         /// <para>
         /// Calling <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient}(IHttpClientBuilder)"/> will register a typed
@@ -321,6 +323,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            ReserveClient(builder, typeof(TClient), builder.Name);
+
             builder.Services.AddTransient<TClient>(s =>
             {
                 var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
@@ -335,7 +339,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Configures a binding between the <typeparamref name="TClient" /> type and the named <see cref="HttpClient"/>
-        /// associated with the <see cref="IHttpClientBuilder"/>. The created instances will be of type 
+        /// associated with the <see cref="IHttpClientBuilder"/>. The created instances will be of type
         /// <typeparamref name="TImplementation"/>.
         /// </summary>
         /// <typeparam name="TClient">
@@ -343,7 +347,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a transient service. See <see cref="ITypedHttpClientFactory{TImplementation}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <typeparam name="TImplementation">
-        /// The implementation type of the typed client. The type specified by will be instantiated by the 
+        /// The implementation type of the typed client. The type specified by will be instantiated by the
         /// <see cref="ITypedHttpClientFactory{TImplementation}"/>.
         /// </typeparam>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -351,11 +355,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <para>
         /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
         /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
-        /// <typeparamref name="TClient"/> as the service type. 
+        /// <typeparamref name="TClient"/> as the service type.
         /// </para>
         /// <para>
         /// Calling <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient,TImplementation}(IHttpClientBuilder)"/>
-        /// will register a typed client binding that creates <typeparamref name="TImplementation"/> using the 
+        /// will register a typed client binding that creates <typeparamref name="TImplementation"/> using the
         /// <see cref="ITypedHttpClientFactory{TImplementation}" />.
         /// </para>
         /// <para>
@@ -372,6 +376,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(builder));
             }
+
+            ReserveClient(builder, typeof(TClient), builder.Name);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -399,7 +405,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <para>
         /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
         /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
-        /// <typeparamref name="TClient"/> as the service type. 
+        /// <typeparamref name="TClient"/> as the service type.
         /// </para>
         /// <para>
         /// Calling <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient}(IHttpClientBuilder,Func{HttpClient,TClient})"/>
@@ -418,6 +424,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(factory));
             }
+
+            ReserveClient(builder, typeof(TClient), builder.Name);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -444,7 +452,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <para>
         /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
         /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
-        /// <typeparamref name="TClient"/> as the service type. 
+        /// <typeparamref name="TClient"/> as the service type.
         /// </para>
         /// <para>
         /// Calling <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient}(IHttpClientBuilder,Func{HttpClient,IServiceProvider,TClient})"/>
@@ -464,6 +472,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(factory));
             }
 
+            ReserveClient(builder, typeof(TClient), builder.Name);
+
             builder.Services.AddTransient<TClient>(s =>
             {
                 var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
@@ -476,7 +486,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Sets the length of time that a <see cref="HttpMessageHandler"/> instance can be reused. Each named 
+        /// Sets the length of time that a <see cref="HttpMessageHandler"/> instance can be reused. Each named
         /// client can have its own configured handler lifetime value. The default value is two minutes. Set the lifetime to
         /// <see cref="Timeout.InfiniteTimeSpan"/> to disable handler expiry.
         /// </summary>
@@ -493,7 +503,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// chosen with an understanding of the application's requirement to respond to changes in the network environment.
         /// </para>
         /// <para>
-        /// Expiry of a handler will not immediately dispose the handler. An expired handler is placed in a separate pool 
+        /// Expiry of a handler will not immediately dispose the handler. An expired handler is placed in a separate pool
         /// which is processed at intervals to dispose handlers only when they become unreachable. Using long-lived
         /// <see cref="HttpClient"/> instances will prevent the underlying <see cref="HttpMessageHandler"/> from being
         /// disposed until all references are garbage-collected.
@@ -513,6 +523,36 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options => options.HandlerLifetime = handlerLifetime);
             return builder;
+        }
+
+        // See comments on HttpClientMappingRegistry.
+        private static void ReserveClient(IHttpClientBuilder builder, Type type, string name)
+        {
+            var registry = (HttpClientMappingRegistry)builder.Services.Single(sd => sd.ServiceType == typeof(HttpClientMappingRegistry)).ImplementationInstance;
+            Debug.Assert(registry != null);
+
+            // Check for same type registered twice. This can't work because typed clients have to be unique for DI to function.
+            if (registry.TypedClientRegistrations.TryGetValue(type, out var otherName))
+            {
+                var message =
+                    $"The HttpClient factory already has a registered client with the type '{type.FullName}'. " +
+                    $"Client types must be unique. " +
+                    $"Consider using inheritance to create multiple unique types with the same API surface.";
+                throw new InvalidOperationException(message);
+            }
+
+            // Check for same name registered to two types. This won't work because we rely on named options for the configuration.
+            if (registry.NamedClientRegistrations.TryGetValue(name, out var otherType))
+            {
+                var message =
+                    $"The HttpClient factory already has a registered client with the name '{name}', bound to the type '{otherType.FullName}'. " +
+                    $"Client names are computed based on the type name without considering the namespace ('{otherType.Name}'). " +
+                    $"Use an overload of AddHttpClient that accepts a string and provide a unique name to resolve the conflict.";
+                throw new InvalidOperationException(message);
+            }
+
+            registry.TypedClientRegistrations[type] = name;
+            registry.NamedClientRegistrations[name] = type;
         }
     }
 }

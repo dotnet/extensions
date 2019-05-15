@@ -2,40 +2,205 @@
 # See https://docs.microsoft.com/azure/devops/pipelines/yaml-schema for details
 #
 
-# Only run CI builds for these branches
+variables:
+  - name: _TeamName
+    value: AspNetCore
+  - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
+    value: true
+  - name: _PublishUsingPipelines
+    value: true
+  - name: _DotNetArtifactsCategory
+    value: ASPNETEXTENSIONS
+
+# CI and PR triggers
 trigger:
+  batch: true
   branches:
     include:
-    - 'master'
-    - 'release/*'
-    - 'internal/release/*'
-# Run PR validation on all branches
+    - master
+    - release/*
+
 pr:
+  autoCancel: false
   branches:
     include:
     - '*'
 
-name: $(Date:yyyyMMdd).$(Rev:rr)
-
 jobs:
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: Windows
-    configuration: Release
-    codeSign: true
-    buildArgs: |
-      '/p:PublishBlobFeedKey=$(PB_PublishBlobFeedKey)'
-    artifacts:
-      publish: true
-      name: artifacts
-      path: artifacts/
+- job: Code_check
+  displayName: Code check
+  workspace:
+    clean: all
+  pool:
+    vmImage: vs2017-win2016
+  steps:
+  - powershell: . ./activate.ps1; ./restore.cmd -ci; ./eng/scripts/CodeCheck.ps1 -ci
+    displayName: Run eng/scripts/CodeCheck.ps1
 
-- template: eng/templates/default-build.yml
+- template: /eng/common/templates/jobs/jobs.yml
   parameters:
-    agentOs: macOS
-    configuration: Release
+    enableMicrobuild: true
+    enablePublishBuildArtifacts: true
+    enablePublishTestResults: true
+    enablePublishBuildAssets: true
+    enablePublishUsingPipelines: $(_PublishUsingPipelines)
+    enableTelemetry: true
+    helixRepo: aspnet/Extensions
+    jobs:
+    - job: Windows
+      pool:
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          name: NetCorePublic-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2017.Open
+        ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          name: NetCoreInternal-Pool
+          queue: BuildPool.Windows.10.Amd64.VS2017
+      variables:
+      # Only enable publishing in official builds.
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
+        # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+        - group: DotNet-Blob-Feed
+        - group: Publish-Build-Assets
+        - name: _OfficialBuildArgs
+          value: /p:DotNetSignType=$(_SignType)
+                 /p:TeamName=$(_TeamName)
+                 /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                 /p:DotNetPublishBlobFeedUrl=https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json
+                 /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+                 /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                 /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
+                 /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+      # else
+      - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+        - name: _OfficialBuildArgs
+          value: ''
+      strategy:
+        matrix:
+          ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+            Debug:
+              _BuildConfig: Debug
+              _SignType: test
+              _DotNetPublishToBlobFeed: false
+              _BuildArgs:
 
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: Linux
-    configuration: Release
+          Release:
+            _BuildConfig: Release
+            # PRs or external builds are not signed.
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              _SignType: test
+              _DotNetPublishToBlobFeed: false
+            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              _SignType: real
+              _DotNetPublishToBlobFeed: true
+              _BuildArgs: $(_OfficialBuildArgs)
+      steps:
+      - checkout: self
+        clean: true
+      - task: NuGetCommand@2
+        displayName: 'Clear NuGet caches'
+        condition: succeeded()
+        inputs:
+          command: custom
+          arguments: 'locals all -clear'
+      - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_BuildArgs)
+        displayName: Build and Publish
+      - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
+        displayName: Run Flaky Tests
+        continueOnError: true
+      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:IsFinalBuild=$(IsFinalBuild)' '/p:CI=true'
+        displayName: Set CI Tags
+        condition: eq(variables['_BuildConfig'], 'Release')
+      - powershell: eng\scripts\KillProcesses.ps1
+        displayName: Kill processes
+        condition: always()
+      - task: PublishTestResults@2
+        displayName: Publish Flaky Test Results
+        inputs:
+          testResultsFormat: 'xUnit'
+          testResultsFiles: '*.xml'
+          searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
+        continueOnError: true
+        condition: always()
+      - task: PublishBuildArtifacts@1
+        displayName: Upload package artifacts
+        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+        inputs:
+          pathtoPublish: artifacts/packages/
+          artifactName: artifacts
+          artifactType: Container
+          parallel: true
+
+    - job: Ubuntu_16_04
+      displayName: 'Ubuntu 16.04'
+      pool:
+        vmImage: ubuntu-16.04
+      strategy:
+        matrix:
+          ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+            Debug:
+              _BuildConfig: Debug
+              _SignType: none
+              _DotNetPublishToBlobFeed : false
+          Release:
+            _BuildConfig: Release
+            _SignType: none
+            _DotNetPublishToBlobFeed : false
+      steps:
+      - checkout: self
+        clean: true
+      - script: eng/common/cibuild.sh
+          --configuration $(_BuildConfig)
+          --prepareMachine
+        displayName: Build
+      - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
+        displayName: Run Flaky Tests
+        continueOnError: true
+      - script: eng/scripts/KillProcesses.sh
+        displayName: Kill processes
+        condition: always()
+      - task: PublishTestResults@2
+        displayName: Publish Flaky Test Results
+        inputs:
+          testResultsFormat: 'xUnit'
+          testResultsFiles: '*.xml'
+          searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
+        continueOnError: true
+        condition: always()
+
+    - job: OSX_10_13
+      displayName: 'OSX'
+      pool:
+        vmImage: macOS-10.13
+      strategy:
+        matrix:
+          ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+            Debug:
+              _BuildConfig: Debug
+              _SignType: none
+              _DotNetPublishToBlobFeed : false
+          Release:
+            _BuildConfig: Release
+            _SignType: none
+            _DotNetPublishToBlobFeed : false
+      steps:
+      - checkout: self
+        clean: true
+      - script: eng/common/cibuild.sh
+          --configuration $(_BuildConfig)
+          --prepareMachine
+        displayName: Build
+      - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
+        displayName: Run Flaky Tests
+        continueOnError: true
+      - script: eng/scripts/KillProcesses.sh
+        displayName: Kill processes
+        condition: always()
+      - task: PublishTestResults@2
+        displayName: Publish Flaky Test Results
+        inputs:
+          testResultsFormat: 'xUnit'
+          testResultsFiles: '*.xml'
+          searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
+        continueOnError: true
+        condition: always()

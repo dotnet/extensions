@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "GenericHostSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

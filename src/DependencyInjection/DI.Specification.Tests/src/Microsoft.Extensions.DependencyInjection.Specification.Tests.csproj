@@ -7,11 +7,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>dependencyinjection;di</PackageTags>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <!-- Api check throws while trying to get default value for one of the test class arguments
-      https://github.com/dotnet/corefx/issues/12338 & https://github.com/dotnet/corefx/issues/11797
-    -->
-    <EnableApiCheck>false</EnableApiCheck>
-    <IsTestProject>false</IsTestProject>
+    <!-- This is actually a library for test projects, not a test project. -->
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsShipping>true</IsShipping>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +18,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.
+      XUnit recommends only using xunit.extensibility.*, xunit.assert, and xunit.abstractions for packages which "extend" xunit.
+      This allows consumers to decide which type of xunit runner they want to use to run these tests,
+      and avoids problems with `dotnet pack`.
+
+      See https://xunit.github.io/docs/nuget-packages and the special note in https://xunit.github.io/releases/2.3.
+    -->
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.core" />
   </ItemGroup>
-
 </Project>

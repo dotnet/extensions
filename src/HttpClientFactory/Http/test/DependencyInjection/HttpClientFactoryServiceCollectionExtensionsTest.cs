@@ -1,14 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Logging;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -339,6 +344,78 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.Equal("http://example2.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient<TestTypedClient>("Test"));
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client types must be unique. " +
+                "Consider using inheritance to create multiple unique types with the same API surface.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_WithAddTypedClient_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient("Test").AddTypedClient<TestTypedClient>());
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client types must be unique. " +
+                "Consider using inheritance to create multiple unique types with the same API surface.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameNameWithTypedClientTwice_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient<AnotherNamespace.TestTypedClient>());
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the name 'TestTypedClient', bound to the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client names are computed based on the type name without considering the namespace ('TestTypedClient'). " +
+                "Use an overload of AddHttpClient that accepts a string and provide a unique name to resolve the conflict.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameNameWithTypedClientTwice_WithAddTypedClient_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient("TestTypedClient").AddTypedClient<AnotherNamespace.TestTypedClient>());
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the name 'TestTypedClient', bound to the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client names are computed based on the type name without considering the namespace ('TestTypedClient'). " +
+                "Use an overload of AddHttpClient that accepts a string and provide a unique name to resolve the conflict.",
+                ex.Message);
         }
 
         [Fact]
@@ -772,6 +849,50 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void AddHttpClient_GetAwaiterAndResult_InSingleThreadedSynchronizationContext_ShouldNotHangs()
+        {
+            // Arrange
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
+            {
+                var token = cts.Token;
+                token.Register(() => throw new OperationCanceledException(token));
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddHttpClient("example.com")
+                    .ConfigurePrimaryHttpMessageHandler(() =>
+                    {
+                        var mockHandler = new Mock<HttpMessageHandler>();
+                        mockHandler
+                        .Protected()
+                        .Setup<Task<HttpResponseMessage>>(
+                            "SendAsync",
+                            ItExpr.IsAny<HttpRequestMessage>(),
+                            ItExpr.IsAny<CancellationToken>()
+                        )
+                        .Returns(async () =>
+                        {
+                            await Task.Delay(1).ConfigureAwait(false);
+                            return new HttpResponseMessage(HttpStatusCode.OK);
+                        });
+                        return mockHandler.Object;
+                    });
+
+                var services = serviceCollection.BuildServiceProvider();
+                var factory = services.GetRequiredService<IHttpClientFactory>();
+                var client = factory.CreateClient("example.com");
+                var hangs = true;
+                SingleThreadedSynchronizationContext.Run(() =>
+                {
+                    // Act
+                    client.GetAsync("http://example.com", token).GetAwaiter().GetResult();
+                    hangs = false;
+                });
+
+                // Assert
+                Assert.False(hangs);
+            }
+        }
+
+        [Fact]
         public void SuppressScope_False_CreatesNewScope()
         {
             // Arrange
@@ -995,6 +1116,16 @@ namespace Microsoft.Extensions.DependencyInjection
             public HttpClient HttpClient { get; }
 
             public TransientService Service { get; }
+        }
+    }
+}
+
+namespace AnotherNamespace
+{
+    public class TestTypedClient
+    {
+        public TestTypedClient(HttpClient httpClient)
+        {
         }
     }
 }
