@@ -68,7 +68,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Polly" Version="7.1.0" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
     <LatestPackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
-    <LatestPackageReference Include="StackExchange.Redis" Version="2.0.513" />
+    <LatestPackageReference Include="StackExchange.Redis" Version="2.0.593" />
     <LatestPackageReference Include="xunit.abstractions" Version="2.0.3" />
     <LatestPackageReference Include="xunit.assert" Version="$(XUnitVersion)" />
     <LatestPackageReference Include="xunit.extensibility.core" Version="$(XUnitVersion)" />
