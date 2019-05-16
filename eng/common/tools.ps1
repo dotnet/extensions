@@ -484,6 +484,8 @@ function MSBuild() {
     $path = Split-Path -parent $toolsetBuildProject
     $path = Join-Path $path (Join-Path $buildTool.Framework "Microsoft.DotNet.Arcade.Sdk.dll")
     $args += "-distributedLogger:$path*ConfigurableForwardingLogger,Microsoft.Build;ERROREVENT;WARNINGEVENT;PROJECTSTARTEDEVENT;PROJECTFINISHEDEVENT"
+
+    $env:AGENT_NAME = $null;
   }
 
   MSBuild-Core @args
