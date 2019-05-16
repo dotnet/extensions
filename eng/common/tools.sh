@@ -3,6 +3,16 @@
 # CI mode - set to true on CI server for PR validation build or official build.
 ci=${ci:-false}
 
+# Set to true to use the pipelines logger which will enable Azure logging output.
+# https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
+# This flag is meant as a temporary opt-opt for the feature while validate it across
+# our consumers. It will be deleted in the future.
+if [[ "$ci" == true ]]; then
+  pipelines_log=${pipelines_log:-true}
+else
+  pipelines_log=${pipelines_log:-false}
+fi
+
 # Build configuration. Common values include 'Debug' and 'Release', but the repository may use other names.
 configuration=${configuration:-'Debug'}
 
@@ -216,6 +226,7 @@ function InitializeBuildTool {
   # return values
   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"  
   _InitializeBuildToolCommand="msbuild"
+  _InitializeBuildToolFramework="netcoreapp2.1"
 }
 
 function GetNuGetPackageCachePath {
@@ -276,7 +287,7 @@ function InitializeToolset {
   fi
   
   echo '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' > "$proj"
-  MSBuild "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file"
+  MSBuild-Core "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file"
 
   local toolset_build_proj=`cat "$toolset_location_file"`
 
@@ -304,6 +315,18 @@ function StopProcesses {
 }
 
 function MSBuild {
+  args=$@
+  if [[ "$pipelines_log" == true ]]; then
+    InitializeBuildTool
+    InitializeToolset
+    _toolset_dir="${_InitializeToolset%/*}"
+    _loggerPath="$_toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
+    args=( "${args[@]}" "-logger:$_loggerPath" )
+  fi
+  MSBuild-Core ${args[@]}
+}
+
+function MSBuild-Core {
   if [[ "$ci" == true ]]; then
     if [[ "$binary_log" != true ]]; then
       echo "Binary log must be enabled in CI build." >&2
