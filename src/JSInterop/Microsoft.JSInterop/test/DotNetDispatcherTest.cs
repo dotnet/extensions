@@ -23,7 +23,7 @@ namespace Microsoft.JSInterop.Tests
             });
 
             Assert.StartsWith("Cannot be null, empty, or whitespace.", ex.Message);
-            Assert.Equal("assemblyName", ex.ParamName);
+            Assert.Equal("AssemblyName", ex.ParamName);
         }
 
         [Fact]

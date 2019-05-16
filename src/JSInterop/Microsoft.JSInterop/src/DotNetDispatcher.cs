@@ -21,8 +21,8 @@ namespace Microsoft.JSInterop
     {
         internal const string DotNetObjectRefKey = nameof(DotNetObjectRef<object>.__dotNetObject);
 
-        private static readonly ConcurrentDictionary<string, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
-            = new ConcurrentDictionary<string, IReadOnlyDictionary<string, (MethodInfo, Type[])>>(StringComparer.Ordinal);
+        private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
+            = new ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
 
         /// <summary>
         /// Receives a call from JS to .NET, locating and invoking the specified method.
@@ -129,6 +129,7 @@ namespace Microsoft.JSInterop
 
         private static object InvokeSynchronously(string assemblyName, string methodIdentifier, object targetInstance, string argsJson)
         {
+            AssemblyKey assemblyKey;
             if (targetInstance != null)
             {
                 if (assemblyName != null)
@@ -136,10 +137,14 @@ namespace Microsoft.JSInterop
                     throw new ArgumentException($"For instance method calls, '{nameof(assemblyName)}' should be null. Value received: '{assemblyName}'.");
                 }
 
-                assemblyName = targetInstance.GetType().Assembly.GetName().Name;
+                assemblyKey = new AssemblyKey(targetInstance.GetType().Assembly);
+            }
+            else
+            {
+                assemblyKey = new AssemblyKey(assemblyName);
             }
 
-            var (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyName, methodIdentifier);
+            var (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
 
             var suppliedArgs = ParseArguments(methodIdentifier, argsJson, parameterTypes);
 
@@ -265,11 +270,11 @@ namespace Microsoft.JSInterop
             DotNetObjectRefManager.Current.ReleaseDotNetObject(dotNetObjectId);
         }
 
-        private static (MethodInfo, Type[]) GetCachedMethodInfo(string assemblyName, string methodIdentifier)
+        private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
         {
-            if (string.IsNullOrWhiteSpace(assemblyName))
+            if (string.IsNullOrWhiteSpace(assemblyKey.AssemblyName))
             {
-                throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(assemblyName));
+                throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(assemblyKey.AssemblyName));
             }
 
             if (string.IsNullOrWhiteSpace(methodIdentifier))
@@ -277,23 +282,23 @@ namespace Microsoft.JSInterop
                 throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(methodIdentifier));
             }
 
-            var assemblyMethods = _cachedMethodsByAssembly.GetOrAdd(assemblyName, ScanAssemblyForCallableMethods);
+            var assemblyMethods = _cachedMethodsByAssembly.GetOrAdd(assemblyKey, ScanAssemblyForCallableMethods);
             if (assemblyMethods.TryGetValue(methodIdentifier, out var result))
             {
                 return result;
             }
             else
             {
-                throw new ArgumentException($"The assembly '{assemblyName}' does not contain a public method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
+                throw new ArgumentException($"The assembly '{assemblyKey.AssemblyName}' does not contain a public method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
             }
         }
 
-        private static Dictionary<string, (MethodInfo, Type[])> ScanAssemblyForCallableMethods(string assemblyName)
+        private static Dictionary<string, (MethodInfo, Type[])> ScanAssemblyForCallableMethods(AssemblyKey assemblyKey)
         {
             // TODO: Consider looking first for assembly-level attributes (i.e., if there are any,
             // only use those) to avoid scanning, especially for framework assemblies.
             var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
-            var invokableMethods = GetRequiredLoadedAssembly(assemblyName)
+            var invokableMethods = GetRequiredLoadedAssembly(assemblyKey)
                 .GetExportedTypes()
                 .SelectMany(type => type.GetMethods(
                     BindingFlags.Public |
@@ -314,7 +319,7 @@ namespace Microsoft.JSInterop
                 {
                     if (result.ContainsKey(identifier))
                     {
-                        throw new InvalidOperationException($"The assembly '{assemblyName}' contains more than one " +
+                        throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
                             $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
                             $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
                             $"the [JSInvokable] attribute.");
@@ -329,7 +334,7 @@ namespace Microsoft.JSInterop
             return result;
         }
 
-        private static Assembly GetRequiredLoadedAssembly(string assemblyName)
+        private static Assembly GetRequiredLoadedAssembly(AssemblyKey assemblyKey)
         {
             // We don't want to load assemblies on demand here, because we don't necessarily trust
             // "assemblyName" to be something the developer intended to load. So only pick from the
@@ -337,8 +342,40 @@ namespace Microsoft.JSInterop
             // In some edge cases this might force developers to explicitly call something on the
             // target assembly (from .NET) before they can invoke its allowed methods from JS.
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            return loadedAssemblies.FirstOrDefault(a => a.GetName().Name.Equals(assemblyName, StringComparison.Ordinal))
-                ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyName}'.");
+            return loadedAssemblies.FirstOrDefault(a => new AssemblyKey(a).Equals(assemblyKey))
+                ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyKey.AssemblyName}'.");
         }
+
+        private readonly struct AssemblyKey : IEquatable<AssemblyKey>
+        {
+            public AssemblyKey(Assembly assembly)
+            {
+                Assembly = assembly;
+                AssemblyName = assembly.GetName().Name;
+            }
+
+            public AssemblyKey(string assemblyName)
+            {
+                Assembly = null;
+                AssemblyName = assemblyName;
+            }
+
+            public Assembly Assembly { get; }
+
+            public string AssemblyName { get; }
+
+            public bool Equals(AssemblyKey other)
+            {
+                if (Assembly != null && other.Assembly != null)
+                {
+                    return Assembly == other.Assembly;
+                }
+
+                return AssemblyName.Equals(other.AssemblyName, StringComparison.Ordinal);
+            }
+
+            public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(AssemblyName);
+        }
+
     }
 }
