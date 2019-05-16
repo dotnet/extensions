@@ -321,7 +321,7 @@ function MSBuild {
     InitializeToolset
     _toolset_dir="${_InitializeToolset%/*}"
     _loggerPath="$_toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
-    args=( "${args[@]}" "-logger:$_loggerPath" )
+    args=( "${args[@]}" "-distributedlogger:$_loggerPath*ConfigurableForwardingLogger,Microsoft.Build;ERROREVENT;WARNINGEVENT;PROJECTSTARTEDEVENT;PROJECTFINISHEDEVENT" )
   fi
   MSBuild-Core ${args[@]}
 }
