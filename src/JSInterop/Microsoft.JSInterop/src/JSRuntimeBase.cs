@@ -16,11 +16,6 @@ namespace Microsoft.JSInterop
     /// </summary>
     public abstract class JSRuntimeBase : IJSRuntime
     {
-        private protected readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-
         private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
         private readonly ConcurrentDictionary<long, object> _pendingTasks
             = new ConcurrentDictionary<long, object>();
@@ -47,7 +42,7 @@ namespace Microsoft.JSInterop
             try
             {
                 var argsJson = args?.Length > 0 ?
-                    JsonSerializer.ToString(args, JsonSerializerOptions) :
+                    JsonSerializer.ToString(args, JsonSerializerOptionsProvider.Options) :
                     null;
                 BeginInvokeJS(taskId, identifier, argsJson);
                 return tcs.Task;
@@ -83,7 +78,7 @@ namespace Microsoft.JSInterop
 
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
-            var args = JsonSerializer.ToString(new[] { callId, success, resultOrException }, JsonSerializerOptions);
+            var args = JsonSerializer.ToString(new[] { callId, success, resultOrException }, JsonSerializerOptionsProvider.Options);
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
         }
 
@@ -100,7 +95,7 @@ namespace Microsoft.JSInterop
                 {
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
                     var result = asyncCallResult != null ?
-                        JsonSerializer.Parse(asyncCallResult.JsonElement.GetRawText(), resultType, JsonSerializerOptions) :
+                        JsonSerializer.Parse(asyncCallResult.JsonElement.GetRawText(), resultType, JsonSerializerOptionsProvider.Options) :
                         null;
                     TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
                 }

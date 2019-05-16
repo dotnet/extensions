@@ -19,9 +19,8 @@ namespace Microsoft.JSInterop
         private long? _trackingId;
 
         /// <summary>
-        /// This A is for meant for JSON deserialization and should not be used by user code.
+        /// This API is for meant for JSON deserialization and should not be used by user code.
         /// </summary>
-        [Obsolete("This API is meant for JSInterop infrastructure and should not be used by user code.")]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public DotNetObjectRef()
         {
@@ -49,24 +48,18 @@ namespace Microsoft.JSInterop
             set;
         }
 
-        internal bool Disposed { get; private set; }
-
         /// <summary>
-        /// This constructor is for meant for JSON serialization and should not be used by user code.
+        /// This API is for meant for JSON serialization and should not be used by user code.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [JsonPropertyName(DotNetDispatcher.DotNetObjectRefKey)]
-        [Obsolete("This API is meant for JSInterop infrastructure and should not be used by user code.")]
-        public long TrackingId
+        public long __dotNetObject
         {
             get
             {
-                ThrowIfDisposed();
                 return _trackingId.Value;
             }
             set
             {
-                ThrowIfDisposed();
                 if (_trackingId != null)
                 {
                     throw new InvalidOperationException($"{nameof(DotNetObjectRef<TValue>)} cannot be reinitialized.");
@@ -80,38 +73,13 @@ namespace Microsoft.JSInterop
         object IDotNetObjectRef.Value => Value;
 
         /// <summary>
-        /// Implictly converts the <see cref="DotNetObjectRef{TValue}" /> instance to the wrapping value.
-        /// </summary>
-        /// <param name="result">The <see cref="DotNetObjectRef{TValue}"/>.</param>
-        public static implicit operator TValue(DotNetObjectRef<TValue> result) => result.Value;
-
-        /// <summary>
         /// Stops tracking this object reference, allowing it to be garbage collected
         /// (if there are no other references to it). Once the instance is disposed, it
         /// can no longer be used in interop calls from JavaScript code.
         /// </summary>
         public void Dispose()
         {
-            if (!Disposed)
-            {
-                Disposed = true;
-                // Make sure the object was constructed correctly.
-                DotNetObjectRefManager.Current.ReleaseDotNetObject(_trackingId.Value);
-            }
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (Disposed)
-            {
-                throw new ObjectDisposedException(nameof(DotNetObjectRef<TValue>));
-            }
-        }
-
-        // Used by the RefManager to mark this instance as disposed once the object is no longer being tracked.
-        void IDotNetObjectRef.SetDisposed()
-        {
-            Disposed = true;
+            DotNetObjectRefManager.Current.ReleaseDotNetObject(_trackingId.Value);
         }
     }
 }

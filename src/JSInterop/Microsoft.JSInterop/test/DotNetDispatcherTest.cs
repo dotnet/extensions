@@ -12,10 +12,6 @@ namespace Microsoft.JSInterop.Tests
 {
     public class DotNetDispatcherTest
     {
-        private protected readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
         private readonly static string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
 
         [Fact]
@@ -93,7 +89,7 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange/Act
             var resultJson = DotNetDispatcher.Invoke(thisAssemblyName, "InvocableStaticNonVoid", default, null);
-            var result = JsonSerializer.Parse<TestDTO>(resultJson, JsonSerializerOptions);
+            var result = JsonSerializer.Parse<TestDTO>(resultJson, JsonSerializerOptionsProvider.Options);
 
             // Assert
             Assert.Equal("Test", result.StringVal);
@@ -105,7 +101,7 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange/Act
             var resultJson = DotNetDispatcher.Invoke(thisAssemblyName, nameof(SomePublicType.InvokableMethodWithoutCustomIdentifier), default, null);
-            var result = JsonSerializer.Parse<TestDTO>(resultJson, JsonSerializerOptions);
+            var result = JsonSerializer.Parse<TestDTO>(resultJson, JsonSerializerOptionsProvider.Options);
 
             // Assert
             Assert.Equal("InvokableMethodWithoutCustomIdentifier", result.StringVal);
@@ -126,7 +122,7 @@ namespace Microsoft.JSInterop.Tests
                 new TestDTO { StringVal = "Another string", IntVal = 456 },
                 new[] { 100, 200 },
                 objectRef
-            }, JsonSerializerOptions);
+            }, JsonSerializerOptionsProvider.Options);
 
             // Act
             var resultJson = DotNetDispatcher.Invoke(thisAssemblyName, "InvocableStaticWithParams", default, argsJson);
@@ -134,7 +130,7 @@ namespace Microsoft.JSInterop.Tests
             var root = result.RootElement;
 
             // Assert: First result value marshalled via JSON
-            var resultDto1 = JsonSerializer.Parse<TestDTO>(root[0].GetRawText(), JsonSerializerOptions);
+            var resultDto1 = JsonSerializer.Parse<TestDTO>(root[0].GetRawText(), JsonSerializerOptionsProvider.Options);
 
             Assert.Equal("ANOTHER STRING", resultDto1.StringVal);
             Assert.Equal(756, resultDto1.IntVal);
@@ -165,12 +161,12 @@ namespace Microsoft.JSInterop.Tests
                 new TestDTO { StringVal = "Another string", IntVal = 456 },
                 new[] { 100, 200 },
                 objectRef
-            }, JsonSerializerOptions);
+            }, JsonSerializerOptionsProvider.Options);
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 DotNetDispatcher.Invoke(thisAssemblyName, method, default, argsJson));
-            Assert.Equal($"In call to '{method}', parameter of type {nameof(TestDTO)} at index 3 must be wrapped in a DotNetObjectRef instance.", ex.Message);
+            Assert.Equal($"In call to '{method}', parameter of type '{nameof(TestDTO)}' at index 3 must be declared as type 'DotNetObjectRef<TestDTO>' to receive the incoming value.", ex.Message);
         });
 
         [Fact]
@@ -267,7 +263,7 @@ namespace Microsoft.JSInterop.Tests
         public void CannotInvokeWithIncorrectNumberOfParams()
         {
             // Arrange
-            var argsJson = JsonSerializer.ToString(new object[] { 1, 2, 3, 4 }, JsonSerializerOptions);
+            var argsJson = JsonSerializer.ToString(new object[] { 1, 2, 3, 4 }, JsonSerializerOptionsProvider.Options);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentException>(() =>
@@ -293,7 +289,7 @@ namespace Microsoft.JSInterop.Tests
             {
                 new TestDTO { IntVal = 1000, StringVal = "String via JSON" },
                 arg2Ref,
-            }, JsonSerializerOptions);
+            }, JsonSerializerOptionsProvider.Options);
 
             // Act
             var callId = "123";
@@ -311,12 +307,12 @@ namespace Microsoft.JSInterop.Tests
             Assert.True(result[1].GetBoolean()); // Success flag
 
             // Assert: First result value marshalled via JSON
-            var resultDto1 = JsonSerializer.Parse<TestDTO>(resultValue[0].GetRawText(), JsonSerializerOptions);
+            var resultDto1 = JsonSerializer.Parse<TestDTO>(resultValue[0].GetRawText(), JsonSerializerOptionsProvider.Options);
             Assert.Equal("STRING VIA JSON", resultDto1.StringVal);
             Assert.Equal(2000, resultDto1.IntVal);
 
             // Assert: Second result value marshalled by ref
-            var resultDto2Ref = JsonSerializer.Parse<DotNetObjectRef<TestDTO>>(resultValue[1].GetRawText(), JsonSerializerOptions);
+            var resultDto2Ref = JsonSerializer.Parse<DotNetObjectRef<TestDTO>>(resultValue[1].GetRawText(), JsonSerializerOptionsProvider.Options);
             var resultDto2 = resultDto2Ref.Value;
             Assert.Equal("MY STRING", resultDto2.StringVal);
             Assert.Equal(2468, resultDto2.IntVal);
@@ -446,7 +442,7 @@ namespace Microsoft.JSInterop.Tests
             [JSInvokable]
             public object[] InvokableInstanceMethod(string someString, DotNetObjectRef<TestDTO> someDTORef)
             {
-                TestDTO someDTO = someDTORef;
+                var someDTO = someDTORef.Value;
                 // Returning an array to make the point that object references
                 // can be embedded anywhere in the result
                 return new object[]

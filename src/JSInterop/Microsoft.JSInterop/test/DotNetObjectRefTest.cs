@@ -21,9 +21,7 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange
             var objRef = DotNetObjectRef.Create(new object());
-#pragma warning disable CS0618 // Type or member is obsolete
-            var trackingId = objRef.TrackingId;
-#pragma warning restore CS0618 // Type or member is obsolete
+            var trackingId = objRef.__dotNetObject;
 
             // Act
             objRef.Dispose();
@@ -31,7 +29,6 @@ namespace Microsoft.JSInterop.Tests
             // Assert
             var ex = Assert.Throws<ArgumentException>(() => jsRuntime.ObjectRefManager.FindDotNetObject(trackingId));
             Assert.StartsWith("There is no tracked object with id '1'.", ex.Message);
-            Assert.True(objRef.Disposed);
         });
 
         class TestJSRuntime : JSRuntimeBase

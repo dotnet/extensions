@@ -2,23 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Microsoft.JSInterop
 {
     internal class DotNetObjectRefManager
     {
-        private readonly object _storageLock = new object();
-        private long _nextId = 1; // Start at 1, because 0 signals "no object"
-        private readonly Dictionary<long, IDotNetObjectRef> _trackedRefsById = new Dictionary<long, IDotNetObjectRef>();
-        private readonly Dictionary<IDotNetObjectRef, long> _trackedIdsByRef = new Dictionary<IDotNetObjectRef, long>();
+        private long _nextId = 0; // 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
+        private readonly ConcurrentDictionary<long, IDotNetObjectRef> _trackedRefsById = new ConcurrentDictionary<long, IDotNetObjectRef>();
+
         public static DotNetObjectRefManager Current
         {
             get
             {
                 if (!(JSRuntime.Current is JSRuntimeBase jsRuntimeBase))
                 {
-                    throw new InvalidOperationException("JSRuntime must be set up to use DotNetObjectRef.");
+                    throw new InvalidOperationException("JSRuntime must be set up correctly and must be an instance of JSRuntimeBase to use DotNetObjectRef.");
                 }
 
                 return jsRuntimeBase.ObjectRefManager;
@@ -27,28 +27,18 @@ namespace Microsoft.JSInterop
 
         public long TrackObject(IDotNetObjectRef dotNetObjectRef)
         {
-            lock (_storageLock)
-            {
-                // Assign an ID only if it doesn't already have one
-                if (!_trackedIdsByRef.TryGetValue(dotNetObjectRef, out var dotNetObjectId))
-                {
-                    dotNetObjectId = _nextId++;
-                    _trackedRefsById.Add(dotNetObjectId, dotNetObjectRef);
-                    _trackedIdsByRef.Add(dotNetObjectRef, dotNetObjectId);
-                }
+            var dotNetObjectId = Interlocked.Increment(ref _nextId);
+            _trackedRefsById[dotNetObjectId] = dotNetObjectRef;
 
-                return dotNetObjectId;
-            }
+            return dotNetObjectId;
         }
 
         public object FindDotNetObject(long dotNetObjectId)
         {
-            lock (_storageLock)
-            {
-                return _trackedRefsById.TryGetValue(dotNetObjectId, out var dotNetObjectRef)
-                    ? dotNetObjectRef.Value
-                    : throw new ArgumentException($"There is no tracked object with id '{dotNetObjectId}'. Perhaps the DotNetObjectRef instance was already disposed.", nameof(dotNetObjectId));
-            }
+            return _trackedRefsById.TryGetValue(dotNetObjectId, out var dotNetObjectRef)
+                ? dotNetObjectRef.Value
+                : throw new ArgumentException($"There is no tracked object with id '{dotNetObjectId}'. Perhaps the DotNetObjectRef instance was already disposed.", nameof(dotNetObjectId));
+            
         }
 
         /// <summary>
@@ -56,18 +46,6 @@ namespace Microsoft.JSInterop
         /// This overload is typically invoked from JS code via JS interop.
         /// </summary>
         /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectRef{TValue}"/>.</param>
-        public void ReleaseDotNetObject(long dotNetObjectId)
-        {
-            lock (_storageLock)
-            {
-                if (_trackedRefsById.TryGetValue(dotNetObjectId, out var dotNetObjectRef))
-                {
-                    _trackedRefsById.Remove(dotNetObjectId);
-                    _trackedIdsByRef.Remove(dotNetObjectRef);
-
-                    dotNetObjectRef.SetDisposed();
-                }
-            }
-        }
+        public void ReleaseDotNetObject(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
     }
 }

@@ -19,13 +19,13 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         public TValue Invoke<TValue>(string identifier, params object[] args)
         {
-            var resultJson = InvokeJS(identifier, JsonSerializer.ToString(args, JsonSerializerOptions));
+            var resultJson = InvokeJS(identifier, JsonSerializer.ToString(args, JsonSerializerOptionsProvider.Options));
             if (resultJson is null)
             {
                 return default;
             }
 
-            return JsonSerializer.Parse<TValue>(resultJson, JsonSerializerOptions);
+            return JsonSerializer.Parse<TValue>(resultJson, JsonSerializerOptionsProvider.Options);
         }
 
         /// <summary>

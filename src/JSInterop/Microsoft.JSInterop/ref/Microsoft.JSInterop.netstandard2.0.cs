@@ -19,17 +19,13 @@ namespace Microsoft.JSInterop
     public sealed partial class DotNetObjectRef<TValue> : System.IDisposable where TValue : class
     {
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        [System.ObsoleteAttribute("This API is meant for JSInterop infrastructure and should not be used by user code.")]
         public DotNetObjectRef() { }
         public DotNetObjectRef(TValue value) { }
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        [System.ObsoleteAttribute("This API is meant for JSInterop infrastructure and should not be used by user code.")]
-        [System.Text.Json.Serialization.JsonPropertyNameAttribute("__dotNetObject")]
-        public long TrackingId { get { throw null; } set { } }
         [System.Text.Json.Serialization.JsonIgnoreAttribute]
         public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+        public long __dotNetObject { get { throw null; } set { } }
         public void Dispose() { }
-        public static implicit operator TValue (Microsoft.JSInterop.DotNetObjectRef<TValue> result) { throw null; }
     }
     public partial interface IJSInProcessRuntime : Microsoft.JSInterop.IJSRuntime
     {

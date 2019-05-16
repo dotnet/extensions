@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -20,11 +19,7 @@ namespace Microsoft.JSInterop
     /// </summary>
     public static class DotNetDispatcher
     {
-        internal const string DotNetObjectRefKey = "__dotNetObject";
-        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
+        internal const string DotNetObjectRefKey = nameof(DotNetObjectRef<object>.__dotNetObject);
 
         private static readonly ConcurrentDictionary<string, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
             = new ConcurrentDictionary<string, IReadOnlyDictionary<string, (MethodInfo, Type[])>>(StringComparer.Ordinal);
@@ -56,7 +51,7 @@ namespace Microsoft.JSInterop
                 return null;
             }
 
-            return JsonSerializer.ToString(syncResult, _jsonSerializerOptions);
+            return JsonSerializer.ToString(syncResult, JsonSerializerOptionsProvider.Options);
         }
 
         /// <summary>
@@ -177,6 +172,11 @@ namespace Microsoft.JSInterop
             var shouldDisposeJsonDocument = true;
             try
             {
+                if (jsonDocument.RootElement.Type != JsonValueType.Array)
+                {
+                    throw new ArgumentNullException($"Expected a JSON array but got {jsonDocument.RootElement.Type}.");
+                }
+
                 var suppliedArgsLength = jsonDocument.RootElement.GetArrayLength();
 
                 if (suppliedArgsLength != parameterTypes.Length)
@@ -202,11 +202,11 @@ namespace Microsoft.JSInterop
                     }
                     else if (IsIncorrectDotNetObjectRefUse(item, parameterType))
                     {
-                        throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type {parameterType.Name} at index {(index + 1)} must be wrapped in a {nameof(DotNetObjectRef<object>)} instance.");
+                        throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
                     }
                     else
                     {
-                        suppliedArgs[index] = JsonSerializer.Parse(item.GetRawText(), parameterType, _jsonSerializerOptions);
+                        suppliedArgs[index] = JsonSerializer.Parse(item.GetRawText(), parameterType, JsonSerializerOptionsProvider.Options);
                     }
 
                     index++;
@@ -233,8 +233,8 @@ namespace Microsoft.JSInterop
                 // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
                 // but we aren't assigning to DotNetObjectRef{T}.
                 return item.Type == JsonValueType.Object &&
-                     !typeof(IDotNetObjectRef).IsAssignableFrom(parameterType) &&
-                     item.TryGetProperty(DotNetObjectRefKey, out _);
+                    item.TryGetProperty(DotNetObjectRefKey, out _) &&
+                     !typeof(IDotNetObjectRef).IsAssignableFrom(parameterType);
             }
         }
 
