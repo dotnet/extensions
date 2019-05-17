@@ -63,6 +63,7 @@
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview6.19264.9</MicrosoftNETCorePlatformsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview6.19264.9</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview6.19264.9</SystemTextEncodingsWebPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview6.19264.9</SystemReflectionMetadataPackageVersion>
   </PropertyGroup>
   <!--
 
