@@ -9,7 +9,7 @@ RazorDocument - [0..21)::21 - [foo @DateTime.Now baz]
                     Transition;[@];
                 CSharpImplicitExpressionBody - [5..17)::12
                     CSharpCodeBlock - [5..17)::12
-                        CSharpExpressionLiteral - [5..17)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K21
+                        CSharpExpressionLiteral - [5..17)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K22
                             Identifier;[DateTime];
                             Dot;[.];
                             Identifier;[Now];

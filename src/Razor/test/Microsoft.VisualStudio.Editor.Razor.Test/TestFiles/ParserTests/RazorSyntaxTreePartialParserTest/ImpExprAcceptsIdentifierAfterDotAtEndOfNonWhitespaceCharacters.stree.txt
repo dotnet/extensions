@@ -19,7 +19,7 @@ RazorDocument - [0..17)::17 - [@{LF    @foo.dLF}]
                                     Transition;[@];
                                 CSharpImplicitExpressionBody - [9..14)::5
                                     CSharpCodeBlock - [9..14)::5
-                                        CSharpExpressionLiteral - [9..14)::5 - [foo.d] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K21
+                                        CSharpExpressionLiteral - [9..14)::5 - [foo.d] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K22
                                             Identifier;[foo];
                                             Dot;[.];
                                             Identifier;[d];

@@ -9,7 +9,7 @@ RazorDocument - [0..20)::20 - [foo @await Html. baz]
                     Transition;[@];
                 CSharpImplicitExpressionBody - [5..15)::10
                     CSharpCodeBlock - [5..15)::10
-                        CSharpExpressionLiteral - [5..15)::10 - [await Html] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[RTD];K21
+                        CSharpExpressionLiteral - [5..15)::10 - [await Html] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[RTD];K22
                             Keyword;[await];
                             Whitespace;[ ];
                             Identifier;[Html];

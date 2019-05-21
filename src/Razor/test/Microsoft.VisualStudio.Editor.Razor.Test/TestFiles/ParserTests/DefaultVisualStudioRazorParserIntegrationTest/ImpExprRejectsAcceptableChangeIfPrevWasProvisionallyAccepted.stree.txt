@@ -9,7 +9,7 @@ RazorDocument - [0..15)::15 - [foo @foo. @barb]
                     Transition;[@];
                 CSharpImplicitExpressionBody - [5..8)::3
                     CSharpCodeBlock - [5..8)::3
-                        CSharpExpressionLiteral - [5..8)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K21
+                        CSharpExpressionLiteral - [5..8)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K22
                             Identifier;[foo];
         MarkupTextLiteral - [8..10)::2 - [. ] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[.];
@@ -20,7 +20,7 @@ RazorDocument - [0..15)::15 - [foo @foo. @barb]
                     Transition;[@];
                 CSharpImplicitExpressionBody - [11..15)::4
                     CSharpCodeBlock - [11..15)::4
-                        CSharpExpressionLiteral - [11..15)::4 - [barb] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K21
+                        CSharpExpressionLiteral - [11..15)::4 - [barb] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K22
                             Identifier;[barb];
         MarkupTextLiteral - [15..15)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Marker;[];
