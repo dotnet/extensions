@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 throw new ArgumentNullException(nameof(engine));
             }
 
-            var providers = engine.Engine.Features.OfType<ITagHelperDescriptorProvider>().ToArray();
+            var providers = engine.Engine.Features.OfType<ITagHelperDescriptorProvider>().OrderBy(f => f.Order).ToArray();
             if (providers.Length == 0)
             {
                 return TagHelperResolutionResult.Empty;

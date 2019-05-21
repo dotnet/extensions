@@ -178,6 +178,42 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             writer.WritePropertyName(nameof(BoundAttributeDescriptor.Metadata));
             WriteMetadata(writer, boundAttribute.Metadata);
 
+            writer.WritePropertyName(nameof(BoundAttributeDescriptor.BoundAttributeParameters));
+            writer.WriteStartArray();
+            foreach (var boundAttributeParameter in boundAttribute.BoundAttributeParameters)
+            {
+                WriteBoundAttributeParameter(writer, boundAttributeParameter, serializer);
+            }
+            writer.WriteEndArray();
+
+            writer.WriteEndObject();
+        }
+
+        private static void WriteBoundAttributeParameter(JsonWriter writer, BoundAttributeParameterDescriptor boundAttributeParameter, JsonSerializer serializer)
+        {
+            writer.WriteStartObject();
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Kind));
+            writer.WriteValue(boundAttributeParameter.Kind);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Name));
+            writer.WriteValue(boundAttributeParameter.Name);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.TypeName));
+            writer.WriteValue(boundAttributeParameter.TypeName);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.IsEnum));
+            writer.WriteValue(boundAttributeParameter.IsEnum);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Documentation));
+            writer.WriteValue(boundAttributeParameter.Documentation);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Diagnostics));
+            serializer.Serialize(writer, boundAttributeParameter.Diagnostics);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Metadata));
+            WriteMetadata(writer, boundAttributeParameter.Metadata);
+
             writer.WriteEndObject();
         }
 
@@ -316,6 +352,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             var documentation = attribute[nameof(BoundAttributeDescriptor.Documentation)].Value<string>();
             var diagnostics = attribute[nameof(BoundAttributeDescriptor.Diagnostics)].Value<JArray>();
             var metadata = attribute[nameof(BoundAttributeDescriptor.Metadata)].Value<JObject>();
+            var boundAttributeParameters = attribute[nameof(BoundAttributeDescriptor.BoundAttributeParameters)].Value<JArray>();
 
             builder.Name = name;
             builder.TypeName = typeName;
@@ -325,6 +362,46 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             {
                 builder.AsDictionary(indexerNamePrefix, indexerTypeName);
             }
+
+            if (isEnum)
+            {
+                builder.IsEnum = true;
+            }
+
+            foreach (var diagnostic in diagnostics)
+            {
+                var diagnosticReader = diagnostic.CreateReader();
+                var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
+                builder.Diagnostics.Add(diagnosticObject);
+            }
+
+            var metadataReader = metadata.CreateReader();
+            var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
+            foreach (var item in metadataValue)
+            {
+                builder.Metadata[item.Key] = item.Value;
+            }
+
+            foreach (var boundAttributeParameter in boundAttributeParameters)
+            {
+                var parameter = boundAttributeParameter.Value<JObject>();
+                builder.BindAttributeParameter(b => ReadBoundAttributeParameter(b, parameter, serializer));
+            }
+        }
+
+        private static void ReadBoundAttributeParameter(BoundAttributeParameterDescriptorBuilder builder, JObject parameter, JsonSerializer serializer)
+        {
+            var descriptorKind = parameter[nameof(BoundAttributeParameterDescriptor.Kind)].Value<string>();
+            var name = parameter[nameof(BoundAttributeParameterDescriptor.Name)].Value<string>();
+            var typeName = parameter[nameof(BoundAttributeParameterDescriptor.TypeName)].Value<string>();
+            var isEnum = parameter[nameof(BoundAttributeParameterDescriptor.IsEnum)].Value<bool>();
+            var documentation = parameter[nameof(BoundAttributeParameterDescriptor.Documentation)].Value<string>();
+            var diagnostics = parameter[nameof(BoundAttributeParameterDescriptor.Diagnostics)].Value<JArray>();
+            var metadata = parameter[nameof(BoundAttributeParameterDescriptor.Metadata)].Value<JObject>();
+
+            builder.Name = name;
+            builder.TypeName = typeName;
+            builder.Documentation = documentation;
 
             if (isEnum)
             {
