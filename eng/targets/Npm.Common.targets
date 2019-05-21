@@ -22,7 +22,7 @@
   </Target>
 
   <Target Name="PrepareForBuild">
-    <MakeDir Directories="$(IntermediateOutputPath);$(PackageOutputPath)"  />
+    <MakeDir Directories="$(IntermediateOutputPath);$(ShippingNpmPackageOutputPath)"  />
   </Target>
 
   <Target Name="ResolveProjectReferences">
@@ -56,7 +56,7 @@
     <Exec Command="npm --no-git-tag-version --allow-same-version version $(PackageVersion)" StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
     <Exec Command="npm pack" StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
 
-    <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />
+    <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(ShippingNpmPackageOutputPath)" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(_PackageTargetPath)" />
 
     <CallTarget Targets="_RestoreBackupPackageJsonFile" />
