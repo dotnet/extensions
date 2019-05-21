@@ -15,6 +15,8 @@
     <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
     <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
     <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
+
+    <ExcludeFromSourceBuild Condition="'$(IsUnitTestProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsSampleProject)' == 'true'">true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <Import Project="eng\FlakyTests.BeforeArcade.props" />
@@ -63,7 +65,7 @@
     </Content>
   </ItemDefinitionGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
     <Reference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 

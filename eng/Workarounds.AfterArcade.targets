@@ -32,4 +32,9 @@
     <PackageReference Remove="xunit.runner.visualstudio" />
     <PackageReference Remove="xunit.runner.console" />
   </ItemGroup>
+
+  <!-- Workaround https://github.com/dotnet/arcade/pull/2867 -->
+  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+    <BeforePack>$(BeforePack.Replace(';_AddSourcePackageSourceLinkFile', ''))</BeforePack>
+  </PropertyGroup>
 </Project>
