@@ -66,6 +66,10 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>4573cea18beb40dc9a41014798060e48ff044c63</Sha>
     </Dependency>
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview6-27722-02">
+      <Uri>https://github.com/dotnet/core-setup</Uri>
+      <Sha>4573cea18beb40dc9a41014798060e48ff044c63</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19270.1">
