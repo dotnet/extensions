@@ -214,8 +214,9 @@ jobs:
     DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
   steps:
   - script: |
+      source eng/common/native/common-library.sh
       mkdir -p $HOME/bin
-      curl -sSL https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o $HOME/bin/jq
+      GetFile https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 $HOME/bin/jq
       chmod +x $HOME/bin/jq
       echo "##vso[task.prependpath]$HOME/bin"
     displayName: Install jq
