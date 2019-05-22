@@ -179,7 +179,7 @@ namespace Microsoft.JSInterop
             {
                 if (jsonDocument.RootElement.Type != JsonValueType.Array)
                 {
-                    throw new ArgumentNullException($"Expected a JSON array but got {jsonDocument.RootElement.Type}.");
+                    throw new ArgumentException($"Expected a JSON array but got {jsonDocument.RootElement.Type}.");
                 }
 
                 var suppliedArgsLength = jsonDocument.RootElement.GetArrayLength();

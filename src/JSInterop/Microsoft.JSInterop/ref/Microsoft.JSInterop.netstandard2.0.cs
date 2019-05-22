@@ -20,9 +20,8 @@ namespace Microsoft.JSInterop
     {
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
         public DotNetObjectRef() { }
-        public DotNetObjectRef(TValue value) { }
         [System.Text.Json.Serialization.JsonIgnoreAttribute]
-        public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
         public long __dotNetObject { get { throw null; } set { } }
         public void Dispose() { }

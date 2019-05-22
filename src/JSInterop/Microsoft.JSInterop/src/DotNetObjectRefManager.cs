@@ -43,7 +43,7 @@ namespace Microsoft.JSInterop
 
         /// <summary>
         /// Stops tracking the specified .NET object reference.
-        /// This overload is typically invoked from JS code via JS interop.
+        /// This may be invoked either by disposing a DotNetObjectRef in .NET code, or via JS interop by calling "dispose" on the corresponding instance in JavaScript code
         /// </summary>
         /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectRef{TValue}"/>.</param>
         public void ReleaseDotNetObject(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
