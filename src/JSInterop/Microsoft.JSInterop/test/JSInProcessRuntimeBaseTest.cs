@@ -45,8 +45,11 @@ namespace Microsoft.JSInterop.Tests
             // Showing we can pass the DotNetObject either as top-level args or nested
             var syncResult = runtime.Invoke<DotNetObjectRef<object>>("test identifier",
                 DotNetObjectRef.Create(obj1),
-                new NestedClass { Key = "obj2", Value = DotNetObjectRef.Create(obj2) },
-                new NestedClass { Key = "obj3", Value = DotNetObjectRef.Create(obj3) });
+                new Dictionary<string, object>
+                {
+                    { "obj2",  DotNetObjectRef.Create(obj2) },
+                    { "obj3",  DotNetObjectRef.Create(obj3) },
+                });
 
             // Assert: Handles null result string
             Assert.Null(syncResult);
@@ -54,20 +57,12 @@ namespace Microsoft.JSInterop.Tests
             // Assert: Serialized as expected
             var call = runtime.InvokeCalls.Single();
             Assert.Equal("test identifier", call.Identifier);
-            // Uncomment once https://github.com/dotnet/corefx/issues/37536 is resolved
-            // Assert.Equal("[{\"__dotNetObject\":1},{\"obj2\":{\"__dotNetObject\":2},\"obj3\":{\"__dotNetObject\":3}}]", call.ArgsJson);
+            Assert.Equal("[{\"__dotNetObject\":1},{\"obj2\":{\"__dotNetObject\":2},\"obj3\":{\"__dotNetObject\":3}}]", call.ArgsJson);
 
             // Assert: Objects were tracked
             Assert.Same(obj1, runtime.ObjectRefManager.FindDotNetObject(1));
             Assert.Same(obj2, runtime.ObjectRefManager.FindDotNetObject(2));
             Assert.Same(obj3, runtime.ObjectRefManager.FindDotNetObject(3));
-        }
-
-        class NestedClass
-        {
-            public string Key { get; set; }
-
-            public DotNetObjectRef<object> Value { get; set; }
         }
 
         [Fact]

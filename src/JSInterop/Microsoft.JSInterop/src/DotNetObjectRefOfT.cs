@@ -30,7 +30,7 @@ namespace Microsoft.JSInterop
         /// Initializes a new instance of <see cref="DotNetObjectRef{TValue}" />.
         /// </summary>
         /// <param name="value">The value to pass by reference.</param>
-        public DotNetObjectRef(TValue value)
+        internal DotNetObjectRef(TValue value)
         {
             Value = value;
             _trackingId = DotNetObjectRefManager.Current.TrackObject(this);
@@ -40,13 +40,7 @@ namespace Microsoft.JSInterop
         /// Gets the object instance represented by this wrapper.
         /// </summary>
         [JsonIgnore]
-        public TValue Value
-        {
-            get;
-            // Workaround for https://github.com/dotnet/corefx/issues/37536 and https://github.com/dotnet/corefx/issues/37567
-            // Once fixed, we should make this property private.
-            set;
-        }
+        public TValue Value { get; private set; }
 
         /// <summary>
         /// This API is for meant for JSON serialization and should not be used by user code.
@@ -54,10 +48,7 @@ namespace Microsoft.JSInterop
         [EditorBrowsable(EditorBrowsableState.Never)]
         public long __dotNetObject
         {
-            get
-            {
-                return _trackingId.Value;
-            }
+            get => _trackingId.Value;
             set
             {
                 if (_trackingId != null)

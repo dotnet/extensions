@@ -252,8 +252,7 @@ namespace Microsoft.JSInterop.Tests
             var resultJson = DotNetDispatcher.Invoke(null, "InvokableInstanceMethod", 1, argsJson);
 
             // Assert
-            // Uncomment once https://github.com/dotnet/corefx/issues/37536 is resolved
-            // Assert.Equal("[\"You passed myvalue\",{\"__dotNetObject\":3}]", resultJson);
+            Assert.Equal("[\"You passed myvalue\",{\"__dotNetObject\":3}]", resultJson);
             var resultDto = (TestDTO)jsRuntime.ObjectRefManager.FindDotNetObject(3);
             Assert.Equal(1235, resultDto.IntVal);
             Assert.Equal("MY STRING", resultDto.StringVal);
