@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop
@@ -16,7 +15,7 @@ namespace Microsoft.JSInterop
         private static ConcurrentDictionary<Type, ITcsResultSetter> _cachedResultSetters
             = new ConcurrentDictionary<Type, ITcsResultSetter>();
 
-        public static void SetTaskCompletionSourceResult(object taskCompletionSource, object result)
+        public static void SetTaskCompletionSourceResult(object taskCompletionSource, object? result)
             => CreateResultSetter(taskCompletionSource).SetResult(taskCompletionSource, result);
 
         public static void SetTaskCompletionSourceException(object taskCompletionSource, Exception exception)
@@ -25,20 +24,24 @@ namespace Microsoft.JSInterop
         public static Type GetTaskCompletionSourceResultType(object taskCompletionSource)
             => CreateResultSetter(taskCompletionSource).ResultType;
 
-        public static object GetTaskResult(Task task)
+        public static object? GetTaskResult(Task task)
         {
-            var getter = _cachedResultGetters.GetOrAdd(task.GetType(), taskInstanceType =>
+            var taskInstanceType = task.GetType();
+            if (!_cachedResultGetters.TryGetValue(taskInstanceType, out var getter))
             {
                 var resultType = GetTaskResultType(taskInstanceType);
-                return resultType == null
-                    ? new VoidTaskResultGetter()
-                    : (ITaskResultGetter)Activator.CreateInstance(
+                getter = resultType == null ?
+                    new VoidTaskResultGetter() :
+                    (ITaskResultGetter)Activator.CreateInstance(
                         typeof(TaskResultGetter<>).MakeGenericType(resultType));
-            });
+
+                _cachedResultGetters.TryAdd(taskInstanceType, getter);
+            }
+
             return getter.GetResult(task);
         }
 
-        private static Type GetTaskResultType(Type taskType)
+        private static Type? GetTaskResultType(Type taskType)
         {
             // It might be something derived from Task or Task<T>, so we have to scan
             // up the inheritance hierarchy to find the Task or Task<T>
@@ -50,30 +53,30 @@ namespace Microsoft.JSInterop
             }
 
             return taskType.IsGenericType
-                ? taskType.GetGenericArguments().Single()
+                ? taskType.GetGenericArguments()[0]
                 : null;
         }
 
         interface ITcsResultSetter
         {
             Type ResultType { get; }
-            void SetResult(object taskCompletionSource, object result);
+            void SetResult(object taskCompletionSource, object? result);
             void SetException(object taskCompletionSource, Exception exception);
         }
 
         private interface ITaskResultGetter
         {
-            object GetResult(Task task);
+            object? GetResult(Task task);
         }
 
         private class TaskResultGetter<T> : ITaskResultGetter
         {
-            public object GetResult(Task task) => ((Task<T>)task).Result;
+            public object? GetResult(Task task) => ((Task<T>)task).Result;
         }
 
         private class VoidTaskResultGetter : ITaskResultGetter
         {
-            public object GetResult(Task task)
+            public object? GetResult(Task task)
             {
                 task.Wait(); // Throw if the task failed
                 return null;
@@ -84,7 +87,7 @@ namespace Microsoft.JSInterop
         {
             public Type ResultType => typeof(T);
 
-            public void SetResult(object tcs, object result)
+            public void SetResult(object tcs, object? result)
             {
                 var typedTcs = (TaskCompletionSource<T>)tcs;
 
@@ -105,12 +108,18 @@ namespace Microsoft.JSInterop
 
         private static ITcsResultSetter CreateResultSetter(object taskCompletionSource)
         {
-            return _cachedResultSetters.GetOrAdd(taskCompletionSource.GetType(), tcsType =>
+            var tcsType = taskCompletionSource.GetType();
+            if (_cachedResultSetters.TryGetValue(tcsType, out var result))
             {
-                var resultType = tcsType.GetGenericArguments().Single();
-                return (ITcsResultSetter)Activator.CreateInstance(
-                    typeof(TcsResultSetter<>).MakeGenericType(resultType));
-            });
+                return result;
+            }
+
+            var resultType = tcsType.GetGenericArguments()[0];
+            result = (ITcsResultSetter)Activator.CreateInstance(
+                typeof(TcsResultSetter<>).MakeGenericType(resultType));
+
+            _cachedResultSetters.TryAdd(tcsType, result);
+            return result;
         }
     }
 }

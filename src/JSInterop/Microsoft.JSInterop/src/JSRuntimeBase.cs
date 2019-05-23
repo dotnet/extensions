@@ -60,9 +60,9 @@ namespace Microsoft.JSInterop
         /// <param name="asyncHandle">The identifier for the function invocation, or zero if no async callback is required.</param>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
-        protected abstract void BeginInvokeJS(long asyncHandle, string identifier, string argsJson);
+        protected abstract void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson);
 
-        internal void EndInvokeDotNet(string callId, bool success, object resultOrException)
+        internal void EndInvokeDotNet(string callId, bool success, object? resultOrException)
         {
             // For failures, the common case is to call EndInvokeDotNet with the Exception object.
             // For these we'll serialize as something that's useful to receive on the JS side.

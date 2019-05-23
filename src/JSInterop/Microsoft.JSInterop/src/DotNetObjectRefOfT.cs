@@ -22,7 +22,9 @@ namespace Microsoft.JSInterop
         /// This API is for meant for JSON deserialization and should not be used by user code.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS8618 // Non-nullable field is uninitialized.
         public DotNetObjectRef()
+#pragma warning restore CS8618 // Non-nullable field is uninitialized.
         {
         }
 
@@ -48,7 +50,7 @@ namespace Microsoft.JSInterop
         [EditorBrowsable(EditorBrowsableState.Never)]
         public long __dotNetObject
         {
-            get => _trackingId.Value;
+            get => _trackingId ?? throw new InvalidOperationException($"{nameof(DotNetObjectRef<TValue>)} has not been initialized.");
             set
             {
                 if (_trackingId != null)
@@ -70,6 +72,12 @@ namespace Microsoft.JSInterop
         /// </summary>
         public void Dispose()
         {
+            if (_trackingId == null)
+            {
+                // Do nothing.
+                return;
+            }
+
             DotNetObjectRefManager.Current.ReleaseDotNetObject(_trackingId.Value);
         }
     }

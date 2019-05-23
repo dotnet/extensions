@@ -32,21 +32,21 @@ namespace Microsoft.JSInterop
         /// <param name="dotNetObjectId">For instance method calls, identifies the target object.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <returns>A JSON representation of the return value, or null.</returns>
-        public static string Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public static string? Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
             // the targeted method has [JSInvokable]. It is not itself subject to that restriction,
             // because there would be nobody to police that. This method *is* the police.
 
-            var targetInstance = (object)null;
+            var targetInstance = (object?)null;
             if (dotNetObjectId != default)
             {
                 targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
             }
 
             var syncResult = InvokeSynchronously(assemblyName, methodIdentifier, targetInstance, argsJson);
-            if (syncResult == null)
+            if (syncResult is null)
             {
                 return null;
             }
@@ -75,7 +75,7 @@ namespace Microsoft.JSInterop
             // code has to implement its own way of returning async results.
             var jsRuntimeBaseInstance = (JSRuntimeBase)JSRuntime.Current;
 
-            var targetInstance = (object)null;
+            var targetInstance = (object?)null;
             if (dotNetObjectId != default)
             {
                 targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
@@ -83,8 +83,8 @@ namespace Microsoft.JSInterop
 
             // Using ExceptionDispatchInfo here throughout because we want to always preserve
             // original stack traces.
-            object syncResult = null;
-            ExceptionDispatchInfo syncException = null;
+            object? syncResult = null;
+            ExceptionDispatchInfo? syncException = null;
 
             try
             {
@@ -127,7 +127,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private static object InvokeSynchronously(string assemblyName, string methodIdentifier, object targetInstance, string argsJson)
+        private static object InvokeSynchronously(string assemblyName, string methodIdentifier, object? targetInstance, string argsJson)
         {
             AssemblyKey assemblyKey;
             if (targetInstance != null)
@@ -157,7 +157,7 @@ namespace Microsoft.JSInterop
                 if (tie.InnerException != null)
                 {
                     ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
-                    throw null; // unreached
+                    throw tie.InnerException; // unreached
                 }
 
                 throw;
@@ -360,7 +360,7 @@ namespace Microsoft.JSInterop
                 AssemblyName = assemblyName;
             }
 
-            public Assembly Assembly { get; }
+            public Assembly? Assembly { get; }
 
             public string AssemblyName { get; }
 

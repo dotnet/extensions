@@ -22,7 +22,9 @@ namespace Microsoft.JSInterop
             var resultJson = InvokeJS(identifier, JsonSerializer.ToString(args, JsonSerializerOptionsProvider.Options));
             if (resultJson is null)
             {
+#pragma warning disable CS8653 // A default expression introduces a null value for a type parameter.
                 return default;
+#pragma warning restore CS8653 // A default expression introduces a null value for a type parameter.
             }
 
             return JsonSerializer.Parse<TValue>(resultJson, JsonSerializerOptionsProvider.Options);
