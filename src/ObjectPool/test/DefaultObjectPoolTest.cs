@@ -3,12 +3,15 @@
 
 using System.Collections.Generic;
 using Xunit;
+using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.Extensions.ObjectPool
 {
+    [Flaky("asdf", FlakyOn.All)]
     public class DefaultObjectPoolTest
     {
-        [Fact]
+        [ConditionalFact]
         public void DefaultObjectPoolWithDefaultPolicy_GetAnd_ReturnObject_SameInstance()
         {
             // Arrange
@@ -24,7 +27,7 @@ namespace Microsoft.Extensions.ObjectPool
             Assert.Same(obj1, obj2);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void DefaultObjectPool_GetAndReturnObject_SameInstance()
         {
             // Arrange
@@ -40,12 +43,12 @@ namespace Microsoft.Extensions.ObjectPool
             Assert.Same(list1, list2);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void DefaultObjectPool_CreatedByPolicy()
         {
             // Arrange
             var pool = new DefaultObjectPool<List<int>>(new ListPolicy());
-            
+
             // Act
             var list = pool.Get();
 
@@ -53,7 +56,7 @@ namespace Microsoft.Extensions.ObjectPool
             Assert.Equal(17, list.Capacity);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void DefaultObjectPool_Return_RejectedByPolicy()
         {
             // Arrange
