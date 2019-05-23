@@ -17,7 +17,7 @@ and are generated based on the last package release.
     </LatestPackageReference>
   </ItemDefinitionGroup>
 
-  <ItemGroup Label=".NET Core dependencies">
+  <ItemGroup Label=".NET team dependencies">
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
@@ -36,12 +36,16 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
     <LatestPackageReference Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' " Label="MSBuild">
-    <LatestPackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
-    <LatestPackageReference Include="Microsoft.Build.Tasks.Core" Version="15.8.166" />
-    <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
+    <LatestPackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
   </ItemGroup>
 
   <!-- These versions must not be renamed because they override the implicit package references from Arcade. -->
@@ -51,17 +55,12 @@ and are generated based on the last package release.
     <XUnitRunnerConsoleVersion>$(XUnitVersion)</XUnitRunnerConsoleVersion>
   </PropertyGroup>
 
-  <ItemGroup Label="External dependencies">
+  <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
     <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.3" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.8.0" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.8.0" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.8.0" />
-    <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
     <LatestPackageReference Include="Microsoft.TypeScript.MSBuild" Version="2.9.2" />
-    <LatestPackageReference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <LatestPackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
