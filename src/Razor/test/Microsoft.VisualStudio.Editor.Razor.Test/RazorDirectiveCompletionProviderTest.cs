@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             CompletionBroker = Mock.Of<IAsyncCompletionBroker>(broker => broker.IsCompletionSupported(It.IsAny<IContentType>()) == true);
             var razorBuffer = Mock.Of<ITextBuffer>(buffer => buffer.ContentType == Mock.Of<IContentType>());
             TextBufferProvider = Mock.Of<RazorTextBufferProvider>(provider => provider.TryGetFromDocument(It.IsAny<TextDocument>(), out razorBuffer) == true);
-            CompletionFactsService = new DefaultRazorCompletionFactsService();
+            CompletionFactsService = new DefaultRazorCompletionFactsService(new[] { new DirectiveCompletionItemProvider() });
             CompletionProviderDependencies = new Lazy<CompletionProviderDependencies>(() => new DefaultCompletionProviderDependencies(CompletionFactsService, CompletionBroker));
         }
 

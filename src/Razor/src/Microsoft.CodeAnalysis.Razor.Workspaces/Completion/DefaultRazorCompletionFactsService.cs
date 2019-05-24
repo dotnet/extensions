@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
-using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.CodeAnalysis.Razor.Completion
 {
@@ -15,12 +13,18 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
     [Export(typeof(RazorCompletionFactsService))]
     internal class DefaultRazorCompletionFactsService : RazorCompletionFactsService
     {
-        private static readonly IEnumerable<DirectiveDescriptor> DefaultDirectives = new[]
+        private readonly IReadOnlyList<RazorCompletionItemProvider> _completionItemProviders;
+
+        [ImportingConstructor]
+        public DefaultRazorCompletionFactsService([ImportMany] IEnumerable<RazorCompletionItemProvider> completionItemProviders)
         {
-            CSharpCodeParser.AddTagHelperDirectiveDescriptor,
-            CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
-            CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
-        };
+            if (completionItemProviders is null)
+            {
+                throw new ArgumentNullException(nameof(completionItemProviders));
+            }
+
+            _completionItemProviders = completionItemProviders.ToArray();
+        }
 
         public override IReadOnlyList<RazorCompletionItem> GetCompletionItems(RazorSyntaxTree syntaxTree, TagHelperDocumentContext tagHelperDocumentContext, SourceSpan location)
         {
@@ -29,71 +33,20 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 throw new ArgumentNullException(nameof(syntaxTree));
             }
 
-            var completionItems = new List<RazorCompletionItem>();
-
-            if (AtDirectiveCompletionPoint(syntaxTree, location))
+            if (tagHelperDocumentContext is null)
             {
-                var directiveCompletions = GetDirectiveCompletionItems(syntaxTree);
-                completionItems.AddRange(directiveCompletions);
+                throw new ArgumentNullException(nameof(tagHelperDocumentContext));
             }
 
-            return completionItems;
-        }
-
-        // Internal for testing
-        internal static List<RazorCompletionItem> GetDirectiveCompletionItems(RazorSyntaxTree syntaxTree)
-        {
-            var defaultDirectives = FileKinds.IsComponent(syntaxTree.Options.FileKind) ? Array.Empty<DirectiveDescriptor>() : DefaultDirectives;
-            var directives = syntaxTree.Options.Directives.Concat(defaultDirectives);
-            var completionItems = new List<RazorCompletionItem>();
-            foreach (var directive in directives)
+            var completions = new List<RazorCompletionItem>();
+            for (var i = 0; i < _completionItemProviders.Count; i++)
             {
-                var completionDisplayText = directive.DisplayName ?? directive.Directive;
-                var completionItem = new RazorCompletionItem(
-                    completionDisplayText,
-                    directive.Directive,
-                    directive.Description,
-                    RazorCompletionItemKind.Directive);
-                completionItems.Add(completionItem);
+                var completionItemProvider = _completionItemProviders[i];
+                var items = completionItemProvider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, location);
+                completions.AddRange(items);
             }
 
-            return completionItems;
-        }
-
-        // Internal for testing
-        internal static bool AtDirectiveCompletionPoint(RazorSyntaxTree syntaxTree, SourceSpan location)
-        {
-            if (syntaxTree == null)
-            {
-                return false;
-            }
-
-            var change = new SourceChange(location, string.Empty);
-            var owner = syntaxTree.Root.LocateOwner(change);
-
-            if (owner == null)
-            {
-                return false;
-            }
-
-            // Do not provide IntelliSense for explicit expressions. Explicit expressions will usually look like:
-            // [@] [(] [DateTime.Now] [)]
-            var isImplicitExpression = owner.FirstAncestorOrSelf<CSharpImplicitExpressionSyntax>() != null;
-            if (isImplicitExpression &&
-                owner.ChildNodes().All(n => n.IsToken && IsDirectiveCompletableToken((AspNetCore.Razor.Language.Syntax.SyntaxToken)n)))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        // Internal for testing
-        internal static bool IsDirectiveCompletableToken(AspNetCore.Razor.Language.Syntax.SyntaxToken token)
-        {
-            return token.Kind == SyntaxKind.Identifier ||
-                // Marker symbol
-                token.Kind == SyntaxKind.Marker;
+            return completions;
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -27,7 +28,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
         };
 
-        private RazorCompletionFactsService CompletionFactsService { get; } = new DefaultRazorCompletionFactsService();
+        private RazorCompletionFactsService CompletionFactsService { get; } = new DefaultRazorCompletionFactsService(new[] { new DirectiveCompletionItemProvider() });
 
         [ForegroundFact]
         public async Task GetCompletionContextAsync_DoesNotProvideCompletionsPriorToParseResults()
@@ -156,6 +157,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var syntaxTree = CreateSyntaxTree(text, directives);
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(text, RazorSourceDocumentProperties.Default));
             codeDocument.SetSyntaxTree(syntaxTree);
+            codeDocument.SetTagHelperContext(TagHelperDocumentContext.Create(prefix: null, Enumerable.Empty<TagHelperDescriptor>()));
             var parser = new Mock<VisualStudioRazorParser>();
             parser.Setup(p => p.GetLatestCodeDocumentAsync(It.IsAny<ITextSnapshot>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(codeDocument));
