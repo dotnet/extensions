@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
@@ -34,8 +35,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var text = "@validCompletion";
             var parser = new Mock<VisualStudioRazorParser>();
-            parser.Setup(p => p.GetLatestSyntaxTreeAsync(It.IsAny<ITextSnapshot>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult<RazorSyntaxTree>(null)); // CodeDocument will be null faking a parser without a parse.
+            parser.Setup(p => p.GetLatestCodeDocumentAsync(It.IsAny<ITextSnapshot>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<RazorCodeDocument>(null)); // CodeDocument will be null faking a parser without a parse.
             var completionSource = new RazorDirectiveCompletionSource(Dispatcher, parser.Object, CompletionFactsService);
             var documentSnapshot = new StringTextSnapshot(text);
             var triggerLocation = new SnapshotPoint(documentSnapshot, 4);
@@ -153,9 +154,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private static VisualStudioRazorParser CreateParser(string text, params DirectiveDescriptor[] directives)
         {
             var syntaxTree = CreateSyntaxTree(text, directives);
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(text, RazorSourceDocumentProperties.Default));
+            codeDocument.SetSyntaxTree(syntaxTree);
             var parser = new Mock<VisualStudioRazorParser>();
-            parser.Setup(p => p.GetLatestSyntaxTreeAsync(It.IsAny<ITextSnapshot>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(syntaxTree));
+            parser.Setup(p => p.GetLatestCodeDocumentAsync(It.IsAny<ITextSnapshot>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(codeDocument));
 
             return parser.Object;
         }

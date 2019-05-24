@@ -217,14 +217,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 };
 
                 await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
-                var getSyntaxTreeTask = manager.InnerParser.GetLatestSyntaxTreeAsync(changed);
+                var codeDocumentTask = manager.InnerParser.GetLatestCodeDocumentAsync(changed);
 
-                Assert.False(getSyntaxTreeTask.IsCompleted);
+                Assert.False(codeDocumentTask.IsCompleted);
 
                 // Perform a partially parsed accepted change
                 ApplyAndVerifyPartialChange(edit, "DateTime.");
 
-                Assert.True(getSyntaxTreeTask.IsCompleted);
+                Assert.True(codeDocumentTask.IsCompleted);
             }
         }
 

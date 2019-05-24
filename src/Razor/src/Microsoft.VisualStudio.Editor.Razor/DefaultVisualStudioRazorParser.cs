@@ -38,7 +38,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly ForegroundDispatcher _dispatcher;
         private readonly ProjectSnapshotProjectEngineFactory _projectEngineFactory;
         private readonly ErrorReporter _errorReporter;
-        private readonly List<SyntaxTreeRequest> _syntaxTreeRequests;
+        private readonly List<CodeDocumentRequest> _codeDocumentRequests;
         private RazorProjectEngine _projectEngine;
         private RazorCodeDocument _codeDocument;
         private ITextSnapshot _snapshot;
@@ -88,7 +88,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _errorReporter = errorReporter;
             _completionBroker = completionBroker;
             _documentTracker = documentTracker;
-            _syntaxTreeRequests = new List<SyntaxTreeRequest>();
+            _codeDocumentRequests = new List<CodeDocumentRequest>();
 
             _documentTracker.ContextChanged += DocumentTracker_ContextChanged;
         }
@@ -109,7 +109,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         // Used in unit tests to ensure we can block background idle work.
         internal ManualResetEventSlim BlockBackgroundIdleWork { get; set; }
 
-        public override Task<RazorSyntaxTree> GetLatestSyntaxTreeAsync(ITextSnapshot atOrNewerSnapshot, CancellationToken cancellationToken = default)
+        internal override Task<RazorCodeDocument> GetLatestCodeDocumentAsync(ITextSnapshot atOrNewerSnapshot, CancellationToken cancellationToken = default)
         {
             if (atOrNewerSnapshot == null)
             {
@@ -121,23 +121,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 if (_disposed ||
                     (_latestParsedSnapshot != null && atOrNewerSnapshot.Version.VersionNumber <= _latestParsedSnapshot.Version.VersionNumber))
                 {
-                    return Task.FromResult(CodeDocument?.GetSyntaxTree());
+                    return Task.FromResult(CodeDocument);
                 }
 
-                SyntaxTreeRequest request = null;
-                for (var i = _syntaxTreeRequests.Count - 1; i >= 0; i--)
+                CodeDocumentRequest request = null;
+                for (var i = _codeDocumentRequests.Count - 1; i >= 0; i--)
                 {
-                    if (_syntaxTreeRequests[i].Snapshot == atOrNewerSnapshot)
+                    if (_codeDocumentRequests[i].Snapshot == atOrNewerSnapshot)
                     {
-                        request = _syntaxTreeRequests[i];
+                        request = _codeDocumentRequests[i];
                         break;
                     }
                 }
 
                 if (request == null)
                 {
-                    request = new SyntaxTreeRequest(atOrNewerSnapshot, cancellationToken);
-                    _syntaxTreeRequests.Add(request);
+                    request = new CodeDocumentRequest(atOrNewerSnapshot, cancellationToken);
+                    _codeDocumentRequests.Add(request);
                 }
 
                 return request.Task;
@@ -171,7 +171,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             lock (UpdateStateLock)
             {
                 _disposed = true;
-                foreach (var request in _syntaxTreeRequests)
+                foreach (var request in _codeDocumentRequests)
                 {
                     request.Cancel();
                 }
@@ -324,7 +324,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
             else
             {
-                TryUpdateLatestParsedSyntaxTreeSnapshot(partialParseSyntaxTree, snapshot);
+                var currentCodeDocument = CodeDocument;
+                var codeDocument = RazorCodeDocument.Create(currentCodeDocument.Source, currentCodeDocument.Imports);
+
+                foreach (var item in currentCodeDocument.Items)
+                {
+                    codeDocument.Items[item.Key] = item.Value;
+                }
+                codeDocument.SetSyntaxTree(partialParseSyntaxTree);
+                TryUpdateLatestParsedSyntaxTreeSnapshot(codeDocument, snapshot);
             }
 
             if ((result & PartialParseResultInternal.Provisional) == PartialParseResultInternal.Provisional)
@@ -489,11 +497,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 _codeDocument = codeDocument;
                 _snapshot = snapshot;
                 _partialParser = new RazorSyntaxTreePartialParser(_codeDocument.GetSyntaxTree());
-                TryUpdateLatestParsedSyntaxTreeSnapshot(_codeDocument.GetSyntaxTree(), _snapshot);
+                TryUpdateLatestParsedSyntaxTreeSnapshot(_codeDocument, _snapshot);
             }
         }
 
-        private void TryUpdateLatestParsedSyntaxTreeSnapshot(RazorSyntaxTree syntaxTree, ITextSnapshot snapshot)
+        private void TryUpdateLatestParsedSyntaxTreeSnapshot(RazorCodeDocument codeDocument, ITextSnapshot snapshot)
         {
             if (snapshot == null)
             {
@@ -507,29 +515,29 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 {
                     _latestParsedSnapshot = snapshot;
 
-                    CompleteSyntaxTreeRequestsForSnapshot(syntaxTree, snapshot);
+                    CompleteCodeDocumentRequestsForSnapshot(codeDocument, snapshot);
                 }
             }
         }
 
-        private void CompleteSyntaxTreeRequestsForSnapshot(RazorSyntaxTree syntaxTree, ITextSnapshot snapshot)
+        private void CompleteCodeDocumentRequestsForSnapshot(RazorCodeDocument codeDocument, ITextSnapshot snapshot)
         {
             lock (UpdateStateLock)
             {
-                if (_syntaxTreeRequests.Count == 0)
+                if (_codeDocumentRequests.Count == 0)
                 {
                     return;
                 }
 
-                var matchingRequests = new List<SyntaxTreeRequest>();
-                for (var i = _syntaxTreeRequests.Count - 1; i >= 0; i--)
+                var matchingRequests = new List<CodeDocumentRequest>();
+                for (var i = _codeDocumentRequests.Count - 1; i >= 0; i--)
                 {
-                    var request = _syntaxTreeRequests[i];
+                    var request = _codeDocumentRequests[i];
                     if (request.Snapshot.Version.VersionNumber <= snapshot.Version.VersionNumber)
                     {
                         // This change was for a newer snapshot, we can complete the TCS.
                         matchingRequests.Add(request);
-                        _syntaxTreeRequests.RemoveAt(i);
+                        _codeDocumentRequests.RemoveAt(i);
                     }
                 }
 
@@ -537,7 +545,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 for (var i = matchingRequests.Count - 1; i >= 0; i--)
                 {
                     // At this point it's possible these requests have been cancelled, if that's the case Complete noops.
-                    matchingRequests[i].Complete(syntaxTree);
+                    matchingRequests[i].Complete(codeDocument);
                 }
             }
         }
@@ -578,14 +586,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal class SyntaxTreeRequest
+        internal class CodeDocumentRequest
         {
             private readonly object CompletionLock = new object();
-            private readonly TaskCompletionSource<RazorSyntaxTree> _taskCompletionSource;
+            private readonly TaskCompletionSource<RazorCodeDocument> _taskCompletionSource;
             private readonly CancellationTokenRegistration _cancellationTokenRegistration;
             private bool _done;
 
-            public SyntaxTreeRequest(ITextSnapshot snapshot, CancellationToken cancellationToken)
+            public CodeDocumentRequest(ITextSnapshot snapshot, CancellationToken cancellationToken)
             {
                 if (snapshot == null)
                 {
@@ -593,7 +601,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 }
 
                 Snapshot = snapshot;
-                _taskCompletionSource = new TaskCompletionSource<RazorSyntaxTree>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _taskCompletionSource = new TaskCompletionSource<RazorCodeDocument>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _cancellationTokenRegistration = cancellationToken.Register(Cancel);
                 Task = _taskCompletionSource.Task;
 
@@ -606,13 +614,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             public ITextSnapshot Snapshot { get; }
 
-            public Task<RazorSyntaxTree> Task { get; }
+            public Task<RazorCodeDocument> Task { get; }
 
-            public void Complete(RazorSyntaxTree syntaxTree)
+            public void Complete(RazorCodeDocument codeDocument)
             {
-                if (syntaxTree == null)
+                if (codeDocument == null)
                 {
-                    throw new ArgumentNullException(nameof(syntaxTree));
+                    throw new ArgumentNullException(nameof(codeDocument));
                 }
 
                 lock (CompletionLock)
@@ -625,7 +633,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                     _done = true;
                     _cancellationTokenRegistration.Dispose();
-                    _taskCompletionSource.SetResult(syntaxTree);
+                    _taskCompletionSource.SetResult(codeDocument);
                 }
             }
 

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
@@ -132,13 +133,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return Task.CompletedTask;
             }
 
-            var syntaxTree = codeDocument.GetSyntaxTree();
-            if (syntaxTree == null)
-            {
-                // No syntax tree has been computed for the current document.
-                return Task.CompletedTask;
-            }
-
             if (!TryGetRazorSnapshotPoint(context, out var razorSnapshotPoint))
             {
                 // Could not find associated Razor location.
@@ -146,7 +140,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             var location = new SourceSpan(razorSnapshotPoint.Position, 0);
-            var razorCompletionItems = _dependencies.Value.CompletionFactsService.GetCompletionItems(syntaxTree, location);
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var razorCompletionItems = _dependencies.Value.CompletionFactsService.GetCompletionItems(syntaxTree, tagHelperDocumentContext, location);
 
             foreach (var razorCompletionItem in razorCompletionItems)
             {

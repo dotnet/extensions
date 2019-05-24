@@ -25,6 +25,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public abstract void QueueReparse();
 
-        public virtual Task<RazorSyntaxTree> GetLatestSyntaxTreeAsync(ITextSnapshot atOrNewerSnapshot, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        internal virtual Task<RazorCodeDocument> GetLatestCodeDocumentAsync(ITextSnapshot atOrNewerSnapshot, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.CodeAnalysis.Razor.Completion
 {
     [Shared]
     [Export(typeof(RazorCompletionFactsService))]
@@ -22,8 +22,13 @@ namespace Microsoft.CodeAnalysis.Razor
             CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
         };
 
-        public override IReadOnlyList<RazorCompletionItem> GetCompletionItems(RazorSyntaxTree syntaxTree, SourceSpan location)
+        public override IReadOnlyList<RazorCompletionItem> GetCompletionItems(RazorSyntaxTree syntaxTree, TagHelperDocumentContext tagHelperDocumentContext, SourceSpan location)
         {
+            if (syntaxTree is null)
+            {
+                throw new ArgumentNullException(nameof(syntaxTree));
+            }
+
             var completionItems = new List<RazorCompletionItem>();
 
             if (AtDirectiveCompletionPoint(syntaxTree, location))

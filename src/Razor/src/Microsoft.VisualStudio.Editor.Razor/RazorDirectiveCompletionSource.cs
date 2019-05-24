@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.VisualStudio.Core.Imaging;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
@@ -72,9 +73,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             try
             {
-                var syntaxTree = await _parser.GetLatestSyntaxTreeAsync(triggerLocation.Snapshot, token);
+                var codeDocument = await _parser.GetLatestCodeDocumentAsync(triggerLocation.Snapshot, token);
+                if (codeDocument == null)
+                {
+                    return CompletionContext.Empty;
+                }
+
                 var location = new SourceSpan(triggerLocation.Position, 0);
-                var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);
+                var syntaxTree = codeDocument.GetSyntaxTree();
+                var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+                var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, tagHelperDocumentContext, location);
 
                 var completionItems = new List<CompletionItem>();
                 foreach (var razorCompletionItem in razorCompletionItems)
