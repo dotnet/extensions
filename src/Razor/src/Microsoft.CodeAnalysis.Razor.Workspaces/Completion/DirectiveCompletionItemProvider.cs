@@ -57,14 +57,43 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
             // Do not provide IntelliSense for explicit expressions. Explicit expressions will usually look like:
             // [@] [(] [DateTime.Now] [)]
-            var isImplicitExpression = owner.FirstAncestorOrSelf<CSharpImplicitExpressionSyntax>() != null;
-            if (isImplicitExpression &&
-                owner.ChildNodes().All(n => n.IsToken && IsDirectiveCompletableToken((AspNetCore.Razor.Language.Syntax.SyntaxToken)n)))
+            var implicitExpression = owner.FirstAncestorOrSelf<CSharpImplicitExpressionSyntax>();
+            if (implicitExpression == null)
             {
-                return true;
+                return false;
             }
 
-            return false;
+            if (owner.ChildNodes().Any(n => !n.IsToken || !IsDirectiveCompletableToken((AspNetCore.Razor.Language.Syntax.SyntaxToken)n)))
+            {
+                // Implicit expression contains invalid directive tokens
+                return false;
+            }
+
+            if (implicitExpression.FirstAncestorOrSelf<RazorDirectiveSyntax>() != null)
+            {
+                // Implicit expression is nested in a directive
+                return false;
+            }
+
+            if (implicitExpression.FirstAncestorOrSelf<CSharpStatementSyntax>() != null)
+            {
+                // Implicit expression is nested in a statement
+                return false;
+            }
+
+            if (implicitExpression.FirstAncestorOrSelf<MarkupElementSyntax>() != null)
+            {
+                // Implicit expression is nested in an HTML element
+                return false;
+            }
+
+            if (implicitExpression.FirstAncestorOrSelf<MarkupTagHelperElementSyntax>() != null)
+            {
+                // Implicit expression is nested in a TagHelper
+                return false;
+            }
+
+            return true;
         }
 
         // Internal for testing

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Moq;
@@ -152,6 +153,62 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             // Arrange
             var syntaxTree = CreateSyntaxTree("@(something)");
             var location = new SourceSpan(4, 0);
+
+            // Act
+            var result = DirectiveCompletionItemProvider.AtDirectiveCompletionPoint(syntaxTree, location);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void AtDirectiveCompletionPoint_ReturnsFalseWhenInsideStatement()
+        {
+            // Arrange
+            var syntaxTree = CreateSyntaxTree("@{ @ }");
+            var location = new SourceSpan(4, 0);
+
+            // Act
+            var result = DirectiveCompletionItemProvider.AtDirectiveCompletionPoint(syntaxTree, location);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void AtDirectiveCompletionPoint_ReturnsFalseWhenInsideMarkup()
+        {
+            // Arrange
+            var syntaxTree = CreateSyntaxTree("<p>@ </p>");
+            var location = new SourceSpan(4, 0);
+
+            // Act
+            var result = DirectiveCompletionItemProvider.AtDirectiveCompletionPoint(syntaxTree, location);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void AtDirectiveCompletionPoint_ReturnsFalseWhenInsideAttributeArea()
+        {
+            // Arrange
+            var syntaxTree = CreateSyntaxTree("<p @ >");
+            var location = new SourceSpan(4, 0);
+
+            // Act
+            var result = DirectiveCompletionItemProvider.AtDirectiveCompletionPoint(syntaxTree, location);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void AtDirectiveCompletionPoint_ReturnsFalseWhenInsideDirective()
+        {
+            // Arrange
+            var syntaxTree = CreateSyntaxTree("@functions { @  }", FunctionsDirective.Directive);
+            var location = new SourceSpan(14, 0);
 
             // Act
             var result = DirectiveCompletionItemProvider.AtDirectiveCompletionPoint(syntaxTree, location);
