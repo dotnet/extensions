@@ -109,9 +109,10 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 var completionItemKinds = new HashSet<RazorCompletionItemKind>();
                 foreach (var razorCompletionItem in razorCompletionItems)
                 {
-                    if (razorCompletionItem.Kind != RazorCompletionItemKind.DirectiveAttribute)
+                    if (razorCompletionItem.Kind != RazorCompletionItemKind.DirectiveAttribute &&
+                        razorCompletionItem.Kind != RazorCompletionItemKind.DirectiveAttributeParameter)
                     {
-                        // Don't support any other types of completion kinds other than directive attributes.
+                        // Don't support any other types of completion kinds other than directive attributes and their parameters.
                         continue;
                     }
 
@@ -233,7 +234,10 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 }
                 else
                 {
-                    return CompletionStartData.DoesNotParticipateInCompletion;
+                    // The trigger location falls on the right hand side of the directive attribute parameter delimiter (:)
+                    //
+                    // <InputSelect @bind-foo:|something|
+                    leftEnd = parameterDelimiter + 1;
                 }
             }
             else

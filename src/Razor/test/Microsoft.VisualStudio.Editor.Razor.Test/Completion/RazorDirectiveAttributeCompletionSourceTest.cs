@@ -80,22 +80,6 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         }
 
         [Fact]
-        public void InitializeCompletion_TriggeredAtPossibleDirectiveAttributeParameter_ReturnsDoesNotParticipate()
-        {
-            // Arrange
-            var source = CreateCompletionSource();
-            var snapshot = new StringTextSnapshot("<input @bind:format='@foo' />");
-            var trigger = new CompletionTrigger(CompletionTriggerReason.Invoke, snapshot);
-            var triggerLocation = new SnapshotPoint(snapshot, 14);
-
-            // Act
-            var result = source.InitializeCompletion(trigger, triggerLocation, CancellationToken.None);
-
-            // Assert
-            Assert.Equal(CompletionStartData.DoesNotParticipateInCompletion, result);
-        }
-
-        [Fact]
         public void InitializeCompletion_TriggeredAtPossibleDirectiveWithAttributeParameter_ReturnsParticipate()
         {
             // Arrange
@@ -104,6 +88,23 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             var trigger = new CompletionTrigger(CompletionTriggerReason.Invoke, snapshot);
             var triggerLocation = new SnapshotPoint(snapshot, 9);
             var expectedApplicableToSpan = new SnapshotSpan(snapshot, new Span(7, 5));
+
+            // Act
+            var result = source.InitializeCompletion(trigger, triggerLocation, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(expectedApplicableToSpan, result.ApplicableToSpan);
+        }
+
+        [Fact]
+        public void InitializeCompletion_TriggeredAtPossibleDirectiveAttributeParameter_ReturnsParticipate()
+        {
+            // Arrange
+            var source = CreateCompletionSource();
+            var snapshot = new StringTextSnapshot("<input @bind:format='@foo' />");
+            var trigger = new CompletionTrigger(CompletionTriggerReason.Invoke, snapshot);
+            var triggerLocation = new SnapshotPoint(snapshot, 13);
+            var expectedApplicableToSpan = new SnapshotSpan(snapshot, new Span(13, 6));
 
             // Act
             var result = source.InitializeCompletion(trigger, triggerLocation, CancellationToken.None);

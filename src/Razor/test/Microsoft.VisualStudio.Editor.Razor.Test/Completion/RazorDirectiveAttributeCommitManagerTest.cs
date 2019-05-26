@@ -1,11 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Utilities;
@@ -45,6 +41,22 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
 
             // Assert
             Assert.True(result);
+        }
+
+        [Fact]
+        public void ShouldCommitCompletion_DirectiveParameterCompletion_ColonCommit_ReturnsFalse()
+        {
+            // Arrange
+            var manager = new RazorDirectiveAttributeCommitManager();
+            var properties = new PropertyCollection();
+            properties.SetCompletionItemKinds(new HashSet<RazorCompletionItemKind>() { RazorCompletionItemKind.DirectiveAttributeParameter });
+            var session = Mock.Of<IAsyncCompletionSession>(s => s.Properties == properties);
+
+            // Act
+            var result = manager.ShouldCommitCompletion(session, location: default, typedChar: ':', token: default);
+
+            // Assert
+            Assert.False(result);
         }
     }
 }
