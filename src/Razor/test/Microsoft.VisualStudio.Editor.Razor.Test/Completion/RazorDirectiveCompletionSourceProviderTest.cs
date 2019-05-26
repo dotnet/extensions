@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.Utilities;
 using Moq;
 using Xunit;
 
-namespace Microsoft.VisualStudio.Editor.Razor
+namespace Microsoft.VisualStudio.Editor.Razor.Completion
 {
     public class RazorDirectiveCompletionSourceProviderTest : ForegroundDispatcherTestBase
     {
