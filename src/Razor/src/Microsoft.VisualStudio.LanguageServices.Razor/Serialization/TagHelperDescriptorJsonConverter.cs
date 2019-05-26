@@ -274,6 +274,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Diagnostics));
             serializer.Serialize(writer, requiredAttribute.Diagnostics);
 
+            writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Metadata));
+            WriteMetadata(writer, requiredAttribute.Metadata);
+
             writer.WriteEndObject();
         }
 
@@ -310,6 +313,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             var value = attribute[nameof(RequiredAttributeDescriptor.Value)].Value<string>();
             var valueComparison = attribute[nameof(RequiredAttributeDescriptor.ValueComparison)].Value<int>();
             var diagnostics = attribute[nameof(RequiredAttributeDescriptor.Diagnostics)].Value<JArray>();
+            var metadata = attribute[nameof(RequiredAttributeDescriptor.Metadata)].Value<JObject>();
 
             builder.Name = name;
             builder.NameComparisonMode = (RequiredAttributeDescriptor.NameComparisonMode)nameComparison;
@@ -321,6 +325,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
                 var diagnosticReader = diagnostic.CreateReader();
                 var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
                 builder.Diagnostics.Add(diagnosticObject);
+            }
+
+            var metadataReader = metadata.CreateReader();
+            var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
+            foreach (var item in metadataValue)
+            {
+                builder.Metadata[item.Key] = item.Value;
             }
         }
 
