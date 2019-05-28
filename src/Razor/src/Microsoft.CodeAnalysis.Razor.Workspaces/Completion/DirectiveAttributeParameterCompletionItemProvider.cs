@@ -106,7 +106,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
                     if (TagHelperMatchingConventions.CanSatisfyBoundAttribute(attributeName, attributeDescriptor))
                     {
-                        for (var j = boundAttributeParameters.Count - 1; j >= 0; j--)
+                        for (var j = 0; j < boundAttributeParameters.Count; j++)
                         {
                             var parameterDescriptor = boundAttributeParameters[j];
 

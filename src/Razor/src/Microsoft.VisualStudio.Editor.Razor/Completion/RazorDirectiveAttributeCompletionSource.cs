@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -177,9 +175,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         public CompletionStartData InitializeCompletion(CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)
         {
             // We can't retrieve the correct SyntaxTree/CodeDocument at this time because this extension point is synchronous so we need 
-            // to make our "do we participate in completion and what do we aspply to" decision without one. We'll look to see if what
-            // we're operating on potentially looks like a directive attribute. We care about things that look like a expressions to
-            // provide directive attribute completions. Basically anything starting with a transition (@).
+            // to make our "do we participate in completion and what do we apply to" decision without one. We'll look to see if what
+            // we're operating on potentially looks like a directive attribute. We care about syntax that looks like an expression when
+            // providing directive attribute completions. Basically anything starting with a transition (@).
 
             var snapshot = triggerLocation.Snapshot;
             if (snapshot.Length == 0)
