@@ -42,7 +42,7 @@ namespace Xunit
 
                     Exception caught = null;
                     var frame = new DispatcherFrame();
-                    Task.Run(async () =>
+                    _ = Task.Run(async () =>
                     {
                         try
                         {

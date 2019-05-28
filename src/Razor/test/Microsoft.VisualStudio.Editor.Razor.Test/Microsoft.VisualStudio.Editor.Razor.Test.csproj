@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

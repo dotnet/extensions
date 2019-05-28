@@ -80,7 +80,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
 
             // Trigger the initial update to the project.
             _batchingProjectChanges = true;
-            Task.Factory.StartNew(ProjectChangedBackgroundAsync, null, CancellationToken.None, TaskCreationOptions.None, ForegroundDispatcher.BackgroundScheduler);
+            _ = Task.Factory.StartNew(ProjectChangedBackgroundAsync, null, CancellationToken.None, TaskCreationOptions.None, ForegroundDispatcher.BackgroundScheduler);
         }
 
         // Must be called inside the lock.
@@ -136,7 +136,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
                 // Therefore, we re-dispatch here to allow any remaining project change events to fire and to then only have 1 host
                 // project change trigger; this way we don't spam our own system with re-configure calls.
                 _batchingProjectChanges = true;
-                Task.Factory.StartNew(ProjectChangedBackgroundAsync, null, CancellationToken.None, TaskCreationOptions.None, ForegroundDispatcher.BackgroundScheduler);
+                _ = Task.Factory.StartNew(ProjectChangedBackgroundAsync, null, CancellationToken.None, TaskCreationOptions.None, ForegroundDispatcher.BackgroundScheduler);
             }
         }
 

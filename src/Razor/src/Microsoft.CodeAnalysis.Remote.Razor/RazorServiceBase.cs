@@ -4,27 +4,27 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Newtonsoft.Json;
 
 namespace Microsoft.CodeAnalysis.Remote.Razor
 {
     internal abstract class RazorServiceBase : ServiceHubServiceBase
     {
         public RazorServiceBase(Stream stream, IServiceProvider serviceProvider)
-            : base(serviceProvider, stream)
+            : base(serviceProvider, stream, GetRazorConverters())
         {
             RazorServices = new RazorServices();
-
-            Rpc.JsonSerializer.Converters.RegisterRazorConverters();
 
             // Due to this issue - https://github.com/dotnet/roslyn/issues/16900#issuecomment-277378950
             // We need to manually start the RPC connection. Otherwise we'd be opting ourselves into 
             // race condition prone call paths.
-            Rpc.StartListening();
+            StartService();
         }
 
         protected RazorServices RazorServices { get; }
@@ -37,6 +37,13 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             }
 
             return Task.FromResult<ProjectSnapshot>(new SerializedProjectSnapshot(projectHandle.FilePath, projectHandle.Configuration, projectHandle.RootNamespace));
+        }
+
+        private static IEnumerable<JsonConverter> GetRazorConverters()
+        {
+            var collection = new JsonConverterCollection();
+            collection.RegisterRazorConverters();
+            return collection;
         }
 
         private class SerializedProjectSnapshot : ProjectSnapshot

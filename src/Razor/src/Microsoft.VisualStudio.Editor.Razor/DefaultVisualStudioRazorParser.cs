@@ -154,7 +154,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
             else
             {
-                Task.Factory.StartNew(ReparseOnForeground, null, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+                _ = Task.Factory.StartNew(ReparseOnForeground, null, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
             }
         }
 
@@ -414,12 +414,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 StopIdleTimer();
 
                 // We need to get back to the UI thread to properly check if a completion is active.
-                Task.Factory.StartNew(OnIdle, null, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+                _ = Task.Factory.StartNew(OnIdle, null, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
             }
             catch (Exception ex)
             {
                 // This is something totally unexpected, let's just send it over to the workspace.
-                Task.Factory.StartNew(() => _errorReporter.ReportError(ex), CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+                _ = Task.Factory.StartNew(() => _errorReporter.ReportError(ex), CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
             }
         }
 
@@ -431,7 +431,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             UpdateParserState(args.CodeDocument, args.ChangeReference.Snapshot);
 
             // Jump back to UI thread to notify structure changes.
-            Task.Factory.StartNew(OnDocumentStructureChanged, args, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+            _ = Task.Factory.StartNew(OnDocumentStructureChanged, args, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
         }
 
         // Internal for testing

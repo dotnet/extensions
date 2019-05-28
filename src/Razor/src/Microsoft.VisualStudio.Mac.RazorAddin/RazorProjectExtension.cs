@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.Mac.RazorAddin
             // Once a workspace is created for the solution we'll setup our project host for the current project. The Razor world
             // shares a lifetime with the workspace (as Roslyn services) so we need to ensure it exists prior to wiring the host
             // world to the Roslyn world.
-            TypeSystemService.GetWorkspaceAsync(Project.ParentSolution).ContinueWith(task =>
+            _ = TypeSystemService.GetWorkspaceAsync(Project.ParentSolution).ContinueWith(task =>
             {
                 if (task.IsFaulted || task.IsCanceled)
                 {
