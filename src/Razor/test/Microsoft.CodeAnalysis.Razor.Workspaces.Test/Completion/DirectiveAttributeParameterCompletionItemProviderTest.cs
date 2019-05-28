@@ -91,18 +91,15 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var codeDocument = GetCodeDocument("<input @bind:fo  />");
             var syntaxTree = codeDocument.GetSyntaxTree();
             var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
-            var expectedCompletions = new[] {
-                new RazorCompletionItem("event", "event", string.Empty, RazorCompletionItemKind.DirectiveAttributeParameter),
-                new RazorCompletionItem("format", "format", string.Empty, RazorCompletionItemKind.DirectiveAttributeParameter),
-            };
             var span = new SourceSpan(14, 0);
 
             // Act
             var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
 
             // Assert
-            var orderedCompletions = completions.OrderBy(c => c.DisplayText);
-            Assert.Equal(expectedCompletions, orderedCompletions);
+            Assert.Equal(2, completions.Count);
+            AssertContains(completions, "event");
+            AssertContains(completions, "format");
         }
 
         [Fact]
@@ -138,34 +135,32 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         public void GetAttributeParameterCompletions_SelectedDirectiveAttributeParameter_IsExcludedInCompletions()
         {
             // Arrange
-            var expectedCompletion = new RazorCompletionItem("format", "format", string.Empty, RazorCompletionItemKind.DirectiveAttributeParameter);
             var attributeNames = new string[] { "@bind" };
 
             // Act
             var completions = Provider.GetAttributeParameterCompletions("@bind", "format", "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            Assert.DoesNotContain(expectedCompletion, completions);
+            AssertDoesNotContain(completions, "format");
         }
 
         [Fact]
         public void GetAttributeParameterCompletions_ReturnsCompletion()
         {
             // Arrange
-            var expectedCompletion = new RazorCompletionItem("format", "format", string.Empty, RazorCompletionItemKind.DirectiveAttributeParameter);
+
 
             // Act
             var completions = Provider.GetAttributeParameterCompletions("@bind", string.Empty, "input", EmptyAttributes, DefaultTagHelperDocumentContext);
 
             // Assert
-            Assert.Contains(expectedCompletion, completions);
+            AssertContains(completions, "format");
         }
 
         [Fact]
         public void GetAttributeParameterCompletions_BaseDirectiveAttributeAndParameterVariationsExist_ExcludesCompletion()
         {
             // Arrange
-            var expectedCompletion = new RazorCompletionItem("format", "format", string.Empty, RazorCompletionItemKind.DirectiveAttributeParameter);
             var attributeNames = new[]
             {
                 "@bind",
@@ -178,7 +173,28 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeParameterCompletions("@bind", string.Empty, "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            Assert.DoesNotContain(expectedCompletion, completions);
+            AssertDoesNotContain(completions, "format");
+        }
+
+        private static void AssertContains(IReadOnlyList<RazorCompletionItem> completions, string insertText)
+        {
+            Assert.Contains(completions, completion =>
+            {
+                return insertText == completion.InsertText &&
+                    insertText == completion.DisplayText &&
+                    RazorCompletionItemKind.DirectiveAttributeParameter == completion.Kind;
+            });
+        }
+
+        private static void AssertDoesNotContain(IReadOnlyList<RazorCompletionItem> completions, string insertText)
+        {
+
+            Assert.DoesNotContain(completions, completion =>
+            {
+                return insertText == completion.InsertText &&
+                   insertText == completion.DisplayText &&
+                   RazorCompletionItemKind.DirectiveAttributeParameter == completion.Kind;
+            });
         }
     }
 }

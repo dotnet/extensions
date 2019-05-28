@@ -16,9 +16,9 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             // Arrange
             var syntaxTree = RazorSyntaxTree.Parse(TestRazorSourceDocument.Create());
             var tagHelperDocumentContext = TagHelperDocumentContext.Create(prefix: null, Enumerable.Empty<TagHelperDescriptor>());
-            var completionItem1 = new RazorCompletionItem("displayText1", "insertText1", "description1", RazorCompletionItemKind.Directive);
+            var completionItem1 = new RazorCompletionItem("displayText1", "insertText1", RazorCompletionItemKind.Directive);
             var provider1 = Mock.Of<RazorCompletionItemProvider>(p => p.GetCompletionItems(syntaxTree, tagHelperDocumentContext, default) == new[] { completionItem1 });
-            var completionItem2 = new RazorCompletionItem("displayText2", "insertText2", "description2", RazorCompletionItemKind.Directive);
+            var completionItem2 = new RazorCompletionItem("displayText2", "insertText2", RazorCompletionItemKind.Directive);
             var provider2 = Mock.Of<RazorCompletionItemProvider>(p => p.GetCompletionItems(syntaxTree, tagHelperDocumentContext, default) == new[] { completionItem2 });
             var completionFactsService = new DefaultRazorCompletionFactsService(new[] { provider1, provider2 });
 

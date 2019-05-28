@@ -94,7 +94,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             }
 
             // Attributes are case sensitive when matching
-            var attributeCompletions = new HashSet<string>(StringComparer.Ordinal);
+            var attributeCompletions = new Dictionary<string, HashSet<AttributeDescriptionInfo>>(StringComparer.Ordinal);
             for (var i = 0; i < descriptorsForTag.Count; i++)
             {
                 var descriptor = descriptorsForTag[i];
@@ -107,7 +107,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                         continue;
                     }
 
-                    if (!TryAddCompletion(attributeDescriptor.Name) && attributeDescriptor.BoundAttributeParameters.Count > 0)
+                    if (!TryAddCompletion(attributeDescriptor.Name, attributeDescriptor, descriptor) && attributeDescriptor.BoundAttributeParameters.Count > 0)
                     {
                         // This attribute has parameters and the base attribute name (@bind) is already satisfied. We need to check if there are any valid
                         // parameters left to be provided, if so, we need to still represent the base attribute name in the completion list.
@@ -118,7 +118,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                             if (!attributes.Any(name => TagHelperMatchingConventions.SatisfiesBoundAttributeWithParameter(name, attributeDescriptor, parameterDescriptor)))
                             {
                                 // This bound attribute parameter has not had a completion entry added for it, re-represent the base attribute name in the completion list
-                                attributeCompletions.Add(attributeDescriptor.Name);
+                                AddCompletion(attributeDescriptor.Name, attributeDescriptor, descriptor);
                                 break;
                             }
                         }
@@ -126,7 +126,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
                     if (!string.IsNullOrEmpty(attributeDescriptor.IndexerNamePrefix))
                     {
-                        TryAddCompletion(attributeDescriptor.IndexerNamePrefix + "...");
+                        TryAddCompletion(attributeDescriptor.IndexerNamePrefix + "...", attributeDescriptor, descriptor);
                     }
                 }
             }
@@ -134,7 +134,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completionItems = new List<RazorCompletionItem>();
             foreach (var completion in attributeCompletions)
             {
-                var insertText = completion;
+                var insertText = completion.Key;
                 if (insertText.EndsWith("..."))
                 {
                     // Indexer attribute, we don't want to insert with the triple dot.
@@ -142,17 +142,18 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 }
 
                 var razorCompletionItem = new RazorCompletionItem(
-                    completion,
+                    completion.Key,
                     insertText,
-                    description: string.Empty,
                     RazorCompletionItemKind.DirectiveAttribute);
+                var completionDescription = new AttributeCompletionDescription(completion.Value.ToArray());
+                razorCompletionItem.SetAttributeCompletionDescription(completionDescription);
 
                 completionItems.Add(razorCompletionItem);
             }
 
             return completionItems;
 
-            bool TryAddCompletion(string attributeName)
+            bool TryAddCompletion(string attributeName, BoundAttributeDescriptor boundAttributeDescriptor, TagHelperDescriptor tagHelperDescriptor)
             {
                 if (attributes.Any(name => string.Equals(name, attributeName, StringComparison.Ordinal)) &&
                     !string.Equals(selectedAttributeName, attributeName, StringComparison.Ordinal))
@@ -162,9 +163,24 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     return false;
                 }
 
-                attributeCompletions.Add(attributeName);
-
+                AddCompletion(attributeName, boundAttributeDescriptor, tagHelperDescriptor);
                 return true;
+            }
+
+            void AddCompletion(string attributeName, BoundAttributeDescriptor boundAttributeDescriptor, TagHelperDescriptor tagHelperDescriptor)
+            {
+                if (!attributeCompletions.TryGetValue(attributeName, out var attributeDescriptionInfos))
+                {
+                    attributeDescriptionInfos = new HashSet<AttributeDescriptionInfo>();
+                    attributeCompletions[attributeName] = attributeDescriptionInfos;
+                }
+
+                var descriptionInfo = new AttributeDescriptionInfo(
+                    boundAttributeDescriptor.TypeName,
+                    tagHelperDescriptor.GetTypeName(),
+                    boundAttributeDescriptor.GetPropertyName(),
+                    boundAttributeDescriptor.Documentation);
+                attributeDescriptionInfos.Add(descriptionInfo);
             }
         }
     }

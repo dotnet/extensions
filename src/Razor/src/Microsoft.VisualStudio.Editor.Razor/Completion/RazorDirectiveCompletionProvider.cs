@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
@@ -153,9 +152,10 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 }
 
                 var propertyDictionary = new Dictionary<string, string>(StringComparer.Ordinal);
-                if (!string.IsNullOrEmpty(razorCompletionItem.Description))
+                var completionDescription = razorCompletionItem.GetDirectiveCompletionDescription();
+                if (!string.IsNullOrEmpty(completionDescription.Description))
                 {
-                    propertyDictionary[DescriptionKey] = razorCompletionItem.Description;
+                    propertyDictionary[DescriptionKey] = completionDescription.Description;
                 }
 
                 var completionItem = CompletionItem.Create(

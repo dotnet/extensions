@@ -2,16 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.CodeAnalysis.Razor.Completion
 {
     internal sealed class RazorCompletionItem : IEquatable<RazorCompletionItem>
     {
+        private ItemCollection _items;
+
         public RazorCompletionItem(
-            string displayText, 
-            string insertText, 
-            string description, 
+            string displayText,
+            string insertText,
             RazorCompletionItemKind kind)
         {
             if (displayText == null)
@@ -24,14 +27,8 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 throw new ArgumentNullException(nameof(insertText));
             }
 
-            if (description == null)
-            {
-                throw new ArgumentNullException(nameof(description));
-            }
-
             DisplayText = displayText;
             InsertText = insertText;
-            Description = description;
             Kind = kind;
         }
 
@@ -39,9 +36,26 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
         public string InsertText { get; }
 
-        public string Description { get; }
-
         public RazorCompletionItemKind Kind { get; }
+
+        public ItemCollection Items
+        {
+            get
+            {
+                if (_items == null)
+                {
+                    lock (this)
+                    {
+                        if (_items == null)
+                        {
+                            _items = new ItemCollection();
+                        }
+                    }
+                }
+
+                return _items;
+            }
+        }
 
         public override bool Equals(object obj)
         {
@@ -65,12 +79,12 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 return false;
             }
 
-            if (!string.Equals(Description, other.Description, StringComparison.Ordinal))
+            if (Kind != other.Kind)
             {
                 return false;
             }
 
-            if (Kind != other.Kind)
+            if (!Enumerable.SequenceEqual(Items, other.Items))
             {
                 return false;
             }
@@ -83,7 +97,6 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var hashCodeCombiner = HashCodeCombiner.Start();
             hashCodeCombiner.Add(DisplayText);
             hashCodeCombiner.Add(InsertText);
-            hashCodeCombiner.Add(Description);
             hashCodeCombiner.Add(Kind);
 
             return hashCodeCombiner.CombinedHash;

@@ -23,13 +23,15 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly RazorCompletionFactsService _completionFactsService;
         private readonly ICompletionBroker _completionBroker;
+        private readonly VisualStudioDescriptionFactory _descriptionFactory;
 
         [ImportingConstructor]
         public RazorDirectiveAttributeCompletionSourceProvider(
             ForegroundDispatcher foregroundDispatcher,
             RazorCompletionFactsService completionFactsService,
             IAsyncCompletionBroker asyncCoompletionBroker,
-            ICompletionBroker completionBroker)
+            ICompletionBroker completionBroker,
+            VisualStudioDescriptionFactory descriptionFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -46,9 +48,15 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 throw new ArgumentNullException(nameof(asyncCoompletionBroker));
             }
 
+            if (descriptionFactory == null)
+            {
+                throw new ArgumentNullException(nameof(descriptionFactory));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _completionFactsService = completionFactsService;
             _completionBroker = completionBroker;
+            _descriptionFactory = descriptionFactory;
         }
 
         public IAsyncCompletionSource GetOrCreate(ITextView textView)
@@ -78,7 +86,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 return null;
             }
 
-            var completionSource = new RazorDirectiveAttributeCompletionSource(_foregroundDispatcher, parser, _completionFactsService, _completionBroker);
+            var completionSource = new RazorDirectiveAttributeCompletionSource(_foregroundDispatcher, parser, _completionFactsService, _completionBroker, _descriptionFactory);
             return completionSource;
         }
     }

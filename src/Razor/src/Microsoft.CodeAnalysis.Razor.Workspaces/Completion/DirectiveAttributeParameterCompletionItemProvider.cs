@@ -92,7 +92,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             }
 
             // Attribute parameters are case sensitive when matching
-            var attributeCompletions = new HashSet<string>(StringComparer.Ordinal);
+            var attributeCompletions = new Dictionary<string, HashSet<AttributeDescriptionInfo>>(StringComparer.Ordinal);
             foreach (var descriptor in descriptorsForTag)
             {
                 for (var i = 0; i < descriptor.BoundAttributes.Count; i++)
@@ -116,7 +116,18 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                                 continue;
                             }
 
-                            attributeCompletions.Add(parameterDescriptor.Name);
+                            if (!attributeCompletions.TryGetValue(parameterDescriptor.Name, out var attributeDescriptionInfos))
+                            {
+                                attributeDescriptionInfos = new HashSet<AttributeDescriptionInfo>();
+                                attributeCompletions[parameterDescriptor.Name] = attributeDescriptionInfos;
+                            }
+
+                            var descriptionInfo = new AttributeDescriptionInfo(
+                                parameterDescriptor.TypeName,
+                                descriptor.GetTypeName(),
+                                parameterDescriptor.GetPropertyName(),
+                                parameterDescriptor.Documentation);
+                            attributeDescriptionInfos.Add(descriptionInfo);
                         }
                     }
                 }
@@ -125,7 +136,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completionItems = new List<RazorCompletionItem>();
             foreach (var completion in attributeCompletions)
             {
-                if (string.Equals(completion, parameterName, StringComparison.Ordinal))
+                if (string.Equals(completion.Key, parameterName, StringComparison.Ordinal))
                 {
                     // This completion is identical to the selected parameter, don't provide for completions for what's already
                     // present in the document.
@@ -133,10 +144,11 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 }
 
                 var razorCompletionItem = new RazorCompletionItem(
-                    completion,
-                    completion,
-                    description: string.Empty,
+                    completion.Key,
+                    completion.Key,
                     RazorCompletionItemKind.DirectiveAttributeParameter);
+                var completionDescription = new AttributeCompletionDescription(completion.Value.ToArray());
+                razorCompletionItem.SetAttributeCompletionDescription(completionDescription);
 
                 completionItems.Add(razorCompletionItem);
             }

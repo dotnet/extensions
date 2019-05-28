@@ -102,7 +102,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                         suffix: string.Empty,
                         sortText: razorCompletionItem.DisplayText,
                         attributeIcons: ImmutableArray<ImageElement>.Empty);
-                    completionItem.Properties.AddProperty(DescriptionKey, razorCompletionItem.Description);
+                    var completionDescription = razorCompletionItem.GetDirectiveCompletionDescription();
+                    completionItem.Properties.AddProperty(DescriptionKey, completionDescription);
                     completionItems.Add(completionItem);
                 }
                 var context = new CompletionContext(completionItems.ToImmutableArray());
@@ -116,12 +117,12 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
 
         public Task<object> GetDescriptionAsync(IAsyncCompletionSession session, CompletionItem item, CancellationToken token)
         {
-            if (!item.Properties.TryGetProperty<string>(DescriptionKey, out var directiveDescription))
+            if (!item.Properties.TryGetProperty(DescriptionKey, out DirectiveCompletionDescription directiveDescription))
             {
-                directiveDescription = string.Empty;
+                return Task.FromResult<object>(string.Empty);
             }
 
-            return Task.FromResult<object>(directiveDescription);
+            return Task.FromResult<object>(directiveDescription.Description);
         }
 
         public CompletionStartData InitializeCompletion(CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)

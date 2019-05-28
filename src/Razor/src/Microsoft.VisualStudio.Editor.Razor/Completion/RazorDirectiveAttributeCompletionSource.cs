@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -21,6 +23,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
 {
     internal class RazorDirectiveAttributeCompletionSource : IAsyncCompletionSource
     {
+        // Internal for testing
+        internal static readonly object DescriptionKey = new object();
+
         // Hardcoding the Guid here to avoid a reference to Microsoft.VisualStudio.ImageCatalog.dll
         // that is not present in Visual Studio for Mac
         private static readonly Guid ImageCatalogGuid = new Guid("{ae27a6b0-e345-4288-96df-5eaf394ee369}");
@@ -34,13 +39,15 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         private readonly VisualStudioRazorParser _parser;
         private readonly RazorCompletionFactsService _completionFactsService;
         private readonly ICompletionBroker _completionBroker;
+        private readonly VisualStudioDescriptionFactory _descriptionFactory;
         private readonly ForegroundDispatcher _foregroundDispatcher;
 
         public RazorDirectiveAttributeCompletionSource(
             ForegroundDispatcher foregroundDispatcher,
             VisualStudioRazorParser parser,
             RazorCompletionFactsService completionFactsService,
-            ICompletionBroker completionBroker)
+            ICompletionBroker completionBroker,
+            VisualStudioDescriptionFactory descriptionFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -57,10 +64,16 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 throw new ArgumentNullException(nameof(completionFactsService));
             }
 
+            if (descriptionFactory == null)
+            {
+                throw new ArgumentNullException(nameof(descriptionFactory));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _parser = parser;
             _completionFactsService = completionFactsService;
             _completionBroker = completionBroker;
+            _descriptionFactory = descriptionFactory;
         }
 
         public async Task<CompletionContext> GetCompletionContextAsync(IAsyncCompletionSession session, CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan, CancellationToken token)
@@ -128,6 +141,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                         attributeIcons: ImmutableArray<ImageElement>.Empty);
                     completionItems.Add(completionItem);
                     completionItemKinds.Add(razorCompletionItem.Kind);
+
+                    var completionDescription = razorCompletionItem.GetAttributeCompletionDescription();
+                    completionItem.Properties[DescriptionKey] = completionDescription;
                 }
 
                 session.Properties.SetCompletionItemKinds(completionItemKinds);
@@ -143,7 +159,19 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
 
         public Task<object> GetDescriptionAsync(IAsyncCompletionSession session, CompletionItem item, CancellationToken token)
         {
-            return Task.FromResult<object>(string.Empty);
+            if (item is null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (!item.Properties.TryGetProperty(DescriptionKey, out AttributeCompletionDescription completionDescription))
+            {
+                return Task.FromResult<object>(string.Empty);
+            }
+
+            var description = _descriptionFactory.CreateClassifiedDescription(completionDescription);
+
+            return Task.FromResult<object>(description);
         }
 
         public CompletionStartData InitializeCompletion(CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)

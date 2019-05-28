@@ -287,7 +287,8 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         {
             Assert.Equal(item.DisplayText, completionDisplayText);
             Assert.Equal(item.InsertText, directive.Directive);
-            Assert.Equal(directive.Description, item.Description);
+            var completionDescription = item.GetDirectiveCompletionDescription();
+            Assert.Equal(directive.Description, completionDescription.Description);
         }
 
         private static void AssertRazorCompletionItem(DirectiveDescriptor directive, RazorCompletionItem item) =>

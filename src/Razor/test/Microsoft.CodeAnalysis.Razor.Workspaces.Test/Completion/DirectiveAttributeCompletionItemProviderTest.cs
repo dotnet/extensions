@@ -91,14 +91,13 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var codeDocument = GetCodeDocument("<input @  />");
             var syntaxTree = codeDocument.GetSyntaxTree();
             var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
-            var expectedCompletion = new RazorCompletionItem("@bind", "@bind", string.Empty, RazorCompletionItemKind.DirectiveAttribute);
             var span = new SourceSpan(8, 0);
 
             // Act
             var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
 
             // Assert
-            Assert.Contains(expectedCompletion, completions);
+            AssertContains(completions, "@bind");
         }
 
         [Fact]
@@ -134,75 +133,59 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         public void GetAttributeCompletions_SelectedDirectiveAttribute_IsIncludedInCompletions()
         {
             // Arrange
-            var expectedCompletion = new RazorCompletionItem("@bind", "@bind", string.Empty, RazorCompletionItemKind.DirectiveAttribute);
             var attributeNames = new string[] { "@bind" };
 
             // Act
             var completions = Provider.GetAttributeCompletions("@bind", "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            Assert.Contains(expectedCompletion, completions);
+            AssertContains(completions, "@bind");
         }
 
         [Fact]
         public void GetAttributeCompletions_NonIndexer_ReturnsCompletion()
         {
             // Arrange
-            var expectedCompletion = new RazorCompletionItem("@bind", "@bind", string.Empty, RazorCompletionItemKind.DirectiveAttribute);
+
 
             // Act
             var completions = Provider.GetAttributeCompletions("@", "input", EmptyAttributes, DefaultTagHelperDocumentContext);
 
             // Assert
-            Assert.Contains(expectedCompletion, completions);
+            AssertContains(completions, "@bind");
         }
 
         [Fact]
         public void GetAttributeCompletions_Indexer_ReturnsCompletion()
         {
             // Arrange
-            var expectedCompletion = new RazorCompletionItem("@bind-...", "@bind-", string.Empty, RazorCompletionItemKind.DirectiveAttribute);
+
 
             // Act
             var completions = Provider.GetAttributeCompletions("@", "input", EmptyAttributes, DefaultTagHelperDocumentContext);
 
             // Assert
-            Assert.Contains(expectedCompletion, completions);
-        }
-
-        [Fact]
-        public void GetAttributeCompletions_BaseDirectiveAttributeDoesNotExist_DoesNotIncludeParamterizedAttribute()
-        {
-            // Arrange
-            var expectedCompletion = new RazorCompletionItem("@bind:", "@bind:", string.Empty, RazorCompletionItemKind.DirectiveAttribute);
-            var attributeNames = new[] { "@" };
-
-            // Act
-            var completions = Provider.GetAttributeCompletions("@", "input", attributeNames, DefaultTagHelperDocumentContext);
-
-            // Assert
-            Assert.DoesNotContain(expectedCompletion, completions);
+            AssertContains(completions, "@bind-", "@bind-...");
         }
 
         [Fact]
         public void GetAttributeCompletions_BaseDirectiveAttributeAlreadyExists_IncludesBaseAttribute()
         {
             // Arrange
-            var expectedCompletion = new RazorCompletionItem("@bind", "@bind", string.Empty, RazorCompletionItemKind.DirectiveAttribute);
             var attributeNames = new[] { "@bind", "@" };
 
             // Act
             var completions = Provider.GetAttributeCompletions("@", "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            Assert.Contains(expectedCompletion, completions);
+            AssertContains(completions, "@bind");
         }
 
         [Fact]
         public void GetAttributeCompletions_BaseDirectiveAttributeAndParameterVariationsExist_ExcludesCompletion()
         {
             // Arrange
-            var expectedCompletion = new RazorCompletionItem("@bind", "@bind", string.Empty, RazorCompletionItemKind.DirectiveAttribute);
+            var expectedCompletion = new RazorCompletionItem("@bind", "@bind", RazorCompletionItemKind.DirectiveAttribute);
             var attributeNames = new[]
             {
                 "@bind",
@@ -215,7 +198,31 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@", "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            Assert.DoesNotContain(expectedCompletion, completions);
+            AssertDoesNotContain(completions, "@bind");
+        }
+
+        private static void AssertContains(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText = null)
+        {
+            displayText = displayText ?? insertText;
+
+            Assert.Contains(completions, completion =>
+            {
+                return insertText == completion.InsertText &&
+                    displayText == completion.DisplayText &&
+                    RazorCompletionItemKind.DirectiveAttribute == completion.Kind;
+            });
+        }
+
+        private static void AssertDoesNotContain(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText = null)
+        {
+            displayText = displayText ?? insertText;
+
+            Assert.DoesNotContain(completions, completion =>
+            {
+                return insertText == completion.InsertText &&
+                   displayText == completion.DisplayText &&
+                   RazorCompletionItemKind.DirectiveAttribute == completion.Kind;
+            });
         }
     }
 }

@@ -99,7 +99,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var completionItem = new CompletionItem("TestDirective", Mock.Of<IAsyncCompletionSource>());
-            var expectedDescription = "The expected description";
+            var expectedDescription = new DirectiveCompletionDescription("The expected description");
             completionItem.Properties.AddProperty(RazorDirectiveCompletionSource.DescriptionKey, expectedDescription);
             var completionSource = new RazorDirectiveCompletionSource(Dispatcher, Mock.Of<VisualStudioRazorParser>(), CompletionFactsService);
 
@@ -108,7 +108,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
 
             // Assert
             var description = Assert.IsType<string>(descriptionObject);
-            Assert.Equal(expectedDescription, descriptionObject);
+            Assert.Equal(expectedDescription.Description, descriptionObject);
         }
 
         [Fact]
@@ -132,8 +132,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             Assert.Equal(item.FilterText, completionDisplayText);
             Assert.Equal(item.InsertText, directive.Directive);
             Assert.Same(item.Source, source);
-            Assert.True(item.Properties.TryGetProperty<string>(RazorDirectiveCompletionSource.DescriptionKey, out var actualDescription));
-            Assert.Equal(directive.Description, actualDescription);
+            Assert.True(item.Properties.TryGetProperty<DirectiveCompletionDescription>(RazorDirectiveCompletionSource.DescriptionKey, out var actualDescription));
+            Assert.Equal(directive.Description, actualDescription.Description);
 
             AssertRazorCompletionItemDefaults(item);
         }
