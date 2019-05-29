@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="AddinMetadata.props" />
-  
+
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <IsMPackProject>true</IsMPackProject>
     <AddinName>Microsoft.VisualStudio.Mac.RazorAddin</AddinName>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

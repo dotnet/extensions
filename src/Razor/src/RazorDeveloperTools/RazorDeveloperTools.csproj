@@ -17,6 +17,7 @@
     <!-- Don't automatically include dependencies -->
     <IncludePackageReferencesInVSIXContainer>false</IncludePackageReferencesInVSIXContainer>
 
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -105,7 +106,7 @@
   </Target>
 
   <Target Name="WORKAROUND_SETINFORMATIONVERSION" BeforeTargets="AddSourceRevisionToInformationalVersion">
-    <!-- 
+    <!--
       We use the VS release versioning for the VSIX. We also need this to flow into the AssemblyInformationVersionAttribute
       for the about... dialog
     -->

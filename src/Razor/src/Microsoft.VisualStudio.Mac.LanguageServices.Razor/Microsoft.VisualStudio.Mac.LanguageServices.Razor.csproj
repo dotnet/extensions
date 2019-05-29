@@ -6,6 +6,7 @@
     <EnableApiCheck>false</EnableApiCheck>
     <NoWarn>$(NoWarn);MSB3277</NoWarn>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsShipping>false</IsShipping>
   </PropertyGroup>
 

@@ -1,10 +1,10 @@
 <Project>
-  <Target Name="_EnsureVSIXWasGenerated" AfterTargets="GenerateVisualStudioInsertionManifests" Condition="'$(OS)'=='WINDOWS_NT'">
+  <Target Name="_EnsureVSIXWasGenerated" AfterTargets="GenerateVisualStudioInsertionManifests" Condition="'$(OS)'=='WINDOWS_NT' AND '$(DotNetBuildFromSource)' != 'true'">
     <PropertyGroup>
       <VSSetupDir>$(ArtifactsDir)VSSetup\</VSSetupDir>
       <RazorExtensionVSIXName>Microsoft.VisualStudio.RazorExtension.vsix</RazorExtensionVSIXName>
     </PropertyGroup>
-    <Error 
+    <Error
       Text="$(RazorExtensionVSIXName) was not generated."
       Condition="!Exists('$(VSSetupDir)$(Configuration)\$(RazorExtensionVSIXName)')" />
   </Target>

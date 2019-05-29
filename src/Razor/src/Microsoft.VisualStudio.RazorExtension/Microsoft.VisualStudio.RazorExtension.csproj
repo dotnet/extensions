@@ -19,6 +19,7 @@
 
     <!-- Update the VSToolsPath to ensure VSIX builds -->
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -131,7 +132,7 @@ using Microsoft.VisualStudio.Shell;
   </Target>
 
   <Target Name="WORKAROUND_SETINFORMATIONVERSION" BeforeTargets="AddSourceRevisionToInformationalVersion">
-    <!-- 
+    <!--
       We use the VS release versioning for the VSIX. We also need this to flow into the AssemblyInformationVersionAttribute
       for the about... dialog
     -->

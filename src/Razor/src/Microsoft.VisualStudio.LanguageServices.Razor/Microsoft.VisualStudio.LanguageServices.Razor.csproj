@@ -7,6 +7,7 @@
     <RulesDirectory>..\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Rules\</RulesDirectory>
     <CodeAnalysisRuleSet>Microsoft.VisualStudio.LanguageServices.Razor.ruleset</CodeAnalysisRuleSet>
     <IsShipping>false</IsShipping>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,7 +49,7 @@
   <ItemGroup>
     <Reference Include="System.Xaml" />
   </ItemGroup>
-  
+
   <!-- Workaround for Microsoft.VisualStudio.SDK.EmbedInteropTypes not working correctly-->
   <Target Name="_EmbeddedAssemblyWorkaround" DependsOnTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences">
     <ItemGroup>
@@ -153,7 +154,7 @@
   </ItemGroup>
 
   <!--
-    Despite us specifying %(XamlPropertyRule.OutputPath), the ProjectSystem.SDK targets still add files in the 
+    Despite us specifying %(XamlPropertyRule.OutputPath), the ProjectSystem.SDK targets still add files in the
     obj folder to the Compile group. This is a workaround to remove them.
   -->
   <Target Name="GrossProjectSystemSDKWorkaround" AfterTargets="GenerateRulePrep">

@@ -1,16 +1,16 @@
 ﻿<Project>
-  <Target 
-    Name="GenerateMPack" 
-    AfterTargets="Build" 
-    DependsOnTargets="_MPackWriteAddinInfo" 
-    Condition="'$(IsMPackProject)'=='true' and '$(TargetFramework)'!=''">
+  <Target
+    Name="GenerateMPack"
+    AfterTargets="Build"
+    DependsOnTargets="_MPackWriteAddinInfo"
+    Condition="'$(IsMPackProject)'=='true' and '$(TargetFramework)'!='' and ('$(DotNetBuildFromSource)' != 'true' or '$(ExcludeFromSourceBuild)' != 'true')">
 
     <!--
       In our case the mpack archive requires the following:
       1. An addin.info
       2. An addin binary (Microsoft.VisualStudio.Mac.RazorAddin.dll)
         a. _Manifest.addin.xml embedded
-        b. Addin assembly attributes for metadata 
+        b. Addin assembly attributes for metadata
       3. All language service binaries
     -->
 
@@ -27,11 +27,11 @@
     <RemoveDir Directories="$(IntermediateOutputPath)MPack\" />
     <MakeDir Directories="$(IntermediateOutputPath);$(IntermediateOutputPath)MPack\" />
     <Copy SourceFiles="@(MPackFile)" DestinationFolder="$(IntermediateOutputPath)MPack\" />
-    
+
     <MakeDir Directories="$(ArtifactsMPackDir)" />
-    <ZipDirectory 
-      SourceDirectory="$(IntermediateOutputPath)MPack\" 
-      DestinationFile="$(MPackOutputPath)" 
+    <ZipDirectory
+      SourceDirectory="$(IntermediateOutputPath)MPack\"
+      DestinationFile="$(MPackOutputPath)"
       Overwrite="true" />
 
     <ItemGroup>
@@ -41,7 +41,7 @@
 
   <Target Name="_MPackWriteAddinInfo">
     <PropertyGroup>
-      <MPackManifest>$(AddinDirectory)Properties\_Manifest.addin.xml</MPackManifest>  
+      <MPackManifest>$(AddinDirectory)Properties\_Manifest.addin.xml</MPackManifest>
       <AddinInfoFilePath>$(IntermediateOutputPath)addin.info</AddinInfoFilePath>
     </PropertyGroup>
 

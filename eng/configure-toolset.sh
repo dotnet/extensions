@@ -2,4 +2,6 @@
 # We could potentially try to find an existing installation that has all the required runtimes,
 # but it's unlikely one will be available.
 
-use_installed_dotnet_cli="false"
+if [ "${DotNetBuildFromSource:-false}" = false ]; then
+    use_installed_dotnet_cli="false"
+fi

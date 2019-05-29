@@ -6,6 +6,7 @@
     <EnableApiCheck>false</EnableApiCheck>
     <CodeAnalysisRuleSet>Microsoft.VisualStudio.LiveShare.Razor.ruleset</CodeAnalysisRuleSet>
     <IsShipping>false</IsShipping>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableApiCheck>false</EnableApiCheck>
     <IsShipping>false</IsShipping>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>

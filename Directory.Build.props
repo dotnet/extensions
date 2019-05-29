@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <!--
-    We don't follow Arcade conventions for project naming. 
+    We don't follow Arcade conventions for project naming.
   -->
   <PropertyGroup Condition="'$(IsUnitTestProject)' == ''">
     <IsUnitTestProject>false</IsUnitTestProject>
@@ -14,12 +14,7 @@
   <Import
     Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
     Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
-
-  <PropertyGroup Condition="'$(CopyrightMicrosoft)' != ''">
-    <Copyright>$(CopyrightMicrosoft)</Copyright>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-  </PropertyGroup>
-
+  
   <PropertyGroup Label="Build Settings">
     <LangVersion>8.0</LangVersion>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
@@ -28,20 +23,17 @@
     <PublishWindowsPdb>true</PublishWindowsPdb>
     <GenerateResxSource>true</GenerateResxSource>
     <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
+    <ExcludeFromSourceBuild Condition="'$(IsUnitTestProject)' == 'true'">true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="Package and Assembly Metadata">
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Product>Microsoft ASP.NET Core</Product>
     <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
   </PropertyGroup>
 
   <PropertyGroup Label="Warning Suppressions">
-    <!-- 
-      Suppress a warning about upcoming deprecation of PackageLicenseUrl. When embedding licenses are supported, replace PackageLicenseUrl with PackageLicenseExpression.
-    -->
-    <NoWarn>$(NoWarn);NU5125</NoWarn>
-
-    <!-- 
+    <!--
       Suppress warnings about assembly conflicts. This happens for assemblies that ship in VS so it's irrelevant.
     -->
     <NoWarn>$(NoWarn);MSB3277</NoWarn>

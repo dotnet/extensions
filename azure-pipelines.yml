@@ -1,3 +1,7 @@
+#
+# See https://docs.microsoft.com/azure/devops/pipelines/yaml-schema for reference.
+#
+
 variables:
 - name: Build.Repository.Clean
   value: true
@@ -10,18 +14,18 @@ variables:
 - name: _DotNetArtifactsCategory
   value: ASPNETCORETOOLING
 
-resources:
-  containers:
-  - container: LinuxContainer
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
-    options: --init # This ensures all the stray defunct processes are reaped.
-
 trigger:
-- master
-- release/*
+  batch: true
+  branches:
+    include:
+      - master
+      - release/*
 
 pr:
-- "*"
+  autoCancel: true
+  branches:
+    include:
+      - '*'
 
 jobs:
 # This job checks for code quality
@@ -49,6 +53,60 @@ jobs:
           arguments: 'locals all -clear'
       - powershell: ./restore.cmd -ci; ./eng/scripts/CodeCheck.ps1 -ci
         displayName: Run eng/scripts/CodeCheck.ps1
+
+    - job: Source_Build
+      jobName: Source_Build
+      displayName: 'Test: Linux Source Build'
+      container:
+        image: centos:7
+        options: --init # This ensures all the stray defunct processes are reaped.
+      pool:
+        vmImage: ubuntu-16.04
+      variables:
+      - DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
+      - _BuildConfig: Release
+      steps:
+      - script: |
+          source eng/common/native/common-library.sh
+          mkdir -p $HOME/bin
+          GetFile https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 $HOME/bin/jq
+          chmod +x $HOME/bin/jq
+          echo "##vso[task.prependpath]$HOME/bin"
+        displayName: Install jq
+      - task: UseDotNet@2
+        displayName: 'Use .NET Core sdk'
+        inputs:
+          packageType: sdk
+          # The SDK version selected here is intentionally supposed to use the latest release
+          # For the purpose of building Linux distros, we can't depend on features of the SDK
+          # which may not exist in pre-built versions of the SDK
+          version: 3.0.x
+          installationPath: $(DotNetCoreSdkDir)
+          includePreviewVersions: true
+
+      - script: ./eng/scripts/ci-source-build.sh --ci --configuration $(_BuildConfig)
+        displayName: Run ci-source-build.sh
+
+      - task: PublishBuildArtifacts@1
+        displayName: Upload package artifacts
+        # Only capture source build artifacts in PRs for the sake of inspecting
+        # changes that impact source-build. The artifacts from this build pipeline are never actually used.
+        condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+        inputs:
+          pathtoPublish: artifacts/packages/
+          artifactName: Source_Build_Packages
+          artifactType: Container
+          parallel: true
+
+      - task: PublishBuildArtifacts@1
+        displayName: Publish Logs
+        inputs:
+          PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
+          PublishLocation: Container
+          ArtifactName: Source_Build_Logs
+        continueOnError: true
+        condition: always()
 
 # Three jobs for each of the three OSes we want to run on
 - template: /eng/common/templates/jobs/jobs.yml
@@ -165,8 +223,10 @@ jobs:
         condition: succeeded()
 
     - job: Linux
+      container:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
+        options: --init # This ensures all the stray defunct processes are reaped.
       pool:
-        container: LinuxContainer
         vmImage: ubuntu-16.04
       strategy:
         matrix:
@@ -181,3 +241,4 @@ jobs:
         name: Build
         displayName: Build
         condition: succeeded()
+

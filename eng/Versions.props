@@ -33,7 +33,7 @@
     <AddinVersion Condition="'$(OfficialBuildId)' == ''">$(AddinVersion).42424242.42</AddinVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
       $(RestoreSources);
       https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json;
       https://dotnet.myget.org/F/roslyn/api/v3/index.json;
