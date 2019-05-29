@@ -62,11 +62,11 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>d58a8ade31b4731759c92df00d0f6398c52f3d83</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27729-03">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27729-04">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>1ac29fa4fed3f5658864593e9b649238f52f3748</Sha>
     </Dependency>
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview6-27729-03">
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview6-27729-04">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>1ac29fa4fed3f5658864593e9b649238f52f3748</Sha>
     </Dependency>
