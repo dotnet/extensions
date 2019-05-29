@@ -149,9 +149,14 @@ jobs:
       steps:
       - checkout: self
         clean: true
+      - task: NodeTool@0
+        displayName: Install Node 10.x
+        inputs:
+          versionSpec: 10.x
       - script: eng/common/cibuild.sh
           --configuration $(_BuildConfig)
           --prepareMachine
+          -p:BuildNodeJS=true
         displayName: Build
       - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
         displayName: Run Flaky Tests
@@ -167,6 +172,14 @@ jobs:
           searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
         continueOnError: true
         condition: always()
+      - task: PublishBuildArtifacts@1
+        displayName: Upload NPM artifacts
+        condition: and(succeeded(), eq(variables['_BuildConfig'], 'Release'))
+        inputs:
+          pathtoPublish: artifacts/npm/
+          artifactName: NpmArtifacts
+          artifactType: Container
+          parallel: true
 
     - job: OSX_10_13
       displayName: 'OSX'
@@ -242,7 +255,9 @@ jobs:
       parallel: true
   - task: PublishBuildArtifacts@1
     displayName: Upload package artifacts
-    condition: succeeded()
+    # Only capture source build artifacts in PRs for the sake of inspecting
+    # changes that impact source-build. The artifacts from this build pipeline are never actually used.
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
     inputs:
       pathtoPublish: artifacts/packages/
       artifactName: Source_Build_Packages

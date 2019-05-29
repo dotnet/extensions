@@ -50,6 +50,9 @@
 
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
+
+    <NpmPackageDir>$(ArtifactsDir)npm\$(Configuration)\</NpmPackageDir>
+    <ShippingNpmPackageOutputPath>$(NpmPackageDir)Shipping\</ShippingNpmPackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
