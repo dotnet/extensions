@@ -18,16 +18,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
         [ImportingConstructor]
         public DefaultProjectPathProviderFactory(
             TextBufferProjectService projectService,
-            LiveShareProjectPathProvider liveShareProjectPathProvider)
+            [Import(AllowDefault = true)] LiveShareProjectPathProvider liveShareProjectPathProvider)
         {
             if (projectService == null)
             {
                 throw new ArgumentNullException(nameof(projectService));
-            }
-
-            if (liveShareProjectPathProvider == null)
-            {
-                throw new ArgumentNullException(nameof(liveShareProjectPathProvider));
             }
 
             _projectService = projectService;

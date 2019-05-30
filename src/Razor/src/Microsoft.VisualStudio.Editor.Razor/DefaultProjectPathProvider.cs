@@ -20,11 +20,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(projectService));
             }
 
-            if (liveShareProjectPathProvider == null)
-            {
-                throw new ArgumentNullException(nameof(liveShareProjectPathProvider));
-            }
-
             _projectService = projectService;
             _liveShareProjectPathProvider = liveShareProjectPathProvider;
         }
@@ -36,7 +31,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
-            if (_liveShareProjectPathProvider.TryGetProjectPath(textBuffer, out filePath))
+            if (_liveShareProjectPathProvider != null &&
+                _liveShareProjectPathProvider.TryGetProjectPath(textBuffer, out filePath))
             {
                 return true;
             }
