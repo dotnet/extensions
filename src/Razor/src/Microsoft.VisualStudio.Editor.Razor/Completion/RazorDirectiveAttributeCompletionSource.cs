@@ -180,7 +180,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             // providing directive attribute completions. Basically anything starting with a transition (@).
 
             var snapshot = triggerLocation.Snapshot;
-            if (snapshot.Length == 0)
+
+            // 4 because of the minimal situation possible "<a @|"
+            if (snapshot.Length < 4)
             {
                 // Empty document, can not provide completions.
                 return CompletionStartData.DoesNotParticipateInCompletion;
@@ -193,7 +195,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             }
 
             var leftEnd = triggerLocation.Position - 1;
-            for (; leftEnd >= 0; leftEnd--)
+            for (; leftEnd > 0; leftEnd--)
             {
                 var currentCharacter = snapshot[leftEnd];
 

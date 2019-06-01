@@ -57,6 +57,39 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         }
 
         [Fact]
+        public void InitializeCompletion_PageDirective_ReturnsDoesNotParticipate()
+        {
+            // Arrange
+            var source = CreateCompletionSource();
+            var snapshot = new StringTextSnapshot("@page");
+            var trigger = new CompletionTrigger(CompletionTriggerReason.Invoke, snapshot);
+            var triggerLocation = new SnapshotPoint(snapshot, 1);
+            var expectedApplicableToSpan = new SnapshotSpan(snapshot, new Span(0, 5));
+
+            // Act
+            var result = source.InitializeCompletion(trigger, triggerLocation, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(expectedApplicableToSpan, result.ApplicableToSpan);
+        }
+
+        [Fact]
+        public void InitializeCompletion_SingleTransition_ReturnsDoesNotParticipate()
+        {
+            // Arrange
+            var source = CreateCompletionSource();
+            var snapshot = new StringTextSnapshot("@");
+            var trigger = new CompletionTrigger(CompletionTriggerReason.Invoke, snapshot);
+            var triggerLocation = new SnapshotPoint(snapshot, 1);
+
+            // Act
+            var result = source.InitializeCompletion(trigger, triggerLocation, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(CompletionStartData.DoesNotParticipateInCompletion, result);
+        }
+
+        [Fact]
         public void InitializeCompletion_EmptySnapshot_ReturnsDoesNotParticipate()
         {
             // Arrange
