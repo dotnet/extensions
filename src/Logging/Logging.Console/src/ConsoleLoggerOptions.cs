@@ -7,6 +7,7 @@ namespace Microsoft.Extensions.Logging.Console
     {
         public bool IncludeScopes { get; set; }
         public bool DisableColors { get; set; }
+        public ConsoleLoggerFormat Format { get; set; }
 
         /// <summary>
         /// Gets or sets value indicating the minimum level of messaged that would get written to  <c>Console.Error</c>.

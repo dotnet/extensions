@@ -73,52 +73,119 @@ namespace Microsoft.Extensions.Logging.Console
                 logBuilder = new StringBuilder();
             }
 
-            // Example:
-            // INFO: ConsoleApp.Program[10]
-            //       Request received
-
-            var logLevelColors = GetLogLevelConsoleColors(logLevel);
-            var logLevelString = GetLogLevelString(logLevel);
-            // category and event id
-            logBuilder.Append(_loglevelPadding);
-            logBuilder.Append(logName);
-            logBuilder.Append("[");
-            logBuilder.Append(eventId);
-            logBuilder.AppendLine("]");
-
-            // scope information
-            GetScopeInformation(logBuilder);
-
-            if (!string.IsNullOrEmpty(message))
+            if (Options.Format == ConsoleLoggerFormat.Default)
             {
+                // Example:
+                // INFO: ConsoleApp.Program[10]
+                //       Request received
+
+                var logLevelColors = GetLogLevelConsoleColors(logLevel);
+                var logLevelString = GetLogLevelString(logLevel);
+                // category and event id
+                logBuilder.Append(_loglevelPadding);
+                logBuilder.Append(logName);
+                logBuilder.Append("[");
+                logBuilder.Append(eventId);
+                logBuilder.AppendLine("]");
+
+                // scope information
+                GetScopeInformation(logBuilder, multiLine: true);
+
+                if (!string.IsNullOrEmpty(message))
+                {
+                    // message
+                    logBuilder.Append(_messagePadding);
+
+                    var len = logBuilder.Length;
+                    logBuilder.AppendLine(message);
+                    logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
+                }
+
+                // Example:
+                // System.InvalidOperationException
+                //    at Namespace.Class.Function() in File:line X
+                if (exception != null)
+                {
+                    // exception message
+                    logBuilder.AppendLine(exception.ToString());
+                }
+
+                var timestampFormat = Options.TimestampFormat;
+                // Queue log message
+                _queueProcessor.EnqueueMessage(new LogMessageEntry(
+                    message: logBuilder.ToString(),
+                    timeStamp: timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
+                    levelString: logLevelString,
+                    levelBackground: logLevelColors.Background,
+                    levelForeground: logLevelColors.Foreground,
+                    messageColor: DefaultConsoleColor,
+                    logAsError: logLevel >= Options.LogToStandardErrorThreshold
+                ));
+            }
+            else if (Options.Format == ConsoleLoggerFormat.Systemd)
+            {
+                // systemd reads messages from standard out line-by-line in a '<pri>message' format.
+                // newline characters are treated as message delimiters, so we must replace them.
+                // Messages longer than the journal LineMax setting (default: 48KB) are cropped.
+                // Example:
+                // <6>ConsoleApp.Program[10] Request received
+
+                // loglevel
+                var logLevelString = GetSyslogSeverityString(logLevel);
+                logBuilder.Append(logLevelString);
+
+                // timestamp
+                var timestampFormat = Options.TimestampFormat;
+                if (timestampFormat != null)
+                {
+                    logBuilder.Append(DateTime.Now.ToString(timestampFormat));
+                }
+
+                // category and event id
+                logBuilder.Append(logName);
+                logBuilder.Append("[");
+                logBuilder.Append(eventId);
+                logBuilder.Append("]");
+
+                // scope information
+                GetScopeInformation(logBuilder, multiLine: false);
+
                 // message
-                logBuilder.Append(_messagePadding);
+                if (!string.IsNullOrEmpty(message))
+                {
+                    logBuilder.Append(' ');
+                    // message
+                    var len = logBuilder.Length;
+                    AppendAndReplaceNewLine(logBuilder, message);
+                }
 
-                var len = logBuilder.Length;
-                logBuilder.AppendLine(message);
-                logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
+                // exception
+                // System.InvalidOperationException at Namespace.Class.Function() in File:line X
+                if (exception != null)
+                {
+                    logBuilder.Append(' ');
+                    AppendAndReplaceNewLine(logBuilder, exception.ToString());
+                }
+
+                // newline delimiter
+                logBuilder.Append(Environment.NewLine);
+
+                // Queue log message
+                _queueProcessor.EnqueueMessage(new LogMessageEntry(
+                    message: logBuilder.ToString()
+                ));
+
+                void AppendAndReplaceNewLine(StringBuilder sb, string message)
+                {
+                    var len = sb.Length;
+                    sb.Append(message);
+                    sb.Replace(Environment.NewLine, " ", len, message.Length);
+                }
             }
-
-            // Example:
-            // System.InvalidOperationException
-            //    at Namespace.Class.Function() in File:line X
-            if (exception != null)
+            else
             {
-                // exception message
-                logBuilder.AppendLine(exception.ToString());
+                throw new ArgumentOutOfRangeException(nameof(Options.Format));
             }
-
-            var timestampFormat = Options.TimestampFormat;
-            // Queue log message
-            _queueProcessor.EnqueueMessage(new LogMessageEntry(
-                timeStamp: timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
-                levelString: logLevelString,
-                levelBackground: logLevelColors.Background,
-                levelForeground: logLevelColors.Foreground,
-                messageColor: DefaultConsoleColor,
-                message: logBuilder.ToString(),
-                logAsError: logLevel >= Options.LogToStandardErrorThreshold
-            ));
 
             logBuilder.Clear();
             if (logBuilder.Capacity > 1024)
@@ -156,6 +223,26 @@ namespace Microsoft.Extensions.Logging.Console
             }
         }
 
+        private static string GetSyslogSeverityString(LogLevel logLevel)
+        {
+            switch (logLevel)
+            {
+                case LogLevel.Trace:
+                case LogLevel.Debug:
+                    return "<7>";
+                case LogLevel.Information:
+                    return "<6>";
+                case LogLevel.Warning:
+                    return "<4>";
+                case LogLevel.Error:
+                    return "<3>";
+                case LogLevel.Critical:
+                    return "<2>";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(logLevel));
+            }
+        }
+
         private ConsoleColors GetLogLevelConsoleColors(LogLevel logLevel)
         {
             if (Options.DisableColors)
@@ -184,7 +271,7 @@ namespace Microsoft.Extensions.Logging.Console
             }
         }
 
-        private void GetScopeInformation(StringBuilder stringBuilder)
+        private void GetScopeInformation(StringBuilder stringBuilder, bool multiLine)
         {
             var scopeProvider = ScopeProvider;
             if (Options.IncludeScopes && scopeProvider != null)
@@ -193,14 +280,22 @@ namespace Microsoft.Extensions.Logging.Console
 
                 scopeProvider.ForEachScope((scope, state) =>
                 {
-                    var (builder, length) = state;
-                    var first = length == builder.Length;
-                    builder.Append(first ? "=> " : " => ").Append(scope);
-                }, (stringBuilder, initialLength));
+                    var (builder, paddAt) = state;
+                    var padd = paddAt == builder.Length;
+                    if (padd)
+                    {
+                        builder.Append(_messagePadding);
+                        builder.Append("=> ");
+                    }
+                    else
+                    {
+                        builder.Append(" => ");
+                    }
+                    builder.Append(scope);
+                }, (stringBuilder, multiLine ? initialLength : -1));
 
-                if (stringBuilder.Length > initialLength)
+                if (stringBuilder.Length > initialLength && multiLine)
                 {
-                    stringBuilder.Insert(initialLength, _messagePadding);
                     stringBuilder.AppendLine();
                 }
             }
