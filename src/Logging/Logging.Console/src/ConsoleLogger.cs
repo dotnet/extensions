@@ -172,7 +172,8 @@ namespace Microsoft.Extensions.Logging.Console
 
                 // Queue log message
                 _queueProcessor.EnqueueMessage(new LogMessageEntry(
-                    message: logBuilder.ToString()
+                    message: logBuilder.ToString(),
+                    logAsError: logLevel >= Options.LogToStandardErrorThreshold
                 ));
 
                 void AppendAndReplaceNewLine(StringBuilder sb, string message)

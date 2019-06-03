@@ -742,11 +742,12 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.NotNull(disposable);
         }
 
-        [Fact]
-        public void ConsoleLoggerLogsToError_WhenOverErrorLevel()
+        [Theory]
+        [MemberData(nameof(Formats))]
+        public void ConsoleLoggerLogsToError_WhenOverErrorLevel(ConsoleLoggerFormat format)
         {
             // Arrange
-            var t = SetUp(new ConsoleLoggerOptions { LogToStandardErrorThreshold = LogLevel.Warning });
+            var t = SetUp(new ConsoleLoggerOptions { LogToStandardErrorThreshold = LogLevel.Warning, Format = format });
             var logger = t.Logger;
             var sink = t.Sink;
             var errorSink = t.ErrorSink;
@@ -756,17 +757,39 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogWarning("Warn");
 
             // Assert
-            Assert.Equal(2, sink.Writes.Count);
-            Assert.Equal(
-                "info: test[0]" + Environment.NewLine +
-                "      Info" + Environment.NewLine,
-                GetMessage(sink.Writes));
+            switch (format)
+            {
+                case ConsoleLoggerFormat.Default:
+                {
+                    Assert.Equal(2, sink.Writes.Count);
+                    Assert.Equal(
+                        "info: test[0]" + Environment.NewLine +
+                        "      Info" + Environment.NewLine,
+                        GetMessage(sink.Writes));
 
-            Assert.Equal(2, errorSink.Writes.Count);
-            Assert.Equal(
-                "warn: test[0]" + Environment.NewLine +
-                "      Warn" + Environment.NewLine,
-                GetMessage(errorSink.Writes));
+                    Assert.Equal(2, errorSink.Writes.Count);
+                    Assert.Equal(
+                        "warn: test[0]" + Environment.NewLine +
+                        "      Warn" + Environment.NewLine,
+                        GetMessage(errorSink.Writes));
+                }
+                break;
+                case ConsoleLoggerFormat.Systemd:
+                {
+                    Assert.Single(sink.Writes);
+                    Assert.Equal(
+                        "<6>test[0] Info" + Environment.NewLine,
+                        GetMessage(sink.Writes));
+
+                    Assert.Single(errorSink.Writes);
+                    Assert.Equal(
+                        "<4>test[0] Warn" + Environment.NewLine,
+                        GetMessage(errorSink.Writes));
+                }
+                break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(format));
+            }
         }
 
         [Theory]
@@ -1071,21 +1094,26 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.NotNull(logger.ScopeProvider);
         }
 
-        public static TheoryData<ConsoleLoggerFormat, LogLevel> FormatsAndLevels => new TheoryData<ConsoleLoggerFormat, LogLevel>()
+        public static TheoryData<ConsoleLoggerFormat, LogLevel> FormatsAndLevels
         {
-            {ConsoleLoggerFormat.Default, LogLevel.Critical},
-            {ConsoleLoggerFormat.Default, LogLevel.Error},
-            {ConsoleLoggerFormat.Default, LogLevel.Warning},
-            {ConsoleLoggerFormat.Default, LogLevel.Information},
-            {ConsoleLoggerFormat.Default, LogLevel.Debug},
-            {ConsoleLoggerFormat.Default, LogLevel.Trace},
-            {ConsoleLoggerFormat.Systemd, LogLevel.Critical},
-            {ConsoleLoggerFormat.Systemd, LogLevel.Error},
-            {ConsoleLoggerFormat.Systemd, LogLevel.Warning},
-            {ConsoleLoggerFormat.Systemd, LogLevel.Information},
-            {ConsoleLoggerFormat.Systemd, LogLevel.Debug},
-            {ConsoleLoggerFormat.Systemd, LogLevel.Trace},
-        };
+            get
+            {
+                var data = new TheoryData<ConsoleLoggerFormat, LogLevel>();
+                foreach (ConsoleLoggerFormat format in Enum.GetValues(typeof(ConsoleLoggerFormat)))
+                {    
+                    foreach (LogLevel level in Enum.GetValues(typeof(LogLevel)))
+                    {
+                        if (level == LogLevel.None)
+                        {
+                            continue;
+                        }
+
+                        data.Add(format, level);
+                    }
+                }
+                return data;
+            }
+        }
 
         public static TheoryData<ConsoleLoggerFormat> Formats
         {
