@@ -228,7 +228,6 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.Same(serviceRef1, servicesRef1);
         }
 
-
         private class FakeMultipleServiceWithIEnumerableDependency: IFakeMultipleService
         {
             public FakeMultipleServiceWithIEnumerableDependency(IEnumerable<IFakeService> fakeServices)
