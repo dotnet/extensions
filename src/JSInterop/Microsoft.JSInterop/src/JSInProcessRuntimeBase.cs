@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.JSInterop
@@ -19,12 +20,15 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         public TValue Invoke<TValue>(string identifier, params object[] args)
         {
+            if (identifier == null)
+            {
+                throw new ArgumentNullException(nameof(identifier));
+            }
+
             var resultJson = InvokeJS(identifier, JsonSerializer.ToString(args, JsonSerializerOptionsProvider.Options));
             if (resultJson is null)
             {
-#pragma warning disable CS8653 // A default expression introduces a null value for a type parameter.
-                return default;
-#pragma warning restore CS8653 // A default expression introduces a null value for a type parameter.
+                return default!;
             }
 
             return JsonSerializer.Parse<TValue>(resultJson, JsonSerializerOptionsProvider.Options);

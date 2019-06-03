@@ -28,12 +28,18 @@ namespace Mono.WebAssembly.Interop
             InternalCalls.InvokeJSMarshalled(out _, ref asyncHandle, identifier, argsJson);
         }
 
-        // Invoked via Mono's JS interop mechanism (invoke_method)
-        private static string InvokeDotNet(string assemblyName, string methodIdentifier, string dotNetObjectId, string argsJson)
-            => DotNetDispatcher.Invoke(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId), argsJson);
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
+#pragma warning disable IDE0051 // Remove unused private members
+        private static string InvokeDotNet(string assemblyName, string methodIdentifier, string dotNetObjectId, string argsJson)
+#pragma warning restore IDE0051 // Remove unused private members
+            => DotNetDispatcher.Invoke(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId), argsJson);
+
+
+        // Invoked via Mono's JS interop mechanism (invoke_method)
+#pragma warning disable IDE0051 // Remove unused private members
         private static void BeginInvokeDotNet(string callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
+#pragma warning restore IDE0051 // Remove unused private members
         {
             // Figure out whether 'assemblyNameOrDotNetObjectId' is the assembly name or the instance ID
             // We only need one for any given call. This helps to work around the limitation that we can

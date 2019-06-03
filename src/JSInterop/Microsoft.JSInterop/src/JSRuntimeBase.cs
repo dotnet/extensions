@@ -31,6 +31,11 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
         public Task<T> InvokeAsync<T>(string identifier, params object[] args)
         {
+            if (identifier == null)
+            {
+                throw new ArgumentNullException(nameof(identifier));
+            }
+
             // We might consider also adding a default timeout here in case we don't want to
             // risk a memory leak in the scenario where the JS-side code is failing to complete
             // the operation.

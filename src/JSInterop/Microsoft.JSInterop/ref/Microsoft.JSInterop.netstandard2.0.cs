@@ -9,7 +9,7 @@ namespace Microsoft.JSInterop
         [Microsoft.JSInterop.JSInvokableAttribute("DotNetDispatcher.EndInvoke")]
         public static void EndInvoke(long asyncHandle, bool succeeded, Microsoft.JSInterop.Internal.JSAsyncCallResult result) { }
         public static string Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { throw null; }
-        [Microsoft.JSInterop.JSInvokableAttribute("DotNetDispatcher.ReleaseDotNetObject")]
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
         public static void ReleaseDotNetObject(long dotNetObjectId) { }
     }
     public static partial class DotNetObjectRef
@@ -45,12 +45,13 @@ namespace Microsoft.JSInterop
         public TValue Invoke<TValue>(string identifier, params object[] args) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=true)]
-    public partial class JSInvokableAttribute : System.Attribute
+    public sealed partial class JSInvokableAttribute : System.Attribute
     {
         public JSInvokableAttribute() { }
         public JSInvokableAttribute(string identifier) { }
         public string Identifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
     public static partial class JSRuntime
     {
         public static void SetCurrentJSRuntime(Microsoft.JSInterop.IJSRuntime instance) { }

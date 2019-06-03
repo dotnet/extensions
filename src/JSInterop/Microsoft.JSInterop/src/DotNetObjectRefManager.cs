@@ -27,6 +27,11 @@ namespace Microsoft.JSInterop
 
         public long TrackObject(IDotNetObjectRef dotNetObjectRef)
         {
+            if (dotNetObjectRef == null)
+            {
+                throw new ArgumentNullException(nameof(dotNetObjectRef));
+            }
+
             var dotNetObjectId = Interlocked.Increment(ref _nextId);
             _trackedRefsById[dotNetObjectId] = dotNetObjectRef;
 

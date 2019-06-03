@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Threading;
 
 namespace Microsoft.JSInterop
@@ -9,11 +10,13 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Provides mechanisms for accessing the current <see cref="IJSRuntime"/>.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class JSRuntime
     {
         private static readonly AsyncLocal<IJSRuntime> _currentJSRuntime = new AsyncLocal<IJSRuntime>();
 
-        internal static IJSRuntime Current => _currentJSRuntime.Value;
+        internal static IJSRuntime Current => _currentJSRuntime.Value ??
+            throw new InvalidOperationException("Cannot access JSRuntime before it is initialized");
 
         /// <summary>
         /// Sets the current JS runtime to the supplied instance.

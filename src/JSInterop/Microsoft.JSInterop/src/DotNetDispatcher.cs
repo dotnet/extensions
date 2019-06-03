@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -32,8 +33,18 @@ namespace Microsoft.JSInterop
         /// <param name="dotNetObjectId">For instance method calls, identifies the target object.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <returns>A JSON representation of the return value, or null.</returns>
-        public static string? Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public static string? Invoke(string? assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
+            if (methodIdentifier == null)
+            {
+                throw new ArgumentNullException(nameof(methodIdentifier));
+            }
+
+            if (argsJson == null)
+            {
+                throw new ArgumentNullException(nameof(argsJson));
+            }
+
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
             // the targeted method has [JSInvokable]. It is not itself subject to that restriction,
@@ -63,8 +74,18 @@ namespace Microsoft.JSInterop
         /// <param name="dotNetObjectId">For instance method calls, identifies the target object.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <returns>A JSON representation of the return value, or null.</returns>
-        public static void BeginInvoke(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public static void BeginInvoke(string? callId, string? assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
+            if (methodIdentifier == null)
+            {
+                throw new ArgumentNullException(nameof(methodIdentifier));
+            }
+
+            if (argsJson == null)
+            {
+                throw new ArgumentNullException(nameof(argsJson));
+            }
+
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
             // the targeted method has [JSInvokable]. It is not itself subject to that restriction,
@@ -127,7 +148,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private static object InvokeSynchronously(string assemblyName, string methodIdentifier, object? targetInstance, string argsJson)
+        private static object InvokeSynchronously(string? assemblyName, string methodIdentifier, object? targetInstance, string argsJson)
         {
             AssemblyKey assemblyKey;
             if (targetInstance != null)
@@ -141,7 +162,7 @@ namespace Microsoft.JSInterop
             }
             else
             {
-                assemblyKey = new AssemblyKey(assemblyName);
+                assemblyKey = new AssemblyKey(assemblyName ?? throw new ArgumentNullException(nameof(assemblyName)));
             }
 
             var (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
@@ -157,7 +178,7 @@ namespace Microsoft.JSInterop
                 if (tie.InnerException != null)
                 {
                     ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
-                    throw tie.InnerException; // unreached
+                    // Unreached.
                 }
 
                 throw;
@@ -231,7 +252,6 @@ namespace Microsoft.JSInterop
                 throw;
             }
 
-
             static bool IsIncorrectDotNetObjectRefUse(JsonElement item, Type parameterType)
             {
                 // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
@@ -264,7 +284,7 @@ namespace Microsoft.JSInterop
         /// automatically when the JavaScript runtime is disposed.
         /// </summary>
         /// <param name="dotNetObjectId">The identifier previously passed to JavaScript code.</param>
-        [JSInvokable(nameof(DotNetDispatcher) + "." + nameof(ReleaseDotNetObject))]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static void ReleaseDotNetObject(long dotNetObjectId)
         {
             DotNetObjectRefManager.Current.ReleaseDotNetObject(dotNetObjectId);
@@ -376,6 +396,5 @@ namespace Microsoft.JSInterop
 
             public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(AssemblyName);
         }
-
     }
 }
