@@ -212,7 +212,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         }
 
         [Fact]
-        public void SameSingletonResolvedThroughEnumerableAndIndividually()
+        public void GenericIEnumerableItemCachedInTheRightSlot()
         {
             var services = new ServiceCollection();
             services.AddSingleton<IFakeOpenGenericService<PocoClass>, FakeService>();
