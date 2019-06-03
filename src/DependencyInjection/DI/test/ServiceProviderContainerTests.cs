@@ -217,7 +217,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var services = new ServiceCollection();
             // It's important that this service is generic, it hits a different codepath when resolved inside IEnumerable
             services.AddSingleton<IFakeOpenGenericService<PocoClass>, FakeService>();
-            // Doesn't matter what this services is, we just something in the collection after generic registration
+            // Doesn't matter what this services is, we just want something in the collection after generic registration
             services.AddSingleton<FakeService>();
 
             var serviceProvider = services.BuildServiceProvider();
