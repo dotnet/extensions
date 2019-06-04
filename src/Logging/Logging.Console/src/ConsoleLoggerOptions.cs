@@ -7,15 +7,19 @@ namespace Microsoft.Extensions.Logging.Console
     {
         public bool IncludeScopes { get; set; }
         public bool DisableColors { get; set; }
+
+        /// <summary>
+        /// Gets or sets log message format. Defaults to <c>ConsoleLoggerFormat.Default</c>.
+        /// </summary>
         public ConsoleLoggerFormat Format { get; set; }
 
         /// <summary>
-        /// Gets or sets value indicating the minimum level of messaged that would get written to  <c>Console.Error</c>.
+        /// Gets or sets value indicating the minimum level of messaged that would get written to <c>Console.Error</c>.
         /// </summary>
         public LogLevel LogToStandardErrorThreshold { get; set; } = LogLevel.None;
 
         /// <summary>
-        /// Gets or sets format string used to format timestamp in logging messages. Defaults to <c>null</c>
+        /// Gets or sets format string used to format timestamp in logging messages. Defaults to <c>null</c>.
         /// </summary>
         public string TimestampFormat { get; set; }
     }

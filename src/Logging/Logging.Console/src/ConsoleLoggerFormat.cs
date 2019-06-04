@@ -3,9 +3,18 @@
 
 namespace Microsoft.Extensions.Logging.Console
 {
+    /// <summary>
+    /// Format of ConsoleLogger messages.
+    /// </summary>
     public enum ConsoleLoggerFormat
     {
+        /// <summary>
+        /// Default format.
+        /// </summary>
         Default,
+        /// <summary>
+        /// systemd '&lt;pri&gt;message' format.
+        /// </summary>
         Systemd
     }
 }

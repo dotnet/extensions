@@ -73,120 +73,20 @@ namespace Microsoft.Extensions.Logging.Console
                 logBuilder = new StringBuilder();
             }
 
+            LogMessageEntry entry;
             if (Options.Format == ConsoleLoggerFormat.Default)
             {
-                // Example:
-                // INFO: ConsoleApp.Program[10]
-                //       Request received
-
-                var logLevelColors = GetLogLevelConsoleColors(logLevel);
-                var logLevelString = GetLogLevelString(logLevel);
-                // category and event id
-                logBuilder.Append(_loglevelPadding);
-                logBuilder.Append(logName);
-                logBuilder.Append("[");
-                logBuilder.Append(eventId);
-                logBuilder.AppendLine("]");
-
-                // scope information
-                GetScopeInformation(logBuilder, multiLine: true);
-
-                if (!string.IsNullOrEmpty(message))
-                {
-                    // message
-                    logBuilder.Append(_messagePadding);
-
-                    var len = logBuilder.Length;
-                    logBuilder.AppendLine(message);
-                    logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
-                }
-
-                // Example:
-                // System.InvalidOperationException
-                //    at Namespace.Class.Function() in File:line X
-                if (exception != null)
-                {
-                    // exception message
-                    logBuilder.AppendLine(exception.ToString());
-                }
-
-                var timestampFormat = Options.TimestampFormat;
-                // Queue log message
-                _queueProcessor.EnqueueMessage(new LogMessageEntry(
-                    message: logBuilder.ToString(),
-                    timeStamp: timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
-                    levelString: logLevelString,
-                    levelBackground: logLevelColors.Background,
-                    levelForeground: logLevelColors.Foreground,
-                    messageColor: DefaultConsoleColor,
-                    logAsError: logLevel >= Options.LogToStandardErrorThreshold
-                ));
+                entry = CreateLogMessageDefault(logBuilder, logLevel, logName, eventId, message, exception);
             }
             else if (Options.Format == ConsoleLoggerFormat.Systemd)
             {
-                // systemd reads messages from standard out line-by-line in a '<pri>message' format.
-                // newline characters are treated as message delimiters, so we must replace them.
-                // Messages longer than the journal LineMax setting (default: 48KB) are cropped.
-                // Example:
-                // <6>ConsoleApp.Program[10] Request received
-
-                // loglevel
-                var logLevelString = GetSyslogSeverityString(logLevel);
-                logBuilder.Append(logLevelString);
-
-                // timestamp
-                var timestampFormat = Options.TimestampFormat;
-                if (timestampFormat != null)
-                {
-                    logBuilder.Append(DateTime.Now.ToString(timestampFormat));
-                }
-
-                // category and event id
-                logBuilder.Append(logName);
-                logBuilder.Append("[");
-                logBuilder.Append(eventId);
-                logBuilder.Append("]");
-
-                // scope information
-                GetScopeInformation(logBuilder, multiLine: false);
-
-                // message
-                if (!string.IsNullOrEmpty(message))
-                {
-                    logBuilder.Append(' ');
-                    // message
-                    var len = logBuilder.Length;
-                    AppendAndReplaceNewLine(logBuilder, message);
-                }
-
-                // exception
-                // System.InvalidOperationException at Namespace.Class.Function() in File:line X
-                if (exception != null)
-                {
-                    logBuilder.Append(' ');
-                    AppendAndReplaceNewLine(logBuilder, exception.ToString());
-                }
-
-                // newline delimiter
-                logBuilder.Append(Environment.NewLine);
-
-                // Queue log message
-                _queueProcessor.EnqueueMessage(new LogMessageEntry(
-                    message: logBuilder.ToString(),
-                    logAsError: logLevel >= Options.LogToStandardErrorThreshold
-                ));
-
-                void AppendAndReplaceNewLine(StringBuilder sb, string message)
-                {
-                    var len = sb.Length;
-                    sb.Append(message);
-                    sb.Replace(Environment.NewLine, " ", len, message.Length);
-                }
+                entry = CreateLogMessageSystemd(logBuilder, logLevel, logName, eventId, message, exception);
             }
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(Options.Format));
             }
+            _queueProcessor.EnqueueMessage(entry);
 
             logBuilder.Clear();
             if (logBuilder.Capacity > 1024)
@@ -194,6 +94,117 @@ namespace Microsoft.Extensions.Logging.Console
                 logBuilder.Capacity = 1024;
             }
             _logBuilder = logBuilder;
+        }
+
+        private LogMessageEntry CreateLogMessageDefault(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception exception)
+        {
+            // Example:
+            // INFO: ConsoleApp.Program[10]
+            //       Request received
+
+            var logLevelColors = GetLogLevelConsoleColors(logLevel);
+            var logLevelString = GetLogLevelString(logLevel);
+            // category and event id
+            logBuilder.Append(_loglevelPadding);
+            logBuilder.Append(logName);
+            logBuilder.Append("[");
+            logBuilder.Append(eventId);
+            logBuilder.AppendLine("]");
+
+            // scope information
+            GetScopeInformation(logBuilder, multiLine: true);
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                // message
+                logBuilder.Append(_messagePadding);
+
+                var len = logBuilder.Length;
+                logBuilder.AppendLine(message);
+                logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
+            }
+
+            // Example:
+            // System.InvalidOperationException
+            //    at Namespace.Class.Function() in File:line X
+            if (exception != null)
+            {
+                // exception message
+                logBuilder.AppendLine(exception.ToString());
+            }
+
+            var timestampFormat = Options.TimestampFormat;
+
+            return new LogMessageEntry(
+                message: logBuilder.ToString(),
+                timeStamp: timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
+                levelString: logLevelString,
+                levelBackground: logLevelColors.Background,
+                levelForeground: logLevelColors.Foreground,
+                messageColor: DefaultConsoleColor,
+                logAsError: logLevel >= Options.LogToStandardErrorThreshold
+            );
+        }
+
+        private LogMessageEntry CreateLogMessageSystemd(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception exception)
+        {
+            // systemd reads messages from standard out line-by-line in a '<pri>message' format.
+            // newline characters are treated as message delimiters, so we must replace them.
+            // Messages longer than the journal LineMax setting (default: 48KB) are cropped.
+            // Example:
+            // <6>ConsoleApp.Program[10] Request received
+
+            // loglevel
+            var logLevelString = GetSyslogSeverityString(logLevel);
+            logBuilder.Append(logLevelString);
+
+            // timestamp
+            var timestampFormat = Options.TimestampFormat;
+            if (timestampFormat != null)
+            {
+                logBuilder.Append(DateTime.Now.ToString(timestampFormat));
+            }
+
+            // category and event id
+            logBuilder.Append(logName);
+            logBuilder.Append("[");
+            logBuilder.Append(eventId);
+            logBuilder.Append("]");
+
+            // scope information
+            GetScopeInformation(logBuilder, multiLine: false);
+
+            // message
+            if (!string.IsNullOrEmpty(message))
+            {
+                logBuilder.Append(' ');
+                // message
+                var len = logBuilder.Length;
+                AppendAndReplaceNewLine(logBuilder, message);
+            }
+
+            // exception
+            // System.InvalidOperationException at Namespace.Class.Function() in File:line X
+            if (exception != null)
+            {
+                logBuilder.Append(' ');
+                AppendAndReplaceNewLine(logBuilder, exception.ToString());
+            }
+
+            // newline delimiter
+            logBuilder.Append(Environment.NewLine);
+
+            return new LogMessageEntry(
+                message: logBuilder.ToString(),
+                logAsError: logLevel >= Options.LogToStandardErrorThreshold
+            );
+
+            void AppendAndReplaceNewLine(StringBuilder sb, string message)
+            {
+                var len = sb.Length;
+                sb.Append(message);
+                sb.Replace(Environment.NewLine, " ", len, message.Length);
+            }
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -226,19 +237,20 @@ namespace Microsoft.Extensions.Logging.Console
 
         private static string GetSyslogSeverityString(LogLevel logLevel)
         {
+            // 'Syslog Message Severities' from https://tools.ietf.org/html/rfc5424.
             switch (logLevel)
             {
                 case LogLevel.Trace:
                 case LogLevel.Debug:
-                    return "<7>";
+                    return "<7>"; // debug-level messages
                 case LogLevel.Information:
-                    return "<6>";
+                    return "<6>"; // informational messages
                 case LogLevel.Warning:
-                    return "<4>";
+                    return "<4>"; // warning conditions
                 case LogLevel.Error:
-                    return "<3>";
+                    return "<3>"; // error conditions
                 case LogLevel.Critical:
-                    return "<2>";
+                    return "<2>"; // critical conditions
                 default:
                     throw new ArgumentOutOfRangeException(nameof(logLevel));
             }
