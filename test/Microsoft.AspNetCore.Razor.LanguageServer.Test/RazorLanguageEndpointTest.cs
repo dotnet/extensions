@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
@@ -431,7 +432,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     projectedCSharpSource,
                     RazorCodeGenerationOptions.CreateDefault(),
                     Enumerable.Empty<RazorDiagnostic>(),
-                    sourceMappings);
+                    sourceMappings,
+                    Enumerable.Empty<LinePragma>());
             codeDocument.SetCSharpDocument(csharpDocument);
             return codeDocument;
         }

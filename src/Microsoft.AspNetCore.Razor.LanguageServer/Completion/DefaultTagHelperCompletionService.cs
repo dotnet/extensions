@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using RazorTagHelperCompletionService = Microsoft.VisualStudio.Editor.Razor.TagHelperCompletionService;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal class DefaultTagHelperCompletionService : TagHelperCompletionService
     {
@@ -200,7 +200,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 attribute is MarkupMinimizedAttributeBlockSyntax ||
                 attribute is MarkupAttributeBlockSyntax ||
                 attribute is MarkupTagHelperAttributeSyntax ||
-                attribute is MarkupMinimizedTagHelperAttributeSyntax) &&
+                attribute is MarkupMinimizedTagHelperAttributeSyntax ||
+                attribute is MarkupTagHelperDirectiveAttributeSyntax ||
+                attribute is MarkupMinimizedTagHelperDirectiveAttributeSyntax) &&
                 TryGetElementInfo(attribute.Parent, out containingTagNameToken, out attributeNodes))
             {
                 selectedAttributeName = null;
@@ -222,9 +224,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             var ancestors = containingAttribute.Parent.Ancestors();
             var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var nonDirectiveAttributeTagHelpers = tagHelperDocumentContext.TagHelpers.Where(tagHelper => !tagHelper.BoundAttributes.Any(attribute => attribute.IsDirectiveAttribute()));
+            var filteredContext = TagHelperDocumentContext.Create(tagHelperDocumentContext.Prefix, nonDirectiveAttributeTagHelpers);
             var (ancestorTagName, ancestorIsTagHelper) = GetNearestAncestorTagInfo(ancestors);
             var attributeCompletionContext = new AttributeCompletionContext(
-                tagHelperDocumentContext,
+                filteredContext,
                 existingCompletions: Enumerable.Empty<string>(),
                 containingTagName,
                 selectedAttributeName,
@@ -351,6 +355,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 else if (attribute is MarkupMinimizedAttributeBlockSyntax minimizedMarkupAttribute)
                 {
                     var name = minimizedMarkupAttribute.Name.GetContent();
+                    stringifiedAttributes.Add(new KeyValuePair<string, string>(name, string.Empty));
+                }
+                else if (attribute is MarkupTagHelperDirectiveAttributeSyntax directiveAttribute)
+                {
+                    var name = directiveAttribute.FullName;
+                    var value = directiveAttribute.Value?.GetContent() ?? string.Empty;
+                    stringifiedAttributes.Add(new KeyValuePair<string, string>(name, value));
+                }
+                else if (attribute is MarkupMinimizedTagHelperDirectiveAttributeSyntax minimizedDirectiveAttribute)
+                {
+                    var name = minimizedDirectiveAttribute.FullName;
                     stringifiedAttributes.Add(new KeyValuePair<string, string>(name, string.Empty));
                 }
             }

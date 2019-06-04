@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.Razor.Completion;
+using RazorAttributeDescriptionInfo = Microsoft.CodeAnalysis.Razor.Completion.AttributeDescriptionInfo;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal class DefaultTagHelperDescriptionFactory : TagHelperDescriptionFactory
     {
@@ -80,9 +82,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return true;
         }
 
-        public override bool TryCreateDescription(AttributeDescriptionInfo attributeDescriptionInfo, out string markdown)
+        public override bool TryCreateDescription(AttributeCompletionDescription descriptionInfos, out string markdown)
         {
-            var associatedAttributeInfos = attributeDescriptionInfo.AssociatedAttributeDescriptions;
+            var associatedAttributeInfos = descriptionInfos.DescriptionInfos;
             if (associatedAttributeInfos.Count == 0)
             {
                 markdown = null;
@@ -96,8 +98,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             //
             // Additional description infos result in a triple `---` to separate the markdown entries.
 
-
-                              var descriptionBuilder = new StringBuilder();
+            var descriptionBuilder = new StringBuilder();
             for (var i = 0; i < associatedAttributeInfos.Count; i++)
             {
                 var descriptionInfo = associatedAttributeInfos[i];
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 var reducedReturnTypeName = ReduceTypeName(returnTypeName);
                 descriptionBuilder.Append(reducedReturnTypeName);
                 descriptionBuilder.Append("** ");
-                var tagHelperTypeName = ResolveTagHelperTypeName(descriptionInfo);
+                var tagHelperTypeName = descriptionInfo.TypeName;
                 var reducedTagHelperTypeName = ReduceTypeName(tagHelperTypeName);
                 descriptionBuilder.Append(reducedTagHelperTypeName);
                 descriptionBuilder.Append(".**");
@@ -133,6 +134,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             markdown = descriptionBuilder.ToString();
             return true;
+        }
+
+        public override bool TryCreateDescription(AttributeDescriptionInfo attributeDescriptionInfo, out string markdown)
+        {
+            var convertedDescriptionInfos = new List<RazorAttributeDescriptionInfo>();
+            foreach (var descriptionInfo in attributeDescriptionInfo.AssociatedAttributeDescriptions)
+            {
+                var tagHelperTypeName = ResolveTagHelperTypeName(descriptionInfo);
+                var converted = new RazorAttributeDescriptionInfo(
+                    descriptionInfo.ReturnTypeName,
+                    tagHelperTypeName,
+                    descriptionInfo.PropertyName,
+                    descriptionInfo.Documentation);
+
+                convertedDescriptionInfos.Add(converted);
+            }
+
+            var convertedDescriptionInfo = new AttributeCompletionDescription(convertedDescriptionInfos);
+
+            return TryCreateDescription(convertedDescriptionInfo, out markdown);
         }
 
         // Internal for testing

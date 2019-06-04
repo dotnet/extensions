@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Xunit;
 using DefaultRazorTagHelperCompletionService = Microsoft.VisualStudio.Editor.Razor.DefaultTagHelperCompletionService;
 using RazorTagHelperCompletionService = Microsoft.VisualStudio.Editor.Razor.TagHelperCompletionService;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     public class DefaultTagHelperCompletionServiceTest : TestBase
     {
@@ -50,7 +51,53 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 attribute.TypeName = typeof(int).FullName;
             });
 
-            DefaultTagHelpers = new[] { builder1.Build(), builder2.Build() };
+            var directiveAttribute1 = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "TestDirectiveAttribute", "TestAssembly");
+            directiveAttribute1.TagMatchingRule(rule =>
+            {
+                rule.TagName = "*";
+            });
+            directiveAttribute1.BindAttribute(attribute =>
+            {
+                attribute.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
+                attribute.Name = "@test";
+                attribute.SetPropertyName("Test");
+                attribute.TypeName = typeof(string).FullName;
+
+                attribute.BindAttributeParameter(parameter =>
+                {
+                    parameter.Name = "something";
+                    parameter.TypeName = typeof(string).FullName;
+
+                    parameter.SetPropertyName("Something");
+                });
+            });
+            directiveAttribute1.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
+            directiveAttribute1.SetTypeName("TestDirectiveAttribute");
+
+            var directiveAttribute2 = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "MinimizedDirectiveAttribute", "TestAssembly");
+            directiveAttribute2.TagMatchingRule(rule =>
+            {
+                rule.TagName = "*";
+            });
+            directiveAttribute2.BindAttribute(attribute =>
+            {
+                attribute.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
+                attribute.Name = "@minimized";
+                attribute.SetPropertyName("Minimized");
+                attribute.TypeName = typeof(bool).FullName;
+
+                attribute.BindAttributeParameter(parameter =>
+                {
+                    parameter.Name = "something";
+                    parameter.TypeName = typeof(string).FullName;
+
+                    parameter.SetPropertyName("Something");
+                });
+            });
+            directiveAttribute2.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
+            directiveAttribute2.SetTypeName("TestDirectiveAttribute");
+
+            DefaultTagHelpers = new[] { builder1.Build(), builder2.Build(), directiveAttribute1.Build() };
             var tagHelperFactsService = new DefaultTagHelperFactsService();
             RazorTagHelperCompletionService = new DefaultRazorTagHelperCompletionService(tagHelperFactsService);
         }
@@ -93,6 +140,98 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Assert
             Assert.Equal("test1", ancestorName);
             Assert.True(ancestorIsTagHelper);
+        }
+
+        [Fact]
+        public void StringifyAttributes_DirectiveAttribute()
+        {
+            // Arrange
+            var codeDocument = CreateComponentDocument($"<TestElement @test='abc' />", DefaultTagHelpers);
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var sourceSpan = new SourceSpan(3, 0);
+            var sourceChangeLocation = new SourceChange(sourceSpan, string.Empty);
+            var startTag = (MarkupTagHelperStartTagSyntax)syntaxTree.Root.LocateOwner(sourceChangeLocation).Parent;
+
+            // Act
+            var attributes = DefaultTagHelperCompletionService.StringifyAttributes(startTag.Attributes);
+
+            // Assert
+            Assert.Collection(
+                attributes,
+                attribute =>
+                {
+                    Assert.Equal("@test", attribute.Key);
+                    Assert.Equal("abc", attribute.Value);
+                });
+        }
+
+        [Fact]
+        public void StringifyAttributes_DirectiveAttributeWithParameter()
+        {
+            // Arrange
+            var codeDocument = CreateComponentDocument($"<TestElement @test:something='abc' />", DefaultTagHelpers);
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var sourceSpan = new SourceSpan(3, 0);
+            var sourceChangeLocation = new SourceChange(sourceSpan, string.Empty);
+            var startTag = (MarkupTagHelperStartTagSyntax)syntaxTree.Root.LocateOwner(sourceChangeLocation).Parent;
+
+            // Act
+            var attributes = DefaultTagHelperCompletionService.StringifyAttributes(startTag.Attributes);
+
+            // Assert
+            Assert.Collection(
+                attributes,
+                attribute =>
+                {
+                    Assert.Equal("@test:something", attribute.Key);
+                    Assert.Equal("abc", attribute.Value);
+                });
+        }
+
+        [Fact]
+        public void StringifyAttributes_MinimizedDirectiveAttribute()
+        {
+            // Arrange
+            var codeDocument = CreateComponentDocument($"<TestElement @minimized />", DefaultTagHelpers);
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var sourceSpan = new SourceSpan(3, 0);
+            var sourceChangeLocation = new SourceChange(sourceSpan, string.Empty);
+            var startTag = (MarkupTagHelperStartTagSyntax)syntaxTree.Root.LocateOwner(sourceChangeLocation).Parent;
+
+            // Act
+            var attributes = DefaultTagHelperCompletionService.StringifyAttributes(startTag.Attributes);
+
+            // Assert
+            Assert.Collection(
+                attributes,
+                attribute =>
+                {
+                    Assert.Equal("@minimized", attribute.Key);
+                    Assert.Equal(string.Empty, attribute.Value);
+                });
+        }
+
+        [Fact]
+        public void StringifyAttributes_MinimizedDirectiveAttributeWithParameter()
+        {
+            // Arrange
+            var codeDocument = CreateComponentDocument($"<TestElement @minimized:something />", DefaultTagHelpers);
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var sourceSpan = new SourceSpan(3, 0);
+            var sourceChangeLocation = new SourceChange(sourceSpan, string.Empty);
+            var startTag = (MarkupTagHelperStartTagSyntax)syntaxTree.Root.LocateOwner(sourceChangeLocation).Parent;
+
+            // Act
+            var attributes = DefaultTagHelperCompletionService.StringifyAttributes(startTag.Attributes);
+
+            // Assert
+            Assert.Collection(
+                attributes,
+                attribute =>
+                {
+                    Assert.Equal("@minimized:something", attribute.Key);
+                    Assert.Equal(string.Empty, attribute.Value);
+                });
         }
 
         [Fact]
@@ -532,6 +671,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceDocument = TestRazorSourceDocument.Create(text);
             var projectEngine = RazorProjectEngine.Create(builder => { });
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, "mvc", Array.Empty<RazorSourceDocument>(), tagHelpers);
+            return codeDocument;
+        }
+
+        private static RazorCodeDocument CreateComponentDocument(string text, params TagHelperDescriptor[] tagHelpers)
+        {
+            tagHelpers = tagHelpers ?? Array.Empty<TagHelperDescriptor>();
+            var sourceDocument = TestRazorSourceDocument.Create(text);
+            var projectEngine = RazorProjectEngine.Create(builder => { });
+            var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), tagHelpers);
             return codeDocument;
         }
     }

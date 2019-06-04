@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             writer.WriteEndObject();
         }
 
-        private void WriteAllowedChildTags(JsonWriter writer, AllowedChildTagDescriptor allowedChildTag, JsonSerializer serializer)
+        private static void WriteAllowedChildTags(JsonWriter writer, AllowedChildTagDescriptor allowedChildTag, JsonSerializer serializer)
         {
             writer.WriteStartObject();
 
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             writer.WriteEndObject();
         }
 
-        private void WriteBoundAttribute(JsonWriter writer, BoundAttributeDescriptor boundAttribute, JsonSerializer serializer)
+        private static void WriteBoundAttribute(JsonWriter writer, BoundAttributeDescriptor boundAttribute, JsonSerializer serializer)
         {
             writer.WriteStartObject();
 
@@ -180,6 +180,42 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             writer.WritePropertyName(nameof(BoundAttributeDescriptor.Metadata));
             WriteMetadata(writer, boundAttribute.Metadata);
 
+            writer.WritePropertyName(nameof(BoundAttributeDescriptor.BoundAttributeParameters));
+            writer.WriteStartArray();
+            foreach (var boundAttributeParameter in boundAttribute.BoundAttributeParameters)
+            {
+                WriteBoundAttributeParameter(writer, boundAttributeParameter, serializer);
+            }
+            writer.WriteEndArray();
+
+            writer.WriteEndObject();
+        }
+
+        private static void WriteBoundAttributeParameter(JsonWriter writer, BoundAttributeParameterDescriptor boundAttributeParameter, JsonSerializer serializer)
+        {
+            writer.WriteStartObject();
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Kind));
+            writer.WriteValue(boundAttributeParameter.Kind);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Name));
+            writer.WriteValue(boundAttributeParameter.Name);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.TypeName));
+            writer.WriteValue(boundAttributeParameter.TypeName);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.IsEnum));
+            writer.WriteValue(boundAttributeParameter.IsEnum);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Documentation));
+            writer.WriteValue(boundAttributeParameter.Documentation);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Diagnostics));
+            serializer.Serialize(writer, boundAttributeParameter.Diagnostics);
+
+            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Metadata));
+            WriteMetadata(writer, boundAttributeParameter.Metadata);
+
             writer.WriteEndObject();
         }
 
@@ -194,7 +230,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             writer.WriteEndObject();
         }
 
-        private void WriteTagMatchingRule(JsonWriter writer, TagMatchingRuleDescriptor ruleDescriptor, JsonSerializer serializer)
+        private static void WriteTagMatchingRule(JsonWriter writer, TagMatchingRuleDescriptor ruleDescriptor, JsonSerializer serializer)
         {
             writer.WriteStartObject();
 
@@ -221,7 +257,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             writer.WriteEndObject();
         }
 
-        private void WriteRequiredAttribute(JsonWriter writer, RequiredAttributeDescriptor requiredAttribute, JsonSerializer serializer)
+        private static void WriteRequiredAttribute(JsonWriter writer, RequiredAttributeDescriptor requiredAttribute, JsonSerializer serializer)
         {
             writer.WriteStartObject();
 
@@ -240,10 +276,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Diagnostics));
             serializer.Serialize(writer, requiredAttribute.Diagnostics);
 
+            writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Metadata));
+            WriteMetadata(writer, requiredAttribute.Metadata);
+
             writer.WriteEndObject();
         }
 
-        private void ReadTagMatchingRule(TagMatchingRuleDescriptorBuilder builder, JObject rule, JsonSerializer serializer)
+        private static void ReadTagMatchingRule(TagMatchingRuleDescriptorBuilder builder, JObject rule, JsonSerializer serializer)
         {
             var tagName = rule[nameof(TagMatchingRuleDescriptor.TagName)].Value<string>();
             var attributes = rule[nameof(TagMatchingRuleDescriptor.Attributes)].Value<JArray>();
@@ -269,13 +308,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             }
         }
 
-        private void ReadRequiredAttribute(RequiredAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
+        private static void ReadRequiredAttribute(RequiredAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
         {
             var name = attribute[nameof(RequiredAttributeDescriptor.Name)].Value<string>();
             var nameComparison = attribute[nameof(RequiredAttributeDescriptor.NameComparison)].Value<int>();
             var value = attribute[nameof(RequiredAttributeDescriptor.Value)].Value<string>();
             var valueComparison = attribute[nameof(RequiredAttributeDescriptor.ValueComparison)].Value<int>();
             var diagnostics = attribute[nameof(RequiredAttributeDescriptor.Diagnostics)].Value<JArray>();
+            var metadata = attribute[nameof(RequiredAttributeDescriptor.Metadata)].Value<JObject>();
 
             builder.Name = name;
             builder.NameComparisonMode = (RequiredAttributeDescriptor.NameComparisonMode)nameComparison;
@@ -288,9 +328,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
                 var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
                 builder.Diagnostics.Add(diagnosticObject);
             }
+
+            var metadataReader = metadata.CreateReader();
+            var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
+            foreach (var item in metadataValue)
+            {
+                builder.Metadata[item.Key] = item.Value;
+            }
         }
 
-        private void ReadAllowedChildTag(AllowedChildTagDescriptorBuilder builder, JObject childTag, JsonSerializer serializer)
+        private static void ReadAllowedChildTag(AllowedChildTagDescriptorBuilder builder, JObject childTag, JsonSerializer serializer)
         {
             var name = childTag[nameof(AllowedChildTagDescriptor.Name)].Value<string>();
             var displayName = childTag[nameof(AllowedChildTagDescriptor.DisplayName)].Value<string>();
@@ -307,7 +354,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             }
         }
 
-        private void ReadBoundAttribute(BoundAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
+        private static void ReadBoundAttribute(BoundAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
         {
             var descriptorKind = attribute[nameof(BoundAttributeDescriptor.Kind)].Value<string>();
             var name = attribute[nameof(BoundAttributeDescriptor.Name)].Value<string>();
@@ -318,6 +365,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             var documentation = attribute[nameof(BoundAttributeDescriptor.Documentation)].Value<string>();
             var diagnostics = attribute[nameof(BoundAttributeDescriptor.Diagnostics)].Value<JArray>();
             var metadata = attribute[nameof(BoundAttributeDescriptor.Metadata)].Value<JObject>();
+            var boundAttributeParameters = attribute[nameof(BoundAttributeDescriptor.BoundAttributeParameters)].Value<JArray>();
 
             builder.Name = name;
             builder.TypeName = typeName;
@@ -327,6 +375,46 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             {
                 builder.AsDictionary(indexerNamePrefix, indexerTypeName);
             }
+
+            if (isEnum)
+            {
+                builder.IsEnum = true;
+            }
+
+            foreach (var diagnostic in diagnostics)
+            {
+                var diagnosticReader = diagnostic.CreateReader();
+                var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
+                builder.Diagnostics.Add(diagnosticObject);
+            }
+
+            var metadataReader = metadata.CreateReader();
+            var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
+            foreach (var item in metadataValue)
+            {
+                builder.Metadata[item.Key] = item.Value;
+            }
+
+            foreach (var boundAttributeParameter in boundAttributeParameters)
+            {
+                var parameter = boundAttributeParameter.Value<JObject>();
+                builder.BindAttributeParameter(b => ReadBoundAttributeParameter(b, parameter, serializer));
+            }
+        }
+
+        private static void ReadBoundAttributeParameter(BoundAttributeParameterDescriptorBuilder builder, JObject parameter, JsonSerializer serializer)
+        {
+            var descriptorKind = parameter[nameof(BoundAttributeParameterDescriptor.Kind)].Value<string>();
+            var name = parameter[nameof(BoundAttributeParameterDescriptor.Name)].Value<string>();
+            var typeName = parameter[nameof(BoundAttributeParameterDescriptor.TypeName)].Value<string>();
+            var isEnum = parameter[nameof(BoundAttributeParameterDescriptor.IsEnum)].Value<bool>();
+            var documentation = parameter[nameof(BoundAttributeParameterDescriptor.Documentation)].Value<string>();
+            var diagnostics = parameter[nameof(BoundAttributeParameterDescriptor.Diagnostics)].Value<JArray>();
+            var metadata = parameter[nameof(BoundAttributeParameterDescriptor.Metadata)].Value<JObject>();
+
+            builder.Name = name;
+            builder.TypeName = typeName;
+            builder.Documentation = documentation;
 
             if (isEnum)
             {

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
 
         public override Task<RazorCodeDocument> GetGeneratedOutputAsync()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(_codeDocument);
         }
 
         public override IReadOnlyList<DocumentSnapshot> GetImports()

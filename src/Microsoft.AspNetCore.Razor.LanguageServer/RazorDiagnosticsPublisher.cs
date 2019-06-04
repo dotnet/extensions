@@ -151,12 +151,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         // Internal for testing
-        internal void PublishDiagnostics(DocumentSnapshot document)
+        internal async Task PublishDiagnosticsAsync(DocumentSnapshot document)
         {
-            if (!document.TryGetGeneratedOutput(out var result))
-            {
-                Debug.Fail("Document output should already be available.");
-            }
+            var result = await document.GetGeneratedOutputAsync();
 
             var diagnostics = result.GetCSharpDocument().Diagnostics;
 
@@ -187,7 +184,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
-        private void WorkTimer_Tick(object state)
+        private async void WorkTimer_Tick(object state)
         {
             DocumentSnapshot[] documents;
             lock (_work)
@@ -199,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             for (var i = 0; i < documents.Length; i++)
             {
                 var document = documents[i];
-                PublishDiagnostics(document);
+                await PublishDiagnosticsAsync(document);
             }
 
             lock (_work)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         };
 
         [Fact]
-        public void PublishDiagnostics_NewDocumentDiagnosticsGetPublished()
+        public async Task PublishDiagnosticsAsync_NewDocumentDiagnosticsGetPublished()
         {
             // Arrange
             var processedOpenDocument = TestDocumentSnapshot.Create(OpenedDocument.FilePath);
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 publisher.Initialize(ProjectManager);
 
                 // Act
-                publisher.PublishDiagnostics(processedOpenDocument);
+                await publisher.PublishDiagnosticsAsync(processedOpenDocument);
 
                 // Assert
                 languageServerDocument.VerifyAll();
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void PublishDiagnostics_NewDiagnosticsGetPublished()
+        public async Task PublishDiagnosticsAsync_NewDiagnosticsGetPublished()
         {
             // Arrange
             var processedOpenDocument = TestDocumentSnapshot.Create(OpenedDocument.FilePath);
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 publisher.Initialize(ProjectManager);
 
                 // Act
-                publisher.PublishDiagnostics(processedOpenDocument);
+                await publisher.PublishDiagnosticsAsync(processedOpenDocument);
 
                 // Assert
                 languageServerDocument.VerifyAll();
@@ -121,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void PublishDiagnostics_NoopsIfDiagnosticsAreSameAsPreviousPublish()
+        public async Task PublishDiagnosticsAsync_NoopsIfDiagnosticsAreSameAsPreviousPublish()
         {
             // Arrange
             var languageServer = new Mock<ILanguageServer>();
@@ -135,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 publisher.Initialize(ProjectManager);
 
                 // Act & Assert
-                publisher.PublishDiagnostics(processedOpenDocument);
+                await publisher.PublishDiagnosticsAsync(processedOpenDocument);
             }
         }
 
