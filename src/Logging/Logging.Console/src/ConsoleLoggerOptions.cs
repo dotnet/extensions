@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Logging.Console
             get => _format;
             set
             {
-                if (!Enum.IsDefined(typeof(ConsoleLoggerFormat), value))
+                if (value < ConsoleLoggerFormat.Default || value > ConsoleLoggerFormat.Systemd)
                 {
                     throw new ArgumentOutOfRangeException(nameof(value));
                 }
