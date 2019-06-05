@@ -4,17 +4,17 @@
 namespace Microsoft.Extensions.Logging.Console
 {
     /// <summary>
-    /// Format of ConsoleLogger messages.
+    /// Format of <see cref="ConsoleLogger" /> messages.
     /// </summary>
     public enum ConsoleLoggerFormat
     {
         /// <summary>
-        /// Default format.
+        /// Produces messages in the default console format.
         /// </summary>
         Default,
         /// <summary>
-        /// systemd '&lt;pri&gt;message' format.
+        /// Produces messages in a format suitable for console output to the systemd journal.
         /// </summary>
-        Systemd
+        Systemd,
     }
 }

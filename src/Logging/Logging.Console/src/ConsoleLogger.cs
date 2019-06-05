@@ -76,11 +76,11 @@ namespace Microsoft.Extensions.Logging.Console
             LogMessageEntry entry;
             if (Options.Format == ConsoleLoggerFormat.Default)
             {
-                entry = CreateLogMessageDefault(logBuilder, logLevel, logName, eventId, message, exception);
+                entry = CreateDefaultLogMessage(logBuilder, logLevel, logName, eventId, message, exception);
             }
             else if (Options.Format == ConsoleLoggerFormat.Systemd)
             {
-                entry = CreateLogMessageSystemd(logBuilder, logLevel, logName, eventId, message, exception);
+                entry = CreateSystemdLogMessage(logBuilder, logLevel, logName, eventId, message, exception);
             }
             else
             {
@@ -96,7 +96,7 @@ namespace Microsoft.Extensions.Logging.Console
             _logBuilder = logBuilder;
         }
 
-        private LogMessageEntry CreateLogMessageDefault(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception exception)
+        private LogMessageEntry CreateDefaultLogMessage(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception exception)
         {
             // Example:
             // INFO: ConsoleApp.Program[10]
@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.Logging.Console
             );
         }
 
-        private LogMessageEntry CreateLogMessageSystemd(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception exception)
+        private LogMessageEntry CreateSystemdLogMessage(StringBuilder logBuilder, LogLevel logLevel, string logName, int eventId, string message, Exception exception)
         {
             // systemd reads messages from standard out line-by-line in a '<pri>message' format.
             // newline characters are treated as message delimiters, so we must replace them.
@@ -199,7 +199,7 @@ namespace Microsoft.Extensions.Logging.Console
                 logAsError: logLevel >= Options.LogToStandardErrorThreshold
             );
 
-            void AppendAndReplaceNewLine(StringBuilder sb, string message)
+            static void AppendAndReplaceNewLine(StringBuilder sb, string message)
             {
                 var len = sb.Length;
                 sb.Append(message);
