@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Text;
 
 namespace Microsoft.Extensions.Logging.Console
@@ -65,6 +66,9 @@ namespace Microsoft.Extensions.Logging.Console
 
         public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception)
         {
+            ConsoleLoggerFormat format = Options.Format;
+            Debug.Assert(format >= ConsoleLoggerFormat.Default && format <= ConsoleLoggerFormat.Systemd);
+
             var logBuilder = _logBuilder;
             _logBuilder = null;
 
@@ -74,17 +78,17 @@ namespace Microsoft.Extensions.Logging.Console
             }
 
             LogMessageEntry entry;
-            if (Options.Format == ConsoleLoggerFormat.Default)
+            if (format == ConsoleLoggerFormat.Default)
             {
                 entry = CreateDefaultLogMessage(logBuilder, logLevel, logName, eventId, message, exception);
             }
-            else if (Options.Format == ConsoleLoggerFormat.Systemd)
+            else if (format == ConsoleLoggerFormat.Systemd)
             {
                 entry = CreateSystemdLogMessage(logBuilder, logLevel, logName, eventId, message, exception);
             }
             else
             {
-                throw new ArgumentOutOfRangeException(nameof(Options.Format));
+                entry = default;
             }
             _queueProcessor.EnqueueMessage(entry);
 
