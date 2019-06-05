@@ -50,5 +50,32 @@ namespace Microsoft.Extensions.Hosting
 
             return hostBuilder;
         }
+
+
+        public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder, Action<EventLogSettings> configureEventLog)
+        {
+            if (ServiceHelpers.IsWindowsService())
+            {
+                // Host.CreateDefaultBuilder uses CurrentDirectory for VS scenarios, but CurrentDirectory for services is c:\Windows\System32.
+                hostBuilder.UseContentRoot(AppContext.BaseDirectory);
+                hostBuilder.ConfigureLogging((hostingContext, logging) =>
+                {
+                    logging.AddEventLog(configureEventLog);
+                })
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddSingleton<IHostLifetime, WindowsServiceLifetime>();
+                    services.Configure<EventLogSettings>(settings =>
+                    {
+                        if (string.IsNullOrEmpty(settings.SourceName))
+                        {
+                            settings.SourceName = hostContext.HostingEnvironment.ApplicationName;
+                        }
+                    });
+                });
+            }
+
+            return hostBuilder;
+        }
     }
 }
