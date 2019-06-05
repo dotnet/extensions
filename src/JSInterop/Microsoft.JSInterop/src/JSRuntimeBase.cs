@@ -94,10 +94,17 @@ namespace Microsoft.JSInterop
                 if (succeeded)
                 {
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
-                    var result = asyncCallResult != null ?
-                        JsonSerializer.Parse(asyncCallResult.JsonElement.GetRawText(), resultType, JsonSerializerOptionsProvider.Options) :
-                        null;
-                    TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
+                    try
+                    {
+                        var result = asyncCallResult != null ?
+                            JsonSerializer.Parse(asyncCallResult.JsonElement.GetRawText(), resultType, JsonSerializerOptionsProvider.Options) :
+                            null;
+                        TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
+                    }
+                    catch (Exception exception)
+                    {
+                        TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(exception.Message, exception));
+                    }
                 }
                 else
                 {
