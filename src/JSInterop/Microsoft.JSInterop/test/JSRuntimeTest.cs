@@ -22,7 +22,8 @@ namespace Microsoft.JSInterop.Tests
             });
 
             await Task.WhenAll(tasks);
-            Assert.Null(JSRuntime.Current);
+            var ex = Assert.Throws<InvalidOperationException>(() => JSRuntime.Current);
+            Assert.Equal("Cannot access JSRuntime before it is initialized", ex.Message);
         }
 
         private class FakeJSRuntime : IJSRuntime

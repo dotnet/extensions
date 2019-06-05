@@ -33,16 +33,11 @@ namespace Microsoft.JSInterop
         /// <param name="dotNetObjectId">For instance method calls, identifies the target object.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <returns>A JSON representation of the return value, or null.</returns>
-        public static string? Invoke(string? assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public static string? Invoke(string? assemblyName, string methodIdentifier, long dotNetObjectId, string? argsJson)
         {
             if (methodIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(methodIdentifier));
-            }
-
-            if (argsJson == null)
-            {
-                throw new ArgumentNullException(nameof(argsJson));
             }
 
             // This method doesn't need [JSInvokable] because the platform is responsible for having
@@ -74,16 +69,11 @@ namespace Microsoft.JSInterop
         /// <param name="dotNetObjectId">For instance method calls, identifies the target object.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <returns>A JSON representation of the return value, or null.</returns>
-        public static void BeginInvoke(string? callId, string? assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public static void BeginInvoke(string? callId, string? assemblyName, string methodIdentifier, long dotNetObjectId, string? argsJson)
         {
             if (methodIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(methodIdentifier));
-            }
-
-            if (argsJson == null)
-            {
-                throw new ArgumentNullException(nameof(argsJson));
             }
 
             // This method doesn't need [JSInvokable] because the platform is responsible for having
@@ -148,7 +138,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private static object InvokeSynchronously(string? assemblyName, string methodIdentifier, object? targetInstance, string argsJson)
+        private static object InvokeSynchronously(string? assemblyName, string methodIdentifier, object? targetInstance, string? argsJson)
         {
             AssemblyKey assemblyKey;
             if (targetInstance != null)
@@ -185,7 +175,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private static object[] ParseArguments(string methodIdentifier, string argsJson, Type[] parameterTypes)
+        private static object[] ParseArguments(string methodIdentifier, string? argsJson, Type[] parameterTypes)
         {
             if (parameterTypes.Length == 0)
             {
@@ -194,7 +184,7 @@ namespace Microsoft.JSInterop
 
             // There's no direct way to say we want to deserialize as an array with heterogenous
             // entry types (e.g., [string, int, bool]), so we need to deserialize in two phases.
-            var jsonDocument = JsonDocument.Parse(argsJson);
+            var jsonDocument = JsonDocument.Parse(argsJson!);
             var shouldDisposeJsonDocument = true;
             try
             {
