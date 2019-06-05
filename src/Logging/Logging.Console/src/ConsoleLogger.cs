@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.Logging.Console
 
         public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception)
         {
-            ConsoleLoggerFormat format = Options.Format;
+            var format = Options.Format;
             Debug.Assert(format >= ConsoleLoggerFormat.Default && format <= ConsoleLoggerFormat.Systemd);
 
             var logBuilder = _logBuilder;
@@ -183,7 +183,6 @@ namespace Microsoft.Extensions.Logging.Console
             {
                 logBuilder.Append(' ');
                 // message
-                var len = logBuilder.Length;
                 AppendAndReplaceNewLine(logBuilder, message);
             }
 
