@@ -39,7 +39,9 @@ namespace Microsoft.Extensions.Hosting.Systemd
                 var endPoint = new UnixDomainSocketEndPoint(_socketPath);
                 socket.Connect(endPoint);
 
-                int rv = socket.Send(state.GetData());
+                // It's safe to do a non-blocking call here: messages sent here are much
+                // smaller than kernel buffers so we won't get blocked.
+                socket.Send(state.GetData());
             }
         }
 
