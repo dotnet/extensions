@@ -11,9 +11,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
     /// </summary>
     public static class SystemdHelpers
     {
-        const string INVOCATION_ID = "INVOCATION_ID";
-
-        private static string s_invocationId;
+        private const string INVOCATION_ID = "INVOCATION_ID";
 
         /// <summary>
         /// Check if the current process is hosted as a systemd Service.
@@ -22,20 +20,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
         public static bool IsSystemdService ()
         {
             // We use the INVOCATION_ID envirionment variable that was introduced in systemd 232 (released 2016-11-03).
-            // We clear the envvar so .NET child processes return false for this method.
-            if (s_invocationId == null)
-            {
-                string invocationId = Environment.GetEnvironmentVariable(INVOCATION_ID);
-                if (invocationId == null)
-                {
-                    invocationId = "";
-                }
-                if (Interlocked.CompareExchange(ref s_invocationId, invocationId, null) == null)
-                {
-                    Environment.SetEnvironmentVariable(INVOCATION_ID, null);
-                }
-            }
-            return s_invocationId.Length != 0;
+            return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(INVOCATION_ID));
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
 {
     public class SystemdNotifier : ISystemdNotifier
     {
-        const string NOTIFY_SOCKET = "NOTIFY_SOCKET";
+        private const string NOTIFY_SOCKET = "NOTIFY_SOCKET";
 
         private readonly string _socketPath;
 
