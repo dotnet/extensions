@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Hosting.SystemdServices
         /// <summary>
         /// Sends a notification to systemd.
         /// </summary>
-        void Notify(ServiceState state, params ServiceState[] states);
+        void Notify(ServiceState state);
         /// <summary>
         /// Returns whether systemd is configured to receive service notifications.
         /// </summary>

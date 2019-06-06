@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Text;
 using System.Net.Sockets;
 
 namespace Microsoft.Extensions.Hosting.SystemdServices
@@ -28,28 +27,11 @@ namespace Microsoft.Extensions.Hosting.SystemdServices
         public bool IsEnabled => _socketPath != null;
 
         /// <inheritdoc />
-        public void Notify(ServiceState state, ServiceState[] states)
+        public void Notify(ServiceState state)
         {
             if (!IsEnabled)
             {
                 return;
-            }
-
-            byte[] data;
-            if (states.Length == 0)
-            {
-                data = Encoding.UTF8.GetBytes(state.ToString());
-            }
-            else
-            {
-                var ms = new MemoryStream();
-                AppendState(ms, state);
-                for (int i = 0; i < states.Length; i++)
-                {
-                    ms.WriteByte((byte)'\n');
-                    AppendState(ms, states[i]);
-                }
-                data = ms.ToArray();
             }
 
             using (var socket = new Socket(AddressFamily.Unix, SocketType.Dgram, ProtocolType.Unspecified))
@@ -57,7 +39,7 @@ namespace Microsoft.Extensions.Hosting.SystemdServices
                 var endPoint = new UnixDomainSocketEndPoint(_socketPath);
                 socket.Connect(endPoint);
 
-                int rv = socket.Send(data);
+                int rv = socket.Send(state.GetData());
             }
         }
 
@@ -77,12 +59,6 @@ namespace Microsoft.Extensions.Hosting.SystemdServices
             }
 
             return socketPath;
-        }
-
-        private static void AppendState(MemoryStream stream, ServiceState state)
-        {
-            var buffer = Encoding.UTF8.GetBytes(state.ToString());
-            stream.Write(buffer, 0, buffer.Length);
         }
     }
 }
