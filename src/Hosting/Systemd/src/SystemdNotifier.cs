@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 
-namespace Microsoft.Extensions.Hosting.SystemdServices
+namespace Microsoft.Extensions.Hosting.Systemd
 {
     public class SystemdNotifier : ISystemdNotifier
     {

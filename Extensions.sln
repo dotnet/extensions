@@ -297,9 +297,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{B0D89499
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{15AC3300-D335-4C5C-9E3A-22F26904AB26}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.SystemdServices", "src\Hosting\SystemdServices\src\Microsoft.Extensions.Hosting.SystemdServices.csproj", "{86C50991-634A-41BB-86EE-22B09A3EAD2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.Systemd", "src\Hosting\Systemd\src\Microsoft.Extensions.Hosting.Systemd.csproj", "{86C50991-634A-41BB-86EE-22B09A3EAD2D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.SystemdServices.Tests", "src\Hosting\SystemdServices\test\Microsoft.Extensions.Hosting.SystemdServices.Tests.csproj", "{C85BC039-863D-4577-AECF-681A8ACA601A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.Systemd.Tests", "src\Hosting\Systemd\test\Microsoft.Extensions.Hosting.Systemd.Tests.csproj", "{C85BC039-863D-4577-AECF-681A8ACA601A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.WindowsServices", "src\Hosting\WindowsServices\src\Microsoft.Extensions.Hosting.WindowsServices.csproj", "{452F9F79-40E8-4B1C-8857-404062886080}"
 EndProject

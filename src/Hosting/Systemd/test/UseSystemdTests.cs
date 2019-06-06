@@ -7,13 +7,13 @@ using Xunit;
 
 namespace Microsoft.Extensions.Hosting
 {
-    public class UseSystemdServiceTests
+    public class UseSystemdTests
     {
         [Fact]
         public void DefaultsToOffOutsideOfService()
         {
             var host = new HostBuilder()
-                .UseSystemdService()
+                .UseSystemd()
                 .Build();
 
             using (host)

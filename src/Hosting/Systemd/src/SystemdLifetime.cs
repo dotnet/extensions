@@ -6,15 +6,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Hosting.SystemdServices
+namespace Microsoft.Extensions.Hosting.Systemd
 {
-    public class SystemdServiceLifetime : IHostLifetime, IDisposable
+    public class SystemdLifetime : IHostLifetime, IDisposable
     {
         private readonly ManualResetEvent _shutdownBlock = new ManualResetEvent(false);
         private CancellationTokenRegistration _applicationStartedRegistration;
         private CancellationTokenRegistration _applicationStoppingRegistration;
 
-        public SystemdServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ISystemdNotifier systemdNotifier, ILoggerFactory loggerFactory)
+        public SystemdLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ISystemdNotifier systemdNotifier, ILoggerFactory loggerFactory)
         {
             Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
@@ -36,12 +36,12 @@ namespace Microsoft.Extensions.Hosting.SystemdServices
         {
             _applicationStartedRegistration = ApplicationLifetime.ApplicationStarted.Register(state =>
             {
-                ((SystemdServiceLifetime)state).OnApplicationStarted();
+                ((SystemdLifetime)state).OnApplicationStarted();
             },
             this);
             _applicationStoppingRegistration = ApplicationLifetime.ApplicationStopping.Register(state =>
             {
-                ((SystemdServiceLifetime)state).OnApplicationStopping();
+                ((SystemdLifetime)state).OnApplicationStopping();
             },
             this);
 

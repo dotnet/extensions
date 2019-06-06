@@ -4,7 +4,7 @@
 using System;
 using System.Text;
 
-namespace Microsoft.Extensions.Hosting.SystemdServices
+namespace Microsoft.Extensions.Hosting.Systemd
 {
     /// <summary>
     /// Describes a service state change.

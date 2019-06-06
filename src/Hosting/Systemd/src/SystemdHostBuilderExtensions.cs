@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting.SystemdServices;
+using Microsoft.Extensions.Hosting.Systemd;
 using Microsoft.Extensions.Logging.Console;
 
 namespace Microsoft.Extensions.Hosting
 {
     /// <summary>
-    /// Extension methods for setting up SystemdServiceLifetime.
+    /// Extension methods for setting up SystemdLifetime.
     /// </summary>
-    public static class SystemdServiceHostBuilderExtensions
+    public static class SystemdHostBuilderExtensions
     {
         /// <summary>
-        /// Sets the host lifetime to SystemdServiceLifetime,
+        /// Sets the host lifetime to SystemdLifetime,
         /// provides notification messages for application started and stopping,
         /// and configures console logging to the systemd format.
         /// </summary>
@@ -29,9 +29,9 @@ namespace Microsoft.Extensions.Hosting
         /// </remarks>
         /// <param name="hostBuilder"></param>
         /// <returns></returns>
-        public static IHostBuilder UseSystemdService(this IHostBuilder hostBuilder)
+        public static IHostBuilder UseSystemd(this IHostBuilder hostBuilder)
         {
-            if (ServiceHelpers.IsSystemdService())
+            if (ServiceHelpers.IsSystemd())
             {
                 hostBuilder.ConfigureServices((hostContext, services) =>
                 {
@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Hosting
 
                     services.AddSingleton<ISystemdNotifier, SystemdNotifier>();
 
-                    services.AddSingleton<IHostLifetime, SystemdServiceLifetime>();
+                    services.AddSingleton<IHostLifetime, SystemdLifetime>();
                 });
             }
             return hostBuilder;
