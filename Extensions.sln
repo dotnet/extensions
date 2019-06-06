@@ -297,6 +297,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{B0D89499
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{15AC3300-D335-4C5C-9E3A-22F26904AB26}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.SystemdServices", "src\Hosting\SystemdServices\src\Microsoft.Extensions.Hosting.SystemdServices.csproj", "{86C50991-634A-41BB-86EE-22B09A3EAD2D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.SystemdServices.Tests", "src\Hosting\SystemdServices\test\Microsoft.Extensions.Hosting.SystemdServices.Tests.csproj", "{C85BC039-863D-4577-AECF-681A8ACA601A}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.WindowsServices", "src\Hosting\WindowsServices\src\Microsoft.Extensions.Hosting.WindowsServices.csproj", "{452F9F79-40E8-4B1C-8857-404062886080}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hosting.WindowsServices.Tests", "src\Hosting\WindowsServices\test\Microsoft.Extensions.Hosting.WindowsServices.Tests.csproj", "{47D27C64-B8B7-4D10-9112-1432EACC79B3}"
@@ -1871,6 +1875,30 @@ Global
 		{60313ECC-7C20-4509-B41B-C0F69F5162E7}.Release|x64.Build.0 = Release|Any CPU
 		{60313ECC-7C20-4509-B41B-C0F69F5162E7}.Release|x86.ActiveCfg = Release|Any CPU
 		{60313ECC-7C20-4509-B41B-C0F69F5162E7}.Release|x86.Build.0 = Release|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Debug|x64.Build.0 = Debug|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Debug|x86.Build.0 = Debug|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Release|x64.ActiveCfg = Release|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Release|x64.Build.0 = Release|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Release|x86.ActiveCfg = Release|Any CPU
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D}.Release|x86.Build.0 = Release|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Debug|x64.Build.0 = Debug|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Debug|x86.Build.0 = Debug|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Release|x64.ActiveCfg = Release|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Release|x64.Build.0 = Release|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Release|x86.ActiveCfg = Release|Any CPU
+		{C85BC039-863D-4577-AECF-681A8ACA601A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2012,6 +2040,8 @@ Global
 		{1DF2C30F-4A33-4711-B198-6163C931FAC8} = {6868A014-43FD-4047-B536-30D5D159D9D4}
 		{C7204C14-0FA5-4EE6-B538-CAAEB7854E98} = {1DF2C30F-4A33-4711-B198-6163C931FAC8}
 		{60313ECC-7C20-4509-B41B-C0F69F5162E7} = {6868A014-43FD-4047-B536-30D5D159D9D4}
+		{86C50991-634A-41BB-86EE-22B09A3EAD2D} = {C4A5DF0A-0798-40BD-B7A4-CF02D3A993D5}
+		{C85BC039-863D-4577-AECF-681A8ACA601A} = {C4A5DF0A-0798-40BD-B7A4-CF02D3A993D5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {814BFC88-0867-451F-AC8F-20FE107809B4}
