@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Hosting
         /// <returns></returns>
         public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder)
         {
-            if (ServiceHelpers.IsWindowsService())
+            if (WindowsServiceHelpers.IsWindowsService())
             {
                 // Host.CreateDefaultBuilder uses CurrentDirectory for VS scenarios, but CurrentDirectory for services is c:\Windows\System32.
                 hostBuilder.UseContentRoot(AppContext.BaseDirectory);

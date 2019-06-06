@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
     }
     public static partial class ServiceHelpers
     {
-        public static bool IsSystemd() { throw null; }
+        public static bool IsSystemdService () { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public partial struct ServiceState
