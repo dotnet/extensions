@@ -37,9 +37,6 @@ namespace Microsoft.Extensions.Hosting.Systemd
         public override string ToString()
             => _data == null ? string.Empty : Encoding.UTF8.GetString(_data);
 
-        /// <summary>
-        /// String representation of service state.
-        /// </summary>
         internal byte[] GetData() => _data;
     }
 }
