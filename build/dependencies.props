@@ -2,15 +2,15 @@
   <PropertyGroup Label="Package Versions">
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview3.19120.3</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181108.5</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview7.19303.4</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>3.0.0-preview7.19303.4</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>3.0.0-preview7.19303.4</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview7.19306.3</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>3.0.0-preview7.19306.3</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>3.0.0-preview7.19306.3</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10643</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildPackageVersion>15.9.20</MicrosoftBuildPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>3.0.0-preview7.19303.4</MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>3.0.0-preview7.19306.3</MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisVisualBasicFeaturesPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisVisualBasicFeaturesPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.0.0-beta4-final</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-preview4.19155.3</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
