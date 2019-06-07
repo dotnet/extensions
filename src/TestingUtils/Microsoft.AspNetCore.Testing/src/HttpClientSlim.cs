@@ -121,7 +121,9 @@ namespace Microsoft.AspNetCore.Testing
                     }
                 }
             }
-            throw new OperationCanceledException("Failed to connect, retry limit exceeded");
+
+            // This will never be hit.
+            throw new OperationCanceledException();
         }
 
         private static HttpStatusCode GetStatus(string response)
