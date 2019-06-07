@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Testing
                 {
                     return await retryBlock().ConfigureAwait(false);
                 }
-                catch (Exception)
+                catch (InvalidDataException)
                 {
                     if (retry == retryCount - 1)
                     {
