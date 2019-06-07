@@ -103,7 +103,8 @@ namespace Microsoft.JSInterop
                     }
                     catch (Exception exception)
                     {
-                        TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(exception.Message, exception));
+                        var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
+                        TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
                     }
                 }
                 else
