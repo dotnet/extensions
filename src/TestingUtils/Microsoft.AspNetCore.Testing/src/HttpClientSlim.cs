@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
@@ -102,11 +103,12 @@ namespace Microsoft.AspNetCore.Testing
 
         private static async Task<string> RetryRequest(Func<Task<string>> retryBlock)
         {
-#if MACOS
-            var retryCount = 3;
-#else
             var retryCount = 1;
-#endif
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                retryCount = 3;
+            }
+
             for (var retry = 0; retry < retryCount; retry++)
             {
                 try
@@ -123,7 +125,7 @@ namespace Microsoft.AspNetCore.Testing
             }
 
             // This will never be hit.
-            throw new OperationCanceledException();
+            throw new NotSupportedException();
         }
 
         private static HttpStatusCode GetStatus(string response)
