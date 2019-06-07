@@ -183,7 +183,7 @@ namespace Microsoft.Extensions.Primitives
             Assert.Equal(string.Empty, stringValues.ToString());
             Assert.Equal(new string[0], stringValues.ToArray());
 
-            Assert.True(StringValues.IsNullOrEmpty(stringValues));
+            Assert.False(StringValues.IsNullOrEmpty(stringValues));
             Assert.Throws<IndexOutOfRangeException>(() => stringValues[0]);
             Assert.Throws<IndexOutOfRangeException>(() => ((IList<string>)stringValues)[0]);
             Assert.Equal(string.Empty, stringValues.ToString());
@@ -192,7 +192,7 @@ namespace Microsoft.Extensions.Primitives
             Assert.Equal(-1, ((IList<string>)stringValues).IndexOf("not there"));
             Assert.False(((ICollection<string>)stringValues).Contains(null));
             Assert.False(((ICollection<string>)stringValues).Contains(string.Empty));
-            Assert.False(((ICollection<string>)stringValues).Contains("not there"));
+            Assert.True(((ICollection<string>)stringValues).Contains("not there"));
             Assert.Empty(stringValues);
         }
 
