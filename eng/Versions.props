@@ -22,7 +22,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview7-27805-01</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview7-27805-0133</MicrosoftNETCoreAppPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview7-27805-01</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview7.19305.1</MicrosoftWin32RegistryPackageVersion>
