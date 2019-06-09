@@ -237,20 +237,19 @@ namespace Microsoft.Extensions.Primitives
 
         private string[] GetArrayValue()
         {
+            // The same idea as ToArray with slightly different semantics: This method reuses the existing array if possible.
+
             // Take local copy of _values so type checks remain valid even if the StringValues is overwritten in memory
             var value = _values;
-            if (value is string[] values)
+            switch (value)
             {
-                return values;
-            }
-            else if (value != null)
-            {
-                // value not array, can only be string
-                return new[] { Unsafe.As<string>(value) };
-            }
-            else
-            {
-                return null;
+                case string[] values:
+                    return values;
+                case null:
+                    return null;
+                default:
+                    // value not array, can only be string
+                    return new[] { Unsafe.As<string>(value) };
             }
         }
 
