@@ -25,7 +25,7 @@
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview7-27805-0133</MicrosoftNETCoreAppPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview7-27805-01</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview7.19305.1</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview7.19305.122</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview7.19305.1</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview7.19305.1</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview7.19305.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
