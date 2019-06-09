@@ -22,11 +22,11 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview7-27805-0133</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview72342-27805-0133</MicrosoftNETCoreAppPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview7-27805-01</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview7.19305.122</MicrosoftWin32RegistryPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview7.19305.1</SystemComponentModelAnnotationsPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview7423.19242305.122</MicrosoftWin32RegistryPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.6.0-343.22preview7.19305.1</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview7.19305.1</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview7.19305.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview7.19305.1</SystemDiagnosticsEventLogPackageVersion>
@@ -55,7 +55,7 @@
   <PropertyGroup Label="Manual">
     <!-- Stable MSBuild task dependencies -->
     <MicrosoftBuildFrameworkPackageVersion>15.8.166</MicrosoftBuildFrameworkPackageVersion>
-    <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>15.8.1662342.242342.24</MicrosoftBuildUtilitiesCorePackageVersion>
     <!-- Used for building and testing analyzers -->
     <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
