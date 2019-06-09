@@ -226,7 +226,7 @@ namespace Microsoft.Extensions.Primitives
             {
                 case string[] values:
 #if NETCOREAPP
-                    return (string[]) values.AsSpan().ToArray();
+                    return values.AsSpan().ToArray();
 #else
                     return (string[])values.Clone();
 #endif
