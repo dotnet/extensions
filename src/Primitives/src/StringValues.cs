@@ -225,11 +225,7 @@ namespace Microsoft.Extensions.Primitives
             switch (value)
             {
                 case string[] values:
-#if NETCOREAPP
-                    return values.AsSpan().ToArray();
-#else
-                    return (string[])values.Clone();
-#endif
+                    return new ReadOnlySpan<string>(values).ToArray();
                 case null:
                     return Array.Empty<string>();
                 default:
