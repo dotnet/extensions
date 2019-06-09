@@ -522,5 +522,27 @@ namespace Microsoft.Extensions.Primitives
             Assert.True(StringValues.Equals(stringValues, expected));
             Assert.False(StringValues.Equals(stringValues, notEqual));
         }
+
+        [Fact]
+        public void ToArray_ConstructedFromString_CopiesValues()
+        {
+            var singleStringValue = new StringValues("abc");
+
+            var array = singleStringValue.ToArray();
+            array[0] = "bcd";
+
+            Assert.Equal("abc", singleStringValue[0]);
+        }
+
+        [Fact]
+        public void ToArray_ConstructedFromArray_CopiesValues()
+        {
+            var singleStringValue = new StringValues(new [] {"abc"});
+
+            var array = singleStringValue.ToArray();
+            array[0] = "bcd";
+
+            Assert.Equal("abc", singleStringValue[0]);
+        }
     }
 }
