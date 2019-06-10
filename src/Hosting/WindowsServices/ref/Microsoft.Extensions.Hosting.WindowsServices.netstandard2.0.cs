@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Hosting
 }
 namespace Microsoft.Extensions.Hosting.WindowsServices
 {
-    public static partial class ServiceHelpers
+    public static partial class WindowsServiceHelpers
     {
         public static bool IsWindowsService() { throw null; }
     }

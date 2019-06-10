@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Hosting.Systemd" />
+  </ItemGroup>
+
+</Project>

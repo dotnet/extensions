@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
     /// <summary>
     /// Helper methods for Windows Services.
     /// </summary>
-    public static class ServiceHelpers
+    public static class WindowsServiceHelpers
     {
         /// <summary>
         /// Check if the current process is hosted as a Windows Service. 
