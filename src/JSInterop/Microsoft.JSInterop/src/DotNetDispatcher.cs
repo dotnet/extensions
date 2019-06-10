@@ -173,12 +173,10 @@ namespace Microsoft.JSInterop
 
             // There's no direct way to say we want to deserialize as an array with heterogenous
             // entry types (e.g., [string, int, bool]), so we need to deserialize in two phases.
-            JsonDocument jsonDocument = default;
+            var jsonDocument = JsonDocument.Parse(argsJson);
             var shouldDisposeJsonDocument = true;
             try
             {
-                jsonDocument = JsonDocument.Parse(argsJson);
-
                 if (jsonDocument.RootElement.Type != JsonValueType.Array)
                 {
                     throw new ArgumentException($"Expected a JSON array but got {jsonDocument.RootElement.Type}.");

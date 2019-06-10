@@ -363,6 +363,22 @@ namespace Microsoft.JSInterop.Tests
             Assert.Contains(nameof(ThrowingClass.AsyncThrowingMethod), exception);
         });
 
+        [Fact]
+        public Task BeginInvoke_ThrowsWithInvalidArgsJson_WithCallId() => WithJSRuntime(async jsRuntime =>
+        {
+            // Arrange
+            var callId = "123";
+            var resultTask = jsRuntime.NextInvocationTask;
+            DotNetDispatcher.BeginInvoke(callId, thisAssemblyName, "InvocableStaticWithParams", default, "<xml>not json</xml>");
+
+            await resultTask; // This won't throw, it sets properties on the jsRuntime.
+
+            // Assert
+            var result = JsonDocument.Parse(jsRuntime.LastInvocationArgsJson).RootElement;
+            Assert.Equal(callId, result[0].GetString());
+            Assert.False(result[1].GetBoolean()); // Fails
+        });
+
         Task WithJSRuntime(Action<TestJSRuntime> testCode)
         {
             return WithJSRuntime(jsRuntime =>
