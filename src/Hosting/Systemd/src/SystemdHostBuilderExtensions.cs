@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.Hosting
         /// <returns></returns>
         public static IHostBuilder UseSystemd(this IHostBuilder hostBuilder)
         {
-            if (SystemdHelpers.IsSystemdService ())
+            if (SystemdHelpers.IsSystemdService())
             {
                 hostBuilder.ConfigureServices((hostContext, services) =>
                 {
