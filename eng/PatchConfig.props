@@ -19,5 +19,9 @@
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.12' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 
 </Project>
