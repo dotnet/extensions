@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <ExtensionsBaselineVersion>2.2.4</ExtensionsBaselineVersion>
+    <ExtensionsBaselineVersion>2.2.5</ExtensionsBaselineVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Caching.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Abstractions' ">
@@ -40,12 +40,12 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Caching.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.513, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.593, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Abstractions' ">
@@ -188,7 +188,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[2.2.0, )" />
@@ -290,14 +290,14 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.Logging.AzureAppServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.ValueTuple" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.Configuration-->

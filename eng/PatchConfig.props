@@ -37,5 +37,9 @@ Later on, this will be checked using this condition:
       Microsoft.Extensions.Caching.StackExchangeRedis;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.6' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 
 </Project>
