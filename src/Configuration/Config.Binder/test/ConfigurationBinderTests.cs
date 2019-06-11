@@ -428,7 +428,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var exception = Assert.Throws<InvalidOperationException>(
                 () => config.Bind(options));
 
-            Assert.Equal(Resources.FormatError_FailedBinding(IncorrectValue, ConfigKey, typeof(int)),
+            Assert.Equal(Resources.FormatError_FailedBinding(ConfigKey, typeof(int)),
                 exception.Message);
         }
 
