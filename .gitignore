@@ -9,6 +9,7 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
+.dotnet/
 bower_components/
 node_modules/
 **/wwwroot/lib/
