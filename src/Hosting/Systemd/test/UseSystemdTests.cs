@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -76,5 +77,26 @@ namespace Microsoft.Extensions.Hosting
                 };
             }
         }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("simple")]
+        [InlineData("notify")]
+        public void SystemdStartStopWorks(string serviceType)
+        {
+            using var userService = CreateService($"dotnet-startstop-{serviceType}", serviceType);
+            userService.Start();
+            userService.Stop();
+
+            var log = userService.GetLog();
+            // TODO: Assert some things about log.
+        }
+
+        private static UserService CreateService(string name, string type)
+            => new UserService(name, type, DotnetPath, IntegrationTestApp);
+
+        private static string DotnetPath => $"/proc/{Process.GetCurrentProcess().Id}/exe";
+        private static string IntegrationTestApp => "xxx/IntegrationTestApp.dll"; // TODO
     }
 }
