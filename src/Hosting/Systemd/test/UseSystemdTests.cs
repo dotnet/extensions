@@ -51,8 +51,8 @@ namespace Microsoft.Extensions.Hosting
                 byte[] buffer = new byte[256];
                 using var cts = new CancellationTokenSource();
                 cts.CancelAfter(30000);
-                int nrBytesReceived = await notifySocket.ReceiveAsync(buffer, SocketFlags.None, cts.Token);
-                string receivedMessage = Encoding.UTF8.GetString(buffer, 0, nrBytesReceived);
+                int read = await notifySocket.ReceiveAsync(buffer, SocketFlags.None, cts.Token);
+                string receivedMessage = Encoding.UTF8.GetString(buffer, 0, read);
                 Assert.Equal(expectedMessage, receivedMessage);
             }
             finally
