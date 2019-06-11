@@ -4,12 +4,12 @@ This file contains a list of all the packages and their versions which were rele
 build of Extensions. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.2.4">
+<Baseline Version="2.2.5">
   <Package Id="Microsoft.Extensions.Caching.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Caching.Redis" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Caching.SqlServer" Version="2.2.0" />
-  <Package Id="Microsoft.Extensions.Caching.StackExchangeRedis" Version="2.2.0" />
+  <Package Id="Microsoft.Extensions.Caching.StackExchangeRedis" Version="2.2.5" />
   <Package Id="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Configuration.Binder" Version="2.2.4" />
@@ -27,7 +27,7 @@ build of Extensions. Update this list when preparing for a new patch.
   <Package Id="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.DiagnosticAdapter" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="2.2.0" />
-  <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks" Version="2.2.0" />
+  <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks" Version="2.2.5" />
   <Package Id="Microsoft.Extensions.FileProviders.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.FileProviders.Composite" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.FileProviders.Embedded" Version="2.2.0" />
@@ -40,7 +40,7 @@ build of Extensions. Update this list when preparing for a new patch.
   <Package Id="Microsoft.Extensions.Localization.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Localization" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
-  <Package Id="Microsoft.Extensions.Logging.AzureAppServices" Version="2.2.0" />
+  <Package Id="Microsoft.Extensions.Logging.AzureAppServices" Version="2.2.5" />
   <Package Id="Microsoft.Extensions.Logging.Configuration" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
