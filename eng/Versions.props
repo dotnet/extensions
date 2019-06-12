@@ -22,7 +22,12 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview7-27812-01</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>3.0.0-preview7-27812-01</MicrosoftNETCoreAppRefPackageVersion>
+    <!-- 
+       Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
+       All Runtime.$rid packages should have the same version.
+    -->
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-preview7-27812-01</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview7-27812-01</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview7.19311.9</MicrosoftWin32RegistryPackageVersion>
@@ -67,5 +72,11 @@
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="Restore sources">
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
+      $(RestoreSources);
+      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
+    </RestoreSources>
   </PropertyGroup>
 </Project>
