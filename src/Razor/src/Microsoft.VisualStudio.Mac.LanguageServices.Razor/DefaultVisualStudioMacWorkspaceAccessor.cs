@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
-using MonoDevelop.Ide.TypeSystem;
+using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using Workspace = Microsoft.CodeAnalysis.Workspace;
 
@@ -67,13 +67,13 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
                 throw new ArgumentNullException(nameof(solution));
             }
 
-            workspace = TypeSystemService.GetWorkspace(solution);
+            workspace = IdeServices.TypeSystemService.GetWorkspace(solution);
 
             // Workspace cannot be null at this point. If TypeSystemService.GetWorkspace isn't able to find a corresponding
             // workspace it returns an empty workspace. Therefore, in order to see if we have a valid workspace we need to
             // cross-check it against the list of active non-empty workspaces.
 
-            if (!TypeSystemService.AllWorkspaces.Contains(workspace))
+            if (!IdeServices.TypeSystemService.AllWorkspaces.Contains(workspace))
             {
                 // We were returned the empty workspace which is equivalent to us not finding a valid workspace for our text buffer.
                 workspace = null;
