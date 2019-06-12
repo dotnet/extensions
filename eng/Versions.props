@@ -54,18 +54,18 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview7.19310.6</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview7.19310.6</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview7.19310.6</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview7-27810-07</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview7.19310.6</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview7.19310.6</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview7.19310.6</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview7-27810-07</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview7.19310.3</MicrosoftNETCorePlatformsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview7.19310.3</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.6.0-preview7.19310.3</SystemTextEncodingsWebPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.7.0-preview7.19310.3</SystemReflectionMetadataPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview7.19311.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview7.19311.1</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview7.19311.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview7-27811-01</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview7.19311.1</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview7.19311.1</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview7.19311.1</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview7-27811-01</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview7.19310.8</MicrosoftNETCorePlatformsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview7.19310.8</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0-preview7.19310.8</SystemTextEncodingsWebPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview7.19310.8</SystemReflectionMetadataPackageVersion>
   </PropertyGroup>
   <!--
 
