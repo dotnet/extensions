@@ -16,11 +16,11 @@
     -->
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <!-- Always update the 'latest version', whether the repo is servicing or not. -->
-      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">$(MicrosoftNETCoreAppPackageVersion)</LatestRuntimeFrameworkVersion>
-      <!-- Only update the default runtime version for preview builds. -->
-      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</DefaultRuntimeFrameworkVersion>
-      <!-- Only update the targeting pack version for preview builds. -->
-      <TargetingPackVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</TargetingPackVersion>
+      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</LatestRuntimeFrameworkVersion>
+      <!-- Only update the default runtime version if its a preview version. -->
+      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and $(MicrosoftNETCoreAppRuntimewinx64PackageVersion.Contains('-'))">$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</DefaultRuntimeFrameworkVersion>
+      <!-- Only update the targeting pack version for preview builds of the ref pack. -->
+      <TargetingPackVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and $(MicrosoftNETCoreAppRefPackageVersion.Contains('-')) ">$(MicrosoftNETCoreAppRefPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
     <KnownFrameworkReference Update="NETStandard.Library">

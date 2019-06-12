@@ -6,7 +6,7 @@
     "dotnet": "3.0.100-preview5-011568",
     "runtimes": {
       "dotnet": [
-        "$(MicrosoftNETCoreAppPackageVersion)"
+        "$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)"
       ]
     }
   },
