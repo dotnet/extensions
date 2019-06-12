@@ -97,6 +97,18 @@ namespace Microsoft.Extensions.Hosting
             => new UserService(name, type, DotnetPath, IntegrationTestApp);
 
         private static string DotnetPath => $"/proc/{Process.GetCurrentProcess().Id}/exe";
-        private static string IntegrationTestApp => "xxx/IntegrationTestApp.dll"; // TODO
+
+        private static string IntegrationTestApp
+        {
+            get
+            {
+                string currentAssemblyPath = typeof(UseSystemdTests).Assembly.Location;
+                string tfmPath = Path.GetDirectoryName(currentAssemblyPath);
+                string configurationPath = Path.GetDirectoryName(tfmPath);
+                string projectPath = Path.GetDirectoryName(configurationPath);
+                string binPath = Path.GetDirectoryName(projectPath);
+                return Path.Combine(binPath, "IntegrationTestApp", Path.GetFileName(configurationPath), "netcoreapp3.0", "IntegrationTestApp.dll");
+            }
+        }
     }
 }
