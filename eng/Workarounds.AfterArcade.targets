@@ -38,8 +38,20 @@
     <PackageReference Remove="xunit.runner.console" />
   </ItemGroup>
 
-  <!-- Workaround https://github.com/dotnet/arcade/pull/2867 -->
-  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
-    <BeforePack>$(BeforePack.Replace(';_AddSourcePackageSourceLinkFile', ''))</BeforePack>
-  </PropertyGroup>
+  <!-- Workaround until we can build our repo with a 3.0 Preview 7 SDK which has https://github.com/dotnet/core-sdk/pull/2401. -->
+  <ItemGroup Condition="'$(PreReleaseVersionLabel)' == 'preview7' ">
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <!--
+        Temporary until we can update to build with the Preview7 SDK .
+        Using PreReleasePreviewNumber to time-bomb this so we can remove this before RTM.
+
+        This workaround was also applied to src\ProjectTemplates\test\Infrastructure\TemplateTests.props.in.
+      -->
+      <RuntimePackNamePatterns>Microsoft.NETCore.App.Runtime.**RID**</RuntimePackNamePatterns>
+      <AppHostPackNamePattern />
+      <AppHostRuntimeIdentifiers />
+      <PackagesToReference />
+    </KnownFrameworkReference>
+  </ItemGroup>
+
 </Project>
