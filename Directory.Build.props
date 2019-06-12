@@ -20,9 +20,7 @@
   </PropertyGroup>
 
   <Import Project="eng\FlakyTests.BeforeArcade.props" />
-  <Import Project="eng\Workarounds.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="eng\Workarounds.AfterArcade.props" />
   <Import Project="eng\FlakyTests.AfterArcade.props" />
 
   <PropertyGroup>
@@ -76,6 +74,5 @@
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\targets\Csharp.Refs.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
-
   <Import Project="eng\targets\Npm.Common.props" Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 </Project>

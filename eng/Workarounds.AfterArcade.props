@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <!-- Ensure symbols type is 'portable'. Arcade attempts to embed symbols in CI builds. -->
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
-</Project>
