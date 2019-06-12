@@ -69,4 +69,10 @@
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
   </PropertyGroup>
+  <PropertyGroup Label="Restore sources">
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
+      $(RestoreSources);
+      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
+    </RestoreSources>
+  </PropertyGroup>
 </Project>
