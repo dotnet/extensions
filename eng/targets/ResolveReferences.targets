@@ -6,6 +6,9 @@
       ResolveCustomReferences;
       $(ResolveReferencesDependsOn);
     </ResolveReferencesDependsOn>
+
+    <!-- Disabling transitive references helps to ensure that tests are actually running against the latest assemblies in a patch. -->
+    <DisableTransitiveProjectReferences Condition="'$(IsTestProject)' == 'true'">true</DisableTransitiveProjectReferences>
   </PropertyGroup>
 
   <PropertyGroup>

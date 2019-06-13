@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.Extensions.ObjectPool.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\**\*.cs">
       <Link>Shared\%(FileName)%(Extension)</Link>
     </Compile>
@@ -19,6 +15,7 @@
 
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Microsoft.Extensions.ObjectPool" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 
