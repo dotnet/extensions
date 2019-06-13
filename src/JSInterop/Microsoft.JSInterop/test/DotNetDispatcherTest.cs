@@ -374,9 +374,11 @@ namespace Microsoft.JSInterop.Tests
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
             // Assert
-            var result = JsonDocument.Parse(jsRuntime.LastInvocationArgsJson).RootElement;
+            using var jsonDocument = JsonDocument.Parse(jsRuntime.LastInvocationArgsJson);
+            var result = jsonDocument.RootElement;
             Assert.Equal(callId, result[0].GetString());
             Assert.False(result[1].GetBoolean()); // Fails
+            Assert.Contains("JsonReaderException: '<' is an invalid start of a value.", result[2].GetString());
         });
 
         Task WithJSRuntime(Action<TestJSRuntime> testCode)
