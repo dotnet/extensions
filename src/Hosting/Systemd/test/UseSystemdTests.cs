@@ -81,6 +81,7 @@ namespace Microsoft.Extensions.Hosting
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
+        [HasSystemdUserServiceCondition]
         [InlineData("simple")]
         [InlineData("notify")]
         public void SystemdStartStopWorks(string serviceType)
@@ -109,21 +110,6 @@ namespace Microsoft.Extensions.Hosting
                 string binPath = Path.GetDirectoryName(projectPath);
                 return Path.Combine(binPath, "IntegrationTestApp", Path.GetFileName(configurationPath), "netcoreapp3.0", "IntegrationTestApp.dll");
             }
-        }
-
-        [Fact]
-        public void SystemdProcesses()
-        {
-            Process[] systemdProcesses = Process.GetProcessesByName("systemd");
-            StringBuilder sb = new StringBuilder();
-            bool userSession = false;
-            foreach(var process in systemdProcesses)
-            {
-                string cmdLine = File.ReadAllText($"/proc/{process.Id}/cmdline");
-                userSession = userSession || cmdLine.Contains("--user");
-            }
-            Assert.NotEmpty(systemdProcesses);
-            Assert.True(userSession);
         }
     }
 }

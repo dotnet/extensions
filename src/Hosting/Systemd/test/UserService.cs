@@ -36,13 +36,13 @@ namespace Microsoft.Extensions.Hosting
             TryStop();
 
             WriteUnitFile();
-            RunProcess("systemctl", "daemon-reload");
-            RunProcess("systemctl", $"start {_name}");
+            ProcessHelper.RunProcess("systemctl", "--user daemon-reload");
+            ProcessHelper.RunProcess("systemctl", $"--user start {_name}");
         }
 
         public string GetLog()
         {
-            return RunProcess("journalctl", $"-t {_syslogIdentifier}");
+            return ProcessHelper.RunProcess("journalctl", $"--user -t {_syslogIdentifier}");
         }
 
         private void WriteUnitFile()
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.Hosting
 
         public void Stop()
         {
-            RunProcess("systemctl", $"stop {_name}");
+            ProcessHelper.RunProcess("systemctl", $"--user stop {_name}");
         }
 
         private void TryStop()
@@ -96,29 +96,6 @@ namespace Microsoft.Extensions.Hosting
                 Directory.CreateDirectory(folder);
                 return folder;
             }
-        }
-
-        private static string RunProcess(string filename, string arguments)
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = filename,
-                Arguments = $"--user {arguments}",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-            };
-
-            using var process = Process.Start(startInfo);
-            string stdout = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-            {
-                throw new Exception(process.StandardError.ReadToEnd());
-            }
-
-            return stdout;
         }
     }
 }
