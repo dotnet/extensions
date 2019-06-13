@@ -110,5 +110,20 @@ namespace Microsoft.Extensions.Hosting
                 return Path.Combine(binPath, "IntegrationTestApp", Path.GetFileName(configurationPath), "netcoreapp3.0", "IntegrationTestApp.dll");
             }
         }
+
+        [Fact]
+        public void SystemdProcesses()
+        {
+            Process[] systemdProcesses = Process.GetProcessesByName("systemd");
+            StringBuilder sb = new StringBuilder();
+            bool userSession = false;
+            foreach(var process in systemdProcesses)
+            {
+                string cmdLine = File.ReadAllText($"/proc/{process.Id}/cmdline");
+                userSession = userSession || cmdLine.Contains("--user");
+            }
+            Assert.NotEmpty(systemdProcesses);
+            Assert.True(userSession);
+        }
     }
 }
