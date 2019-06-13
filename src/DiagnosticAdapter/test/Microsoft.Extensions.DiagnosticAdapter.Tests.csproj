@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.Extensions.DiagnosticAdapter.csproj" />
+    <Reference Include="Microsoft.Extensions.DiagnosticAdapter" />
   </ItemGroup>
 
 </Project>
