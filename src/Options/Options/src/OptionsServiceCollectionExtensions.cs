@@ -43,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="configureOptions">The action used to configure the options.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class
+        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class, new()
             => services.Configure(Options.Options.DefaultName, configureOptions);
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configureOptions">The action used to configure the options.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, string name, Action<TOptions> configureOptions)
-            where TOptions : class
+            where TOptions : class, new()
         {
             if (services == null)
             {
@@ -80,7 +80,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <param name="configureOptions">The action used to configure the options.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-        public static IServiceCollection ConfigureAll<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class
+        public static IServiceCollection ConfigureAll<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class, new()
             => services.Configure(name: null, configureOptions: configureOptions);
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
         /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that configure calls can be chained in it.</returns>
-        public static OptionsBuilder<TOptions> AddOptions<TOptions>(this IServiceCollection services) where TOptions : class
+        public static OptionsBuilder<TOptions> AddOptions<TOptions>(this IServiceCollection services) where TOptions : class, new()
             => services.AddOptions<TOptions>(Options.Options.DefaultName);
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="name">The name of the options instance.</param>
         /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that configure calls can be chained in it.</returns>
         public static OptionsBuilder<TOptions> AddOptions<TOptions>(this IServiceCollection services, string name)
-            where TOptions : class
+            where TOptions : class, new()
         {
             if (services == null)
             {
