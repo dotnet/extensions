@@ -3,8 +3,8 @@
   <Import Project="Build.props" />
 
   <Target Name="TagCiBuilds" Condition=" '$(CI)' == 'true' AND '$(BUILD_REASON)' != 'PullRequest' ">
-    <Message Importance="high" Text="##vso[build.addbuildtag]daily-build" Condition=" '$(IsFinalBuild)' != 'true' " />
-    <Message Importance="high" Text="##vso[build.addbuildtag]release-candidate" Condition=" '$(IsFinalBuild)' == 'true' " />
+    <Message Importance="high" Text="##vso[build.addbuildtag]daily-build" Condition=" '$(DotNetFinalVersionKind)' == '' " />
+    <Message Importance="high" Text="##vso[build.addbuildtag]release-candidate" Condition=" '$(DotNetFinalVersionKind)' != '' " />
   </Target>
 
   <Target Name="GenerateProjectList">

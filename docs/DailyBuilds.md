@@ -13,7 +13,8 @@ If you want to download the latest daily build and use it in a project, then you
   <configuration>
       <packageSources>
           <clear />
-          <add key="dotnet-core" value="https://dotnet.myget.org/F/dotnet-core/api/v3/index.json" />
+          <add key="dotnet-core" value="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json" />
+          <add key="aspnet-extensions" value="https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>
@@ -23,21 +24,3 @@ If you want to download the latest daily build and use it in a project, then you
 
 Some features, such as new target frameworks, may require prerelease tooling builds for Visual Studio.
 These are available in the [Visual Studio Preview](https://www.visualstudio.com/vs/preview/).
-
-## NuGet packages
-
-Daily builds of ackages can be found on <https://dotnet.myget.org/gallery/dotnet-core>. This feed may include
-packages that will not be supported in a officially released build.
-
-Commonly referenced packages:
-
-[logging-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.Extensions.Logging
-[logging-myget-badge]: https://img.shields.io/dotnet.myget/dotnet-core/vpre/Microsoft.Extensions.Logging.svg?style=flat-square&label=myget
-
-[di-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.Extensions.DependencyInjection
-[di-myget-badge]: https://img.shields.io/dotnet.myget/dotnet-core/vpre/Microsoft.Extensions.DependencyInjection.svg?style=flat-square&label=myget
-
-Package                                    | MyGet
-:------------------------------------------|:---------------------------------------------------------
-Microsoft.Extensions.Logging               | [![][logging-myget-badge]][logging-myget]
-Microsoft.Extensions.DependencyInjection   | [![][di-myget-badge]][di-myget]
