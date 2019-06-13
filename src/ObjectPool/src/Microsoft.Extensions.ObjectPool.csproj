@@ -10,4 +10,8 @@
     <IsShipping>true</IsShipping>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.ObjectPool.Tests" />
+  </ItemGroup>
+
 </Project>
