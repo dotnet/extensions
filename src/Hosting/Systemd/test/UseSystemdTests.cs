@@ -86,12 +86,36 @@ namespace Microsoft.Extensions.Hosting
         [InlineData("notify")]
         public void SystemdStartStopWorks(string serviceType)
         {
+            const string ApplicationStartedEntry = "Microsoft.Hosting.Lifetime[0] Application started.";
+            const string ApplicationShuttingDownEntry = "Microsoft.Hosting.Lifetime[0] Application is shutting down...";
             using var userService = CreateService($"dotnet-startstop-{serviceType}", serviceType);
+
+            // Start the service.
             userService.Start();
+
+            // For the 'notify' type, the Start method will return when the host has started.
+            // For the 'simple' type, Start returns when the application started and we check the
+            // log to see when the host has started.
+            if (serviceType == "simple")
+            {
+                do
+                {
+                    if (userService.GetLog().Contains(ApplicationStartedEntry))
+                    {
+                        break;
+                    }
+                    Thread.Sleep(100);
+                } while (userService.IsActive());
+            }
+            Assert.True(userService.IsActive());
+
+            // Stop the service.
             userService.Stop();
 
+            // Verify the host started and shut down.
             var log = userService.GetLog();
-            // TODO: Assert some things about log.
+            Assert.Contains(ApplicationStartedEntry, log);
+            Assert.Contains(ApplicationShuttingDownEntry, log);
         }
 
         private static UserService CreateService(string name, string type)

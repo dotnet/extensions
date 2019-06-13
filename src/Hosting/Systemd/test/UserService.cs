@@ -45,6 +45,19 @@ namespace Microsoft.Extensions.Hosting
             return ProcessHelper.RunProcess("journalctl", $"--user -t {_syslogIdentifier}");
         }
 
+        public bool IsActive()
+        {
+            try
+            {
+                ProcessHelper.RunProcess("systemctl", $"--user is-active {_name}");
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void WriteUnitFile()
         {
             StringBuilder unit = new StringBuilder();
