@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
     <!-- Set these before importing Arcade to override Arcade's defaults -->
@@ -25,6 +27,8 @@
 
   <PropertyGroup>
     <IncludeSymbols>true</IncludeSymbols>
+    <!-- Always pass portable to override arcade sdk which uses embedded for local builds -->
+    <DebugType>portable</DebugType>
     <Serviceable Condition="'$(Configuration)' == 'Release'">true</Serviceable>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
@@ -35,8 +39,6 @@
     <DefaultNetCoreTargetFramework>netcoreapp$(MajorVersion).$(MinorVersion)</DefaultNetCoreTargetFramework>
 
     <Product>Microsoft .NET Extensions</Product>
-    <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Enables Strict mode for Roslyn compiler -->
