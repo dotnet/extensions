@@ -37,6 +37,10 @@
     <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
+    <Compile Include="$(SharedSourceRoot)ReferenceAssemblyInfo.cs" LinkBase="Properties" />
+  </ItemGroup>
+
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="eng\targets\ResolveReferences.targets" Condition=" '$(DisableReferenceRestrictions)' != 'true' AND '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" '$(HasReferenceAssembly)' == 'true' " />
