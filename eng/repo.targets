@@ -1,11 +1,6 @@
 <Project>
-  <Import Project="../Directory.Build.props" />
+  <Import Project="..\Directory.Build.props" />
   <Import Project="Build.props" />
-
-  <Target Name="TagCiBuilds" Condition=" '$(CI)' == 'true' AND '$(BUILD_REASON)' != 'PullRequest' ">
-    <Message Importance="high" Text="##vso[build.addbuildtag]daily-build" Condition=" '$(DotNetFinalVersionKind)' == '' " />
-    <Message Importance="high" Text="##vso[build.addbuildtag]release-candidate" Condition=" '$(DotNetFinalVersionKind)' != '' " />
-  </Target>
 
   <Target Name="GenerateProjectList">
     <MSBuild Projects="@(ProjectToBuild)"

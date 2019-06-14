@@ -108,9 +108,6 @@ jobs:
       - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
         displayName: Run Flaky Tests
         continueOnError: true
-      - powershell: eng\common\msbuild.ps1 eng/repo.targets /t:TagCiBuilds '/p:DotNetFinalVersionKind=$(DotNetFinalVersionKind)' '/p:CI=true'
-        displayName: Set CI Tags
-        condition: eq(variables['_BuildConfig'], 'Release')
       - powershell: eng\scripts\KillProcesses.ps1
         displayName: Kill processes
         condition: always()
