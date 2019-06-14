@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview7.19313.5">
+    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview7.19314.1">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>26cf0c9f4eb73237a460b6cc6a4912675869a0b5</Sha>
+      <Sha>9107db48230c79bca89db510f6306d92ee451e5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.0.0-preview7.19313.5">
+    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.0.0-preview7.19314.1">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>26cf0c9f4eb73237a460b6cc6a4912675869a0b5</Sha>
+      <Sha>9107db48230c79bca89db510f6306d92ee451e5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.NonCapturingTimer.Sources" Version="3.0.0-preview7.19313.5">
+    <Dependency Name="Microsoft.Extensions.NonCapturingTimer.Sources" Version="3.0.0-preview7.19314.1">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>26cf0c9f4eb73237a460b6cc6a4912675869a0b5</Sha>
+      <Sha>9107db48230c79bca89db510f6306d92ee451e5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="3.0.0-preview7.19313.5">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="3.0.0-preview7.19314.1">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>26cf0c9f4eb73237a460b6cc6a4912675869a0b5</Sha>
+      <Sha>9107db48230c79bca89db510f6306d92ee451e5d</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview7.19310.8" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview7.19313.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>6d37591d13dd58abc90b7f15b707f605e809be29</Sha>
+      <Sha>5955ee2583d4509d37ecf55243e9e3c9af128487</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.Metadata" Version="1.7.0-preview7.19313.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -33,9 +33,9 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>2a663574a47d8ac25b9b959e5a9f9fa67fc97ecc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.0.0-preview7-27811-01">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.0.0-preview7-27813-08" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>bba327461e7521b640be91127309760a18f12416</Sha>
+      <Sha>2a663574a47d8ac25b9b959e5a9f9fa67fc97ecc</Sha>
     </Dependency>
     <!-- 
       Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
@@ -52,13 +52,13 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>5955ee2583d4509d37ecf55243e9e3c9af128487</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.0.0-preview7.19313.5">
+    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.0.0-preview7.19314.1">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>26cf0c9f4eb73237a460b6cc6a4912675869a0b5</Sha>
+      <Sha>9107db48230c79bca89db510f6306d92ee451e5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview7.19313.5">
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview7.19314.1">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>26cf0c9f4eb73237a460b6cc6a4912675869a0b5</Sha>
+      <Sha>9107db48230c79bca89db510f6306d92ee451e5d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19309.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
