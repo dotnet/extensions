@@ -264,7 +264,9 @@ namespace Microsoft.Extensions.Logging
             return logValuesFormatter;
         }
 
-        private readonly struct LogValues : IReadOnlyList<KeyValuePair<string, object>>
+        const string OriginalFormatKey = "{OriginalFormat}";
+
+        private readonly struct LogValues : IReadOnlyList<KeyValuePair<string, object>>, IReadOnlyDictionary<string, object>
         {
             public static readonly Func<LogValues, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -281,7 +283,7 @@ namespace Microsoft.Extensions.Logging
                 {
                     if (index == 0)
                     {
-                        return new KeyValuePair<string, object>("{OriginalFormat}", _formatter.OriginalFormat);
+                        return new KeyValuePair<string, object>(OriginalFormatKey, _formatter.OriginalFormat);
                     }
                     throw new IndexOutOfRangeException(nameof(index));
                 }
@@ -300,9 +302,46 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public bool ContainsKey(string key) => key == OriginalFormatKey;
+
+            public bool TryGetValue(string key, out object value)
+            {
+                if (key == OriginalFormatKey)
+                {
+                    value = _formatter.OriginalFormat;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            }
+
+            public object this[string key]
+            {
+                get
+                {
+                    if (TryGetValue(key, out var value))
+                    {
+                        return value;
+                    }
+
+                    throw new KeyNotFoundException($"The key '{key}' was not found");
+                }
+            }
+
+            public IEnumerable<string> Keys
+            {
+                get { yield return OriginalFormatKey; }
+            }
+
+            public IEnumerable<object> Values
+            {
+                get { yield return _formatter.OriginalFormat; }
+            }
         }
 
-        private readonly struct LogValues<T0> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0> : IReadOnlyList<KeyValuePair<string, object>>, IReadOnlyDictionary<string, object>
         {
             public static readonly Func<LogValues<T0>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -324,7 +363,7 @@ namespace Microsoft.Extensions.Logging
                         case 0:
                             return new KeyValuePair<string, object>(_formatter.ValueNames[0], _value0);
                         case 1:
-                            return new KeyValuePair<string, object>("{OriginalFormat}", _formatter.OriginalFormat);
+                            return new KeyValuePair<string, object>(OriginalFormatKey, _formatter.OriginalFormat);
                         default:
                             throw new IndexOutOfRangeException(nameof(index));
                     }
@@ -341,16 +380,70 @@ namespace Microsoft.Extensions.Logging
                 }
             }
 
-
             public override string ToString() => _formatter.Format(_value0);
 
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
             }
+
+            public bool ContainsKey(string key)
+            {
+                return key == _formatter.ValueNames[0] ||
+                       key == OriginalFormatKey;
+            }
+
+            public bool TryGetValue(string key, out object value)
+            {
+                if (key == _formatter.ValueNames[0])
+                {
+                    value = _value0;
+                    return true;
+                }
+
+                if (key == OriginalFormatKey)
+                {
+                    value = _formatter.OriginalFormat;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            }
+
+            public object this[string key]
+            {
+                get
+                {
+                    if (TryGetValue(key, out var value))
+                    {
+                        return value;
+                    }
+
+                    throw new KeyNotFoundException($"The key '{key}' was not found");
+                }
+            }
+
+            public IEnumerable<string> Keys
+            {
+                get
+                {
+                    yield return _formatter.ValueNames[0];
+                    yield return OriginalFormatKey;
+                }
+            }
+
+            public IEnumerable<object> Values
+            {
+                get
+                {
+                    yield return _value0;
+                    yield return _formatter.OriginalFormat;
+                }
+            }
         }
 
-        private readonly struct LogValues<T0, T1> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0, T1> : IReadOnlyList<KeyValuePair<string, object>>, IReadOnlyDictionary<string, object>
         {
             public static readonly Func<LogValues<T0, T1>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -399,9 +492,73 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public bool ContainsKey(string key)
+            {
+                return key == _formatter.ValueNames[0] ||
+                       key == _formatter.ValueNames[1] ||
+                       key == OriginalFormatKey;
+            }
+
+            public bool TryGetValue(string key, out object value)
+            {
+                if (key == _formatter.ValueNames[0])
+                {
+                    value = _value0;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[1])
+                {
+                    value = _value1;
+                    return true;
+                }
+
+                if (key == OriginalFormatKey)
+                {
+                    value = _formatter.OriginalFormat;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            }
+
+            public object this[string key]
+            {
+                get
+                {
+                    if (TryGetValue(key, out var value))
+                    {
+                        return value;
+                    }
+
+                    throw new KeyNotFoundException($"The key '{key}' was not found");
+                }
+            }
+
+            public IEnumerable<string> Keys
+            {
+                get
+                {
+                    yield return _formatter.ValueNames[0];
+                    yield return _formatter.ValueNames[1];
+                    yield return OriginalFormatKey;
+                }
+            }
+
+            public IEnumerable<object> Values
+            {
+                get
+                {
+                    yield return _value0;
+                    yield return _value1;
+                    yield return _formatter.OriginalFormat;
+                }
+            }
         }
 
-        private readonly struct LogValues<T0, T1, T2> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0, T1, T2> : IReadOnlyList<KeyValuePair<string, object>>, IReadOnlyDictionary<string, object>
         {
             public static readonly Func<LogValues<T0, T1, T2>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -454,9 +611,82 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public bool ContainsKey(string key)
+            {
+                return key == _formatter.ValueNames[0] ||
+                       key == _formatter.ValueNames[1] ||
+                       key == _formatter.ValueNames[2] ||
+                       key == OriginalFormatKey;
+            }
+
+            public bool TryGetValue(string key, out object value)
+            {
+                if (key == _formatter.ValueNames[0])
+                {
+                    value = _value0;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[1])
+                {
+                    value = _value1;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[2])
+                {
+                    value = _value2;
+                    return true;
+                }
+
+                if (key == OriginalFormatKey)
+                {
+                    value = _formatter.OriginalFormat;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            }
+
+            public object this[string key]
+            {
+                get
+                {
+                    if (TryGetValue(key, out var value))
+                    {
+                        return value;
+                    }
+
+                    throw new KeyNotFoundException($"The key '{key}' was not found");
+                }
+            }
+
+            public IEnumerable<string> Keys
+            {
+                get
+                {
+                    yield return _formatter.ValueNames[0];
+                    yield return _formatter.ValueNames[1];
+                    yield return _formatter.ValueNames[2];
+                    yield return OriginalFormatKey;
+                }
+            }
+
+            public IEnumerable<object> Values
+            {
+                get
+                {
+                    yield return _value0;
+                    yield return _value1;
+                    yield return _value2;
+                    yield return _formatter.OriginalFormat;
+                }
+            }
         }
 
-        private readonly struct LogValues<T0, T1, T2, T3> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0, T1, T2, T3> : IReadOnlyList<KeyValuePair<string, object>>, IReadOnlyDictionary<string, object>
         {
             public static readonly Func<LogValues<T0, T1, T2, T3>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -515,9 +745,91 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public bool ContainsKey(string key)
+            {
+                return key == _formatter.ValueNames[0] ||
+                       key == _formatter.ValueNames[1] ||
+                       key == _formatter.ValueNames[2] ||
+                       key == _formatter.ValueNames[3] ||
+                       key == OriginalFormatKey;
+            }
+
+            public bool TryGetValue(string key, out object value)
+            {
+                if (key == _formatter.ValueNames[0])
+                {
+                    value = _value0;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[1])
+                {
+                    value = _value1;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[2])
+                {
+                    value = _value2;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[3])
+                {
+                    value = _value3;
+                    return true;
+                }
+
+                if (key == OriginalFormatKey)
+                {
+                    value = _formatter.OriginalFormat;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            }
+
+            public object this[string key]
+            {
+                get
+                {
+                    if (TryGetValue(key, out var value))
+                    {
+                        return value;
+                    }
+
+                    throw new KeyNotFoundException($"The key '{key}' was not found");
+                }
+            }
+
+            public IEnumerable<string> Keys
+            {
+                get
+                {
+                    yield return _formatter.ValueNames[0];
+                    yield return _formatter.ValueNames[1];
+                    yield return _formatter.ValueNames[2];
+                    yield return _formatter.ValueNames[3];
+                    yield return OriginalFormatKey;
+                }
+            }
+
+            public IEnumerable<object> Values
+            {
+                get
+                {
+                    yield return _value0;
+                    yield return _value1;
+                    yield return _value2;
+                    yield return _value3;
+                    yield return _formatter.OriginalFormat;
+                }
+            }
         }
 
-        private readonly struct LogValues<T0, T1, T2, T3, T4> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0, T1, T2, T3, T4> : IReadOnlyList<KeyValuePair<string, object>>, IReadOnlyDictionary<string, object>
         {
             public static readonly Func<LogValues<T0, T1, T2, T3, T4>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -579,6 +891,97 @@ namespace Microsoft.Extensions.Logging
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
+            }
+
+            public bool ContainsKey(string key)
+            {
+                return key == _formatter.ValueNames[0] ||
+                       key == _formatter.ValueNames[1] ||
+                       key == _formatter.ValueNames[2] ||
+                       key == _formatter.ValueNames[3] ||
+                       key == _formatter.ValueNames[4] ||
+                       key == OriginalFormatKey;
+            }
+
+            public bool TryGetValue(string key, out object value)
+            {
+                if (key == _formatter.ValueNames[0])
+                {
+                    value = _value0;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[1])
+                {
+                    value = _value1;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[2])
+                {
+                    value = _value2;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[3])
+                {
+                    value = _value3;
+                    return true;
+                }
+
+                if (key == _formatter.ValueNames[4])
+                {
+                    value = _value4;
+                    return true;
+                }
+
+                if (key == OriginalFormatKey)
+                {
+                    value = _formatter.OriginalFormat;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            }
+
+            public object this[string key]
+            {
+                get
+                {
+                    if (TryGetValue(key, out var value))
+                    {
+                        return value;
+                    }
+
+                    throw new KeyNotFoundException($"The key '{key}' was not found");
+                }
+            }
+
+            public IEnumerable<string> Keys
+            {
+                get
+                {
+                    yield return _formatter.ValueNames[0];
+                    yield return _formatter.ValueNames[1];
+                    yield return _formatter.ValueNames[2];
+                    yield return _formatter.ValueNames[3];
+                    yield return _formatter.ValueNames[4];
+                    yield return OriginalFormatKey;
+                }
+            }
+
+            public IEnumerable<object> Values
+            {
+                get
+                {
+                    yield return _value0;
+                    yield return _value1;
+                    yield return _value2;
+                    yield return _value3;
+                    yield return _value4;
+                    yield return _formatter.OriginalFormat;
+                }
             }
         }
 
