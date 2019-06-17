@@ -24,6 +24,14 @@ namespace Microsoft.Extensions.Hosting
         protected abstract Task ExecuteAsync(CancellationToken stoppingToken);
 
         /// <summary>
+        /// This property give information about the current status of the background service task,
+        /// it allows the developer to see if the service is running or has faulted etc. handy for
+        /// things like watchdog processes etc.
+        /// </summary>
+        public TaskStatus Status => 
+            _executingTask.Status;
+
+        /// <summary>
         /// Triggered when the application host is ready to start the service.
         /// </summary>
         /// <param name="cancellationToken">Indicates that the start process has been aborted.</param>
