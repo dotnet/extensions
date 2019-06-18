@@ -156,7 +156,7 @@ namespace Microsoft.Extensions.Localization
                 var assembly = typeInfo.Assembly;
 
                 return CreateResourceManagerStringLocalizer(assembly, baseName);
-            }
+            });
         }
 
         /// <summary>
