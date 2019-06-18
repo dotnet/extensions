@@ -149,13 +149,14 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(resourceSource));
             }
 
-            var typeInfo = resourceSource.GetTypeInfo();
+            return _localizerCache.GetOrAdd(resourceSource.AssemblyQualifiedName, _ =>
+            {
+                var typeInfo = resourceSource.GetTypeInfo();
+                var baseName = GetResourcePrefix(typeInfo);
+                var assembly = typeInfo.Assembly;
 
-            var baseName = GetResourcePrefix(typeInfo);
-
-            var assembly = typeInfo.Assembly;
-
-            return _localizerCache.GetOrAdd(baseName, _ => CreateResourceManagerStringLocalizer(assembly, baseName));
+                return CreateResourceManagerStringLocalizer(assembly, baseName);
+            }
         }
 
         /// <summary>
