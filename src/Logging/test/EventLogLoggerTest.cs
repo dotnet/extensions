@@ -61,10 +61,9 @@ namespace Microsoft.Extensions.Logging
             var windowsEventLog = new WindowsEventLog(logName, machineName, sourceName);
 
             // Assert
-            Assert.NotNull(windowsEventLog.DiagnosticsEventLog);
-            Assert.Equal(logName, windowsEventLog.DiagnosticsEventLog.Log);
-            Assert.Equal(machineName, windowsEventLog.DiagnosticsEventLog.MachineName);
-            Assert.Equal(sourceName, windowsEventLog.DiagnosticsEventLog.Source);
+            Assert.Equal(logName, windowsEventLog.LogName);
+            Assert.Equal(machineName, windowsEventLog.MachineName);
+            Assert.Equal(sourceName, windowsEventLog.SourceName);
         }
 
         [ConditionalFact]
@@ -75,9 +74,9 @@ namespace Microsoft.Extensions.Logging
 
             // Assert
             var windowsEventLog = Assert.IsType<WindowsEventLog>(eventLogLogger.EventLog);
-            Assert.Equal("Application", windowsEventLog.DiagnosticsEventLog.Log);
-            Assert.Equal(".NET Runtime", windowsEventLog.DiagnosticsEventLog.Source);
-            Assert.Equal(".", windowsEventLog.DiagnosticsEventLog.MachineName);
+            Assert.Equal("Application", windowsEventLog.LogName);
+            Assert.Equal(".NET Runtime", windowsEventLog.SourceName);
+            Assert.Equal(".", windowsEventLog.MachineName);
         }
 
         [ConditionalFact]
@@ -97,9 +96,9 @@ namespace Microsoft.Extensions.Logging
 
             // Assert
             var windowsEventLog = Assert.IsType<WindowsEventLog>(eventLogLogger.EventLog);
-            Assert.Equal(settings.LogName, windowsEventLog.DiagnosticsEventLog.Log);
-            Assert.Equal(settings.SourceName, windowsEventLog.DiagnosticsEventLog.Source);
-            Assert.Equal(settings.MachineName, windowsEventLog.DiagnosticsEventLog.MachineName);
+            Assert.Equal(settings.LogName, windowsEventLog.LogName);
+            Assert.Equal(settings.SourceName, windowsEventLog.SourceName);
+            Assert.Equal(settings.MachineName, windowsEventLog.MachineName);
         }
 
         [Fact]

@@ -15,10 +15,14 @@ namespace Microsoft.Extensions.Logging.EventLog
 
         public WindowsEventLog(string logName, string machineName, string sourceName)
         {
-            DiagnosticsEventLog = new System.Diagnostics.EventLog(logName, machineName, sourceName);
+            LogName = logName;
+            MachineName = machineName;
+            SourceName = sourceName;
         }
 
-        public System.Diagnostics.EventLog DiagnosticsEventLog { get; }
+        public string LogName { get; }
+        public string MachineName { get; }
+        public string SourceName { get; }
 
         public int MaxMessageSize => MaximumMessageSize;
 
@@ -30,7 +34,8 @@ namespace Microsoft.Extensions.Logging.EventLog
             {
                 if (_enabled)
                 {
-                    DiagnosticsEventLog.WriteEvent(new EventInstance(eventID, category, type), message);
+                    using var diagnosticsEventLog = new System.Diagnostics.EventLog(LogName, MachineName, SourceName);
+                    diagnosticsEventLog.WriteEvent(new EventInstance(eventID, category, type), message);
                 }
             }
             catch (SecurityException sx)
