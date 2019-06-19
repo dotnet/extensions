@@ -36,6 +36,7 @@
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
       $(RestoreSources);
       https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json;
+      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
       https://dotnet.myget.org/F/roslyn/api/v3/index.json;
       https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
       https://vside.myget.org/F/vssdk/api/v3/index.json;
