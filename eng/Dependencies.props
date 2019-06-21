@@ -20,7 +20,6 @@ and are generated based on the last package release.
   <ItemGroup Label=".NET team dependencies">
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
-    <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
@@ -72,6 +71,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="xunit.assert" Version="$(XUnitVersion)" />
     <LatestPackageReference Include="xunit.extensibility.core" Version="$(XUnitVersion)" />
     <LatestPackageReference Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />
+    <LatestPackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19128.1-Preview" />
 
     <!-- External DI container references -->
     <LatestPackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />
