@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 {
     public class SqlServerCacheWithDatabaseTest
     {
-        private const string SkipReason = "This requires SQL Server database to be set up";
+        private const string SkipReason = null; //"This requires SQL Server database to be set up";
 
         private const string ConnectionStringKey = "ConnectionString";
         private const string SchemaNameKey = "SchemaName";
