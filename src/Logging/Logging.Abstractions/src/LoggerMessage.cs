@@ -264,7 +264,7 @@ namespace Microsoft.Extensions.Logging
             return logValuesFormatter;
         }
 
-        private readonly struct LogValues : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues : IReadOnlyList<KeyValuePair<string, object>>, ILogValues
         {
             public static readonly Func<LogValues, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -300,9 +300,15 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public string OriginalFormat => _formatter.OriginalFormat;
+
+            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            {
+            }
         }
 
-        private readonly struct LogValues<T0> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0> : IReadOnlyList<KeyValuePair<string, object>>, ILogValues
         {
             public static readonly Func<LogValues<T0>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -348,9 +354,16 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public string OriginalFormat => _formatter.OriginalFormat;
+
+            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            {
+                visitor.Visit(_value0);
+            }
         }
 
-        private readonly struct LogValues<T0, T1> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0, T1> : IReadOnlyList<KeyValuePair<string, object>>, ILogValues
         {
             public static readonly Func<LogValues<T0, T1>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -399,9 +412,17 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public string OriginalFormat => _formatter.OriginalFormat;
+
+            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            {
+                visitor.Visit(_value0);
+                visitor.Visit(_value1);
+            }
         }
 
-        private readonly struct LogValues<T0, T1, T2> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0, T1, T2> : IReadOnlyList<KeyValuePair<string, object>>, ILogValues
         {
             public static readonly Func<LogValues<T0, T1, T2>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -454,9 +475,18 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public string OriginalFormat => _formatter.OriginalFormat;
+
+            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            {
+                visitor.Visit(_value0);
+                visitor.Visit(_value1);
+                visitor.Visit(_value2);
+            }
         }
 
-        private readonly struct LogValues<T0, T1, T2, T3> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0, T1, T2, T3> : IReadOnlyList<KeyValuePair<string, object>>, ILogValues
         {
             public static readonly Func<LogValues<T0, T1, T2, T3>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -515,9 +545,19 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public string OriginalFormat => _formatter.OriginalFormat;
+
+            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            {
+                visitor.Visit(_value0);
+                visitor.Visit(_value1);
+                visitor.Visit(_value2);
+                visitor.Visit(_value3);
+            }
         }
 
-        private readonly struct LogValues<T0, T1, T2, T3, T4> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0, T1, T2, T3, T4> : IReadOnlyList<KeyValuePair<string, object>>, ILogValues
         {
             public static readonly Func<LogValues<T0, T1, T2, T3, T4>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -580,9 +620,20 @@ namespace Microsoft.Extensions.Logging
             {
                 return GetEnumerator();
             }
+
+            public string OriginalFormat => _formatter.OriginalFormat;
+
+            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            {
+                visitor.Visit(_value0);
+                visitor.Visit(_value1);
+                visitor.Visit(_value2);
+                visitor.Visit(_value3);
+                visitor.Visit(_value4);
+            }
         }
 
-        private readonly struct LogValues<T0, T1, T2, T3, T4, T5> : IReadOnlyList<KeyValuePair<string, object>>
+        private readonly struct LogValues<T0, T1, T2, T3, T4, T5> : IReadOnlyList<KeyValuePair<string, object>>, ILogValues
         {
             public static readonly Func<LogValues<T0, T1, T2, T3, T4, T5>, Exception, string> Callback = (state, exception) => state.ToString();
 
@@ -648,6 +699,18 @@ namespace Microsoft.Extensions.Logging
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
+            }
+
+            public string OriginalFormat => _formatter.OriginalFormat;
+
+            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            {
+                visitor.Visit(_value0);
+                visitor.Visit(_value1);
+                visitor.Visit(_value2);
+                visitor.Visit(_value3);
+                visitor.Visit(_value4);
+                visitor.Visit(_value5);
             }
         }
     }
