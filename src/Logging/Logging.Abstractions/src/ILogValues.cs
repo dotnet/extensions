@@ -9,16 +9,11 @@ namespace Microsoft.Extensions.Logging
     public interface ILogValues
     {
         /// <summary>
-        /// The original format of the log.
-        /// </summary>
-        string OriginalFormat { get; }
-
-        /// <summary>
         /// Visits values of the log entry.
         /// </summary>
-        /// <typeparam name="TVisitor">The type of the visitor.</typeparam>
-        /// <param name="visitor">The visitor to visit log values.</param>
-        void Accept<TVisitor>(ref TVisitor visitor)
-            where TVisitor : ILogValueVisitor;
+        /// <typeparam name="TTypedLogger">The type of the logger.</typeparam>
+        /// <param name="logger">The logger that is able to logging strongly-typed values. It's passed via ref to enable typed wrappers that are structs.</param>
+        void Log<TTypedLogger>(ref TTypedLogger logger)
+            where TTypedLogger : ITypedLogger;
     }
 }

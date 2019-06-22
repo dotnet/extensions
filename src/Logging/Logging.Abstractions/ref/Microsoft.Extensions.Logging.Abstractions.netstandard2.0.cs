@@ -42,9 +42,23 @@ namespace Microsoft.Extensions.Logging
     public partial interface ILogger<out TCategoryName> : Microsoft.Extensions.Logging.ILogger
     {
     }
+    public partial interface ILogValues
+    {
+        void Log<TTypedLogger>(ref TTypedLogger logger) where TTypedLogger : Microsoft.Extensions.Logging.ITypedLogger;
+    }
     public partial interface ISupportExternalScope
     {
         void SetScopeProvider(Microsoft.Extensions.Logging.IExternalScopeProvider scopeProvider);
+    }
+    public partial interface ITypedLogger
+    {
+        void OnFormatted(string logEntry);
+        void OnFormatted<T0>(string originalFormat, T0 value0);
+        void OnFormatted<T0, T1>(string originalFormat, T0 value0, T1 value1);
+        void OnFormatted<T0, T1, T2>(string originalFormat, T0 value0, T1 value1, T2 value2);
+        void OnFormatted<T0, T1, T2, T3>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3);
+        void OnFormatted<T0, T1, T2, T3, T4>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4);
+        void OnFormatted<T0, T1, T2, T3, T4, T5>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5);
     }
     public static partial class LoggerExtensions
     {

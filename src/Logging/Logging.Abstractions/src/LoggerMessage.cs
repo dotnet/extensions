@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Extensions.Logging
@@ -301,10 +302,10 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public string OriginalFormat => _formatter.OriginalFormat;
-
-            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            public void Log<TTypedLogger>(ref TTypedLogger logger)
+                where TTypedLogger : ITypedLogger
             {
+                logger.OnFormatted(_formatter.OriginalFormat);
             }
         }
 
@@ -355,11 +356,10 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public string OriginalFormat => _formatter.OriginalFormat;
-
-            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            public void Log<TTypedLogger>(ref TTypedLogger logger)
+                where TTypedLogger : ITypedLogger
             {
-                visitor.Visit(_value0);
+                logger.OnFormatted(_formatter.OriginalFormat, _value0);
             }
         }
 
@@ -413,12 +413,10 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public string OriginalFormat => _formatter.OriginalFormat;
-
-            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            public void Log<TTypedLogger>(ref TTypedLogger logger)
+                where TTypedLogger : ITypedLogger
             {
-                visitor.Visit(_value0);
-                visitor.Visit(_value1);
+                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1);
             }
         }
 
@@ -476,13 +474,10 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public string OriginalFormat => _formatter.OriginalFormat;
-
-            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            public void Log<TTypedLogger>(ref TTypedLogger logger)
+                where TTypedLogger : ITypedLogger
             {
-                visitor.Visit(_value0);
-                visitor.Visit(_value1);
-                visitor.Visit(_value2);
+                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1, _value2);
             }
         }
 
@@ -546,14 +541,11 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public string OriginalFormat => _formatter.OriginalFormat;
 
-            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            public void Log<TTypedLogger>(ref TTypedLogger logger)
+                where TTypedLogger : ITypedLogger
             {
-                visitor.Visit(_value0);
-                visitor.Visit(_value1);
-                visitor.Visit(_value2);
-                visitor.Visit(_value3);
+                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1, _value2, _value3);
             }
         }
 
@@ -621,15 +613,10 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public string OriginalFormat => _formatter.OriginalFormat;
-
-            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            public void Log<TTypedLogger>(ref TTypedLogger logger)
+                where TTypedLogger : ITypedLogger
             {
-                visitor.Visit(_value0);
-                visitor.Visit(_value1);
-                visitor.Visit(_value2);
-                visitor.Visit(_value3);
-                visitor.Visit(_value4);
+                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1, _value2, _value3, _value4);
             }
         }
 
@@ -701,16 +688,10 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public string OriginalFormat => _formatter.OriginalFormat;
-
-            public void Accept<TVisitor>(ref TVisitor visitor) where TVisitor : ILogValueVisitor
+            public void Log<TTypedLogger>(ref TTypedLogger logger)
+                where TTypedLogger : ITypedLogger
             {
-                visitor.Visit(_value0);
-                visitor.Visit(_value1);
-                visitor.Visit(_value2);
-                visitor.Visit(_value3);
-                visitor.Visit(_value4);
-                visitor.Visit(_value5);
+                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1, _value2, _value3, _value4, _value5);
             }
         }
     }
