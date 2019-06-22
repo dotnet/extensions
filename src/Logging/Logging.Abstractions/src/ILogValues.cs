@@ -4,7 +4,7 @@
 namespace Microsoft.Extensions.Logging
 {
     /// <summary>
-    /// Provides an interface for a state of <see cref="ILogger.Log{TState}"/> that wants to make their values visitable without boxing them to objects
+    /// Provides an interface for a state of <see cref="ILogger.Log{TState}"/> that wants to make their values visitable without boxing them to objects.
     /// </summary>
     public interface ILogValues
     {
