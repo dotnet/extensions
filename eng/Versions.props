@@ -44,9 +44,9 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppRefPackageVersion>3.0.0-preview7-27822-04</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-preview7-27822-04</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0-preview7-27822-04</NETStandardLibraryRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>3.0.0-preview7-27822-05</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-preview7-27822-05</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0-preview7-27822-05</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview7.19320.1</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview7.19320.1</SystemComponentModelAnnotationsPackageVersion>
