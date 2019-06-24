@@ -6,8 +6,9 @@ using System.Composition;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.Editor.Razor.Documents;
 
-namespace Microsoft.VisualStudio.Editor.Razor.Documents
+namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 {
     [Shared]
     [ExportWorkspaceServiceFactory(typeof(FileChangeTrackerFactory), ServiceLayer.Host)]

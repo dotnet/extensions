@@ -3,8 +3,9 @@
 
 using System;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.Editor.Razor.Documents;
 
-namespace Microsoft.VisualStudio.Editor.Razor.Documents
+namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 {
     internal class VisualStudioMacFileChangeTrackerFactory : FileChangeTrackerFactory
     {

@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
-namespace Microsoft.VisualStudio.Editor.Razor.Documents
+namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 {
     public class VisualStudioMacFileChangeTrackerTest : ForegroundDispatcherTestBase
     {
