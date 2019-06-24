@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Logging
     }
     public partial interface ILogValues
     {
-        void Log<TTypedLogger>(ref TTypedLogger logger) where TTypedLogger : Microsoft.Extensions.Logging.ITypedLogger;
+        void Log(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, Microsoft.Extensions.Logging.ITypedLogger logger);
     }
     public partial interface ISupportExternalScope
     {
@@ -52,13 +52,13 @@ namespace Microsoft.Extensions.Logging
     }
     public partial interface ITypedLogger
     {
-        void OnFormatted(string logEntry);
-        void OnFormatted<T0>(string originalFormat, T0 value0);
-        void OnFormatted<T0, T1>(string originalFormat, T0 value0, T1 value1);
-        void OnFormatted<T0, T1, T2>(string originalFormat, T0 value0, T1 value1, T2 value2);
-        void OnFormatted<T0, T1, T2, T3>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3);
-        void OnFormatted<T0, T1, T2, T3, T4>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4);
-        void OnFormatted<T0, T1, T2, T3, T4, T5>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5);
+        void Log(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string message);
+        void Log<T0>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string originalFormat, T0 value0);
+        void Log<T0, T1>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string originalFormat, T0 value0, T1 value1);
+        void Log<T0, T1, T2>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string originalFormat, T0 value0, T1 value1, T2 value2);
+        void Log<T0, T1, T2, T3>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3);
+        void Log<T0, T1, T2, T3, T4>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4);
+        void Log<T0, T1, T2, T3, T4, T5>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5);
     }
     public static partial class LoggerExtensions
     {
