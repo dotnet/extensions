@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,26 +11,46 @@ namespace Microsoft.Extensions.Logging.Performance
     [AspNetCoreBenchmark]
     public class FormattingBenchmarks : LoggingBenchmarkBase
     {
-        [ParamsSource(nameof(Loggers))]
-        public ILogger Logger;
+        ILogger formattingLogger;
+        ILogger rawLogger;
 
         [Benchmark]
-        public void TwoArguments()
+        public void TwoArguments_Formatting()
         {
-            TwoArgumentErrorMessage(Logger, 1, "string", Exception);
+            TwoArgumentErrorMessage(formattingLogger, 1, "string", Exception);
+        }
+
+        [Benchmark]
+        public void TwoArguments_Raw()
+        {
+            TwoArgumentErrorMessage(rawLogger, 1, "string", Exception);
+        }
+
+        [Benchmark]
+        public void TwoArguments_NoEx_Formatting()
+        {
+            TwoArgumentErrorMessage(formattingLogger, 1, "string", null);
+        }
+
+        [Benchmark]
+        [DisassemblyDiagnoser]
+        public void TwoArguments_NoEx_Raw()
+        {
+            TwoArgumentErrorMessage(rawLogger, 1, "string", null);
         }
 
         [Benchmark(Baseline = true)]
         public void NoArguments()
         {
-            NoArgumentErrorMessage(Logger, Exception);
+            NoArgumentErrorMessage(formattingLogger, Exception);
         }
 
-        public IEnumerable<ILogger> Loggers => new[]
+        [GlobalSetup]
+        public void GlobalSetup()
         {
-            CreateLogger<MessageFormattingLogger>(),
-            CreateLogger<MessageDirectLogger>()
-        };
+            formattingLogger = CreateLogger<MessageFormattingLogger>();
+            rawLogger = CreateLogger<MessageRawLogger>();
+        }
 
         static ILogger CreateLogger<TLogger>()
             where TLogger : ILogger, new()
@@ -57,35 +77,28 @@ namespace Microsoft.Extensions.Logging.Performance
             {
                 return null;
             }
-
-            public override string ToString()
-            {
-                return "Formatting logger";
-            }
         }
 
-        class MessageDirectLogger : ILogger
+        class MessageRawLogger : ILogger
         {
-            readonly IExternalLogger logger;
+            readonly ITypedLogger logger;
 
-            public MessageDirectLogger()
+            public MessageRawLogger()
             {
                 logger = new NoopExternalLogger();
             }
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
-                if (state is ILogValues logValues)
+                if (exception != null)
                 {
-                    if (exception == null)
-                    {
-                        var wrapper = new Wrapper(logger, logLevel, eventId);
-                        logValues.Log(ref wrapper);
-                    }
-                    else
-                    {
-                        formatter(state, exception);
-                    }
+                    formatter(state, exception);
+                    return;
+                }
+
+                if (state is ILogValues)
+                {
+                    ((ILogValues)state).Log(logLevel, eventId, logger);
                 }
                 else
                 {
@@ -103,67 +116,38 @@ namespace Microsoft.Extensions.Logging.Performance
                 return null;
             }
 
-            public override string ToString()
+            class NoopExternalLogger : ITypedLogger
             {
-                return "Formatting logger";
-            }
-
-            readonly struct Wrapper : ITypedLogger
-            {
-                readonly IExternalLogger logger;
-                readonly LogLevel logValues;
-                readonly EventId eventId;
-
-                public Wrapper(IExternalLogger logger, LogLevel logValues, in EventId eventId)
+                public void Log(LogLevel logLevel, EventId eventId, string message)
                 {
-                    this.logger = logger;
-                    this.logValues = logValues;
-                    this.eventId = eventId;
                 }
 
-                public void OnFormatted(string logEntry) => logger.Log(logEntry);
+                public void Log<T0>(LogLevel logLevel, EventId eventId, string originalFormat, T0 value0)
+                {
+                }
 
-                public void OnFormatted<T0>(string originalFormat, T0 value0) => logger.Log(originalFormat, value0);
+                public void Log<T0, T1>(LogLevel logLevel, EventId eventId, string originalFormat, T0 value0, T1 value1)
+                {
+                }
 
-                public void OnFormatted<T0, T1>(string originalFormat, T0 value0, T1 value1) => logger.Log(originalFormat, value0, value1);
+                public void Log<T0, T1, T2>(LogLevel logLevel, EventId eventId, string originalFormat, T0 value0, T1 value1, T2 value2)
+                {
+                }
 
-                public void OnFormatted<T0, T1, T2>(string originalFormat, T0 value0, T1 value1, T2 value2) => logger.Log(originalFormat, value0, value1, value2);
+                public void Log<T0, T1, T2, T3>(LogLevel logLevel, EventId eventId, string originalFormat, T0 value0, T1 value1, T2 value2,
+                    T3 value3)
+                {
+                }
 
-                public void OnFormatted<T0, T1, T2, T3>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3) => logger.Log(originalFormat, value0, value1, value2, value3);
+                public void Log<T0, T1, T2, T3, T4>(LogLevel logLevel, EventId eventId, string originalFormat, T0 value0, T1 value1, T2 value2,
+                    T3 value3, T4 value4)
+                {
+                }
 
-                public void OnFormatted<T0, T1, T2, T3, T4>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4) => logger.Log(originalFormat, value0, value1, value2, value3, value4);
-
-                public void OnFormatted<T0, T1, T2, T3, T4, T5>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4,
-                    T5 value5) =>
-                    logger.Log(originalFormat, value0, value1, value2, value3, value4, value5);
-            }
-
-            interface IExternalLogger
-            {
-                void Log(string logEntry);
-                void Log<T0>(string originalFormat, T0 value0);
-                void Log<T0, T1>(string originalFormat, T0 value0, T1 value1);
-                void Log<T0, T1, T2>(string originalFormat, T0 value0, T1 value1, T2 value2);
-                void Log<T0, T1, T2, T3>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3);
-                void Log<T0, T1, T2, T3, T4>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4);
-                void Log<T0, T1, T2, T3, T4, T5>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5);
-            }
-
-            class NoopExternalLogger : IExternalLogger
-            {
-                public void Log(string logEntry) { }
-
-                public void Log<T0>(string originalFormat, T0 value0) { }
-
-                public void Log<T0, T1>(string originalFormat, T0 value0, T1 value1) { }
-
-                public void Log<T0, T1, T2>(string originalFormat, T0 value0, T1 value1, T2 value2) { }
-
-                public void Log<T0, T1, T2, T3>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3) { }
-
-                public void Log<T0, T1, T2, T3, T4>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4) { }
-
-                public void Log<T0, T1, T2, T3, T4, T5>(string originalFormat, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5) { }
+                public void Log<T0, T1, T2, T3, T4, T5>(LogLevel logLevel, EventId eventId, string originalFormat, T0 value0, T1 value1,
+                    T2 value2, T3 value3, T4 value4, T5 value5)
+                {
+                }
             }
         }
     }

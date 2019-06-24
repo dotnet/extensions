@@ -302,10 +302,9 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public void Log<TTypedLogger>(ref TTypedLogger logger)
-                where TTypedLogger : ITypedLogger
+            public void Log(LogLevel logLevel, EventId eventId, ITypedLogger logger)
             {
-                logger.OnFormatted(_formatter.OriginalFormat);
+                logger.Log(logLevel, eventId, _formatter.OriginalFormat);
             }
         }
 
@@ -356,10 +355,9 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public void Log<TTypedLogger>(ref TTypedLogger logger)
-                where TTypedLogger : ITypedLogger
+            public void Log(LogLevel logLevel, EventId eventId, ITypedLogger logger)
             {
-                logger.OnFormatted(_formatter.OriginalFormat, _value0);
+                logger.Log(logLevel, eventId, _formatter.OriginalFormat, _value0);
             }
         }
 
@@ -413,10 +411,9 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public void Log<TTypedLogger>(ref TTypedLogger logger)
-                where TTypedLogger : ITypedLogger
+            public void Log(LogLevel logLevel, EventId eventId, ITypedLogger logger)
             {
-                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1);
+                logger.Log(logLevel, eventId, _formatter.OriginalFormat, _value0, _value1);
             }
         }
 
@@ -474,10 +471,9 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public void Log<TTypedLogger>(ref TTypedLogger logger)
-                where TTypedLogger : ITypedLogger
+            public void Log(LogLevel logLevel, EventId eventId, ITypedLogger logger)
             {
-                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1, _value2);
+                logger.Log(logLevel, eventId, _formatter.OriginalFormat, _value0, _value1, _value2);
             }
         }
 
@@ -542,10 +538,9 @@ namespace Microsoft.Extensions.Logging
             }
 
 
-            public void Log<TTypedLogger>(ref TTypedLogger logger)
-                where TTypedLogger : ITypedLogger
+            public void Log(LogLevel logLevel, EventId eventId, ITypedLogger logger)
             {
-                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1, _value2, _value3);
+                logger.Log(logLevel, eventId, _formatter.OriginalFormat, _value0, _value1, _value2, _value3);
             }
         }
 
@@ -613,10 +608,9 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public void Log<TTypedLogger>(ref TTypedLogger logger)
-                where TTypedLogger : ITypedLogger
+            public void Log(LogLevel logLevel, EventId eventId, ITypedLogger logger)
             {
-                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1, _value2, _value3, _value4);
+                logger.Log(logLevel, eventId, _formatter.OriginalFormat, _value0, _value1, _value2, _value3, _value4);
             }
         }
 
@@ -688,10 +682,9 @@ namespace Microsoft.Extensions.Logging
                 return GetEnumerator();
             }
 
-            public void Log<TTypedLogger>(ref TTypedLogger logger)
-                where TTypedLogger : ITypedLogger
+            public void Log(LogLevel logLevel, EventId eventId, ITypedLogger logger)
             {
-                logger.OnFormatted(_formatter.OriginalFormat, _value0, _value1, _value2, _value3, _value4, _value5);
+                logger.Log(logLevel, eventId, _formatter.OriginalFormat, _value0, _value1, _value2, _value3, _value4, _value5);
             }
         }
     }

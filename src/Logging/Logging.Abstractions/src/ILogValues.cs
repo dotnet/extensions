@@ -11,9 +11,9 @@ namespace Microsoft.Extensions.Logging
         /// <summary>
         /// Visits values of the log entry.
         /// </summary>
-        /// <typeparam name="TTypedLogger">The type of the logger.</typeparam>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="eventId">The eventId.</param>
         /// <param name="logger">The logger that is able to logging strongly-typed values. It's passed via ref to enable typed wrappers that are structs.</param>
-        void Log<TTypedLogger>(ref TTypedLogger logger)
-            where TTypedLogger : ITypedLogger;
+        void Log(LogLevel logLevel, EventId eventId, ITypedLogger logger);
     }
 }
