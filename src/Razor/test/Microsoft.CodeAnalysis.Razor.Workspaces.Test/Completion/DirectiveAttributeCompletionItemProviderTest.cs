@@ -97,7 +97,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
 
             // Assert
-            AssertContains(completions, "@bind");
+            AssertContains(completions, "bind", "@bind");
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@bind", "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            AssertContains(completions, "@bind");
+            AssertContains(completions, "bind", "@bind");
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@", "input", EmptyAttributes, DefaultTagHelperDocumentContext);
 
             // Assert
-            AssertContains(completions, "@bind");
+            AssertContains(completions, "bind", "@bind");
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@", "input", EmptyAttributes, DefaultTagHelperDocumentContext);
 
             // Assert
-            AssertContains(completions, "@bind-", "@bind-...");
+            AssertContains(completions, "bind-", "@bind-...");
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@", "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            AssertContains(completions, "@bind");
+            AssertContains(completions, "bind", "@bind");
         }
 
         [Fact]
@@ -198,10 +198,10 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@", "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            AssertDoesNotContain(completions, "@bind");
+            AssertDoesNotContain(completions, "bind", "@bind");
         }
 
-        private static void AssertContains(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText = null)
+        private static void AssertContains(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText)
         {
             displayText = displayText ?? insertText;
 
@@ -213,7 +213,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             });
         }
 
-        private static void AssertDoesNotContain(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText = null)
+        private static void AssertDoesNotContain(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText)
         {
             displayText = displayText ?? insertText;
 

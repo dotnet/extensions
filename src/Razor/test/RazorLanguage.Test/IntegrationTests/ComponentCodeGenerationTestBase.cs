@@ -959,6 +959,34 @@ namespace Test
         }
 
         [Fact]
+        public void BindToElementWithSuffix_OverridesEvent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", ""value"", ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+<div @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void BuiltIn_BindToInputWithoutType_WritesAttributes()
         {
             // Arrange
@@ -1076,6 +1104,60 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <input type=""text"" @bind-value=""@CurrentDate"" @bind-value:event=""onchange"" @bind-value:format=""MM/dd"" />
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputText_CanOverrideEvent()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input @bind=""@CurrentDate"" @bind:event=""oninput"" @bind:format=""MM/dd"" />
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputWithSuffix()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input @bind-value=""@CurrentDate"" @bind-value:format=""MM/dd"" />
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputWithSuffix_CanOverrideEvent()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input @bind-value=""@CurrentDate"" @bind-value:event=""oninput"" @bind-value:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
@@ -2118,7 +2200,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<DynamicElement @onclick=""@OnClick"" />
+<DynamicElement @onclick=""OnClick"" />
 
 @code {
     private Action<UIMouseEventArgs> OnClick { get; set; }
@@ -2172,7 +2254,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""foo"" />");
+<input onclick=""foo"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2187,7 +2269,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@(() => { })"" />");
+<input @onclick=""() => { }"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2202,7 +2284,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@(x => { })"" />");
+<input @onclick=""x => { }"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2217,7 +2299,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     void OnClick() {
     }
@@ -2236,7 +2318,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     void OnClick(UIMouseEventArgs e) {
     }
@@ -2255,7 +2337,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     void OnClick(UIEventArgs e) {
     }
@@ -2275,7 +2357,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     Task OnClick() 
     {
@@ -2297,7 +2379,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     Task OnClick(UIMouseEventArgs e) 
     {
@@ -2352,7 +2434,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@(x => { })"" />");
+<input @onclick=""x => { }"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2367,7 +2449,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     void OnClick(UIMouseEventArgs e) {
     }
@@ -3118,6 +3200,185 @@ namespace Test
 
         #endregion
 
+        #region Splat
+
+        [Fact]
+        public void Element_WithSplat()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attributebefore=""before"" @attributes=""someAttributes"" attributeafter=""after"">Hello</elem>
+
+@code {
+    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Element_WithSplat_ImplicitExpression()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attributebefore=""before"" @attributes=""@someAttributes"" attributeafter=""after"">Hello</elem>
+
+@code {
+    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Element_WithSplat_ExplicitExpression()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attributebefore=""before"" @attributes=""@(someAttributes)"" attributeafter=""after"">Hello</elem>
+
+@code {
+    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithSplat()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<MyComponent AttributeBefore=""before"" @attributes=""someAttributes"" AttributeAfter=""after"" />
+
+@code {
+    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithSplat_ImplicitExpression()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<MyComponent AttributeBefore=""before"" @attributes=""@someAttributes"" AttributeAfter=""after"" />
+
+@code {
+    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithSplat_ExplicitExpression()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<MyComponent AttributeBefore=""before"" @attributes=""@(someAttributes)"" AttributeAfter=""after"" />
+
+@code {
+    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithSplat_GenericTypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent<T> : ComponentBase
+    {
+        [Parameter] T Value { get; set;}
+    }
+}
+"));
+
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<MyComponent Value=""18"" @attributes=""@(someAttributes)"" />
+
+@code {
+    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        #endregion
+
         #region Ref
 
         [Fact]
@@ -3652,6 +3913,7 @@ namespace Test
             var importContent = @"
 @using System.Text
 @using System.Reflection
+@attribute [Serializable]
 ";
             var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
             ImportItems.Add(importItem);
@@ -3824,7 +4086,7 @@ namespace New.Test
             // Act
             var generated = CompileToCSharp(@"
 <div>
-  <a @onclick=""test()"" onclick=""@(() => {})"">Learn the ten cool tricks your compiler author will hate!</a>
+  <a onclick=""test()"" @onclick=""() => {}"">Learn the ten cool tricks your compiler author will hate!</a>
 </div>");
 
             // Assert
@@ -3888,7 +4150,7 @@ namespace New.Test
             // Act
             var generated = CompileToCSharp(@"
 <div>
-  <input type=""text"" @bind-value=""@text"" @bind-value:event=""oninput"" @oninput=""@(() => {})""></input>
+  <input type=""text"" @bind-value=""@text"" @bind-value:event=""oninput"" @oninput=""() => {}""></input>
 </div>
 @functions {
     private string text = ""hi"";
@@ -4260,7 +4522,7 @@ Welcome to your new app.
 
             // Act
             var generated = CompileToCSharp(@"
-<p @onmouseover=""@OnComponentHover"" style=""background: @ParentBgColor;"" />
+<p @onmouseover=""OnComponentHover"" style=""background: @ParentBgColor;"" />
 @code {
     public string ParentBgColor { get; set; } = ""#FFFFFF"";
 
@@ -4281,7 +4543,7 @@ Welcome to your new app.
         {
             // Act
             var generated = CompileToCSharp(@"
-<input @onfocus='alert(""Test"");' />
+<input onfocus='alert(""Test"");' />
 ");
 
             // Assert

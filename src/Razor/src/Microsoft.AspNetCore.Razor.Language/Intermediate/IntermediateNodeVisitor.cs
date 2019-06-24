@@ -124,12 +124,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             VisitDefault(node);
         }
 
+        public virtual void VisitTagHelperDirectiveAttribute(TagHelperDirectiveAttributeIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
+
         public virtual void VisitTagHelperHtmlAttribute(TagHelperHtmlAttributeIntermediateNode node)
         {
             VisitDefault(node);
         }
 
-        public virtual void VisitTagHelperAttributeParameter(TagHelperAttributeParameterIntermediateNode node)
+        public virtual void VisitTagHelperDirectiveAttributeParameter(TagHelperDirectiveAttributeParameterIntermediateNode node)
         {
             VisitDefault(node);
         }
@@ -175,6 +180,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         }
 
         public virtual void VisitSetKey(SetKeyIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
+
+        public virtual void VisitSplat(SplatIntermediateNode node)
         {
             VisitDefault(node);
         }

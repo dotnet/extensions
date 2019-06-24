@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         private static readonly string[] AllowedBuildWarnings = new[]
         {
             "MSB3491" , // The process cannot access the file. As long as the build succeeds, we're ok.
+            "NETSDK1071", // "A PackageReference to 'Microsoft.NETCore.App' specified a Version ..."
         };
 
         public static void BuildPassed(MSBuildResult result, bool allowWarnings = false)
@@ -345,58 +346,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        public static Stream ContainsEmbeddedResource(string assemblyPath, string resourceName)
-        {
-            var stream = ExtractEmbeddedResource(assemblyPath, resourceName);
-            Assert.NotNull(stream);
-
-            return stream;
-        }
-
-        public static void DoesNotContainEmbeddedResource(string assemblyPath, string resourceName)
-        {
-            var stream = ExtractEmbeddedResource(assemblyPath, resourceName);
-            Assert.Null(stream);
-        }
-
-        private static Stream ExtractEmbeddedResource(string path, string expectedResourceName)
-        {
-            using (var peStream = File.OpenRead(path))
-            {
-                using (var peReader = new PEReader(peStream))
-                {
-                    var mdReader = peReader.GetMetadataReader();
-
-                    foreach (var resourceHandle in mdReader.ManifestResources)
-                    {
-                        var resource = mdReader.GetManifestResource(resourceHandle);
-
-                        if (!resource.Implementation.IsNil)
-                        {
-                            continue; // resource is not embedded.
-                        }
-
-                        var resourceName = mdReader.GetString(resource.Name);
-                        if (!string.Equals(expectedResourceName, resourceName))
-                        {
-                            continue;
-                        }
-
-                        // We are not taking resource.Offset into account here.
-                        // We currently only have the casuistic that we are embedding a single resource.
-                        // If that changes we'll have to change this test code, but as its hard we won't do it for now.
-                        var resourcesSection = peReader.GetSectionData(peReader.PEHeaders.CorHeader.ResourcesDirectory.RelativeVirtualAddress);
-                        var resourcesReader = resourcesSection.GetReader();
-                        var resourceSizeInBytes = resourcesReader.ReadInt32();
-                        var resourceBytes = resourcesReader.ReadBytes(resourceSizeInBytes);
-                        return new MemoryStream(resourceBytes, writable: false);
-                    }
-                }
-            }
-
-            return null;
-        }
-
         public static void NuspecContains(MSBuildResult result, string nuspecPath, string expected)
         {
             if (result == null)
@@ -554,6 +503,36 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 return metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
                 {
                     var type = metadataReader.GetTypeDefinition(t);
+                    return metadataReader.GetString(type.Namespace) + "." + metadataReader.GetString(type.Name);
+                }).ToArray();
+            }
+        }
+
+        public static void AssemblyHasAttribute(MSBuildResult result, string assemblyPath, string fullTypeName)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            assemblyPath = Path.Combine(result.Project.DirectoryPath, Path.Combine(assemblyPath));
+
+            var typeNames = GetAssemblyAttributes(assemblyPath);
+            Assert.Contains(fullTypeName, typeNames);
+        }
+
+        private static IEnumerable<string> GetAssemblyAttributes(string assemblyPath)
+        {
+            using (var file = File.OpenRead(assemblyPath))
+            {
+                var peReader = new PEReader(file);
+                var metadataReader = peReader.GetMetadataReader();
+                return metadataReader.CustomAttributes.Where(t => !t.IsNil).Select(t =>
+                {
+                    var attribute = metadataReader.GetCustomAttribute(t);
+                    var constructor = metadataReader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                    var type = metadataReader.GetTypeReference((TypeReferenceHandle)constructor.Parent);
+
                     return metadataReader.GetString(type.Namespace) + "." + metadataReader.GetString(type.Name);
                 }).ToArray();
             }

@@ -259,6 +259,11 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                     //
                     // <InputSelect |@bind-foo|:something
                     rightEnd = parameterDelimiter;
+
+                    // Next we need to move our left end to not include the "@"
+                    //
+                    // <InputSelect |@bind-foo|:something   =>   <InputSelect @|bind-foo|:something
+                    leftEnd++;
                 }
                 else
                 {
@@ -270,9 +275,20 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             }
             else
             {
-                // Do nothing, our directive attribute does not have parameters and our leftEnd -> rightEnd bounds already encompass the attribute
+                // Our directive attribute does not have parameters and our leftEnd -> rightEnd bounds encompass:
                 //
-                // <InputSelect |@bind-foo|
+                // <InputSelect |@bind-foo|  =>  <InputSelect @|bind-foo|  
+                //
+                // We don't want leftEnd to include the "@"
+                leftEnd++;
+            }
+
+            for (var i = leftEnd; i < rightEnd; i++)
+            {
+                if (!IsValidDirectiveAttributeCharacter(snapshot[i]))
+                {
+                    return CompletionStartData.DoesNotParticipateInCompletion;
+                }
             }
 
             var applicableSpanLength = rightEnd - leftEnd;
@@ -284,6 +300,11 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         private static bool IsInvalidAttributeDelimiter(char currentCharacter)
         {
             return currentCharacter == '<' || currentCharacter == '>' || currentCharacter == '\'' || currentCharacter == '"' || currentCharacter == '/';
+        }
+
+        private static bool IsValidDirectiveAttributeCharacter(char currentCharacter)
+        {
+            return char.IsLetter(currentCharacter) || currentCharacter == '-';
         }
     }
 }

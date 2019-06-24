@@ -141,6 +141,14 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     insertText = insertText.Substring(0, insertText.Length - 3);
                 }
 
+                if (insertText.StartsWith("@"))
+                {
+                    // Strip off the @ from the insertion text. This change is here to align the insertion text with the
+                    // completion hooks into VS and VSCode. Basically, completion triggers when `@` is typed so we don't
+                    // want to insert `@bind` because `@` already exists.
+                    insertText = insertText.Substring(1);
+                }
+
                 var razorCompletionItem = new RazorCompletionItem(
                     completion.Key,
                     insertText,
