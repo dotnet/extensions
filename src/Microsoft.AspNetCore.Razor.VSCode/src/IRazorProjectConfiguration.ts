@@ -15,4 +15,5 @@ export interface IRazorProjectConfiguration {
     readonly projectWorkspaceState: any;
     readonly lastUpdated: Date;
     readonly documents: any;
+    readonly serializationFormat: string;
 }

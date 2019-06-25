@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
     internal class FullProjectSnapshotHandleJsonConverter : JsonConverter
     {
         public static readonly FullProjectSnapshotHandleJsonConverter Instance = new FullProjectSnapshotHandleJsonConverter();
+        private const string SerializationFormatPropertyName = "SerializationFormat";
 
         public override bool CanConvert(Type objectType)
         {
@@ -27,6 +28,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
             }
 
             var obj = JObject.Load(reader);
+
+            // We need to add a serialization format to the project response to indicate that this version of the code is compatible with what's being serialized.
+            // This scenario typically happens when a user has an incompatible serialized project snapshot but is using the latest Razor bits.
+
+            if (!obj.TryGetValue(SerializationFormatPropertyName, out var serializationFormatToken))
+            {
+                // Pre-serialization format release.
+                return null;
+            }
+
+            var serializationFormat = serializationFormatToken.Value<string>();
+            if (serializationFormat != ProjectSerializationFormat.Version)
+            {
+                // Unknown serialization format.
+                return null;
+            }
+
             var filePath = obj[nameof(FullProjectSnapshotHandle.FilePath)].Value<string>();
             var configuration = obj[nameof(FullProjectSnapshotHandle.Configuration)].ToObject<RazorConfiguration>(serializer);
             var rootNamespace = obj[nameof(FullProjectSnapshotHandle.RootNamespace)].ToObject<string>(serializer);
@@ -72,6 +90,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
 
             writer.WritePropertyName(nameof(FullProjectSnapshotHandle.Documents));
             serializer.Serialize(writer, handle.Documents);
+
+            writer.WritePropertyName(SerializationFormatPropertyName);
+            writer.WriteValue(ProjectSerializationFormat.Version);
 
             writer.WriteEndObject();
         }

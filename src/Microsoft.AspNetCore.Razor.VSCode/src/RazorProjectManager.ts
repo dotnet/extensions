@@ -160,16 +160,6 @@ export class RazorProjectManager {
             const projectJson = fs.readFileSync(fileSystemPath, 'utf8');
             const lastUpdated = fs.statSync(fileSystemPath).mtime;
             const projectHandle = JSON.parse(projectJson);
-            if (projectHandle.ProjectWorkspaceState === undefined) {
-                // ProjectWorkspaceState was added in the alpha3 release, if the parsed file doesn't contain this entry
-                // then it's an old-school project configuration file (unsupported). Wait for the OmniSharp side of the
-                // world to generate a new project configuration file.
-                //
-                // Eventually this work won't be needed. Once we 1.0 we'll add a protocol version to the configuration
-                // file and parse it correctly depending on its protocol.
-                return undefined;
-            }
-
             const projectUri = vscode.Uri.file(projectHandle.FilePath);
             const projectFilePath = getUriPath(projectUri);
             const configuration: IRazorProjectConfiguration = {
@@ -182,6 +172,7 @@ export class RazorProjectManager {
                 projectWorkspaceState: projectHandle.ProjectWorkspaceState,
                 documents: projectHandle.Documents,
                 lastUpdated,
+                serializationFormat: projectHandle.SerializationFormat,
             };
             return configuration;
         } catch (error) {

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
@@ -22,6 +21,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         IRazorRemoveDocumentHandler
     {
         private readonly RazorProjectService _projectService;
+        private readonly ILogger<RazorProjectEndpoint> _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
 
         public RazorProjectEndpoint(
@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher = foregroundDispatcher;
             _projectService = projectService;
+            _logger = loggerFactory.CreateLogger<RazorProjectEndpoint>();
         }
 
         public async Task<Unit> Handle(RazorAddProjectParams request, CancellationToken cancellationToken)
@@ -87,13 +88,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(request));
             }
 
+            var handle = request.ProjectSnapshotHandle;
+            if (handle == null)
+            {
+                _logger.LogWarning("Could not update project information. This often happens after Razor LanguageServer releases when project formats change. Once project information has been recalculated by OmniSharp this warning should go away.");
+                return Unit.Value;
+            }
+
             await Task.Factory.StartNew(
                 () => _projectService.UpdateProject(
-                    request.FilePath,
-                    request.Configuration,
-                    request.RootNamespace,
-                    request.ProjectWorkspaceState ?? ProjectWorkspaceState.Default,
-                    request.Documents ?? Array.Empty<DocumentSnapshotHandle>()),
+                    handle.FilePath,
+                    handle.Configuration,
+                    handle.RootNamespace,
+                    handle.ProjectWorkspaceState ?? ProjectWorkspaceState.Default,
+                    handle.Documents ?? Array.Empty<DocumentSnapshotHandle>()),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);

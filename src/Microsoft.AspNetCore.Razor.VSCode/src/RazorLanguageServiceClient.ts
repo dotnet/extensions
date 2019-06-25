@@ -60,11 +60,14 @@ export class RazorLanguageServiceClient {
         await this.ensureStarted();
 
         const request: UpdateProjectRequest = {
-            filePath: project.uri.fsPath,
-            projectWorkspaceState: project.configuration ? project.configuration.projectWorkspaceState : null,
-            configuration: project.configuration ? project.configuration.configuration : undefined,
-            rootNamespace: project.configuration ? project.configuration.rootNamespace : undefined,
-            documents: project.configuration ? project.configuration.documents : undefined,
+            ProjectSnapshotHandle: {
+                FilePath: project.uri.fsPath,
+                ProjectWorkspaceState: project.configuration ? project.configuration.projectWorkspaceState : null,
+                Configuration: project.configuration ? project.configuration.configuration : undefined,
+                RootNamespace: project.configuration ? project.configuration.rootNamespace : undefined,
+                Documents: project.configuration ? project.configuration.documents : undefined,
+                SerializationFormat: project.configuration ? project.configuration.serializationFormat : null,
+            },
         };
         await this.serverClient.sendRequest<UpdateProjectRequest>('projects/updateProject', request);
     }

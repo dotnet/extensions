@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
@@ -37,6 +39,50 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         private ProjectWorkspaceState ProjectWorkspaceState { get; }
 
         private JsonConverter[] Converters { get; }
+
+        [Fact]
+        public void FullProjectSnapshotHandle_InvalidSerializationFormat_SerializesToNull()
+        {
+            // Arrange
+            var handle = new FullProjectSnapshotHandle(
+                "/path/to/project.csproj",
+                Configuration,
+                rootNamespace: "TestProject",
+                ProjectWorkspaceState,
+                Array.Empty<DocumentSnapshotHandle>());
+            var serializedHandle = JsonConvert.SerializeObject(handle, Converters);
+            var serializedJObject = JObject.Parse(serializedHandle);
+            serializedJObject["SerializationFormat"] = "INVALID";
+            var reserializedHandle = JsonConvert.SerializeObject(serializedJObject);
+
+            // Act
+            var deserializedHandle = JsonConvert.DeserializeObject<FullProjectSnapshotHandle>(reserializedHandle, Converters);
+
+            // Assert
+            Assert.Null(deserializedHandle);
+        }
+
+        [Fact]
+        public void FullProjectSnapshotHandle_MissingSerializationFormat_SerializesToNull()
+        {
+            // Arrange
+            var handle = new FullProjectSnapshotHandle(
+                "/path/to/project.csproj",
+                Configuration,
+                rootNamespace: "TestProject",
+                ProjectWorkspaceState,
+                Array.Empty<DocumentSnapshotHandle>());
+            var serializedHandle = JsonConvert.SerializeObject(handle, Converters);
+            var serializedJObject = JObject.Parse(serializedHandle);
+            serializedJObject.Remove("SerializationFormat");
+            var reserializedHandle = JsonConvert.SerializeObject(serializedJObject);
+
+            // Act
+            var deserializedHandle = JsonConvert.DeserializeObject<FullProjectSnapshotHandle>(reserializedHandle, Converters);
+
+            // Assert
+            Assert.Null(deserializedHandle);
+        }
 
         [Fact]
         public void FullProjectSnapshotHandle_CanRoundTrip()
