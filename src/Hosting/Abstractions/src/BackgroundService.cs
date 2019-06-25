@@ -27,9 +27,11 @@ namespace Microsoft.Extensions.Hosting
         /// This property give information about the current status of the background service task,
         /// it allows the developer to see if the service is running or has faulted etc. handy for
         /// things like watchdog processes etc.
+        /// TaskStatus of Created may not be correct but it's the nearest value that represents the
+        /// TaskStatus when _executingTask is null
         /// </summary>
         public TaskStatus Status => 
-            _executingTask.Status;
+            _executingTask?.Status ?? TaskStatus.Created;
 
         /// <summary>
         /// Triggered when the application host is ready to start the service.
