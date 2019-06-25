@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
@@ -19,6 +20,9 @@ namespace Microsoft.JSInterop
         private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
         private readonly ConcurrentDictionary<long, object> _pendingTasks
             = new ConcurrentDictionary<long, object>();
+
+        internal static readonly object AssemblyNameKey = new object();
+        internal static readonly object MethodKey = new object();
 
         internal DotNetObjectRefManager ObjectRefManager { get; } = new DotNetObjectRefManager();
 
@@ -70,8 +74,10 @@ namespace Microsoft.JSInterop
         /// sensitive information to remote browser clients.
         /// </remarks>
         /// <param name="exception">The exception that occurred.</param>
+        /// <param name="assemblyName">The assembly for the invoked .NET method.</param>
+        /// <param name="methodIdentifier">The identifier for the invoked .NET method.</param>
         /// <returns>An object containing information about the exception.</returns>
-        protected virtual object OnDotNetInteropException(Exception exception) => exception;
+        protected virtual object OnDotNetInvocationException(Exception exception, string assemblyName, string methodIdentifier) => exception;
 
         internal void EndInvokeDotNet(string callId, bool success, object resultOrException)
         {
@@ -80,17 +86,37 @@ namespace Microsoft.JSInterop
             // If the value is not an Exception, we'll just rely on it being directly JSON-serializable.
             if (!success && resultOrException is Exception ex)
             {
-                resultOrException = OnDotNetInteropException(ex);
+                var (assemblyName, methodName) = ResolveAssemblyAndMethodNames(ex);
+
+                resultOrException = OnDotNetInvocationException(ex, assemblyName, methodName);
             }
             else if (!success && resultOrException is ExceptionDispatchInfo edi)
             {
-                resultOrException = OnDotNetInteropException(edi.SourceException);
+                var (assemblyName, methodName) = ResolveAssemblyAndMethodNames(edi.SourceException);
+
+                resultOrException = OnDotNetInvocationException(edi.SourceException, assemblyName, methodName);
             }
 
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
             var args = JsonSerializer.Serialize(new[] { callId, success, resultOrException }, JsonSerializerOptionsProvider.Options);
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
+        }
+
+        private static (string assemblyName, string methodName) ResolveAssemblyAndMethodNames(Exception ex)
+        {
+            var assemblyName = ex.Data.Contains(AssemblyNameKey) ? ex.Data[AssemblyNameKey] as string : null;
+            var methodName = ex.Data.Contains(MethodKey) ? ex.Data[MethodKey] as string : null;
+            if (assemblyName != null)
+            {
+                ex.Data.Remove(AssemblyNameKey);
+            }
+            if (methodName != null)
+            {
+                ex.Data.Remove(MethodKey);
+            }
+
+            return (assemblyName, methodName);
         }
 
         internal void EndInvokeJS(long asyncHandle, bool succeeded, JSAsyncCallResult asyncCallResult)
