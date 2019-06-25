@@ -23,6 +23,11 @@ namespace Microsoft.JSInterop
         internal DotNetObjectRefManager ObjectRefManager { get; } = new DotNetObjectRefManager();
 
         /// <summary>
+        /// Gets or sets the default timeout for asynchronous JavaScript calls.
+        /// </summary>
+        protected TimeSpan? DefaultAsyncCallTimeout { get; set; }
+
+        /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
         /// </summary>
         /// <typeparam name="T">The JSON-serializable return type.</typeparam>
@@ -31,10 +36,6 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
         public Task<T> InvokeAsync<T>(string identifier, params object[] args)
         {
-            // We might consider also adding a default timeout here in case we don't want to
-            // risk a memory leak in the scenario where the JS-side code is failing to complete
-            // the operation.
-
             var taskId = Interlocked.Increment(ref _nextPendingTaskId);
             var tcs = new TaskCompletionSource<T>();
             _pendingTasks[taskId] = tcs;
@@ -45,12 +46,35 @@ namespace Microsoft.JSInterop
                     JsonSerializer.Serialize(args, JsonSerializerOptionsProvider.Options) :
                     null;
                 BeginInvokeJS(taskId, identifier, argsJson);
-                return tcs.Task;
+                if(DefaultAsyncCallTimeout != null)
+                {
+                    return GetResultTask(taskId, identifier, tcs.Task);
+                }
+                else
+                {
+                    return tcs.Task;
+                }
             }
             catch
             {
                 _pendingTasks.TryRemove(taskId, out _);
                 throw;
+            }
+        }
+
+        private async Task<T> GetResultTask<T>(long taskId, string methodIdentifier, Task<T> task)
+        {
+            await Task.WhenAny(task, Task.Delay(DefaultAsyncCallTimeout.Value));
+
+            if (!task.IsCompleted)
+            {
+                _pendingTasks.TryRemove(taskId, out _);
+                throw new JSException($"The call to {methodIdentifier} exceded the maximum allowed wait time.");
+            }
+            else
+            {
+                // await here to unwrap exceptions, etc.
+                return await task;
             }
         }
 
