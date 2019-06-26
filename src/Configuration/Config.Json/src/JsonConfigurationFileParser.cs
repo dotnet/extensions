@@ -24,14 +24,14 @@ namespace Microsoft.Extensions.Configuration.Json
         {
             _data.Clear();
 
-            var jsonReaderOptions = new JsonReaderOptions
+            var jsonDocumentOptions = new JsonDocumentOptions
             {
                 CommentHandling = JsonCommentHandling.Skip,
                 AllowTrailingCommas = true,
             };
 
             using (var reader = new StreamReader(input))
-            using (JsonDocument doc = JsonDocument.Parse(reader.ReadToEnd(), jsonReaderOptions))
+            using (JsonDocument doc = JsonDocument.Parse(reader.ReadToEnd(), jsonDocumentOptions))
             {
                 if (doc.RootElement.Type != JsonValueType.Object)
                 {

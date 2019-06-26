@@ -51,7 +51,7 @@ namespace Microsoft.JSInterop
                 return null;
             }
 
-            return JsonSerializer.ToString(syncResult, JsonSerializerOptionsProvider.Options);
+            return JsonSerializer.Serialize(syncResult, JsonSerializerOptionsProvider.Options);
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace Microsoft.JSInterop
                     }
                     else
                     {
-                        suppliedArgs[index] = JsonSerializer.Parse(item.GetRawText(), parameterType, JsonSerializerOptionsProvider.Options);
+                        suppliedArgs[index] = JsonSerializer.Deserialize(item.GetRawText(), parameterType, JsonSerializerOptionsProvider.Options);
                     }
 
                     index++;
