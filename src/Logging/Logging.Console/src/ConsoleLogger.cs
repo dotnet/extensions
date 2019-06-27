@@ -137,11 +137,16 @@ namespace Microsoft.Extensions.Logging.Console
                 logBuilder.AppendLine(exception.ToString());
             }
 
+            string timestamp = null;
             var timestampFormat = Options.TimestampFormat;
+            if (timestampFormat != null)
+            {
+                timestamp = Options.UseUtcTimezone ? DateTime.UtcNow.ToString(timestampFormat) : DateTime.Now.ToString(timestampFormat);
+            }
 
             return new LogMessageEntry(
                 message: logBuilder.ToString(),
-                timeStamp: timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
+                timeStamp: timestamp,
                 levelString: logLevelString,
                 levelBackground: logLevelColors.Background,
                 levelForeground: logLevelColors.Foreground,
