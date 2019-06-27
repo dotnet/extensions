@@ -47,10 +47,12 @@ namespace Microsoft.Extensions.Logging.EventLog
             return new EventLogLogger(name, _settings, _scopeProvider);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
         }
 
+        /// <inheritdoc />
         public void SetScopeProvider(IExternalScopeProvider scopeProvider)
         {
             _scopeProvider = scopeProvider;
