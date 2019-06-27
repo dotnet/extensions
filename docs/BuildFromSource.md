@@ -26,7 +26,7 @@ Building Extensions on macOS or Linux requires:
 
 ## Building in Visual Studio
 
-Visual Studio requires special tools and command lien parameters. You can acquire these by executing the following on command-line:
+Visual Studio requires special tools and command line parameters. You can acquire these by executing the following on command-line:
 ```
 .\restore.cmd
 .\startvs.cmd
