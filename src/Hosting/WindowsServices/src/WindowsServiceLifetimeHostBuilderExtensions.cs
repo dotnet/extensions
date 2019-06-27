@@ -23,8 +23,8 @@ namespace Microsoft.Extensions.Hosting
         /// This is context aware and will only activate if it detects the process is running
         /// as a Windows Service.
         /// </remarks>
-        /// <param name="hostBuilder"></param>
-        /// <returns></returns>
+        /// <param name="hostBuilder">The <see cref="IHostBuilder"/> to operate on.</param>
+        /// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder)
         {
             if (WindowsServiceHelpers.IsWindowsService())
