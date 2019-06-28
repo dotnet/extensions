@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Logging.EventLog
     /// <summary>
     /// Settings for <see cref="EventLogLogger"/>.
     /// </summary>
-    public class EventLogSettings : IDisposable
+    public class EventLogSettings
     {
         private IEventLog _eventLog;
 
@@ -38,14 +38,6 @@ namespace Microsoft.Extensions.Logging.EventLog
 
             // For unit testing purposes only.
             set => _eventLog = value;
-        }
-
-        public void Dispose()
-        {
-            if (EventLog is IDisposable disposableEventLog)
-            {
-                disposableEventLog.Dispose();
-            }
         }
 
         private IEventLog CreateDefaultEventLog()
