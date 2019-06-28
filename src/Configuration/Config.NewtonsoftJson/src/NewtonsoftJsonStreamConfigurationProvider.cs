@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Configuration.NewtonsoftJson
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="source"></param>
+        /// <param name="source">The source of configuration.</param>
         public NewtonsoftJsonStreamConfigurationProvider(NewtonsoftJsonStreamConfigurationSource source) : base(source) { }
 
         /// <summary>

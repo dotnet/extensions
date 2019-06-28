@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Hosting
         ///     notifications. See https://www.freedesktop.org/software/systemd/man/systemd.service.html.
         ///   </para>
         /// </remarks>
-        /// <param name="hostBuilder"></param>
+        /// <param name="hostBuilder">The <see cref="IHostBuilder"/> to use.</param>
         /// <returns></returns>
         public static IHostBuilder UseSystemd(this IHostBuilder hostBuilder)
         {
