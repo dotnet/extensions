@@ -50,9 +50,9 @@ namespace Microsoft.Extensions.Logging.EventLog
 
         public void Dispose()
         {
-            if (_settings.EventLog is IDisposable disposableEventLog)
+            if (_settings.EventLog is WindowsEventLog windowsEventLog)
             {
-                disposableEventLog.Dispose();
+                windowsEventLog.DiagnosticsEventLog.Dispose();
             }
         }
 
