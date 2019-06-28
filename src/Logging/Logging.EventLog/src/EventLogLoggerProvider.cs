@@ -49,6 +49,7 @@ namespace Microsoft.Extensions.Logging.EventLog
 
         public void Dispose()
         {
+            _settings.Dispose();
         }
 
         public void SetScopeProvider(IExternalScopeProvider scopeProvider)

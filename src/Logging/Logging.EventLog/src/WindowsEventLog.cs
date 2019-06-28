@@ -7,7 +7,7 @@ using System.Security;
 
 namespace Microsoft.Extensions.Logging.EventLog
 {
-    internal class WindowsEventLog : IEventLog
+    internal class WindowsEventLog : IEventLog, IDisposable
     {
         // https://msdn.microsoft.com/EN-US/library/windows/desktop/aa363679.aspx
         private const int MaximumMessageSize = 31839;
@@ -23,6 +23,11 @@ namespace Microsoft.Extensions.Logging.EventLog
         public int MaxMessageSize => MaximumMessageSize;
 
         public int? DefaultEventId { get; set; }
+
+        public void Dispose()
+        {
+            DiagnosticsEventLog.Dispose();
+        }
 
         public void WriteEntry(string message, EventLogEntryType type, int eventID, short category)
         {
