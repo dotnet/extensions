@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
 
         private void OnApplicationStarted()
         {
-            Logger.LogInformation("Application started. Hosting environment: {EnvName}; Content root path: {ContentRoot}",
+            Logger.LogInformation("Application started. Hosting environment: {EnvironmentName}; Content root path: {ContentRoot}",
                 Environment.EnvironmentName, Environment.ContentRootPath);
 
             SystemdNotifier.Notify(ServiceState.Ready);
