@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging.Console;
 namespace Microsoft.Extensions.Hosting
 {
     /// <summary>
-    /// Extension methods for setting up SystemdLifetime.
+    /// Extension methods for setting up <see cref="SystemdLifetime" />.
     /// </summary>
     public static class SystemdHostBuilderExtensions
     {
         /// <summary>
-        /// Sets the host lifetime to SystemdLifetime,
+        /// Sets the host lifetime to <see cref="SystemdLifetime" />,
         /// provides notification messages for application started and stopping,
         /// and configures console logging to the systemd format.
         /// </summary>
