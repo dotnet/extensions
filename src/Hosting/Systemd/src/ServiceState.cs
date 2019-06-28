@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
     /// </summary>
     public struct ServiceState
     {
-        private byte[] _data;
+        private readonly byte[] _data;
 
         /// <summary>
         /// Service startup is finished.
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
         /// String representation of service state.
         /// </summary>
         public override string ToString()
-            => _data == null ? string.Empty : Encoding.UTF8.GetString(_data);
+            => Encoding.UTF8.GetString(_data);
 
         internal byte[] GetData() => _data;
     }
