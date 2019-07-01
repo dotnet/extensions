@@ -93,8 +93,6 @@ namespace Microsoft.JSInterop
             catch (Exception ex)
             {
                 syncException = ExceptionDispatchInfo.Capture(ex);
-                syncException.SourceException.Data.Add(JSRuntimeBase.AssemblyNameKey, assemblyName);
-                syncException.SourceException.Data.Add(JSRuntimeBase.MethodKey, methodIdentifier);
             }
 
             // If there was no callId, the caller does not want to be notified about the result
@@ -116,8 +114,6 @@ namespace Microsoft.JSInterop
                     if (t.Exception != null)
                     {
                         var exception = t.Exception.GetBaseException();
-                        exception.Data.Add(JSRuntimeBase.AssemblyNameKey, assemblyName);
-                        exception.Data.Add(JSRuntimeBase.MethodKey, methodIdentifier);
 
                         jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, ExceptionDispatchInfo.Capture(exception), assemblyName, methodIdentifier);
                     }

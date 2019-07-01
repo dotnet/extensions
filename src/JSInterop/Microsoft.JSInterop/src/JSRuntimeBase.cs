@@ -21,9 +21,6 @@ namespace Microsoft.JSInterop
         private readonly ConcurrentDictionary<long, object> _pendingTasks
             = new ConcurrentDictionary<long, object>();
 
-        internal static readonly object AssemblyNameKey = new object();
-        internal static readonly object MethodKey = new object();
-
         internal DotNetObjectRefManager ObjectRefManager { get; } = new DotNetObjectRefManager();
 
         /// <summary>
