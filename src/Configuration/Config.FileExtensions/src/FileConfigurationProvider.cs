@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Primitives;
@@ -125,7 +126,7 @@ namespace Microsoft.Extensions.Configuration
             }
             if (!ignoreException)
             {
-                throw e;
+                ExceptionDispatchInfo.Capture(e).Throw();
             }
         }
 
