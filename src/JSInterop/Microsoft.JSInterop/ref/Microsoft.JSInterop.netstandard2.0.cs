@@ -59,7 +59,6 @@ namespace Microsoft.JSInterop
     public abstract partial class JSRuntimeBase : Microsoft.JSInterop.IJSRuntime
     {
         protected JSRuntimeBase() { }
-        protected System.TimeSpan? DefaultAsyncCallTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected abstract void BeginInvokeJS(long asyncHandle, string identifier, string argsJson);
         public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, params object[] args) { throw null; }
         protected virtual object OnDotNetInvocationException(System.Exception exception, string assemblyName, string methodIdentifier) { throw null; }
