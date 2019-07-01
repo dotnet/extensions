@@ -185,11 +185,9 @@ namespace Microsoft.JSInterop.Tests
             };
 
             var exception = new Exception("Some really sensitive data in here");
-            exception.Data.Add(JSRuntimeBase.AssemblyNameKey, "Assembly");
-            exception.Data.Add(JSRuntimeBase.MethodKey, "Method");
 
             // Act
-            runtime.EndInvokeDotNet("0", false, exception);
+            runtime.EndInvokeDotNet("0", false, exception, "Assembly", "Method");
 
             // Assert
             var call = runtime.BeginInvokeCalls.Single();
