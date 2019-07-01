@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
                 return false;
             }
 
-            // We've got invocation id, it's systemd >= 232 running a unit
+            // We've got invocation id, it's systemd >= 232 running a unit (either directly or through a child process)
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable(INVOCATION_ID)))
             {
                 return true;
@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
             // Either it's not a unit, or systemd is < 232, do a bit more digging
             try
             {
-                // Test parent process
+                // Test parent process (this matches only direct parents, walking all the way up to the PID 1 is probably not what we would want)
                 var parentPid = GetParentPid();
                 var ppidString = parentPid.ToString(NumberFormatInfo.InvariantInfo);
 
