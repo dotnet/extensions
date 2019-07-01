@@ -69,7 +69,8 @@ namespace Microsoft.Extensions.Configuration
                     {
                         error.Append($" The physical path is '{file.PhysicalPath}'.");
                     }
-                    HandleException(new FileNotFoundException(error.ToString()));
+                    var ex = new FileNotFoundException(error.ToString());
+                    HandleException(ex, ExceptionDispatchInfo.Capture(ex));
                 }
             }
             else
@@ -87,7 +88,7 @@ namespace Microsoft.Extensions.Configuration
                     }
                     catch (Exception e)
                     {
-                        HandleException(e);
+                        HandleException(e, ExceptionDispatchInfo.Capture(e));
                     }
                 }
             }
@@ -111,7 +112,7 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="stream">The stream to read.</param>
         public abstract void Load(Stream stream);
 
-        private void HandleException(Exception e)
+        private void HandleException(Exception e, ExceptionDispatchInfo info)
         {
             bool ignoreException = false;
             if (Source.OnLoadException != null)
@@ -126,7 +127,7 @@ namespace Microsoft.Extensions.Configuration
             }
             if (!ignoreException)
             {
-                ExceptionDispatchInfo.Capture(e).Throw();
+                info.Throw();
             }
         }
 
