@@ -180,21 +180,19 @@ namespace Microsoft.JSInterop.Tests
         }
 
         [Fact]
-        public void CannotCompleteSameAsyncCallMoreThanOnce()
+        public async Task CompletingSameAsyncCallMoreThanOnce_IgnoresSecondResultAsync()
         {
             // Arrange
             var runtime = new TestJSRuntime();
 
             // Act/Assert
-            runtime.InvokeAsync<string>("test identifier", Array.Empty<object>());
+            var task = runtime.InvokeAsync<string>("test identifier", Array.Empty<object>());
             var asyncHandle = runtime.BeginInvokeCalls[0].AsyncHandle;
-            runtime.OnEndInvoke(asyncHandle, true, null);
-            var ex = Assert.Throws<ArgumentException>(() =>
-            {
-                // Second "end invoke" will fail
-                runtime.OnEndInvoke(asyncHandle, true, null);
-            });
-            Assert.Equal($"There is no pending task with handle '{asyncHandle}'.", ex.Message);
+            runtime.OnEndInvoke(asyncHandle, true, new JSAsyncCallResult(JsonDocument.Parse("{}"), JsonDocument.Parse("{\"Message\": \"Some data\"}").RootElement.GetProperty("Message")));
+            runtime.OnEndInvoke(asyncHandle, false, new JSAsyncCallResult(null, JsonDocument.Parse("{\"Message\": \"Exception\"}").RootElement.GetProperty("Message")));
+
+            var result = await task;
+            Assert.Equal("Some data", result);
         }
 
         [Fact]
