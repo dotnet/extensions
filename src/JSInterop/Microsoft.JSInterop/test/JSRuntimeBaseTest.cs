@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop.Internal;
 using Xunit;
@@ -36,6 +37,70 @@ namespace Microsoft.JSInterop.Tests
                     Assert.Equal("[\"some other arg\"]", call.ArgsJson);
                     Assert.NotEqual(runtime.BeginInvokeCalls[0].AsyncHandle, call.AsyncHandle);
                 });
+        }
+
+        [Fact]
+        public async Task InvokeAsync_CancelsAsyncTask_AfterDefaultTimeout()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            runtime.DefaultTimeout = TimeSpan.FromSeconds(1);
+
+            // Act
+            var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            // Assert
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_CompletesSuccessfullyBeforeTimeout()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            runtime.DefaultTimeout = TimeSpan.FromSeconds(10);
+
+            // Act
+            var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
+            runtime.EndInvokeJS(2, succeeded: true, null);
+
+            // Assert
+            await task;
+        }
+
+        [Fact]
+        public async Task InvokeAsync_CancelsAsyncTasksWhenCancellationTokenFires()
+        {
+            // Arrange
+            using var cts = new CancellationTokenSource();
+            var runtime = new TestJSRuntime();
+
+            // Act
+            var task = runtime.InvokeAsync<object>("test identifier 1", new object[] { "arg1", 123, true }, cts.Token);
+
+            cts.Cancel();
+            
+            // Assert
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_DoesNotStartWorkWhenCancellationHasBeenRequested()
+        {
+            // Arrange
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+            var runtime = new TestJSRuntime();
+
+            // Act
+            var task = runtime.InvokeAsync<object>("test identifier 1", new object[] { "arg1", 123, true }, cts.Token);
+
+            cts.Cancel();
+
+            // Assert
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+            Assert.Empty(runtime.BeginInvokeCalls);
         }
 
         [Fact]
@@ -171,6 +236,14 @@ namespace Microsoft.JSInterop.Tests
         class TestJSRuntime : JSRuntimeBase
         {
             public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
+
+            public TimeSpan? DefaultTimeout
+            {
+                set
+                {
+                    base.DefaultAsyncCallTimeout = value;
+                }
+            }
 
             public class BeginInvokeAsyncArgs
             {

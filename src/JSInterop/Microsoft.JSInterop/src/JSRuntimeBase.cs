@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
@@ -20,6 +22,9 @@ namespace Microsoft.JSInterop
         private readonly ConcurrentDictionary<long, object> _pendingTasks
             = new ConcurrentDictionary<long, object>();
 
+        private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations =
+            new ConcurrentDictionary<long, CancellationTokenRegistration>();
+
         internal DotNetObjectRefManager ObjectRefManager { get; } = new DotNetObjectRefManager();
 
         /// <summary>
@@ -33,48 +38,80 @@ namespace Microsoft.JSInterop
         /// <typeparam name="T">The JSON-serializable return type.</typeparam>
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
+        /// <param name="cancellationToken">A cancellation token to signal the cancellation of the operation.</param>
         /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
-        public Task<T> InvokeAsync<T>(string identifier, params object[] args)
+        public Task<T> InvokeAsync<T>(string identifier, IEnumerable<object> args, CancellationToken cancellationToken = default)
         {
             var taskId = Interlocked.Increment(ref _nextPendingTaskId);
-            var tcs = new TaskCompletionSource<T>();
+            var tcs = new TaskCompletionSource<T>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            if (cancellationToken != default)
+            {
+                _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
+                {
+                    tcs.TrySetCanceled();
+                    CleanupRegistrations(taskId);
+                });
+            }
             _pendingTasks[taskId] = tcs;
 
             try
             {
-                var argsJson = args?.Length > 0 ?
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    tcs.TrySetCanceled();
+                    CleanupRegistrations(taskId);
+
+                    return tcs.Task;
+                }
+
+                var argsJson = args?.Any() == true ?
                     JsonSerializer.Serialize(args, JsonSerializerOptionsProvider.Options) :
                     null;
                 BeginInvokeJS(taskId, identifier, argsJson);
-                if(DefaultAsyncCallTimeout != null)
-                {
-                    return GetResultTask(taskId, identifier, tcs.Task);
-                }
-                else
-                {
-                    return tcs.Task;
-                }
+
+                return tcs.Task;
             }
             catch
             {
-                _pendingTasks.TryRemove(taskId, out _);
+                CleanupRegistrations(taskId);
                 throw;
             }
         }
 
-        private async Task<T> GetResultTask<T>(long taskId, string methodIdentifier, Task<T> task)
+        private void CleanupRegistrations(long taskId)
         {
-            await Task.WhenAny(task, Task.Delay(DefaultAsyncCallTimeout.Value));
+            _pendingTasks.TryRemove(taskId, out _);
+            _cancellationRegistrations.TryRemove(taskId, out var registration);
 
-            if (!task.IsCompleted)
+            // dispose will noop when registration == default
+            registration.Dispose();
+        }
+
+        /// <summary>
+        /// Invokes the specified JavaScript function asynchronously.
+        /// </summary>
+        /// <typeparam name="T">The JSON-serializable return type.</typeparam>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="args">JSON-serializable arguments.</param>
+        /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
+        public Task<T> InvokeAsync<T>(string identifier, params object[] args)
+        {
+            if (!DefaultAsyncCallTimeout.HasValue)
             {
-                _pendingTasks.TryRemove(taskId, out _);
-                throw new JSException($"The call to {methodIdentifier} exceded the maximum allowed wait time.");
+                return InvokeAsync<T>(identifier, args, default);
             }
             else
             {
-                // await here to unwrap exceptions, etc.
-                return await task;
+                return InvokeWithDefaultCancellation<T>(identifier, args);
+            }
+        }
+
+        private async Task<T> InvokeWithDefaultCancellation<T>(string identifier, IEnumerable<object> args)
+        {
+            using (var cts = new CancellationTokenSource(DefaultAsyncCallTimeout.Value))
+            {
+                // We need to await here due to the using
+                return await InvokeAsync<T>(identifier, args, cts.Token);
             }
         }
 
@@ -112,8 +149,12 @@ namespace Microsoft.JSInterop
             {
                 if (!_pendingTasks.TryRemove(asyncHandle, out var tcs))
                 {
-                    throw new ArgumentException($"There is no pending task with handle '{asyncHandle}'.");
+                    // We should simply return if we can't find an id for the invocation.
+                    // This likely means that the method that initiated the call defined a timeout and stopped waiting.
+                    return;
                 }
+
+                CleanupRegistrations(asyncHandle);
 
                 if (succeeded)
                 {
