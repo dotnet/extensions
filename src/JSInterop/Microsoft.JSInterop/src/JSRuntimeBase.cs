@@ -30,7 +30,7 @@ namespace Microsoft.JSInterop
         /// <summary>
         /// Gets or sets the default timeout for asynchronous JavaScript calls.
         /// </summary>
-        protected TimeSpan? DefaultAsyncCallTimeout { get; set; }
+        protected TimeSpan? DefaultAsyncTimeout { get; set; }
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -48,8 +48,8 @@ namespace Microsoft.JSInterop
             {
                 _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
                 {
-                    tcs.TrySetCanceled();
-                    CleanupRegistrations(taskId);
+                    tcs.TrySetCanceled(cancellationToken);
+                    CleanupTasksAndRegistrations(taskId);
                 });
             }
             _pendingTasks[taskId] = tcs;
@@ -58,8 +58,8 @@ namespace Microsoft.JSInterop
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    tcs.TrySetCanceled();
-                    CleanupRegistrations(taskId);
+                    tcs.TrySetCanceled(cancellationToken);
+                    CleanupTasksAndRegistrations(taskId);
 
                     return tcs.Task;
                 }
@@ -73,18 +73,18 @@ namespace Microsoft.JSInterop
             }
             catch
             {
-                CleanupRegistrations(taskId);
+                CleanupTasksAndRegistrations(taskId);
                 throw;
             }
         }
 
-        private void CleanupRegistrations(long taskId)
+        private void CleanupTasksAndRegistrations(long taskId)
         {
             _pendingTasks.TryRemove(taskId, out _);
-            _cancellationRegistrations.TryRemove(taskId, out var registration);
-
-            // dispose will noop when registration == default
-            registration.Dispose();
+            if (_cancellationRegistrations.TryRemove(taskId, out var registration))
+            {
+                registration.Dispose();
+            }
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
         public Task<T> InvokeAsync<T>(string identifier, params object[] args)
         {
-            if (!DefaultAsyncCallTimeout.HasValue)
+            if (!DefaultAsyncTimeout.HasValue)
             {
                 return InvokeAsync<T>(identifier, args, default);
             }
@@ -108,7 +108,7 @@ namespace Microsoft.JSInterop
 
         private async Task<T> InvokeWithDefaultCancellation<T>(string identifier, IEnumerable<object> args)
         {
-            using (var cts = new CancellationTokenSource(DefaultAsyncCallTimeout.Value))
+            using (var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value))
             {
                 // We need to await here due to the using
                 return await InvokeAsync<T>(identifier, args, cts.Token);
@@ -118,10 +118,10 @@ namespace Microsoft.JSInterop
         /// <summary>
         /// Begins an asynchronous function invocation.
         /// </summary>
-        /// <param name="asyncHandle">The identifier for the function invocation, or zero if no async callback is required.</param>
+        /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
-        protected abstract void BeginInvokeJS(long asyncHandle, string identifier, string argsJson);
+        protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
 
         internal void EndInvokeDotNet(string callId, bool success, object resultOrException)
         {
@@ -143,18 +143,18 @@ namespace Microsoft.JSInterop
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
         }
 
-        internal void EndInvokeJS(long asyncHandle, bool succeeded, JSAsyncCallResult asyncCallResult)
+        internal void EndInvokeJS(long taskId, bool succeeded, JSAsyncCallResult asyncCallResult)
         {
             using (asyncCallResult?.JsonDocument)
             {
-                if (!_pendingTasks.TryRemove(asyncHandle, out var tcs))
+                if (!_pendingTasks.TryRemove(taskId, out var tcs))
                 {
                     // We should simply return if we can't find an id for the invocation.
                     // This likely means that the method that initiated the call defined a timeout and stopped waiting.
                     return;
                 }
 
-                CleanupRegistrations(asyncHandle);
+                CleanupTasksAndRegistrations(taskId);
 
                 if (succeeded)
                 {

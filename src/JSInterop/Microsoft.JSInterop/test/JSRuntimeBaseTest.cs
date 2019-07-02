@@ -48,7 +48,6 @@ namespace Microsoft.JSInterop.Tests
 
             // Act
             var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
-            await Task.Delay(TimeSpan.FromSeconds(1));
 
             // Assert
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
@@ -239,7 +238,7 @@ namespace Microsoft.JSInterop.Tests
             {
                 set
                 {
-                    base.DefaultAsyncCallTimeout = value;
+                    base.DefaultAsyncTimeout = value;
                 }
             }
 
