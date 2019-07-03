@@ -6,8 +6,6 @@
     <!-- Use .NET Framework reference assemblies from a nuget package so machine-global targeting packs do not need to be installed. -->
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
     <UsingToolSymbolUploader>true</UsingToolSymbolUploader>
-    <!-- Opt-in to using the version of the Roslyn compiler bundled with Arcade. -->
-    <UsingToolMicrosoftNetCompilers>true</UsingToolMicrosoftNetCompilers>
   </PropertyGroup>
   <!-- Opt out Arcade features -->
   <PropertyGroup>
@@ -43,6 +41,10 @@
       https://vside.myget.org/F/vsmac/api/v3/index.json;
       https://vside.myget.org/F/devcore/api/v3/index.json;
     </RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND $(MicrosoftNetCompilersToolsetPackageVersion.Contains('-')) ">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
+    </RestoreSources>
   </PropertyGroup>
   <!--
 
@@ -68,6 +70,8 @@
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview8.19352.11</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview8.19352.11</SystemTextEncodingsWebPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.7.0-preview8.19352.11</SystemReflectionMetadataPackageVersion>
+    <!-- Packages from dotnet/roslyn -->
+    <MicrosoftNetCompilersToolsetPackageVersion>3.3.0-beta1-19351-01</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
