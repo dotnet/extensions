@@ -7,4 +7,12 @@
   <PropertyGroup>
     <BundledNETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Track compiler separately from Arcade.-->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
+        PrivateAssets="all"
+        IsImplicitlyDefined="true" />
+  </ItemGroup>
 </Project>
