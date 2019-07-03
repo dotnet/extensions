@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.CodeAnalysis;
@@ -67,6 +68,21 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var property = component.GetType().GetProperty("Value", BindingFlags.NonPublic | BindingFlags.Instance);
             Assert.NotNull(property);
             Assert.Same(typeof(StringBuilder), property.PropertyType);
+        }
+
+        [Fact]
+        public void DeclarationConfiguration_IncludesRef()
+        {
+            // Arrange & Act
+            var component = CompileToComponent(@"
+@using System.Text
+<div @ref=""myDiv"" />
+");
+
+            // Assert
+            var field = component.GetType().GetField("myDiv", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(field);
+            Assert.Same(typeof(ElementRef), field.FieldType);
         }
 
         [Fact]
@@ -155,7 +171,7 @@ namespace Test
 
         public class BaseClass : IComponent
         {
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
             {
             }
 
@@ -163,8 +179,9 @@ namespace Test
             {
             }
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
             {
+                throw new System.NotImplementedException();
             }
         }
 

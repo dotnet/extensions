@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingPackageVersion)" />
     <PackageReference Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(VSMAC_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
