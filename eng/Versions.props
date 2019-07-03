@@ -25,8 +25,6 @@
     <PreviousExtensionsReleaseVersion Condition=" '$(PatchVersion)' != '0' ">$(MajorVersion).$(MinorVersion).$([MSBuild]::Subtract($(PatchVersion), 1))</PreviousExtensionsReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Label="Arcade settings">
-    <!-- Opt-in to using the version of the Roslyn compiler bundled with Arcade. -->
-    <UsingToolMicrosoftNetCompilers>true</UsingToolMicrosoftNetCompilers>
     <!-- Disable Arcade's Xliff tools -->
     <UsingToolXliff>false</UsingToolXliff>
     <!-- Using .NET framework assemblies from a package. -->
@@ -64,6 +62,8 @@
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview7.19329.3</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19330.1</MicrosoftDotNetGenAPIPackageVersion>
+    <!-- Packages from dotnet/roslyn -->
+    <MicrosoftNetCompilersToolsetVersion>3.3.0-beta1-19351-01</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
@@ -101,6 +101,10 @@
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
       $(RestoreSources);
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
+    </RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND $(MicrosoftNetCompilersToolsetVersion.Contains('-')) ">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
     </RestoreSources>
   </PropertyGroup>
 </Project>

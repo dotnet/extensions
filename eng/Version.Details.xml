@@ -62,7 +62,7 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>568073c69f4b7e6b90ca7a3ede7abf68f489b031</Sha>
     </Dependency>
-    <!-- 
+    <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
@@ -91,6 +91,10 @@
     <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview7.19329.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>9e3278936912fc413891926f3789689cb05fd3c3</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta1-19351-01">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>c91adff42c488aef2c2c532a7b053fb55e0c16ea</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
