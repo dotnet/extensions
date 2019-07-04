@@ -364,7 +364,7 @@ namespace Microsoft.Extensions.Logging.Test
         public void WriteCore_LogsCorrectTimestamp(ConsoleLoggerFormat format, LogLevel level)
         {
             // Arrange
-            var t = SetUp(new ConsoleLoggerOptions { TimestampFormat = "yyyyMMddHHmmss ", Format = format});
+            var t = SetUp(new ConsoleLoggerOptions { TimestampFormat = "yyyyMMddHHmmss ", Format = format });
             var levelPrefix = t.GetLevelPrefix(level);
             var logger = t.Logger;
             var sink = t.Sink;
@@ -382,14 +382,50 @@ namespace Microsoft.Extensions.Logging.Test
                     Assert.Matches("^\\d{14}\\s$", sink.Writes[0].Message);
                     Assert.StartsWith(levelPrefix, sink.Writes[1].Message);
                 }
-                break;
+                    break;
                 case ConsoleLoggerFormat.Systemd:
                 {
                     Assert.Single(sink.Writes);
                     Assert.Matches("^<\\d>\\d{14}\\s[^\\s]", sink.Writes[0].Message);
                     Assert.StartsWith(levelPrefix, sink.Writes[0].Message);
                 }
-                break;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(format));
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FormatsAndLevels))]
+        public void WriteCore_LogsCorrectTimestampInUtc(ConsoleLoggerFormat format, LogLevel level)
+        {
+            // Arrange
+            var t = SetUp(new ConsoleLoggerOptions { TimestampFormat = "yyyyMMddHHmmss ", Format = format, UseUtcTimezone = true});
+            var levelPrefix = t.GetLevelPrefix(level);
+            var logger = t.Logger;
+            var sink = t.Sink;
+            var ex = new Exception("Exception message" + Environment.NewLine + "with a second line");
+
+            // Act
+            logger.Log(level, 0, _state, ex, _defaultFormatter);
+
+            // Assert
+            switch (format)
+            {
+                case ConsoleLoggerFormat.Default:
+                {
+                    Assert.Equal(3, sink.Writes.Count);
+                    Assert.Matches("^\\d{14}\\s$", sink.Writes[0].Message);
+                    Assert.StartsWith(levelPrefix, sink.Writes[1].Message);
+                }
+                    break;
+                case ConsoleLoggerFormat.Systemd:
+                {
+                    Assert.Single(sink.Writes);
+                    Assert.Matches("^<\\d>\\d{14}\\s[^\\s]", sink.Writes[0].Message);
+                    Assert.StartsWith(levelPrefix, sink.Writes[0].Message);
+                }
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(format));
             }
