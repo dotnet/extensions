@@ -141,7 +141,8 @@ namespace Microsoft.Extensions.Logging.Console
             var timestampFormat = Options.TimestampFormat;
             if (timestampFormat != null)
             {
-                timestamp = Options.UseUtcTimezone ? DateTime.UtcNow.ToString(timestampFormat) : DateTime.Now.ToString(timestampFormat);
+                var dateTime = Options.UseUtcTimezone ? DateTime.UtcNow : DateTime.Now;
+                timestamp = dateTime.ToString(timestampFormat);
             }
 
             return new LogMessageEntry(
