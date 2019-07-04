@@ -41,6 +41,6 @@ namespace Microsoft.Extensions.Logging.Console
         /// <summary>
         /// Gets or sets indication whether or not UTC timezone should be used to for timestamps in logging messages. Defaults to <c>false</c>.
         /// </summary>
-        public bool UseUtcTimezone { get; set; };
+        public bool UseUtcTimezone { get; set; }
     }
 }
