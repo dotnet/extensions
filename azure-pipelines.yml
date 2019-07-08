@@ -181,6 +181,15 @@ jobs:
         displayName: Build
         condition: succeeded()
       - task: PublishBuildArtifacts@1
+        displayName: Upload TestResults
+        condition: always()
+        continueOnError: true
+        inputs:
+          pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+          artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+          artifactType: Container
+          parallel: true
+      - task: PublishBuildArtifacts@1
         displayName: Publish VSIX Artifacts
         inputs:
           PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
@@ -221,6 +230,15 @@ jobs:
         name: Build
         displayName: Build
         condition: succeeded()
+      - task: PublishBuildArtifacts@1
+        displayName: Upload TestResults
+        condition: always()
+        continueOnError: true
+        inputs:
+          pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+          artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+          artifactType: Container
+          parallel: true
 
     - job: Linux
       container:
@@ -241,4 +259,12 @@ jobs:
         name: Build
         displayName: Build
         condition: succeeded()
-
+      - task: PublishBuildArtifacts@1
+        displayName: Upload TestResults
+        condition: always()
+        continueOnError: true
+        inputs:
+          pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+          artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+          artifactType: Container
+          parallel: true
