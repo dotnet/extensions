@@ -120,6 +120,15 @@ jobs:
         continueOnError: true
         condition: always()
       - task: PublishBuildArtifacts@1
+        displayName: Upload TestResults
+        condition: always()
+        continueOnError: true
+        inputs:
+          pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+          artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+          artifactType: Container
+          parallel: true
+      - task: PublishBuildArtifacts@1
         displayName: Upload package artifacts
         condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
         inputs:
@@ -180,6 +189,15 @@ jobs:
         continueOnError: true
         condition: always()
       - task: PublishBuildArtifacts@1
+        displayName: Upload TestResults
+        condition: always()
+        continueOnError: true
+        inputs:
+          pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+          artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+          artifactType: Container
+          parallel: true
+      - task: PublishBuildArtifacts@1
         displayName: Upload NPM artifacts
         condition: and(succeeded(), eq(variables['_BuildConfig'], 'Release'))
         inputs:
@@ -224,6 +242,15 @@ jobs:
           searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
         continueOnError: true
         condition: always()
+      - task: PublishBuildArtifacts@1
+        displayName: Upload TestResults
+        condition: always()
+        continueOnError: true
+        inputs:
+          pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+          artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+          artifactType: Container
+          parallel: true
 - job: Source_Build
   displayName: 'Test: Linux Source Build'
   container: centos:7
