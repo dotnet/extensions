@@ -71,7 +71,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="xunit.assert" Version="$(XUnitVersion)" />
     <LatestPackageReference Include="xunit.extensibility.core" Version="$(XUnitVersion)" />
     <LatestPackageReference Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />
-    <LatestPackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19128.1-Preview" />
+    <LatestPackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19189.1-Preview" />
 
     <!-- External DI container references -->
     <LatestPackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />
