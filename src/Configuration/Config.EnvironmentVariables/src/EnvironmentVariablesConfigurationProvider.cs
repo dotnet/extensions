@@ -94,11 +94,9 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
             }
             else
             {
-                key = NormalizeKey(key);
-
                 if (key.StartsWith(prefixFilter, StringComparison.OrdinalIgnoreCase))
                 {
-                    entry.Key = key.Substring(prefixFilter.Length);
+                    entry.Key = NormalizeKey(key.Substring(prefixFilter.Length));
                     yield return entry;
                 }
 
