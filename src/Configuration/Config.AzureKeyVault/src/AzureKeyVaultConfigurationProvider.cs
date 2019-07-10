@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         protected virtual async Task WaitForReload()
         {
-            await Task.Delay(_reloadInterval.Value.Milliseconds, _cancellationToken.Token);
+            await Task.Delay(_reloadInterval.Value, _cancellationToken.Token);
         }
 
         private async Task LoadAsync()
