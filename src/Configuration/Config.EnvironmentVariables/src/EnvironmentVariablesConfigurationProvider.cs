@@ -52,13 +52,11 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
 
             var filteredEnvVariables = envVariables
                 .Cast<DictionaryEntry>()
-                .SelectMany(AzureEnvToAppEnv)
-                .Where(entry => ((string)entry.Key).StartsWith(_prefix, StringComparison.OrdinalIgnoreCase));
+                .SelectMany(entry => FilterAzureEnvToAppEnv(entry, _prefix));
 
             foreach (var envVariable in filteredEnvVariables)
             {
-                var key = ((string)envVariable.Key).Substring(_prefix.Length);
-                data[key] = (string)envVariable.Value;
+                data[(string)envVariable.Key] = (string)envVariable.Value;
             }
 
             Data = data;
@@ -69,7 +67,7 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
             return key.Replace("__", ConfigurationPath.KeyDelimiter);
         }
 
-        private static IEnumerable<DictionaryEntry> AzureEnvToAppEnv(DictionaryEntry entry)
+        private static IEnumerable<DictionaryEntry> FilterAzureEnvToAppEnv(DictionaryEntry entry, string prefixFilter)
         {
             var key = (string)entry.Key;
             var prefix = string.Empty;
@@ -96,8 +94,14 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
             }
             else
             {
-                entry.Key = NormalizeKey(key);
-                yield return entry;
+                key = NormalizeKey(key);
+
+                if (key.StartsWith(prefixFilter, StringComparison.OrdinalIgnoreCase))
+                {
+                    entry.Key = key.Substring(prefixFilter.Length);
+                    yield return entry;
+                }
+
                 yield break;
             }
 
