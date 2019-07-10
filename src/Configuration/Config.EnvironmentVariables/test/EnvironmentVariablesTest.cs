@@ -85,23 +85,24 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables.Test
         {
             var dict = new Hashtable()
             {
-                {"CUSTOMCONNSTR_db1", "CustomConnStr"},
-                {"SQLCONNSTR_db2", "SQLConnStr"},
-                {"MYSQLCONNSTR_db3", "MySQLConnStr"},
-                {"SQLAZURECONNSTR_db4", "SQLAzureConnStr"},
+                {"CUSTOMCONNSTR_PREFIX_db1", "CustomConnStr"},
+                {"SQLCONNSTR_PREFIX_db2", "SQLConnStr"},
+                {"MYSQLCONNSTR_PREFIX_db3", "MySQLConnStr"},
+                {"SQLAZURECONNSTR_PREFIX_db4", "SQLAzureConnStr"},
                 {"CommonEnv", "CommonEnvValue"},
             };
-            var envConfigSrc = new EnvironmentVariablesConfigurationProvider("ConnectionStrings:");
+            var envConfigSrc = new EnvironmentVariablesConfigurationProvider("PREFIX_");
 
             envConfigSrc.Load(dict);
 
-            Assert.Equal("CustomConnStr", envConfigSrc.Get("db1"));
-            Assert.Equal("SQLConnStr", envConfigSrc.Get("db2"));
-            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("db2_ProviderName"));
-            Assert.Equal("MySQLConnStr", envConfigSrc.Get("db3"));
-            Assert.Equal("MySql.Data.MySqlClient", envConfigSrc.Get("db3_ProviderName"));
-            Assert.Equal("SQLAzureConnStr", envConfigSrc.Get("db4"));
-            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("db4_ProviderName"));
+            Assert.Equal("CustomConnStr", envConfigSrc.Get("ConnectionStrings:db1"));
+            Assert.Equal("SQLConnStr", envConfigSrc.Get("ConnectionStrings:db2"));
+            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("ConnectionStrings:db2_ProviderName"));
+            Assert.Equal("MySQLConnStr", envConfigSrc.Get("ConnectionStrings:db3"));
+            Assert.Equal("MySql.Data.MySqlClient", envConfigSrc.Get("ConnectionStrings:db3_ProviderName"));
+            Assert.Equal("SQLAzureConnStr", envConfigSrc.Get("ConnectionStrings:db4"));
+            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("ConnectionStrings:db4_ProviderName"));
+            Assert.False(envConfigSrc.TryGet("CommonEnv", out var _));
         }
 
         [Fact]

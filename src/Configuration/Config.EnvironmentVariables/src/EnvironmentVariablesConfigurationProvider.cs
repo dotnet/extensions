@@ -70,50 +70,43 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
         private static IEnumerable<DictionaryEntry> FilterAzureEnvToAppEnv(DictionaryEntry entry, string prefixFilter)
         {
             var key = (string)entry.Key;
-            var prefix = string.Empty;
+            var dbPrefix = string.Empty;
             var provider = string.Empty;
 
             if (key.StartsWith(MySqlServerPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                prefix = MySqlServerPrefix;
+                dbPrefix = MySqlServerPrefix;
                 provider = "MySql.Data.MySqlClient";
             }
             else if (key.StartsWith(SqlAzureServerPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                prefix = SqlAzureServerPrefix;
+                dbPrefix = SqlAzureServerPrefix;
                 provider = "System.Data.SqlClient";
             }
             else if (key.StartsWith(SqlServerPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                prefix = SqlServerPrefix;
+                dbPrefix = SqlServerPrefix;
                 provider = "System.Data.SqlClient";
             }
             else if (key.StartsWith(CustomPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                prefix = CustomPrefix;
+                dbPrefix = CustomPrefix;
             }
-            else
+
+            if (key.IndexOf(prefixFilter, dbPrefix.Length, StringComparison.OrdinalIgnoreCase) == dbPrefix.Length)
             {
-                if (key.StartsWith(prefixFilter, StringComparison.OrdinalIgnoreCase))
+                key = NormalizeKey(key.Substring(dbPrefix.Length + prefixFilter.Length));
+                entry.Key = dbPrefix.Length == 0 ? key : string.Format(ConnStrKeyFormat, key);
+
+                yield return entry;
+
+                if (!string.IsNullOrEmpty(provider))
                 {
-                    entry.Key = NormalizeKey(key.Substring(prefixFilter.Length));
-                    yield return entry;
+                    // Return the key-value pair for provider name
+                    yield return new DictionaryEntry(
+                        string.Format(ProviderKeyFormat, key),
+                        provider);
                 }
-
-                yield break;
-            }
-
-            // Return the key-value pair for connection string
-            yield return new DictionaryEntry(
-                string.Format(ConnStrKeyFormat, NormalizeKey(key.Substring(prefix.Length))),
-                entry.Value);
-
-            if (!string.IsNullOrEmpty(provider))
-            {
-                // Return the key-value pair for provider name
-                yield return new DictionaryEntry(
-                    string.Format(ProviderKeyFormat, NormalizeKey(key.Substring(prefix.Length))),
-                    provider);
             }
         }
     }
