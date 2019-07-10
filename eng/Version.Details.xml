@@ -58,21 +58,21 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>b6edaf0ac1ca42b48fd6c836f9bb472090d832a8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.0.0-preview8-27910-01">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.0.0-preview8-27910-04">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>5cd0245860335e0b307f6a46b99c6f9244887318</Sha>
+      <Sha>7a43bc15505447fcbd79e544e41fd212dd447bcf</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.0.0-preview8-27910-01">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.0.0-preview8-27910-04">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>5cd0245860335e0b307f6a46b99c6f9244887318</Sha>
+      <Sha>7a43bc15505447fcbd79e544e41fd212dd447bcf</Sha>
     </Dependency>
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview8-27910-01">
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview8-27910-04">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>5cd0245860335e0b307f6a46b99c6f9244887318</Sha>
+      <Sha>7a43bc15505447fcbd79e544e41fd212dd447bcf</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
