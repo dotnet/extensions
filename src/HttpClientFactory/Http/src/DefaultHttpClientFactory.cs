@@ -147,6 +147,7 @@ namespace Microsoft.Extensions.Http
             return entry.Handler;
         }
 
+
         // Internal for tests
         internal ActiveHandlerTrackingEntry CreateHandlerEntry(string name)
         {
@@ -164,16 +165,7 @@ namespace Microsoft.Extensions.Http
             {
                 var builder = services.GetRequiredService<HttpMessageHandlerBuilder>();
                 builder.Name = name;
-
-                // This is similar to the initialization pattern in:
-                // https://github.com/aspnet/Hosting/blob/e892ed8bbdcd25a0dafc1850033398dc57f65fe1/src/Microsoft.AspNetCore.Hosting/Internal/WebHost.cs#L188
-                Action<HttpMessageHandlerBuilder> configure = Configure;
-                for (var i = _filters.Length - 1; i >= 0; i--)
-                {
-                    configure = _filters[i].Configure(configure);
-                }
-
-                configure(builder);
+                ConfigureBuilder(builder, options);
 
                 // Wrap the handler so we can ensure the inner handler outlives the outer handler.
                 var handler = new LifetimeTrackingHttpMessageHandler(builder.Build());
@@ -187,19 +179,34 @@ namespace Microsoft.Extensions.Http
                 // this would happen, but we want to be sure.
                 return new ActiveHandlerTrackingEntry(name, handler, scope, options.HandlerLifetime);
 
-                void Configure(HttpMessageHandlerBuilder b)
-                {
-                    for (var i = 0; i < options.HttpMessageHandlerBuilderActions.Count; i++)
-                    {
-                        options.HttpMessageHandlerBuilderActions[i](b);
-                    }
-                }
+                
             }
             catch
             {
                 // If something fails while creating the handler, dispose the services.
                 scope?.Dispose();
                 throw;
+            }
+        }
+
+        private void ConfigureBuilder(HttpMessageHandlerBuilder builder, HttpClientFactoryOptions options)
+        {
+            // This is similar to the initialization pattern in:
+            // https://github.com/aspnet/Hosting/blob/e892ed8bbdcd25a0dafc1850033398dc57f65fe1/src/Microsoft.AspNetCore.Hosting/Internal/WebHost.cs#L188
+            Action<HttpMessageHandlerBuilder> configure = Configure;
+            for (var i = _filters.Length - 1; i >= 0; i--)
+            {
+                configure = _filters[i].Configure(configure);
+            }
+
+            configure(builder);
+
+            void Configure(HttpMessageHandlerBuilder b)
+            {
+                for (var i = 0; i < options.HttpMessageHandlerBuilderActions.Count; i++)
+                {
+                    options.HttpMessageHandlerBuilderActions[i](b);
+                }
             }
         }
 
