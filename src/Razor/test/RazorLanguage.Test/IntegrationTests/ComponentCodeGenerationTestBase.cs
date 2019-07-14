@@ -174,10 +174,10 @@ namespace Test
 
     public class MyComponent : ComponentBase
     {
-        [Parameter] int IntProperty { get; set; }
-        [Parameter] bool BoolProperty { get; set; }
-        [Parameter] string StringProperty { get; set; }
-        [Parameter] SomeType ObjectProperty { get; set; }
+        [Parameter] public int IntProperty { get; set; }
+        [Parameter] public bool BoolProperty { get; set; }
+        [Parameter] public string StringProperty { get; set; }
+        [Parameter] public SomeType ObjectProperty { get; set; }
     }
 }
 "));
@@ -215,9 +215,9 @@ namespace Test
     </p>
 }
 @code {
-    [Parameter] TItem1 Item1 { get; set; }
-    [Parameter] List<TItem2> Items2 { get; set; }
-    [Parameter] RenderFragment<TItem2> ChildContent { get; set; }
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 }");
 
             // Assert
@@ -238,7 +238,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string StringProperty { get; set; }
+        public string StringProperty { get; set; }
     }
 }
 "));
@@ -289,7 +289,7 @@ namespace Test
 {
     public class CoolnessMeter : ComponentBase
     {
-        [Parameter] private int Coolness { get; set; }
+        [Parameter] public int Coolness { get; set; }
     }
 }
 "));
@@ -415,10 +415,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> ValueChanged { get; set; }
+        public Action<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -448,10 +448,10 @@ namespace Test
     public class InputText : ComponentBase
     {
         [Parameter]
-        string Value { get; set; }
+        public string Value { get; set; }
 
         [Parameter]
-        Action<string> ValueChanged { get; set; }
+        public Action<string> ValueChanged { get; set; }
     }
 }"));
 
@@ -495,10 +495,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> ValueChanged { get; set; }
+        public Action<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -534,10 +534,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        EventCallback<int> ValueChanged { get; set; }
+        public EventCallback<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -567,10 +567,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        EventCallback<int> ValueChanged { get; set; }
+        public EventCallback<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -603,11 +603,8 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : ComponentBase, IComponent
+    public class MyComponent : ComponentBase
     {
-        void IComponent.SetParameters(ParameterCollection parameters)
-        {
-        }
     }
 }"));
 
@@ -637,10 +634,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> OnChanged { get; set; }
+        public Action<int> OnChanged { get; set; }
     }
 }"));
             // Act
@@ -666,11 +663,8 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : ComponentBase, IComponent
+    public class MyComponent : ComponentBase
     {
-        void IComponent.SetParameters(ParameterCollection parameters)
-        {
-        }
     }
 }"));
 
@@ -700,13 +694,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> ValueChanged { get; set; }
+        public Action<int> ValueChanged { get; set; }
 
         [Parameter]
-        Expression<Func<int>> ValueExpression { get; set; }
+        public Expression<Func<int>> ValueExpression { get; set; }
     }
 }"));
 
@@ -737,13 +731,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        EventCallback<int> ValueChanged { get; set; }
+        public EventCallback<int> ValueChanged { get; set; }
 
         [Parameter]
-        Expression<Func<int>> ValueExpression { get; set; }
+        public Expression<Func<int>> ValueExpression { get; set; }
     }
 }"));
 
@@ -774,13 +768,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> ValueChanged { get; set; }
+        public Action<int> ValueChanged { get; set; }
 
         [Parameter]
-        Expression<Func<string>> ValueExpression { get; set; }
+        public Expression<Func<string>> ValueExpression { get; set; }
     }
 }"));
 
@@ -813,13 +807,13 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        T SomeParam { get; set; }
+        public T SomeParam { get; set; }
 
         [Parameter]
-        Action<T> SomeParamChanged { get; set; }
+        public Action<T> SomeParamChanged { get; set; }
 
         [Parameter]
-        Expression<Func<T>> SomeParamExpression { get; set; }
+        public Expression<Func<T>> SomeParamExpression { get; set; }
     }
 }"));
 
@@ -850,13 +844,13 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        T SomeParam { get; set; }
+        public T SomeParam { get; set; }
 
         [Parameter]
-        EventCallback<T> SomeParamChanged { get; set; }
+        public EventCallback<T> SomeParamChanged { get; set; }
 
         [Parameter]
-        Expression<Func<T>> SomeParamExpression { get; set; }
+        public Expression<Func<T>> SomeParamExpression { get; set; }
     }
 }"));
 
@@ -1115,6 +1109,113 @@ namespace Test
         }
 
         [Fact]
+        public void BindToElementFallback_WithCulture()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Globalization
+<div @bind-value=""@ParentValue"" @bind-value:event=""onchange"" @bind-value:culture=""CultureInfo.InvariantCulture"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToElementWithCulture()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", ""value"", ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Globalization
+<div @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" @bind-value:culture=""CultureInfo.InvariantCulture"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToInputElementWithDefaultCulture()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: true, format: null)]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Globalization
+<input type=""custom"" @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" />
+@code {
+    public int ParentValue { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToInputElementWithDefaultCulture_Override()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: true, format: null)]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Globalization
+<input type=""custom"" @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" @bind-value:culture=""CultureInfo.CurrentCulture"" />
+@code {
+    public int ParentValue { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+
+        [Fact]
         public void BuiltIn_BindToInputText_CanOverrideEvent()
         {
             // Arrange
@@ -1168,6 +1269,93 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void BuiltIn_BindToInputWithDefaultFormat()
+        { 
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: false, format: ""MM/dd"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input type=""custom"" @bind=""@CurrentDate"" />
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputWithDefaultFormat_Override()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: false, format: ""MM/dd"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input type=""custom"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputWithDefaultCultureAndDefaultFormat_Override()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: true, format: ""MM/dd"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input type=""custom"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Child Content
@@ -1184,10 +1372,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyAttr { get; set; }
+        public string MyAttr { get; set; }
 
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -1214,10 +1402,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyAttr { get; set; }
+        public string MyAttr { get; set; }
 
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
     }
 }
 "));
@@ -1245,10 +1433,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyAttr { get; set; }
+        public string MyAttr { get; set; }
 
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
     }
 }
 "));
@@ -1279,10 +1467,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyAttr { get; set; }
+        public string MyAttr { get; set; }
 
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
     }
 }
 "));
@@ -1313,7 +1501,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -1340,7 +1528,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -1367,7 +1555,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
     }
 }
 "));
@@ -1394,10 +1582,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment Header { get; set; }
+        public RenderFragment Header { get; set; }
 
         [Parameter]
-        RenderFragment Footer { get; set; }
+        public RenderFragment Footer { get; set; }
     }
 }
 "));
@@ -1427,12 +1615,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<string> Header { get; set; }
-
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment<string> Header { get; set; }
 
         [Parameter]
-        RenderFragment Footer { get; set; }
+        public RenderFragment ChildContent { get; set; }
+
+        [Parameter]
+        public RenderFragment Footer { get; set; }
     }
 }
 "));
@@ -1462,13 +1651,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<string> Header { get; set; }
+        public RenderFragment<string> Header { get; set; }
 
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
 
         [Parameter]
-        RenderFragment Footer { get; set; }
+        public RenderFragment Footer { get; set; }
     }
 }
 "));
@@ -1661,7 +1850,7 @@ namespace Test
     public class HeaderComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment Header { get; set; }
+        public RenderFragment Header { get; set; }
     }
 }
 
@@ -1670,7 +1859,7 @@ namespace AnotherTest
     public class FooterComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<DateTime> Footer { get; set; }
+        public RenderFragment<DateTime> Footer { get; set; }
     }
 }
 "));
@@ -1712,7 +1901,7 @@ namespace Test
     public class HeaderComponent : ComponentBase
     {
         [Parameter]
-        string Header { get; set; }
+        public string Header { get; set; }
     }
 }
 
@@ -1721,7 +1910,7 @@ namespace AnotherTest
     public class FooterComponent : ComponentBase
     {
         [Parameter]
-        string Footer { get; set; }
+        public string Footer { get; set; }
     }
 }
 "));
@@ -1760,7 +1949,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -1795,7 +1984,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -1830,7 +2019,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -1865,7 +2054,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -1900,7 +2089,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -1936,7 +2125,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -1972,7 +2161,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2007,7 +2196,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2042,7 +2231,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2078,7 +2267,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2114,7 +2303,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2158,7 +2347,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        Action<UIEventArgs> OnClick { get; set; }
+        public Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2225,7 +2414,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        Action<UIEventArgs> OnClick { get; set; }
+        public Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2476,7 +2665,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2502,7 +2691,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2528,7 +2717,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2556,7 +2745,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2582,7 +2771,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2610,10 +2799,10 @@ namespace Test
     public class MyComponent<TItem> : ComponentBase
     {
         [Parameter]
-        TItem Item { get; set; }
+        public TItem Item { get; set; }
 
         [Parameter]
-        Action<TItem> ItemChanged { get; set; }
+        public Action<TItem> ItemChanged { get; set; }
     }
 }
 "));
@@ -2644,10 +2833,10 @@ namespace Test
     public class MyComponent<TItem> : ComponentBase
     {
         [Parameter]
-        TItem Item { get; set; }
+        public TItem Item { get; set; }
 
         [Parameter]
-        Action<TItem> ItemChanged { get; set; }
+        public Action<TItem> ItemChanged { get; set; }
     }
 }
 "));
@@ -2707,7 +2896,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Value { get; set; }
+        [Parameter] public TItem Value { get; set; }
     }
 }
 "));
@@ -2736,9 +2925,9 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
 
-        [Parameter] RenderFragment<TItem> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem> ChildContent { get; set; }
     }
 }
 "));
@@ -2766,9 +2955,9 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
 
-        [Parameter] RenderFragment<TItem> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem> ChildContent { get; set; }
     }
 }
 "));
@@ -2796,11 +2985,11 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
 
-        [Parameter] RenderFragment<TItem> GenericFragment { get; set; }
+        [Parameter] public RenderFragment<TItem> GenericFragment { get; set; }
 
-        [Parameter] RenderFragment<int> IntFragment { get; set; }
+        [Parameter] public RenderFragment<int> IntFragment { get; set; }
     }
 }
 "));
@@ -2829,9 +3018,9 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
 
-        [Parameter] RenderFragment<TItem> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem> ChildContent { get; set; }
     }
 }
 "));
@@ -2859,11 +3048,11 @@ namespace Test
 {
     public class MyComponent<TItem1, TItem2> : ComponentBase
     {
-        [Parameter] TItem1 Item { get; set; }
+        [Parameter] public TItem1 Item { get; set; }
 
-        [Parameter] RenderFragment<TItem1> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem1> ChildContent { get; set; }
 
-        [Parameter] RenderFragment<Context> AnotherChildContent { get; set; }
+        [Parameter] public RenderFragment<Context> AnotherChildContent { get; set; }
 
         public class Context
         {
@@ -2900,13 +3089,13 @@ namespace Test
 {
     public class MyComponent<TItem1, TItem2> : ComponentBase
     {
-        [Parameter] TItem1 Item { get; set; }
+        [Parameter] public TItem1 Item { get; set; }
 
-        [Parameter] List<TItem2> Items { get; set; }
+        [Parameter] public List<TItem2> Items { get; set; }
 
-        [Parameter] RenderFragment<TItem1> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem1> ChildContent { get; set; }
 
-        [Parameter] RenderFragment<Context> AnotherChildContent { get; set; }
+        [Parameter] public RenderFragment<Context> AnotherChildContent { get; set; }
 
         public class Context
         {
@@ -2942,7 +3131,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2973,7 +3162,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2994,7 +3183,7 @@ namespace Test
         }
 
         [Fact]
-        public void GenericComponent_WithComponentRef()
+        public void GenericComponent_WithComponentRef_CreatesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3004,7 +3193,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -3012,10 +3201,39 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent TItem=int Item=""3"" @ref=""_my"" />
-
 @code {
-    private MyComponent<int> _my;
-    public void Foo() { System.GC.KeepAlive(_my); }
+    MyComponent myInstance;
+    void DoStuff() { GC.KeepAlive(myInstance); }
+}
+", throwOnFailure: false);
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(diagnostic.Id, ComponentDiagnosticFactory.RefSuppressFieldRequiredForGeneric.Id);
+        }
+
+        [Fact]
+        public void GenericComponent_WithComponentRef_SuppressField()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : ComponentBase
+    {
+        [Parameter] public TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent TItem=int Item=""3"" @ref=""_my"" @ref:suppressField />
+@code {
+    MyComponent<int> _my;
+    void DoStuff() { GC.KeepAlive(_my); }
 }
 ");
 
@@ -3026,7 +3244,7 @@ namespace Test
         }
 
         [Fact]
-        public void GenericComponent_WithComponentRef_TypeInference()
+        public void GenericComponent_WithComponentRef_TypeInference_CreatesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
@@ -3036,7 +3254,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -3044,6 +3262,38 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent Item=""3"" @ref=""_my"" />
+
+@code {
+    private MyComponent<int> _my;
+    public void Foo() { System.GC.KeepAlive(_my); }
+}
+", throwOnFailure: true);
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(diagnostic.Id, ComponentDiagnosticFactory.RefSuppressFieldRequiredForGeneric.Id);
+
+        }
+
+        [Fact]
+        public void GenericComponent_WithComponentRef_TypeInference_SuppressField()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : ComponentBase
+    {
+        [Parameter] public TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent Item=""3"" @ref=""_my"" @ref:suppressField />
 
 @code {
     private MyComponent<int> _my;
@@ -3069,8 +3319,8 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
-        [Parameter] MyClass Foo { get; set; }
+        [Parameter] public TItem Item { get; set; }
+        [Parameter] public MyClass Foo { get; set; }
     }
 }
 
@@ -3130,7 +3380,7 @@ namespace Test.Shared
 @code {
         private object someObject = new object();
 
-        [Parameter] protected int Min { get; set; }
+        [Parameter] public int Min { get; set; }
     }
 ");
 
@@ -3357,7 +3607,7 @@ namespace Test
 {
     public class MyComponent<T> : ComponentBase
     {
-        [Parameter] T Value { get; set;}
+        [Parameter] public T Value { get; set;}
     }
 }
 "));
@@ -3386,13 +3636,7 @@ namespace Test
         {
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<elem attributebefore=""before"" @ref=""myElem"" attributeafter=""after"">Hello</elem>
-
-@code {
-    private Microsoft.AspNetCore.Components.ElementRef myElem;
-    public void Foo() { System.GC.KeepAlive(myElem); }
-}
-");
+<elem attributebefore=""before"" @ref=""myElem"" attributeafter=""after"">Hello</elem>");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -3408,10 +3652,7 @@ namespace Test
 <input type=""text"" data-slider-min=""@Min"" @ref=""@_element"" />
 
 @code {
-        private ElementRef _element;
-
-        [Parameter] protected int Min { get; set; }
-        public void Foo() { System.GC.KeepAlive(_element); }
+        [Parameter] public int Min { get; set; }
     }
 ");
 
@@ -3419,6 +3660,35 @@ namespace Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Element_WithRef_SuppressField()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem @ref=""myElem"" @ref:suppressField>Hello</elem>
+@code {
+    ElementRef myElem;
+    void DoStuff() { GC.KeepAlive(myElem); }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Element_WithRef_SuppressFieldWithValue_ResultsInDiagnostic()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem @ref=""myElem"" @ref:suppressField=""false"">Hello</elem>", throwOnFailure: false);
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(diagnostic.Id, ComponentDiagnosticFactory.RefSuppressFieldNotMinimized.Id);
         }
 
         [Fact]
@@ -3438,13 +3708,7 @@ namespace Test
 
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<MyComponent ParamBefore=""before"" @ref=""myInstance"" ParamAfter=""after"" />
-
-@code {
-    private Test.MyComponent myInstance;
-    public void Foo() { System.GC.KeepAlive(myInstance); }
-}
-");
+<MyComponent ParamBefore=""before"" @ref=""myInstance"" ParamAfter=""after"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -3472,12 +3736,36 @@ namespace Test
 <MyComponent @ref=""myInstance"" SomeProp=""val"">
     Some <el>further</el> content
 </MyComponent>
-
-@code {
-    private Test.MyComponent myInstance;
-    public void Foo() { System.GC.KeepAlive(myInstance); }
-}
 ");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithRef_SuppressField()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<MyComponent @ref=""myInstance"" @ref:suppressField />
+@code {
+    MyComponent myInstance;
+    void DoStuff() { GC.KeepAlive(myInstance); }
+}");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -3587,7 +3875,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] string Name { get; set; }
+        [Parameter] public string Name { get; set; }
     }
 }
 "));
@@ -3622,7 +3910,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] string Name { get; set; }
+        [Parameter] public string Name { get; set; }
     }
 }
 "));
@@ -3660,7 +3948,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] RenderFragment Template { get; set; }
+        [Parameter] public RenderFragment Template { get; set; }
     }
 }
 "));
@@ -3688,7 +3976,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] RenderFragment<Person> PersonTemplate { get; set; }
+        [Parameter] public RenderFragment<Person> PersonTemplate { get; set; }
     }
 
     public class Person
@@ -3721,7 +4009,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] RenderFragment<Context> Template { get; set; }
+        [Parameter] public RenderFragment<Context> Template { get; set; }
     }
 
     public class Context
@@ -4455,7 +4743,7 @@ namespace Test
 {
     public class SurveyPrompt : ComponentBase
     {
-        [Parameter] private string Title { get; set; }
+        [Parameter] public string Title { get; set; }
     }
 }
 "));
@@ -4493,7 +4781,7 @@ namespace Test
 {
     public class SurveyPrompt : ComponentBase
     {
-        [Parameter] private string Title { get; set; }
+        [Parameter] public string Title { get; set; }
     }
 }
 "));

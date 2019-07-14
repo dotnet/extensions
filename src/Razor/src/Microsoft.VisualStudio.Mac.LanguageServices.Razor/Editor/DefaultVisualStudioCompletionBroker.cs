@@ -4,7 +4,6 @@
 using System;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text.Editor;
-using MonoDevelop.Ide.CodeCompletion;
 
 namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.Editor
 {
@@ -23,11 +22,6 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.Editor
             {
                 // Text view does not have focus, if the completion window is visible it's for a different text view.
                 return false;
-            }
-
-            if (CompletionWindowManager.IsVisible)
-            {
-                return true;
             }
 
             if (textView.Properties.TryGetProperty<bool>(IsCompletionActiveKey, out var visible))

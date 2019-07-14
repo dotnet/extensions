@@ -348,34 +348,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return diagnostic;
         }
 
-        public static readonly RazorDiagnosticDescriptor BindAttribute_UnsupportedFormat =
-            new RazorDiagnosticDescriptor(
-            $"{DiagnosticPrefix}10005",
-            () => "Specifying event handlers in bind attributes are no longer supported. Specify it using the bind:event=... attribute instead.",
-            RazorDiagnosticSeverity.Warning);
-
-        public static RazorDiagnostic CreateBindAttribute_UnsupportedFormat(SourceSpan? source)
-        {
-            var diagnostic = RazorDiagnostic.Create(
-                BindAttribute_UnsupportedFormat,
-                source ?? SourceSpan.Undefined);
-            return diagnostic;
-        }
-
-        public static readonly RazorDiagnosticDescriptor BindAttribute_FormatNode_Unsupported =
-            new RazorDiagnosticDescriptor(
-            $"{DiagnosticPrefix}10006",
-            () => "Specifying format using 'format-...' attributes are no longer supported. Specify it using the 'bind-...:format=...' attribute instead.",
-            RazorDiagnosticSeverity.Warning);
-
-        public static RazorDiagnostic CreateBindAttribute_FormatNode_Unsupported(SourceSpan? source)
-        {
-            var diagnostic = RazorDiagnostic.Create(
-                BindAttribute_FormatNode_Unsupported,
-                source ?? SourceSpan.Undefined);
-            return diagnostic;
-        }
-
         public static readonly RazorDiagnosticDescriptor DuplicateMarkupAttribute =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}10007",
@@ -422,6 +394,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static RazorDiagnostic Create_DuplicateComponentParameterDirective(string attributeName, string directiveAttributeName, SourceSpan? source = null)
         {
             return RazorDiagnostic.Create(DuplicateComponentParameterDirective, source ?? SourceSpan.Undefined, attributeName, directiveAttributeName);
+        }
+
+        public static readonly RazorDiagnosticDescriptor RefSuppressFieldNotMinimized =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}10011",
+                () =>
+                    "The directive attribute '@ref:suppressField' must be used as a minimized attribute. Providing an attribute value like '@ref:suppressField=\"false\"' " +
+                    "is not supported.",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_RefSuppressFieldNotMinimized(SourceSpan? source = null)
+        {
+            return RazorDiagnostic.Create(RefSuppressFieldNotMinimized, source ?? SourceSpan.Undefined);
+        }
+
+        public static readonly RazorDiagnosticDescriptor RefSuppressFieldRequiredForGeneric =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}10012",
+                () =>
+                    "Using '@ref' on a generic-typed component requires manually defining a field to hold the component reference. Use '@ref:suppressField' to " +
+                    "suppress field generation, and manually define a field inside '@code {{ }}' to contain the reference.",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_RefSuppressFieldRequiredForGeneric(SourceSpan? source = null)
+        {
+            return RazorDiagnostic.Create(RefSuppressFieldRequiredForGeneric, source ?? SourceSpan.Undefined);
         }
     }
 }

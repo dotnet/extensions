@@ -191,6 +191,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 "@bind",
                 "@bind:format",
                 "@bind:event",
+                "@bind:culture",
                 "@",
             };
 

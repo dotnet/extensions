@@ -17,24 +17,28 @@ namespace Microsoft.CodeAnalysis.Razor
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
     public class MyComponent : IComponent
     {
-        public void Init(RenderHandle renderHandle) { }
+        public void Configure(RenderHandle renderHandle) { }
 
-        public void SetParameters(ParameterCollection parameters) { }
-
-        [Parameter]
-        string MyProperty { get; set; }
-
-        [Parameter]
-        Action<string> MyPropertyChanged { get; set; }
+        public Task SetParametersAsync(ParameterCollection parameters)
+        {
+            return Task.CompletedTask;
+        }
 
         [Parameter]
-        Expression<Func<string>> MyPropertyExpression { get; set; }
+        public string MyProperty { get; set; }
+
+        [Parameter]
+        public Action<string> MyPropertyChanged { get; set; }
+
+        [Parameter]
+        public Expression<Func<string>> MyPropertyExpression { get; set; }
     }
 }
 "));
@@ -137,21 +141,25 @@ namespace Test
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
     public class MyComponent : IComponent
     {
-        public void Init(RenderHandle renderHandle) { }
+        public void Configure(RenderHandle renderHandle) { }
 
-        public void SetParameters(ParameterCollection parameters) { }
+        public Task SetParametersAsync(ParameterCollection parameters)
+        {
+            return Task.CompletedTask;
+        }
 
         [Parameter]
-        string MyProperty { get; set; }
+        public string MyProperty { get; set; }
 
         [Parameter]
-        EventCallback<string> MyPropertyChanged { get; set; }
+        public EventCallback<string> MyPropertyChanged { get; set; }
     }
 }
 "));
@@ -254,15 +262,19 @@ namespace Test
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
     public class MyComponent : IComponent
     {
-        public void Init(RenderHandle renderHandle) { }
+        public void Configure(RenderHandle renderHandle) { }
 
-        public void SetParameters(ParameterCollection parameters) { }
+        public Task SetParametersAsync(ParameterCollection parameters)
+        {
+            return Task.CompletedTask;
+        }
 
         public string MyProperty { get; set; }
 
@@ -418,6 +430,28 @@ namespace Test
             // Defined from the property type
             Assert.Equal("System.String", parameter.TypeName);
             Assert.True(parameter.IsStringProperty);
+            Assert.False(parameter.IsBooleanProperty);
+            Assert.False(parameter.IsEnum);
+
+            parameter = Assert.Single(attribute.BoundAttributeParameters, a => a.Name.Equals("culture"));
+
+            // Invariants
+            Assert.Empty(parameter.Diagnostics);
+            Assert.False(parameter.HasErrors);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, parameter.Kind);
+            Assert.False(parameter.IsDefaultKind());
+
+            Assert.Equal(
+                "Specifies the culture to use for conversions.",
+                parameter.Documentation);
+
+            Assert.Equal("culture", parameter.Name);
+            Assert.Equal("Culture", parameter.GetPropertyName());
+            Assert.Equal(":culture", parameter.DisplayName);
+
+            // Defined from the property type
+            Assert.Equal("System.Globalization.CultureInfo", parameter.TypeName);
+            Assert.False(parameter.IsStringProperty);
             Assert.False(parameter.IsBooleanProperty);
             Assert.False(parameter.IsEnum);
         }
@@ -637,6 +671,8 @@ namespace Test
             Assert.Equal("checkbox", bind.Metadata[ComponentMetadata.Bind.TypeAttribute]);
             Assert.True(bind.IsInputElementBindTagHelper());
             Assert.False(bind.IsInputElementFallbackBindTagHelper());
+            Assert.False(bind.IsInvariantCultureBindTagHelper());
+            Assert.Null(bind.GetFormat());
 
             var rule = Assert.Single(bind.TagMatchingRules);
             Assert.Equal("input", rule.TagName);
@@ -667,6 +703,46 @@ namespace Test
             Assert.Equal("format", parameter.Name);
             Assert.Equal("Format_somevalue", parameter.GetPropertyName());
             Assert.Equal(":format", parameter.DisplayName);
+        }
+
+        [Fact]
+        public void Execute_BindOnInputElementWithTypeAttributeAndSuffixAndInvariantCultureAndFormat_CreatesDescriptor()
+        {
+            // Arrange
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""number"", null, ""value"", ""onchange"", isInvariantCulture: true, format: ""0.00"")]
+    public class BindAttributes
+    {
+    }
+}
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new BindTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 0);
+            var bind = Assert.Single(matches);
+
+            Assert.Equal("value", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
+            Assert.Equal("onchange", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
+            Assert.Equal("number", bind.Metadata[ComponentMetadata.Bind.TypeAttribute]);
+            Assert.True(bind.IsInputElementBindTagHelper());
+            Assert.False(bind.IsInputElementFallbackBindTagHelper());
+            Assert.True(bind.IsInvariantCultureBindTagHelper());
+            Assert.Equal("0.00", bind.GetFormat());
         }
 
         [Fact]
@@ -793,8 +869,29 @@ namespace Test
             Assert.True(parameter.IsStringProperty);
             Assert.False(parameter.IsBooleanProperty);
             Assert.False(parameter.IsEnum);
-        }
 
+            parameter = Assert.Single(attribute.BoundAttributeParameters, a => a.Name.Equals("culture"));
+
+            // Invariants
+            Assert.Empty(parameter.Diagnostics);
+            Assert.False(parameter.HasErrors);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, parameter.Kind);
+            Assert.False(parameter.IsDefaultKind());
+
+            Assert.Equal(
+                "Specifies the culture to use for conversions.",
+                parameter.Documentation);
+
+            Assert.Equal("culture", parameter.Name);
+            Assert.Equal("Culture", parameter.GetPropertyName());
+            Assert.Equal(":culture", parameter.DisplayName);
+
+            // Defined from the property type
+            Assert.Equal("System.Globalization.CultureInfo", parameter.TypeName);
+            Assert.False(parameter.IsStringProperty);
+            Assert.False(parameter.IsBooleanProperty);
+            Assert.False(parameter.IsEnum);
+        }
 
         private static TagHelperDescriptor[] GetBindTagHelpers(TagHelperDescriptorProviderContext context)
         {

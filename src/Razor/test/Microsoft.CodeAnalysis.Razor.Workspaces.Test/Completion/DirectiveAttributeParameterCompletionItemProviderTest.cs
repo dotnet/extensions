@@ -97,7 +97,8 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
 
             // Assert
-            Assert.Equal(2, completions.Count);
+            Assert.Equal(3, completions.Count);
+            AssertContains(completions, "culture");
             AssertContains(completions, "event");
             AssertContains(completions, "format");
         }

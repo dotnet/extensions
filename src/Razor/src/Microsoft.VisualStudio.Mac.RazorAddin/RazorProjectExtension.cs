@@ -3,6 +3,7 @@
 
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.Composition;
 using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Projects;
@@ -16,7 +17,7 @@ namespace Microsoft.VisualStudio.Mac.RazorAddin
 
         public RazorProjectExtension()
         {
-            _foregroundDispatcher = CompositionManager.GetExportedValue<ForegroundDispatcher>();
+            _foregroundDispatcher = CompositionManager.Instance.GetExportedValue<ForegroundDispatcher>();
         }
 
         protected override void OnBoundToSolution()
@@ -35,7 +36,7 @@ namespace Microsoft.VisualStudio.Mac.RazorAddin
                     return;
                 }
 
-                var projectHostFactory = CompositionManager.GetExportedValue<DotNetProjectHostFactory>();
+                var projectHostFactory = CompositionManager.Instance.GetExportedValue<DotNetProjectHostFactory>();
                 projectHost = projectHostFactory.Create(dotNetProject);
                 Project.ExtendedProperties[typeof(DotNetProjectHost)] = projectHost;
             }
@@ -43,7 +44,7 @@ namespace Microsoft.VisualStudio.Mac.RazorAddin
             // Once a workspace is created for the solution we'll setup our project host for the current project. The Razor world
             // shares a lifetime with the workspace (as Roslyn services) so we need to ensure it exists prior to wiring the host
             // world to the Roslyn world.
-            _ = TypeSystemService.GetWorkspaceAsync(Project.ParentSolution).ContinueWith(task =>
+            _ = IdeApp.TypeSystemService.GetWorkspaceAsync(Project.ParentSolution).ContinueWith(task =>
             {
                 if (task.IsFaulted || task.IsCanceled)
                 {

@@ -16,18 +16,22 @@ namespace Microsoft.CodeAnalysis.Razor
             // Arrange
 
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
     public class MyComponent : IComponent
     {
-        public void Init(RenderHandle renderHandle) { }
+        public void Configure(RenderHandle renderHandle) { }
 
-        public void SetParameters(ParameterCollection parameters) { }
+        public Task SetParametersAsync(ParameterCollection parameters)
+        {
+            return Task.CompletedTask;
+        }
 
         [Parameter]
-        private string MyProperty { get; set; }
+        public string MyProperty { get; set; }
     }
 }
 
@@ -132,18 +136,22 @@ namespace Test
             // Arrange
 
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
     public class MyComponent<T> : IComponent
     {
-        public void Init(RenderHandle renderHandle) { }
+        public void Configure(RenderHandle renderHandle) { }
 
-        public void SetParameters(ParameterCollection parameters) { }
+        public Task SetParametersAsync(ParameterCollection parameters)
+        {
+            return Task.CompletedTask;
+        }
 
         [Parameter]
-        private string MyProperty { get; set; }
+        public string MyProperty { get; set; }
     }
 }
 
@@ -207,7 +215,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyProperty { get; set; }
+        public string MyProperty { get; set; }
     }
 }
 
@@ -249,7 +257,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        bool MyProperty { get; set; }
+        public bool MyProperty { get; set; }
     }
 }
 
@@ -302,7 +310,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        MyEnum MyProperty { get; set; }
+        public MyEnum MyProperty { get; set; }
     }
 }
 
@@ -349,7 +357,7 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        T MyProperty { get; set; }
+        public T MyProperty { get; set; }
     }
 }
 
@@ -407,13 +415,13 @@ namespace Test
     public class MyComponent<T, U, V> : ComponentBase
     {
         [Parameter]
-        T MyProperty1 { get; set; }
+        public T MyProperty1 { get; set; }
 
         [Parameter]
-        U MyProperty2 { get; set; }
+        public U MyProperty2 { get; set; }
 
         [Parameter]
-        V MyProperty3 { get; set; }
+        public V MyProperty3 { get; set; }
     }
 }
 
@@ -488,7 +496,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        Action<UIMouseEventArgs> OnClick { get; set; }
+        public Action<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 
@@ -538,7 +546,7 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        Action<T> OnClick { get; set; }
+        public Action<T> OnClick { get; set; }
     }
 }
 
@@ -600,7 +608,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 
@@ -650,7 +658,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 
@@ -705,7 +713,7 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        EventCallback<T> OnClick { get; set; }
+        public EventCallback<T> OnClick { get; set; }
     }
 }
 
@@ -768,7 +776,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment ChildContent2 { get; set; }
+        public RenderFragment ChildContent2 { get; set; }
     }
 }
 
@@ -825,7 +833,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<string> ChildContent2 { get; set; }
+        public RenderFragment<string> ChildContent2 { get; set; }
     }
 }
 
@@ -897,10 +905,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<string> ChildContent2 { get; set; }
+        public RenderFragment<string> ChildContent2 { get; set; }
 
         [Parameter]
-        string Context { get; set; }
+        public string Context { get; set; }
     }
 }
 
@@ -972,7 +980,7 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        RenderFragment<T> ChildContent2 { get; set; }
+        public RenderFragment<T> ChildContent2 { get; set; }
     }
 }
 
@@ -1054,7 +1062,7 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        RenderFragment<List<string>> ChildContent2 { get; set; }
+        public RenderFragment<List<string>> ChildContent2 { get; set; }
     }
 }
 
@@ -1136,7 +1144,7 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        RenderFragment<List<T>> ChildContent2 { get; set; }
+        public RenderFragment<List<T>> ChildContent2 { get; set; }
     }
 }
 
@@ -1217,7 +1225,7 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        RenderFragment<Context> ChildContent2 { get; set; }
+        public RenderFragment<Context> ChildContent2 { get; set; }
 
         public class Context
         {
@@ -1302,13 +1310,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
 
         [Parameter]
-        RenderFragment<string> Header { get; set; }
+        public RenderFragment<string> Header { get; set; }
 
         [Parameter]
-        RenderFragment<string> Footer { get; set; }
+        public RenderFragment<string> Footer { get; set; }
     }
 }
 
@@ -1380,21 +1388,21 @@ namespace Test
     public abstract class MyBase : ComponentBase
     {
         [Parameter]
-        protected string Hidden { get; set; }
+        public string Hidden { get; set; }
     }
 
     public class MyComponent : MyBase
     {
         [Parameter]
-        string NoSetter { get; }
+        public string NoSetter { get; }
 
         [Parameter]
-        static string StaticProperty { get; set; }
+        public static string StaticProperty { get; set; }
 
         public string NoParameterAttribute { get; set; }
 
         // No attribute here, hides base-class property of the same name.
-        protected new int Hidden { get; set; }
+        public new int Hidden { get; set; }
 
         public string this[int i]
         {

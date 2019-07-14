@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -100,6 +101,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     else if (node.BoundAttributeParameter.Name == "format")
                     {
                         entry.BindFormatNode = node;
+                    }
+                    else if (node.BoundAttributeParameter.Name == "culture")
+                    {
+                        entry.BindCultureNode = node;
                     }
                     else
                     {
@@ -277,7 +282,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // Skip anything we can't understand. It's important that we don't crash, that will bring down
                 // the build.
                 node.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttribute_InvalidSyntax(
-                    node.Source, 
+                    node.Source,
                     node.AttributeName));
                 return new[] { node };
             }
@@ -290,35 +295,49 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return new[] { node };
             }
 
-            // Look for a matching format node. If we find one then we need to pass the format into the
+            // Look for a format. If we find one then we need to pass the format into the
             // two nodes we generate.
             IntermediateToken format = null;
             if (bindEntry.BindFormatNode != null)
             {
                 format = GetAttributeContent(bindEntry.BindFormatNode);
             }
-
-            if (TryGetFormatNode(
-                parent,
-                node,
-                valueAttributeName,
-                out var formatNode))
+            else if (node.TagHelper?.GetFormat() != null)
             {
-                // If there is a format- attribute present, add a warning to say that it's unsupported.
-                parent.Children.Remove(formatNode);
-                parent.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttribute_FormatNode_Unsupported(formatNode.Source));
+                // We may have a default format if one is associated with the field type.
+                format = new IntermediateToken()
+                {
+                    Kind = TokenKind.CSharp,
+                    Content = "\"" + node.TagHelper.GetFormat() + "\"",
+                };
+            }
+
+            // Look for a culture. If we find one then we need to pass the culture into the
+            // two nodes we generate.
+            IntermediateToken culture = null;
+            if (bindEntry.BindCultureNode != null)
+            {
+                culture = GetAttributeContent(bindEntry.BindCultureNode);
+            }
+            else if (node.TagHelper?.IsInvariantCultureBindTagHelper() == true)
+            {
+                // We may have a default invariant culture if one is associated with the field type.
+                culture = new IntermediateToken()
+                {
+                    Kind = TokenKind.CSharp,
+                    Content = $"global::{typeof(CultureInfo).FullName}.{nameof(CultureInfo.InvariantCulture)}",
+                };
             }
 
             var valueExpressionTokens = new List<IntermediateToken>();
             var changeExpressionTokens = new List<IntermediateToken>();
+
+            // DOM-based event handlers use EventCallback, so if we see a delegate here it's a component.
             if (changeAttribute != null && changeAttribute.IsDelegateProperty())
             {
-                RewriteNodesForDelegateBind(
+                RewriteNodesForComponentDelegateBind(
                     original,
-                    format,
-                    valueAttribute,
-                    changeAttribute,
-                    valueExpressionTokens, 
+                    valueExpressionTokens,
                     changeExpressionTokens);
             }
             else
@@ -326,6 +345,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 RewriteNodesForEventCallbackBind(
                     original,
                     format,
+                    culture,
                     valueAttribute,
                     changeAttribute,
                     valueExpressionTokens,
@@ -379,7 +399,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     changeNode.Children[0].Children.Add(changeExpressionTokens[i]);
                 }
 
-                return  new[] { valueNode, changeNode };
+                return new[] { valueNode, changeNode };
             }
             else
             {
@@ -456,54 +476,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private bool TryParseBindAttribute(
-            BindEntry bindEntry,
-            out string valueAttributeName,
-            out string changeAttributeName)
+        private bool TryParseBindAttribute(BindEntry bindEntry, out string valueAttributeName)
         {
             var attributeName = bindEntry.BindNode.AttributeName;
             valueAttributeName = null;
-            changeAttributeName = null;
-
-            if (!attributeName.StartsWith("bind"))
-            {
-                return false;
-            }
-
-            if (bindEntry.BindEventNode != null)
-            {
-                changeAttributeName = GetAttributeContent(bindEntry.BindEventNode)?.Content?.Trim('"');
-            }
 
             if (attributeName == "bind")
             {
                 return true;
             }
 
-            var segments = attributeName.Split('-');
-            for (var i = 0; i < segments.Length; i++)
+            if (!attributeName.StartsWith("bind-"))
             {
-                if (string.IsNullOrEmpty(segments[i]))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            switch (segments.Length)
-            {
-                case 2:
-                    valueAttributeName = segments[1];
-                    return true;
-
-                case 3:
-                    valueAttributeName = segments[1];
-                    changeAttributeName = segments[2];
-                    bindEntry.BindNode.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttribute_UnsupportedFormat(bindEntry.BindNode.Source));
-                    return true;
-
-                default:
-                    return false;
-            }
+            valueAttributeName = attributeName.Substring("bind-".Length);
+            return true;
         }
 
         // Attempts to compute the attribute names that should be used for an instance of 'bind'.
@@ -517,16 +506,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             out BoundAttributeDescriptor changeAttribute,
             out BoundAttributeDescriptor expressionAttribute)
         {
+            valueAttributeName = null;
+            changeAttributeName = null;
+            expressionAttributeName = null;
             valueAttribute = null;
             changeAttribute = null;
             expressionAttribute = null;
-            expressionAttributeName = null;
 
             // Even though some of our 'bind' tag helpers specify the attribute names, they
             // should still satisfy one of the valid syntaxes.
-            if (!TryParseBindAttribute(bindEntry, out valueAttributeName, out changeAttributeName))
+            if (!TryParseBindAttribute(bindEntry, out valueAttributeName))
             {
                 return false;
+            }
+
+            if (bindEntry.BindEventNode != null)
+            {
+                changeAttributeName = GetAttributeContent(bindEntry.BindEventNode)?.Content?.Trim('"');
             }
 
             // The tag helper specifies attribute names, they should win.
@@ -595,102 +591,41 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return true;
         }
 
-        private bool TryGetFormatNode(
-            IntermediateNode node,
-            TagHelperDirectiveAttributeIntermediateNode attributeNode,
-            string valueAttributeName,
-            out TagHelperPropertyIntermediateNode formatNode)
-        {
-            for (var i = 0; i < node.Children.Count; i++)
-            {
-                var child = node.Children[i] as TagHelperPropertyIntermediateNode;
-                if (child != null &&
-                    child.TagHelper != null &&
-                    child.TagHelper == attributeNode.TagHelper &&
-                    child.AttributeName == "format-" + valueAttributeName)
-                {
-                    formatNode = child;
-                    return true;
-                }
-            }
-
-            formatNode = null;
-            return false;
-        }
-
-        private void RewriteNodesForDelegateBind(
+        private void RewriteNodesForComponentDelegateBind(
             IntermediateToken original,
-            IntermediateToken format,
-            BoundAttributeDescriptor valueAttribute,
-            BoundAttributeDescriptor changeAttribute,
-            List<IntermediateToken> valueExpressionTokens, 
+            List<IntermediateToken> valueExpressionTokens,
             List<IntermediateToken> changeExpressionTokens)
         {
             // Now rewrite the content of the value node to look like:
             //
-            // BindMethods.GetValue(<code>) OR
-            // BindMethods.GetValue(<code>, <format>)
+            // BindMethods.GetValue(<code>)
             valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = $"{ComponentsApi.BindMethods.GetValue}(",
                 Kind = TokenKind.CSharp
             });
             valueExpressionTokens.Add(original);
-            if (!string.IsNullOrEmpty(format?.Content))
-            {
-                valueExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = ", ",
-                    Kind = TokenKind.CSharp,
-                });
-                valueExpressionTokens.Add(format);
-            }
             valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = ")",
                 Kind = TokenKind.CSharp,
             });
 
-            // Now rewrite the content of the change-handler node. There are two cases we care about
-            // here. If it's a component attribute, then don't use the 'BindMethods' wrapper. We expect
-            // component attributes to always 'match' on type.
+            // Now rewrite the content of the change-handler node. Since it's a component attribute,
+            // we don't use the 'BindMethods' wrapper. We expect component attributes to always 'match' on type.
             //
             // __value => <code> = __value
-            //
-            // For general DOM attributes, we need to be able to create a delegate that accepts UIEventArgs
-            // so we use BindMethods.SetValueHandler
-            //
-            // BindMethods.SetValueHandler(__value => <code> = __value, <code>) OR
-            // BindMethods.SetValueHandler(__value => <code> = __value, <code>, <format>)
-            //
-            // Note that the linemappings here are applied to the value attribute, not the change attribute.
-
-            string changeExpressionContent;
-            if (changeAttribute == null && format == null)
-            {
-                // DOM
-                changeExpressionContent = $"{ComponentsApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content})";
-            }
-            else if (changeAttribute == null && format != null)
-            {
-                // DOM + format
-                changeExpressionContent = $"{ComponentsApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content}, {format.Content})";
-            }
-            else
-            {
-                // Component
-                changeExpressionContent = $"__value => {original.Content} = __value";
-            }
             changeExpressionTokens.Add(new IntermediateToken()
             {
-                Content = changeExpressionContent,
-                Kind = TokenKind.CSharp
-            });              
+                Content = $"__value => {original.Content} = __value",
+                Kind = TokenKind.CSharp,
+            });
         }
 
         private void RewriteNodesForEventCallbackBind(
             IntermediateToken original,
             IntermediateToken format,
+            IntermediateToken culture,
             BoundAttributeDescriptor valueAttribute,
             BoundAttributeDescriptor changeAttribute,
             List<IntermediateToken> valueExpressionTokens,
@@ -698,23 +633,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             // Now rewrite the content of the value node to look like:
             //
-            // BindMethods.GetValue(<code>) OR
-            // BindMethods.GetValue(<code>, <format>)
+            // BindMethods.GetValue(<code>, format: <format>, culture: <culture>)
             valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = $"{ComponentsApi.BindMethods.GetValue}(",
                 Kind = TokenKind.CSharp
             });
             valueExpressionTokens.Add(original);
+
             if (!string.IsNullOrEmpty(format?.Content))
             {
                 valueExpressionTokens.Add(new IntermediateToken()
                 {
-                    Content = ", ",
+                    Content = ", format: ",
                     Kind = TokenKind.CSharp,
                 });
                 valueExpressionTokens.Add(format);
             }
+
+            if (!string.IsNullOrEmpty(culture?.Content))
+            {
+                valueExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = ", culture: ",
+                    Kind = TokenKind.CSharp,
+                });
+                valueExpressionTokens.Add(culture);
+            }
+
             valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = ")",
@@ -735,32 +681,56 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // For general DOM attributes, we need to be able to create a delegate that accepts UIEventArgs
             // so we use 'CreateBinder'
             //
-            // EventCallbackFactory.CreateBinder(this, __value => <code> = __value, <code>) OR
-            // EventCallbackFactory.CreateBinder(this, __value => <code> = __value, <code>, <format>)
+            // EventCallbackFactory.CreateBinder(this, __value => <code> = __value, <code>, format: <format>, culture: <culture>)
             //
             // Note that the linemappings here are applied to the value attribute, not the change attribute.
+            if (changeAttribute == null)
+            {
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateBinderMethod}(this, __value => {original.Content} = __value, ",
+                    Kind = TokenKind.CSharp
+                });
 
-            string changeExpressionContent;
-            if (changeAttribute == null && format == null)
-            {
-                // DOM
-                changeExpressionContent = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateBinderMethod}(this, __value => {original.Content} = __value, {original.Content})";
-            }
-            else if (changeAttribute == null && format != null)
-            {
-                // DOM + format
-                changeExpressionContent = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateBinderMethod}(this, __value => {original.Content} = __value, {original.Content}, {format.Content})";
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = original.Content,
+                    Kind = TokenKind.CSharp
+                });
+
+                if (format != null)
+                {
+                    changeExpressionTokens.Add(new IntermediateToken()
+                    {
+                        Content = $", format: {format.Content}",
+                        Kind = TokenKind.CSharp
+                    });
+                }
+
+                if (culture != null)
+                {
+                    changeExpressionTokens.Add(new IntermediateToken()
+                    {
+                        Content = $", culture: {culture.Content}",
+                        Kind = TokenKind.CSharp
+                    });
+                }
+
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = ")",
+                    Kind = TokenKind.CSharp,
+                });
             }
             else
             {
                 // Component
-                changeExpressionContent = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateInferredMethod}(this, __value => {original.Content} = __value, {original.Content})";
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateInferredMethod}(this, __value => {original.Content} = __value, {original.Content})",
+                    Kind = TokenKind.CSharp
+                });
             }
-            changeExpressionTokens.Add(new IntermediateToken()
-            {
-                Content = changeExpressionContent,
-                Kind = TokenKind.CSharp
-            });
         }
 
         private static IntermediateToken GetAttributeContent(IntermediateNode node)
@@ -823,6 +793,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public TagHelperDirectiveAttributeParameterIntermediateNode BindEventNode { get; set; }
 
             public TagHelperDirectiveAttributeParameterIntermediateNode BindFormatNode { get; set; }
+
+            public TagHelperDirectiveAttributeParameterIntermediateNode BindCultureNode { get; set; }
         }
     }
 }
