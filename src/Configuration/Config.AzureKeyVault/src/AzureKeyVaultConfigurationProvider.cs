@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// </summary>
         /// <param name="client">The <see cref="KeyVaultClient"/> to use for retrieving values.</param>
         /// <param name="vault">Azure KeyVault uri.</param>
-        /// <param name="manager"></param>
+        /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> to use in managing values.</param>
         /// <param name="reloadInterval">The timespan to wait in between each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
         public AzureKeyVaultConfigurationProvider(IKeyVaultClient client, string vault, IKeyVaultSecretManager manager, TimeSpan? reloadInterval = null)
         {
@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
             if (reloadInterval != null && reloadInterval.Value <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException (nameof(reloadInterval), reloadInterval, nameof(reloadInterval) + " must be positive.");
+                throw new ArgumentOutOfRangeException(nameof(reloadInterval), reloadInterval, nameof(reloadInterval) + " must be positive.");
             }
 
             _pollingTask = null;
@@ -46,6 +46,9 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             _reloadInterval = reloadInterval;
         }
 
+        /// <summary>
+        /// Load secrets into this provider.
+        /// </summary>
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
         private async Task PollForSecretChangesAsync()
@@ -66,7 +69,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         protected virtual async Task WaitForReload()
         {
-            await Task.Delay(_reloadInterval.Value.Milliseconds, _cancellationToken.Token);
+            await Task.Delay(_reloadInterval.Value, _cancellationToken.Token);
         }
 
         private async Task LoadAsync()
@@ -145,6 +148,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _cancellationToken.Cancel();
