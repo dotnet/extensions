@@ -20,6 +20,7 @@ namespace Microsoft.JSInterop
     public static class DotNetDispatcher
     {
         internal const string DotNetObjectRefKey = nameof(DotNetObjectRef<object>.__dotNetObject);
+        private static readonly Type[] EndInvokeParameterTypes = new Type[] { typeof(long), typeof(bool), typeof(JSAsyncCallResult) };
 
         private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
             = new ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
@@ -242,6 +243,19 @@ namespace Microsoft.JSInterop
                     item.TryGetProperty(DotNetObjectRefKey, out _) &&
                      !typeof(IDotNetObjectRef).IsAssignableFrom(parameterType);
             }
+        }
+
+        public static void EndInvoke(string arguments)
+        {
+            // We don't need to notify the client if a JS interop call fails to be processed on the server.
+            // The client needs to catch potential exceptions. We do it this way so that we can log errors
+            // processing the callback completion.
+            var parsedArgs = ParseArguments(
+                nameof(EndInvoke),
+                arguments,
+                EndInvokeParameterTypes);
+
+            EndInvoke((long)parsedArgs[0], (bool)parsedArgs[1], (JSAsyncCallResult)parsedArgs[2]);
         }
 
         /// <summary>
