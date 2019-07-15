@@ -79,7 +79,7 @@ namespace Microsoft.JSInterop.Tests
             var task = runtime.InvokeAsync<object>("test identifier 1", new object[] { "arg1", 123, true }, cts.Token);
 
             cts.Cancel();
-            
+
             // Assert
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
         }
@@ -248,7 +248,7 @@ namespace Microsoft.JSInterop.Tests
             var exception = new Exception("Some really sensitive data in here");
 
             // Act
-            runtime.EndInvokeDotNet("0", false, exception, "Assembly", "Method");
+            runtime.EndInvokeDotNet("0", false, exception, "Assembly", "Method", 0);
 
             // Assert
             var call = runtime.BeginInvokeCalls.Single();
@@ -283,14 +283,14 @@ namespace Microsoft.JSInterop.Tests
 
             public Func<Exception, string, string, object> OnDotNetException { get; set; }
 
-            protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodName)
+            protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)
             {
-                if (OnDotNetException != null)
+                if (OnDotNetException != null && !success)
                 {
-                    return OnDotNetException(exception, assemblyName, methodName);
+                    resultOrError = OnDotNetException(resultOrError as Exception, assemblyName, methodIdentifier);
                 }
 
-                return base.OnDotNetInvocationException(exception, assemblyName, methodName);
+                base.EndInvokeDotNet(callId, success, resultOrError, assemblyName, methodIdentifier, dotNetObjectId);
             }
 
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
