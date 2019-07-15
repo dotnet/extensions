@@ -245,6 +245,11 @@ namespace Microsoft.JSInterop
             }
         }
 
+        /// <summary>
+        /// Receives notification that a call from .NET to JS has finished, marking the
+        /// associated <see cref="Task"/> as completed.
+        /// </summary>
+        /// <param name="arguments">The serialized arguments for the callback completion.</param>
         public static void EndInvoke(string arguments)
         {
             // We don't need to notify the client if a JS interop call fails to be processed on the server.
