@@ -33,6 +33,10 @@ namespace Mono.WebAssembly.Interop
             => DotNetDispatcher.Invoke(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId), argsJson);
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
+        private static void EndInvokeJS(string argsJson)
+            => DotNetDispatcher.EndInvoke(argsJson);
+
+        // Invoked via Mono's JS interop mechanism (invoke_method)
         private static void BeginInvokeDotNet(string callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
         {
             // Figure out whether 'assemblyNameOrDotNetObjectId' is the assembly name or the instance ID

@@ -193,7 +193,7 @@ module DotNet {
         // Not using "await" because it codegens a lot of boilerplate
         promise.then(
           result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, result], argReplacer)),
-          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, true, formatError(error)]))
+          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, false, formatError(error)]))
         );
       }
     },
