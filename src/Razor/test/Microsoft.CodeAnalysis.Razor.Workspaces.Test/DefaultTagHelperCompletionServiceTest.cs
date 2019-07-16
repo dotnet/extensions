@@ -1169,7 +1169,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 var actualValue = actual.Completions[expectedCompletion.Key];
                 Assert.NotNull(actualValue);
-                Assert.Equal(expectedCompletion.Value, actualValue, TagHelperDescriptorComparer.CaseSensitive);
+                Assert.Equal(expectedCompletion.Value, actualValue, TagHelperDescriptorComparer.Default);
             }
         }
 
@@ -1181,7 +1181,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 var actualValue = actual.Completions[expectedCompletion.Key];
                 Assert.NotNull(actualValue);
-                Assert.Equal(expectedCompletion.Value, actualValue, BoundAttributeDescriptorComparer.CaseSensitive);
+                Assert.Equal(expectedCompletion.Value, actualValue, BoundAttributeDescriptorComparer.Default);
             }
         }
 

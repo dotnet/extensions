@@ -34,6 +34,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             var childTags = descriptor[nameof(TagHelperDescriptor.AllowedChildTags)].Value<JArray>();
             var documentation = descriptor[nameof(TagHelperDescriptor.Documentation)].Value<string>();
             var tagOutputHint = descriptor[nameof(TagHelperDescriptor.TagOutputHint)].Value<string>();
+            var caseSensitive = descriptor[nameof(TagHelperDescriptor.CaseSensitive)].Value<bool>();
             var diagnostics = descriptor[nameof(TagHelperDescriptor.Diagnostics)].Value<JArray>();
             var metadata = descriptor[nameof(TagHelperDescriptor.Metadata)].Value<JObject>();
 
@@ -41,6 +42,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
 
             builder.Documentation = documentation;
             builder.TagOutputHint = tagOutputHint;
+            builder.CaseSensitive = caseSensitive;
 
             foreach (var tagMatchingRule in tagMatchingRules)
             {
@@ -97,6 +99,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
 
             writer.WritePropertyName(nameof(TagHelperDescriptor.TagOutputHint));
             writer.WriteValue(tagHelper.TagOutputHint);
+
+            writer.WritePropertyName(nameof(TagHelperDescriptor.CaseSensitive));
+            writer.WriteValue(tagHelper.CaseSensitive);
 
             writer.WritePropertyName(nameof(TagHelperDescriptor.TagMatchingRules));
             writer.WriteStartArray();

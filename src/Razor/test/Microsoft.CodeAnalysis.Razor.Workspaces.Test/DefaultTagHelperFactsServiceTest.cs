@@ -77,9 +77,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Assert
             var descriptor = Assert.Single(binding.Descriptors);
-            Assert.Equal(documentDescriptors[0], descriptor, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(documentDescriptors[0], descriptor, TagHelperDescriptorComparer.Default);
             var boundRule = Assert.Single(binding.Mappings[descriptor]);
-            Assert.Equal(documentDescriptors[0].TagMatchingRules.First(), boundRule, TagMatchingRuleDescriptorComparer.CaseSensitive);
+            Assert.Equal(documentDescriptors[0].TagMatchingRules.First(), boundRule, TagMatchingRuleDescriptorComparer.Default);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var descriptors = service.GetBoundTagHelperAttributes(documentContext, "asp-route-something", binding);
 
             // Assert
-            Assert.Equal(expectedAttributeDescriptors, descriptors, BoundAttributeDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedAttributeDescriptors, descriptors, BoundAttributeDescriptorComparer.Default);
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var descriptors = service.GetBoundTagHelperAttributes(documentContext, "asp-for", binding);
 
             // Assert
-            Assert.Equal(expectedAttributeDescriptors, descriptors, BoundAttributeDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedAttributeDescriptors, descriptors, BoundAttributeDescriptorComparer.Default);
         }
 
         [Fact]
@@ -190,7 +190,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var descriptors = service.GetTagHelpersGivenTag(documentContext, "strong", "p");
 
             // Assert
-            Assert.Equal(documentDescriptors, descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(documentDescriptors, descriptors, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -223,7 +223,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var descriptors = service.GetTagHelpersGivenTag(documentContext, "a", "div");
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -250,7 +250,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var descriptors = service.GetTagHelpersGivenTag(documentContext, "thstrong", "div");
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -283,7 +283,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var descriptors = service.GetTagHelpersGivenTag(documentContext, "strong", "div");
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -303,7 +303,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var descriptors = service.GetTagHelpersGivenParent(documentContext, parentTag: null /* root */);
 
             // Assert
-            Assert.Equal(documentDescriptors, descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(documentDescriptors, descriptors, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -329,7 +329,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(documentDescriptors[0], descriptor, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(documentDescriptors[0], descriptor, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -349,7 +349,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var descriptors = service.GetTagHelpersGivenParent(documentContext, "p");
 
             // Assert
-            Assert.Equal(documentDescriptors, descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(documentDescriptors, descriptors, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -382,7 +382,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var descriptors = service.GetTagHelpersGivenParent(documentContext, "div");
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.Default);
         }
     }
 }
