@@ -249,12 +249,22 @@ namespace Microsoft.JSInterop
         /// Receives notification that a call from .NET to JS has finished, marking the
         /// associated <see cref="Task"/> as completed.
         /// </summary>
+        /// <remarks>
+        /// All exceptions from <see cref="EndInvoke(long, bool, JSAsyncCallResult)"/> are caught
+        /// are delivered via JS interop to the JavaScript side when it requests confirmation, as
+        /// the mechanism to call <see cref="EndInvoke(long, bool, JSAsyncCallResult)"/> relies on
+        /// using JS->.NET interop. This overload is meant for directly triggering completion callbacks
+        /// for .NET -> JS operations without going through JS interop, so the callsite for this
+        /// method is responsible for handling any possible exception generated from the arguments
+        /// passed in as parameters.
+        /// </remarks>
         /// <param name="arguments">The serialized arguments for the callback completion.</param>
+        /// <exception cref="Exception">
+        /// This method can throw any exception either from the argument received or as a result
+        /// of executing any callback synchronously upon completion.
+        /// </exception>
         public static void EndInvoke(string arguments)
         {
-            // We don't need to notify the client if a JS interop call fails to be processed on the server.
-            // The client needs to catch potential exceptions. We do it this way so that we can log errors
-            // processing the callback completion.
             var parsedArgs = ParseArguments(
                 nameof(EndInvoke),
                 arguments,
@@ -271,7 +281,7 @@ namespace Microsoft.JSInterop
         /// <param name="succeeded">A flag to indicate whether the invocation succeeded.</param>
         /// <param name="result">If <paramref name="succeeded"/> is <c>true</c>, specifies the invocation result. If <paramref name="succeeded"/> is <c>false</c>, gives the <see cref="Exception"/> corresponding to the invocation failure.</param>
         [JSInvokable(nameof(DotNetDispatcher) + "." + nameof(EndInvoke))]
-        public static void EndInvoke(long asyncHandle, bool succeeded, JSAsyncCallResult result)
+        private static void EndInvoke(long asyncHandle, bool succeeded, JSAsyncCallResult result)
             => ((JSRuntimeBase)JSRuntime.Current).EndInvokeJS(asyncHandle, succeeded, result);
 
         /// <summary>

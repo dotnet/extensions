@@ -24,19 +24,6 @@ module DotNet {
     }
 
     dotNetDispatcher = dispatcher;
-    if (!dotNetDispatcher.endInvokeDotNetFromJS) {
-      // We didn't get a concrete implementation, so provide a default one
-      dotNetDispatcher.endInvokeDotNetFromJS = (asyncHandle, succeeded, resultOrError, replacer) => {
-        return getRequiredDispatcher().beginInvokeDotNetFromJS(
-          0,
-          'Microsoft.JSInterop',
-          'DotNetDispatcher.EndInvoke',
-          null,
-          succeeded ?
-            JSON.stringify([asyncHandle, succeeded, resultOrError], replacer) :
-            JSON.stringify([asyncHandle, succeeded, resultOrError]));
-      };
-    }
   }
 
   /**
@@ -154,14 +141,13 @@ module DotNet {
     beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void;
 
     /**
-     * Invoked by the runtime to begin an asynchronous call to a .NET method.
+     * Invoked by the runtime to complete an asynchronous JavaScript function call started from .NET
      *
      * @param callId A value identifying the asynchronous operation. This value should be passed back in a later call from .NET to JS.
      * @param succeded Whether the operation succeeded or not.
-     * @param resultOrError The result or the error from the async operation.
-     * @param argReplacer A function that replaces [DotNetObject] references with the appropriate value during serialization.
+     * @param resultOrError The serialized result or the serialized error from the async operation.
      */
-    endInvokeDotNetFromJS?(callId: number, succeeded: boolean, resultOrError: any, argReplacer: (key: string, value: any) => any): void;
+    endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
   }
 
   /**
@@ -210,8 +196,8 @@ module DotNet {
         // On completion, dispatch result back to .NET
         // Not using "await" because it codegens a lot of boilerplate
         promise.then(
-          result => getRequiredDispatcher().endInvokeDotNetFromJS!(asyncHandle, true, result, argReplacer),
-          error => getRequiredDispatcher().endInvokeDotNetFromJS!(asyncHandle, false, formatError(error), argReplacer)
+          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, result], argReplacer)),
+          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, true, formatError(error)]))
         );
       }
     },
