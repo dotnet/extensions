@@ -61,7 +61,7 @@ namespace Microsoft.JSInterop
         protected JSRuntimeBase() { }
         protected System.TimeSpan? DefaultAsyncTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
-        protected internal virtual void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId) { }
+        protected internal abstract void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId);
         public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, System.Collections.Generic.IEnumerable<object> args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, params object[] args) { throw null; }
     }
