@@ -11,7 +11,8 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
 {
     public class WindowsServiceLifetime : ServiceBase, IHostLifetime
     {
-        private TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>();
+        private readonly ManualResetEventSlim _delayStop = new ManualResetEventSlim();
 
         public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory)
         {
@@ -35,6 +36,11 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
             ApplicationLifetime.ApplicationStopping.Register(() =>
             {
                 Logger.LogInformation("Application is shutting down...");
+                Task.Run(Stop); // Transition the service to StopPending.
+            });
+            ApplicationLifetime.ApplicationStopped.Register(() =>
+            {
+                _delayStop.Set();
             });
 
             new Thread(Run).Start(); // Otherwise this would block and prevent IHost.StartAsync from finishing.
@@ -56,7 +62,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            Stop();
+            ApplicationLifetime.StopApplication();
             return Task.CompletedTask;
         }
 
@@ -72,6 +78,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
         protected override void OnStop()
         {
             ApplicationLifetime.StopApplication();
+            _delayStop.Wait();
             base.OnStop();
         }
     }
