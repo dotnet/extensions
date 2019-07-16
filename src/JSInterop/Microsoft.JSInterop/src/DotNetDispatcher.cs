@@ -273,14 +273,6 @@ namespace Microsoft.JSInterop
             EndInvoke((long)parsedArgs[0], (bool)parsedArgs[1], (JSAsyncCallResult)parsedArgs[2]);
         }
 
-        /// <summary>
-        /// Receives notification that a call from .NET to JS has finished, marking the
-        /// associated <see cref="Task"/> as completed.
-        /// </summary>
-        /// <param name="asyncHandle">The identifier for the function invocation.</param>
-        /// <param name="succeeded">A flag to indicate whether the invocation succeeded.</param>
-        /// <param name="result">If <paramref name="succeeded"/> is <c>true</c>, specifies the invocation result. If <paramref name="succeeded"/> is <c>false</c>, gives the <see cref="Exception"/> corresponding to the invocation failure.</param>
-        [JSInvokable(nameof(DotNetDispatcher) + "." + nameof(EndInvoke))]
         private static void EndInvoke(long asyncHandle, bool succeeded, JSAsyncCallResult result)
             => ((JSRuntimeBase)JSRuntime.Current).EndInvokeJS(asyncHandle, succeeded, result);
 
