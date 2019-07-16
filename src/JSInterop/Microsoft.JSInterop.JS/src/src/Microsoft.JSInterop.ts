@@ -24,7 +24,7 @@ module DotNet {
     }
 
     dotNetDispatcher = dispatcher;
-    if (!(dotNetDispatcher.endInvokeDotNetFromJS)) {
+    if (!dotNetDispatcher.endInvokeDotNetFromJS) {
       // We didn't get a concrete implementation, so provide a default one
       dotNetDispatcher.endInvokeDotNetFromJS = (asyncHandle, succeeded, resultOrError, replacer) => {
         return getRequiredDispatcher().beginInvokeDotNetFromJS(
