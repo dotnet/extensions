@@ -66,11 +66,3 @@ namespace Microsoft.JSInterop
         public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, params object[] args) { throw null; }
     }
 }
-namespace Microsoft.JSInterop.Internal
-{
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-    public sealed partial class JSAsyncCallResult
-    {
-        internal JSAsyncCallResult() { }
-    }
-}

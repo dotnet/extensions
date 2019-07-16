@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.JSInterop.Internal;
 using Xunit;
 
 namespace Microsoft.JSInterop.Tests

@@ -9,7 +9,6 @@ using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.JSInterop.Internal;
 
 namespace Microsoft.JSInterop
 {
