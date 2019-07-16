@@ -694,13 +694,13 @@ namespace Microsoft.Extensions.Logging.Test
 #if NETCOREAPP
             { "E5JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 5, null, LogLevel.Critical,
                 @"""ArgumentsJson"":{""stringParam"":""bar"",""int1Param"":""23"",""int2Param"":""45""",
-                @$"""ExceptionJson"":{{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops{EscapedNewline()} ---\u003e System.Exception: inner oops") },
+                @$"""ExceptionJson"":{{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops{Environment.NewLine} ---\\u003e System.Exception: inner oops") },
 
             { "E5MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 5, null, LogLevel.Critical,
                  @"{""Key"":""stringParam"",""Value"":""bar""}",
                 @"{""Key"":""int1Param"",""Value"":""23""}",
                 @"{""Key"":""int2Param"",""Value"":""45""}",
-                @$"""Exception"":{{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":-2146233088,""VerboseMessage"":""System.Exception: oops{EscapedNewline()} ---> System.Exception: inner oops") },
+                @$"""Exception"":{{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":-2146233088,""VerboseMessage"":""System.Exception: oops{Environment.NewLine} ---> System.Exception: inner oops") },
 #else
             { "E5JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 5, null, LogLevel.Critical,
                 @"""ArgumentsJson"":{""stringParam"":""bar"",""int1Param"":""23"",""int2Param"":""45""",
@@ -760,7 +760,7 @@ namespace Microsoft.Extensions.Logging.Test
             {
                 if (c == '/')
                 {
-                    output += "\\u" + ((int)c).ToString("x4");
+                    output += "\\/";
                 }
                 else
                 {
@@ -769,11 +769,6 @@ namespace Microsoft.Extensions.Logging.Test
             }
 
             return output;
-        }
-
-        static string EscapedNewline()
-        {
-            return Environment.NewLine.Replace("\r", "\\r").Replace("\n", "\\n");
         }
     }
 }
