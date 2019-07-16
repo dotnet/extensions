@@ -124,7 +124,7 @@ namespace Microsoft.JSInterop
         protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
 
         /// <summary>
-        /// Completes an async JS interop call from JavaScript to DotNet.
+        /// Completes an async JS interop call from JavaScript to .NET
         /// </summary>
         /// <param name="callId">The id of the JavaScript callback to execute on completion.</param>
         /// <param name="success">Whether the operation succeeded or not.</param>
