@@ -19,10 +19,6 @@ module DotNet {
    * @param dispatcher An object that can dispatch calls from JavaScript to a .NET runtime.
    */
   export function attachDispatcher(dispatcher: DotNetCallDispatcher) {
-    if (!dispatcher) {
-      throw new Error("dispatcher can't be null or undefined.");
-    }
-
     dotNetDispatcher = dispatcher;
   }
 
