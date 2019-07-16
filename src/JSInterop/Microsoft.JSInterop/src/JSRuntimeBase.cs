@@ -131,31 +131,13 @@ namespace Microsoft.JSInterop
         /// <param name="assemblyName">The name of the method assembly if the invocation was for a static method.</param>
         /// <param name="methodIdentifier">The identifier for the method within the assembly.</param>
         /// <param name="dotNetObjectId">The tracking id of the dotnet object if the invocation was for an instance method.</param>
-        protected internal virtual void EndInvokeDotNet(
+        protected internal abstract void EndInvokeDotNet(
             string callId,
             bool success,
             object resultOrError,
             string assemblyName,
             string methodIdentifier,
-            long dotNetObjectId)
-        {
-            // For failures, the common case is to call EndInvokeDotNet with the Exception object.
-            // For these we'll serialize as something that's useful to receive on the JS side.
-            // If the value is not an Exception, we'll just rely on it being directly JSON-serializable.
-            if (!success && resultOrError is Exception ex)
-            {
-                resultOrError = ex.ToString();
-            }
-            else if (!success && resultOrError is ExceptionDispatchInfo edi)
-            {
-                resultOrError = edi.SourceException.ToString();
-            }
-
-            // We pass 0 as the async handle because we don't want the JS-side code to
-            // send back any notification (we're just providing a result for an existing async call)
-            var args = JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptionsProvider.Options);
-            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
-        }
+            long dotNetObjectId);
 
         internal void EndInvokeJS(long taskId, bool succeeded, JSAsyncCallResult asyncCallResult)
         {

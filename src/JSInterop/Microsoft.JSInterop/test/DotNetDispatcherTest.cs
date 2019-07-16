@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -573,6 +574,27 @@ namespace Microsoft.JSInterop.Tests
                 _nextInvocationTcs.SetResult(null);
                 _nextInvocationTcs = new TaskCompletionSource<object>();
                 return null;
+            }
+
+            protected internal override void EndInvokeDotNet(
+                string callId,
+                bool success,
+                object resultOrError,
+                string assemblyName,
+                string methodIdentifier,
+                long dotNetObjectId)
+            {
+                if (!success && resultOrError is Exception ex)
+                {
+                    resultOrError = ex.ToString();
+                }
+                else if (!success && resultOrError is ExceptionDispatchInfo edi)
+                {
+                    resultOrError = edi.SourceException.ToString();
+                }
+
+                var args = JsonSerializer.Serialize(new[] { callId, success, resultOrError }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
             }
         }
     }

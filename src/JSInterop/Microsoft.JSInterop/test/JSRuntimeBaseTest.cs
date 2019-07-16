@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -289,7 +290,17 @@ namespace Microsoft.JSInterop.Tests
                     resultOrError = OnDotNetException(resultOrError as Exception, assemblyName, methodIdentifier);
                 }
 
-                base.EndInvokeDotNet(callId, success, resultOrError, assemblyName, methodIdentifier, dotNetObjectId);
+                if (!success && resultOrError is Exception ex)
+                {
+                    resultOrError = ex.ToString();
+                }
+                else if (!success && resultOrError is ExceptionDispatchInfo edi)
+                {
+                    resultOrError = edi.SourceException.ToString();
+                }
+
+                var args = JsonSerializer.Serialize(new[] { callId, success, resultOrError }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+                BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
             }
 
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
