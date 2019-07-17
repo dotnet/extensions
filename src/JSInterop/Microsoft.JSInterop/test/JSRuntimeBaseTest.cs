@@ -251,10 +251,11 @@ namespace Microsoft.JSInterop.Tests
             runtime.EndInvokeDotNet("0", false, exception, "Assembly", "Method", 0);
 
             // Assert
-            var call = runtime.BeginInvokeCalls.Single();
-            Assert.Equal(0, call.AsyncHandle);
-            Assert.Equal("DotNet.jsCallDispatcher.endInvokeDotNetFromJS", call.Identifier);
-            Assert.Equal($"[\"0\",false,{{\"message\":\"{expectedMessage.Replace("'", "\\u0027")}\"}}]", call.ArgsJson);
+            var call = runtime.EndInvokeDotNetCalls.Single();
+            Assert.Equal("0", call.CallId);
+            Assert.False(call.Success);
+            var jsError = Assert.IsType<JSError>(call.ResultOrError);
+            Assert.Equal(expectedMessage, jsError.Message);
         }
 
         private class JSError
@@ -265,6 +266,7 @@ namespace Microsoft.JSInterop.Tests
         class TestJSRuntime : JSRuntimeBase
         {
             public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
+            public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = new List<EndInvokeDotNetArgs>();
 
             public TimeSpan? DefaultTimeout
             {
@@ -281,6 +283,13 @@ namespace Microsoft.JSInterop.Tests
                 public string ArgsJson { get; set; }
             }
 
+            public class EndInvokeDotNetArgs
+            {
+                public string CallId { get; set; }
+                public bool Success { get; set; }
+                public object ResultOrError { get; set; }
+            }
+
             public Func<Exception, string, string, object> OnDotNetException { get; set; }
 
             protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)
@@ -290,17 +299,12 @@ namespace Microsoft.JSInterop.Tests
                     resultOrError = OnDotNetException(resultOrError as Exception, assemblyName, methodIdentifier);
                 }
 
-                if (!success && resultOrError is Exception ex)
+                EndInvokeDotNetCalls.Add(new EndInvokeDotNetArgs
                 {
-                    resultOrError = ex.ToString();
-                }
-                else if (!success && resultOrError is ExceptionDispatchInfo edi)
-                {
-                    resultOrError = edi.SourceException.ToString();
-                }
-
-                var args = JsonSerializer.Serialize(new[] { callId, success, resultOrError }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-                BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
+                    CallId = callId,
+                    Success = success,
+                    ResultOrError = resultOrError
+                });
             }
 
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
