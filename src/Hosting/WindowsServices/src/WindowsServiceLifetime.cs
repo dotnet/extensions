@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
 {
     public class WindowsServiceLifetime : ServiceBase, IHostLifetime
     {
-        private readonly TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly ManualResetEventSlim _delayStop = new ManualResetEventSlim();
 
         public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory)
