@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,6 +75,9 @@ namespace Microsoft.CodeAnalysis.Razor
         // Used in unit tests to ensure we can know when background work finishes.
         public ManualResetEventSlim NotifyBackgroundWorkCompleted { get; set; }
 
+        // Used in unit tests to ensure we can know when errors are reported
+        public ManualResetEventSlim NotifyErrorBeingReported { get; set; }
+
         private void OnStartingBackgroundWork()
         {
             if (BlockBackgroundWorkStart != null)
@@ -110,6 +114,14 @@ namespace Microsoft.CodeAnalysis.Razor
             if (NotifyBackgroundCapturedWorkload != null)
             {
                 NotifyBackgroundCapturedWorkload.Set();
+            }
+        }
+
+        private void OnErrorBeingReported()
+        {
+            if (NotifyErrorBeingReported != null)
+            {
+                NotifyErrorBeingReported.Set();
             }
         }
 
@@ -203,6 +215,15 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         await ProcessDocument(project, document).ConfigureAwait(false);
                     }
+                    catch (UnauthorizedAccessException)
+                    {
+                        // Ignore UnauthorizedAccessException. These can occur when a file gets its permissions changed as we're processing it.
+                    }
+                    catch (IOException)
+                    {
+                        // Ignore IOException. These can occur when a file was in the middle of being renamed and it dissapears as we're processing it.
+                        // This is a common case and does not warrant an activity log entry.
+                    }
                     catch (Exception ex)
                     {
                         ReportError(project, ex);
@@ -240,8 +261,10 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private void ReportError(ProjectSnapshot project, Exception ex)
         {
+            OnErrorBeingReported();
+
             GC.KeepAlive(Task.Factory.StartNew(
-                (p) => ((ProjectSnapshotManagerBase)p).ReportError(ex, project), 
+                (p) => ((ProjectSnapshotManagerBase)p).ReportError(ex, project),
                 _projectManager,
                 CancellationToken.None,
                 TaskCreationOptions.None,

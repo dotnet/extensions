@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
@@ -42,6 +41,68 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
             builder.SetImportFeature(new TestImportProjectFeature());
+        }
+
+        [ForegroundFact]
+        public async Task ProcessDocument_SwallowsIOExceptions()
+        {
+            // Arrange
+            var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
+            projectManager.ProjectAdded(HostProject1);
+
+            var textLoader = new Mock<TextLoader>();
+            textLoader.Setup(loader => loader.LoadTextAndVersionAsync(It.IsAny<Workspace>(), It.IsAny<DocumentId>(), It.IsAny<CancellationToken>()))
+                .Throws<FileNotFoundException>();
+            projectManager.DocumentAdded(HostProject1, Documents[0], textLoader.Object);
+
+            var project = projectManager.GetLoadedProject(HostProject1.FilePath);
+
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            {
+                Delay = TimeSpan.FromMilliseconds(1),
+                NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
+                NotifyErrorBeingReported = new ManualResetEventSlim(initialState: false),
+            };
+
+            queue.Initialize(projectManager);
+
+            // Act & Assert
+            queue.Enqueue(project, project.GetDocument(Documents[0].FilePath));
+
+            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
+
+            Assert.False(queue.NotifyErrorBeingReported.IsSet);
+        }
+
+        [ForegroundFact]
+        public async Task ProcessDocument_SwallowsUnauthorizedAccessExceptions()
+        {
+            // Arrange
+            var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
+            projectManager.ProjectAdded(HostProject1);
+
+            var textLoader = new Mock<TextLoader>();
+            textLoader.Setup(loader => loader.LoadTextAndVersionAsync(It.IsAny<Workspace>(), It.IsAny<DocumentId>(), It.IsAny<CancellationToken>()))
+                .Throws<UnauthorizedAccessException>();
+            projectManager.DocumentAdded(HostProject1, Documents[0], textLoader.Object);
+
+            var project = projectManager.GetLoadedProject(HostProject1.FilePath);
+
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            {
+                Delay = TimeSpan.FromMilliseconds(1),
+                NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
+                NotifyErrorBeingReported = new ManualResetEventSlim(initialState: false),
+            };
+
+            queue.Initialize(projectManager);
+
+            // Act & Assert
+            queue.Enqueue(project, project.GetDocument(Documents[0].FilePath));
+
+            await Task.Run(() => queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
+
+            Assert.False(queue.NotifyErrorBeingReported.IsSet);
         }
 
         [ForegroundFact]
