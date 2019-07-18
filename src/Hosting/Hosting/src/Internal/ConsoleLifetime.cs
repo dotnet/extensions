@@ -76,6 +76,10 @@ namespace Microsoft.Extensions.Hosting.Internal
         private void OnProcessExit(object sender, EventArgs e)
         {
             ApplicationLifetime.StopApplication();
+            if(!_shutdownBlock.WaitOne(TimeSpan.FromMinutes(1)))
+            {
+                Logger.LogInformation("Waiting for the host to be disposed. Ensure all 'IHost' instances are wrapped in 'using' blocks.");
+            }
             _shutdownBlock.WaitOne();
             // On Linux if the shutdown is triggered by SIGTERM then that's signaled with the 143 exit code.
             // Suppress that since we shut down gracefully. https://github.com/aspnet/AspNetCore/issues/6526
