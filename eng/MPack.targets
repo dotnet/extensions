@@ -22,6 +22,7 @@
 
     <ItemGroup>
       <MPackFile Include="$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).dll" />
+      <MPackFile Include="$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).pdb" />
     </ItemGroup>
 
     <RemoveDir Directories="$(IntermediateOutputPath)MPack\" />
