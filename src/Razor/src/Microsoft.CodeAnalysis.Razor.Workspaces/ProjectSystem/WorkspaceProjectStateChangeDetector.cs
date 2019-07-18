@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -34,6 +35,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             _workspaceStateGenerator = workspaceStateGenerator;
+        }
+
+        // Used in unit tests to ensure we can control when background work starts.
+        public ManualResetEventSlim BlockDelayedUpdateWorkEnqueue { get; set; }
+
+        private void OnStartingDelayedUpdate()
+        {
+            if (BlockDelayedUpdateWorkEnqueue != null)
+            {
+                BlockDelayedUpdateWorkEnqueue.Wait();
+                BlockDelayedUpdateWorkEnqueue.Reset();
+            }
         }
 
         public override void Initialize(ProjectSnapshotManagerBase projectManager)
@@ -183,6 +196,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private async Task UpdateAfterDelay(ProjectId projectId)
         {
             await Task.Delay(EnqueueDelay);
+
+            OnStartingDelayedUpdate();
 
             var solution = _projectManager.Workspace.CurrentSolution;
             var workspaceProject = solution.GetProject(projectId);

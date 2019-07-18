@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServices.Razor.Test;
@@ -153,7 +154,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
             var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator)
             {
-                EnqueueDelay = 50,
+                EnqueueDelay = 1,
+                BlockDelayedUpdateWorkEnqueue = new ManualResetEventSlim(initialState: false),
             };
 
             var projectManager = new TestProjectSnapshotManager(new[] { detector }, Workspace);
@@ -170,6 +172,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // The change hasn't come through yet.
             Assert.Empty(workspaceStateGenerator.UpdateQueue);
 
+            detector.BlockDelayedUpdateWorkEnqueue.Set();
+
             await detector._deferredUpdates.Single().Value;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
@@ -184,7 +188,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
             var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator)
             {
-                EnqueueDelay = 50,
+                EnqueueDelay = 1,
+                BlockDelayedUpdateWorkEnqueue = new ManualResetEventSlim(initialState: false),
             };
 
             Workspace.TryApplyChanges(SolutionWithTwoProjects);
@@ -203,6 +208,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // The change hasn't come through yet.
             Assert.Empty(workspaceStateGenerator.UpdateQueue);
 
+            detector.BlockDelayedUpdateWorkEnqueue.Set();
+
             await detector._deferredUpdates.Single().Value;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
@@ -217,7 +224,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
             var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator)
             {
-                EnqueueDelay = 50,
+                EnqueueDelay = 1,
+                BlockDelayedUpdateWorkEnqueue = new ManualResetEventSlim(initialState: false),
             };
 
             Workspace.TryApplyChanges(SolutionWithTwoProjects);
@@ -235,6 +243,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             //
             // The change hasn't come through yet.
             Assert.Empty(workspaceStateGenerator.UpdateQueue);
+
+            detector.BlockDelayedUpdateWorkEnqueue.Set();
 
             await detector._deferredUpdates.Single().Value;
 
