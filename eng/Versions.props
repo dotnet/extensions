@@ -57,13 +57,13 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview8.19367.7</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview8.19367.7</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview8.19367.7</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview8.19367.8</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview8.19367.8</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview8.19367.8</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview8-27917-01</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview8.19367.7</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview8.19367.7</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview8.19367.7</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview8.19367.8</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview8.19367.8</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview8.19367.8</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.0.0-preview8-27917-01</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-preview8-27917-01</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview8.19366.12</MicrosoftNETCorePlatformsPackageVersion>
