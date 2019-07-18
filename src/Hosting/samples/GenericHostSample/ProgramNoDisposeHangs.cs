@@ -10,6 +10,7 @@ namespace GenericHostSample
     {
         public static async Task Main(string[] args)
         {
+            // Hangs due to #1363
             var host = CreateHostBuilder(args).Build();
             await host.StartAsync();
             await host.StopAsync();
@@ -17,6 +18,6 @@ namespace GenericHostSample
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureServices(services => services.AddHostedService<Worker>());
+                .ConfigureServices(services => services.AddHostedService<MyServiceA>());
     }
 }
