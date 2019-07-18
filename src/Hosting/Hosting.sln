@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hostin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericHostSample", "samples\GenericHostSample\GenericHostSample.csproj", "{7301C61C-0B4E-4CAE-97F7-13E8FF72D121}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleForHang", "samples\SampleForHang\SampleForHang.csproj", "{B6CA30EF-B996-429F-95C1-B2B154FD880D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleMsmqHost", "samples\SampleMsmqHost\SampleMsmqHost.csproj", "{50586D64-6326-4CDB-9023-3A4D027263CF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{D754FD75-091F-48DF-B3DA-91D0DB601E8B}"
@@ -53,10 +51,6 @@ Global
 		{7301C61C-0B4E-4CAE-97F7-13E8FF72D121}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7301C61C-0B4E-4CAE-97F7-13E8FF72D121}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7301C61C-0B4E-4CAE-97F7-13E8FF72D121}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B6CA30EF-B996-429F-95C1-B2B154FD880D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B6CA30EF-B996-429F-95C1-B2B154FD880D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B6CA30EF-B996-429F-95C1-B2B154FD880D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B6CA30EF-B996-429F-95C1-B2B154FD880D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{50586D64-6326-4CDB-9023-3A4D027263CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{50586D64-6326-4CDB-9023-3A4D027263CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50586D64-6326-4CDB-9023-3A4D027263CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -95,7 +89,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7301C61C-0B4E-4CAE-97F7-13E8FF72D121} = {D754FD75-091F-48DF-B3DA-91D0DB601E8B}
-		{B6CA30EF-B996-429F-95C1-B2B154FD880D} = {D754FD75-091F-48DF-B3DA-91D0DB601E8B}
 		{50586D64-6326-4CDB-9023-3A4D027263CF} = {D754FD75-091F-48DF-B3DA-91D0DB601E8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

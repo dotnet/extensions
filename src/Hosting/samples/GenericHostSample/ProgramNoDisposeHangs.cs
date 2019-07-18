@@ -4,9 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 
-namespace SampleForHang
+namespace GenericHostSample
 {
-    public class Program
+    public class ProgramNoDisposeHangs
     {
         public static async Task Main(string[] args)
         {
