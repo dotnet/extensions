@@ -9,7 +9,7 @@ namespace CreateHostBuilderPatternTestSite
     {
         public static void Main(string[] args)
         {
-            var webHost = CreateHostBuilder(args).Build();
+            using (var webHost = CreateHostBuilder(args).Build()) { }
         }
 
         // Do not change the signature of this method. It's used for tests.
