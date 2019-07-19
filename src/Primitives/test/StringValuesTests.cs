@@ -231,12 +231,16 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Fact]
-        public void GetHashCode_NullVsArrayWithNullItem_DifferentHashCodes()
+        public void GetHashCode_NullCases_DifferentHashCodes()
         {
             var sv1 = new StringValues((string)null);
             var sv2 = new StringValues(new[] { (string)null });
             Assert.NotEqual(sv1, sv2);
-            Assert.Equal(sv1.GetHashCode(), sv2.GetHashCode());
+            Assert.NotEqual(sv1.GetHashCode(), sv2.GetHashCode());
+
+            var sv3 = new StringValues((string[])null);
+            Assert.Equal(sv1, sv3);
+            Assert.Equal(sv1.GetHashCode(), sv3.GetHashCode());
         }
 
         [Fact]
