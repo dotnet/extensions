@@ -587,6 +587,10 @@ namespace Microsoft.Extensions.Primitives
             var value = _values;
             if (value is string[] values)
             {
+                if (Count == 1)
+                {
+                    return values[0].GetHashCode();
+                }
                 var hcc = new HashCodeCombiner();
                 for (var i = 0; i < values.Length; i++)
                 {

@@ -222,6 +222,24 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Fact]
+        public void GetHashCode_SingleValueVsArrayWithOneItem_SameHashCode()
+        {
+            var sv1 = new StringValues("value");
+            var sv2 = new StringValues(new[] { "value" });
+            Assert.True(sv1.Equals(sv2));
+            Assert.Equal(sv1.GetHashCode(), sv2.GetHashCode());
+        }
+
+        [Fact]
+        public void GetHashCode_SingleValueVsArrayWithTwoItems_DifferentHashCodes()
+        {
+            var sv1 = new StringValues("value");
+            var sv2 = new StringValues(new[] { "value", "value" });
+            Assert.False(sv1.Equals(sv2));
+            Assert.NotEqual(sv1.GetHashCode(), sv2.GetHashCode());
+        }
+
+        [Fact]
         public void ImplicitStringArrayConverter_Works()
         {
             string[] nullStringArray = null;
