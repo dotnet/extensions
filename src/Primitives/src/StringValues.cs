@@ -589,7 +589,7 @@ namespace Microsoft.Extensions.Primitives
             {
                 if (Count == 1)
                 {
-                    return values[0].GetHashCode();
+                    return Unsafe.As<string>(this[0])?.GetHashCode() ?? 0;
                 }
                 var hcc = new HashCodeCombiner();
                 for (var i = 0; i < values.Length; i++)

@@ -226,7 +226,16 @@ namespace Microsoft.Extensions.Primitives
         {
             var sv1 = new StringValues("value");
             var sv2 = new StringValues(new[] { "value" });
-            Assert.True(sv1.Equals(sv2));
+            Assert.Equal(sv1, sv2);
+            Assert.Equal(sv1.GetHashCode(), sv2.GetHashCode());
+        }
+
+        [Fact]
+        public void GetHashCode_NullVsArrayWithNullItem_DifferentHashCodes()
+        {
+            var sv1 = new StringValues((string)null);
+            var sv2 = new StringValues(new[] { (string)null });
+            Assert.NotEqual(sv1, sv2);
             Assert.Equal(sv1.GetHashCode(), sv2.GetHashCode());
         }
 
@@ -235,7 +244,7 @@ namespace Microsoft.Extensions.Primitives
         {
             var sv1 = new StringValues("value");
             var sv2 = new StringValues(new[] { "value", "value" });
-            Assert.False(sv1.Equals(sv2));
+            Assert.NotEqual(sv1, sv2);
             Assert.NotEqual(sv1.GetHashCode(), sv2.GetHashCode());
         }
 
