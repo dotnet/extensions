@@ -703,6 +703,79 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Fact]
+        public void GetElementCompletions_IsCaseSensitive()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("MyliTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("myli"))
+                    .SetCaseSensitive()
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("MYLITagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("MYLI"))
+                    .SetCaseSensitive()
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["myli"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0] },
+                ["MYLI"] = new HashSet<TagHelperDescriptor> { documentDescriptors[1] },
+                ["li"] = new HashSet<TagHelperDescriptor> { },
+            });
+
+            var existingCompletions = new[] { "li" };
+            var completionContext = BuildElementCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                containingTagName: "ul",
+                tagHelperPrefix: null);
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetElementCompletions_HTMLSchemaTagName_IsCaseSensitive()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("LITagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("LI"))
+                    .SetCaseSensitive()
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("LiTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("li"))
+                    .SetCaseSensitive()
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["LI"] = new HashSet<TagHelperDescriptor> { documentDescriptors[0] },
+                ["li"] = new HashSet<TagHelperDescriptor> { documentDescriptors[1] },
+            });
+
+            var existingCompletions = new[] { "li" };
+            var completionContext = BuildElementCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                containingTagName: "ul",
+                tagHelperPrefix: null);
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
         public void GetElementCompletions_CatchAllsApplyToOnlyTagHelperCompletions()
         {
             // Arrange

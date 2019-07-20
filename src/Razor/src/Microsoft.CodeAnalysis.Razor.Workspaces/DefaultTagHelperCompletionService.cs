@@ -173,7 +173,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             elementCompletions = completionContext.ExistingCompletions.ToDictionary(
                 completion => completion,
                 _ => new HashSet<TagHelperDescriptor>(),
-                StringComparer.OrdinalIgnoreCase);
+                StringComparer.Ordinal);
 
             var catchAllDescriptors = new HashSet<TagHelperDescriptor>();
             var prefix = completionContext.DocumentContext.Prefix ?? string.Empty;
@@ -206,10 +206,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         // We'd expect to only get "my-table" as a completion because the "body" tag doesn't allow "tr" tags.
                         addRuleCompletions = elementCompletions.ContainsKey(outputHint);
                     }
-                    else if (!completionContext.InHTMLSchema(rule.TagName))
+                    else if (!completionContext.InHTMLSchema(rule.TagName) || rule.TagName.Any(c => char.IsUpper(c)))
                     {
                         // If there is an unknown HTML schema tag that doesn't exist in the current completion we should add it. This happens for
                         // TagHelpers that target non-schema oriented tags.
+                        // The second condition is a workaround for the fact that InHTMLSchema does a case insensitive comparison.
+                        // We want completions to not dedupe by casing. E.g, we want to show both <div> and <DIV> completion items separately.
                         addRuleCompletions = true;
                     }
 
