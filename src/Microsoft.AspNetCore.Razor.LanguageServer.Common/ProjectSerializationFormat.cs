@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
     internal static class ProjectSerializationFormat
     {
-        public static string Version => "0.1";
+        public static string Version => "0.2";
     }
 }
