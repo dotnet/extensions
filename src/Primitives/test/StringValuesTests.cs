@@ -542,6 +542,9 @@ namespace Microsoft.Extensions.Primitives
 
             Assert.True(StringValues.Equals(stringValues, expected));
             Assert.False(StringValues.Equals(stringValues, notEqual));
+
+            Assert.True(StringValues.Equals(stringValues, new StringValues(expected)));
+            Assert.Equal(stringValues.GetHashCode(), new StringValues(expected).GetHashCode());
         }
 
         [Theory]
@@ -552,6 +555,9 @@ namespace Microsoft.Extensions.Primitives
 
             Assert.True(StringValues.Equals(stringValues, expected));
             Assert.False(StringValues.Equals(stringValues, notEqual));
+
+            Assert.True(StringValues.Equals(stringValues, new StringValues(expected)));
+            Assert.Equal(stringValues.GetHashCode(), new StringValues(expected).GetHashCode());
         }
     }
 }
