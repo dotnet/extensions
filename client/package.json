@@ -141,10 +141,12 @@
         "ts-node": "^7.0.1",
         "tslint": "^5.11.0",
         "typescript": "3.3.4000",
-        "rimraf": "2.6.3"
+        "rimraf": "2.6.3",
+        "js-yaml": ">=3.13.1"
     },
     "dependencies": {
         "microsoft.aspnetcore.razor.vscode": "file:../src/Microsoft.AspNetCore.Razor.VSCode",
+        "diff": ">=3.5.0",
         "vscode": "1.1.33"
     }
 }
