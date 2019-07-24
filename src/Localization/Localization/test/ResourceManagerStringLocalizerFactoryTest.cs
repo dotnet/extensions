@@ -148,7 +148,7 @@ namespace Microsoft.Extensions.Localization.Tests
             typeFactory.Create(type);
 
             // Assert
-            Assert.Equal($"{rootNamespace}.{namof(Model)}", typeFactory.BaseName);
+            Assert.Equal($"{rootNamespace}.{nameof(Model)}", typeFactory.BaseName);
         }
 
         [Fact]
