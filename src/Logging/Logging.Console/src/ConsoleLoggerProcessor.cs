@@ -49,18 +49,24 @@ namespace Microsoft.Extensions.Logging.Console
         {
             var console = message.LogAsError ? ErrorConsole : Console;
 
-            if (message.TimeStamp != null)
+            try
             {
-                console.Write(message.TimeStamp, message.MessageColor, message.MessageColor);
-            }
+                if (message.TimeStamp != null)
+                {
+                    console.Write(message.TimeStamp, message.MessageColor, message.MessageColor);
+                }
 
-            if (message.LevelString != null)
+                if (message.LevelString != null)
+                {
+                    console.Write(message.LevelString, message.LevelBackground, message.LevelForeground);
+                }
+
+                console.Write(message.Message, message.MessageColor, message.MessageColor);
+                console.Flush();
+            }
+            catch (Exception)
             {
-                console.Write(message.LevelString, message.LevelBackground, message.LevelForeground);
             }
-
-            console.Write(message.Message, message.MessageColor, message.MessageColor);
-            console.Flush();
         }
 
         private void ProcessLogQueue()
