@@ -41,7 +41,11 @@ namespace Microsoft.Extensions.Logging.Console
             }
 
             // Adding is completed so just log the message
-            WriteMessage(message);
+            try
+            {
+                WriteMessage(message);            
+            }
+            catch (Exception) { }
         }
 
         // for testing
@@ -49,24 +53,18 @@ namespace Microsoft.Extensions.Logging.Console
         {
             var console = message.LogAsError ? ErrorConsole : Console;
 
-            try
+            if (message.TimeStamp != null)
             {
-                if (message.TimeStamp != null)
-                {
-                    console.Write(message.TimeStamp, message.MessageColor, message.MessageColor);
-                }
-
-                if (message.LevelString != null)
-                {
-                    console.Write(message.LevelString, message.LevelBackground, message.LevelForeground);
-                }
-
-                console.Write(message.Message, message.MessageColor, message.MessageColor);
-                console.Flush();
+                console.Write(message.TimeStamp, message.MessageColor, message.MessageColor);
             }
-            catch (Exception)
+
+            if (message.LevelString != null)
             {
+                console.Write(message.LevelString, message.LevelBackground, message.LevelForeground);
             }
+
+            console.Write(message.Message, message.MessageColor, message.MessageColor);
+            console.Flush();
         }
 
         private void ProcessLogQueue()
