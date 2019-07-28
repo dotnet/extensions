@@ -87,14 +87,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
         {
             ApplicationLifetime.StopApplication();
             // Wait for the host to shutdown before marking service as stopped.
-            if (_hostOptions == null)
-            {
-                _delayStop.Wait();
-            }
-            else
-            {
-                _delayStop.Wait(_hostOptions.ShutdownTimeout);
-            }
+            _delayStop.Wait(_hostOptions.ShutdownTimeout);
             base.OnStop();
         }
 
