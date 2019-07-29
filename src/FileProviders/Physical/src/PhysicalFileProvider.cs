@@ -84,21 +84,19 @@ namespace Microsoft.Extensions.FileProviders
         /// </value>
         public bool UsePollingFileWatcher
         {
-            get
+            get => _usePollingFileWatcher ?? false;
+            set
             {
                 if (_fileWatcher != null)
                 {
                     throw new InvalidOperationException($"Cannot modify {nameof(UsePollingFileWatcher)} once file watcher has been initialized.");
                 }
-
                 if (_usePollingFileWatcher == null)
                 {
                     ReadPollingEnvironmentVariables();
                 }
-
-                return _usePollingFileWatcher.Value;
+                _usePollingFileWatcher = value;
             }
-            set => _usePollingFileWatcher = value;
         }
 
         /// <summary>
