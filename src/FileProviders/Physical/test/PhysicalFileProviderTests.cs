@@ -1416,6 +1416,26 @@ namespace Microsoft.Extensions.FileProviders
         }
 
         [Fact]
+        public void UsePollingFileWatcher_FileWatcherNotNull_ReturnsFalse()
+        {
+            // Arrange
+            using (var root = new DisposableFileSystem())
+            {
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath) { FileWatcher = physicalFilesWatcher })
+                        {
+                            // Act / Assert
+                            Assert.False(provider.UsePollingFileWatcher);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void CreateFileWatcher_CreatesWatcherWithPollingAndActiveFlags()
         {
             // Arrange

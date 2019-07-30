@@ -86,11 +86,15 @@ namespace Microsoft.Extensions.FileProviders
         {
             get
             {
+                if (_fileWatcher != null)
+                {
+                    return false;
+                }
                 if (_usePollingFileWatcher == null)
                 {
                     ReadPollingEnvironmentVariables();
                 }
-                return _usePollingFileWatcher ?? false;;
+                return _usePollingFileWatcher ?? false;
             }
             set
             {
