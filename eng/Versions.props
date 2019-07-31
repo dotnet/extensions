@@ -52,13 +52,13 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview8.19380.5</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview8.19380.5</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview8.19380.5</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview8.19381.3</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview8.19381.3</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview8.19381.3</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview8-28380-08</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview8.19380.5</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview8.19380.5</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview8.19380.5</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview8.19381.3</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview8.19381.3</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview8.19381.3</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.0.0-preview8-28380-08</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-preview8-28380-08</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview8.19379.7</MicrosoftNETCorePlatformsPackageVersion>
@@ -66,7 +66,7 @@
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview8.19379.7</SystemTextEncodingsWebPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.7.0-preview8.19379.7</SystemReflectionMetadataPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>3.3.0-beta2-19380-13</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.3.0-beta2-19381-14</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
