@@ -360,6 +360,8 @@ namespace Microsoft.JSInterop
             return result;
         }
 
+        internal static bool WorkAroundTestBug;
+
         private static Assembly GetRequiredLoadedAssembly(AssemblyKey assemblyKey)
         {
             // We don't want to load assemblies on demand here, because we don't necessarily trust
@@ -368,7 +370,20 @@ namespace Microsoft.JSInterop
             // In some edge cases this might force developers to explicitly call something on the
             // target assembly (from .NET) before they can invoke its allowed methods from JS.
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            return loadedAssemblies.FirstOrDefault(a => new AssemblyKey(a).Equals(assemblyKey))
+            Assembly assembly;
+
+            if (WorkAroundTestBug)
+            {
+                // Workaround for https://github.com/dotnet/arcade/issues/2816
+                assembly = loadedAssemblies.LastOrDefault(a => new AssemblyKey(a).Equals(assemblyKey));
+            }
+            else
+            {
+                assembly = loadedAssemblies.FirstOrDefault(a => new AssemblyKey(a).Equals(assemblyKey));
+
+            }
+
+            return assembly
                 ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyKey.AssemblyName}'.");
         }
 

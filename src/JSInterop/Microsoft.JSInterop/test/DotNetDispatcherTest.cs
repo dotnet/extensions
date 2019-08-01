@@ -7,7 +7,6 @@ using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Moq;
 using Xunit;
 
 namespace Microsoft.JSInterop
@@ -15,6 +14,11 @@ namespace Microsoft.JSInterop
     public class DotNetDispatcherTest
     {
         private readonly static string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
+
+        static DotNetDispatcherTest()
+        {
+            DotNetDispatcher.WorkAroundTestBug = true;
+        }
 
         [Fact]
         public void CannotInvokeWithEmptyAssemblyName()
