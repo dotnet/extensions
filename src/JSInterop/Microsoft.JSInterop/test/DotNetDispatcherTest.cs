@@ -607,19 +607,6 @@ namespace Microsoft.JSInterop
         }
 
         [Fact]
-        public void ParseEndInvokeArguments_UsesStackForSmallPayloads()
-        {
-            var smallString = new string('a', 200);
-            var jsRuntime = new TestJSRuntime();
-            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
-
-            DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, {{\"stringVal\": \"{smallString}\"}}]");
-
-            Assert.True(task.IsCompletedSuccessfully);
-            Assert.Equal(smallString, task.Result.StringVal);
-        }
-
-        [Fact]
         public void ParseEndInvokeArguments_WithArrayValue()
         {
             var jsRuntime = new TestJSRuntime();
