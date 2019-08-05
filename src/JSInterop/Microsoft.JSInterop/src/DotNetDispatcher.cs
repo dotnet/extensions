@@ -207,7 +207,7 @@ namespace Microsoft.JSInterop
 
             return suppliedArgs;
 
-            // Note that the JsonReader instance is intentionally not passed by ref (or asn in parameter) since we want a copy of the original reader.
+            // Note that the JsonReader instance is intentionally not passed by ref (or an in parameter) since we want a copy of the original reader.
             static bool IsIncorrectDotNetObjectRefUse(Type parameterType, Utf8JsonReader jsonReader)
             {
                 // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
@@ -380,7 +380,6 @@ namespace Microsoft.JSInterop
             else
             {
                 assembly = loadedAssemblies.FirstOrDefault(a => new AssemblyKey(a).Equals(assemblyKey));
-
             }
 
             return assembly

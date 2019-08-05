@@ -557,21 +557,6 @@ namespace Microsoft.JSInterop
         }
 
         [Fact]
-        public void ParseArguments_UsesStackForSmallJsonPayloads()
-        {
-            // Arrange
-            var smallString = new string('a', 200);
-            var arguments = $"[{{\"StringVal\": \"{smallString}\"}}]";
-
-            // Act
-            var result = DotNetDispatcher.ParseArguments("SomeMethod", arguments, new[] { typeof(TestDTO), });
-
-            // Assert
-            var value = Assert.IsType<TestDTO>(Assert.Single(result));
-            Assert.Equal(smallString, value.StringVal);
-        }
-
-        [Fact]
         public void ParseArguments_Throws_WithIncorrectDotNetObjectRefUsage()
         {
             // Arrange
