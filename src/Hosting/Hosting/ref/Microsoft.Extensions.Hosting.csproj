@@ -17,6 +17,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Debug"  />
     <Reference Include="Microsoft.Extensions.Logging.EventSource"  />
     <Reference Include="Microsoft.Extensions.Logging.EventLog"  />
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.Extensions.Hosting.netcoreapp3.0.cs" />
