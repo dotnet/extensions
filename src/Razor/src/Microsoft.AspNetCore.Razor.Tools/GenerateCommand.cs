@@ -176,20 +176,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
             });
 
             var success = true;
-            var csharpLanguageVersion = LanguageVersion.Default;
-            if (CSharpLanguageVersion.HasValue())
-            {
-                var rawLanguageVersion = CSharpLanguageVersion.Value();
-                if (!LanguageVersionFacts.TryParse(CSharpLanguageVersion.Value(), out var parsedLanguageVersion))
-                {
-                    success = false;
-                    Error.WriteLine($"Unknown C# language version {rawLanguageVersion}.");
-                }
-                else
-                {
-                    csharpLanguageVersion = parsedLanguageVersion;
-                }
-            }
 
             var engine = RazorProjectEngine.Create(configuration, compositeFileSystem, b =>
             {
@@ -206,7 +192,22 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     b.SetRootNamespace(RootNamespace.Value());
                 }
 
-                b.SetCSharpLanguageVersion(csharpLanguageVersion);
+                if (CSharpLanguageVersion.HasValue())
+                {
+                    // Only set the C# language version if one was specified, otherwise it defaults to whatever
+                    // value was set in the corresponding RazorConfiguration's extensions.
+
+                    var rawLanguageVersion = CSharpLanguageVersion.Value();
+                    if (LanguageVersionFacts.TryParse(rawLanguageVersion, out var csharpLanguageVersion))
+                    {
+                        b.SetCSharpLanguageVersion(csharpLanguageVersion);
+                    }
+                    else
+                    {
+                        success = false;
+                        Error.WriteLine($"Unknown C# language version {rawLanguageVersion}.");
+                    }
+                }
             });
 
             var results = GenerateCode(engine, sourceItems);
@@ -214,24 +215,27 @@ namespace Microsoft.AspNetCore.Razor.Tools
             foreach (var result in results)
             {
                 var errorCount = result.CSharpDocument.Diagnostics.Count;
-                if (errorCount > 0)
+                for (var i = 0; i < errorCount; i++)
                 {
-                    success = false;
-
-                    for (var i = 0; i < errorCount; i++)
+                    var error = result.CSharpDocument.Diagnostics[i];
+                    if (error.Severity == RazorDiagnosticSeverity.Error)
                     {
-                        var error = result.CSharpDocument.Diagnostics[i];
+                        success = false;
+                    }
+
+                    if (i < 100)
+                    {
                         Error.WriteLine(error.ToString());
 
                         // Only show the first 100 errors to prevent massive string allocations.
                         if (i == 99)
                         {
-                            Error.WriteLine($"And {errorCount - i + 1} more errors.");
-                            break;
+                            Error.WriteLine($"And {errorCount - i + 1} more warnings/errors.");
                         }
                     }
                 }
-                else
+
+                if (success)
                 {
                     // Only output the file if we generated it without errors.
                     var outputFilePath = result.InputItem.OutputPath;
