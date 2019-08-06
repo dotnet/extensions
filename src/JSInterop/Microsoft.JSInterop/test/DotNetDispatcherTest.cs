@@ -15,11 +15,6 @@ namespace Microsoft.JSInterop
     {
         private readonly static string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
 
-        static DotNetDispatcherTest()
-        {
-            DotNetDispatcher.WorkAroundTestBug = true;
-        }
-
         [Fact]
         public void CannotInvokeWithEmptyAssemblyName()
         {
