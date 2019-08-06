@@ -10,9 +10,9 @@
   </metadata>
 
   <files>
-    <file src="$OutputBinary$" target="lib\netcoreapp3.0\" />
-    <file src="$OutputSymbol$" target="lib\netcoreapp3.0\" />
-    <file src="$OutputDocumentation$" target="lib\netcoreapp3.0\" />
+    <file src="$OutputBinary$" target="lib\" />
+    <file src="$OutputSymbol$" target="lib\" />
+    <file src="$OutputDocumentation$" target="lib\" />
     <file src="build\**\*" target="build\" />
     <file src="buildMultiTargeting\**\*" target="buildMultiTargeting\" />
     <file src="$TaskAssemblyNetStandard$" target="tasks\netstandard2.0\$AssemblyName$.Manifest.Task.dll" />
