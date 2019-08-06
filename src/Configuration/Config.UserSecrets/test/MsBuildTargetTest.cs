@@ -41,12 +41,14 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         }
 
         [Theory]
-        [InlineData(".csproj", ".cs", "netcoreapp2.2")] // Testing with netcoreapp2.2 to verify netstandard 2.0 binaries
-        [InlineData(".fsproj", ".fs", "netcoreapp2.2")] // Testing with netcoreapp2.2 to verify netstandard 2.0 binaries
-        [InlineData(".csproj", ".cs", "netcoreapp3.0")]
-        [InlineData(".fsproj", ".fs", "netcoreapp3.0")]
-        public void GeneratesAssemblyAttributeFile(string projectExt, string sourceExt, string testTfm)
+        [InlineData(".csproj", ".cs")]
+        [InlineData(".fsproj", ".fs")]
+        public void GeneratesAssemblyAttributeFile(string projectExt, string sourceExt)
         {
+            var testTfm = typeof(MsBuildTargetTest).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(f => f.Key == "TargetFramework")
+                .Value;
             var target = Path.Combine(_solutionRoot.FullName, "src", "Configuration", "Config.UserSecrets", "src", "build", "netstandard2.0", "Microsoft.Extensions.Configuration.UserSecrets.targets");
             Directory.CreateDirectory(Path.Combine(_tempDir, "obj"));
             var libName = "Microsoft.Extensions.Configuration.UserSecrets.dll";
