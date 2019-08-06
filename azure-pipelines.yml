@@ -27,217 +27,253 @@ pr:
     include:
       - '*'
 
-jobs:
-# This job checks for code quality
-- template: /eng/common/templates/jobs/jobs.yml
-  parameters:
-    enablePublishBuildArtifacts: false
-    enablePublishTestResults: false
-    enablePublishUsingPipelines: false
-    jobs:
-    - job: Code_check
-      displayName: Code check
-      pool:
-        ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          name: NetCorePublic-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019.Open
-        ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          name: NetCoreInternal-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019
-      steps:
-      - task: NuGetCommand@2
-        displayName: 'Clear NuGet caches'
-        condition: succeeded()
-        inputs:
-          command: custom
-          arguments: 'locals all -clear'
-      - powershell: ./restore.cmd -ci; ./eng/scripts/CodeCheck.ps1 -ci
-        displayName: Run eng/scripts/CodeCheck.ps1
+stages:
+- stage: build
+  displayName: Build
+  jobs:
+  # This job checks for code quality
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enablePublishBuildArtifacts: false
+      enablePublishTestResults: false
+      enablePublishUsingPipelines: false
+      jobs:
+      - job: Code_check
+        displayName: Code check
+        pool:
+          ${{ if eq(variables['System.TeamProject'], 'public') }}:
+            name: NetCorePublic-Pool
+            queue: BuildPool.Windows.10.Amd64.VS2019.Open
+          ${{ if ne(variables['System.TeamProject'], 'public') }}:
+            name: NetCoreInternal-Pool
+            queue: BuildPool.Windows.10.Amd64.VS2019
+        steps:
+        - task: NuGetCommand@2
+          displayName: 'Clear NuGet caches'
+          condition: succeeded()
+          inputs:
+            command: custom
+            arguments: 'locals all -clear'
+        - powershell: ./restore.cmd -ci; ./eng/scripts/CodeCheck.ps1 -ci
+          displayName: Run eng/scripts/CodeCheck.ps1
 
-    - job: Source_Build
-      jobName: Source_Build
-      displayName: 'Test: Linux Source Build'
-      container:
-        image: centos:7
-        options: --init # This ensures all the stray defunct processes are reaped.
-      pool:
-        vmImage: ubuntu-16.04
-      variables:
-      - DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
-      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
-      - _BuildConfig: Release
-      steps:
-      - script: |
-          source eng/common/native/common-library.sh
-          mkdir -p $HOME/bin
-          GetFile https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 $HOME/bin/jq
-          chmod +x $HOME/bin/jq
-          echo "##vso[task.prependpath]$HOME/bin"
-        displayName: Install jq
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core sdk'
-        inputs:
-          packageType: sdk
-          # The SDK version selected here is intentionally supposed to use the latest release
-          # For the purpose of building Linux distros, we can't depend on features of the SDK
-          # which may not exist in pre-built versions of the SDK
-          version: 3.0.x
-          installationPath: $(DotNetCoreSdkDir)
-          includePreviewVersions: true
+      - job: Source_Build
+        jobName: Source_Build
+        displayName: 'Test: Linux Source Build'
+        container:
+          image: centos:7
+          options: --init # This ensures all the stray defunct processes are reaped.
+        pool:
+          vmImage: ubuntu-16.04
+        variables:
+        - DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
+        - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
+        - _BuildConfig: Release
+        steps:
+        - script: |
+            source eng/common/native/common-library.sh
+            mkdir -p $HOME/bin
+            GetFile https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 $HOME/bin/jq
+            chmod +x $HOME/bin/jq
+            echo "##vso[task.prependpath]$HOME/bin"
+          displayName: Install jq
+        - task: UseDotNet@2
+          displayName: 'Use .NET Core sdk'
+          inputs:
+            packageType: sdk
+            # The SDK version selected here is intentionally supposed to use the latest release
+            # For the purpose of building Linux distros, we can't depend on features of the SDK
+            # which may not exist in pre-built versions of the SDK
+            version: 3.0.x
+            installationPath: $(DotNetCoreSdkDir)
+            includePreviewVersions: true
 
-      - script: ./eng/scripts/ci-source-build.sh --ci --configuration $(_BuildConfig)
-        displayName: Run ci-source-build.sh
+        - script: ./eng/scripts/ci-source-build.sh --ci --configuration $(_BuildConfig)
+          displayName: Run ci-source-build.sh
 
-      - task: PublishBuildArtifacts@1
-        displayName: Upload package artifacts
-        # Only capture source build artifacts in PRs for the sake of inspecting
-        # changes that impact source-build. The artifacts from this build pipeline are never actually used.
-        condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
-        inputs:
-          pathtoPublish: artifacts/packages/
-          artifactName: Source_Build_Packages
-          artifactType: Container
-          parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload package artifacts
+          # Only capture source build artifacts in PRs for the sake of inspecting
+          # changes that impact source-build. The artifacts from this build pipeline are never actually used.
+          condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+          inputs:
+            pathtoPublish: artifacts/packages/
+            artifactName: Source_Build_Packages
+            artifactType: Container
+            parallel: true
 
-      - task: PublishBuildArtifacts@1
-        displayName: Publish Logs
-        inputs:
-          PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
-          PublishLocation: Container
-          ArtifactName: Source_Build_Logs
-        continueOnError: true
-        condition: always()
+        - task: PublishBuildArtifacts@1
+          displayName: Publish Logs
+          inputs:
+            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
+            PublishLocation: Container
+            ArtifactName: Source_Build_Logs
+          continueOnError: true
+          condition: always()
 
-# Three jobs for each of the three OSes we want to run on
-- template: /eng/common/templates/jobs/jobs.yml
-  parameters:
-    enablePublishBuildArtifacts: true
-    enablePublishTestResults: true
-    enablePublishUsingPipelines: $(_PublishUsingPipelines)
-    enableTelemetry: true
-    helixRepo: aspnet/AspNetCore-Tooling
-    helixType: build.product/
-    # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
-    ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      enableMicrobuild: true
-      enablePublishBuildAssets: true
-    jobs:
-    - job: Windows
-      pool:
-        ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          name: NetCorePublic-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019.Open
-        ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          name: NetCoreInternal-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019
-      strategy:
-        matrix:
-          debug:
-            _BuildConfig: Debug
-          release:
-            _BuildConfig: Release
-            ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              _DotNetPublishToBlobFeed: true
-              _PublishArgs: /p:PublishToSymbolServer=true
-                /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-                /p:PublishToAzure=true
-                /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
-                /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
-                /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-                /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-                /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-      variables:
-      - _DotNetPublishToBlobFeed : false
-      - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json
-      - _PublishArgs: '/p:PublishToSymbolServer=false /p:PublishToAzure=false'
-      - _BuildArgs: ''
+  # Three jobs for each of the three OSes we want to run on
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: true
+      enablePublishUsingPipelines: $(_PublishUsingPipelines)
+      enableTelemetry: true
+      helixRepo: aspnet/AspNetCore-Tooling
+      helixType: build.product/
+      # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
+      ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        enableMicrobuild: true
+        enablePublishBuildAssets: true
+      jobs:
+      - job: Windows
+        pool:
+          ${{ if eq(variables['System.TeamProject'], 'public') }}:
+            name: NetCorePublic-Pool
+            queue: BuildPool.Windows.10.Amd64.VS2019.Open
+          ${{ if ne(variables['System.TeamProject'], 'public') }}:
+            name: NetCoreInternal-Pool
+            queue: BuildPool.Windows.10.Amd64.VS2019
+        strategy:
+          matrix:
+            debug:
+              _BuildConfig: Debug
+            release:
+              _BuildConfig: Release
+              ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+                _DotNetPublishToBlobFeed: true
+                _PublishArgs: /p:PublishToSymbolServer=true
+                  /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+                  /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+                  /p:PublishToAzure=true
+                  /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                  /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
+                  /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                  /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+                  /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+        variables:
+        - _DotNetPublishToBlobFeed : false
+        - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json
+        - _PublishArgs: '/p:PublishToSymbolServer=false /p:PublishToAzure=false'
+        - _BuildArgs: ''
 
-      # Variables for internal Official builds
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - _SignType: real
-        - _BuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-            /p:OfficialBuildId=$(Build.BuildNumber)
-            /p:ManifestBuildBranch=$(Build.SourceBranchName)
-            /p:ManifestBuildNumber=$(Build.BuildNumber)
-            /p:VisualStudioDropName=Products/AspNet/AspNetCore-Tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
+        # Variables for internal Official builds
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - _SignType: real
+          - _BuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+              /p:OfficialBuildId=$(Build.BuildNumber)
+              /p:ManifestBuildBranch=$(Build.SourceBranchName)
+              /p:ManifestBuildNumber=$(Build.BuildNumber)
+              /p:VisualStudioDropName=Products/AspNet/AspNetCore-Tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
 
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - group: DotNet-Blob-Feed
-        - group: DotNet-Symbol-Server-Pats
-      steps:
-      - task: NuGetCommand@2
-        displayName: 'Clear NuGet caches'
-        condition: succeeded()
-        inputs:
-          command: custom
-          arguments: 'locals all -clear'
-      - script: eng\common\cibuild.cmd
-          -configuration $(_BuildConfig)
-          -prepareMachine
-          $(_BuildArgs)
-          $(_PublishArgs)
-        name: Build
-        displayName: Build
-        condition: succeeded()
-      - task: PublishBuildArtifacts@1
-        displayName: Publish VSIX Artifacts
-        inputs:
-          PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-          PublishLocation: Container
-          ArtifactName: VSIX_$(Agent.Os)_$(_BuildConfig)
-        continueOnError: true
-        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
-      - task: PublishBuildArtifacts@1
-        displayName: Publish VS for Mac Artifacts
-        inputs:
-          PathtoPublish: '$(Build.SourcesDirectory)/artifacts/MPack/$(_BuildConfig)'
-          PublishLocation: Container
-          ArtifactName: MPack_$(Agent.Os)_$(_BuildConfig)
-        continueOnError: true
-        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
-      - task: PublishBuildArtifacts@1
-        displayName: Publish package artifacts
-        inputs:
-          PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
-          PublishLocation: Container
-          ArtifactName: Packages_$(Agent.Os)_$(_BuildConfig)
-        continueOnError: true
-        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - group: DotNet-Blob-Feed
+          - group: DotNet-Symbol-Server-Pats
+        steps:
+        - task: NuGetCommand@2
+          displayName: 'Clear NuGet caches'
+          condition: succeeded()
+          inputs:
+            command: custom
+            arguments: 'locals all -clear'
+        - script: eng\common\cibuild.cmd
+            -configuration $(_BuildConfig)
+            -prepareMachine
+            $(_BuildArgs)
+            $(_PublishArgs)
+          name: Build
+          displayName: Build
+          condition: succeeded()
+        - task: PublishBuildArtifacts@1
+          displayName: Upload TestResults
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+            artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Publish VSIX Artifacts
+          inputs:
+            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+            PublishLocation: Container
+            ArtifactName: VSIX_$(Agent.Os)_$(_BuildConfig)
+          continueOnError: true
+          condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+        - task: PublishBuildArtifacts@1
+          displayName: Publish VS for Mac Artifacts
+          inputs:
+            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/MPack/$(_BuildConfig)'
+            PublishLocation: Container
+            ArtifactName: MPack_$(Agent.Os)_$(_BuildConfig)
+          continueOnError: true
+          condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+        - task: PublishBuildArtifacts@1
+          displayName: Publish package artifacts
+          inputs:
+            PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
+            PublishLocation: Container
+            ArtifactName: Packages_$(Agent.Os)_$(_BuildConfig)
+          continueOnError: true
+          condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
 
-    - job: macOS
-      pool:
-        vmImage: macOS-10.13
-      strategy:
-        matrix:
-          debug:
-            _BuildConfig: Debug
-          release:
-            _BuildConfig: Release
-      steps:
-      - script: eng/common/cibuild.sh
-          --configuration $(_BuildConfig)
-          --prepareMachine
-        name: Build
-        displayName: Build
-        condition: succeeded()
+      - job: macOS
+        pool:
+          vmImage: macOS-10.13
+        strategy:
+          matrix:
+            debug:
+              _BuildConfig: Debug
+            release:
+              _BuildConfig: Release
+        steps:
+        - script: eng/common/cibuild.sh
+            --configuration $(_BuildConfig)
+            --prepareMachine
+          name: Build
+          displayName: Build
+          condition: succeeded()
+        - task: PublishBuildArtifacts@1
+          displayName: Upload TestResults
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+            artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
 
-    - job: Linux
-      container:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
-        options: --init # This ensures all the stray defunct processes are reaped.
-      pool:
-        vmImage: ubuntu-16.04
-      strategy:
-        matrix:
-          debug:
-            _BuildConfig: Debug
-          release:
-            _BuildConfig: Release
-      steps:
-      - script: eng/common/cibuild.sh
-          --configuration $(_BuildConfig)
-          --prepareMachine
-        name: Build
-        displayName: Build
-        condition: succeeded()
+      - job: Linux
+        container:
+          image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
+          options: --init # This ensures all the stray defunct processes are reaped.
+        pool:
+          vmImage: ubuntu-16.04
+        strategy:
+          matrix:
+            debug:
+              _BuildConfig: Debug
+            release:
+              _BuildConfig: Release
+        steps:
+        - script: eng/common/cibuild.sh
+            --configuration $(_BuildConfig)
+            --prepareMachine
+          name: Build
+          displayName: Build
+          condition: succeeded()
+        - task: PublishBuildArtifacts@1
+          displayName: Upload TestResults
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+            artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: eng\common\templates\post-build\post-build.yml
+    parameters:
+      # See https://github.com/dotnet/arcade/issues/2871
+      enableSymbolValidation: false

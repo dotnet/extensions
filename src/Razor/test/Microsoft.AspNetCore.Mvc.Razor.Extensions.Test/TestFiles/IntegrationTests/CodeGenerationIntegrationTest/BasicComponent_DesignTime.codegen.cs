@@ -15,7 +15,7 @@ namespace __GeneratedComponent
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
-IDisposable __typeHelper = default(IDisposable);
+IDisposable __typeHelper = default!;
 
 #line default
 #line hidden
@@ -28,7 +28,7 @@ IDisposable __typeHelper = default(IDisposable);
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
             __o = 
 #nullable restore

@@ -32,12 +32,15 @@ namespace Microsoft.CodeAnalysis.Razor
                 builder.Features.Remove(existingFeature);
             }
 
-            builder.Features.Add(new ConfigureParserForCSharpVersionFeature(csharpLanguageVersion));
+            // This will convert any "latest", "default" or "LatestMajor" LanguageVersions into their numerical equivalent.
+            var effectiveCSharpLanguageVersion = LanguageVersionFacts.MapSpecifiedToEffectiveVersion(csharpLanguageVersion);
+            builder.Features.Add(new ConfigureParserForCSharpVersionFeature(effectiveCSharpLanguageVersion));
 
             return builder;
         }
 
-        private class ConfigureParserForCSharpVersionFeature : IConfigureRazorCodeGenerationOptionsFeature
+        // Internal for testing
+        internal class ConfigureParserForCSharpVersionFeature : IConfigureRazorCodeGenerationOptionsFeature
         {
             public ConfigureParserForCSharpVersionFeature(LanguageVersion csharpLanguageVersion)
             {
@@ -57,7 +60,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     throw new ArgumentNullException(nameof(options));
                 }
 
-                if (options.Configuration.LanguageVersion.Major < 3)
+                if (options.Configuration != null && options.Configuration.LanguageVersion.Major < 3)
                 {
                     // Prior to 3.0 there were no C# version specific controlled features. Suppress nullability enforcement.
                     options.SuppressNullabilityEnforcement = true;
