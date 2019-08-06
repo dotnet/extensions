@@ -41,14 +41,12 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         }
 
         [Theory]
-        [InlineData(".csproj", ".cs")]
-        [InlineData(".fsproj", ".fs")]
-        public void GeneratesAssemblyAttributeFile(string projectExt, string sourceExt)
+        [InlineData(".csproj", ".cs", "net472")]
+        [InlineData(".fsproj", ".fs", "net472")]
+        [InlineData(".csproj", ".cs", "netcoreapp3.0")]
+        [InlineData(".fsproj", ".fs", "netcoreapp3.0")]
+        public void GeneratesAssemblyAttributeFile(string projectExt, string sourceExt, string testTfm)
         {
-            var testTfm = typeof(MsBuildTargetTest).Assembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(f => f.Key == "TargetFramework")
-                .Value;
             var target = Path.Combine(_solutionRoot.FullName, "src", "Configuration", "Config.UserSecrets", "src", "build", "netstandard2.0", "Microsoft.Extensions.Configuration.UserSecrets.targets");
             Directory.CreateDirectory(Path.Combine(_tempDir, "obj"));
             var libName = "Microsoft.Extensions.Configuration.UserSecrets.dll";
@@ -94,7 +92,7 @@ let main argv =
                     break;
             }
 
-            foreach (var file in new[] { Path.Join(_tempDir, "Directory.Build.props"), Path.Join(_tempDir, "Directory.Build.targets") })
+            foreach (var file in new[] { Path.Combine(_tempDir, "Directory.Build.props"), Path.Combine(_tempDir, "Directory.Build.targets") })
             {
                 if (!File.Exists(file))
                 {
