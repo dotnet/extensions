@@ -43,6 +43,11 @@
         Version="$(MicrosoftNetCompilersToolsetVersion)"
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
+
+    <!-- Reference netstandard library at incoming dependency flow version, not bundled sdk version. -->
+    <FrameworkReference Update="NETStandard.Library"
+        Condition="'$(TargetFramework)' == 'netstandard2.1'"
+        TargetingPackVersion="$(NETStandardLibraryRefPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
