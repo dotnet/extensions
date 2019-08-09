@@ -17,7 +17,7 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <see cref="DotNetObjectReference{TValue}" />.</returns>
         public static DotNetObjectReference<TValue> Create<TValue>(TValue value) where TValue : class
         {
-            return new DotNetObjectReference<TValue>(DotNetObjectReferenceManager.Current, value);
+            return new DotNetObjectReference<TValue>(value);
         }
     }
 }

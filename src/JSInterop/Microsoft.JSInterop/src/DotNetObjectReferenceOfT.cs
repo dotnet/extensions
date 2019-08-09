@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Microsoft.JSInterop.Infrastructure;
 
@@ -14,22 +15,18 @@ namespace Microsoft.JSInterop
     /// To avoid leaking memory, the reference must later be disposed by JS code or by .NET code.
     /// </summary>
     /// <typeparam name="TValue">The type of the value to wrap.</typeparam>
-    [JsonConverter(typeof(DotNetObjectReferenceJsonConverterFactory))]
     public sealed class DotNetObjectReference<TValue> : IDotNetObjectReference, IDisposable where TValue : class
     {
-        private readonly DotNetObjectReferenceManager _referenceManager;
         private readonly TValue _value;
-        private readonly long _objectId;
+        private long _objectId;
+        private JSRuntime _jsRuntime;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DotNetObjectReference{TValue}" />.
         /// </summary>
-        /// <param name="referenceManager"></param>
         /// <param name="value">The value to pass by reference.</param>
-        internal DotNetObjectReference(DotNetObjectReferenceManager referenceManager, TValue value)
+        internal DotNetObjectReference(TValue value)
         {
-            _referenceManager = referenceManager;
-            _objectId = _referenceManager.TrackObject(this);
             _value = value;
         }
 
@@ -50,8 +47,34 @@ namespace Microsoft.JSInterop
             get
             {
                 ThrowIfDisposed();
+                Debug.Assert(_objectId != 0, "Accessing ObjectId without tracking is always incorrect.");
+
                 return _objectId;
             }
+        }
+
+        internal long TrackObjectReference(JSRuntime jsRuntime)
+        {
+            if (jsRuntime == null)
+            {
+                throw new ArgumentNullException(nameof(jsRuntime));
+            }
+
+            ThrowIfDisposed();
+
+            if (_jsRuntime is null)
+            {
+                _jsRuntime = jsRuntime;
+                _objectId = jsRuntime.TrackObjectReference(this);
+            }
+            else if (!ReferenceEquals(_jsRuntime, jsRuntime))
+            {
+                throw new InvalidOperationException($"{GetType().Name} is already being tracked by a different instance of {nameof(JSRuntime)}. A common cause is caching an instance of {nameof(DotNetObjectReference<TValue>)}" +
+                    $" globally. Consider creating instances of {nameof(DotNetObjectReference<TValue>)} at the JSInterop callsite instead");
+            }
+
+            Debug.Assert(_objectId != 0, "Object must already be tracked");
+            return _objectId;
         }
 
         object IDotNetObjectReference.Value => Value;
@@ -68,7 +91,11 @@ namespace Microsoft.JSInterop
             if (!Disposed)
             {
                 Disposed = true;
-                _referenceManager.ReleaseDotNetObject(_objectId);
+
+                if (_jsRuntime != null)
+                {
+                    _jsRuntime.ReleaseObjectReference(_objectId);
+                }
             }
         }
 
