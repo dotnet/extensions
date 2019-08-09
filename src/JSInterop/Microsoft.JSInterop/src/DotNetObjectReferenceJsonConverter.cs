@@ -7,11 +7,11 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.JSInterop
 {
-    internal sealed class DotNetObjectReferenceJsonConverter<TValue> : JsonConverter<DotNetObjectRef<TValue>> where TValue : class
+    internal sealed class DotNetObjectReferenceJsonConverter<TValue> : JsonConverter<DotNetObjectReference<TValue>> where TValue : class
     {
         private static JsonEncodedText DotNetObjectRefKey => DotNetDispatcher.DotNetObjectRefKey;
 
-        public override DotNetObjectRef<TValue> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override DotNetObjectReference<TValue> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             long dotNetObjectId = 0;
 
@@ -41,10 +41,10 @@ namespace Microsoft.JSInterop
             }
 
             var referenceManager = DotNetObjectRefManager.Current;
-            return (DotNetObjectRef<TValue>)referenceManager.FindDotNetObject(dotNetObjectId);
+            return (DotNetObjectReference<TValue>)referenceManager.FindDotNetObject(dotNetObjectId);
         }
 
-        public override void Write(Utf8JsonWriter writer, DotNetObjectRef<TValue> value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, DotNetObjectReference<TValue> value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
             writer.WriteNumber(DotNetObjectRefKey, value.ObjectId);

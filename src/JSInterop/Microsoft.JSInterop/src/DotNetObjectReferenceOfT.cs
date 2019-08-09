@@ -14,18 +14,18 @@ namespace Microsoft.JSInterop
     /// </summary>
     /// <typeparam name="TValue">The type of the value to wrap.</typeparam>
     [JsonConverter(typeof(DotNetObjectReferenceJsonConverterFactory))]
-    public sealed class DotNetObjectRef<TValue> : IDotNetObjectRef, IDisposable where TValue : class
+    public sealed class DotNetObjectReference<TValue> : IDisposable where TValue : class
     {
         private readonly DotNetObjectRefManager _referenceManager;
         private readonly TValue _value;
         private readonly long _objectId;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="DotNetObjectRef{TValue}" />.
+        /// Initializes a new instance of <see cref="DotNetObjectReference{TValue}" />.
         /// </summary>
         /// <param name="referenceManager"></param>
         /// <param name="value">The value to pass by reference.</param>
-        internal DotNetObjectRef(DotNetObjectRefManager referenceManager, TValue value)
+        internal DotNetObjectReference(DotNetObjectRefManager referenceManager, TValue value)
         {
             _referenceManager = referenceManager;
             _objectId = _referenceManager.TrackObject(this);

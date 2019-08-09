@@ -11,7 +11,7 @@ namespace Microsoft.JSInterop
     {
         public override bool CanConvert(Type typeToConvert)
         {
-            return typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(DotNetObjectRef<>);
+            return typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(DotNetObjectReference<>);
         }
 
         public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions jsonSerializerOptions)

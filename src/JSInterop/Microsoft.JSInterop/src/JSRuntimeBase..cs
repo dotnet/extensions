@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -14,7 +13,7 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Abstract base class for a JavaScript runtime.
     /// </summary>
-    public abstract class JSRuntimeBase : IJSRuntime
+    public abstract partial class JSRuntime : IJSRuntime
     {
         private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
         private readonly ConcurrentDictionary<long, object> _pendingTasks
@@ -23,7 +22,7 @@ namespace Microsoft.JSInterop
         private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations =
             new ConcurrentDictionary<long, CancellationTokenRegistration>();
 
-        internal DotNetObjectRefManager ObjectRefManager { get; } = new DotNetObjectRefManager();
+        internal DotNetObjectReferenceManager ObjectRefManager { get; } = new DotNetObjectReferenceManager();
 
         /// <summary>
         /// Gets or sets the default timeout for asynchronous JavaScript calls.
@@ -32,16 +31,40 @@ namespace Microsoft.JSInterop
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
+        /// <para>
+        /// <see cref="JSRuntime"/> will apply timeouts to this operation based on the value configured in <see cref="DefaultAsyncTimeout"/>. To dispatch a call with a different, or no timeout,
+        /// consider using <see cref="InvokeAsync{TValue}(string, CancellationToken, object[])" />.
+        /// </para>
         /// </summary>
-        /// <typeparam name="T">The JSON-serializable return type.</typeparam>
+        /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
-        /// <param name="cancellationToken">A cancellation token to signal the cancellation of the operation.</param>
-        /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
-        public Task<T> InvokeAsync<T>(string identifier, IEnumerable<object> args, CancellationToken cancellationToken = default)
+        /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
         {
+            if (DefaultAsyncTimeout.HasValue)
+            {
+                return InvokeWithDefaultCancellation<TValue>(identifier, args);
+            }
+
+            return InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+        }
+
+        /// <summary>
+        /// Invokes the specified JavaScript function asynchronously.
+        /// </summary>
+        /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="cancellationToken">
+        /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
+        /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
+        /// </param>
+        /// <param name="args">JSON-serializable arguments.</param>
+        /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        { 
             var taskId = Interlocked.Increment(ref _nextPendingTaskId);
-            var tcs = new TaskCompletionSource<T>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<TValue>(TaskContinuationOptions.RunContinuationsAsynchronously);
             if (cancellationToken != default)
             {
                 _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
@@ -59,7 +82,7 @@ namespace Microsoft.JSInterop
                     tcs.TrySetCanceled(cancellationToken);
                     CleanupTasksAndRegistrations(taskId);
 
-                    return tcs.Task;
+                    return new ValueTask<TValue>(tcs.Task);
                 }
 
                 var argsJson = args?.Any() == true ?
@@ -67,7 +90,7 @@ namespace Microsoft.JSInterop
                     null;
                 BeginInvokeJS(taskId, identifier, argsJson);
 
-                return tcs.Task;
+                return new ValueTask<TValue>(tcs.Task);
             }
             catch
             {
@@ -85,31 +108,12 @@ namespace Microsoft.JSInterop
             }
         }
 
-        /// <summary>
-        /// Invokes the specified JavaScript function asynchronously.
-        /// </summary>
-        /// <typeparam name="T">The JSON-serializable return type.</typeparam>
-        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
-        /// <param name="args">JSON-serializable arguments.</param>
-        /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
-        public Task<T> InvokeAsync<T>(string identifier, params object[] args)
-        {
-            if (!DefaultAsyncTimeout.HasValue)
-            {
-                return InvokeAsync<T>(identifier, args, default);
-            }
-            else
-            {
-                return InvokeWithDefaultCancellation<T>(identifier, args);
-            }
-        }
-
-        private async Task<T> InvokeWithDefaultCancellation<T>(string identifier, IEnumerable<object> args)
+        private async ValueTask<T> InvokeWithDefaultCancellation<T>(string identifier, object[] args)
         {
             using (var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value))
             {
                 // We need to await here due to the using
-                return await InvokeAsync<T>(identifier, args, cts.Token);
+                return await InvokeAsync<T>(identifier, cts.Token, args);
             }
         }
 

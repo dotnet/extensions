@@ -7,16 +7,16 @@ using System.Threading;
 
 namespace Microsoft.JSInterop
 {
-    internal class DotNetObjectRefManager
+    internal class DotNetObjectReferenceManager
     {
         private long _nextId = 0; // 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
         private readonly ConcurrentDictionary<long, IDotNetObjectRef> _trackedRefsById = new ConcurrentDictionary<long, IDotNetObjectRef>();
 
-        public static DotNetObjectRefManager Current
+        public static DotNetObjectReferenceManager Current
         {
             get
             {
-                if (!(JSRuntime.Current is JSRuntimeBase jsRuntimeBase))
+                if (!(JSRuntime.Current is JSRuntime jsRuntimeBase))
                 {
                     throw new InvalidOperationException("JSRuntime must be set up correctly and must be an instance of JSRuntimeBase to use DotNetObjectRef.");
                 }
@@ -45,7 +45,7 @@ namespace Microsoft.JSInterop
         /// Stops tracking the specified .NET object reference.
         /// This may be invoked either by disposing a DotNetObjectRef in .NET code, or via JS interop by calling "dispose" on the corresponding instance in JavaScript code
         /// </summary>
-        /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectRef{TValue}"/>.</param>
+        /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectReference{TValue}"/>.</param>
         public void ReleaseDotNetObject(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
     }
 }

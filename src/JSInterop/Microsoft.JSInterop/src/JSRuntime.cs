@@ -7,9 +7,9 @@ using System.Threading;
 namespace Microsoft.JSInterop
 {
     /// <summary>
-    /// Provides mechanisms for accessing the current <see cref="IJSRuntime"/>.
+    /// Abstract base class for a JavaScript runtime.
     /// </summary>
-    public static class JSRuntime
+    public abstract partial class JSRuntime : IJSRuntime
     {
         private static readonly AsyncLocal<IJSRuntime> _currentJSRuntime = new AsyncLocal<IJSRuntime>();
 
