@@ -11,8 +11,6 @@ variables:
     value: true
   - name: _DotNetArtifactsCategory
     value: ASPNETEXTENSIONS
-  - name: _DotNetValidationArtifactsCategory
-    value: ASPNETEXTENSIONS
 
 # CI and PR triggers
 trigger:
