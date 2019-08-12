@@ -42,24 +42,24 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-alpha1.19404.5</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-alpha1.19404.5</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0-alpha1.19404.5</NETStandardLibraryRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-alpha1.19411.12</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-alpha1.19411.12</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0-alpha1.19411.12</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha1.19381.2</MicrosoftWin32RegistryPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha1.19381.2</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-alpha1.19381.2</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>5.0.0-alpha1.19381.2</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>5.0.0-alpha1.19381.2</SystemIOPipelinesPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.8.0-alpha1.19381.2</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-alpha1.19381.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>5.0.0-alpha1.19381.2</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-alpha1.19381.2</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-alpha1.19381.2</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>5.0.0-alpha1.19381.2</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>5.0.0-alpha1.19381.2</SystemTextJsonPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha1.19409.9</MicrosoftWin32RegistryPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha1.19409.9</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-alpha1.19409.9</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>5.0.0-alpha1.19409.9</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>5.0.0-alpha1.19409.9</SystemIOPipelinesPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.8.0-alpha1.19409.9</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-alpha1.19409.9</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>5.0.0-alpha1.19409.9</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-alpha1.19409.9</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-alpha1.19409.9</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-alpha1.19409.9</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>5.0.0-alpha1.19409.9</SystemTextJsonPackageVersion>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
-    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-alpha1.19381.2</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-alpha1.19409.9</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19404.1</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
