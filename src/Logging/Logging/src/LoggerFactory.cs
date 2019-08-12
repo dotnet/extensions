@@ -22,7 +22,6 @@ namespace Microsoft.Extensions.Logging
         private volatile bool _disposed;
         private IDisposable _changeTokenRegistration;
         private LoggerFilterOptions _filterOptions;
-        private LoggerExternalScopeProvider _scopeProvider;
 
         /// <summary>
         /// Creates a new <see cref="LoggerFactory"/> instance.
@@ -63,6 +62,8 @@ namespace Microsoft.Extensions.Logging
             _changeTokenRegistration = filterOption.OnChange(RefreshFilters);
             RefreshFilters(filterOption.CurrentValue);
         }
+
+        public IExternalScopeProvider ScopeProvider { get; set; }
 
         /// <summary>
         /// Creates new instance of <see cref="ILoggerFactory"/> configured using provided <paramref name="configure"/> delegate.
@@ -161,12 +162,12 @@ namespace Microsoft.Extensions.Logging
 
             if (provider is ISupportExternalScope supportsExternalScope)
             {
-                if (_scopeProvider == null)
+                if (ScopeProvider == null)
                 {
-                    _scopeProvider = new LoggerExternalScopeProvider();
+                    ScopeProvider = new LoggerExternalScopeProvider();
                 }
 
-                supportsExternalScope.SetScopeProvider(_scopeProvider);
+                supportsExternalScope.SetScopeProvider(ScopeProvider);
             }
         }
 
@@ -206,9 +207,9 @@ namespace Microsoft.Extensions.Logging
                 }
             }
 
-            if (_scopeProvider != null)
+            if (ScopeProvider != null)
             {
-                scopeLoggers?.Add(new ScopeLogger(logger: null, externalScopeProvider: _scopeProvider));
+                scopeLoggers?.Add(new ScopeLogger(logger: null, externalScopeProvider: ScopeProvider));
             }
 
             return (messageLoggers.ToArray(), scopeLoggers?.ToArray());
