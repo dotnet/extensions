@@ -18,12 +18,12 @@ namespace Microsoft.JSInterop
             var method = "someMethod";
             var expected = new[] { "a", "b" };
             var jsRuntime = new Mock<IJSRuntime>(MockBehavior.Strict);
-            jsRuntime.Setup(s => s.InvokeAsync<object>(method, It.IsAny<object[]>()))
+            jsRuntime.Setup(s => s.InvokeAsync<string>(method, It.IsAny<object[]>()))
                 .Callback<string, object[]>((method, args) =>
                 {
                     Assert.Equal(expected, args);
                 })
-                .Returns(new ValueTask<object>("Hello"))
+                .Returns(new ValueTask<string>("Hello"))
                 .Verifiable();
 
             // Act
@@ -113,29 +113,6 @@ namespace Microsoft.JSInterop
         }
 
         [Fact]
-        public async Task InvokeAsync_WithZeroTimeout()
-        {
-            // Arrange
-            var expected = "Hello";
-            var method = "someMethod";
-            var args = new[] { "a", "b" };
-            var jsRuntime = new Mock<IJSRuntime>(MockBehavior.Strict);
-            jsRuntime.Setup(s => s.InvokeAsync<string>(method, It.IsAny<CancellationToken>(), args))
-                .Callback<string, CancellationToken, object[]>((method, cts, args) =>
-                {
-                    // We can test a degenerate case for a timeout.
-                    Assert.True(cts.IsCancellationRequested);
-                })
-                .Returns(new ValueTask<string>(expected));
-
-            // Act
-            var result = await jsRuntime.Object.InvokeAsync<string>(method, TimeSpan.Zero, args);
-
-            Assert.Equal(expected, result);
-            jsRuntime.Verify();
-        }
-
-        [Fact]
         public async Task InvokeAsync_WithInfiniteTimeout()
         {
             // Arrange
@@ -147,6 +124,7 @@ namespace Microsoft.JSInterop
                 .Callback<string, CancellationToken, object[]>((method, cts, args) =>
                 {
                     Assert.False(cts.CanBeCanceled);
+                    Assert.True(cts == CancellationToken.None);
                 })
                 .Returns(new ValueTask<string>(expected));
 
@@ -180,27 +158,6 @@ namespace Microsoft.JSInterop
         }
 
         [Fact]
-        public async Task InvokeVoidAsync_WithZeroTimeout()
-        {
-            // Arrange
-            var method = "someMethod";
-            var args = new[] { "a", "b" };
-            var jsRuntime = new Mock<IJSRuntime>(MockBehavior.Strict);
-            jsRuntime.Setup(s => s.InvokeAsync<object>(method, It.IsAny<CancellationToken>(), args))
-                .Callback<string, CancellationToken, object[]>((method, cts, args) =>
-                {
-                    // We can test a degenerate case for a timeout.
-                    Assert.True(cts.IsCancellationRequested);
-                })
-                .Returns(new ValueTask<object>(new object()));
-
-            // Act
-            await jsRuntime.Object.InvokeVoidAsync(method, TimeSpan.Zero, args);
-
-            jsRuntime.Verify();
-        }
-
-        [Fact]
         public async Task InvokeVoidAsync_WithInfiniteTimeout()
         {
             // Arrange
@@ -211,6 +168,7 @@ namespace Microsoft.JSInterop
                 .Callback<string, CancellationToken, object[]>((method, cts, args) =>
                 {
                     Assert.False(cts.CanBeCanceled);
+                    Assert.True(cts == CancellationToken.None);
                 })
                 .Returns(new ValueTask<object>(new object()));
 
