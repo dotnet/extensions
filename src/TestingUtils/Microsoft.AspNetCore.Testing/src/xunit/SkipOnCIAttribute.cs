@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Testing
 {
     /// <summary>
-    /// Skip test if running on helix (or a particular helix queue).
+    /// Skip test if running on CI
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class SkipOnCIAttribute : Attribute, ITestCondition
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             get
             {
-                return OnCI();
+                return !OnCI();
             }
         }
 
