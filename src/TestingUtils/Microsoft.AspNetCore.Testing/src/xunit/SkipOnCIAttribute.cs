@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Testing.xunit
+using System;
+
+namespace Microsoft.AspNetCore.Testing
 {
     /// <summary>
     /// Skip test if running on helix (or a particular helix queue).
@@ -25,9 +25,6 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 return OnCI();
             }
         }
-
-        // Queues that should be skipped on, i.e. "Windows.10.Amd64.ClientRS4.VS2017.Open;OSX.1012.Amd64.Open"
-        public string Queues { get; set; }
 
         public string SkipReason
         {
