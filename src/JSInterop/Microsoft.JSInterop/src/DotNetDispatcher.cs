@@ -18,6 +18,7 @@ namespace Microsoft.JSInterop
     /// </summary>
     public static class DotNetDispatcher
     {
+        private const string DisposeDotNetObjectReferenceMethodName = "__Dispose";
         internal static readonly JsonEncodedText DotNetObjectRefKey = JsonEncodedText.Encode("__dotNetObject");
 
         private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
@@ -141,7 +142,7 @@ namespace Microsoft.JSInterop
                     throw new ArgumentException($"For instance method calls, '{nameof(assemblyName)}' should be null. Value received: '{assemblyName}'.");
                 }
 
-                if (string.Equals("__Dispose", methodIdentifier, StringComparison.Ordinal))
+                if (string.Equals(DisposeDotNetObjectReferenceMethodName, methodIdentifier, StringComparison.Ordinal))
                 {
                     // The client executed dotNetObjectReference.dispose(). Dispose the reference and exit.
                     objectReference.Dispose();
@@ -151,13 +152,13 @@ namespace Microsoft.JSInterop
                 assemblyKey = new AssemblyKey(objectReference.Value.GetType().Assembly);
             }
 
-
             var (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
 
             var suppliedArgs = ParseArguments(methodIdentifier, argsJson, parameterTypes);
 
             try
             {
+                // objectReference will be null if this call invokes a static JSInvokable method.
                 return methodInfo.Invoke(objectReference?.Value, suppliedArgs);
             }
             catch (TargetInvocationException tie) // Avoid using exception filters for AOT runtime support
