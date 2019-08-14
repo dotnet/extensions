@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.JSInterop.Tests
+namespace Microsoft.JSInterop
 {
     public class JSInProcessRuntimeBaseTest
     {

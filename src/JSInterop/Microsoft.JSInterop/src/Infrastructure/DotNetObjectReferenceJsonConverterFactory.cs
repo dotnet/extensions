@@ -5,7 +5,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class DotNetObjectReferenceJsonConverterFactory : JsonConverterFactory
     {

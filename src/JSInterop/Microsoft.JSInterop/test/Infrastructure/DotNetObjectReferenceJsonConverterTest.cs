@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using static Microsoft.JSInterop.TestJSRuntime;
 
-namespace Microsoft.JSInterop.Tests
+namespace Microsoft.JSInterop.Infrastructure
 {
     public class DotNetObjectReferenceJsonConverterTest
     {

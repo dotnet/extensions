@@ -5,7 +5,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class DotNetObjectReferenceJsonConverter<TValue> : JsonConverter<DotNetObjectReference<TValue>> where TValue : class
     {
@@ -40,7 +40,7 @@ namespace Microsoft.JSInterop
                 throw new JsonException($"Required property {DotNetObjectRefKey} not found.");
             }
 
-            var referenceManager = DotNetObjectRefManager.Current;
+            var referenceManager = DotNetObjectReferenceManager.Current;
             return (DotNetObjectReference<TValue>)referenceManager.FindDotNetObject(dotNetObjectId);
         }
 

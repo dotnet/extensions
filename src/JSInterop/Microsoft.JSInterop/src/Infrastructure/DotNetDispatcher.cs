@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Infrastructure
 {
     /// <summary>
     /// Provides methods that receive incoming calls from JS to .NET.
@@ -39,7 +39,7 @@ namespace Microsoft.JSInterop
             // the targeted method has [JSInvokable]. It is not itself subject to that restriction,
             // because there would be nobody to police that. This method *is* the police.
 
-            IDotNetObjectRef targetInstance = default;
+            IDotNetObjectReference targetInstance = default;
             if (dotNetObjectId != default)
             {
                 targetInstance = DotNetObjectReferenceManager.Current.FindDotNetObject(dotNetObjectId);
@@ -79,7 +79,7 @@ namespace Microsoft.JSInterop
             // original stack traces.
             object syncResult = null;
             ExceptionDispatchInfo syncException = null;
-            IDotNetObjectRef targetInstance = null;
+            IDotNetObjectReference targetInstance = null;
 
             try
             {
@@ -128,7 +128,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private static object InvokeSynchronously(string assemblyName, string methodIdentifier, IDotNetObjectRef objectReference, string argsJson)
+        private static object InvokeSynchronously(string assemblyName, string methodIdentifier, IDotNetObjectReference objectReference, string argsJson)
         {
             AssemblyKey assemblyKey;
             if (objectReference is null)

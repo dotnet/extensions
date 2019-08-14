@@ -5,6 +5,7 @@ using System;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
 
 namespace Mono.WebAssembly.Interop

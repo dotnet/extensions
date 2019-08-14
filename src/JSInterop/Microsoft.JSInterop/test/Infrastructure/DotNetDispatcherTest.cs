@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Infrastructure
 {
     public class DotNetDispatcherTest
     {
@@ -142,7 +142,7 @@ namespace Microsoft.JSInterop
             Assert.False(resultDto2Ref.TryGetProperty(nameof(TestDTO.IntVal), out _));
 
             Assert.True(resultDto2Ref.TryGetProperty(DotNetDispatcher.DotNetObjectRefKey.EncodedUtf8Bytes, out var property));
-            var resultDto2 = Assert.IsType<DotNetObjectRef<TestDTO>>(DotNetObjectReferenceManager.Current.FindDotNetObject(property.GetInt64())).Value;
+            var resultDto2 = Assert.IsType<DotNetObjectReference<TestDTO>>(DotNetObjectReferenceManager.Current.FindDotNetObject(property.GetInt64())).Value;
             Assert.Equal("MY STRING", resultDto2.StringVal);
             Assert.Equal(1299, resultDto2.IntVal);
         });
@@ -207,10 +207,10 @@ namespace Microsoft.JSInterop
         {
             // Arrange
             var targetInstance = new SomePublicType();
-            var objectRef = DotNetObjectRef.Create(targetInstance);
+            var objectRef = DotNetObjectReference.Create(targetInstance);
 
             // Act
-            DotNetDispatcher.BeginInvoke(null, null, "__Dispose", objectRef.ObjectId, null);
+            DotNetDispatcher.BeginInvokeDotNet(null, null, "__Dispose", objectRef.ObjectId, null);
 
             // Assert
             Assert.True(objectRef.Disposed);
@@ -334,7 +334,7 @@ namespace Microsoft.JSInterop
 
             // Assert
             Assert.Equal("[\"You passed myvalue\",{\"__dotNetObject\":3}]", resultJson);
-            var resultDto = ((DotNetObjectRef<TestDTO>)jsRuntime.ObjectRefManager.FindDotNetObject(3)).Value;
+            var resultDto = ((DotNetObjectReference<TestDTO>)jsRuntime.ObjectRefManager.FindDotNetObject(3)).Value;
             Assert.Equal(1235, resultDto.IntVal);
             Assert.Equal("MY STRING", resultDto.StringVal);
         });

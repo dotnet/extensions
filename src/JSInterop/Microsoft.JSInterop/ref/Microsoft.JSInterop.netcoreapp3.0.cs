@@ -3,12 +3,6 @@
 
 namespace Microsoft.JSInterop
 {
-    public static partial class DotNetDispatcher
-    {
-        public static void BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { }
-        public static void EndInvokeJS(string arguments) { }
-        public static string Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { throw null; }
-    }
     public static partial class DotNetObjectReference
     {
         public static Microsoft.JSInterop.DotNetObjectReference<TValue> Create<TValue>(TValue value) where TValue : class { throw null; }
@@ -72,5 +66,14 @@ namespace Microsoft.JSInterop
         public static System.Threading.Tasks.ValueTask InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime jsRuntime, string identifier, System.Threading.CancellationToken cancellationToken, params object[] args) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.ValueTask InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime jsRuntime, string identifier, System.TimeSpan timeout, params object[] args) { throw null; }
+    }
+}
+namespace Microsoft.JSInterop.Infrastructure
+{
+    public static partial class DotNetDispatcher
+    {
+        public static void BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { }
+        public static void EndInvokeJS(string arguments) { }
+        public static string Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { throw null; }
     }
 }

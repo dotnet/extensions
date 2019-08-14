@@ -14,7 +14,7 @@ namespace Microsoft.JSInterop
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
         /// <para>
-        /// <see cref="JSRuntime"/> will apply timeouts to this operation based on the value configured in <see cref="JSRuntime.DefaultAsyncTimeout"/>. To dispatch a call with a different, or no timeout,
+        /// <see cref="JSRuntime"/> will apply timeouts to this operation based on the value configured in <see cref="JSRuntime.DefaultAsyncTimeout"/>. To dispatch a call with a different timeout, or no timeout,
         /// consider using <see cref="InvokeAsync{TValue}(string, CancellationToken, object[])" />.
         /// </para>
         /// </summary>
