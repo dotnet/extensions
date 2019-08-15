@@ -73,8 +73,8 @@ namespace Microsoft.JSInterop.Infrastructure
             // because there would be nobody to police that. This method *is* the police.
 
             // Using ExceptionDispatchInfo here throughout because we want to always preserve
-
             // original stack traces.
+
             object syncResult = null;
             ExceptionDispatchInfo syncException = null;
             IDotNetObjectReference targetInstance = null;
