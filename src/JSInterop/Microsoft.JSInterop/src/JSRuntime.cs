@@ -218,8 +218,8 @@ namespace Microsoft.JSInterop
             }
             else if (!ReferenceEquals(this, jsRuntime))
             {
-                throw new InvalidOperationException($"{GetType().Name} is already being tracked by a different instance of {nameof(JSRuntime)}. A common cause is caching an instance of {dotNetObjectReference.GetType().Name}" +
-                    $" globally. Consider creating instances of {nameof(DotNetObjectReference<TValue>)} at the JSInterop callsite.");
+                throw new InvalidOperationException($"{dotNetObjectReference.GetType().Name} is already being tracked by a different instance of {nameof(JSRuntime)}." +
+                    $" A common cause is caching an instance of {nameof(DotNetObjectReference<TValue>)} globally. Consider creating instances of {nameof(DotNetObjectReference<TValue>)} at the JSInterop callsite.");
             }
 
             Debug.Assert(dotNetObjectReference.ObjectId != 0);

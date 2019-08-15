@@ -103,8 +103,8 @@ namespace Microsoft.JSInterop.Infrastructure
             var deserialized = JsonSerializer.Deserialize<DotNetObjectReference<TestModel>[]>(json, JsonSerializerOptions);
 
             // Assert
-            Assert.Same(instance2, deserialized[0].Value);
-            Assert.Same(instance1, deserialized[1].Value);
+            Assert.Same(instance1, deserialized[0].Value);
+            Assert.Same(instance2, deserialized[1].Value);
         }
 
         [Fact]
