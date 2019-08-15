@@ -53,7 +53,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public override void Write(Utf8JsonWriter writer, DotNetObjectReference<TValue> value, JsonSerializerOptions options)
         {
-            var objectId = value.TrackObjectReference(JSRuntime);
+            var objectId = JSRuntime.TrackObjectReference<TValue>(value);
 
             writer.WriteStartObject();
             writer.WriteNumber(DotNetObjectRefKey, objectId);

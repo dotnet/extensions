@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -196,13 +197,33 @@ namespace Microsoft.JSInterop
             }
         }
 
-        #region DotNetObjectReference
-        internal long TrackObjectReference(IDotNetObjectReference dotNetObjectRef)
+        internal long TrackObjectReference<TValue>(DotNetObjectReference<TValue> dotNetObjectReference) where TValue : class
         {
-            var dotNetObjectId = Interlocked.Increment(ref _nextObjectReferenceId);
-            _trackedRefsById[dotNetObjectId] = dotNetObjectRef;
+            if (dotNetObjectReference == null)
+            {
+                throw new ArgumentNullException(nameof(dotNetObjectReference));
+            }
 
-            return dotNetObjectId;
+            dotNetObjectReference.ThrowIfDisposed();
+
+            var jsRuntime = dotNetObjectReference.JSRuntime;
+            if (jsRuntime is null)
+            {
+                var dotNetObjectId = Interlocked.Increment(ref _nextObjectReferenceId);
+
+                dotNetObjectReference.JSRuntime = this;
+                dotNetObjectReference.ObjectId = dotNetObjectId;
+
+                _trackedRefsById[dotNetObjectId] = dotNetObjectReference;
+            }
+            else if (!ReferenceEquals(this, jsRuntime))
+            {
+                throw new InvalidOperationException($"{GetType().Name} is already being tracked by a different instance of {nameof(JSRuntime)}. A common cause is caching an instance of {dotNetObjectReference.GetType().Name}" +
+                    $" globally. Consider creating instances of {nameof(DotNetObjectReference<TValue>)} at the JSInterop callsite.");
+            }
+
+            Debug.Assert(dotNetObjectReference.ObjectId != 0);
+            return dotNetObjectReference.ObjectId;
         }
 
         internal IDotNetObjectReference GetObjectReference(long dotNetObjectId)
@@ -218,6 +239,5 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectReference{TValue}"/>.</param>
         internal void ReleaseObjectReference(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
-        #endregion
     }
 }

@@ -45,7 +45,7 @@ namespace Microsoft.JSInterop.Infrastructure
             // Arrange
             var input = new TestModel();
             var dotNetObjectRef = DotNetObjectReference.Create(input);
-            var objectId = dotNetObjectRef.TrackObjectReference(JSRuntime);
+            var objectId = JSRuntime.TrackObjectReference(dotNetObjectRef);
 
             var json = $"{{\"__dotNetObject\":{objectId}";
 
@@ -60,7 +60,7 @@ namespace Microsoft.JSInterop.Infrastructure
             // Arrange
             var input = new TestModel();
             var dotNetObjectRef = DotNetObjectReference.Create(input);
-            var objectId = dotNetObjectRef.TrackObjectReference(JSRuntime);
+            var objectId = JSRuntime.TrackObjectReference(dotNetObjectRef);
 
             var json = $"{{\"__dotNetObject\":{objectId},\"__dotNetObject\":{objectId}}}";
 
@@ -75,7 +75,7 @@ namespace Microsoft.JSInterop.Infrastructure
             // Arrange
             var input = new TestModel();
             var dotNetObjectRef = DotNetObjectReference.Create(input);
-            var objectId = dotNetObjectRef.TrackObjectReference(JSRuntime);
+            var objectId = JSRuntime.TrackObjectReference(dotNetObjectRef);
 
             var json = $"{{\"__dotNetObject\":{objectId}}}";
 
@@ -97,7 +97,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var ref1 = DotNetObjectReference.Create(instance1);
             var ref2 = DotNetObjectReference.Create(instance2);
 
-            var json = $"[{{\"__dotNetObject\":{ref2.TrackObjectReference(JSRuntime)}}},{{\"__dotNetObject\":{ref1.TrackObjectReference(JSRuntime)}}}]";
+            var json = $"[{{\"__dotNetObject\":{JSRuntime.TrackObjectReference(ref1)}}},{{\"__dotNetObject\":{JSRuntime.TrackObjectReference(ref2)}}}]";
 
             // Act
             var deserialized = JsonSerializer.Deserialize<DotNetObjectReference<TestModel>[]>(json, JsonSerializerOptions);
@@ -113,7 +113,7 @@ namespace Microsoft.JSInterop.Infrastructure
             // Arrange
             var input = new TestModel();
             var dotNetObjectRef = DotNetObjectReference.Create(input);
-            var objectId = dotNetObjectRef.TrackObjectReference(JSRuntime);
+            var objectId = JSRuntime.TrackObjectReference(dotNetObjectRef);
 
             var json =
 @$"{{

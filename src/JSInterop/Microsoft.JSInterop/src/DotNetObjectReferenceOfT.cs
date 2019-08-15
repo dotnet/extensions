@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Text.Json.Serialization;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
@@ -51,30 +50,26 @@ namespace Microsoft.JSInterop
 
                 return _objectId;
             }
+            set
+            {
+                ThrowIfDisposed();
+                _objectId = value;
+            }
         }
 
-        internal long TrackObjectReference(JSRuntime jsRuntime)
+        internal JSRuntime JSRuntime
         {
-            if (jsRuntime == null)
+            get
             {
-                throw new ArgumentNullException(nameof(jsRuntime));
+                ThrowIfDisposed();
+                return _jsRuntime;
+            }
+            set
+            {
+                ThrowIfDisposed();
+                _jsRuntime = value;
             }
 
-            ThrowIfDisposed();
-
-            if (_jsRuntime is null)
-            {
-                _jsRuntime = jsRuntime;
-                _objectId = jsRuntime.TrackObjectReference(this);
-            }
-            else if (!ReferenceEquals(_jsRuntime, jsRuntime))
-            {
-                throw new InvalidOperationException($"{GetType().Name} is already being tracked by a different instance of {nameof(JSRuntime)}. A common cause is caching an instance of {nameof(DotNetObjectReference<TValue>)}" +
-                    $" globally. Consider creating instances of {nameof(DotNetObjectReference<TValue>)} at the JSInterop callsite instead");
-            }
-
-            Debug.Assert(_objectId != 0, "Object must already be tracked");
-            return _objectId;
         }
 
         object IDotNetObjectReference.Value => Value;
@@ -99,7 +94,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private void ThrowIfDisposed()
+        internal void ThrowIfDisposed()
         {
             if (Disposed)
             {
