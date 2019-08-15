@@ -27,7 +27,7 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <summary>
         /// Receives a call from JS to .NET, locating and invoking the specified method.
         /// </summary>
-        /// <param name="jsRuntime"></param>
+        /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
         /// <param name="assemblyName">The assembly containing the method to be invoked.</param>
         /// <param name="methodIdentifier">The identifier of the method to be invoked. The method must be annotated with a <see cref="JSInvokableAttribute"/> matching this identifier string.</param>
         /// <param name="dotNetObjectId">For instance method calls, identifies the target object.</param>
@@ -58,7 +58,7 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <summary>
         /// Receives a call from JS to .NET, locating and invoking the specified method asynchronously.
         /// </summary>
-        /// <param name="jsRuntime"></param>
+        /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
         /// <param name="callId">A value identifying the asynchronous call that should be passed back with the result, or null if no result notification is required.</param>
         /// <param name="assemblyName">The assembly containing the method to be invoked.</param>
         /// <param name="methodIdentifier">The identifier of the method to be invoked. The method must be annotated with a <see cref="JSInvokableAttribute"/> matching this identifier string.</param>
@@ -245,7 +245,7 @@ namespace Microsoft.JSInterop.Infrastructure
         /// method is responsible for handling any possible exception generated from the arguments
         /// passed in as parameters.
         /// </remarks>
-        /// <param name="jsRuntime"></param>
+        /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
         /// <param name="arguments">The serialized arguments for the callback completion.</param>
         /// <exception cref="Exception">
         /// This method can throw any exception either from the argument received or as a result
