@@ -47,6 +47,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed", "src\Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed\Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed.csproj", "{5E301FB7-D52E-412A-8EBE-B4B3FAFFBA09}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OmniSharp.Shared", "modules\omnisharp-roslyn\src\OmniSharp.Shared\OmniSharp.Shared.csproj", "{4B3BEFE6-3D93-49B0-BA8C-87F81313FF69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -109,6 +111,10 @@ Global
 		{5E301FB7-D52E-412A-8EBE-B4B3FAFFBA09}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E301FB7-D52E-412A-8EBE-B4B3FAFFBA09}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E301FB7-D52E-412A-8EBE-B4B3FAFFBA09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B3BEFE6-3D93-49B0-BA8C-87F81313FF69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B3BEFE6-3D93-49B0-BA8C-87F81313FF69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B3BEFE6-3D93-49B0-BA8C-87F81313FF69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B3BEFE6-3D93-49B0-BA8C-87F81313FF69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,6 +136,7 @@ Global
 		{68200076-1756-4E72-AD93-FD412D23086F} = {75400311-9729-4D9A-80D2-ADD5286DE405}
 		{C81B10BB-4272-49E8-BDF6-CB5615BC601D} = {75400311-9729-4D9A-80D2-ADD5286DE405}
 		{5E301FB7-D52E-412A-8EBE-B4B3FAFFBA09} = {2BBB2AB1-2AE4-4306-AA88-FD66A90AA101}
+		{4B3BEFE6-3D93-49B0-BA8C-87F81313FF69} = {05FA40C7-7899-4050-B9CC-9B9A20852C31}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ED1782EB-ABE7-4615-80E2-442006DF2826}

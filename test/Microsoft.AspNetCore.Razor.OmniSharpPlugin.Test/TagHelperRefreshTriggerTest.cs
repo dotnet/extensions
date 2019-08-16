@@ -75,7 +75,13 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) => mre.Set());
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object);
-            var args = new ProjectLoadedEventArgs(null, Project1Instance, EmptyDiagnostics, isReload: false);
+            var args = new ProjectLoadedEventArgs(
+                null,
+                Project1Instance,
+                EmptyDiagnostics,
+                isReload: false,
+                projectIdIsDefinedInSolution: false,
+                sourceFiles: Enumerable.Empty<string>().ToImmutableArray());
 
             // Act
             refreshTrigger.ProjectLoaded(args);
@@ -103,7 +109,13 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     mre.Set();
                 });
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object, enqueueDelay: 10);
-            var args = new ProjectLoadedEventArgs(null, Project1Instance, EmptyDiagnostics, isReload: false);
+            var args = new ProjectLoadedEventArgs(
+                null,
+                Project1Instance,
+                EmptyDiagnostics,
+                isReload: false,
+                projectIdIsDefinedInSolution: false,
+                sourceFiles: Enumerable.Empty<string>().ToImmutableArray());
 
             // Act
             refreshTrigger.ProjectLoaded(args);

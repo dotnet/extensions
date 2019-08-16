@@ -212,8 +212,10 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var args = new ProjectLoadedEventArgs(
                 ProjectId.CreateNewId(),
                 projectInstance,
-                Enumerable.Empty<MSBuildDiagnostic>().ToImmutableArray(),
-                false);
+                diagnostics: Enumerable.Empty<MSBuildDiagnostic>().ToImmutableArray(),
+                isReload: false,
+                projectIdIsDefinedInSolution: false,
+                sourceFiles: Enumerable.Empty<string>().ToImmutableArray());
 
             // Act
             await msbuildProjectManager.ProjectLoadedAsync(args);

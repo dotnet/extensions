@@ -22,10 +22,10 @@
   <Target Name="PublishLanguageServerNativeExecutables" AfterTargets="Pack" DependsOnTargets="PublishAllRids" />
 
   <Target Name="IncludeOmniSharpPlugin" AfterTargets="Publish" Condition="Exists('$(PublishDir)')">
-    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj" Properties="PublishDir=$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net461\publish;RuntimeIdentifier=" Targets="Publish" />
+    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj" Properties="PublishDir=$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net472\publish;RuntimeIdentifier=" Targets="Publish" />
 
     <PropertyGroup>
-      <PluginReferenceOutputPath>$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net461\publish</PluginReferenceOutputPath>
+      <PluginReferenceOutputPath>$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net472\publish</PluginReferenceOutputPath>
       <TargetPluginOutputPath>$(PublishDir)\OmniSharpPlugin</TargetPluginOutputPath>
     </PropertyGroup>
 

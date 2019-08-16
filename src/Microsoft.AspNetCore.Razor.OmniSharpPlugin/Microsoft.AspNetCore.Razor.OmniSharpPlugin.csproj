@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
+
     <Description>Razor is a markup syntax for adding logic to pages. This package contains the Omnisharp Razor plugin that extracts Razor configuration information from projects.</Description>
     <EnableApiCheck>false</EnableApiCheck>
 
@@ -17,6 +18,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- 
+      This is here to workaround a Roslyn bug
+      https://github.com/OmniSharp/omnisharp-roslyn/commit/18cf2e415eb050de4e2e8a3520a25adbfc20aafa
+    -->
+    <PackageReference Include="Humanizer" Version="$(HumanizerPackageVersion)" />
+    
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />
     <PackageReference Include="System.Runtime" Version="$(SystemRuntimePackageVersion)" />

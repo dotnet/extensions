@@ -5,7 +5,7 @@
     <DeveloperBuildTestTfms>netcoreapp2.2</DeveloperBuildTestTfms>
     <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
 
-    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
+    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net472</StandardTestTfms>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -20,7 +20,7 @@
     <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.2' OR '$(TargetFramework)' == 'net461'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.2' OR '$(TargetFramework)' == 'net472'">
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
   </ItemGroup>
 </Project>

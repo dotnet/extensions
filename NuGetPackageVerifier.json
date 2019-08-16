@@ -7,10 +7,10 @@
       "Microsoft.AspNetCore.Razor.OmniSharpPlugin": {
         "Exclusions": {
           "SIGN_STRONGNAME": {
-            "lib/net461/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll": "Underlying omnisharp dependency is not strong-named."
+            "lib/net472/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll": "Underlying omnisharp dependency is not strong-named."
           },
           "WRONG_PUBLICKEYTOKEN": {
-            "lib/net461/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll": "Underlying omnisharp dependency is not strong-named."
+            "lib/net472/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll": "Underlying omnisharp dependency is not strong-named."
           }
         }
       },
