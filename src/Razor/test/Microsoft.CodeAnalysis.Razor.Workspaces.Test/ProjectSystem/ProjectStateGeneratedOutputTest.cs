@@ -222,7 +222,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var csharp8ValidConfiguration = RazorConfiguration.Create(RazorLanguageVersion.Version_3_0, HostProject.Configuration.ConfigurationName, HostProject.Configuration.Extensions);
             var hostProject = new HostProject(TestProjectData.SomeProject.FilePath, csharp8ValidConfiguration, TestProjectData.SomeProject.RootNamespace);
-            var originalWorkspaceState = new ProjectWorkspaceState(SomeTagHelpers, default);
+            var originalWorkspaceState = new ProjectWorkspaceState(SomeTagHelpers, LanguageVersion.CSharp7);
             var original =
                 ProjectState.Create(Workspace.Services, hostProject, originalWorkspaceState)
                 .WithAddedHostDocument(HostDocument, () =>

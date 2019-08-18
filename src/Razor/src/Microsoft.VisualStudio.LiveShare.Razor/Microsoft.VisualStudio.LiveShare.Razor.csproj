@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingPackageVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(VS_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
 </Project>
