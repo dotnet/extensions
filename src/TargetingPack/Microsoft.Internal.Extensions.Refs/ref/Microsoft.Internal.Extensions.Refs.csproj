@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp5.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
+    <!-- This project is not included in the shared framework -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 
     <!-- Subject to change: see https://github.com/dotnet/designs/pull/50 -->
