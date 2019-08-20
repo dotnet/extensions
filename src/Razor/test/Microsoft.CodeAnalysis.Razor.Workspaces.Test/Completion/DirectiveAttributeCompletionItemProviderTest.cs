@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
@@ -19,9 +20,15 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         public DirectiveAttributeCompletionItemProviderTest()
         {
             Provider = new DirectiveAttributeCompletionItemProvider(new DefaultTagHelperFactsService());
+            EmptyAttributes = Enumerable.Empty<string>();
+
+            // Most of these completions rely on stuff in the web namespace.
+            ImportItems.Add(CreateProjectItem(
+                "_Imports.razor",
+                "@using Microsoft.AspNetCore.Components.Web"));
+
             var codeDocument = GetCodeDocument(string.Empty);
             DefaultTagHelperDocumentContext = codeDocument.GetTagHelperContext();
-            EmptyAttributes = Enumerable.Empty<string>();
         }
 
         private DirectiveAttributeCompletionItemProvider Provider { get; }
@@ -146,7 +153,6 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         public void GetAttributeCompletions_NonIndexer_ReturnsCompletion()
         {
             // Arrange
-
 
             // Act
             var completions = Provider.GetAttributeCompletions("@", "input", EmptyAttributes, DefaultTagHelperDocumentContext);
