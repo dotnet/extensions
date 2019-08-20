@@ -19,9 +19,15 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         public DirectiveAttributeParameterCompletionItemProviderTest()
         {
             Provider = new DirectiveAttributeParameterCompletionItemProvider(new DefaultTagHelperFactsService());
+            EmptyAttributes = Enumerable.Empty<string>();
+
+            // Most of these completions rely on stuff in the web namespace.
+            ImportItems.Add(CreateProjectItem(
+                "_Imports.razor",
+                "@using Microsoft.AspNetCore.Components.Web"));
+
             var codeDocument = GetCodeDocument(string.Empty);
             DefaultTagHelperDocumentContext = codeDocument.GetTagHelperContext();
-            EmptyAttributes = Enumerable.Empty<string>();
         }
 
         private DirectiveAttributeParameterCompletionItemProvider Provider { get; }
