@@ -51,6 +51,7 @@
     See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
 
   -->
+  <PropertyGroup Label="Automated">
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>5.0.0-alpha1.19418.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>5.0.0-alpha1.19418.1</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>5.0.0-alpha1.19418.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
