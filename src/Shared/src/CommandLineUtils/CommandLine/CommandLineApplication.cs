@@ -190,13 +190,11 @@ namespace Microsoft.Extensions.CommandLineUtils
                         // If we find a help/version option, show information and stop parsing
                         if (command.OptionHelp == option)
                         {
-                            arguments?.Dispose();
                             command.ShowHelp();
                             return 0;
                         }
                         else if (command.OptionVersion == option)
                         {
-                            arguments?.Dispose();
                             command.ShowVersion();
                             return 0;
                         }
@@ -242,13 +240,11 @@ namespace Microsoft.Extensions.CommandLineUtils
                         // If we find a help/version option, show information and stop parsing
                         if (command.OptionHelp == option)
                         {
-                            arguments?.Dispose();
                             command.ShowHelp();
                             return 0;
                         }
                         else if (command.OptionVersion == option)
                         {
-                            arguments?.Dispose();
                             command.ShowVersion();
                             return 0;
                         }
@@ -332,7 +328,6 @@ namespace Microsoft.Extensions.CommandLineUtils
                 throw new CommandParsingException(command, $"Missing value for option '{option.LongName}'");
             }
 
-            arguments?.Dispose();
             return command.Invoke();
         }
 
