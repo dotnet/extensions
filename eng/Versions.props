@@ -52,21 +52,21 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview9.19421.3</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview9.19421.3</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview9.19421.3</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-rc1-19420-08</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview9.19421.3</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview9.19421.3</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview9.19421.3</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>3.0.0-rc1-19420-08</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-rc1-19420-08</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview9.19409.17</MicrosoftNETCorePlatformsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview9.19409.17</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.6.0-preview9.19409.17</SystemTextEncodingsWebPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.7.0-preview9.19409.17</SystemReflectionMetadataPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview9.19422.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview9.19422.1</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-preview9.19422.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-rc1-19421-22</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview9.19422.1</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview9.19422.1</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview9.19422.1</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>3.0.0-rc1-19421-22</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-rc1-19421-22</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-rc1.19420.10</MicrosoftNETCorePlatformsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-rc1.19420.10</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0-rc1.19420.10</SystemTextEncodingsWebPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-rc1.19420.10</SystemReflectionMetadataPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>3.3.0-beta3-19415-01</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.3.1-beta3-19422-01</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
