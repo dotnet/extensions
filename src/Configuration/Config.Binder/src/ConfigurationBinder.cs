@@ -189,10 +189,11 @@ namespace Microsoft.Extensions.Configuration
 
         private static void BindProperty(PropertyInfo property, object instance, IConfiguration config, BinderOptions options)
         {
-            // We don't support set only, non public, or indexer properties
+            // We don't support set only, non public, indexer properties, or ignored static properties
             if (property.GetMethod == null ||
                 (!options.BindNonPublicProperties && !property.GetMethod.IsPublic) ||
-                property.GetMethod.GetParameters().Length > 0)
+                property.GetMethod.GetParameters().Length > 0 ||
+                (options.IgnoreStaticProperties && property.GetMethod.IsStatic))
             {
                 return;
             }

@@ -375,6 +375,23 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Throws<MissingMethodException>(() => sp.GetRequiredService<IOptionsMonitor<OptionsWithoutDefaultCtor>>().Get("Named"));
         }
 
+        [Theory]
+        [InlineData("StaticProperty", false)]
+        [InlineData("InstanceProperty", true)]
+        public void IgnoreStaticProperties(string property, bool shouldBind)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var services = new ServiceCollection();
+            services.Configure<OptionsWithStaticProperty>(new ConfigurationBuilder().AddInMemoryCollection(dic).Build(), o => o.IgnoreStaticProperties = true);
+            var sp = services.BuildServiceProvider();
+            var options = sp.GetRequiredService<IOptions<OptionsWithStaticProperty>>().Value;
+
+            Assert.Equal(string.IsNullOrWhiteSpace((string)options.GetType().GetProperty(property).GetValue(options)), !shouldBind);
+        }
+
         private class OptionsWithoutDefaultCtor
         {
             public string Name { get; }
@@ -396,6 +413,12 @@ namespace Microsoft.Extensions.Options.Tests
             {
                 return new OptionsWithoutDefaultCtor(name);
             }
+        }
+
+        private class OptionsWithStaticProperty
+        {
+            public static string StaticProperty { get; set; }
+            public string InstanceProperty { get; set; }
         }
     }
 }

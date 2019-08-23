@@ -13,5 +13,11 @@ namespace Microsoft.Extensions.Configuration
         /// If true, the binder will attempt to set all non read-only properties.
         /// </summary>
         public bool BindNonPublicProperties { get; set; }
+
+        /// <summary>
+        /// When false (the default), the binder will set both instance and static properties.
+        /// If true, the binder will attempt to set only instance properties, ignoring static ones.
+        /// </summary>
+        public bool IgnoreStaticProperties { get; set; }
     }
 }
