@@ -13,17 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\modules\omnisharp-roslyn\src\OmniSharp.MSBuild\OmniSharp.MSBuild.csproj" ExcludeAssets="Runtime" Private="True" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed\Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 
-      This is here to workaround a Roslyn bug
-      https://github.com/OmniSharp/omnisharp-roslyn/commit/18cf2e415eb050de4e2e8a3520a25adbfc20aafa
-    -->
-    <PackageReference Include="Humanizer" Version="$(HumanizerPackageVersion)" />
-    
+    <PackageReference Include="OmniSharp.MSBuild" Version="$(OmniSharpMSBuildPackageVersion)" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />

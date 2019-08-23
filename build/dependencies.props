@@ -1,6 +1,5 @@
 ﻿<Project>
   <PropertyGroup Label="Package Versions">
-    <HumanizerPackageVersion>2.2.0</HumanizerPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview8.19373.3</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181108.5</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview9.19415.11</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
@@ -25,6 +24,7 @@
     <MoqPackageVersion>4.9.0</MoqPackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <OmniSharpExtensionsLanguageServerPackageVersion>0.10.0</OmniSharpExtensionsLanguageServerPackageVersion>
+    <OmniSharpMSBuildPackageVersion>1.33.0</OmniSharpMSBuildPackageVersion>
     <SystemRuntimePackageVersion>4.3.0</SystemRuntimePackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
