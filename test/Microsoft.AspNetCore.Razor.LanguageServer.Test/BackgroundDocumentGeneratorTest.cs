@@ -13,6 +13,8 @@ using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Xunit;
 
@@ -323,6 +325,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             public ILanguageServerWindow Window => throw new NotImplementedException();
 
             public ILanguageServerWorkspace Workspace => throw new NotImplementedException();
+
+            public IDisposable AddHandler(string method, IJsonRpcHandler handler) => throw new NotImplementedException();
+
+            public IDisposable AddHandler(string method, Func<IServiceProvider, IJsonRpcHandler> handlerFunc) => throw new NotImplementedException();
+
+            public IDisposable AddHandler<T>() where T : IJsonRpcHandler => throw new NotImplementedException();
+
+            public IDisposable AddHandlers(params IJsonRpcHandler[] handlers) => throw new NotImplementedException();
+
+            public IDisposable AddTextDocumentIdentifier(params ITextDocumentIdentifier[] handlers) => throw new NotImplementedException();
+
+            public IDisposable AddTextDocumentIdentifier<T>() where T : ITextDocumentIdentifier => throw new NotImplementedException();
 
             public TaskCompletionSource<JToken> GetRequest(long id) => throw new NotImplementedException();
 

@@ -23,7 +23,7 @@
     <MicrosoftNETFrameworkReferenceAssembliesPackageVersion>1.0.0-preview.1</MicrosoftNETFrameworkReferenceAssembliesPackageVersion>
     <MoqPackageVersion>4.9.0</MoqPackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
-    <OmniSharpExtensionsLanguageServerPackageVersion>0.10.0</OmniSharpExtensionsLanguageServerPackageVersion>
+    <OmniSharpExtensionsLanguageServerPackageVersion>0.13.1</OmniSharpExtensionsLanguageServerPackageVersion>
     <OmniSharpMSBuildPackageVersion>1.33.0</OmniSharpMSBuildPackageVersion>
     <SystemRuntimePackageVersion>4.3.0</SystemRuntimePackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
