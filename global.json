@@ -18,6 +18,6 @@
     "version": "5.0.100-alpha1-013788"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19421.1"
+    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19425.1"
   }
 }
