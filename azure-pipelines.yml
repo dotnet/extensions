@@ -245,6 +245,14 @@ stages:
             searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
           continueOnError: true
           condition: always()
+        - task: PublishTestResults@2
+          displayName: Publish Test Results
+          inputs:
+            testResultsFormat: 'xUnit'
+            testResultsFiles: '*.xml'
+            searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+          continueOnError: true
+          condition: always()
         - task: PublishBuildArtifacts@1
           displayName: Upload TestResults
           condition: always()
