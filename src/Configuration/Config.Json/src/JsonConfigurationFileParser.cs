@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace Microsoft.Extensions.Configuration.Json
 {
-    internal class JsonConfigurationFileParser
+    public class JsonConfigurationFileParser
     {
         private JsonConfigurationFileParser() { }
 
