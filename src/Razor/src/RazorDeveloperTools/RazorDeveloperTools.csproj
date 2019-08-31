@@ -100,10 +100,22 @@
     <PackageReference Include="Microsoft.VisualStudio.SDK.Analyzers" Version="$(MicrosoftVisualStudioSDKAnalyzersVersion)" PrivateAssets="all" />
   </ItemGroup>
 
-  <Target Name="_RemoveAnalyzers" BeforeTargets="CoreCompile">
+  <Target Name="_RemoveAnalyzers_CopyXaml" BeforeTargets="CoreCompile">
     <ItemGroup>
       <Analyzer Remove="@(Analyzer)" />
+      <_SourcesForXamlCopy Include="*\*.xaml" />
     </ItemGroup>
+
+    <!-- Make XAML files available to the compiler. This allows embedding the files for source link. -->
+    <Copy
+        SourceFiles="@(_SourcesForXamlCopy)"
+        DestinationFiles="@(_SourcesForXamlCopy -> '$(IntermediateOutputPath)%(RelativeDir)%(RelativeDir)%(Filename)%(Extension)')"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)" />
   </Target>
 
   <Target Name="WORKAROUND_SETINFORMATIONVERSION" BeforeTargets="AddSourceRevisionToInformationalVersion">
