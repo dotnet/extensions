@@ -52,21 +52,21 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-rc1.19429.5</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-rc1.19429.5</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-rc1.19429.5</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-rc1-19428-14</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-rc1.19429.5</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-rc1.19429.5</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-rc1.19429.5</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>3.0.0-rc1-19428-14</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-rc1-19428-14</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-rc1.19430.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-rc1.19430.1</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-rc1.19430.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-rc1-19429-07</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-rc1.19430.1</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>3.0.0-rc1.19430.1</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-rc1.19430.1</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>3.0.0-rc1-19429-07</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-rc1-19429-07</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-rc1.19420.10</MicrosoftNETCorePlatformsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-rc1.19420.10</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-rc1.19420.10</SystemTextEncodingsWebPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.7.0-rc1.19420.10</SystemReflectionMetadataPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>3.3.1-beta3-19429-03</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.3.1-beta3-19430-03</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
