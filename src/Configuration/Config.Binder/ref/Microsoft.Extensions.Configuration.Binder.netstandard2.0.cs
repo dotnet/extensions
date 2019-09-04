@@ -7,6 +7,7 @@ namespace Microsoft.Extensions.Configuration
     {
         public BinderOptions() { }
         public bool BindNonPublicProperties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool IgnoreStaticProperties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public static partial class ConfigurationBinder
     {
