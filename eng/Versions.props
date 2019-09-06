@@ -46,6 +46,7 @@
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-alpha1.19452.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-alpha1.19452.1</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
+    <MicrosoftBclAsyncInterfacesPackageVersion>1.2.0-alpha1.19451.2</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha1.19451.2</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha1.19451.2</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-alpha1.19451.2</SystemDiagnosticsDiagnosticSourcePackageVersion>
@@ -61,7 +62,7 @@
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
     <MicrosoftNETCorePlatformsPackageVersion>5.0.0-alpha1.19451.2</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19430.3</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19454.31</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetVersion>3.4.0-beta1-19424-01</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
