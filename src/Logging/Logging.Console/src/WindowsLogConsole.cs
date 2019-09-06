@@ -18,17 +18,20 @@ namespace Microsoft.Extensions.Logging.Console
 
         private bool SetColor(ConsoleColor? background, ConsoleColor? foreground)
         {
-            if (background.HasValue)
+            bool colorChanged = false;
+            if (background.HasValue && System.Console.BackgroundColor != background.Value)
             {
+                colorChanged = true;
                 System.Console.BackgroundColor = background.Value;
             }
 
-            if (foreground.HasValue)
+            if (foreground.HasValue && System.Console.ForegroundColor != foreground.Value)
             {
+                colorChanged = true;
                 System.Console.ForegroundColor = foreground.Value;
             }
 
-            return background.HasValue || foreground.HasValue;
+            return colorChanged;
         }
 
         private void ResetColor()
