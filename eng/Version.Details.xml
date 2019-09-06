@@ -10,6 +10,10 @@
 -->
 <Dependencies>
   <ProductDependencies>
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.2.0-alpha1.19451.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>130d8582e4973bbdb55ae737b942d214ad3c6570</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-alpha1.19451.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>130d8582e4973bbdb55ae737b942d214ad3c6570</Sha>

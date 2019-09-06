@@ -46,6 +46,7 @@
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-alpha1.19452.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-alpha1.19452.1</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
+    <MicrosoftBclAsyncInterfacesPackageVersion>1.2.0-alpha1.19451.2</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha1.19451.2</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha1.19451.2</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-alpha1.19451.2</SystemDiagnosticsDiagnosticSourcePackageVersion>
