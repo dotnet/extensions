@@ -7,10 +7,10 @@
 <Project>
   <PropertyGroup Label="Version settings">
     <MajorVersion>3</MajorVersion>
-    <MinorVersion>0</MinorVersion>
+    <MinorVersion>1</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <PreReleaseVersionLabel>rc2</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>alpha1</PreReleaseVersionLabel>
     <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
     <!--
       We do not support changing reference assemblies in a patch. This ignores
@@ -46,6 +46,7 @@
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-rc1-19455-02</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-rc1-19455-02</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
+    <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0-rc1.19454.13</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-rc1.19454.13</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-rc1.19454.13</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-rc1.19454.13</SystemDiagnosticsDiagnosticSourcePackageVersion>
