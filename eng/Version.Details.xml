@@ -10,6 +10,10 @@
 -->
 <Dependencies>
   <ProductDependencies>
+    <Dependency Name="Microsoft.Bcl.HashCode" Version="1.1.0-rc1.19454.8" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>6019e0ce528d0743cce92a28b6ee31c445ab8884</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="4.7.0-rc1.19454.8" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>6019e0ce528d0743cce92a28b6ee31c445ab8884</Sha>
