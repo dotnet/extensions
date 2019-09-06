@@ -46,6 +46,7 @@
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.0-preview1.19454.16</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview1.19454.16</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
+    <MicrosoftBclAsyncInterfacesPackageVersion>1.1.0-rc1.19454.8</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.7.0-rc1.19454.8</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.7.0-rc1.19454.8</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.7.0-rc1.19454.8</SystemDiagnosticsDiagnosticSourcePackageVersion>
