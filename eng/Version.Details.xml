@@ -10,9 +10,9 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.1.0-rc1.19454.8" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0-rc1.19454.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>6019e0ce528d0743cce92a28b6ee31c445ab8884</Sha>
+      <Sha>5f2c2771e077f98c097ecc1b9202bee22ef50aed</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="4.7.0-rc1.19454.8" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -96,9 +96,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>6019e0ce528d0743cce92a28b6ee31c445ab8884</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.1-beta3-19454-05">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.0-beta1-19455-05">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>3b423bd305daf81076d4d7b105101361c2490531</Sha>
+      <Sha>097dd7b734c66138462a3b2eed84c6f4af725c21</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
