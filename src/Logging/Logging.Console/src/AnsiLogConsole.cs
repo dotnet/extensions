@@ -29,18 +29,24 @@ namespace Microsoft.Extensions.Logging.Console
             bool backgroundColorChanged = false;
             bool foregroundColorChanged = false;
 
-            string backgroundColor = GetBackgroundColorEscapeCode(background.Value);
-            if (background.HasValue && _defaultBackgroundColor != backgroundColor)
+            if (background.HasValue)
             {
-                backgroundColorChanged = true;
-                _outputBuilder.Append(backgroundColor);
+                string backgroundColor = GetBackgroundColorEscapeCode(background.Value);
+                if (_defaultBackgroundColor != backgroundColor)
+                {
+                    backgroundColorChanged = true;
+                    _outputBuilder.Append(backgroundColor);
+                }
             }
 
-            string foregroundColor = GetForegroundColorEscapeCode(foreground.Value);
-            if (foreground.HasValue && _defaultForegroundColor != foregroundColor)
+            if (foreground.HasValue)
             {
-                foregroundColorChanged = true;
-                _outputBuilder.Append(foregroundColor);
+                string foregroundColor = GetForegroundColorEscapeCode(foreground.Value);
+                if (_defaultForegroundColor != foregroundColor)
+                {
+                    foregroundColorChanged = true;
+                    _outputBuilder.Append(foregroundColor);
+                }
             }
 
             _outputBuilder.Append(message);
