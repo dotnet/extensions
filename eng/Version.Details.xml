@@ -35,6 +35,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="5.0.0-alpha1.19452.1" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
+
       <Sha>fb49d11c77525a6af8e5bc7067a17d9eee6948dd</Sha>
     </Dependency>
     <!--
