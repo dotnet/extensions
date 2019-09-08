@@ -13,6 +13,7 @@ Param(
   [switch] $rebuild,
   [switch] $deploy,
   [switch][Alias('t')]$test,
+  [switch] $codeCoverage,
   [switch] $integrationTest,
   [switch] $performanceTest,
   [switch] $sign,
@@ -104,6 +105,7 @@ function Build {
     /p:Rebuild=$rebuild `
     /p:Deploy=$deploy `
     /p:Test=$test `
+    /p:CodeCoverage=$codeCoverage `
     /p:Pack=$pack `
     /p:IntegrationTest=$integrationTest `
     /p:PerformanceTest=$performanceTest `
