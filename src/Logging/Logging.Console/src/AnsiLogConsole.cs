@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.Logging.Console
 
             if (backgroundColorChanged)
             {
-                _outputBuilder.Append(_defaultBackgroundColor); // reset to the background color
+                _outputBuilder.Append(_defaultBackgroundColor); // reset to default background color
             }
         }
 
