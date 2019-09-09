@@ -76,17 +76,17 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19456.10">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19458.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2d393243ba4a0c95c2c18aa266df6e0f43ffe22d</Sha>
+      <Sha>29ee79a10c58dd6863a46157e374521cac610ad8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19456.10">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19458.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2d393243ba4a0c95c2c18aa266df6e0f43ffe22d</Sha>
+      <Sha>29ee79a10c58dd6863a46157e374521cac610ad8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19456.10">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19458.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2d393243ba4a0c95c2c18aa266df6e0f43ffe22d</Sha>
+      <Sha>29ee79a10c58dd6863a46157e374521cac610ad8</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-rc2.19457.8" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
