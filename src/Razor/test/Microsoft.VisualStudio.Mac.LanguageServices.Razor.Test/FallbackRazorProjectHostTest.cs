@@ -9,7 +9,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
 {
     public class FallbackRazorProjectHostTest
     {
-        [Theory(Skip = "MonoDevelop.Core.FilePath cannot be loaded due to strong name issues.")]
+        [Theory]
         [InlineData(null)]
         [InlineData("")]
         public void IsMvcAssembly_FailsIfNullOrEmptyFilePath(string filePath)
@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             Assert.False(result);
         }
 
-        [Fact(Skip = "MonoDevelop.Core.FilePath cannot be loaded due to strong name issues.")]
+        [Fact]
         public void IsMvcAssembly_FailsIfNotMvc()
         {
             // Arrange
@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             Assert.False(result);
         }
 
-        [Fact(Skip = "MonoDevelop.Core.FilePath cannot be loaded due to strong name issues.")]
+        [Fact]
         public void IsMvcAssembly_SucceedsIfMvc()
         {
             // Arrange
