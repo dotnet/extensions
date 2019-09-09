@@ -108,19 +108,8 @@ stages:
             arguments: 'locals all -clear'
         - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_BuildArgs)
           displayName: Build and Publish
-        - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
-          displayName: Run Flaky Tests
-          continueOnError: true
         - powershell: eng\scripts\KillProcesses.ps1
           displayName: Kill processes
-          condition: always()
-        - task: PublishTestResults@2
-          displayName: Publish Flaky Test Results
-          inputs:
-            testResultsFormat: 'xUnit'
-            testResultsFiles: '*.xml'
-            searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
-          continueOnError: true
           condition: always()
         - task: PublishBuildArtifacts@1
           displayName: Upload TestResults
