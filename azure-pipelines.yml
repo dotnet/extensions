@@ -132,6 +132,15 @@ stages:
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
+          displayName: Upload Code Coverage results
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log/$(_BuildConfig)/codecoverage/
+            artifactName: $(Agent.Os)_$(Agent.JobName) CodeCoverage
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
           displayName: Upload package artifacts
           condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
           inputs:
