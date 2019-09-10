@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem;
 using MonoDevelop.Ide;
@@ -14,6 +16,7 @@ namespace Microsoft.VisualStudio.Mac.RazorAddin
     {
         private readonly object _lock = new object();
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public RazorProjectExtension()
         {
@@ -44,17 +47,26 @@ namespace Microsoft.VisualStudio.Mac.RazorAddin
             // Once a workspace is created for the solution we'll setup our project host for the current project. The Razor world
             // shares a lifetime with the workspace (as Roslyn services) so we need to ensure it exists prior to wiring the host
             // world to the Roslyn world.
-            _ = IdeApp.TypeSystemService.GetWorkspaceAsync(Project.ParentSolution).ContinueWith(task =>
-            {
-                if (task.IsFaulted || task.IsCanceled)
-                {
-                    // We only want to act if we could properly retrieve the workspace.
-                    return;
-                }
+            _cancellationTokenSource = new CancellationTokenSource();
+            var token = _cancellationTokenSource.Token;
 
+            _ = IdeApp.TypeSystemService.GetWorkspaceAsync(Project.ParentSolution, token).ContinueWith(task =>
+            {
                 projectHost.Subscribe();
             },
+            token,
+            TaskContinuationOptions.OnlyOnRanToCompletion, // We only want to act if we could properly retrieve the workspace.
             _foregroundDispatcher.ForegroundScheduler);
+        }
+
+        protected override void OnUnboundFromSolution()
+        {
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+                _cancellationTokenSource = null;
+            }
         }
     }
 }
