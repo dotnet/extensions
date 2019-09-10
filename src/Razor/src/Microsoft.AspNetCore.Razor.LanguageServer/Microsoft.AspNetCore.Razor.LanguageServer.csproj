@@ -17,13 +17,13 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer.Common\Microsoft.AspNetCore.Razor.LanguageServer.Common.csproj" />
   </ItemGroup>
 
-  <!--<Target Name="_IncludeOmniSharpPlugin" Condition="Exists('$(PublishDir)')">
+  <Target Name="_IncludeOmniSharpPlugin" Condition="Exists('$(PublishDir)')">
     <PropertyGroup>
       <TargetPluginOutputPath>$(PublishDir)\OmniSharpPlugin</TargetPluginOutputPath>
     </PropertyGroup>
     
     <MSBuild Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj" Properties="PublishDir=$(TargetPluginOutputPath);RuntimeIdentifier=" Targets="Publish" />
-  </Target>-->
+  </Target>
 
   <!--
     Technique for publishing multiple RIDs from
@@ -53,7 +53,7 @@
     </ItemGroup>
 
     <MSBuild Projects="@(ProjectToPublish)"
-             Targets="Publish;"
+             Targets="Publish;_IncludeOmniSharpPlugin"
              BuildInParallel="false" />
   </Target>
 </Project>

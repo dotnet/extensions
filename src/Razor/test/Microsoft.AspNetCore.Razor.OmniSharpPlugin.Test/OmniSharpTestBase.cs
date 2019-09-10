@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Razor.Test.Common;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class OmniSharpTestBase : TestBase
+    public class OmniSharpTestBase : LanguageServerTestBase
     {
         private readonly MethodInfo _createTestProjectSnapshotMethod;
         private readonly MethodInfo _createWithDocumentsTestProjectSnapshotMethod;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         public OmniSharpTestBase()
         {
-            var commonTestAssembly = Assembly.Load("Microsoft.AspNetCore.Razor.Test.Common");
+            var commonTestAssembly = Assembly.Load("Microsoft.AspNetCore.Razor.LanguageServer.Test.Common");
             var testProjectSnapshotType = commonTestAssembly.GetType("Microsoft.AspNetCore.Razor.Test.Common.TestProjectSnapshot");
             var testProjectSnapshotManagerType = commonTestAssembly.GetType("Microsoft.AspNetCore.Razor.Test.Common.TestProjectSnapshotManager");
             var strongNamedAssembly = Assembly.Load("Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed");
