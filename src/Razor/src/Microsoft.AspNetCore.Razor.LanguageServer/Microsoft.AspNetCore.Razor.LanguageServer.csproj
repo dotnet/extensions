@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains a Razor language server.</Description>
+    <EnableApiCheck>false</EnableApiCheck>
+    <RuntimeIdentifiers>win-x64;win-x86;linux-x64;osx-x64;</RuntimeIdentifiers>
+    <AssemblyName>rzls</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OmniSharp.Extensions.LanguageServer" Version="$(OmniSharpExtensionsLanguageServerPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer.Common\Microsoft.AspNetCore.Razor.LanguageServer.Common.csproj" />
+  </ItemGroup>
+
+  <!--<Target Name="_IncludeOmniSharpPlugin" Condition="Exists('$(PublishDir)')">
+    <PropertyGroup>
+      <TargetPluginOutputPath>$(PublishDir)\OmniSharpPlugin</TargetPluginOutputPath>
+    </PropertyGroup>
+    
+    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj" Properties="PublishDir=$(TargetPluginOutputPath);RuntimeIdentifier=" Targets="Publish" />
+  </Target>-->
+
+  <!--
+    Technique for publishing multiple RIDs from
+    https://github.com/dotnet/cli/issues/9221#issuecomment-387512008
+    Example usage:
+     dotnet msbuild -restore -t:PublishAllRids -p:Configuration=Release   
+  -->
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <!-- Enable roll-forward to latest patch.  This allows one restore operation
+        to apply to all of the self-contained publish operations. -->
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <RidsPublishDir>$(ArtifactsDir)LanguageServer\$(Configuration)\</RidsPublishDir>
+  </PropertyGroup>
+
+  <Target Name="PublishAllRids">
+    
+    <ItemGroup>
+      <!-- Transform RuntimeIdentifiers property to item -->
+      <RuntimeIdentifierForPublish Include="$(RuntimeIdentifiers)" />
+
+      <!-- Transform RuntimeIdentifierForPublish items to project items to pass to MSBuild task -->
+      <ProjectToPublish Include="@(RuntimeIdentifierForPublish->'$(MSBuildProjectFullPath)')">
+        <AdditionalProperties>RuntimeIdentifier=%(RuntimeIdentifierForPublish.Identity);PublishDir=$(RidsPublishDir)%(RuntimeIdentifierForPublish.Identity)\</AdditionalProperties>
+      </ProjectToPublish>
+    </ItemGroup>
+
+    <MSBuild Projects="@(ProjectToPublish)"
+             Targets="Publish;"
+             BuildInParallel="false" />
+  </Target>
+</Project>
