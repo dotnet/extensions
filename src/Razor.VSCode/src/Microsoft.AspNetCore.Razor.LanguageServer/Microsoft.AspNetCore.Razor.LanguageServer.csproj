@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="PublishAll.targets" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains a Razor language server.</Description>
+    <EnableApiCheck>false</EnableApiCheck>
+    <RuntimeIdentifiers>win-x64;win-x86;linux-x64;osx-x64;</RuntimeIdentifiers>
+    <AssemblyName>rzls</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OmniSharp.Extensions.LanguageServer" Version="$(OmniSharpExtensionsLanguageServerPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer.Common\Microsoft.AspNetCore.Razor.LanguageServer.Common.csproj" />
+  </ItemGroup>
+
+  <Target Name="PublishLanguageServerNativeExecutables" AfterTargets="Pack" DependsOnTargets="PublishAllRids" />
+
+  <Target Name="IncludeOmniSharpPlugin" AfterTargets="Publish" Condition="Exists('$(PublishDir)')">
+    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj" Properties="PublishDir=$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net472\publish;RuntimeIdentifier=" Targets="Publish" />
+
+    <PropertyGroup>
+      <PluginReferenceOutputPath>$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net472\publish</PluginReferenceOutputPath>
+      <TargetPluginOutputPath>$(PublishDir)\OmniSharpPlugin</TargetPluginOutputPath>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(TargetPluginOutputPath)" />
+    <MakeDir Directories="$(TargetPluginOutputPath)" />
+
+    <ItemGroup>
+      <PluginAssets Include="$(PluginReferenceOutputPath)\**\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PluginAssets)" DestinationFiles="@(PluginAssets->'$(TargetPluginOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+</Project>

@@ -1,0 +1,6 @@
+bin/
+obj/
+src/
+*.csproj
+tslint.json
+tsconfig.json

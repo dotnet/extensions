@@ -1,0 +1,152 @@
+{
+    "name": "razor-vscode",
+    "displayName": "Razor",
+    "description": "Razor tooling support for VS Code",
+    "version": "0.0.1",
+    "defaults": {
+        "razor": "0.0.1"
+    },
+    "publisher": "ms-vscode",
+    "engines": {
+        "vscode": "^1.31.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onWebviewPanel:razorReportIssue",
+        "onDebugInitialConfigurations",
+        "onDebugResolve:coreclr",
+        "onDebugResolve:clr",
+        "onLanguage:csharp",
+        "onLanguage:aspnetcorerazor",
+        "onCommand:o.restart",
+        "onCommand:o.pickProjectAndStart",
+        "onCommand:o.showOutput",
+        "onCommand:dotnet.restore.project",
+        "onCommand:dotnet.restore.all",
+        "onCommand:dotnet.generateAssets",
+        "onCommand:csharp.downloadDebugger",
+        "onCommand:csharp.listProcess",
+        "onCommand:csharp.listRemoteProcess",
+        "workspaceContains:project.json",
+        "workspaceContains:*.csproj",
+        "workspaceContains:*.sln",
+        "workspaceContains:*.csx",
+        "workspaceContains:*.cake",
+        "workspaceContains:**/*.csproj",
+        "workspaceContains:**/*.sln",
+        "workspaceContains:**/*.csx",
+        "workspaceContains:**/*.cake"
+    ],
+    "main": "./out/src/extension",
+    "contributes": {
+        "languages": [
+            {
+                "id": "aspnetcorerazor",
+                "extensions": [
+                    ".cshtml",
+                    ".razor"
+                ],
+                "mimetypes": [
+                    "text/x-cshtml"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "aspnetcorerazor",
+                "scopeName": "text.aspnetcorerazor",
+                "path": "./syntaxes/aspnetcorerazor.tmLanguage.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "extension.showRazorCSharpWindow",
+                "title": "Show Razor CSharp",
+                "category": "Razor"
+            },
+            {
+                "command": "extension.showRazorHtmlWindow",
+                "title": "Show Razor Html",
+                "category": "Razor"
+            },
+            {
+                "command": "razor.reportIssue",
+                "title": "Report a Razor issue",
+                "category": "Razor"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "extension.showRazorCSharpWindow",
+                    "when": "resourceLangId == aspnetcorerazor"
+                },
+                {
+                    "command": "extension.showRazorHtmlWindow",
+                    "when": "resourceLangId == aspnetcorerazor"
+                },
+                {
+                    "command": "razor.reportIssue",
+                    "when": "resourceLangId == aspnetcorerazor"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Razor Configuration",
+            "properties": {
+                "razor.languageServer.debug": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Specifies whether to wait for debug attach when launching the language server."
+                },
+                "razor.trace": {
+                    "type": "string",
+                    "default": "Messages",
+                    "enum": [
+                        "Off",
+                        "Messages",
+                        "Verbose"
+                    ],
+                    "enumDescriptions": [
+                        "Does not log messages from the Razor extension",
+                        "Logs only some messages from the Razor extension",
+                        "Logs all messages from the Razor extension"
+                    ],
+                    "description": "Specifies whether to output all messages [Verbose], some messages [Messages] or not at all [Off]."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "setupTestApps": "node ../build/setupTestAppSettings.js",
+        "vscode:prepublish": "npm run compile",
+        "clean": "rimraf out",
+        "compile": "npm run clean && npm run lint && tsc -p ./",
+        "lint": "tslint --project ./",
+        "watch": "npm run clean && npm run lint && tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && npm run test:unitcore && npm run test:functional",
+        "unittest": "npm run compile && npm run test:unitcore",
+        "test:unitcore": "mocha --recursive out/unittest",
+        "test:unitcore:watch": "mocha -r ts-node/register --recursive unittest/**/*.ts --watch --watch-extensions ts",
+        "test:functional": "npm run setupTestApps && cross-env CODE_TESTS_WORKSPACE=../test/testapps node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "@types/mocha": "2.2.42",
+        "@types/node": "9.4.7",
+        "cross-env": "^5.2.0",
+        "ts-node": "^7.0.1",
+        "tslint": "^5.11.0",
+        "typescript": "3.3.4000",
+        "rimraf": "2.6.3",
+        "js-yaml": ">=3.13.1"
+    },
+    "dependencies": {
+        "microsoft.aspnetcore.razor.vscode": "file:../src/Microsoft.AspNetCore.Razor.VSCode",
+        "diff": ">=3.5.0",
+        "vscode": "1.1.33"
+    }
+}

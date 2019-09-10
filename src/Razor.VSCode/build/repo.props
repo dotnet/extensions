@@ -1,0 +1,19 @@
+﻿<Project>
+  <Import Project="dependencies.props" />
+
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.OmniSharpPlugin.Test\Microsoft.AspNetCore.Razor.OmniSharpPlugin.Test.csproj" Condition="'$(OS)'!='Windows_NT'" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- This only controls KoreBuild's code signing, we do it ourselves -->
+    <DisableCodeSigning>true</DisableCodeSigning>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+
+    <!-- These properties are use by the automation that updates dependencies.props -->
+    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,9 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    var message = "Hello";
+}
+
+<cache vary-by-user="message.Length > 0">
+    <h1>@(message)</h1>
+</cache>

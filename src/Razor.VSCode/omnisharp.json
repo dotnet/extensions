@@ -1,0 +1,14 @@
+{
+    "script": {
+        "enabled": false
+     },
+     "cake": {
+         "enabled": false
+     },
+     "dotnet": {
+         "enabled": false
+     },
+     "msbuild": {
+         "enabled": false
+     }
+}

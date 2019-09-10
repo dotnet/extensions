@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DefaultItemExcludes>${DefaultItemExcludes};node_modules\**</DefaultItemExcludes>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- TypeScript code in this project relies on TypeScript code being built first in that project -->
+    <ProjectReference Include="../src/Microsoft.AspNetCore.Razor.VSCode/Microsoft.AspNetCore.Razor.VSCode.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="ClearDistDir" BeforeTargets="Clean">
+    <RemoveDir Directories="out" />
+  </Target>
+
+  <Target Name="EnsureNpmRestored" Condition="!Exists('node_modules')">
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+    <Exec Command="node -v" />
+    <Exec Command="npm -v" />
+    <Exec Command="npm install" />
+  </Target>
+
+  <Target Name="RunNpmCompile" AfterTargets="Build" DependsOnTargets="EnsureNpmRestored">
+    <Exec Command="npm run compile" />
+  </Target>
+
+</Project>

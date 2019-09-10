@@ -1,0 +1,42 @@
+<Project>
+  <!--
+    Technique for publishing multiple RIDs from
+    https://github.com/dotnet/cli/issues/9221#issuecomment-387512008
+
+    Example usage:
+     dotnet msbuild -restore -t:PublishAllRids -p:Configuration=Release   
+  -->
+
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <!-- Enable roll-forward to latest patch.  This allows one restore operation
+         to apply to all of the self-contained publish operations. -->
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+  </PropertyGroup>
+
+  <Target Name="PublishAllRids">
+    <PropertyGroup>
+      <RidsPublishDir>bin\$(Configuration)\$(TargetFramework)\publish\</RidsPublishDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Transform RuntimeIdentifiers property to item -->
+      <RuntimeIdentifierForPublish Include="$(RuntimeIdentifiers)" />
+
+      <!-- Transform RuntimeIdentifierForPublish items to project items to pass to MSBuild task -->
+      <ProjectToPublish Include="@(RuntimeIdentifierForPublish->'$(MSBuildProjectFullPath)')">
+        <AdditionalProperties>RuntimeIdentifier=%(RuntimeIdentifierForPublish.Identity);PublishDir=$(RidsPublishDir)%(RuntimeIdentifierForPublish.Identity)\</AdditionalProperties>
+      </ProjectToPublish>
+    </ItemGroup>
+
+    <!--
+      Calling "Build" here, even though it's already just been built, is a workaround for
+      https://github.com/dotnet/cli/issues/9656. Once that is fixed we should be able
+      to reduce this to just calling "Publish".
+    -->
+    <MSBuild Projects="@(ProjectToPublish)"
+             Targets="Build;Publish"
+             BuildInParallel="false" />
+  </Target>
+</Project>

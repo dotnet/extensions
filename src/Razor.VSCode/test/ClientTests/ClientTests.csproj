@@ -1,0 +1,24 @@
+<Project>
+    <Target Name="GetTestAssembly">
+        <!--
+            By default, this excludes the functional tests from the repo-level build command.
+            The CI can enable these by passing /p:IncludeFunctionalTests=true to build.cmd/build.sh
+            Note that VSCode functional tests are only supported if you are not also running
+            some other VSCode instance at the same time, which is fine in CI but inconvenient locally.
+        -->
+        <CallTarget Targets="RunFunctionalTests" Condition="'$(IncludeFunctionalTests)'=='true'" />
+        <CallTarget Targets="RunUnitTests" />
+    </Target>
+
+    <Target Name="RunFunctionalTests">
+        <Message Importance="high" Text="Running functional tests" />
+        <Exec Command="npm install" WorkingDirectory="$(MSBuildThisFileDirectory)..\..\client" />
+        <Exec Command="npm test" WorkingDirectory="$(MSBuildThisFileDirectory)..\..\client" />
+    </Target>
+
+    <Target Name="RunUnitTests">
+        <Message Importance="high" Text="Running unit tests" />
+        <Exec Command="npm install" WorkingDirectory="$(MSBuildThisFileDirectory)..\..\client" />
+        <Exec Command="npm run unittest" WorkingDirectory="$(MSBuildThisFileDirectory)..\..\client" />
+    </Target>
+</Project>
