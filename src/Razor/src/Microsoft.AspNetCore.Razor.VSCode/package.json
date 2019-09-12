@@ -1,10 +1,11 @@
 {
   "name": "microsoft.aspnetcore.razor.vscode",
+  "private": true,
   "version": "0.0.1",
   "defaults": {
     "razor": "0.0.1"
   },
-  "description": "Implements parts of a VS Code extension for Razor language support.",
+  "description": "VS Code library for Razor language support.",
   "devDependencies": {
     "@types/node": "^10.9.4",
     "tslint": "^5.11.0",
@@ -20,11 +21,11 @@
   "main": "./dist/extension.js",
   "types": "./dist/extension.d.ts",
   "engines": {
-    "vscode": "^1.31.0"
+    "vscode": "1.31.0"
   },
   "scripts": {
-    "clean": "rimraf out",
-    "compile": "npm run clean && npm run lint && tsc -p ./",
+    "clean": "rimraf out && rimraf dist",
+    "build": "yarn run clean && yarn run lint && tsc -p ./",
     "prepare": "node ./node_modules/vscode/bin/install",
     "lint": "tslint ./src/**/*.ts",
     "watch": "tsc -watch -p ./"

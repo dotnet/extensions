@@ -133,3 +133,7 @@ node_modules/
 
 # Rider
 .idea/
+
+# VSCode extension outputs
+dist/
+out/

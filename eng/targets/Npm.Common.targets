@@ -28,7 +28,6 @@
 
     <BuildOutputFiles Include="$(BaseIntermediateOutputPath)\build-sentinel" />
     <BuildOutputFiles Include="dist\**\*.js" />
-    <BuildOutputFiles Include="out\**\*.js" />
   </ItemGroup>
 
   <Target Name="_CheckForInvalidConfiguration">

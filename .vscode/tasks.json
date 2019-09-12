@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CompilePackage",
+            "command": "dotnet",
+            "args": [ "build" ],
+            "options": {
+                "cwd": "src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/"
+            },
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
+        {
+            "label": "CompileExtension",
+            "command": "dotnet",
+            "args": [ "build" ],
+            "options": {
+                "cwd": "src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.Extension/"
+            },
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
+    ]
+}
