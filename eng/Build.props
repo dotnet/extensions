@@ -5,5 +5,9 @@
 
     <!-- Exclude VSIX projects on non-Windows -->
     <ProjectToBuild Condition="'$(OS)'!='WINDOWS_NT' and '$(SdkTaskProjects)'==''" Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Slim.sln" />
+
+    <NodeJsProjects Include="$(RepoRoot)src\Razor\src\**\*.npmproj" RestoreInParallel="false"/>
+
+    <ProjectToBuild Include="@(NodeJsProjects)" />
   </ItemGroup>
 </Project>
