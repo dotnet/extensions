@@ -4,32 +4,27 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as assert from 'assert';
+import { afterEach, before, beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { extensionActivated } from '../src/extension';
 import {
-    basicRazorApp10Root,
-    csharpExtensionReady,
-    dotnetRestore,
-    htmlLanguageFeaturesExtensionReady,
     pollUntil,
+    simpleMvc11Root,
+    waitForProjectReady,
 } from './TestUtil';
 
 let doc: vscode.TextDocument;
 let editor: vscode.TextEditor;
 
-describe('Completions 1.0', () => {
+suite('Completions 1.0', () => {
     before(async () => {
-        await csharpExtensionReady();
-        await htmlLanguageFeaturesExtensionReady();
-        await dotnetRestore(basicRazorApp10Root);
+        await waitForProjectReady(simpleMvc11Root);
     });
 
     beforeEach(async () => {
-        const filePath = path.join(basicRazorApp10Root, 'Views', 'Index.cshtml');
+        const filePath = path.join(simpleMvc11Root, 'Views', 'Home', 'Index.cshtml');
         doc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(doc);
-        await extensionActivated;
     });
 
     afterEach(async () => {
@@ -37,7 +32,7 @@ describe('Completions 1.0', () => {
         await pollUntil(() => vscode.window.visibleTextEditors.length === 0, 1000);
     });
 
-    it('Can complete Razor directive', async () => {
+    test('Can complete Razor directive', async () => {
         const firstLine = new vscode.Position(0, 0);
         await editor.edit(edit => edit.insert(firstLine, '@\n'));
         const completions = await vscode.commands.executeCommand<vscode.CompletionList>(

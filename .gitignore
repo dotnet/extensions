@@ -119,6 +119,7 @@ Session.vim
 
 # Visual Studio Code
 .vscode/
+.vscode-test/
 
 # Private test configuration and binaries.
 config.ps1

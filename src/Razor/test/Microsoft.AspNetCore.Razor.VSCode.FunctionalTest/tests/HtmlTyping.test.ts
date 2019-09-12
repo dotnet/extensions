@@ -4,30 +4,29 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as assert from 'assert';
+import { afterEach, before, beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { extensionActivated } from '../src/extension';
 import {
-    basicRazorApp21Root,
     ensureNoChangesFor,
-    htmlLanguageFeaturesExtensionReady,
     pollUntil,
+    simpleMvc21Root,
     waitForDocumentUpdate,
+    waitForProjectReady,
 } from './TestUtil';
 
 let doc: vscode.TextDocument;
 let editor: vscode.TextEditor;
 
-describe('Html Typing', () => {
+suite('Html Typing', () => {
     before(async () => {
-        await htmlLanguageFeaturesExtensionReady();
+        await waitForProjectReady(simpleMvc21Root);
     });
 
     beforeEach(async () => {
-        const filePath = path.join(basicRazorApp21Root, 'Pages', 'Index.cshtml');
+        const filePath = path.join(simpleMvc21Root, 'Views', 'Home', 'Index.cshtml');
         doc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(doc);
-        await extensionActivated;
     });
 
     afterEach(async () => {
@@ -35,7 +34,7 @@ describe('Html Typing', () => {
         await pollUntil(() => vscode.window.visibleTextEditors.length === 0, 1000);
     });
 
-    it('Can auto-close start and end Html tags', async () => {
+    test('Can auto-close start and end Html tags', async () => {
         const lastLine = new vscode.Position(doc.lineCount - 1, 0);
         await editor.edit(edit => edit.insert(lastLine, '<strong'));
         const lastLineEnd = new vscode.Position(doc.lineCount - 1, 7);
@@ -47,7 +46,7 @@ describe('Html Typing', () => {
         assert.deepEqual(docLine.text, '<strong></strong>');
     });
 
-    it('Does not auto-close self-closing Html tags', async () => {
+    test('Does not auto-close self-closing Html tags', async () => {
         const lastLine = new vscode.Position(doc.lineCount - 1, 0);
         await editor.edit(edit => edit.insert(lastLine, '<input /'));
         const lastLineEnd = new vscode.Position(doc.lineCount - 1, 8);
@@ -61,7 +60,7 @@ describe('Html Typing', () => {
         assert.deepEqual(docLine.text, '<input />');
     });
 
-    it('Does not auto-close C# generics', async () => {
+    test('Does not auto-close C# generics', async () => {
         const lastLine = new vscode.Position(doc.lineCount - 1, 0);
         await editor.edit(edit => edit.insert(lastLine, '@{new List<string}'));
         const lastLineEnd = new vscode.Position(doc.lineCount - 1, 17);

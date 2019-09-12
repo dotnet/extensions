@@ -34,5 +34,20 @@
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": "CompileUnitTests"
         },
+        {
+            "name": "Run Functional Tests",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "${workspaceFolder}/src/Razor/test/testapps/",
+                "--extensionDevelopmentPath=${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.Extension",
+                "--extensionTestsPath=${workspaceFolder}/src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.FunctionalTest/dist/index",
+            ],
+            "outFiles": [
+                "${workspaceFolder}/src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.FunctionalTest/dist/**/*.js",
+            ],
+            "preLaunchTask": "CompileFunctionalTest"
+        },
     ]
 }

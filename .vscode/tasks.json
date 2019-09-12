@@ -37,5 +37,17 @@
                 "reveal": "silent"
             }
         },
+        {
+            "label": "CompileFunctionalTest",
+            "command": "dotnet",
+            "args": [ "build" ],
+            "options": {
+                "cwd": "src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.FunctionalTest/"
+            },
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
     ]
 }
