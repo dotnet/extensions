@@ -28,7 +28,7 @@
       <RuntimeFrameworkName>NETStandard.Library</RuntimeFrameworkName>
 
       <!-- Only update the targeting pack version for preview builds. -->
-      <TargetingPackVersion Condition="'%(TargetFramework)' == 'netstandard2.1' and '$(IsServicingBuild)' != 'true'">$(NETStandardLibraryRefPackageVersion)</TargetingPackVersion>
+      <TargetingPackVersion Condition="'%(TargetFramework)' == 'netstandard2.1' and '$(IsServicingBuild)' != 'true'">$(NETStandardLibraryPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
   </ItemGroup>
 
