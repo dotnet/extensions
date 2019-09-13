@@ -8,7 +8,7 @@
     <Reference Include="System.Diagnostics.DiagnosticSource"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-    <Compile Include="Microsoft.Extensions.DiagnosticAdapter.netcoreapp2.0.cs" />
+    <Compile Include="Microsoft.Extensions.DiagnosticAdapter.netcoreapp.cs" />
     <Reference Include="System.Diagnostics.DiagnosticSource"  />
   </ItemGroup>
 </Project>
