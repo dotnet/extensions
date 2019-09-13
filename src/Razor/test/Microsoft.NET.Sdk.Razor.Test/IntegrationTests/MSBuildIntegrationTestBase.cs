@@ -69,8 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             bool suppressTimeout = false,
             bool suppressBuildServer = false,
             string buildServerPipeName = null,
-            MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet,
-            bool runRestoreBeforeBuildOrPublish = true)
+            MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
 
@@ -94,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // Let the test app know it is running as part of a test.
                 "/p:RunningAsTest=true",
 
-                $"/p:MicrosoftNETCoreApp30PackageVersion={BuildVariables.MicrosoftNETCoreApp30PackageVersion}",
+                $"/p:MicrosoftNETCoreApp31PackageVersion={BuildVariables.MicrosoftNETCoreApp31PackageVersion}",
                 $"/p:MicrosoftNetCompilersToolsetPackageVersion={BuildVariables.MicrosoftNetCompilersToolsetPackageVersion}",
 
                 // Additional restore sources for projects that require built packages
@@ -105,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 if (!Directory.Exists(LocalNugetPackagesCacheTempPath))
                 {
-                    // The local cache folder needs to exist so that nuget 
+                    // The local cache folder needs to exist so that nuget
                     Directory.CreateDirectory(LocalNugetPackagesCacheTempPath);
                 }
             }
@@ -117,23 +116,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             if (!string.IsNullOrEmpty(target))
             {
-                // Restore before build or publish
-                if (runRestoreBeforeBuildOrPublish &&
-                    (string.Equals("Build", target, StringComparison.OrdinalIgnoreCase)
-                        || string.Equals("Publish", target, StringComparison.OrdinalIgnoreCase)))
-                {
-                    buildArgumentList.Add($"/t:Restore");
-                }
-
                 buildArgumentList.Add($"/t:{target}");
             }
             else
             {
-                // By default, restore then build
-                if (runRestoreBeforeBuildOrPublish)
-                {
-                    buildArgumentList.Add($"/t:Restore");
-                }
                 buildArgumentList.Add($"/t:Build");
             }
 
