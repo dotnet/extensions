@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -353,6 +352,52 @@ namespace Microsoft.JSInterop.Infrastructure
             var resultDto = ((DotNetObjectReference<TestDTO>)jsRuntime.GetObjectReference(3)).Value;
             Assert.Equal(1235, resultDto.IntVal);
             Assert.Equal("MY STRING", resultDto.StringVal);
+        }
+
+        [Fact]
+        public void CanInvokeNonGenericInstanceMethodOnGenericType()
+        {
+            var jsRuntime = new TestJSRuntime();
+            var targetInstance = new GenericType<int>();
+            jsRuntime.Invoke<object>("_setup",
+                DotNetObjectReference.Create(targetInstance));
+            var argsJson = "[\"hello world\"]";
+
+            // Act
+            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(GenericType<int>.EchoStringParameter), 1, default), argsJson);
+
+            // Assert
+            Assert.Equal("\"hello world\"", resultJson);
+        }
+
+        [Fact]
+        public void CanInvokeMethodsThatAcceptGenericParametersOnGenericTypes()
+        {
+            var jsRuntime = new TestJSRuntime();
+            var targetInstance = new GenericType<string>();
+            jsRuntime.Invoke<object>("_setup",
+                DotNetObjectReference.Create(targetInstance));
+            var argsJson = "[\"hello world\"]";
+
+            // Act
+            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(GenericType<string>.EchoParameter), 1, default), argsJson);
+
+            // Assert
+            Assert.Equal("\"hello world\"", resultJson);
+        }
+
+        [Fact]
+        public void CannotInvokeMethodsWithGenericParameters_IfTypesDoNotMatch()
+        {
+            var jsRuntime = new TestJSRuntime();
+            var targetInstance = new GenericType<int>();
+            jsRuntime.Invoke<object>("_setup",
+                DotNetObjectReference.Create(targetInstance));
+            var argsJson = "[\"hello world\"]";
+
+            // Act & Assert
+            Assert.Throws<JsonException>(() =>
+                DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(GenericType<int>.EchoParameter), 1, default), argsJson));
         }
 
         [Fact]
@@ -788,6 +833,12 @@ namespace Microsoft.JSInterop.Infrastructure
                 await Task.Yield();
                 throw new InvalidTimeZoneException();
             }
+        }
+
+        public class GenericType<TValue>
+        {
+            [JSInvokable] public string EchoStringParameter(string input) => input;
+            [JSInvokable] public TValue EchoParameter(TValue input) => input;
         }
 
         public class TestJSRuntime : JSInProcessRuntime

@@ -24,6 +24,9 @@ namespace Microsoft.JSInterop.Infrastructure
         private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
             = new ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
 
+        private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByType
+            = new ConcurrentDictionary<Type, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
+
         /// <summary>
         /// Receives a call from JS to .NET, locating and invoking the specified method.
         /// </summary>
@@ -129,9 +132,12 @@ namespace Microsoft.JSInterop.Infrastructure
             var methodIdentifier = callInfo.MethodIdentifier;
 
             AssemblyKey assemblyKey;
+            MethodInfo methodInfo;
+            Type[] parameterTypes;
             if (objectReference is null)
             {
                 assemblyKey = new AssemblyKey(assemblyName);
+                (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
             }
             else
             {
@@ -147,10 +153,8 @@ namespace Microsoft.JSInterop.Infrastructure
                     return default;
                 }
 
-                assemblyKey = new AssemblyKey(objectReference.Value.GetType().Assembly);
+                (methodInfo, parameterTypes) = GetCachedMethodInfo(objectReference, methodIdentifier);
             }
-
-            var (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
 
             var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, argsJson, parameterTypes);
 
@@ -305,6 +309,45 @@ namespace Microsoft.JSInterop.Infrastructure
             }
         }
 
+        private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
+        {
+            var type = objectReference.Value.GetType();
+            var assemblyMethods = _cachedMethodsByType.GetOrAdd(type, ScanTypeForCallableMethods);
+            if (assemblyMethods.TryGetValue(methodIdentifier, out var result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new ArgumentException($"The type '{type}' does not contain a public method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
+            }
+
+            static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods(Type type)
+            {
+                var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
+                var invokableMethods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .Where(method => method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
+
+                foreach (var method in invokableMethods)
+                {
+                    var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false).Identifier ?? method.Name;
+                    var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
+
+                    if (result.ContainsKey(identifier))
+                    {
+                        throw new InvalidOperationException($"The type '{type}' contains more than one " +
+                            $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
+                            $"type must have different identifiers. You can pass a custom identifier as a parameter to " +
+                            $"the [JSInvokable] attribute.");
+                    }
+
+                    result.Add(identifier, (method, parameterTypes));
+                }
+
+                return result;
+            }
+        }
+
         private static Dictionary<string, (MethodInfo, Type[])> ScanAssemblyForCallableMethods(AssemblyKey assemblyKey)
         {
             // TODO: Consider looking first for assembly-level attributes (i.e., if there are any,
@@ -315,7 +358,6 @@ namespace Microsoft.JSInterop.Infrastructure
                 .SelectMany(type => type.GetMethods(
                     BindingFlags.Public |
                     BindingFlags.DeclaredOnly |
-                    BindingFlags.Instance |
                     BindingFlags.Static))
                 .Where(method => method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
             foreach (var method in invokableMethods)
