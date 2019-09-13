@@ -69,7 +69,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(thisAssemblyName, methodIdentifier, default, default), null);
             });
 
-            Assert.Equal($"The assembly '{thisAssemblyName}' does not contain a public method with [JSInvokableAttribute(\"{methodIdentifier}\")].", ex.Message);
+            Assert.Equal($"The assembly '{thisAssemblyName}' does not contain a public invokable method with [JSInvokableAttribute(\"{methodIdentifier}\")].", ex.Message);
         }
 
         [Fact]
@@ -384,6 +384,32 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Assert
             Assert.Equal("\"hello world\"", resultJson);
+        }
+
+        [Fact]
+        public void CannotInvokeStaticOpenGenericMethods()
+        {
+            var methodIdentifier = "StaticGenericMethod";
+            var jsRuntime = new TestJSRuntime();
+
+            // Act
+            var ex = Assert.Throws<ArgumentException>(() => DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, methodIdentifier, 0, default), "[7]"));
+            Assert.Contains($"The assembly '{thisAssemblyName}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].", ex.Message);
+        }
+
+        [Fact]
+        public void CannotInvokeInstanceOpenGenericMethods()
+        {
+            var methodIdentifier = "InstanceGenericMethod";
+            var targetInstance = new GenericType<int>();
+            var jsRuntime = new TestJSRuntime();
+            jsRuntime.Invoke<object>("_setup",
+                DotNetObjectReference.Create(targetInstance));
+            var argsJson = "[\"hello world\"]";
+
+            // Act
+            var ex = Assert.Throws<ArgumentException>(() => DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, methodIdentifier, 1, default), argsJson));
+            Assert.Contains($"The type 'GenericType`1' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].", ex.Message);
         }
 
         [Fact]
@@ -839,6 +865,12 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             [JSInvokable] public string EchoStringParameter(string input) => input;
             [JSInvokable] public TValue EchoParameter(TValue input) => input;
+        }
+
+        public class GenericMethodClass
+        {
+            [JSInvokable("StaticGenericMethod")] public static string StaticGenericMethod<TValue>(TValue input) => input.ToString();
+            [JSInvokable("InstanceGenericMethod")] public string GenericMethod<TValue>(TValue input) => input.ToString();
         }
 
         public class TestJSRuntime : JSInProcessRuntime
