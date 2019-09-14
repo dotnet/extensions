@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.JSInterop" />
+    <Reference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\**\*.cs">
+      <Link>Shared\%(FileName)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>

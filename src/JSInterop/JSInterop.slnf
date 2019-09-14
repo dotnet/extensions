@@ -4,6 +4,7 @@
     "projects": [
       "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj",
       "src\\JSInterop\\Microsoft.JSInterop\\test\\Microsoft.JSInterop.Tests.csproj",
+      "src\\JSInterop\\Microsoft.JSInterop\\perf\\Microsoft.JSInterop.Performance.csproj",
       "src\\JSInterop\\Mono.WebAssembly.Interop\\src\\Mono.WebAssembly.Interop.csproj",
     ]
   }

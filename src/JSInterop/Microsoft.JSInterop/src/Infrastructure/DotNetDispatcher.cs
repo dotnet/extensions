@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop.Infrastructure
 {
+    using InvokeMethod = Func<object, object[], object>;
+
     /// <summary>
     /// Provides methods that receive incoming calls from JS to .NET.
     /// </summary>
@@ -21,11 +23,11 @@ namespace Microsoft.JSInterop.Infrastructure
         private const string DisposeDotNetObjectReferenceMethodName = "__Dispose";
         internal static readonly JsonEncodedText DotNetObjectRefKey = JsonEncodedText.Encode("__dotNetObject");
 
-        private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
-            = new ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
+        private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (InvokeMethod, Type[])>> _cachedMethodsByAssembly
+            = new ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (InvokeMethod, Type[])>>();
 
-        private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByType
-            = new ConcurrentDictionary<Type, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
+        private static readonly ConcurrentDictionary<Type, IReadOnlyDictionary<string, (InvokeMethod, Type[])>> _cachedMethodsByType
+            = new ConcurrentDictionary<Type, IReadOnlyDictionary<string, (InvokeMethod, Type[])>>();
 
         /// <summary>
         /// Receives a call from JS to .NET, locating and invoking the specified method.
@@ -132,12 +134,12 @@ namespace Microsoft.JSInterop.Infrastructure
             var methodIdentifier = callInfo.MethodIdentifier;
 
             AssemblyKey assemblyKey;
-            MethodInfo methodInfo;
+            InvokeMethod invoker;
             Type[] parameterTypes;
             if (objectReference is null)
             {
                 assemblyKey = new AssemblyKey(assemblyName);
-                (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
+                (invoker, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
             }
             else
             {
@@ -153,7 +155,7 @@ namespace Microsoft.JSInterop.Infrastructure
                     return default;
                 }
 
-                (methodInfo, parameterTypes) = GetCachedMethodInfo(objectReference, methodIdentifier);
+                (invoker, parameterTypes) = GetCachedMethodInfo(objectReference, methodIdentifier);
             }
 
             var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, argsJson, parameterTypes);
@@ -161,7 +163,7 @@ namespace Microsoft.JSInterop.Infrastructure
             try
             {
                 // objectReference will be null if this call invokes a static JSInvokable method.
-                return methodInfo.Invoke(objectReference?.Value, suppliedArgs);
+                return invoker(objectReference?.Value, suppliedArgs);
             }
             catch (TargetInvocationException tie) // Avoid using exception filters for AOT runtime support
             {
@@ -286,7 +288,7 @@ namespace Microsoft.JSInterop.Infrastructure
             }
         }
 
-        private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
+        private static (InvokeMethod, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
         {
             if (string.IsNullOrWhiteSpace(assemblyKey.AssemblyName))
             {
@@ -309,7 +311,7 @@ namespace Microsoft.JSInterop.Infrastructure
             }
         }
 
-        private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
+        private static (InvokeMethod methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
         {
             var type = objectReference.Value.GetType();
             var assemblyMethods = _cachedMethodsByType.GetOrAdd(type, ScanTypeForCallableMethods);
@@ -322,9 +324,9 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new ArgumentException($"The type '{type.Name}' does not contain a public invokable method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
             }
 
-            static Dictionary<string, (MethodInfo, Type[])> ScanTypeForCallableMethods(Type type)
+            static Dictionary<string, (InvokeMethod, Type[])> ScanTypeForCallableMethods(Type type)
             {
-                var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
+                var result = new Dictionary<string, (InvokeMethod, Type[])>(StringComparer.Ordinal);
                 var invokableMethods = type
                     .GetMethods(BindingFlags.Public | BindingFlags.Instance)
                     .Where(method => !method.ContainsGenericParameters && method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
@@ -342,18 +344,19 @@ namespace Microsoft.JSInterop.Infrastructure
                             $"the [JSInvokable] attribute.");
                     }
 
-                    result.Add(identifier, (method, parameterTypes));
+                    var invoker = ObjectMethodExecutor.GetExecutor(method, type);
+                    result.Add(identifier, (invoker, parameterTypes));
                 }
 
                 return result;
             }
         }
 
-        private static Dictionary<string, (MethodInfo, Type[])> ScanAssemblyForCallableMethods(AssemblyKey assemblyKey)
+        private static Dictionary<string, (InvokeMethod, Type[])> ScanAssemblyForCallableMethods(AssemblyKey assemblyKey)
         {
             // TODO: Consider looking first for assembly-level attributes (i.e., if there are any,
             // only use those) to avoid scanning, especially for framework assemblies.
-            var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
+            var result = new Dictionary<string, (InvokeMethod, Type[])>(StringComparer.Ordinal);
             var invokableMethods = GetRequiredLoadedAssembly(assemblyKey)
                 .GetExportedTypes()
                 .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static))
@@ -371,7 +374,8 @@ namespace Microsoft.JSInterop.Infrastructure
                         $"the [JSInvokable] attribute.");
                 }
 
-                result.Add(identifier, (method, parameterTypes));
+                var invoker = ObjectMethodExecutor.GetExecutor(method, default);
+                result.Add(identifier, (invoker, parameterTypes));
             }
 
             return result;
