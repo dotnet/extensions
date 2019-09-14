@@ -17,6 +17,11 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>rc2</PreReleaseVersionLabel>
+    <!--
+        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
+    -->
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
   </PropertyGroup>
   <!--
     Versioning for tooling releases.
