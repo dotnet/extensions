@@ -6,11 +6,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <RuntimeAdditionalRestoreSources Condition="'$(RuntimeAdditionalRestoreSources)' == ''">$(MSBuildThisFileDirectory)..\TestPackageRestoreSource\</RuntimeAdditionalRestoreSources>
-    <RestoreSources>
-      $(RestoreSources);
-      $(RuntimeAdditionalRestoreSources)
-    </RestoreSources>
+    <RuntimeAdditionalRestoreSources Condition="'$(RuntimeAdditionalRestoreSources)'==''">$(MSBuildThisFileDirectory)..\TestPackageRestoreSource\</RuntimeAdditionalRestoreSources>
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(RuntimeAdditionalRestoreSources)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
