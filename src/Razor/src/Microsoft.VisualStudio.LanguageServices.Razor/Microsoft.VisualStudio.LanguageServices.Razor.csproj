@@ -10,11 +10,11 @@
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
 
     <!--
-      Razor.RemoteClient won't always match the other packages Roslyn ships. This is ignorable. 
+      Razor.RemoteClient won't always match the other packages Roslyn ships. This is ignorable.
 
       PrivateAssets keeps it from being viral.
     -->
-    <NoWarn>NU1608</NoWarn>
+    <NoWarn>$(NoWarn);NU1608</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
