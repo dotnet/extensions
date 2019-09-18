@@ -19,6 +19,20 @@
                 "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/dist/**/*.js",
             ],
             "preLaunchTask": "CompileExtension"
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Unit Tests",
+            "runtimeExecutable": "yarn",
+            "cwd": "${workspaceFolder}/src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.Test",
+            "runtimeArgs": [
+                "test:debug"
+            ],
+            "port": 9229,
+            "sourceMaps": true,
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "CompileUnitTests"
+        },
     ]
 }
