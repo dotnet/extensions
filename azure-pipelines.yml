@@ -90,7 +90,7 @@ stages:
             installationPath: $(DotNetCoreSdkDir)
             includePreviewVersions: true
 
-        - script: ./eng/scripts/ci-source-build.sh --ci --configuration $(_BuildConfig)
+        - script: ./eng/scripts/ci-source-build.sh --ci --configuration $(_BuildConfig) /p:BuildNodeJs=false
           displayName: Run ci-source-build.sh
 
         - task: PublishBuildArtifacts@1

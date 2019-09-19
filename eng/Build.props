@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <BuildNodeJs Condition="'$(BuildNodeJs)' == ''">true</BuildNodeJs>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectToBuild Condition="'$(OS)'=='WINDOWS_NT' and '$(SdkTaskProjects)'==''" Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.sln" />
 
@@ -9,6 +14,6 @@
     <NodeJsProjects Include="$(RepoRoot)src\Razor\src\**\*.npmproj" RestoreInParallel="false"/>
     <NodeJsProjects Include="$(RepoRoot)src\Razor\test\**\*.npmproj" RestoreInParallel="false" />
 
-    <ProjectToBuild Include="@(NodeJsProjects)" />
+    <ProjectToBuild Include="@(NodeJsProjects)" Condition="'$(BuildNodeJs)' == 'true'" />
   </ItemGroup>
 </Project>
