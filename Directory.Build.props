@@ -43,5 +43,9 @@
       Suppress warnings about assembly conflicts. This happens for assemblies that ship in VS so it's irrelevant.
     -->
     <NoWarn>$(NoWarn);MSB3277</NoWarn>
+    <!--
+      Ignore PackageIconUrl deprecation. Work to convert to embedded icons is tracked in https://github.com/aspnet/AspNetCore-Internal/issues/3146.
+    -->
+    <NoWarn>$(NoWarn);NU5048</NoWarn>
   </PropertyGroup>
 </Project>

@@ -105,7 +105,7 @@ stages:
     parameters:
       enablePublishBuildArtifacts: true
       enablePublishTestResults: true
-      enablePublishUsingPipelines: $(_PublishUsingPipelines)
+      enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       enableTelemetry: true
       helixRepo: aspnet/AspNetCore-Tooling
       helixType: build.product/
