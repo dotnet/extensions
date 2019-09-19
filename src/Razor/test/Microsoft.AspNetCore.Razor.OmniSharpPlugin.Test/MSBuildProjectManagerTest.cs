@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
 using Moq;
 using OmniSharp.MSBuild.Logging;
 using OmniSharp.MSBuild.Notification;
@@ -24,17 +23,11 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
     {
         public MSBuildProjectManagerTest()
         {
-            var projectInstanceEvaluator = new Mock<ProjectInstanceEvaluator>();
-            projectInstanceEvaluator.Setup(instance => instance.Evaluate(It.IsAny<ProjectInstance>()))
-                .Returns<ProjectInstance>(pi => pi);
-            ProjectInstanceEvaluator = projectInstanceEvaluator.Object;
             CustomConfiguration = RazorConfiguration.Create(
                 RazorLanguageVersion.Experimental,
                 "Custom",
                 Enumerable.Empty<RazorExtension>());
         }
-
-        public ProjectInstanceEvaluator ProjectInstanceEvaluator { get; }
 
         public RazorConfiguration CustomConfiguration { get; }
 
@@ -44,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Arrange
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
-                ProjectInstanceEvaluator,
+                CreateProjectInstanceEvaluator(),
                 Mock.Of<ProjectChangePublisher>(),
                 Dispatcher,
                 LoggerFactory);
@@ -88,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Arrange
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
-                ProjectInstanceEvaluator,
+                CreateProjectInstanceEvaluator(),
                 Mock.Of<ProjectChangePublisher>(),
                 Dispatcher,
                 LoggerFactory);
@@ -126,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var configuredHostDocuments = new[] { hostDocument };
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
-                ProjectInstanceEvaluator,
+                CreateProjectInstanceEvaluator(),
                 Mock.Of<ProjectChangePublisher>(),
                 Dispatcher,
                 LoggerFactory);
@@ -158,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             };
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
-                ProjectInstanceEvaluator,
+                CreateProjectInstanceEvaluator(),
                 Mock.Of<ProjectChangePublisher>(),
                 Dispatcher,
                 LoggerFactory);
@@ -203,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 .Returns(true);
             var msbuildProjectManager = new MSBuildProjectManager(
                 new[] { configurationProvider.Object },
-                ProjectInstanceEvaluator,
+                CreateProjectInstanceEvaluator(),
                 Mock.Of<ProjectChangePublisher>(),
                 Dispatcher,
                 LoggerFactory);
@@ -352,6 +345,14 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Assert
             Assert.True(result);
             Assert.NotEmpty(path);
+        }
+
+        private ProjectInstanceEvaluator CreateProjectInstanceEvaluator()
+        {
+            var projectInstanceEvaluator = new Mock<ProjectInstanceEvaluator>();
+            projectInstanceEvaluator.Setup(instance => instance.Evaluate(It.IsAny<ProjectInstance>()))
+                .Returns<ProjectInstance>(pi => pi);
+            return projectInstanceEvaluator.Object;
         }
     }
 }

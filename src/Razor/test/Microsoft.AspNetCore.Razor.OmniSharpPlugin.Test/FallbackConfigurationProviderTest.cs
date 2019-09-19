@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class FallbackConfigurationProviderTest
+    public class FallbackConfigurationProviderTest : OmniSharpTestBase
     {
         public Version MvcAssemblyVersion { get; } = Version.Parse("2.1.0");
 

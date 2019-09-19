@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
-using Microsoft.Extensions.Logging;
 using Moq;
 using OmniSharp.Models;
 using OmniSharp.Models.UpdateBuffer;
@@ -19,22 +18,11 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     public class ComponentRefreshTriggerTest : OmniSharpTestBase
     {
-        public ComponentRefreshTriggerTest()
-        {
-            var projectInstanceEvaluator = new Mock<ProjectInstanceEvaluator>();
-            projectInstanceEvaluator.Setup(instance => instance.Evaluate(It.IsAny<ProjectInstance>()))
-                .Returns<ProjectInstance>(pi => pi);
-            ProjectInstanceEvaluator = projectInstanceEvaluator.Object;
-        }
-
-        private ProjectInstanceEvaluator ProjectInstanceEvaluator { get; }
-
-        private ProjectInstance ProjectInstance { get; } = new ProjectInstance(ProjectRootElement.Create());
-
         [Fact]
         public void RazorDocumentOutputChanged_ClearsWorkspaceBufferOnRemove()
         {
             // Arrange
+            var changedProjectInstance = new ProjectInstance(ProjectRootElement.Create());
             var updateBufferRequests = new List<Request>();
             var refreshTrigger = CreateTestComponentRefreshTrigger(onUpdateBuffer: (request) => updateBufferRequests.Add(request));
             refreshTrigger.BlockRefreshWorkStarting = new ManualResetEventSlim(initialState: false);
@@ -43,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             projectRootElement.AddItem("Compile", filePath);
             var projectInstance = new ProjectInstance(projectRootElement);
             var onAddArgs = new RazorFileChangeEventArgs(filePath, filePath, projectInstance, RazorFileChangeKind.Added);
-            var onRemoveArgs = new RazorFileChangeEventArgs(filePath, filePath, ProjectInstance, RazorFileChangeKind.Removed);
+            var onRemoveArgs = new RazorFileChangeEventArgs(filePath, filePath, changedProjectInstance, RazorFileChangeKind.Removed);
             refreshTrigger.RazorDocumentOutputChanged(onAddArgs);
             refreshTrigger.BlockRefreshWorkStarting.Set();
 
@@ -123,9 +111,10 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public void RazorDocumentOutputChanged_MemoizesRefreshTasks()
         {
             // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             var refreshTrigger = CreateTestComponentRefreshTrigger();
             refreshTrigger.BlockRefreshWorkStarting = new ManualResetEventSlim(initialState: false);
-            var args = new RazorFileChangeEventArgs("/path/to/file.razor.g.cs", "file.razor.g.cs", ProjectInstance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/file.razor.g.cs", "file.razor.g.cs", projectInstance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);
@@ -144,8 +133,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public void RazorDocumentOutputChanged_EnqueuesRefresh()
         {
             // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             var refreshTrigger = CreateTestComponentRefreshTrigger();
-            var args = new RazorFileChangeEventArgs("/path/to/file.razor.g.cs", "file.razor.g.cs", ProjectInstance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/file.razor.g.cs", "file.razor.g.cs", projectInstance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);
@@ -227,8 +217,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public async Task RazorDocumentChangedAsync_AddedRemoved_Noops(RazorFileChangeKind changeKind)
         {
             // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             var refreshTrigger = CreateTestComponentRefreshTrigger();
-            var args = new RazorFileChangeEventArgs("file.cshtml", "file.cshtml", ProjectInstance, changeKind);
+            var args = new RazorFileChangeEventArgs("file.cshtml", "file.cshtml", projectInstance, changeKind);
 
             // Act & Assert
 
@@ -240,6 +231,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public async Task RazorDocumentChangedAsync_Changed_NotComponent_Noops()
         {
             // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             var projectManager = CreateProjectSnapshotManager();
             var refreshTrigger = CreateTestComponentRefreshTrigger();
             refreshTrigger.Initialize(projectManager);
@@ -252,7 +244,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 projectManager.DocumentAdded(hostProject, hostDocument);
             });
 
-            var args = new RazorFileChangeEventArgs("file.cshtml", "file.cshtml", ProjectInstance, RazorFileChangeKind.Changed);
+            var args = new RazorFileChangeEventArgs("file.cshtml", "file.cshtml", projectInstance, RazorFileChangeKind.Changed);
 
             // Act & Assert
             await refreshTrigger.RazorDocumentChangedAsync(args);
@@ -338,7 +330,10 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         {
             onUpdateBuffer = onUpdateBuffer ?? ((_) => { });
             var testUpdateBufferDispatcher = new TestUpdateBufferDispatcher(onUpdateBuffer);
-            return new ComponentRefreshTrigger(Dispatcher, new FilePathNormalizer(), ProjectInstanceEvaluator, testUpdateBufferDispatcher, LoggerFactory)
+            var projectInstanceEvaluator = new Mock<ProjectInstanceEvaluator>();
+            projectInstanceEvaluator.Setup(instance => instance.Evaluate(It.IsAny<ProjectInstance>()))
+                .Returns<ProjectInstance>(pi => pi);
+            return new ComponentRefreshTrigger(Dispatcher, new FilePathNormalizer(), projectInstanceEvaluator.Object, testUpdateBufferDispatcher, LoggerFactory)
             {
                 EnqueueDelay = 1,
                 NotifyRefreshWorkStarting = new ManualResetEventSlim(initialState: false),

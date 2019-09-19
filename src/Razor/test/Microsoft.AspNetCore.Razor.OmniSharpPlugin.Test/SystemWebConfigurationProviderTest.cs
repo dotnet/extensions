@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class SystemWebConfigurationProviderTest
+    public class SystemWebConfigurationProviderTest : OmniSharpTestBase
     {
         [Fact]
         public void TryResolveConfiguration_RazorCoreCapability_ReturnsFalse()

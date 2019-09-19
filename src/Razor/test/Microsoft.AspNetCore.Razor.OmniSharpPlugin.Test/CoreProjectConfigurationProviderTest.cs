@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class CoreProjectConfigurationProviderTest
+    public class CoreProjectConfigurationProviderTest : OmniSharpTestBase
     {
         [Fact]
         public void HasRazorCoreCapability_NoCapabilities_ReturnsFalse()

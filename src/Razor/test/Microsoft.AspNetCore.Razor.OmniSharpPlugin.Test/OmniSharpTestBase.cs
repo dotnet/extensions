@@ -7,9 +7,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Test.Common;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
+    [Collection("MSBuildLocator")]
     public class OmniSharpTestBase : LanguageServerTestBase
     {
         private readonly MethodInfo _createTestProjectSnapshotMethod;

@@ -61,9 +61,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         public OmniSharpHostProject Project1 { get; }
 
-        public ProjectInstance Project1Instance { get; }
-
-        public ImmutableArray<MSBuildDiagnostic> EmptyDiagnostics => Enumerable.Empty<MSBuildDiagnostic>().ToImmutableArray();
+        public object Project1Instance { get; }
 
         [Fact]
         public async Task ProjectLoaded_TriggersUpdate()
@@ -77,8 +75,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object);
             var args = new ProjectLoadedEventArgs(
                 null,
-                Project1Instance,
-                EmptyDiagnostics,
+                (ProjectInstance)Project1Instance,
+                Enumerable.Empty<MSBuildDiagnostic>().ToImmutableArray(),
                 isReload: false,
                 projectIdIsDefinedInSolution: false,
                 sourceFiles: Enumerable.Empty<string>().ToImmutableArray());
@@ -111,8 +109,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object, enqueueDelay: 10);
             var args = new ProjectLoadedEventArgs(
                 null,
-                Project1Instance,
-                EmptyDiagnostics,
+                (ProjectInstance)Project1Instance,
+                Enumerable.Empty<MSBuildDiagnostic>().ToImmutableArray(),
                 isReload: false,
                 projectIdIsDefinedInSolution: false,
                 sourceFiles: Enumerable.Empty<string>().ToImmutableArray());
@@ -138,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) => mre.Set());
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object);
-            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", "obj/file.cshtml.g.cs", Project1Instance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", "obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);
@@ -166,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     mre.Set();
                 });
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object, enqueueDelay: 10);
-            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", "obj/file.cshtml.g.cs", Project1Instance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", "obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);
@@ -206,7 +204,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object);
 
             // Act & Assert
-            await RunOnForegroundAsync(() => refreshTrigger.UpdateAfterDelayAsync(Project1Instance.ProjectFileLocation.File));
+            await RunOnForegroundAsync(() => refreshTrigger.UpdateAfterDelayAsync(((ProjectInstance)Project1Instance).ProjectFileLocation.File));
         }
 
         private TagHelperRefreshTrigger CreateRefreshTrigger(OmniSharpProjectWorkspaceStateGenerator workspaceStateGenerator, Workspace workspace = null, int enqueueDelay = 1)

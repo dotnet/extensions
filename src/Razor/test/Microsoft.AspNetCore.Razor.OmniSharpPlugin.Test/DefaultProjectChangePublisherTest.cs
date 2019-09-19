@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.Build.Locator;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;

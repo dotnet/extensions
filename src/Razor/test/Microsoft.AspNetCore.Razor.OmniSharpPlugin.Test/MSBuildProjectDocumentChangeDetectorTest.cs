@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class MSBuildProjectDocumentChangeDetectorTest
+    public class MSBuildProjectDocumentChangeDetectorTest : OmniSharpTestBase
     {
         [Fact]
         public void FileSystemWatcher_RazorDocumentEvent_InvokesOutputListeners()

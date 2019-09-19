@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class LatestProjectConfigurationProviderTest
+    public class LatestProjectConfigurationProviderTest : OmniSharpTestBase
     {
         [Fact]
         public void GetRootNamespace_NoRootNamespace_ReturnsNull()
