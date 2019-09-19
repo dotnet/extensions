@@ -171,6 +171,10 @@ stages:
           - group: DotNet-Blob-Feed
           - group: DotNet-Symbol-Server-Pats
         steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
         - task: NuGetCommand@2
           displayName: 'Clear NuGet caches'
           condition: succeeded()
@@ -229,6 +233,10 @@ stages:
             release:
               _BuildConfig: Release
         steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
@@ -258,6 +266,10 @@ stages:
             release:
               _BuildConfig: Release
         steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
