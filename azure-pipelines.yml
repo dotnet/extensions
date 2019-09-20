@@ -48,6 +48,10 @@ stages:
             name: NetCoreInternal-Pool
             queue: BuildPool.Windows.10.Amd64.VS2019
         steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
         - task: NuGetCommand@2
           displayName: 'Clear NuGet caches'
           condition: succeeded()
@@ -77,7 +81,7 @@ stages:
             chmod +x $HOME/bin/jq
             echo "##vso[task.prependpath]$HOME/bin"
           displayName: Install jq
-        - script: ./eng/scripts/ci-source-build.sh --ci --configuration $(_BuildConfig)
+        - script: ./eng/scripts/ci-source-build.sh --ci --configuration $(_BuildConfig) /p:BuildNodeJs=false
           displayName: Run ci-source-build.sh
 
         - task: PublishBuildArtifacts@1
@@ -158,6 +162,10 @@ stages:
           - group: DotNet-Blob-Feed
           - group: DotNet-Symbol-Server-Pats
         steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
         - task: NuGetCommand@2
           displayName: 'Clear NuGet caches'
           condition: succeeded()
@@ -226,6 +234,10 @@ stages:
             release:
               _BuildConfig: Release
         steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
@@ -255,6 +267,10 @@ stages:
             release:
               _BuildConfig: Release
         steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
