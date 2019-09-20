@@ -74,6 +74,10 @@ stages:
         - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
         - _BuildConfig: Release
         steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
         - script: |
             source eng/common/native/common-library.sh
             mkdir -p $HOME/bin

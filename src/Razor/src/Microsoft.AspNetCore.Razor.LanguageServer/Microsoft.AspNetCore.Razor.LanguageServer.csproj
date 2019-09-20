@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains a Razor language server.</Description>
     <EnableApiCheck>false</EnableApiCheck>
@@ -21,7 +21,7 @@
     <PropertyGroup>
       <TargetPluginOutputPath>$(PublishDir)\OmniSharpPlugin</TargetPluginOutputPath>
     </PropertyGroup>
-    
+
     <MSBuild Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj" Properties="PublishDir=$(TargetPluginOutputPath);RuntimeIdentifier=" Targets="Publish" />
   </Target>
 
@@ -29,7 +29,7 @@
     Technique for publishing multiple RIDs from
     https://github.com/dotnet/cli/issues/9221#issuecomment-387512008
     Example usage:
-     dotnet msbuild -restore -t:PublishAllRids -p:Configuration=Release   
+     dotnet msbuild -restore -t:PublishAllRids -p:Configuration=Release
   -->
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -41,7 +41,7 @@
   </PropertyGroup>
 
   <Target Name="PublishAllRids">
-    
+
     <ItemGroup>
       <!-- Transform RuntimeIdentifiers property to item -->
       <RuntimeIdentifierForPublish Include="$(RuntimeIdentifiers)" />
