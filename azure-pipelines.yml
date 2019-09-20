@@ -48,6 +48,10 @@ stages:
             name: NetCoreInternal-Pool
             queue: BuildPool.Windows.10.Amd64.VS2019
         steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
         - task: NuGetCommand@2
           displayName: 'Clear NuGet caches'
           condition: succeeded()

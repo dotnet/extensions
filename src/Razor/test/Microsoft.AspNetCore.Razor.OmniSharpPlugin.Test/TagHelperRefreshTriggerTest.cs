@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     return TimeSpan.MaxValue;
                 }
 
-                return TimeSpan.FromMilliseconds(250);
+                return TimeSpan.FromMilliseconds(3000);
             }
         }
 
