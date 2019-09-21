@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -11,14 +12,65 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         // Keys are services being resolved via GetService, values - first scoped service in their call site tree
         private readonly ConcurrentDictionary<Type, Type> _scopedServices = new ConcurrentDictionary<Type, Type>();
 
+        // Cache already-checked services that resulted in null.
+        private readonly HashSet<Type> _nonScopedServices = new HashSet<Type>();
+
         public void ValidateCallSite(ServiceCallSite callSite)
         {
-            var scoped = VisitCallSite(callSite, default);
+            VisitCallSite(callSite, default);
+        }
+
+        protected override Type VisitCallSite(ServiceCallSite callSite, CallSiteValidatorState argument)
+        {
+            Type scoped;
+            bool ignoreServiceType = argument.IgnoreServiceType;
+
+            if ((!ignoreServiceType && _scopedServices.TryGetValue(callSite.ServiceType, out scoped)) ||
+                _scopedServices.TryGetValue(callSite.ImplementationType, out scoped))
+            {
+                return scoped;
+            }
+            else
+            {
+                lock (_nonScopedServices)
+                {
+                    if ((!ignoreServiceType && _nonScopedServices.Contains(callSite.ServiceType)) ||
+                        _nonScopedServices.Contains(callSite.ImplementationType))
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            argument.IgnoreServiceType = false;
+
+            scoped = base.VisitCallSite(callSite, argument);
+
             if (scoped != null)
             {
-                _scopedServices[callSite.ServiceType] = scoped;
+                _scopedServices[callSite.ImplementationType] = scoped;
+
+                if (!ignoreServiceType)
+                {
+                    _scopedServices[callSite.ServiceType] = scoped;
+                }
             }
+            else
+            {
+                lock (_nonScopedServices)
+                {
+                    _nonScopedServices.Add(callSite.ImplementationType);
+
+                    if (!ignoreServiceType)
+                    {
+                        _nonScopedServices.Add(callSite.ServiceType);
+                    }
+                }
+            }
+
+            return scoped;
         }
+
 
         public void ValidateResolution(Type serviceType, IServiceScope scope, IServiceScope rootScope)
         {
@@ -58,9 +110,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             CallSiteValidatorState state)
         {
             Type result = null;
-            foreach (var serviceCallSite in enumerableCallSite.ServiceCallSites)
+            ServiceCallSite[] serviceCallSites = enumerableCallSite.ServiceCallSites;
+
+            for (int i = 0; i < serviceCallSites.Length; i++)
             {
-                var scoped = VisitCallSite(serviceCallSite, state);
+                // Ignore service type for all except the last element
+                state.IgnoreServiceType = i != serviceCallSites.Length - 1;
+
+                var scoped = VisitCallSite(serviceCallSites[i], state);
                 if (result == null)
                 {
                     result = scoped;
@@ -107,6 +164,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal struct CallSiteValidatorState
         {
             public ServiceCallSite Singleton { get; set; }
+            public bool IgnoreServiceType { get; set; }
         }
     }
 }
