@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             bool ignoreServiceType = argument.IgnoreServiceType;
 
             if ((!ignoreServiceType && _scopedServices.TryGetValue(callSite.ServiceType, out scoped)) ||
-                _scopedServices.TryGetValue(callSite.ImplementationType, out scoped))
+                (callSite.ImplementationType != null && _scopedServices.TryGetValue(callSite.ImplementationType, out scoped)))
             {
                 return scoped;
             }
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 lock (_nonScopedServices)
                 {
                     if ((!ignoreServiceType && _nonScopedServices.Contains(callSite.ServiceType)) ||
-                        _nonScopedServices.Contains(callSite.ImplementationType))
+                        (callSite.ImplementationType != null && _nonScopedServices.Contains(callSite.ImplementationType)))
                     {
                         return null;
                     }
@@ -48,22 +48,28 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             if (scoped != null)
             {
-                _scopedServices[callSite.ImplementationType] = scoped;
-
                 if (!ignoreServiceType)
                 {
                     _scopedServices[callSite.ServiceType] = scoped;
+                }
+
+                if (callSite.ImplementationType != null)
+                {
+                    _scopedServices[callSite.ImplementationType] = scoped;
                 }
             }
             else
             {
                 lock (_nonScopedServices)
                 {
-                    _nonScopedServices.Add(callSite.ImplementationType);
-
                     if (!ignoreServiceType)
                     {
                         _nonScopedServices.Add(callSite.ServiceType);
+                    }
+
+                    if (callSite.ImplementationType != null)
+                    {
+                        _nonScopedServices.Add(callSite.ImplementationType);
                     }
                 }
             }
