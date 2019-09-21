@@ -71,7 +71,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return scoped;
         }
 
-
         public void ValidateResolution(Type serviceType, IServiceScope scope, IServiceScope rootScope)
         {
             if (ReferenceEquals(scope, rootScope)

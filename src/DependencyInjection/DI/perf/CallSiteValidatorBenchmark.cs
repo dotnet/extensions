@@ -53,12 +53,6 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             {
 
             }
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            public void Foo()
-            {
-
-            }
         }
 
         private class B

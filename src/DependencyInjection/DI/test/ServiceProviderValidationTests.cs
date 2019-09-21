@@ -111,7 +111,6 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.NotNull(result);
         }
 
-
         [Fact]
         public void GetService_DoesNotThrow_WhenGetServiceForServiceWithMultipleImplementationScopesWhereLastIsNotScoped()
         {
