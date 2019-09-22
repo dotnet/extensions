@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,10 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [InlineData(ServiceProviderMode.Runtime, typeof(I999))]
         [InlineData(ServiceProviderMode.ILEmit, typeof(I999))]
         [InlineData(ServiceProviderMode.Expressions, typeof(I999))]
+        [InlineData(ServiceProviderMode.Dynamic, typeof(DI36))]
+        [InlineData(ServiceProviderMode.Runtime, typeof(DI36))]
+        [InlineData(ServiceProviderMode.ILEmit, typeof(DI36))]
+        [InlineData(ServiceProviderMode.Expressions, typeof(DI36))]
         private async Task CompilesInLimitedStackSpace(ServiceProviderMode mode, Type serviceType)
         {
             // Arrange

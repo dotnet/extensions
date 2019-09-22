@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
@@ -2003,6 +2003,83 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
     class S998 : I998 { public S998(I997 s) { } }
     interface I999 { }
     class S999 : I999 { public S999(I998 s) { } }
+
+    interface DI0 { }
+    class DS0 : DI0 { }
+    interface DI1 { }
+    class DS1 : DI1 { public DS1(DI0 s0) { } }
+    interface DI2 { }
+    class DS2 : DI2 { public DS2(DI0 s0, DI1 s1) { } }
+    interface DI3 { }
+    class DS3 : DI3 { public DS3(DI0 s0, DI1 s1, DI2 s2) { } }
+    interface DI4 { }
+    class DS4 : DI4 { public DS4(DI0 s0, DI1 s1, DI2 s2, DI3 s3) { } }
+    interface DI5 { }
+    class DS5 : DI5 { public DS5(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4) { } }
+    interface DI6 { }
+    class DS6 : DI6 { public DS6(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5) { } }
+    interface DI7 { }
+    class DS7 : DI7 { public DS7(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6) { } }
+    interface DI8 { }
+    class DS8 : DI8 { public DS8(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7) { } }
+    interface DI9 { }
+    class DS9 : DI9 { public DS9(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8) { } }
+    interface DI10 { }
+    class DS10 : DI10 { public DS10(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9) { } }
+    interface DI11 { }
+    class DS11 : DI11 { public DS11(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10) { } }
+    interface DI12 { }
+    class DS12 : DI12 { public DS12(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11) { } }
+    interface DI13 { }
+    class DS13 : DI13 { public DS13(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12) { } }
+    interface DI14 { }
+    class DS14 : DI14 { public DS14(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13) { } }
+    interface DI15 { }
+    class DS15 : DI15 { public DS15(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14) { } }
+    interface DI16 { }
+    class DS16 : DI16 { public DS16(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15) { } }
+    interface DI17 { }
+    class DS17 : DI17 { public DS17(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16) { } }
+    interface DI18 { }
+    class DS18 : DI18 { public DS18(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17) { } }
+    interface DI19 { }
+    class DS19 : DI19 { public DS19(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18) { } }
+    interface DI20 { }
+    class DS20 : DI20 { public DS20(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19) { } }
+    interface DI21 { }
+    class DS21 : DI21 { public DS21(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20) { } }
+    interface DI22 { }
+    class DS22 : DI22 { public DS22(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21) { } }
+    interface DI23 { }
+    class DS23 : DI23 { public DS23(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22) { } }
+    interface DI24 { }
+    class DS24 : DI24 { public DS24(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23) { } }
+    interface DI25 { }
+    class DS25 : DI25 { public DS25(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24) { } }
+    interface DI26 { }
+    class DS26 : DI26 { public DS26(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25) { } }
+    interface DI27 { }
+    class DS27 : DI27 { public DS27(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26) { } }
+    interface DI28 { }
+    class DS28 : DI28 { public DS28(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26, DI27 s27) { } }
+    interface DI29 { }
+    class DS29 : DI29 { public DS29(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26, DI27 s27, DI28 s28) { } }
+    interface DI30 { }
+    class DS30 : DI30 { public DS30(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26, DI27 s27, DI28 s28, DI29 s29) { } }
+    interface DI31 { }
+    class DS31 : DI31 { public DS31(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26, DI27 s27, DI28 s28, DI29 s29, DI30 s30) { } }
+    interface DI32 { }
+    class DS32 : DI32 { public DS32(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26, DI27 s27, DI28 s28, DI29 s29, DI30 s30, DI31 s31) { } }
+    interface DI33 { }
+    class DS33 : DI33 { public DS33(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26, DI27 s27, DI28 s28, DI29 s29, DI30 s30, DI31 s31, DI32 s32) { } }
+    interface DI34 { }
+    class DS34 : DI34 { public DS34(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26, DI27 s27, DI28 s28, DI29 s29, DI30 s30, DI31 s31, DI32 s32, DI33 s33) { } }
+    interface DI35 { }
+    class DS35 : DI35 { public DS35(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26, DI27 s27, DI28 s28, DI29 s29, DI30 s30, DI31 s31, DI32 s32, DI33 s33, DI34 s34) { } }
+    interface DI36 { }
+    class DS36 : DI36 { public DS36(DI0 s0, DI1 s1, DI2 s2, DI3 s3, DI4 s4, DI5 s5, DI6 s6, DI7 s7, DI8 s8, DI9 s9, DI10 s10, DI11 s11, DI12 s12, DI13 s13, DI14 s14, DI15 s15, DI16 s16, DI17 s17, DI18 s18, DI19 s19, DI20 s20, DI21 s21, DI22 s22, DI23 s23, DI24 s24, DI25 s25, DI26 s26, DI27 s27, DI28 s28, DI29 s29, DI30 s30, DI31 s31, DI32 s32, DI33 s33, DI34 s34, DI35 s35) { } }
+
+
     public static class CompilationTestDataProvider
     {
         public static void Register(IServiceCollection p)
@@ -3008,6 +3085,44 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             p.AddSingleton<I997, S997>();
             p.AddSingleton<I998, S998>();
             p.AddSingleton<I999, S999>();
+
+            p.AddScoped<DI0, DS0>();
+            p.AddScoped<DI1, DS1>();
+            p.AddScoped<DI2, DS2>();
+            p.AddScoped<DI3, DS3>();
+            p.AddScoped<DI4, DS4>();
+            p.AddScoped<DI5, DS5>();
+            p.AddScoped<DI6, DS6>();
+            p.AddScoped<DI7, DS7>();
+            p.AddScoped<DI8, DS8>();
+            p.AddScoped<DI9, DS9>();
+            p.AddScoped<DI10, DS10>();
+            p.AddScoped<DI11, DS11>();
+            p.AddScoped<DI12, DS12>();
+            p.AddScoped<DI13, DS13>();
+            p.AddScoped<DI14, DS14>();
+            p.AddScoped<DI15, DS15>();
+            p.AddScoped<DI16, DS16>();
+            p.AddScoped<DI17, DS17>();
+            p.AddScoped<DI18, DS18>();
+            p.AddScoped<DI19, DS19>();
+            p.AddScoped<DI20, DS20>();
+            p.AddScoped<DI21, DS21>();
+            p.AddScoped<DI22, DS22>();
+            p.AddScoped<DI23, DS23>();
+            p.AddScoped<DI24, DS24>();
+            p.AddScoped<DI25, DS25>();
+            p.AddScoped<DI26, DS26>();
+            p.AddScoped<DI27, DS27>();
+            p.AddScoped<DI28, DS28>();
+            p.AddScoped<DI29, DS29>();
+            p.AddScoped<DI30, DS30>();
+            p.AddScoped<DI31, DS31>();
+            p.AddScoped<DI32, DS32>();
+            p.AddScoped<DI33, DS33>();
+            p.AddScoped<DI34, DS34>();
+            p.AddScoped<DI35, DS35>();
+            p.AddScoped<DI36, DS36>();
         }
     }
 }
