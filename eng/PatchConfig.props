@@ -14,10 +14,6 @@ Later on, this will be checked using this condition:
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.1' ">
-    <PackagesInPatch>
-    </PackagesInPatch>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.2' ">
     <PackagesInPatch>
       Microsoft.Extensions.Logging.AzureAppServices
@@ -37,7 +33,7 @@ Later on, this will be checked using this condition:
       Microsoft.Extensions.Caching.StackExchangeRedis;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.6' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.8' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
