@@ -12,7 +12,9 @@ variables:
 - name: _PublishUsingPipelines
   value: true
 - name: _DotNetArtifactsCategory
-  value: ASPNETCORETOOLING
+  value: .NETCORE
+- name: _DotNetValidationArtifactsCategory
+  value: .NETCORE
 
 trigger:
   batch: true
@@ -296,3 +298,4 @@ stages:
     parameters:
       # See https://github.com/dotnet/arcade/issues/2871
       enableSymbolValidation: false
+      publishInstallersAndChecksums: true
