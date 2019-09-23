@@ -31,7 +31,8 @@
     <DebugType>portable</DebugType>
     <Serviceable Condition="'$(Configuration)' == 'Release'">true</Serviceable>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <PackageIconFullPath>$(MSBuildThisFileDirectory)packageIcon.png</PackageIconFullPath>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <LangVersion>8.0</LangVersion>
@@ -54,6 +55,10 @@
     <NpmPackageDir>$(ArtifactsDir)npm\$(Configuration)\</NpmPackageDir>
     <ShippingNpmPackageOutputPath>$(NpmPackageDir)Shipping\</ShippingNpmPackageOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(PackageIconFullPath)" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
