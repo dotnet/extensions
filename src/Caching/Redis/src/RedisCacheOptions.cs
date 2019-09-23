@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.Redis
 {
@@ -14,6 +15,12 @@ namespace Microsoft.Extensions.Caching.Redis
         /// The configuration used to connect to Redis.
         /// </summary>
         public string Configuration { get; set; }
+        
+        /// <summary>
+        /// The configuration used to connect to Redis.
+        /// This is preferred over Configuration.
+        /// </summary>
+        public ConfigurationOptions ConfigurationOptions { get; set; }
 
         /// <summary>
         /// The Redis instance name.
