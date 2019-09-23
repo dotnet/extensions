@@ -17,8 +17,8 @@
   </ItemGroup>
 
 <Target Name="_PublishingBlobItems">
-    <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
-    <MSBuild Projects="$(RepoRoot)src\Razor\src\Microsoft.AspNetCore.Razor.Language.csproj"
+    <!-- This target is defined in eng/targets/Packaging.targets and included in every project. -->
+    <MSBuild Projects="$(RepoRoot)src\Razor\src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
