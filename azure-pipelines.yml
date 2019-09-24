@@ -14,7 +14,7 @@ variables:
 - name: _DotNetArtifactsCategory
   value: .NETCORE
 - name: _DotNetValidationArtifactsCategory
-  value: .NETCORE
+  value: .NETCOREVALIDATION
 
 trigger:
   batch: true
