@@ -8,12 +8,6 @@
   <Import Project="eng\Baseline.Designer.props" />
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
-    <!--
-      Build entire repo while we settle the infrastructure; ignore PatchConfig.props.
-      Do _not_ do this when stabilizing versions.
-    -->
-    <IsPackageInThisPatch
-        Condition="'$(IsPackageInThisPatch)' == '' AND '$(StabilizePackageVersion)' != 'true'">true</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
     <!-- Suppress creation of .nupkg for servicing builds. -->
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
