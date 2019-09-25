@@ -13,7 +13,6 @@ export const razorRoot = path.join(__dirname, '..', '..', '..');
 export const testAppsRoot = path.join(razorRoot, 'test', 'testapps');
 export const mvcWithComponentsRoot = path.join(testAppsRoot, 'MvcWithComponents');
 export const simpleMvc21Root = path.join(testAppsRoot, 'SimpleMvc21');
-export const simpleMvc11Root = path.join(testAppsRoot, 'SimpleMvc11');
 
 export async function pollUntil(fn: () => boolean, timeoutMs: number, pollInterval?: number) {
     const resolvedPollInterval = pollInterval ? pollInterval : 50;
