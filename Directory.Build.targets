@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+
+  <PropertyGroup>
+    <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
+  </PropertyGroup>
+
   <Import Project="eng\MPack.targets" />
+  <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 
   <!-- Workaround https://github.com/dotnet/cli/issues/10528 -->
   <PropertyGroup>
