@@ -1,10 +1,10 @@
-<!--
+﻿<!--
 
 This file contains a list of all the packages and their versions which were released in the last servicing
 build of Extensions. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.2.5">
+<Baseline Version="2.2.7">
   <Package Id="Microsoft.Extensions.Caching.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Caching.Redis" Version="2.2.0" />
