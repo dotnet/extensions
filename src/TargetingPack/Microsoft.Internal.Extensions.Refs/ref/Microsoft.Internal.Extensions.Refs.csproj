@@ -23,7 +23,7 @@
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <GenerateDependencyFile>false</GenerateDependencyFile>
 
-    <!-- This project should not be referenced via the `<Reference>` impementation. -->
+    <!-- This project should not be referenced via the `<Reference>` implementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
@@ -31,7 +31,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="@(ProjectReferenceProvider)" />
+    <!-- Don't reference anything unless building a targeting pack. End up using ref and non-ref assemblies. -->
+    <Reference Include="@(ProjectReferenceProvider)" Condition=" '$(AspNetCorePatchVersion)' != '0' " />
   </ItemGroup>
 
   <ItemGroup>
