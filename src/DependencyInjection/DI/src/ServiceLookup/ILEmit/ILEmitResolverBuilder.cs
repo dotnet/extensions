@@ -392,15 +392,22 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                 // load value
                 Ldloc(context.Generator, resultLocal.LocalIndex);
-                // return
-                context.Generator.Emit(OpCodes.Ret);
             }
             else
             {
                 VisitCallSite(callSite, context);
-                // return
-                context.Generator.Emit(OpCodes.Ret);
             }
+
+            if (callSite.ServiceType.IsValueType)
+            {
+                context.Generator.Emit(OpCodes.Box, callSite.ServiceType);
+            }
+            else if (callSite.ImplementationType?.IsValueType == true)
+            {
+                context.Generator.Emit(OpCodes.Box, callSite.ImplementationType);
+            }
+            // return
+            context.Generator.Emit(OpCodes.Ret);
 
             return new ILEmitResolverBuilderRuntimeContext
             {

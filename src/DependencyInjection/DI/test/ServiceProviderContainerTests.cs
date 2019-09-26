@@ -10,11 +10,19 @@ using Microsoft.Extensions.DependencyInjection.Specification;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
     public abstract class ServiceProviderContainerTests : DependencyInjectionSpecificationTests
     {
+        private readonly ITestOutputHelper _outputHelper;
+
+        protected ServiceProviderContainerTests(ITestOutputHelper outputHelper)
+        {
+            _outputHelper = outputHelper;
+        }
+
         [Fact]
         public void RethrowOriginalExceptionFromConstructor()
         {
@@ -180,12 +188,19 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.NotNull(provider.CreateScope());
         }
 
-        [Theory(Skip = "We don't support value task services currently")]
+        [Theory]
         [InlineData(ServiceLifetime.Transient)]
         [InlineData(ServiceLifetime.Scoped)]
         [InlineData(ServiceLifetime.Singleton)]
         public void WorksWithStructServices(ServiceLifetime lifetime)
         {
+#if NETCOREAPP5_0
+            if (GetType() == typeof(ServiceProviderILEmitContainerTests) && lifetime == ServiceLifetime.Scoped)
+            {
+                _outputHelper.WriteLine("We don't support scoped value type services when using the ILEmitServiceProviderEngine in netcoreapp5.0 currently");
+                return;
+            }
+#endif
             IServiceCollection serviceCollection = new ServiceCollection();
             serviceCollection.Add(new ServiceDescriptor(typeof(IFakeService), typeof(StructFakeService), lifetime));
             serviceCollection.Add(new ServiceDescriptor(typeof(StructService), typeof(StructService), lifetime));

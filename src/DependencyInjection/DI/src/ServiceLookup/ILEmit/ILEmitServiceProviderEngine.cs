@@ -8,15 +8,15 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class ILEmitServiceProviderEngine : ServiceProviderEngine
     {
-        private readonly ILEmitResolverBuilder _expressionResolverBuilder;
+        private readonly ILEmitResolverBuilder _ilEmitResolverBuilder;
         public ILEmitServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback) : base(serviceDescriptors, callback)
         {
-            _expressionResolverBuilder = new ILEmitResolverBuilder(RuntimeResolver, this, Root);
+            _ilEmitResolverBuilder = new ILEmitResolverBuilder(RuntimeResolver, this, Root);
         }
 
         protected override Func<ServiceProviderEngineScope, object> RealizeService(ServiceCallSite callSite)
         {
-            var realizedService = _expressionResolverBuilder.Build(callSite);
+            var realizedService = _ilEmitResolverBuilder.Build(callSite);
             RealizedServices[callSite.ServiceType] = realizedService;
             return realizedService;
         }
