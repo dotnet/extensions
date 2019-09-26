@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "lib": [ "es6" ],
+    "declaration": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "microsoft.aspnetcore.razor.vscode": [
+        "./src/Microsoft.AspNetCore.Razor.VSCode"
+      ]
+    }
+  }
+}
