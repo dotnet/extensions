@@ -5,8 +5,7 @@ This file contains a list of the package IDs which are patching in a given relea
 CAUTION: due to limitations in MSBuild, the format of the PackagesInPatch property is picky.
 When adding a new package, make sure the new line ends with a semicolon and starts with a space.
 
-Later on, this will be checked using this condition:
-
+Directory.Build.props checks this property using the following condition:
     <IsPackageInThisPatch>$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
 -->
 <Project>
@@ -14,26 +13,7 @@ Later on, this will be checked using this condition:
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.2' ">
-    <PackagesInPatch>
-      Microsoft.Extensions.Logging.AzureAppServices
-    </PackagesInPatch>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.4' ">
-    <PackagesInPatch>
-      Microsoft.Extensions.Configuration.Binder;
-      Microsoft.Extensions.Configuration.EnvironmentVariables;
-      Microsoft.Extensions.Configuration.KeyPerFile;
-    </PackagesInPatch>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.5' ">
-    <PackagesInPatch>
-      Microsoft.Extensions.Diagnostics.HealthChecks;
-      Microsoft.Extensions.Logging.AzureAppServices;
-      Microsoft.Extensions.Caching.StackExchangeRedis;
-    </PackagesInPatch>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.8' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '3.0.1' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
