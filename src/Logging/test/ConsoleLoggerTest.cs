@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Console;
@@ -382,20 +380,20 @@ namespace Microsoft.Extensions.Logging.Test
                 case ConsoleLoggerFormat.Default:
                     {
                         Assert.Equal(3, sink.Writes.Count);
+                        Assert.StartsWith(levelPrefix, sink.Writes[1].Message);
                         Assert.Matches("^\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\s$", sink.Writes[0].Message);
                         var parsedDateTime = DateTimeOffset.Parse(sink.Writes[0].Message.Trim());
-                        Assert.NotEqual(0, parsedDateTime.Offset.Hours); 
-                        Assert.StartsWith(levelPrefix, sink.Writes[1].Message);
+                        Assert.NotEqual(0, parsedDateTime.Offset.Hours);
                     }
                     break;
                 case ConsoleLoggerFormat.Systemd:
                     {
                         Assert.Single(sink.Writes);
-                        Assert.Matches("^<\\d>\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\s[^\\s]", sink.Writes[0].Message);
-                        var foundMatch = Regex.Match(sink.Writes[0].Message, "^<\\d>(\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2})\\s[^\\s]");
-                        var parsedDateTime = DateTimeOffset.Parse(foundMatch.Groups[1].Value);
-                        Assert.NotEqual(0, parsedDateTime.Offset.Hours);
                         Assert.StartsWith(levelPrefix, sink.Writes[0].Message);
+                        var regexMatch = Regex.Match(sink.Writes[0].Message, "^<\\d>(\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2})\\s[^\\s]");
+                        Assert.True(regexMatch.Success);
+                        var parsedDateTime = DateTimeOffset.Parse(regexMatch.Groups[1].Value);
+                        Assert.NotEqual(0, parsedDateTime.Offset.Hours);
                     }
                     break;
                 default:
@@ -423,20 +421,20 @@ namespace Microsoft.Extensions.Logging.Test
                 case ConsoleLoggerFormat.Default:
                     {
                         Assert.Equal(3, sink.Writes.Count);
+                        Assert.StartsWith(levelPrefix, sink.Writes[1].Message);
                         Assert.Matches("^\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\s$", sink.Writes[0].Message);
                         var parsedDateTime = DateTimeOffset.Parse(sink.Writes[0].Message.Trim());
                         Assert.Equal(0, parsedDateTime.Offset.Hours);
-                        Assert.StartsWith(levelPrefix, sink.Writes[1].Message);
                     }
                     break;
                 case ConsoleLoggerFormat.Systemd:
                     {
                         Assert.Single(sink.Writes);
-                        Assert.Matches("^<\\d>\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\s[^\\s]", sink.Writes[0].Message);
-                        var foundMatch = Regex.Match(sink.Writes[0].Message, "^<\\d>(\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2})\\s[^\\s]");
-                        var parsedDateTime = DateTimeOffset.Parse(foundMatch.Groups[1].Value);
-                        Assert.Equal(0, parsedDateTime.Offset.Hours);
                         Assert.StartsWith(levelPrefix, sink.Writes[0].Message);
+                        var regexMatch = Regex.Match(sink.Writes[0].Message, "^<\\d>(\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2})\\s[^\\s]");
+                        Assert.True(regexMatch.Success);
+                        var parsedDateTime = DateTimeOffset.Parse(regexMatch.Groups[1].Value);
+                        Assert.Equal(0, parsedDateTime.Offset.Hours);
                     }
                     break;
                 default:
