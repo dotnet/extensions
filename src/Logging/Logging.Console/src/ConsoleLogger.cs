@@ -141,7 +141,7 @@ namespace Microsoft.Extensions.Logging.Console
             var timestampFormat = Options.TimestampFormat;
             if (timestampFormat != null)
             {
-                var dateTime = Options.UseUtcTimezone ? DateTime.UtcNow : DateTime.Now;
+                var dateTime = GetCurrentDateTime();
                 timestamp = dateTime.ToString(timestampFormat);
             }
 
@@ -172,7 +172,8 @@ namespace Microsoft.Extensions.Logging.Console
             var timestampFormat = Options.TimestampFormat;
             if (timestampFormat != null)
             {
-                logBuilder.Append(DateTime.Now.ToString(timestampFormat));
+                var dateTime = GetCurrentDateTime();
+                logBuilder.Append(dateTime.ToString(timestampFormat));
             }
 
             // category and event id
@@ -214,6 +215,11 @@ namespace Microsoft.Extensions.Logging.Console
                 sb.Append(message);
                 sb.Replace(Environment.NewLine, " ", len, message.Length);
             }
+        }
+
+        private DateTime GetCurrentDateTime()
+        {
+            return Options.UseUtcTimezone ? DateTime.UtcNow : DateTime.Now;
         }
 
         public bool IsEnabled(LogLevel logLevel)
