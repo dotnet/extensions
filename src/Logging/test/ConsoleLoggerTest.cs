@@ -381,7 +381,7 @@ namespace Microsoft.Extensions.Logging.Test
                     {
                         Assert.Equal(3, sink.Writes.Count);
                         Assert.StartsWith(levelPrefix, sink.Writes[1].Message);
-                        Assert.Matches("^\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\s$", sink.Writes[0].Message);
+                        Assert.Matches(@"^\d{4}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\s$", sink.Writes[0].Message);
                         var parsedDateTime = DateTimeOffset.Parse(sink.Writes[0].Message.Trim());
                         Assert.NotEqual(0, parsedDateTime.Offset.Hours);
                     }
@@ -390,7 +390,7 @@ namespace Microsoft.Extensions.Logging.Test
                     {
                         Assert.Single(sink.Writes);
                         Assert.StartsWith(levelPrefix, sink.Writes[0].Message);
-                        var regexMatch = Regex.Match(sink.Writes[0].Message, "^<\\d>(\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2})\\s[^\\s]");
+                        var regexMatch = Regex.Match(sink.Writes[0].Message, @"^<\d>(\d{4}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2})\s[^\s]");
                         Assert.True(regexMatch.Success);
                         var parsedDateTime = DateTimeOffset.Parse(regexMatch.Groups[1].Value);
                         Assert.NotEqual(0, parsedDateTime.Offset.Hours);
@@ -422,7 +422,7 @@ namespace Microsoft.Extensions.Logging.Test
                     {
                         Assert.Equal(3, sink.Writes.Count);
                         Assert.StartsWith(levelPrefix, sink.Writes[1].Message);
-                        Assert.Matches("^\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\s$", sink.Writes[0].Message);
+                        Assert.Matches(@"^\d{4}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\s$", sink.Writes[0].Message);
                         var parsedDateTime = DateTimeOffset.Parse(sink.Writes[0].Message.Trim());
                         Assert.Equal(0, parsedDateTime.Offset.Hours);
                     }
@@ -431,7 +431,7 @@ namespace Microsoft.Extensions.Logging.Test
                     {
                         Assert.Single(sink.Writes);
                         Assert.StartsWith(levelPrefix, sink.Writes[0].Message);
-                        var regexMatch = Regex.Match(sink.Writes[0].Message, "^<\\d>(\\d{4}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2}\\D\\d{2})\\s[^\\s]");
+                        var regexMatch = Regex.Match(sink.Writes[0].Message, @"^<\d>(\d{4}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2})\s[^\s]");
                         Assert.True(regexMatch.Success);
                         var parsedDateTime = DateTimeOffset.Parse(regexMatch.Groups[1].Value);
                         Assert.Equal(0, parsedDateTime.Offset.Hours);
