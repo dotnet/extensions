@@ -219,7 +219,7 @@ namespace Microsoft.Extensions.Logging.Console
 
         private DateTime GetCurrentDateTime()
         {
-            return Options.UseUtcTimezone ? DateTime.UtcNow : DateTime.Now;
+            return Options.UseUtcTimestamp ? DateTime.UtcNow : DateTime.Now;
         }
 
         public bool IsEnabled(LogLevel logLevel)
