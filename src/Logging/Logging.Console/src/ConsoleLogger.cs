@@ -233,7 +233,8 @@ namespace Microsoft.Extensions.Logging.Console
 
         private DateTime GetCurrentDateTime()
         {
-            return Options.UseUtcTimestamp ? _systemClock.UtcNow.DateTime : DateTime.Now;
+            var utcNow = _systemClock.UtcNow.DateTime;
+            return Options.UseUtcTimestamp ? utcNow : utcNow.ToLocalTime();
         }
 
         public bool IsEnabled(LogLevel logLevel)
