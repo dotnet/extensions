@@ -31,7 +31,12 @@ namespace Microsoft.Extensions.Logging.Console
 
         internal ConsoleLogger(string name, ConsoleLoggerProcessor loggerProcessor)
         {
-            _name = name ?? throw new ArgumentNullException(nameof(name));
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            _name = name;
             _queueProcessor = loggerProcessor;
         }
 
