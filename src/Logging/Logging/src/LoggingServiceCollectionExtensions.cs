@@ -38,6 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddOptions();
 
+            services.TryAdd(ServiceDescriptor.Singleton<IExternalScopeProvider, LoggerExternalScopeProvider>());
             services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, LoggerFactory>());
             services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(Logger<>)));
 

@@ -22,12 +22,22 @@ namespace Microsoft.Extensions.Logging
         private volatile bool _disposed;
         private IDisposable _changeTokenRegistration;
         private LoggerFilterOptions _filterOptions;
-        private LoggerExternalScopeProvider _scopeProvider;
+
+        // TODO: There is lazy loading logic which might have a very small performance benefit avoiding an AsyncLocal
+        // if no ISupportExternalScope providers are supplied; to keep that behavior all the "new LoggerExternalScopeProvider()"
+        // statements could be changed to null and the TryAdd could be removed from LoggingServiceCollectionExtensions
+        private IExternalScopeProvider _scopeProvider;
 
         /// <summary>
         /// Creates a new <see cref="LoggerFactory"/> instance.
         /// </summary>
-        public LoggerFactory() : this(Enumerable.Empty<ILoggerProvider>())
+        public LoggerFactory() : this(new LoggerExternalScopeProvider()) { }
+
+        /// <summary>
+        /// Creates a new <see cref="LoggerFactory"/> instance.
+        /// </summary>
+        /// <param name="scopeProvider">The external scope provider to use for providers that implement <see cref="ISupportExternalScope"/></param>
+        public LoggerFactory(IExternalScopeProvider scopeProvider) : this(Enumerable.Empty<ILoggerProvider>(), scopeProvider)
         {
         }
 
@@ -35,7 +45,18 @@ namespace Microsoft.Extensions.Logging
         /// Creates a new <see cref="LoggerFactory"/> instance.
         /// </summary>
         /// <param name="providers">The providers to use in producing <see cref="ILogger"/> instances.</param>
-        public LoggerFactory(IEnumerable<ILoggerProvider> providers) : this(providers, new StaticFilterOptionsMonitor(new LoggerFilterOptions()))
+        public LoggerFactory(IEnumerable<ILoggerProvider> providers)
+            : this(providers, new LoggerExternalScopeProvider())
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="LoggerFactory"/> instance.
+        /// </summary>
+        /// <param name="providers">The providers to use in producing <see cref="ILogger"/> instances.</param>
+        /// <param name="scopeProvider">The external scope provider to use for providers that implement <see cref="ISupportExternalScope"/></param>
+        public LoggerFactory(IEnumerable<ILoggerProvider> providers, IExternalScopeProvider scopeProvider)
+            : this(providers, new StaticFilterOptionsMonitor(new LoggerFilterOptions()), scopeProvider)
         {
         }
 
@@ -44,7 +65,19 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="providers">The providers to use in producing <see cref="ILogger"/> instances.</param>
         /// <param name="filterOptions">The filter options to use.</param>
-        public LoggerFactory(IEnumerable<ILoggerProvider> providers, LoggerFilterOptions filterOptions) : this(providers, new StaticFilterOptionsMonitor(filterOptions))
+        public LoggerFactory(IEnumerable<ILoggerProvider> providers, LoggerFilterOptions filterOptions)
+            : this(providers, filterOptions, new LoggerExternalScopeProvider())
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="LoggerFactory"/> instance.
+        /// </summary>
+        /// <param name="providers">The providers to use in producing <see cref="ILogger"/> instances.</param>
+        /// <param name="filterOptions">The filter options to use.</param>
+        /// <param name="scopeProvider">The external scope provider to use for providers that implement <see cref="ISupportExternalScope"/></param>
+        public LoggerFactory(IEnumerable<ILoggerProvider> providers, LoggerFilterOptions filterOptions, IExternalScopeProvider scopeProvider)
+            : this(providers, new StaticFilterOptionsMonitor(filterOptions), scopeProvider)
         {
         }
 
@@ -54,7 +87,17 @@ namespace Microsoft.Extensions.Logging
         /// <param name="providers">The providers to use in producing <see cref="ILogger"/> instances.</param>
         /// <param name="filterOption">The filter option to use.</param>
         public LoggerFactory(IEnumerable<ILoggerProvider> providers, IOptionsMonitor<LoggerFilterOptions> filterOption)
+            : this(providers, filterOption, new LoggerExternalScopeProvider()) { }
+
+        /// <summary>
+        /// Creates a new <see cref="LoggerFactory"/> instance.
+        /// </summary>
+        /// <param name="providers">The providers to use in producing <see cref="ILogger"/> instances.</param>
+        /// <param name="filterOption">The filter option to use.</param>
+        /// <param name="scopeProvider">The external scope provider to use for providers that implement <see cref="ISupportExternalScope"/></param>
+        public LoggerFactory(IEnumerable<ILoggerProvider> providers, IOptionsMonitor<LoggerFilterOptions> filterOption, IExternalScopeProvider scopeProvider)
         {
+            _scopeProvider = scopeProvider;
             foreach (var provider in providers)
             {
                 AddProviderRegistration(provider, dispose: false);

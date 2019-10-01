@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Logging
         { }
 
         /// <inheritdoc />
-        public void ForEachScope<TState>(Action<object, TState> callback, TState state)
+        public virtual void ForEachScope<TState>(Action<object, TState> callback, TState state)
         {
             void Report(Scope current)
             {
