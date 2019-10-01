@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Logging.Console
 {
@@ -19,7 +18,6 @@ namespace Microsoft.Extensions.Logging.Console
 
         private readonly string _name;
         private readonly ConsoleLoggerProcessor _queueProcessor;
-        private readonly ISystemClock _systemClock = new SystemClock();
 
         [ThreadStatic]
         private static StringBuilder _logBuilder;
@@ -31,11 +29,10 @@ namespace Microsoft.Extensions.Logging.Console
             _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
         }
 
-        internal ConsoleLogger(string name, ConsoleLoggerProcessor loggerProcessor, ISystemClock systemClock = null)
+        internal ConsoleLogger(string name, ConsoleLoggerProcessor loggerProcessor)
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
             _queueProcessor = loggerProcessor;
-            _systemClock = systemClock ?? new SystemClock();
         }
 
         internal IExternalScopeProvider ScopeProvider { get; set; }
@@ -217,8 +214,7 @@ namespace Microsoft.Extensions.Logging.Console
 
         private DateTime GetCurrentDateTime()
         {
-            var utcNow = _systemClock.UtcNow.DateTime;
-            return Options.UseUtcTimestamp ? utcNow : utcNow.ToLocalTime();
+            return Options.UseUtcTimestamp ? DateTime.UtcNow : DateTime.Now;
         }
 
         public bool IsEnabled(LogLevel logLevel)
