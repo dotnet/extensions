@@ -121,7 +121,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                         // Using EndsWith because Path.GetExtension will ignore everything before .cs
                         // Using Ordinal because the SDK generates these filenames.
-                        if (document.FilePath.EndsWith(".cshtml.g.cs", StringComparison.Ordinal) || document.FilePath.EndsWith(".razor.g.cs", StringComparison.Ordinal))
+                        // Stll have .cshtml.g.cs and .razor.g.cs for Razor.VSCode scenarios.
+                        if (document.FilePath.EndsWith(".cshtml.g.cs", StringComparison.Ordinal) || document.FilePath.EndsWith(".razor.g.cs", StringComparison.Ordinal) || document.FilePath.EndsWith(".razor", StringComparison.Ordinal))
                         {
                             EnqueueUpdate(e.ProjectId);
                         }
