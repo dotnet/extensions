@@ -31,27 +31,11 @@ namespace Microsoft.Extensions.Logging.Console
             _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
         }
 
-        internal ConsoleLogger(string name, ConsoleLoggerProcessor loggerProcessor)
+        internal ConsoleLogger(string name, ConsoleLoggerProcessor loggerProcessor, ISystemClock systemClock = null)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            _name = name;
+            _name = name ?? throw new ArgumentNullException(nameof(name));
             _queueProcessor = loggerProcessor;
-        }
-
-        internal ConsoleLogger(string name, ConsoleLoggerProcessor loggerProcessor, ISystemClock systemClock)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            _name = name;
-            _queueProcessor = loggerProcessor;
-            _systemClock = systemClock;
+            _systemClock = systemClock ?? new SystemClock();
         }
 
         internal IExternalScopeProvider ScopeProvider { get; set; }
