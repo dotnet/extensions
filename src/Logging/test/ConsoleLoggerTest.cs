@@ -1139,6 +1139,20 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Fact]
+        public void ConsoleLoggerOptions_UseUtcTimestamp_IsAppliedToLoggers()
+        {
+            // Arrange
+            var monitor = new TestOptionsMonitor(new ConsoleLoggerOptions());
+            var loggerProvider = new ConsoleLoggerProvider(monitor);
+            var logger = (ConsoleLogger)loggerProvider.CreateLogger("Name");
+
+            // Act & Assert
+            Assert.False(logger.Options.UseUtcTimestamp);
+            monitor.Set(new ConsoleLoggerOptions() { UseUtcTimestamp = true });
+            Assert.True(logger.Options.UseUtcTimestamp);
+        }
+
+        [Fact]
         public void ConsoleLoggerOptions_IncludeScopes_IsReadFromLoggingConfiguration()
         {
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(new[] { new KeyValuePair<string, string>("Console:IncludeScopes", "true") }).Build();
