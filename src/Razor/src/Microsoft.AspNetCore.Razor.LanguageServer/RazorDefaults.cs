@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 Pattern = "**/*.{cshtml,razor}"
             });
 
-        public static RazorConfiguration Configuration { get; } = FallbackRazorConfiguration.MVC_2_1;
+        public static RazorConfiguration Configuration { get; } = FallbackRazorConfiguration.Latest;
 
         public static string RootNamespace { get; } = null;
     }
