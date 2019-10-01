@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging.Test.Console;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test
@@ -21,7 +22,7 @@ namespace Microsoft.Extensions.Logging.Test
         private const string _state = "This is a test, and {curly braces} are just fine!";
         private readonly Func<object, Exception, string> _defaultFormatter = (state, exception) => state.ToString();
 
-        private static (ConsoleLogger Logger, ConsoleSink Sink, ConsoleSink ErrorSink, Func<LogLevel, string> GetLevelPrefix, int WritesPerMsg) SetUp(ConsoleLoggerOptions options = null)
+        private static (ConsoleLogger Logger, ConsoleSink Sink, ConsoleSink ErrorSink, Func<LogLevel, string> GetLevelPrefix, int WritesPerMsg) SetUp(ConsoleLoggerOptions options = null, ISystemClock systemClock = null)
         {
             // Arrange
             var sink = new ConsoleSink();
@@ -31,8 +32,9 @@ namespace Microsoft.Extensions.Logging.Test
             var consoleLoggerProcessor = new TestLoggerProcessor();
             consoleLoggerProcessor.Console = console;
             consoleLoggerProcessor.ErrorConsole = errorConsole;
+            systemClock ??= new SystemClock();
 
-            var logger = new ConsoleLogger(_loggerName, consoleLoggerProcessor);
+            var logger = new ConsoleLogger(_loggerName, consoleLoggerProcessor, systemClock);
             logger.ScopeProvider = new LoggerExternalScopeProvider();
             logger.Options = options ?? new ConsoleLoggerOptions();
             Func<LogLevel, string> levelAsString;
@@ -406,7 +408,8 @@ namespace Microsoft.Extensions.Logging.Test
         public void WriteCore_LogsCorrectTimestampInUtc(ConsoleLoggerFormat format, LogLevel level)
         {
             // Arrange
-            var t = SetUp(new ConsoleLoggerOptions { TimestampFormat = "yyyy-MM-ddTHH:mm:sszz ", Format = format, UseUtcTimestamp = true });
+            var testClock = new TestClock();
+            var t = SetUp(new ConsoleLoggerOptions { TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffzz ", Format = format, UseUtcTimestamp = true }, testClock);
             var levelPrefix = t.GetLevelPrefix(level);
             var logger = t.Logger;
             var sink = t.Sink;
@@ -422,19 +425,19 @@ namespace Microsoft.Extensions.Logging.Test
                     {
                         Assert.Equal(3, sink.Writes.Count);
                         Assert.StartsWith(levelPrefix, sink.Writes[1].Message);
-                        Assert.Matches(@"^\d{4}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\s$", sink.Writes[0].Message);
-                        var parsedDateTime = DateTimeOffset.Parse(sink.Writes[0].Message.Trim());
-                        Assert.Equal(0, parsedDateTime.Offset.Hours);
+                        Assert.Matches(@"^\d{4}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{3}\D\d{2}\s$", sink.Writes[0].Message);
+                        var parsedDateTime = DateTime.Parse(sink.Writes[0].Message.Trim());
+                        Assert.Equal(testClock.UtcNow, parsedDateTime);
                     }
                     break;
                 case ConsoleLoggerFormat.Systemd:
                     {
                         Assert.Single(sink.Writes);
                         Assert.StartsWith(levelPrefix, sink.Writes[0].Message);
-                        var regexMatch = Regex.Match(sink.Writes[0].Message, @"^<\d>(\d{4}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2})\s[^\s]");
+                        var regexMatch = Regex.Match(sink.Writes[0].Message, @"^<\d>(\d{4}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{2}\D\d{3}\D\d{2})\s[^\s]");
                         Assert.True(regexMatch.Success);
-                        var parsedDateTime = DateTimeOffset.Parse(regexMatch.Groups[1].Value);
-                        Assert.Equal(0, parsedDateTime.Offset.Hours);
+                        var parsedDateTime = DateTime.Parse(regexMatch.Groups[1].Value);
+                        Assert.Equal(testClock.UtcNow, parsedDateTime);
                     }
                     break;
                 default:

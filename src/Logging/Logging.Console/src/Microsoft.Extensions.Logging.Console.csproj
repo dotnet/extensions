@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Compile Include="../../shared/*.cs" />
+    <ProjectReference Include="..\..\..\Caching\Abstractions\src\Microsoft.Extensions.Caching.Abstractions.csproj" />
 
     <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
