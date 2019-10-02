@@ -20,10 +20,11 @@ namespace Microsoft.Extensions.Logging
         private readonly List<ProviderRegistration> _providerRegistrations = new List<ProviderRegistration>();
         private readonly object _sync = new object();
         private volatile bool _disposed;
+        private bool _usingExternalScope;
         private IDisposable _changeTokenRegistration;
         private LoggerFilterOptions _filterOptions;
 
-        // TODO: There is lazy loading logic which might have a very small performance benefit avoiding an AsyncLocal
+        // Review Note: There is lazy loading logic which might have a very small performance benefit avoiding an AsyncLocal
         // if no ISupportExternalScope providers are supplied; to keep that behavior all the "new LoggerExternalScopeProvider()"
         // statements could be changed to null and the TryAdd could be removed from LoggingServiceCollectionExtensions
         private IExternalScopeProvider _scopeProvider;
@@ -204,6 +205,9 @@ namespace Microsoft.Extensions.Logging
 
             if (provider is ISupportExternalScope supportsExternalScope)
             {
+                // Review Note: Using a bool here since otherwise we have to loop the collection since we can no longer rely on null
+                // to identify when an ISupportExternalScope provider exists
+                _usingExternalScope = true; 
                 if (_scopeProvider == null)
                 {
                     _scopeProvider = new LoggerExternalScopeProvider();
@@ -249,7 +253,7 @@ namespace Microsoft.Extensions.Logging
                 }
             }
 
-            if (_scopeProvider != null)
+            if (_usingExternalScope && _scopeProvider != null)
             {
                 scopeLoggers?.Add(new ScopeLogger(logger: null, externalScopeProvider: _scopeProvider));
             }
