@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.Logging
     public partial class LoggerExternalScopeProvider : Microsoft.Extensions.Logging.IExternalScopeProvider
     {
         public LoggerExternalScopeProvider() { }
-        public void ForEachScope<TState>(System.Action<object, TState> callback, TState state) { }
+        public virtual void ForEachScope<TState>(System.Action<object, TState> callback, TState state) { }
         public System.IDisposable Push(object state) { throw null; }
     }
     public static partial class LoggerFactoryExtensions
