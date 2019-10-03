@@ -1,12 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
     <!-- Do not pack in servicing builds. -->
     <IsPackable>false</IsPackable>
     <IsPackable Condition=" '$(PatchVersion)' == '0' ">true</IsPackable>
-
     <IsShipping>false</IsShipping>
     <!-- This project is not included in the shared framework -->
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
