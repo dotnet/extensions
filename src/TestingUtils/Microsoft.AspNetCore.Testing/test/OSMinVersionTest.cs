@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Testing
         [ConditionalTheory]
         [OSMinVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         [InlineData(1)]
-        public void TestTheorySkipWindows(int arg)
+        public void RunTheory_Win8DoesNotRunOnWin7(int arg)
         {
             Assert.False(
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
