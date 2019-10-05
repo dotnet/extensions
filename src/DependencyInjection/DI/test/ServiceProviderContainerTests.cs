@@ -346,6 +346,52 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 exception.Message);
         }
 
+        [Fact]
+        public void SingletonServiceCreatedFromFactoryIsDisposedWhenContainerIsDisposed()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddSingleton(_ => new TestDisposable());
+            var provider = this.CreateServiceProvider(collection);
+
+            // Act
+            var service = provider.GetService<TestDisposable>();
+            ((IDisposable)provider).Dispose();
+
+            // Assert
+            Assert.True(service.IsDisposed);
+        }
+
+        [Fact]
+        public void SingletonServiceCreatedFromInstanceIsNotDisposedWhenContainerIsDisposed()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddSingleton(new TestDisposable());
+            var provider = this.CreateServiceProvider(collection);
+
+            // Act
+            var service = provider.GetService<TestDisposable>();
+            ((IDisposable)provider).Dispose();
+
+            // Assert
+            Assert.False(service.IsDisposed);
+        }
+
+        internal class TestDisposable : IDisposable
+        {
+            public bool IsDisposed { get; private set; }
+
+            public void Dispose()
+            {
+                this.IsDisposed = true;
+            }
+        }
+
+        internal class TestServiceCollection : List<ServiceDescriptor>, IServiceCollection
+        {
+        }
+
         private class FakeMultipleServiceWithIEnumerableDependency: IFakeMultipleService
         {
             public FakeMultipleServiceWithIEnumerableDependency(IEnumerable<IFakeService> fakeServices)
