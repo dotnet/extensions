@@ -18,11 +18,21 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <summary>
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationOptions"/>.
         /// </summary>
-        public AzureKeyVaultConfigurationOptions()
+        public AzureKeyVaultConfigurationOptions() : this(false)
         {
-            Manager = DefaultKeyVaultSecretManager.Instance;
+
         }
 
+        /// <summary>
+        /// Creates a new instance of <see cref="AzureKeyVaultConfigurationOptions"/>.
+        /// </summary>
+        /// <param name="optional">Whether reading from the key vault is optional.</param>
+        public AzureKeyVaultConfigurationOptions(bool optional)
+        {
+            Manager = DefaultKeyVaultSecretManager.Instance;
+            Optional = optional;
+        }
+        
         /// <summary>
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationOptions"/>.
         /// </summary>
@@ -32,26 +42,55 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         public AzureKeyVaultConfigurationOptions(
             string vault,
             string clientId,
-            X509Certificate2 certificate) : this()
+            X509Certificate2 certificate) : this(vault, clientId, certificate, false)
+        {
+
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="AzureKeyVaultConfigurationOptions"/>.
+        /// </summary>
+        /// <param name="vault">Azure KeyVault uri.</param>
+        /// <param name="clientId">The application client id.</param>
+        /// <param name="certificate">The <see cref="X509Certificate2"/> to use for authentication.</param>
+        /// <param name="optional">Whether reading from the key vault is optional.</param>
+        public AzureKeyVaultConfigurationOptions(
+            string vault,
+            string clientId,
+            X509Certificate2 certificate,
+            bool optional) : this()
         {
             KeyVaultClient.AuthenticationCallback authenticationCallback =
                 (authority, resource, scope) => GetTokenFromClientCertificate(authority, resource, clientId, certificate);
 
             Vault = vault;
             Client = new KeyVaultClient(authenticationCallback);
+            Optional = optional;
         }
 
         /// <summary>
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationOptions"/>.
         /// </summary>
         /// <param name="vault">The Azure KeyVault uri.</param>
-        public AzureKeyVaultConfigurationOptions(string vault) : this()
+        public AzureKeyVaultConfigurationOptions(string vault) : this(vault, false)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="AzureKeyVaultConfigurationOptions"/>.
+        /// </summary>
+        /// <param name="vault">The Azure KeyVault uri.</param>
+        /// <param name="optional">Whether reading from the key vault is optional.</param>
+        public AzureKeyVaultConfigurationOptions(
+            string vault,
+            bool optional) : this()
         {
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var authenticationCallback = new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback);
 
             Vault = vault;
             Client = new KeyVaultClient(authenticationCallback);
+            Optional = optional;
         }
 
         /// <summary>
@@ -63,7 +102,22 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         public AzureKeyVaultConfigurationOptions(
             string vault,
             string clientId,
-            string clientSecret) : this()
+            string clientSecret) : this(vault, clientId, clientSecret, false)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="AzureKeyVaultConfigurationOptions"/>.
+        /// </summary>
+        /// <param name="vault">The Azure KeyVault uri.</param>
+        /// <param name="clientId">The application client id.</param>
+        /// <param name="clientSecret">The client secret to use for authentication.</param>
+        /// <param name="optional">Whether reading from the key vault is optional.</param>
+        public AzureKeyVaultConfigurationOptions(
+            string vault,
+            string clientId,
+            string clientSecret,
+            bool optional) : this()
         {
             if (clientId == null)
             {
@@ -78,6 +132,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                 (authority, resource, scope) => GetTokenFromClientSecret(authority, resource, clientId, clientSecret);
 
             Vault = vault;
+            Optional = optional;
             Client = new KeyVaultClient(authenticationCallback);
         }
 
@@ -90,6 +145,11 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// Gets or sets the vault uri.
         /// </summary>
         public string Vault { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether reading from this key vault is optional
+        /// </summary>
+        public bool Optional { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IKeyVaultSecretManager"/> instance used to control secret loading.
