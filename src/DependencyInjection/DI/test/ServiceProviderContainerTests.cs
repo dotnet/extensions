@@ -350,13 +350,13 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         public void SingletonServiceCreatedFromFactoryIsDisposedWhenContainerIsDisposed()
         {
             // Arrange
-            var collection = new TestServiceCollection();
-            collection.AddSingleton(_ => new TestDisposable());
-            var provider = this.CreateServiceProvider(collection);
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_ => new FakeDisposable());
+            var serviceProvider = CreateServiceProvider(serviceCollection);
 
             // Act
-            var service = provider.GetService<TestDisposable>();
-            ((IDisposable)provider).Dispose();
+            var service = serviceProvider.GetService<FakeDisposable>();
+            ((IDisposable)serviceProvider).Dispose();
 
             // Assert
             Assert.True(service.IsDisposed);
@@ -366,19 +366,19 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         public void SingletonServiceCreatedFromInstanceIsNotDisposedWhenContainerIsDisposed()
         {
             // Arrange
-            var collection = new TestServiceCollection();
-            collection.AddSingleton(new TestDisposable());
-            var provider = this.CreateServiceProvider(collection);
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(new FakeDisposable());
+            var serviceProvider = CreateServiceProvider(serviceCollection);
 
             // Act
-            var service = provider.GetService<TestDisposable>();
-            ((IDisposable)provider).Dispose();
+            var service = serviceProvider.GetService<FakeDisposable>();
+            ((IDisposable)serviceProvider).Dispose();
 
             // Assert
             Assert.False(service.IsDisposed);
         }
 
-        internal class TestDisposable : IDisposable
+        private class FakeDisposable : IDisposable
         {
             public bool IsDisposed { get; private set; }
 
@@ -386,10 +386,6 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             {
                 this.IsDisposed = true;
             }
-        }
-
-        internal class TestServiceCollection : List<ServiceDescriptor>, IServiceCollection
-        {
         }
 
         private class FakeMultipleServiceWithIEnumerableDependency: IFakeMultipleService
