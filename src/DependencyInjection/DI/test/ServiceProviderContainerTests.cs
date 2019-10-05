@@ -384,7 +384,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             public void Dispose()
             {
-                this.IsDisposed = true;
+                IsDisposed = true;
             }
         }
 
