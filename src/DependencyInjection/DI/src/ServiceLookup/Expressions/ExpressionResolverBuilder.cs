@@ -128,6 +128,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.Invoke(Expression.Constant(factoryCallSite.Factory), ScopeParameter);
         }
 
+        protected override Expression VisitFunc(FuncCallSite funcCallSite, object argument)
+        {
+            return Expression.Lambda(Expression.Convert(Expression.Call(ScopeParameter, typeof(IServiceProvider).GetMethod(nameof(IServiceProvider.GetService)), Expression.Constant(funcCallSite.ItemType)), funcCallSite.ItemType));
+        }
+
         protected override Expression VisitIEnumerable(IEnumerableCallSite callSite, object context)
         {
             if (callSite.ServiceCallSites.Length == 0)

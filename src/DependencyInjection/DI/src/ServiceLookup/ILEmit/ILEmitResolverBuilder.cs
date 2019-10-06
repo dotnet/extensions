@@ -255,6 +255,19 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
+        protected override object VisitFunc(FuncCallSite funcCallSite, ILEmitResolverBuilderContext argument)
+        {
+            argument.Generator.Emit(OpCodes.Ldarg_1);
+            argument.Generator.Emit(
+                OpCodes.Call,
+                this
+                    .GetType()
+                    .GetMethod(nameof(GetFunc), BindingFlags.NonPublic | BindingFlags.Static)
+                    .MakeGenericMethod(funcCallSite.ItemType));
+
+            return null;
+        }
+
         private void AddConstant(ILEmitResolverBuilderContext argument, object value)
         {
             if (argument.Constants == null)
@@ -465,6 +478,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
 
             generator.Emit(OpCodes.Stloc, index);
+        }
+
+        private static Func<T> GetFunc<T>(IServiceProvider provider)
+        {
+            return provider.GetService<T>;
         }
     }
 }

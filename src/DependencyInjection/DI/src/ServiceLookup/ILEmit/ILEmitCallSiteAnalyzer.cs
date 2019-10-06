@@ -57,6 +57,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override ILEmitCallSiteAnalysisResult VisitFactory(FactoryCallSite factoryCallSite, object argument) => new ILEmitCallSiteAnalysisResult(FactoryILSize);
 
+        protected override ILEmitCallSiteAnalysisResult VisitFunc(FuncCallSite funcCallSite, object argument) => new ILEmitCallSiteAnalysisResult(6);
+
         public ILEmitCallSiteAnalysisResult CollectGenerationInfo(ServiceCallSite callSite) => VisitCallSite(callSite, null);
     }
 }

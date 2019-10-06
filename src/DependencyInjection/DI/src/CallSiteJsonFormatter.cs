@@ -113,6 +113,15 @@ namespace Microsoft.Extensions.DependencyInjection
             return null;
         }
 
+        protected override object VisitFunc(FuncCallSite funcCallSite, CallSiteFormatterContext argument)
+        {
+            argument.WriteProperty("itemType", funcCallSite.ItemType);
+            argument.StartProperty("itemCallSite");
+            VisitCallSite(funcCallSite.ItemCallSite, argument);
+
+            return null;
+        }
+
         internal struct CallSiteFormatterContext
         {
             private readonly HashSet<ServiceCallSite> _processedCallSites;

@@ -50,6 +50,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     return VisitServiceProvider((ServiceProviderCallSite)callSite, argument);
                 case CallSiteKind.ServiceScopeFactory:
                     return VisitServiceScopeFactory((ServiceScopeFactoryCallSite)callSite, argument);
+                case CallSiteKind.Func:
+                    return VisitFunc((FuncCallSite)callSite, argument);
                 default:
                     throw new NotSupportedException($"Call site type {callSite.GetType()} is not supported");
             }
@@ -86,5 +88,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected abstract TResult VisitIEnumerable(IEnumerableCallSite enumerableCallSite, TArgument argument);
 
         protected abstract TResult VisitFactory(FactoryCallSite factoryCallSite, TArgument argument);
+
+        protected abstract TResult VisitFunc(FuncCallSite funcCallSite, TArgument argument);
     }
 }

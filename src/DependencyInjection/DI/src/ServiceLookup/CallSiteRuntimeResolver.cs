@@ -140,6 +140,19 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             return factoryCallSite.Factory(context.Scope);
         }
+
+        protected override object VisitFunc(FuncCallSite funcCallSite, RuntimeResolverContext argument)
+        {
+            return this.GetType()
+                .GetMethod(nameof(CreateFunc), BindingFlags.NonPublic | BindingFlags.Static)
+                .MakeGenericMethod(funcCallSite.ItemType)
+                .Invoke(null, new object[] { argument.Scope });
+        }
+
+        private static Func<T> CreateFunc<T>(IServiceProvider collection)
+        {
+            return collection.GetService<T>;
+        }
     }
 
     internal struct RuntimeResolverContext

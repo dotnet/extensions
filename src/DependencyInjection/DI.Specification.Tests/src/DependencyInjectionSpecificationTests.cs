@@ -172,6 +172,25 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
+        public void SingleServiceCanBeFuncResolved()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddTransient(typeof(IFakeService), typeof(FakeService));
+            var provider = CreateServiceProvider(collection);
+
+            // Act
+            var func = provider.GetService<Func<IFakeService>>();
+            var service = func();
+
+            // Assert
+            Assert.NotNull(func);
+            Assert.NotNull(service);
+            Assert.IsAssignableFrom<Func<IFakeService>>(func);
+            Assert.IsType<FakeService>(service);
+        }
+
+        [Fact]
         public void MultipleServiceCanBeIEnumerableResolved()
         {
             // Arrange
@@ -187,6 +206,24 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.Collection(services.OrderBy(s => s.GetType().FullName),
                 service => Assert.IsType<FakeOneMultipleService>(service),
                 service => Assert.IsType<FakeTwoMultipleService>(service));
+        }
+
+        [Fact]
+        public void LastRegisteredServiceWillBeFuncResolved()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+            var provider = CreateServiceProvider(collection);
+
+            // Act
+            var func = provider.GetService<Func<IFakeMultipleService>>();
+            var service = func();
+
+            // Assert
+            Assert.IsAssignableFrom<Func<IFakeMultipleService>>(func);
+            Assert.IsType<FakeTwoMultipleService>(service);
         }
 
         [Fact]

@@ -20,6 +20,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         ServiceScopeFactory,
 
-        Singleton
+        Singleton,
+
+        Func
     }
 }

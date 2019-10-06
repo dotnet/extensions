@@ -104,6 +104,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Type VisitFactory(FactoryCallSite factoryCallSite, CallSiteValidatorState state) => null;
 
+        protected override Type VisitFunc(FuncCallSite funcCallSite, CallSiteValidatorState argument) => null;
+
         internal struct CallSiteValidatorState
         {
             public ServiceCallSite Singleton { get; set; }

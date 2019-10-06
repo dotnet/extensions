@@ -96,7 +96,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             var callSite = TryCreateExact(serviceType, callSiteChain) ??
                                        TryCreateOpenGeneric(serviceType, callSiteChain) ??
-                                       TryCreateEnumerable(serviceType, callSiteChain);
+                                       TryCreateEnumerable(serviceType, callSiteChain) ??
+                                       TryCreateFunc(serviceType, callSiteChain);
 
             _callSiteCache[serviceType] = callSite;
 
@@ -119,6 +120,24 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 && _descriptorLookup.TryGetValue(serviceType.GetGenericTypeDefinition(), out var descriptor))
             {
                 return TryCreateOpenGeneric(descriptor.Last, serviceType, callSiteChain, DefaultSlot);
+            }
+
+            return null;
+        }
+
+        private ServiceCallSite TryCreateFunc(Type serviceType, CallSiteChain callSiteChain)
+        {
+            if (serviceType.IsConstructedGenericType && serviceType.GetGenericTypeDefinition() == typeof(Func<>))
+            {
+                var itemType = serviceType.GetGenericArguments()[0];
+
+                if (_descriptorLookup.TryGetValue(itemType, out var descriptor))
+                {
+                    var lifetime = new ResultCache(descriptor.Last.Lifetime, serviceType, DefaultSlot);
+                    var callSite = TryCreateExact(descriptor.Last, itemType, callSiteChain, DefaultSlot);
+
+                    return new FuncCallSite(lifetime, itemType, callSite);
+                }
             }
 
             return null;
