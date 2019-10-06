@@ -31,6 +31,9 @@
 
     <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
     <NoWarn>$(NoWarn);NU5131</NoWarn>
+
+    <!-- Working around https://github.com/microsoft/msbuild/pull/4764 -->
+    <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>
 
   <PropertyGroup Label="Package and Assembly Metadata">
