@@ -218,25 +218,37 @@ namespace Microsoft.Extensions.Primitives
 
         public string[] ToArray()
         {
-            return GetArrayValue() ?? Array.Empty<string>();
+            // The same idea as GetArrayValue with slightly different semantics: This method always returns a copy of the array (just like the IEnumerable.ToArray extension method).
+
+            // Take local copy of _values so type checks remain valid even if the StringValues is overwritten in memory.
+            var value = _values;
+            switch (value)
+            {
+                case string[] values:
+                    return new ReadOnlySpan<string>(values).ToArray();
+                case null:
+                    return Array.Empty<string>();
+                default:
+                    // value not array, can only be string
+                    return new[] { Unsafe.As<string>(value) };
+            }
         }
 
         private string[] GetArrayValue()
         {
+            // The same idea as ToArray with slightly different semantics: This method reuses the existing array if possible.
+
             // Take local copy of _values so type checks remain valid even if the StringValues is overwritten in memory
             var value = _values;
-            if (value is string[] values)
+            switch (value)
             {
-                return values;
-            }
-            else if (value != null)
-            {
-                // value not array, can only be string
-                return new[] { Unsafe.As<string>(value) };
-            }
-            else
-            {
-                return null;
+                case string[] values:
+                    return values;
+                case null:
+                    return null;
+                default:
+                    // value not array, can only be string
+                    return new[] { Unsafe.As<string>(value) };
             }
         }
 
