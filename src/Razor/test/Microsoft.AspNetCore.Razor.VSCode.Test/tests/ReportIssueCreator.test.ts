@@ -69,7 +69,7 @@ describe('ReportIssueCreator', () => {
         assert.equal(sanitizedContent, content);
     });
 
-    it('create can operate when no content is available', async () => {
+    it.skip('create can operate when no content is available', async () => {
         // Arrange
         const api = createTestVSCodeApi();
         const issueCreator = getReportIssueCreator(api);
