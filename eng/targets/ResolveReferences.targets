@@ -77,7 +77,6 @@
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <!-- Capture a list of references which were set explicitly in the project. -->
     <_AllowedExplicitPackageReference Include="@(PackageReference->WithMetadataValue('AllowExplicitReference', 'true'))" />
-    <_AllowedExplicitPackageReference Include="FSharp.Core" Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference);@(_AllowedExplicitPackageReference)" />
 
     <_UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
@@ -114,7 +113,7 @@
   </ItemGroup>
 
   <!--
-    This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
+    This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference items for the SDK to resolve.
     This target helps ensure projects within the shared framework do no unintentionally add new references,
     and that assemblies outside the shared framework reference the framework as a whole instead of using
     individual assemblies.
