@@ -77,20 +77,11 @@
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <!-- Capture a list of references which were set explicitly in the project. -->
     <_AllowedExplicitPackageReference Include="@(PackageReference->WithMetadataValue('AllowExplicitReference', 'true'))" />
+    <!-- These references are specifed as PackageReference explicitly in projects. These are generally not allowed and this itemgroup will be used to generate an error. -->
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference);@(_AllowedExplicitPackageReference)" />
-
+    <!-- Capture a list of reference providers which are not referenced. This is used to compute _ProjectReferenceByAssemblyName later. -->
     <_UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 
-    <_CompilationOnlyReference Condition="'$(TargetFramework)' == 'netstandard2.0'" Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))" />
-
-    <_InvalidReferenceToNonSharedFxAssembly Condition="'$(IsAspNetCoreApp)' == 'true'"
-      Include="@(Reference)"
-      Exclude="
-        @(AspNetCoreAppReference);
-        @(AspNetCoreAppReferenceAndPackage);
-        @(ExternalAspNetCoreAppReference);
-        @(_CompilationOnlyReference);
-        @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
     <_OriginalReferences Include="@(Reference)" />
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.
@@ -122,9 +113,6 @@
 
     <Error Condition="@(_InvalidReferenceToSharedFxOnlyAssembly->Count()) != 0"
            Text="Cannot reference &quot;%(_InvalidReferenceToSharedFxOnlyAssembly.Identity)&quot; directly because it is part of the shared framework and this project is not. Use &lt;FrameworkReference Include=&quot;Microsoft.AspNetCore.App&quot; /&gt; instead." />
-
-    <Error Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0"
-           Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
   </Target>
 
   <Target Name="_WarnAboutRedundantRef" AfterTargets="ResolveFrameworkReferences;ProcessFrameworkReferences">
