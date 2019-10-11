@@ -75,6 +75,10 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.0.1-servicing-19510-13">
+      <Uri>https://github.com/dotnet/core-setup</Uri>
+      <Sha>ee7dbc9e064bf59f822c5310b89e0e996ccc0d58</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19474.3">
