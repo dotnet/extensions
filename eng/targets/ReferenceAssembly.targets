@@ -43,7 +43,7 @@
     <Message Importance="High" Text="Generated $(_RefProjectFileOutputPath)" />
   </Target>
 
-  <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="Build" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+  <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="Build" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' OR '$(GenerateFrameworkReferenceAssembly)' == 'true'">
     <PropertyGroup>
       <_RefSourceFileTFM>$(TargetFramework)</_RefSourceFileTFM>
       <_RefSourceFileTFM Condition="$(TargetFramework.StartsWith('netcoreapp'))">netcoreapp</_RefSourceFileTFM>
