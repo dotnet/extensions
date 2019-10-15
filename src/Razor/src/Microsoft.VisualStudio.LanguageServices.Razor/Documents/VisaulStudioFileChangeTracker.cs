@@ -2,20 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.InteropServices;
+using System.IO;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
-    internal class VisualStudioFileChangeTracker : FileChangeTracker, IVsFileChangeEvents
+    internal class VisualStudioFileChangeTracker : FileChangeTracker, IVsFreeThreadedFileChangeEvents2
     {
-        private const uint FileChangeFlags = (uint)(_VSFILECHANGEFLAGS.VSFILECHG_Time | _VSFILECHANGEFLAGS.VSFILECHG_Size | _VSFILECHANGEFLAGS.VSFILECHG_Del | _VSFILECHANGEFLAGS.VSFILECHG_Add);
+        private const _VSFILECHANGEFLAGS FileChangeFlags = _VSFILECHANGEFLAGS.VSFILECHG_Time | _VSFILECHANGEFLAGS.VSFILECHG_Size | _VSFILECHANGEFLAGS.VSFILECHG_Del | _VSFILECHANGEFLAGS.VSFILECHG_Add;
 
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ErrorReporter _errorReporter;
-        private readonly IVsFileChangeEx _fileChangeService;
-        private uint _fileChangeCookie;
+        private readonly IVsAsyncFileChangeEx _fileChangeService;
+        private readonly JoinableTaskFactory _joinableTaskFactory;
+
+        // Internal for testing
+        internal JoinableTask<uint> _fileChangeAdviseTask;
+        internal JoinableTask _fileChangeUnadviseTask;
+        internal JoinableTask _fileChangedTask;
 
         public override event EventHandler<FileChangeEventArgs> Changed;
 
@@ -23,7 +30,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             string filePath,
             ForegroundDispatcher foregroundDispatcher,
             ErrorReporter errorReporter,
-            IVsFileChangeEx fileChangeService)
+            IVsAsyncFileChangeEx fileChangeService,
+            JoinableTaskFactory joinableTaskFactory)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -49,7 +57,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             _foregroundDispatcher = foregroundDispatcher;
             _errorReporter = errorReporter;
             _fileChangeService = fileChangeService;
-            _fileChangeCookie = VSConstants.VSCOOKIE_NIL;
+            _joinableTaskFactory = joinableTaskFactory ?? throw new ArgumentNullException();
         }
 
         public override string FilePath { get; }
@@ -58,70 +66,108 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         {
             _foregroundDispatcher.AssertForegroundThread();
 
-            try
+            if (_fileChangeUnadviseTask?.IsCompleted == false)
             {
-                if (_fileChangeCookie == VSConstants.VSCOOKIE_NIL)
-                {
-                    var hr = _fileChangeService.AdviseFileChange(
-                        FilePath,
-                        FileChangeFlags,
-                        this,
-                        out _fileChangeCookie);
+                // An unadvise operation is still processing, block the foreground thread until it completes.
+                _fileChangeUnadviseTask.Join();
+            }
 
-                    Marshal.ThrowExceptionForHR(hr);
-                }
-            }
-            catch (Exception exception)
+            if (_fileChangeAdviseTask != null)
             {
-                _errorReporter.ReportError(exception);
+                // Already listening
+                return;
             }
+
+            _fileChangeAdviseTask = _joinableTaskFactory.RunAsync(async () =>
+            {
+                try
+                {
+                    return await _fileChangeService.AdviseFileChangeAsync(FilePath, FileChangeFlags, this);
+                }
+                catch (PathTooLongException)
+                {
+                    // Don't report PathTooLongExceptions but don't fault either.
+                }
+                catch (Exception exception)
+                {
+                    _errorReporter.ReportError(exception);
+                }
+
+                return VSConstants.VSCOOKIE_NIL;
+            });
         }
 
         public override void StopListening()
         {
             _foregroundDispatcher.AssertForegroundThread();
 
-            try
+            if (_fileChangeAdviseTask == null || _fileChangeUnadviseTask?.IsCompleted == false)
             {
-                if (_fileChangeCookie != VSConstants.VSCOOKIE_NIL)
+                // Already not listening or trying to stop listening
+                return;
+            }
+
+            _fileChangeUnadviseTask = _joinableTaskFactory.RunAsync(async () =>
+            {
+                try
                 {
-                    var hr = _fileChangeService.UnadviseFileChange(_fileChangeCookie);
-                    Marshal.ThrowExceptionForHR(hr);
-                    _fileChangeCookie = VSConstants.VSCOOKIE_NIL;
+                    var fileChangeCookie = await _fileChangeAdviseTask;
+
+                    if (fileChangeCookie == VSConstants.VSCOOKIE_NIL)
+                    {
+                        // Wasn't able to listen for file change events. This typically happens when some sort of exception (i.e. access exceptions)
+                        // is thrown when attempting to listen for file changes.
+                        return;
+                    }
+
+                    await _fileChangeService.UnadviseFileChangeAsync(fileChangeCookie);
+                    _fileChangeAdviseTask = null;
                 }
-            }
-            catch (Exception exception)
-            {
-                _errorReporter.ReportError(exception);
-            }
+                catch (PathTooLongException)
+                {
+                    // Don't report PathTooLongExceptions but don't fault either.
+                }
+                catch (Exception exception)
+                {
+                    _errorReporter.ReportError(exception);
+                }
+            });
         }
 
         public int FilesChanged(uint fileCount, string[] filePaths, uint[] fileChangeFlags)
         {
-            _foregroundDispatcher.AssertForegroundThread();
-
-            foreach (var fileChangeFlag in fileChangeFlags)
+            // Capturing task for testing purposes
+            _fileChangedTask = _joinableTaskFactory.RunAsync(async () =>
             {
-                var fileChangeKind = FileChangeKind.Changed;
-                var changeFlag = (_VSFILECHANGEFLAGS)fileChangeFlag;
-                if ((changeFlag & _VSFILECHANGEFLAGS.VSFILECHG_Del) == _VSFILECHANGEFLAGS.VSFILECHG_Del)
-                {
-                    fileChangeKind = FileChangeKind.Removed;
-                }
-                else if ((changeFlag & _VSFILECHANGEFLAGS.VSFILECHG_Add) == _VSFILECHANGEFLAGS.VSFILECHG_Add)
-                {
-                    fileChangeKind = FileChangeKind.Added;
-                }
+                await _joinableTaskFactory.SwitchToMainThreadAsync();
 
-                // Purposefully not passing through the file paths here because we know this change has to do with this trackers FilePath.
-                // We use that FilePath instead so any path normalization the file service did does not impact callers.
-                OnChanged(fileChangeKind);
-            }
+                foreach (var fileChangeFlag in fileChangeFlags)
+                {
+                    var fileChangeKind = FileChangeKind.Changed;
+                    var changeFlag = (_VSFILECHANGEFLAGS)fileChangeFlag;
+                    if ((changeFlag & _VSFILECHANGEFLAGS.VSFILECHG_Del) == _VSFILECHANGEFLAGS.VSFILECHG_Del)
+                    {
+                        fileChangeKind = FileChangeKind.Removed;
+                    }
+                    else if ((changeFlag & _VSFILECHANGEFLAGS.VSFILECHG_Add) == _VSFILECHANGEFLAGS.VSFILECHG_Add)
+                    {
+                        fileChangeKind = FileChangeKind.Added;
+                    }
+
+                    // Purposefully not passing through the file paths here because we know this change has to do with this trackers FilePath.
+                    // We use that FilePath instead so any path normalization the file service did does not impact callers.
+                    OnChanged(fileChangeKind);
+                }
+            });
 
             return VSConstants.S_OK;
         }
 
         public int DirectoryChanged(string pszDirectory) => VSConstants.S_OK;
+
+        public int DirectoryChangedEx(string pszDirectory, string pszFile) => VSConstants.S_OK;
+
+        public int DirectoryChangedEx2(string pszDirectory, uint cChanges, string[] rgpszFile, uint[] rggrfChange) => VSConstants.S_OK;
 
         private void OnChanged(FileChangeKind changeKind)
         {
