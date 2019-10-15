@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language.Components;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -116,13 +118,21 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                         if (document.FilePath == null)
                         {
-                            break;
+                            return;
                         }
 
                         // Using EndsWith because Path.GetExtension will ignore everything before .cs
                         // Using Ordinal because the SDK generates these filenames.
                         // Stll have .cshtml.g.cs and .razor.g.cs for Razor.VSCode scenarios.
                         if (document.FilePath.EndsWith(".cshtml.g.cs", StringComparison.Ordinal) || document.FilePath.EndsWith(".razor.g.cs", StringComparison.Ordinal) || document.FilePath.EndsWith(".razor", StringComparison.Ordinal))
+                        {
+                            EnqueueUpdate(e.ProjectId);
+                            return;
+                        }
+
+                        // We now know we're not operating directly on a Razor file. However, it's possible the user is operating on a partial class that is associated with a Razor file.
+
+                        if (IsPartialComponentClass(document))
                         {
                             EnqueueUpdate(e.ProjectId);
                         }
@@ -151,6 +161,46 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     InitializeSolution(e.NewSolution);
                     break;
             }
+        }
+
+        // Internal for testing
+        internal bool IsPartialComponentClass(Document document)
+        {
+            if (!document.TryGetSyntaxRoot(out var root))
+            {
+                return false;
+            }
+
+            var classDeclarations = root.DescendantNodes().OfType<ClassDeclarationSyntax>();
+            if (!classDeclarations.Any())
+            {
+                return false;
+            }
+
+            if (!document.TryGetSemanticModel(out var semanticModel))
+            {
+                // This will occasionally return false resulting in us not refreshing TagHelpers for component partial classes. This means there are situations when a user's
+                // TagHelper definitions will not immediately update but we will eventually acheive omniscience.
+                return false;
+            }
+
+            var icomponentType = semanticModel.Compilation.GetTypeByMetadataName(ComponentsApi.IComponent.MetadataName);
+
+            foreach (var classDeclaration in classDeclarations)
+            {
+                var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
+                if (classSymbol == null)
+                {
+                    continue;
+                }
+
+                if (ComponentDetectionConventions.IsComponent(classSymbol, icomponentType))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // Virtual for temporary VSCode workaround
