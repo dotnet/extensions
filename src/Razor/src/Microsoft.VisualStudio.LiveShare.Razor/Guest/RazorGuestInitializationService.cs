@@ -15,6 +15,9 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         private const string ViewImportsFileName = "_ViewImports.cshtml";
         private readonly DefaultLiveShareSessionAccessor _sessionAccessor;
 
+        // Internal for testing
+        internal Task _viewImportsCopyTask;
+
         [ImportingConstructor]
         public RazorGuestInitializationService([Import(typeof(LiveShareSessionAccessor))] DefaultLiveShareSessionAccessor sessionAccessor)
         {
@@ -26,18 +29,23 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             _sessionAccessor = sessionAccessor;
         }
 
-        public async Task<ICollaborationService> CreateServiceAsync(CollaborationSession sessionContext, CancellationToken cancellationToken)
+        public Task<ICollaborationService> CreateServiceAsync(CollaborationSession sessionContext, CancellationToken cancellationToken)
         {
             if (sessionContext == null)
             {
                 throw new ArgumentNullException(nameof(sessionContext));
             }
 
-            await EnsureViewImportsCopiedAsync(sessionContext, cancellationToken);
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _viewImportsCopyTask = EnsureViewImportsCopiedAsync(sessionContext, cts.Token);
 
             _sessionAccessor.SetSession(sessionContext);
-            var sessionDetector = new SessionActiveDetector(() => _sessionAccessor.SetSession(session: null));
-            return sessionDetector;
+            var sessionDetector = new SessionActiveDetector(() =>
+            {
+                cts.Cancel();
+                _sessionAccessor.SetSession(session: null);
+            });
+            return Task.FromResult<ICollaborationService>(sessionDetector);
         }
 
         // Today we ensure that all _ViewImports in the shared project exist on the guest because we don't currently track import documents
@@ -52,14 +60,28 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             };
 
             var copyTasks = new List<Task>();
-            var roots = await sessionContext.ListRootsAsync(cancellationToken);
-            foreach (var root in roots)
-            {
-                var fileUris = await sessionContext.ListDirectoryAsync(root, listDirectoryOptions, cancellationToken);
-                StartViewImportsCopy(fileUris, copyTasks, sessionContext, cancellationToken);
-            }
 
-            await Task.WhenAll(copyTasks);
+            try
+            {
+                var roots = await sessionContext.ListRootsAsync(cancellationToken);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                foreach (var root in roots)
+                {
+                    var fileUris = await sessionContext.ListDirectoryAsync(root, listDirectoryOptions, cancellationToken);
+                    StartViewImportsCopy(fileUris, copyTasks, sessionContext, cancellationToken);
+                }
+
+                await Task.WhenAll(copyTasks);
+            }
+            catch (OperationCanceledException)
+            {
+                // Swallow task cancellations
+            }
         }
 
         private static void StartViewImportsCopy(Uri[] fileUris, List<Task> copyTasks, CollaborationSession sessionContext, CancellationToken cancellationToken)
