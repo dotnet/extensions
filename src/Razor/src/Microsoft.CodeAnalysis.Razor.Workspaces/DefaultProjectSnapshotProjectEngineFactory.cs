@@ -9,7 +9,7 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     internal class DefaultProjectSnapshotProjectEngineFactory : ProjectSnapshotProjectEngineFactory
     {
-        private readonly static RazorConfiguration DefaultConfiguration = FallbackRazorConfiguration.MVC_2_1;
+        private readonly static RazorConfiguration DefaultConfiguration = FallbackRazorConfiguration.Latest;
 
         private readonly IFallbackProjectEngineFactory _fallback;
         private readonly Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[] _factories;

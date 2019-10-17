@@ -3,7 +3,9 @@
 
 using System;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
@@ -11,12 +13,14 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ErrorReporter _errorReporter;
-        private readonly IVsFileChangeEx _fileChangeService;
+        private readonly JoinableTaskContext _joinableTaskContext;
+        private readonly IVsAsyncFileChangeEx _fileChangeService;
 
         public VisualStudioFileChangeTrackerFactory(
             ForegroundDispatcher foregroundDispatcher,
-            ErrorReporter errorReporter, 
-            IVsFileChangeEx fileChangeService)
+            ErrorReporter errorReporter,
+            IVsAsyncFileChangeEx fileChangeService,
+            JoinableTaskContext joinableTaskContext)
         {
             if (foregroundDispatcher == null)
             {
@@ -33,8 +37,14 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 throw new ArgumentNullException(nameof(fileChangeService));
             }
 
+            if (joinableTaskContext is null)
+            {
+                throw new ArgumentNullException(nameof(joinableTaskContext));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _errorReporter = errorReporter;
+            _joinableTaskContext = joinableTaskContext;
             _fileChangeService = fileChangeService;
         }
 
@@ -45,7 +55,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(filePath));
             }
 
-            var fileChangeTracker = new VisualStudioFileChangeTracker(filePath, _foregroundDispatcher, _errorReporter, _fileChangeService);
+            var fileChangeTracker = new VisualStudioFileChangeTracker(filePath, _foregroundDispatcher, _errorReporter, _fileChangeService, _joinableTaskContext.Factory);
             return fileChangeTracker;
         }
     }

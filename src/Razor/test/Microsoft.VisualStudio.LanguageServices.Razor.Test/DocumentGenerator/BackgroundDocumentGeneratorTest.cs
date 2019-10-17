@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
@@ -208,6 +209,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [ForegroundFact]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/14805", FlakyOn.All)]
         public async Task DocumentChanged_ReparsesRelatedFiles()
         {
             // Arrange

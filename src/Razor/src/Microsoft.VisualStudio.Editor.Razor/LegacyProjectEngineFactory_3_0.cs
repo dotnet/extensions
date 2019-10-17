@@ -29,13 +29,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 initializer.Initialize(b);
                 configure?.Invoke(b);
-
-                // See comments on MangleClassNames
-                var componentDocumentClassifier = b.Features.OfType<ComponentDocumentClassifierPass>().FirstOrDefault();
-                if (componentDocumentClassifier != null)
-                {
-                    componentDocumentClassifier.MangleClassNames = true;
-                }
             });
         }
     }
