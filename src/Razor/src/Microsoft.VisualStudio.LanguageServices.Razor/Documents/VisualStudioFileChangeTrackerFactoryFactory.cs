@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.Editor.Razor.Documents
 {
@@ -15,11 +16,12 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
     [ExportWorkspaceServiceFactory(typeof(FileChangeTrackerFactory), ServiceLayer.Host)]
     internal class VisualStudioFileChangeTrackerFactoryFactory : IWorkspaceServiceFactory
     {
-        private readonly IVsFileChangeEx _fileChangeService;
+        private readonly IVsAsyncFileChangeEx _fileChangeService;
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private readonly JoinableTaskContext _joinableTaskContext;
 
         [ImportingConstructor]
-        public VisualStudioFileChangeTrackerFactoryFactory(ForegroundDispatcher foregroundDispatcher, SVsServiceProvider serviceProvider)
+        public VisualStudioFileChangeTrackerFactoryFactory(ForegroundDispatcher foregroundDispatcher, SVsServiceProvider serviceProvider, JoinableTaskContext joinableTaskContext)
         {
             if (foregroundDispatcher == null)
             {
@@ -31,8 +33,14 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
+            if (joinableTaskContext is null)
+            {
+                throw new ArgumentNullException(nameof(joinableTaskContext));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
-            _fileChangeService = serviceProvider.GetService(typeof(SVsFileChangeEx)) as IVsFileChangeEx;
+            _joinableTaskContext = joinableTaskContext;
+            _fileChangeService = serviceProvider.GetService(typeof(SVsFileChangeEx)) as IVsAsyncFileChangeEx;
         }
         public IWorkspaceService CreateService(HostWorkspaceServices workspaceServices)
         {
@@ -42,7 +50,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             }
 
             var errorReporter = workspaceServices.GetRequiredService<ErrorReporter>();
-            return new VisualStudioFileChangeTrackerFactory(_foregroundDispatcher, errorReporter, _fileChangeService);
+            return new VisualStudioFileChangeTrackerFactory(_foregroundDispatcher, errorReporter, _fileChangeService, _joinableTaskContext);
         }
     }
 }
