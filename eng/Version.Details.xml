@@ -96,9 +96,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>d6156966c01a8a45a069fecdc68c162f94d9d58d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.0-beta3-19516-01">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.0-beta3-19516-02">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>2ea4fdbd277a758e60ed4c33d7564a2043bb0227</Sha>
+      <Sha>a20758048e61ca82323f5876b427d71714467e96</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
