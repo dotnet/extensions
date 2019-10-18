@@ -62,21 +62,21 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>c4d092f0430a104fa633f1503a1c207b4518f05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0-preview2.19516.18">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0-preview2.19517.5">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>7eeb5cdcc5bddb9588b406e3cdd924e9ff3dd192</Sha>
+      <Sha>7982be53f1c59c813d8157e9cf1f84e1b36f8478</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.1.0-preview2.19516.18">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.1.0-preview2.19517.5">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>7eeb5cdcc5bddb9588b406e3cdd924e9ff3dd192</Sha>
+      <Sha>7982be53f1c59c813d8157e9cf1f84e1b36f8478</Sha>
     </Dependency>
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview2.19516.18">
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview2.19517.5">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>7eeb5cdcc5bddb9588b406e3cdd924e9ff3dd192</Sha>
+      <Sha>7982be53f1c59c813d8157e9cf1f84e1b36f8478</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -96,9 +96,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>c4d092f0430a104fa633f1503a1c207b4518f05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.0-beta3-19516-02">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.0-beta3-19517-02">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>a20758048e61ca82323f5876b427d71714467e96</Sha>
+      <Sha>6ec300539cbdc68c373a296f2731c562fe6d593d</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
