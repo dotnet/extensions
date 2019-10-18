@@ -7,12 +7,25 @@
   </PropertyGroup>
 
   <Import Project="eng\MPack.targets" />
+  <Import Project="eng\targets\Packaging.targets" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 
   <!-- Workaround https://github.com/dotnet/cli/issues/10528 -->
   <PropertyGroup>
     <BundledNETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Reference base shared framework at incoming dependency flow version, not bundled sdk version. -->
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <!-- Always update the 'latest version', whether the repo is servicing or not. -->
+      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
+      <!-- Only update the default runtime version for preview builds. -->
+      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
+      <!-- Only update the targeting pack version for preview builds. -->
+      <TargetingPackVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRefPackageVersion)</TargetingPackVersion>
+    </KnownFrameworkReference>
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Track compiler separately from Arcade.-->

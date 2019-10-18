@@ -17,6 +17,11 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>alpha1</PreReleaseVersionLabel>
+    <!--
+        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
+    -->
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
     <DefaultNetCoreTargetFramework>netcoreapp$(MajorVersion).$(MinorVersion)</DefaultNetCoreTargetFramework>
   </PropertyGroup>
   <!--
@@ -56,7 +61,7 @@
     <SystemTextEncodingsWebPackageVersion>5.0.0-alpha1.19462.7</SystemTextEncodingsWebPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.9.0-alpha1.19462.7</SystemReflectionMetadataPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>3.4.0-beta1-19456-03</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.4.0-beta3-19518-02</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
