@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
@@ -592,6 +593,42 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Act
             var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetElementCompletions_IgnoresDirectiveAttributes()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("BindAttribute", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("input"))
+                    .BoundAttributeDescriptor(builder =>
+                    {
+                        builder.Name = "@bind";
+                        builder.AddMetadata(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString);
+                    })
+                    .TagOutputHint("table")
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["table"] = new HashSet<TagHelperDescriptor>(),
+            });
+
+            var existingCompletions = new[] { "table" };
+            var completionContext = BuildElementCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                containingTagName: "body",
+                containingParentTagName: null);
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
 
             // Assert
             AssertCompletionsAreEquivalent(expectedCompletions, completions);
