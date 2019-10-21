@@ -186,14 +186,14 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         internal static class EventIds
         {
-            public static readonly EventId HealthCheckPublisherProcessingBegin = new EventId(100, "HealthCheckPublisherProcessingBegin");
-            public static readonly EventId HealthCheckPublisherProcessingEnd = new EventId(101, "HealthCheckPublisherProcessingEnd");
-            public static readonly EventId HealthCheckPublisherProcessingError = new EventId(101, "HealthCheckPublisherProcessingError");
+            public static readonly EventId HealthCheckPublisherProcessingBegin = (100, nameof(HealthCheckPublisherProcessingBegin));
+            public static readonly EventId HealthCheckPublisherProcessingEnd = (101, nameof(HealthCheckPublisherProcessingEnd));
+            public static readonly EventId HealthCheckPublisherProcessingError = (101, nameof(HealthCheckPublisherProcessingError));
 
-            public static readonly EventId HealthCheckPublisherBegin = new EventId(102, "HealthCheckPublisherBegin");
-            public static readonly EventId HealthCheckPublisherEnd = new EventId(103, "HealthCheckPublisherEnd");
-            public static readonly EventId HealthCheckPublisherError = new EventId(104, "HealthCheckPublisherError");
-            public static readonly EventId HealthCheckPublisherTimeout = new EventId(104, "HealthCheckPublisherTimeout");
+            public static readonly EventId HealthCheckPublisherBegin = (102, nameof(HealthCheckPublisherBegin));
+            public static readonly EventId HealthCheckPublisherEnd = (103, nameof(HealthCheckPublisherEnd));
+            public static readonly EventId HealthCheckPublisherError = (104, nameof(HealthCheckPublisherError));
+            public static readonly EventId HealthCheckPublisherTimeout = (104, nameof(HealthCheckPublisherTimeout));
         }
 
         private static class Logger

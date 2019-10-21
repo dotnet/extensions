@@ -334,10 +334,10 @@ namespace Microsoft.Extensions.Http
         {
             public static class EventIds
             {
-                public static readonly EventId CleanupCycleStart = new EventId(100, "CleanupCycleStart");
-                public static readonly EventId CleanupCycleEnd = new EventId(101, "CleanupCycleEnd");
-                public static readonly EventId CleanupItemFailed = new EventId(102, "CleanupItemFailed");
-                public static readonly EventId HandlerExpired = new EventId(103, "HandlerExpired");
+                public static readonly EventId CleanupCycleStart = (100, nameof(CleanupCycleStart));
+                public static readonly EventId CleanupCycleEnd = (101, nameof(CleanupCycleEnd));
+                public static readonly EventId CleanupItemFailed = (102, nameof(CleanupItemFailed));
+                public static readonly EventId HandlerExpired = (103, nameof(HandlerExpired));
             }
 
             private static readonly Action<ILogger, int, Exception> _cleanupCycleStart = LoggerMessage.Define<int>(

@@ -49,23 +49,23 @@ namespace Microsoft.Extensions.Http.Logging
         {
             public static class EventIds
             {
-                public static readonly EventId PipelineStart = new EventId(100, "RequestPipelineStart");
-                public static readonly EventId PipelineEnd = new EventId(101, "RequestPipelineEnd");
+                public static readonly EventId RequestPipelineStart = (100, nameof(RequestPipelineStart));
+                public static readonly EventId RequestPipelineEnd = (101, nameof(RequestPipelineEnd));
 
-                public static readonly EventId RequestHeader = new EventId(102, "RequestPipelineRequestHeader");
-                public static readonly EventId ResponseHeader = new EventId(103, "RequestPipelineResponseHeader");
+                public static readonly EventId RequestPipelineRequestHeader = (102, nameof(RequestPipelineRequestHeader));
+                public static readonly EventId RequestPipelineResponseHeader = (103, nameof(RequestPipelineResponseHeader));
             }
 
             private static readonly Func<ILogger, HttpMethod, Uri, IDisposable> _beginRequestPipelineScope = LoggerMessage.DefineScope<HttpMethod, Uri>("HTTP {HttpMethod} {Uri}");
 
             private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestPipelineStart = LoggerMessage.Define<HttpMethod, Uri>(
                 LogLevel.Information, 
-                EventIds.PipelineStart, 
+                EventIds.RequestPipelineStart, 
                 "Start processing HTTP request {HttpMethod} {Uri}");
 
             private static readonly Action<ILogger, double, HttpStatusCode, Exception> _requestPipelineEnd = LoggerMessage.Define<double, HttpStatusCode>(
                 LogLevel.Information,
-                EventIds.PipelineEnd,
+                EventIds.RequestPipelineEnd,
                 "End processing HTTP request after {ElapsedMilliseconds}ms - {StatusCode}");
 
             public static IDisposable BeginRequestPipelineScope(ILogger logger, HttpRequestMessage request)
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.Http.Logging
                 {
                     logger.Log(
                         LogLevel.Trace,
-                        EventIds.RequestHeader,
+                        EventIds.RequestPipelineRequestHeader,
                         new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, request.Headers, request.Content?.Headers),
                         null,
                         (state, ex) => state.ToString());
@@ -96,7 +96,7 @@ namespace Microsoft.Extensions.Http.Logging
                 {
                     logger.Log(
                         LogLevel.Trace,
-                        EventIds.ResponseHeader,
+                        EventIds.RequestPipelineResponseHeader,
                         new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Response, response.Headers, response.Content?.Headers),
                         null,
                         (state, ex) => state.ToString());

@@ -52,11 +52,11 @@ namespace Microsoft.Extensions.Http.Logging
         {
             public static class EventIds
             {
-                public static readonly EventId RequestStart = new EventId(100, "RequestStart");
-                public static readonly EventId RequestEnd = new EventId(101, "RequestEnd");
+                public static readonly EventId RequestStart = (100, nameof(RequestStart));
+                public static readonly EventId RequestEnd = (101, nameof(RequestEnd));
 
-                public static readonly EventId RequestHeader = new EventId(102, "RequestHeader");
-                public static readonly EventId ResponseHeader = new EventId(103, "ResponseHeader");
+                public static readonly EventId RequestHeader = (102, nameof(RequestHeader));
+                public static readonly EventId ResponseHeader = (103, nameof(ResponseHeader));
             }
 
             private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestStart = LoggerMessage.Define<HttpMethod, Uri>(

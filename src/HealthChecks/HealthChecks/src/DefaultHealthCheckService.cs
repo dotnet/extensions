@@ -170,13 +170,13 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         internal static class EventIds
         {
-            public static readonly EventId HealthCheckProcessingBegin = new EventId(100, "HealthCheckProcessingBegin");
-            public static readonly EventId HealthCheckProcessingEnd = new EventId(101, "HealthCheckProcessingEnd");
+            public static readonly EventId HealthCheckProcessingBegin = (100, nameof(HealthCheckProcessingBegin));
+            public static readonly EventId HealthCheckProcessingEnd = (101, nameof(HealthCheckProcessingEnd));
 
-            public static readonly EventId HealthCheckBegin = new EventId(102, "HealthCheckBegin");
-            public static readonly EventId HealthCheckEnd = new EventId(103, "HealthCheckEnd");
-            public static readonly EventId HealthCheckError = new EventId(104, "HealthCheckError");
-            public static readonly EventId HealthCheckData = new EventId(105, "HealthCheckData");
+            public static readonly EventId HealthCheckBegin = (102, nameof(HealthCheckBegin));
+            public static readonly EventId HealthCheckEnd = (103, nameof(HealthCheckEnd));
+            public static readonly EventId HealthCheckError = (104, nameof(HealthCheckError));
+            public static readonly EventId HealthCheckData = (105, nameof(HealthCheckData));
         }
 
         private static class Log

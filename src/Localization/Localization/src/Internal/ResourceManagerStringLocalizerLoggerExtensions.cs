@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Localization.Internal
         {
             _searchedLocation = LoggerMessage.Define<string, string, CultureInfo>(
                 LogLevel.Debug,
-                new EventId(1, "SearchedLocation"),
+                (1, nameof(SearchedLocation)),
                 $"{nameof(ResourceManagerStringLocalizer)} searched for '{{Key}}' in '{{LocationSearched}}' with culture '{{Culture}}'.");
         }
 
