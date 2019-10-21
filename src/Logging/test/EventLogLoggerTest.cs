@@ -199,7 +199,7 @@ namespace Microsoft.Extensions.Logging
             var logger = new EventLogLogger(loggerName, new EventLogSettings() { EventLog = testEventLog }, new LoggerExternalScopeProvider());
 
             // Act
-            logger.LogInformation(new EventId(1, "FooEvent"), "Message");
+            logger.LogInformation((1, "FooEvent"), "Message");
 
             // Assert
             Assert.Single(testEventLog.Messages);
@@ -223,7 +223,7 @@ namespace Microsoft.Extensions.Logging
             var logger = new EventLogLogger(loggerName, new EventLogSettings() { EventLog = testEventLog }, new LoggerExternalScopeProvider());
 
             // Act
-            logger.LogInformation(new EventId(1, "FooEvent"), "Message");
+            logger.LogInformation((1, "FooEvent"), "Message");
 
             // Assert
             Assert.Single(testEventLog.Messages);

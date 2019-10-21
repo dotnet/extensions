@@ -33,5 +33,37 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.True(new EventId(1).GetHashCode() != new EventId(2).GetHashCode());
             Assert.True(new EventId(1, "Foo").GetHashCode() != new EventId(2, "Foo").GetHashCode());
         }
+
+
+        [Fact]
+        public void Equality_operations_implicit_eventid()
+        {
+            EventId one = 1;
+            EventId bar = (1, "Bar");
+            EventId foo = (1, "Foo");
+
+            Assert.True(one.Equals(1));
+            Assert.True(one.Equals((object)new EventId(1)));
+            Assert.True(one.Equals(foo));
+            Assert.True(bar.Equals(foo));
+
+            Assert.False(one.Equals(2));
+            Assert.False(one.Equals(null));
+            Assert.False(foo.Equals((2, "Foo")));
+
+            Assert.True(one == 1);
+            Assert.True(one == (1, "Foo"));
+            Assert.True(bar == (1, "Foo"));
+
+            Assert.True(one != 2);
+            Assert.True(foo != (2, "Foo"));
+
+            Assert.True(one.GetHashCode() == new EventId(1).GetHashCode());
+            Assert.True(one.GetHashCode() == new EventId(1, "Foo").GetHashCode());
+            Assert.True(bar.GetHashCode() == new EventId(1, "Foo").GetHashCode());
+
+            Assert.True(one.GetHashCode() != new EventId(2).GetHashCode());
+            Assert.True(foo.GetHashCode() != new EventId(2, "Foo").GetHashCode());
+        }
     }
 }

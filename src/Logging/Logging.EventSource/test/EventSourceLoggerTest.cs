@@ -421,7 +421,7 @@ namespace Microsoft.Extensions.Logging.Test
 
                 Dispose();
 
-                logger.LogDebug(new EventId(1), "Logger1 Event1 Debug {intParam}", 1);
+                logger.LogDebug(1, "Logger1 Event1 Debug {intParam}", 1);
 
                 VerifyEvents(testListener);
             }
@@ -433,26 +433,26 @@ namespace Microsoft.Extensions.Logging.Test
             var logger2 = factory.CreateLogger("Logger2");
             var logger3 = factory.CreateLogger("Logger3");
 
-            logger1.LogDebug(new EventId(1), "Logger1 Event1 Debug {intParam}", 1);
-            logger2.LogTrace(new EventId(2), "Logger2 Event2 Trace {doubleParam} {timeParam} {doubleParam2}", DoubleParam1, TimeParam.ToString("O"), DoubleParam2);
-            logger3.LogInformation(new EventId(3), "Logger3 Event3 Information {string1Param} {string2Param} {string3Param}", "foo", "bar", "baz");
+            logger1.LogDebug(1, "Logger1 Event1 Debug {intParam}", 1);
+            logger2.LogTrace(2, "Logger2 Event2 Trace {doubleParam} {timeParam} {doubleParam2}", DoubleParam1, TimeParam.ToString("O"), DoubleParam2);
+            logger3.LogInformation(3, "Logger3 Event3 Information {string1Param} {string2Param} {string3Param}", "foo", "bar", "baz");
 
             using (logger1.BeginScope("Outer scope {stringParam} {intParam} {doubleParam}", "scoped foo", 13, DoubleParam1))
             {
-                logger1.LogError(new EventId(4, "ErrorEvent"), "Logger1 Event4 Error {stringParam} {guidParam}", "foo", GuidParam);
+                logger1.LogError((4, "ErrorEvent"), "Logger1 Event4 Error {stringParam} {guidParam}", "foo", GuidParam);
 
-                logger2.LogCritical(new EventId(5), new Exception("oops", new Exception("inner oops")),
+                logger2.LogCritical(5, new Exception("oops", new Exception("inner oops")),
                     "Logger2 Event5 Critical {stringParam} {int1Param} {int2Param}", "bar", 23, 45);
 
                 using (logger3.BeginScope("Inner scope {timeParam} {guidParam}", TimeParam, GuidParam))
                 {
-                    logger2.LogWarning(new EventId(6), "Logger2 Event6 Warning NoParams");
+                    logger2.LogWarning(6, "Logger2 Event6 Warning NoParams");
                 }
 
-                logger3.LogInformation(new EventId(7), "Logger3 Event7 Information {stringParam} {doubleParam} {intParam}", "inner scope closed", DoubleParam2, 37);
+                logger3.LogInformation(7, "Logger3 Event7 Information {stringParam} {doubleParam} {intParam}", "inner scope closed", DoubleParam2, 37);
             }
 
-            logger2.LogWarning(new EventId(8), "Logger2 Event8 Warning {stringParam} {timeParam}", "Outer scope closed", TimeParam.ToString("O"));
+            logger2.LogWarning(8, "Logger2 Event8 Warning {stringParam} {timeParam}", "Outer scope closed", TimeParam.ToString("O"));
         }
 
         private static void VerifyEvents(TestEventListener eventListener, params string[] verifierIDs)

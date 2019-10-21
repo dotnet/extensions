@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace Microsoft.Extensions.Logging
 {
@@ -15,6 +17,15 @@ namespace Microsoft.Extensions.Logging
         public static implicit operator EventId(int i)
         {
             return new EventId(i);
+        }
+
+        /// <summary>
+        /// Implicitly creates an EventId from the given <see cref="ValueTuple{Int32, String}"/> properties.
+        /// </summary>
+        /// <param name="properties">The <see cref="ValueTuple{Int32, String}"/> properties to convert to an EventId.</param>
+        public static implicit operator EventId((int id, string name) properties)
+        {
+            return new EventId(properties.id, properties.name);
         }
 
         /// <summary>
