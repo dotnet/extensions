@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.Logging
         public override int GetHashCode() { throw null; }
         public static bool operator ==(Microsoft.Extensions.Logging.EventId left, Microsoft.Extensions.Logging.EventId right) { throw null; }
         public static implicit operator Microsoft.Extensions.Logging.EventId (int i) { throw null; }
+        public static implicit operator Microsoft.Extensions.Logging.EventId ((int id, string name) properties) { throw null; }
         public static bool operator !=(Microsoft.Extensions.Logging.EventId left, Microsoft.Extensions.Logging.EventId right) { throw null; }
         public override string ToString() { throw null; }
     }
