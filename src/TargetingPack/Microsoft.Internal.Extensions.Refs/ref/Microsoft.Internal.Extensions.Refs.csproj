@@ -32,6 +32,8 @@
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+    <!-- We are ignoring MSB3243 warnings since implemenation and reference assemblies are versioned differently. We need both to compose the targeting pack with reference assemblies and xml docs. -->
+    <MSBuildWarningsAsMessages>MSB3243</MSBuildWarningsAsMessages >
 
     <LayoutTargetDir>$(ArtifactsObjDir)TargetingPack.Layout\$(Configuration)\</LayoutTargetDir>
   </PropertyGroup>
