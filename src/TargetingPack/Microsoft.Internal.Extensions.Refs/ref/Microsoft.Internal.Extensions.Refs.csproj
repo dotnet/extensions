@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
 
     <!-- Do not pack in servicing builds. -->
     <IsPackable>false</IsPackable>
-    <IsPackable Condition=" '$(PatchVersion)' == '0' ">true</IsPackable>
+    <IsPackable Condition=" '$(PatchVersion)' == '1' ">true</IsPackable>
 
     <IsShipping>false</IsShipping>
     <!-- This project is not included in the shared framework -->
@@ -32,11 +32,14 @@
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+
+    <LayoutTargetDir>$(ArtifactsObjDir)TargetingPack.Layout\$(Configuration)\</LayoutTargetDir>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Don't reference anything unless building a targeting pack. Otherwise will use ref and non-ref assemblies. -->
-    <Reference Include="@(ProjectReferenceProvider)" Condition="$(IsPackable)" />
+    <Reference Include="@(ProjectReferenceProvider)" Condition="$(IsPackable)" ReferenceOutputAssembly="false" />
+    <Reference Remove="Microsoft.Extensions.Hosting.Systemd" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,7 +53,14 @@
     </BuildDependsOn>
 
     <!-- Suppresses building this project completely during servicing builds. -->
-    <BuildDependsOn Condition="! $(IsPackable)" />
+    <BuildDependsOn Condition="!$(IsPackable)" />
+
+    <ResolveTargetingPackContentDependsOn Condition="'$(IsInnerBuild)' == 'true'">
+      _ResolveTargetingPackContentInner
+    </ResolveTargetingPackContentDependsOn>
+    <ResolveTargetingPackContentDependsOn Condition="'$(IsInnerBuild)' != 'true'">
+      _ResolveTargetingPackContentOuter
+    </ResolveTargetingPackContentDependsOn>
   </PropertyGroup>
 
   <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
@@ -69,6 +79,11 @@
   <!-- This target finds the reference assemblies. -->
   <Target Name="_ResolveTargetingPackContent"
           BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="$(ResolveTargetingPackContentDependsOn)">
+  </Target>
+
+  <Target Name="_ResolveTargetingPackContentInner"
+          AfterTargets="CoreCompile"
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
       <AspNetCoreReferenceAssemblyPath Include="@(ReferencePathWithRefAssemblies->WithMetadataValue('IsReferenceAssembly', 'true'))" />
@@ -76,8 +91,17 @@
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />
+    </ItemGroup>
 
-      <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
+    <Copy SourceFiles="@(RefPackContent)"
+          DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)$(TargetFramework)\%(FileName)%(Extension)')"
+          UseHardlinksIfPossible="true" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(LayoutTargetDir)" />
+  </Target>
+
+  <Target Name="_ResolveTargetingPackContentOuter">
+    <ItemGroup>
+      <_PackageFiles Include="$(LayoutTargetDir)**\*" PackagePath="$(RefAssemblyPackagePath)" />
     </ItemGroup>
   </Target>
 
