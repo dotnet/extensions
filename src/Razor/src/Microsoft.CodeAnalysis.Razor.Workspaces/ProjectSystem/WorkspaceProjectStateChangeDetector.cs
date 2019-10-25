@@ -185,6 +185,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             var icomponentType = semanticModel.Compilation.GetTypeByMetadataName(ComponentsApi.IComponent.MetadataName);
+            if (icomponentType == null)
+            {
+                // IComponent is not available in the compilation.
+                return false;
+            }
 
             foreach (var classDeclaration in classDeclarations)
             {

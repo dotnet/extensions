@@ -356,6 +356,33 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public async Task IsPartialComponentClass_NoIComponent_ReturnsFalse()
+        {
+            // Arrange
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator);
+            var sourceText = SourceText.From(
+$@"
+public partial class TestComponent{{}}
+");
+            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var solution = SolutionWithTwoProjects
+                .WithDocumentText(PartialComponentClassDocumentId, sourceText)
+                .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
+            var document = solution.GetDocument(PartialComponentClassDocumentId);
+
+            // Initialize document
+            await document.GetSyntaxRootAsync();
+            await document.GetSemanticModelAsync();
+
+            // Act
+            var result = detector.IsPartialComponentClass(document);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
         public async Task IsPartialComponentClass_InitializedDocument_ReturnsTrue()
         {
             // Arrange
