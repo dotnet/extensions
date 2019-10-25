@@ -10,10 +10,6 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0" Pinned="true">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>4ac4c0367003fe3973a3648eb0715ddb0e3bbcea</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Win32.Registry" Version="5.0.0-alpha1.19520.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>03453d9aae8e5d18e571699c5d2229b1ab5f4b9d</Sha>
@@ -77,6 +73,10 @@
     <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-alpha1.19521.2">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>a3a9cb66e59909d03269f7c0024f10fe07f0a2d5</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0" Pinned="true">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>4ac4c0367003fe3973a3648eb0715ddb0e3bbcea</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
