@@ -27,6 +27,23 @@ namespace Microsoft.Extensions.Hosting
         /// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder)
         {
+            return UseWindowsService<WindowsServiceLifetime>(hostBuilder);
+        }
+
+        /// <summary>
+        /// Sets the host lifetime to WindowsServiceLifetime, sets the Content Root,
+        /// and enables logging to the event log with the application name as the default source name.
+        /// </summary>
+        /// <remarks>
+        /// This is context aware and will only activate if it detects the process is running
+        /// as a Windows Service.
+        /// </remarks>
+        /// <typeparam name="TServiceLifetime">The type of the ServiceBase lifetime class</typeparam>
+        /// <param name="hostBuilder">The <see cref="IHostBuilder"/> to operate on.</param>
+        /// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
+        public static IHostBuilder UseWindowsService<TServiceLifetime>(this IHostBuilder hostBuilder)
+            where TServiceLifetime : WindowsServiceLifetime
+        {
             if (WindowsServiceHelpers.IsWindowsService())
             {
                 // Host.CreateDefaultBuilder uses CurrentDirectory for VS scenarios, but CurrentDirectory for services is c:\Windows\System32.
@@ -37,7 +54,7 @@ namespace Microsoft.Extensions.Hosting
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<IHostLifetime, WindowsServiceLifetime>();
+                    services.AddSingleton<IHostLifetime, TServiceLifetime>();
                     services.Configure<EventLogSettings>(settings =>
                     {
                         if (string.IsNullOrEmpty(settings.SourceName))
