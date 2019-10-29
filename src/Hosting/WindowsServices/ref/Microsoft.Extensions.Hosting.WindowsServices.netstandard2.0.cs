@@ -6,6 +6,7 @@ namespace Microsoft.Extensions.Hosting
     public static partial class WindowsServiceLifetimeHostBuilderExtensions
     {
         public static Microsoft.Extensions.Hosting.IHostBuilder UseWindowsService(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder) { throw null; }
+        public static Microsoft.Extensions.Hosting.IHostBuilder UseWindowsService<TServiceLifetime>(this Microsoft.Extensions.Hosting.IHostBuilder hostBuilder) { throw null; }
     }
 }
 namespace Microsoft.Extensions.Hosting.WindowsServices
