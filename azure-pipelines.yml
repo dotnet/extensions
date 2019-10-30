@@ -14,7 +14,7 @@ variables:
     
   # used for post-build phases, internal builds only
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - group: DotNet-Winforms-SDLValidation-Params
+    - group: DotNet-AspNet-SDLValidation-Params
 
 # CI and PR triggers
 trigger:
@@ -310,7 +310,7 @@ stages:
         -TsaProjectName $(_TsaProjectName)
         -TsaNotificationEmail $(_TsaNotificationEmail)
         -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-        -TsaBugAreaPath $(_TsaBugAreaPath)
+        -TsaBugAreaPath "DevDiv\NET Fundamentals\Extensions\Runtime\Core"
         -TsaIterationPath $(_TsaIterationPath)
         -TsaRepositoryName "Extensions"
         -TsaCodebaseName "Extensions"
