@@ -310,7 +310,7 @@ stages:
         -TsaProjectName $(_TsaProjectName)
         -TsaNotificationEmail $(_TsaNotificationEmail)
         -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-        -TsaBugAreaPath "DevDiv\NET Fundamentals\Extensions\Runtime\Core"
+        -TsaBugAreaPath $(_TsaBugAreaPath)
         -TsaIterationPath $(_TsaIterationPath)
         -TsaRepositoryName "Extensions"
         -TsaCodebaseName "Extensions"
