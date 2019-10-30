@@ -16,9 +16,9 @@ variables:
 - name: _DotNetValidationArtifactsCategory
   value: .NETCOREVALIDATION
   
-  # used for post-build phases, internal builds only
-  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - group: DotNet-Winforms-SDLValidation-Params
+# used for post-build phases, internal builds only
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - group: DotNet-Winforms-SDLValidation-Params
 
 trigger:
   batch: true
