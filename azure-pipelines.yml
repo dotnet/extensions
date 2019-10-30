@@ -310,6 +310,6 @@ stages:
         -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
         -TsaBugAreaPath $(_TsaBugAreaPath)
         -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName "Arcade"
-        -TsaCodebaseName "Arcade"
+        -TsaRepositoryName "AspNetCore-Tooling"
+        -TsaCodebaseName "AspNetCore-Tooling"
         -TsaPublish $True'
