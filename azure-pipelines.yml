@@ -15,6 +15,10 @@ variables:
   value: .NETCORE
 - name: _DotNetValidationArtifactsCategory
   value: .NETCOREVALIDATION
+  
+# used for post-build phases, internal builds only
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - group: DotNet-AspNet-SDLValidation-Params
 
 trigger:
   batch: true
@@ -299,3 +303,17 @@ stages:
       # See https://github.com/dotnet/arcade/issues/2871
       enableSymbolValidation: false
       publishInstallersAndChecksums: true
+      # This is to enable SDL runs part of Post-Build Validation Stage
+      SDLValidationParameters:
+        enable: true
+        continueOnError: false
+        params: ' -SourceToolsList @("policheck","credscan")
+        -TsaInstanceURL $(_TsaInstanceURL)
+        -TsaProjectName $(_TsaProjectName)
+        -TsaNotificationEmail $(_TsaNotificationEmail)
+        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+        -TsaBugAreaPath $(_TsaBugAreaPath)
+        -TsaIterationPath $(_TsaIterationPath)
+        -TsaRepositoryName "AspNetCore-Tooling"
+        -TsaCodebaseName "AspNetCore-Tooling"
+        -TsaPublish $True'
