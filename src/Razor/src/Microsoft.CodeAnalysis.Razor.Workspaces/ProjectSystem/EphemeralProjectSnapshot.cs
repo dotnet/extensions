@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _projectEngine = new Lazy<RazorProjectEngine>(CreateProjectEngine);
         }
 
-        public override RazorConfiguration Configuration => FallbackRazorConfiguration.MVC_2_1;
+        public override RazorConfiguration Configuration => FallbackRazorConfiguration.Latest;
 
         public override IEnumerable<string> DocumentFilePaths => Array.Empty<string>();
 
