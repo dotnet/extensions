@@ -6,11 +6,11 @@
 -->
 <Project>
   <PropertyGroup Label="Version settings">
-    <MajorVersion>3</MajorVersion>
-    <MinorVersion>1</MinorVersion>
+    <MajorVersion>5</MajorVersion>
+    <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <PreReleaseVersionLabel>preview3</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>alpha1</PreReleaseVersionLabel>
     <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
     <!-- Blazor WASM packages will not RTM with 3.1 -->
     <BlazorWASMPreReleaseVersionLabel>preview3</BlazorWASMPreReleaseVersionLabel>
@@ -54,29 +54,29 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppRefPackageVersion>3.1.0-preview3.19531.15</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.0-preview3.19531.15</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-alpha.1.19531.19</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-alpha.1.19531.19</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0-alpha.1.19531.19</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftBclAsyncInterfacesPackageVersion>1.1.0-preview3.19531.8</MicrosoftBclAsyncInterfacesPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.7.0-preview3.19531.8</MicrosoftWin32RegistryPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>4.7.0-preview3.19531.8</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.7.0-preview3.19531.8</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>4.7.0-preview3.19531.8</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.7.0-preview3.19531.8</SystemIOPipelinesPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.8.0-preview3.19531.8</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.7.0-preview3.19531.8</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.7.0-preview3.19531.8</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>4.7.0-preview3.19531.8</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemServiceProcessServiceControllerPackageVersion>4.7.0-preview3.19531.8</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.7.0-preview3.19531.8</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>4.7.0-preview3.19531.8</SystemTextJsonPackageVersion>
+    <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha.1.19531.13</MicrosoftWin32RegistryPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha.1.19531.13</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-alpha.1.19531.13</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>5.0.0-alpha.1.19531.13</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>5.0.0-alpha.1.19531.13</SystemIOPipelinesPackageVersion>
+    <SystemReflectionMetadataPackageVersion>5.0.0-alpha.1.19531.13</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-alpha.1.19531.13</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>5.0.0-alpha.1.19531.13</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-alpha.1.19531.13</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-alpha.1.19531.13</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-alpha.1.19531.13</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>5.0.0-alpha.1.19531.13</SystemTextJsonPackageVersion>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
-    <MicrosoftNETCorePlatformsPackageVersion>3.1.0-preview3.19531.8</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-alpha.1.19531.13</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19517.3</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.19531.8</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetVersion>3.5.0-beta1-19531-01</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetVersion>3.4.0-beta1-19456-03</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
