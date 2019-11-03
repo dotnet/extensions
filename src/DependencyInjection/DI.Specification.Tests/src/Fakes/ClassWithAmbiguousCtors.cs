@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
             Data1 = data1;
             Data2 = data2;
 
-            CtorUsed = "IFakeService, string, string";
+            CtorUsed = "IFakeService, string, int";
         }
 
         public IFakeService FakeService { get; }
