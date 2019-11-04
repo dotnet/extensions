@@ -1,34 +1,46 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
-using System.Composition;
+using System.ComponentModel.Composition;
 using System.IO;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Host;
+using Microsoft.Extensions.Internal;
+using Microsoft.VisualStudio.Editor.Razor;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    /// <summary>
-    /// Base MEF component for implementing a dynamic document info provider
-    /// Currently only used by VS Mac
-    /// </summary>
-    internal abstract class RazorDynamicDocumentInfoProviderBase
+    [System.Composition.Shared]
+    [ExportMetadata("Extensions", new string[] { "cshtml", "razor", })]
+    [Export(typeof(RazorDynamicFileInfoProvider))]
+    [Export(typeof(IDynamicFileInfoProvider))]
+    internal class DefaultRazorDynamicFileInfoProvider : RazorDynamicFileInfoProvider, IDynamicFileInfoProvider
     {
         private readonly ConcurrentDictionary<Key, Entry> _entries;
+        private readonly Func<Key, Entry> _createEmptyEntry;
+        private readonly DocumentServiceProviderFactory _factory;
 
-        [Import]
-        private DocumentServiceProviderFactory Factory { get; set; }
-
-        public RazorDynamicDocumentInfoProviderBase()
+        [ImportingConstructor]
+        public DefaultRazorDynamicFileInfoProvider(DocumentServiceProviderFactory factory)
         {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+            
+            _factory = factory;
+
             _entries = new ConcurrentDictionary<Key, Entry>();
+            _createEmptyEntry = (key) => new Entry(CreateEmptyInfo(key));
         }
 
-        public event Action<DocumentInfo> Updated;
+        public event EventHandler<string> Updated;
 
         // Called by us to update entries
-        public void UpdateFileInfo(ProjectSnapshot projectSnapshot, DocumentSnapshot document)
+        public override void UpdateFileInfo(ProjectSnapshot projectSnapshot, DocumentSnapshot document)
         {
             if (projectSnapshot == null)
             {
@@ -48,16 +60,15 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 lock (entry.Lock)
                 {
-                    entry.Current = entry.Current
-                        .WithTextLoader(new GeneratedDocumentTextLoader(document, entry.Current.FilePath));
+                    entry.Current = CreateInfo(key, document);
                 }
 
-                Updated?.Invoke(entry.Current);
+                Updated?.Invoke(this, document.FilePath);
             }
         }
 
         // Called by us when a document opens in the editor
-        public void SuppressDocument(ProjectSnapshot project, DocumentSnapshot document)
+        public override void SuppressDocument(ProjectSnapshot project, DocumentSnapshot document)
         {
             if (project == null)
             {
@@ -81,18 +92,18 @@ namespace Microsoft.CodeAnalysis.Razor
                     if (entry.Current.TextLoader is GeneratedDocumentTextLoader)
                     {
                         updated = true;
-                        entry.Current = entry.Current.WithTextLoader(new EmptyTextLoader(entry.Current.FilePath));
+                        entry.Current = CreateEmptyInfo(key);
                     }
                 }
 
                 if (updated)
                 {
-                    Updated?.Invoke(entry.Current);
+                    Updated?.Invoke(this, document.FilePath);
                 }
             }
         }
 
-        public DocumentInfo GetDynamicDocumentInfo(ProjectId projectId, string projectFilePath, string filePath)
+        public Task<DynamicFileInfo> GetDynamicFileInfoAsync(ProjectId projectId, string projectFilePath, string filePath, CancellationToken cancellationToken)
         {
             if (projectFilePath == null)
             {
@@ -105,11 +116,11 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             var key = new Key(projectFilePath, filePath);
-            var entry = _entries.GetOrAdd(key, k => new Entry(CreateEmptyInfo(k, projectId)));
-            return entry.Current;
+            var entry = _entries.GetOrAdd(key, _createEmptyEntry);
+            return Task.FromResult(entry.Current);
         }
 
-        public void RemoveDynamicDocumentInfo(ProjectId projectId, string projectFilePath, string filePath)
+        public Task RemoveDynamicFileInfoAsync(ProjectId projectId, string projectFilePath, string filePath, CancellationToken cancellationToken)
         {
             if (projectFilePath == null)
             {
@@ -123,22 +134,21 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var key = new Key(projectFilePath, filePath);
             _entries.TryRemove(key, out var entry);
+            return Task.CompletedTask;
         }
 
-        private DocumentInfo CreateEmptyInfo(Key key, ProjectId projectId)
+        private DynamicFileInfo CreateEmptyInfo(Key key)
         {
             var filename = Path.ChangeExtension(key.FilePath, ".g.cs");
             var textLoader = new EmptyTextLoader(filename);
-            var docId = DocumentId.CreateNewId(projectId, debugName: filename);
-            return DocumentInfo.Create(
-                id: docId, 
-                name: Path.GetFileName(filename),
-                folders: null,
-                sourceCodeKind: SourceCodeKind.Regular,
-                filePath: filename,
-                loader: textLoader,
-                isGenerated: true,
-                documentServiceProvider: Factory.CreateEmpty());
+            return new DynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.CreateEmpty());
+        }
+
+        private DynamicFileInfo CreateInfo(Key key, DocumentSnapshot document)
+        {
+            var filename = Path.ChangeExtension(key.FilePath, ".g.cs");
+            var textLoader = new GeneratedDocumentTextLoader(document, filename);
+            return new DynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.Create(document));
         }
 
         // Using a separate handle to the 'current' file info so that can allow Roslyn to send
@@ -146,9 +156,9 @@ namespace Microsoft.CodeAnalysis.Razor
         public class Entry
         {
             // Can't ever be null for thread-safety reasons
-            private DocumentInfo _current;
+            private DynamicFileInfo _current;
 
-            public Entry(DocumentInfo current)
+            public Entry(DynamicFileInfo current)
             {
                 if (current == null)
                 {
@@ -159,7 +169,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 Lock = new object();
             }
 
-            public DocumentInfo Current
+            public DynamicFileInfo Current
             {
                 get => _current;
                 set
@@ -209,7 +219,10 @@ namespace Microsoft.CodeAnalysis.Razor
 
             public override int GetHashCode()
             {
-                return (FilePathComparer.Instance.GetHashCode(ProjectFilePath), FilePathComparer.Instance.GetHashCode(FilePath)).GetHashCode();
+                var hash = new HashCodeCombiner();
+                hash.Add(ProjectFilePath, FilePathComparer.Instance);
+                hash.Add(FilePath, FilePathComparer.Instance);
+                return hash;
             }
         }
     }
