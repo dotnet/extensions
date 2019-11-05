@@ -162,6 +162,9 @@ jobs:
         displayName: Install Node 10.x
         inputs:
           versionSpec: 10.x
+      - script: check-systemd.sh
+        displayName: Check systemd configuration
+        continueOnError: false
       - script: eng/common/cibuild.sh
           --configuration $(_BuildConfig)
           --prepareMachine
