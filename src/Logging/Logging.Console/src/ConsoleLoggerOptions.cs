@@ -5,11 +5,21 @@ using System;
 
 namespace Microsoft.Extensions.Logging.Console
 {
+    /// <summary>
+    /// Options for a <see cref="ConsoleLogger"/>.
+    /// </summary>
     public class ConsoleLoggerOptions
     {
         private ConsoleLoggerFormat _format = ConsoleLoggerFormat.Default;
 
+        /// <summary>
+        /// Includes scopes when <code>true</code>.
+        /// </summary>
         public bool IncludeScopes { get; set; }
+
+        /// <summary>
+        /// Disables colors when <code>true</code>.
+        /// </summary>
         public bool DisableColors { get; set; }
 
         /// <summary>
@@ -37,5 +47,10 @@ namespace Microsoft.Extensions.Logging.Console
         /// Gets or sets format string used to format timestamp in logging messages. Defaults to <c>null</c>.
         /// </summary>
         public string TimestampFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets indication whether or not UTC timezone should be used to for timestamps in logging messages. Defaults to <c>false</c>.
+        /// </summary>
+        public bool UseUtcTimestamp { get; set; }
     }
 }

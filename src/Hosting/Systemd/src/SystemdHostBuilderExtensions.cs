@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging.Console;
 namespace Microsoft.Extensions.Hosting
 {
     /// <summary>
-    /// Extension methods for setting up SystemdLifetime.
+    /// Extension methods for setting up <see cref="SystemdLifetime" />.
     /// </summary>
     public static class SystemdHostBuilderExtensions
     {
         /// <summary>
-        /// Sets the host lifetime to SystemdLifetime,
+        /// Sets the host lifetime to <see cref="SystemdLifetime" />,
         /// provides notification messages for application started and stopping,
         /// and configures console logging to the systemd format.
         /// </summary>
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Hosting
         ///     notifications. See https://www.freedesktop.org/software/systemd/man/systemd.service.html.
         ///   </para>
         /// </remarks>
-        /// <param name="hostBuilder"></param>
+        /// <param name="hostBuilder">The <see cref="IHostBuilder"/> to use.</param>
         /// <returns></returns>
         public static IHostBuilder UseSystemd(this IHostBuilder hostBuilder)
         {

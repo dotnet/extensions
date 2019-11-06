@@ -658,13 +658,13 @@ namespace Microsoft.Extensions.Logging.Test
                         @"{""Key"":""intParam"",""Value"":""1""}") },
 
             { "E2FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 2, null, LogLevel.Trace,
-                @"""FormattedMessage"":""Logger2 Event2 Trace " + DoubleParam1.ToString() + " " + GetEscapedForwardSlash(TimeParam.ToString("O")) + " " + DoubleParam2.ToString()) },
+                @"""FormattedMessage"":""Logger2 Event2 Trace " + DoubleParam1.ToString() + " " + TimeParam.ToString("O") + " " + DoubleParam2.ToString()) },
             { "E2JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 2, null, LogLevel.Trace,
                         @"""ArgumentsJson"":{""doubleParam"":""" + DoubleParam1.ToString() + @""",""timeParam"":"""
-                        + GetEscapedForwardSlash(TimeParam.ToString("O")) +@""",""doubleParam2"":""" + DoubleParam2.ToString()) },
+                        + TimeParam.ToString("O") +@""",""doubleParam2"":""" + DoubleParam2.ToString()) },
             { "E2MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 2, null, LogLevel.Trace,
                 @"{""Key"":""doubleParam"",""Value"":""" + DoubleParam1.ToString() +@"""}",
-                @"{""Key"":""timeParam"",""Value"":""" + GetEscapedForwardSlash(TimeParam.ToString("O")) +@"""}",
+                @"{""Key"":""timeParam"",""Value"":""" + TimeParam.ToString("O") +@"""}",
                 @"{""Key"":""doubleParam2"",""Value"":""" + DoubleParam2.ToString() +@"""}") },
 
             { "E3FM", (e) => VerifySingleEvent(e, "Logger3", EventTypes.FormattedMessage, 3, null, LogLevel.Information,
@@ -690,15 +690,28 @@ namespace Microsoft.Extensions.Logging.Test
             { "E5FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 5, null, LogLevel.Critical,
                 @"""FormattedMessage"":""Logger2 Event5 Critical bar 23 45") },
 
+// Starting in netcoreapp3.0 Exception.ToString() puts a newline before inner exceptions
+#if NETCOREAPP
             { "E5JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 5, null, LogLevel.Critical,
                 @"""ArgumentsJson"":{""stringParam"":""bar"",""int1Param"":""23"",""int2Param"":""45""",
-                @"""ExceptionJson"":{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops ---\u003e System.Exception: inner oops") },
+                @$"""ExceptionJson"":{{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops{EscapedNewline()} ---\u003E System.Exception: inner oops") },
+
+            { "E5MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 5, null, LogLevel.Critical,
+                 @"{""Key"":""stringParam"",""Value"":""bar""}",
+                @"{""Key"":""int1Param"",""Value"":""23""}",
+                @"{""Key"":""int2Param"",""Value"":""45""}",
+                @$"""Exception"":{{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":-2146233088,""VerboseMessage"":""System.Exception: oops{EscapedNewline()} ---> System.Exception: inner oops") },
+#else
+            { "E5JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 5, null, LogLevel.Critical,
+                @"""ArgumentsJson"":{""stringParam"":""bar"",""int1Param"":""23"",""int2Param"":""45""",
+                @"""ExceptionJson"":{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops ---\u003E System.Exception: inner oops") },
 
             { "E5MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 5, null, LogLevel.Critical,
                  @"{""Key"":""stringParam"",""Value"":""bar""}",
                 @"{""Key"":""int1Param"",""Value"":""23""}",
                 @"{""Key"":""int2Param"",""Value"":""45""}",
                 @"""Exception"":{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":-2146233088,""VerboseMessage"":""System.Exception: oops ---> System.Exception: inner oops") },
+#endif
 
             { "E6FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 6, null, LogLevel.Warning,
                 @"""FormattedMessage"":""Logger2 Event6 Warning NoParams""") },
@@ -715,13 +728,13 @@ namespace Microsoft.Extensions.Logging.Test
                 @"{""Key"":""intParam"",""Value"":""37""}") },
 
             { "E8FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 8, null, LogLevel.Warning,
-                @"""FormattedMessage"":""Logger2 Event8 Warning Outer scope closed " + GetEscapedForwardSlash(TimeParam.ToString("O"))) },
+                @"""FormattedMessage"":""Logger2 Event8 Warning Outer scope closed " + TimeParam.ToString("O")) },
             { "E8JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 8, null, LogLevel.Warning,
-                        @"""ArgumentsJson"":{""stringParam"":""Outer scope closed"",""timeParam"":""" + GetEscapedForwardSlash(TimeParam.ToString("O"))) },
+                        @"""ArgumentsJson"":{""stringParam"":""Outer scope closed"",""timeParam"":""" + TimeParam.ToString("O")) },
 
             { "E8MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 8, null, LogLevel.Warning,
                 @"{""Key"":""stringParam"",""Value"":""Outer scope closed""}",
-                @"{""Key"":""timeParam"",""Value"":""" + GetEscapedForwardSlash(TimeParam.ToString("O")) +@"""}") },
+                @"{""Key"":""timeParam"",""Value"":""" + TimeParam.ToString("O") +@"""}") },
 
 
             { "OuterScopeJsonStart", (e) => VerifySingleEvent(e, "Logger1", EventTypes.ActivityJsonStart, null, null, null,
@@ -732,30 +745,16 @@ namespace Microsoft.Extensions.Logging.Test
             { "OuterScopeStop", (e) => VerifySingleEvent(e, "Logger1", EventTypes.ActivityStop, null, null, null) },
 
             { "InnerScopeJsonStart", (e) => VerifySingleEvent(e, "Logger3", EventTypes.ActivityJsonStart, null, null, null,
-                        @"""ArgumentsJson"":{""timeParam"":""" + GetEscapedForwardSlash(TimeParam.ToString()) + @""",""guidParam"":""" + GuidParam.ToString("D")) },
+                        @"""ArgumentsJson"":{""timeParam"":""" + TimeParam.ToString() + @""",""guidParam"":""" + GuidParam.ToString("D")) },
             { "InnerScopeJsonStop", (e) => VerifySingleEvent(e, "Logger3", EventTypes.ActivityJsonStop, null, null, null) },
 
             { "InnerScopeStart", (e) => VerifySingleEvent(e, "Logger3", EventTypes.ActivityStart, null, null, null) },
             { "InnerScopeStop", (e) => VerifySingleEvent(e, "Logger3", EventTypes.ActivityStop, null, null, null) },
         };
 
-        // Temporary until: https://github.com/dotnet/corefx/issues/37192
-        static string GetEscapedForwardSlash(string input)
+        static string EscapedNewline()
         {
-            var output = "";
-            foreach (var c in input)
-            {
-                if (c == '/')
-                {
-                    output += "\\u" + ((int)c).ToString("x4");
-                }
-                else
-                {
-                    output += c;
-                }
-            }
-
-            return output;
+            return Environment.NewLine.Replace("\r", "\\r").Replace("\n", "\\n");
         }
     }
 }

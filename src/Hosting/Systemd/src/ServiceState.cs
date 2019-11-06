@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
     /// </summary>
     public struct ServiceState
     {
-        private byte[] _data;
+        private readonly byte[] _data;
 
         /// <summary>
         /// Service startup is finished.

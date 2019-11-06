@@ -3,7 +3,7 @@
 
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,18 +19,6 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public LoggedTestXunitTests(ITestOutputHelper output)
         {
             _output = output;
-        }
-
-        [Fact]
-        public void ShortClassNameUsedWhenShortClassNameAttributeSpecified()
-        {
-            Assert.Equal(GetType().Name, ResolvedTestClassName);
-        }
-
-        [Fact]
-        public void LoggedTestTestOutputHelperSameInstanceAsInjectedConstructorArg()
-        {
-            Assert.Same(_output, TestOutputHelper);
         }
 
         [Fact]
@@ -189,9 +177,9 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public bool SetupInvoked { get; private set; } = false;
         public bool ITestOutputHelperIsInitialized { get; private set; } = false;
 
-        public override void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
-            base.Initialize(methodInfo, testMethodArguments, testOutputHelper);
+            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
             try
             {

@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Hosting.IntegrationTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeFlavor.CoreClr,
                     RuntimeArchitecture.x64)
                 {
-                    TargetFramework = Tfm.NetCoreApp30,
+                    TargetFramework = Tfm.NetCoreApp50,
                     ApplicationType = ApplicationType.Portable,
                     PublishApplicationBeforeDeployment = true,
                     StatusMessagesEnabled = false

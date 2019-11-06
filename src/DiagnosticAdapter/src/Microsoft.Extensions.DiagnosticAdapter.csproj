@@ -6,7 +6,10 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnosticadapter;diagnosticlistener;diagnostics</PackageTags>
+    <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
+    <!-- This project is not included in the shared framework -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>

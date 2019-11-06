@@ -2,9 +2,10 @@
 
   <PropertyGroup>
     <Description>.NET hosting infrastructure for Windows Services.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>hosting</PackageTags>
+    <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
 

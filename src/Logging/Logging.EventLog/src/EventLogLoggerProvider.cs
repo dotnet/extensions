@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging.EventLog
@@ -47,10 +48,16 @@ namespace Microsoft.Extensions.Logging.EventLog
             return new EventLogLogger(name, _settings, _scopeProvider);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
+            if (_settings.EventLog is WindowsEventLog windowsEventLog)
+            {
+                windowsEventLog.DiagnosticsEventLog.Dispose();
+            }
         }
 
+        /// <inheritdoc />
         public void SetScopeProvider(IExternalScopeProvider scopeProvider)
         {
             _scopeProvider = scopeProvider;

@@ -17,6 +17,8 @@
     <PackageTags>analyzers;async</PackageTags>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
+    <!-- This project is not included in the shared framework -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>

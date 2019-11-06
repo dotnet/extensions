@@ -4,7 +4,8 @@
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing.xunit
+// Do not change this namespace without changing the usage in ConditionalFactAttribute
+namespace Microsoft.AspNetCore.Testing
 {
     internal class ConditionalFactDiscoverer : FactDiscoverer
     {
