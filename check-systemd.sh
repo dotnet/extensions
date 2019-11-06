@@ -1,5 +1,11 @@
 #!/bin/bash
 
+echo "user service status"
+systemctl status user@vsts.service
+
+echo "start user service"
+systemctl start user@vsts.service
+
 echo "is-system-running"
 systemctl is-system-running
 
