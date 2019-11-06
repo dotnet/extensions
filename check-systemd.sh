@@ -3,6 +3,12 @@
 echo "is-system-running"
 systemctl is-system-running
 
+echo "env"
+env
+
+echo "ps"
+ps aux
+
 echo "is-system-running --user"
 systemctl --user is-system-running
 
