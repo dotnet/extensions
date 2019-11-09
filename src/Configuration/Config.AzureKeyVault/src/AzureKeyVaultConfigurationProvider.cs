@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.KeyVault.Models;
+using Azure;
+using Azure.Security.KeyVault.Secrets;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
@@ -17,8 +17,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     internal class AzureKeyVaultConfigurationProvider : ConfigurationProvider, IDisposable
     {
         private readonly TimeSpan? _reloadInterval;
-        private readonly IKeyVaultClient _client;
-        private readonly string _vault;
+        private readonly SecretClient _client;
         private readonly IKeyVaultSecretManager _manager;
         private Dictionary<string, LoadedSecret> _loadedSecrets;
         private Task _pollingTask;
@@ -27,14 +26,12 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <summary>
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationProvider"/>.
         /// </summary>
-        /// <param name="client">The <see cref="KeyVaultClient"/> to use for retrieving values.</param>
-        /// <param name="vault">Azure KeyVault uri.</param>
+        /// <param name="client">The <see cref="SecretClient"/> to use for retrieving values.</param>
         /// <param name="manager">The <see cref="IKeyVaultSecretManager"/> to use in managing values.</param>
         /// <param name="reloadInterval">The timespan to wait in between each attempt at polling the Azure KeyVault for changes. Default is null which indicates no reloading.</param>
-        public AzureKeyVaultConfigurationProvider(IKeyVaultClient client, string vault, IKeyVaultSecretManager manager, TimeSpan? reloadInterval = null)
+        public AzureKeyVaultConfigurationProvider(SecretClient client, IKeyVaultSecretManager manager, TimeSpan? reloadInterval = null)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
-            _vault = vault ?? throw new ArgumentNullException(nameof(vault));
             _manager = manager ?? throw new ArgumentNullException(nameof(manager));
             if (reloadInterval != null && reloadInterval.Value <= TimeSpan.Zero)
             {
@@ -74,38 +71,37 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         private async Task LoadAsync()
         {
-            var secretPage = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
-            var allSecrets = new List<SecretItem>(secretPage.Count());
-            do
-            {
-                allSecrets.AddRange(secretPage.ToList());
-                secretPage = secretPage.NextPageLink != null ?
-                    await _client.GetSecretsNextAsync(secretPage.NextPageLink).ConfigureAwait(false) :
-                     null;
-            } while (secretPage != null);
+            var secretPages = _client.GetPropertiesOfSecretsAsync();
 
-            var tasks = new List<Task<SecretBundle>>();
+            var allSecrets = new List<SecretProperties>();
+
+            await foreach (var secretProperties in secretPages.ConfigureAwait(false))
+            {
+                allSecrets.Add(secretProperties);
+            }
+
+            var tasks = new List<Task<Response<KeyVaultSecret>>>();
             var newLoadedSecrets = new Dictionary<string, LoadedSecret>();
             var oldLoadedSecrets = Interlocked.Exchange(ref _loadedSecrets, null);
 
             foreach (var secret in allSecrets)
             {
-                if (!_manager.Load(secret) || secret.Attributes?.Enabled != true)
+                if (!_manager.Load(secret) || secret.Enabled != true)
                 {
                     continue;
                 }
 
-                var secretId = secret.Identifier.BaseIdentifier;
+                var secretId = secret.Name;
                 if (oldLoadedSecrets != null &&
                     oldLoadedSecrets.TryGetValue(secretId, out var existingSecret) &&
-                    existingSecret.IsUpToDate(secret.Attributes.Updated))
+                    existingSecret.IsUpToDate(secret.UpdatedOn))
                 {
                     oldLoadedSecrets.Remove(secretId);
                     newLoadedSecrets.Add(secretId, existingSecret);
                 }
                 else
                 {
-                    tasks.Add(_client.GetSecretAsync(secretId));
+                    tasks.Add(_client.GetSecretAsync(secret.Name));
                 }
             }
 
@@ -114,7 +110,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             foreach (var task in tasks)
             {
                 var secretBundle = task.Result;
-                newLoadedSecrets.Add(secretBundle.SecretIdentifier.BaseIdentifier, new LoadedSecret(_manager.GetKey(secretBundle), secretBundle.Value, secretBundle.Attributes.Updated));
+                newLoadedSecrets.Add(secretBundle.Value.Name, new LoadedSecret(_manager.GetKey(secretBundle), secretBundle.Value.Value, secretBundle.Value.Properties.UpdatedOn));
             }
 
             _loadedSecrets = newLoadedSecrets;
@@ -156,7 +152,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
         private readonly struct LoadedSecret
         {
-            public LoadedSecret(string key, string value, DateTime? updated)
+            public LoadedSecret(string key, string value, DateTimeOffset? updated)
             {
                 Key = key;
                 Value = value;
@@ -165,9 +161,9 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 
             public string Key { get; }
             public string Value { get; }
-            public DateTime? Updated { get; }
+            public DateTimeOffset? Updated { get; }
 
-            public bool IsUpToDate(DateTime? updated)
+            public bool IsUpToDate(DateTimeOffset? updated)
             {
                 if (updated.HasValue != Updated.HasValue)
                 {

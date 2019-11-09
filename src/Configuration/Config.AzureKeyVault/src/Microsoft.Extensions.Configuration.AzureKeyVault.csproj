@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Azure KeyVault configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Azure.KeyVault" />
-    <Reference Include="Microsoft.Azure.Services.AppAuthentication" />
+    <Reference Include="Azure.Security.KeyVault.Secrets" />
+    <Reference Include="Azure.Identity" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" />
   </ItemGroup>

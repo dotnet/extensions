@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Azure.KeyVault.Models;
+using Azure.Security.KeyVault.Secrets;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
@@ -11,17 +11,17 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     public interface IKeyVaultSecretManager
     {
         /// <summary>
-        /// Checks if <see cref="SecretItem"/> value should be retrieved.
+        /// Checks if <see cref="KeyVaultSecret"/> value should be retrieved.
         /// </summary>
-        /// <param name="secret">The <see cref="SecretItem"/> instance.</param>
+        /// <param name="secret">The <see cref="KeyVaultSecret"/> instance.</param>
         /// <returns><code>true</code> is secrets value should be loaded, otherwise <code>false</code>.</returns>
-        bool Load(SecretItem secret);
+        bool Load(SecretProperties secret);
 
         /// <summary>
         /// Maps secret to a configuration key.
         /// </summary>
-        /// <param name="secret">The <see cref="SecretBundle"/> instance.</param>
+        /// <param name="secret">The <see cref="KeyVaultSecret"/> instance.</param>
         /// <returns>Configuration key name to store secret value.</returns>
-        string GetKey(SecretBundle secret);
+        string GetKey(KeyVaultSecret secret);
     }
 }
