@@ -51,6 +51,27 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
+        /// Initializes an instance of the <see cref="EventId"/> struct.
+        /// The numeric identifier is derived from the given name.
+        /// </summary>
+        /// <param name="name">The name of this event.</param>
+        public EventId(string name)
+        {
+            unchecked
+            {
+                var hash = 3074457345618258791ul;
+                for (var index = 0; index < name.Length; ++index)
+                {
+                    hash += name[index];
+                    hash *= 3074457345618258799ul;
+                }
+
+                Id = 100000 + (int)(hash % 900000);
+                Name = name;
+            }
+        }
+
+        /// <summary>
         /// Gets the numeric identifier for this event.
         /// </summary>
         public int Id { get; }
