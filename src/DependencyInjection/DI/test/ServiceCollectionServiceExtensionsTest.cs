@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
@@ -164,14 +165,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 return new TheoryData<Action<IServiceCollection>, Type, Type, ServiceLifetime>
                 {
                     { collection => collection.TryAddTransient(serviceType, implementationType), serviceType, implementationType, ServiceLifetime.Transient },
+                    { collection => collection.TryAddTransient(serviceType, implementationType, out _), serviceType, implementationType, ServiceLifetime.Transient },
                     { collection => collection.TryAddTransient<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Transient },
+                    { collection => collection.TryAddTransient<IFakeService, FakeService>(out _), serviceType, implementationType, ServiceLifetime.Transient },
                     { collection => collection.TryAddTransient<IFakeService>(), serviceType, serviceType, ServiceLifetime.Transient },
+                    { collection => collection.TryAddTransient<IFakeService>(out _), serviceType, serviceType, ServiceLifetime.Transient },
                     { collection => collection.TryAddTransient(implementationType), implementationType, implementationType, ServiceLifetime.Transient },
+                    { collection => collection.TryAddTransient(implementationType, out _), implementationType, implementationType, ServiceLifetime.Transient },
 
                     { collection => collection.TryAddScoped(serviceType, implementationType), serviceType, implementationType, ServiceLifetime.Scoped },
+                    { collection => collection.TryAddScoped(serviceType, implementationType, out _), serviceType, implementationType, ServiceLifetime.Scoped },
                     { collection => collection.TryAddScoped<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Scoped },
+                    { collection => collection.TryAddScoped<IFakeService, FakeService>(out _), serviceType, implementationType, ServiceLifetime.Scoped },
                     { collection => collection.TryAddScoped<IFakeService>(), serviceType, serviceType, ServiceLifetime.Scoped },
+                    { collection => collection.TryAddScoped<IFakeService>(out _), serviceType, serviceType, ServiceLifetime.Scoped },
                     { collection => collection.TryAddScoped(implementationType), implementationType, implementationType, ServiceLifetime.Scoped },
+                    { collection => collection.TryAddScoped(implementationType, out _), implementationType, implementationType, ServiceLifetime.Scoped },
 
                     { collection => collection.TryAddSingleton(serviceType, implementationType), serviceType, implementationType, ServiceLifetime.Singleton },
                     { collection => collection.TryAddSingleton<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Singleton },
