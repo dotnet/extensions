@@ -14,9 +14,9 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
     {
         private readonly TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly ManualResetEventSlim _delayStop = new ManualResetEventSlim();
-        private readonly HostOptions _hostOptions;
+        private readonly WindowsServiceLifetimeOptions _options;
 
-        public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> optionsAccessor)
+        public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<WindowsServiceLifetimeOptions> optionsAccessor)
         {
             Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
@@ -25,7 +25,8 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
             {
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
-            _hostOptions = optionsAccessor.Value;
+            _options = optionsAccessor.Value;
+            ServiceName = _options.ServiceName;
         }
 
         private IHostApplicationLifetime ApplicationLifetime { get; }
@@ -87,7 +88,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
         {
             ApplicationLifetime.StopApplication();
             // Wait for the host to shutdown before marking service as stopped.
-            _delayStop.Wait(_hostOptions.ShutdownTimeout);
+            _delayStop.Wait(_options.ShutdownTimeout);
             base.OnStop();
         }
 
