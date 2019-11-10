@@ -33,5 +33,51 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.True(new EventId(1).GetHashCode() != new EventId(2).GetHashCode());
             Assert.True(new EventId(1, "Foo").GetHashCode() != new EventId(2, "Foo").GetHashCode());
         }
+
+        [Fact]
+        public void NameOnly_NameIsAssigned()
+        {
+            var foo = new EventId("Foo");
+
+            var bar = new EventId("Bar");
+
+            Assert.Equal("Foo", foo.Name);
+
+            Assert.Equal("Bar", bar.Name);
+        }
+        
+        [Fact]
+        public void NameOnly_IdIsNonZero()
+        {
+            var foo = new EventId("Foo");
+
+            var bar = new EventId("Bar");
+
+            Assert.NotEqual(0, foo.Id);
+
+            Assert.NotEqual(0, bar.Id);
+        }
+
+        [Fact]
+        public void NameOnly_IdAreDistinct()
+        {
+            var foo = new EventId("Foo");
+
+            var bar = new EventId("Bar");
+
+            Assert.NotEqual(foo.Id, bar.Id);
+            Assert.NotEqual(foo, bar);
+        }
+
+        [Fact]
+        public void NameOnly_IdAreStable()
+        {
+            var foo1 = new EventId("Foo");
+
+            var foo2 = new EventId("Foo");
+
+            Assert.Equal(foo1.Id, foo2.Id);
+            Assert.Equal(foo1, foo2);
+        }
     }
 }
