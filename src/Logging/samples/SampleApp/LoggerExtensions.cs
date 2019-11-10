@@ -8,23 +8,14 @@ namespace SampleApp
 {
     internal static class LoggerExtensions
     {
-        private static Func<ILogger, string, IDisposable> _purchaseOrderScope = LoggerMessage.DefineScope<string>("PO:{PurchaseOrder}");
-        private static LogMessage<DateTimeOffset, int> _programStarting = (LogLevel.Information, nameof(ProgramStarting), "Starting at '{StartTime}' and 0x{Hello:X} is hex of 42");
-        private static LogMessage<DateTimeOffset> _programStopping = (LogLevel.Information, nameof(ProgramStopping), "Stopping at '{StopTime}'");
+        private static LogScope<string> _programPurchaceOrderScope = "PO:{PurchaseOrder}";
+        private static LogMessage<DateTimeOffset, int> _programExampleStarting = (LogLevel.Information, nameof(ExampleStarting), "Starting at '{StartTime}' and 0x{Hello:X} is hex of 42");
+        private static LogMessage<DateTimeOffset> _programExampleStopping = (LogLevel.Information, nameof(ExampleStopping), "Stopping at '{StopTime}'");
 
-        public static IDisposable PurchaseOrderScope(this ILogger logger, string purchaseOrder)
-        {
-            return _purchaseOrderScope(logger, purchaseOrder);
-        }
+        public static IDisposable PurchaseOrderScope(this ILogger<Program> logger, string purchaseOrder) => _programPurchaceOrderScope.Begin(logger, purchaseOrder);
 
-        public static void ProgramStarting(this ILogger logger, DateTimeOffset startTime, int hello)
-        {
-            _programStarting.Log(logger, startTime, hello);
-        }
+        public static void ExampleStarting(this ILogger<Program> logger, DateTimeOffset startTime, int hello) => _programExampleStarting.Log(logger, startTime, hello);
 
-        public static void ProgramStopping(this ILogger logger, DateTimeOffset stopTime)
-        {
-            _programStopping.Log(logger, stopTime);
-        }
+        public static void ExampleStopping(this ILogger<Program> logger, DateTimeOffset stopTime) => _programExampleStopping.Log(logger, stopTime);
     }
 }

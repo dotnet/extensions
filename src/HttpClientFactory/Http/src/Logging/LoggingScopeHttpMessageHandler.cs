@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.Http.Logging
                 public static readonly EventId ResponseHeader = new EventId(103, "RequestPipelineResponseHeader");
             }
 
-            private static readonly Func<ILogger, HttpMethod, Uri, IDisposable> _beginRequestPipelineScope = LoggerMessage.DefineScope<HttpMethod, Uri>("HTTP {HttpMethod} {Uri}");
+            private static readonly LogScope<HttpMethod, Uri> _beginRequestPipelineScope = "HTTP {HttpMethod} {Uri}";
 
             private static readonly LogMessage<HttpMethod, Uri> _requestPipelineStart = (
                 LogLevel.Information, 
@@ -70,7 +70,7 @@ namespace Microsoft.Extensions.Http.Logging
 
             public static IDisposable BeginRequestPipelineScope(ILogger logger, HttpRequestMessage request)
             {
-                return _beginRequestPipelineScope(logger, request.Method, request.RequestUri);
+                return _beginRequestPipelineScope.Begin(logger, request.Method, request.RequestUri);
             }
 
             public static void RequestPipelineStart(ILogger logger, HttpRequestMessage request)

@@ -40,9 +40,9 @@ namespace SampleApp
                 logger.LogInformation("Starting");
 
                 var startTime = DateTimeOffset.Now;
-                logger.LogInformation(1, "Started at '{StartTime}' and 0x{Hello:X} is hex of 42", startTime, 42);
+                logger.LogInformation(new EventId("ExampleStarting"), "Started at '{StartTime}' and 0x{Hello:X} is hex of 42", startTime, 42);
                 // or
-                logger.ProgramStarting(startTime, 42);
+                logger.ExampleStarting(startTime, 42);
 
                 using (logger.PurchaseOrderScope("00655321"))
                 {
@@ -59,7 +59,6 @@ namespace SampleApp
 
                     using (logger.BeginScope("Main"))
                     {
-
                         logger.LogInformation("Waiting for user input");
 
                         string input;
@@ -76,11 +75,9 @@ namespace SampleApp
                 }
 
                 var endTime = DateTimeOffset.Now;
-                logger.LogInformation(2, "Stopping at '{StopTime}'", endTime);
+                logger.LogInformation(new EventId("ExampleStopping"), "Stopping at '{StopTime}'", endTime);
                 // or
-                logger.ProgramStopping(endTime);
-
-                logger.LogInformation("Stopping");
+                logger.ExampleStopping(endTime);
             }
         }
     }
