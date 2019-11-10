@@ -22,4 +22,4 @@ IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
     call restore.cmd
 )
 
-start %sln%
+start "" "%sln%"
