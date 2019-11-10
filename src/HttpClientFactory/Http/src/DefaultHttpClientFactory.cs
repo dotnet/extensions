@@ -340,22 +340,22 @@ namespace Microsoft.Extensions.Http
                 public static readonly EventId HandlerExpired = new EventId(103, "HandlerExpired");
             }
 
-            private static readonly Action<ILogger, int, Exception> _cleanupCycleStart = LoggerMessage.Define<int>(
+            private static readonly LogMessage<int> _cleanupCycleStart = (
                 LogLevel.Debug,
                 EventIds.CleanupCycleStart,
                 "Starting HttpMessageHandler cleanup cycle with {InitialCount} items");
 
-            private static readonly Action<ILogger, double, int, int, Exception> _cleanupCycleEnd = LoggerMessage.Define<double, int, int>(
+            private static readonly LogMessage<double, int, int> _cleanupCycleEnd = (
                 LogLevel.Debug,
                 EventIds.CleanupCycleEnd,
                 "Ending HttpMessageHandler cleanup cycle after {ElapsedMilliseconds}ms - processed: {DisposedCount} items - remaining: {RemainingItems} items");
 
-            private static readonly Action<ILogger, string, Exception> _cleanupItemFailed = LoggerMessage.Define<string>(
+            private static readonly LogMessage<string> _cleanupItemFailed = (
                 LogLevel.Error,
                 EventIds.CleanupItemFailed,
                 "HttpMessageHandler.Dispose() threw and unhandled exception for client: '{ClientName}'");
 
-            private static readonly Action<ILogger, double, string, Exception> _handlerExpired = LoggerMessage.Define<double, string>(
+            private static readonly LogMessage<double, string> _handlerExpired = (
                 LogLevel.Debug,
                 EventIds.HandlerExpired,
                 "HttpMessageHandler expired after {HandlerLifetime}ms for client '{ClientName}'");
@@ -363,22 +363,22 @@ namespace Microsoft.Extensions.Http
 
             public static void CleanupCycleStart(ILogger logger, int initialCount)
             {
-                _cleanupCycleStart(logger, initialCount, null);
+                _cleanupCycleStart.Log(logger, initialCount);
             }
 
             public static void CleanupCycleEnd(ILogger logger, TimeSpan duration, int disposedCount, int finalCount)
             {
-                _cleanupCycleEnd(logger, duration.TotalMilliseconds, disposedCount, finalCount, null);
+                _cleanupCycleEnd.Log(logger, duration.TotalMilliseconds, disposedCount, finalCount);
             }
 
             public static void CleanupItemFailed(ILogger logger, string clientName, Exception exception)
             {
-                _cleanupItemFailed(logger, clientName, exception);
+                _cleanupItemFailed.Log(logger, exception, clientName);
             }
 
             public static void HandlerExpired(ILogger logger, string clientName, TimeSpan lifetime)
             {
-                _handlerExpired(logger, lifetime.TotalMilliseconds, clientName, null);
+                _handlerExpired.Log(logger, lifetime.TotalMilliseconds, clientName);
             }
         }
     }

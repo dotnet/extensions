@@ -58,12 +58,12 @@ namespace Microsoft.Extensions.Http.Logging
 
             private static readonly Func<ILogger, HttpMethod, Uri, IDisposable> _beginRequestPipelineScope = LoggerMessage.DefineScope<HttpMethod, Uri>("HTTP {HttpMethod} {Uri}");
 
-            private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestPipelineStart = LoggerMessage.Define<HttpMethod, Uri>(
+            private static readonly LogMessage<HttpMethod, Uri> _requestPipelineStart = (
                 LogLevel.Information, 
                 EventIds.PipelineStart, 
                 "Start processing HTTP request {HttpMethod} {Uri}");
 
-            private static readonly Action<ILogger, double, HttpStatusCode, Exception> _requestPipelineEnd = LoggerMessage.Define<double, HttpStatusCode>(
+            private static readonly LogMessage<double, HttpStatusCode> _requestPipelineEnd = (
                 LogLevel.Information,
                 EventIds.PipelineEnd,
                 "End processing HTTP request after {ElapsedMilliseconds}ms - {StatusCode}");
@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.Http.Logging
 
             public static void RequestPipelineStart(ILogger logger, HttpRequestMessage request)
             {
-                _requestPipelineStart(logger, request.Method, request.RequestUri, null);
+                _requestPipelineStart.Log(logger, request.Method, request.RequestUri);
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.Http.Logging
 
             public static void RequestPipelineEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration)
             {
-                _requestPipelineEnd(logger, duration.TotalMilliseconds, response.StatusCode, null);
+                _requestPipelineEnd.Log(logger, duration.TotalMilliseconds, response.StatusCode);
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {

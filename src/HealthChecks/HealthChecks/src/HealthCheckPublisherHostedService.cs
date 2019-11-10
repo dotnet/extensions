@@ -198,64 +198,64 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         private static class Logger
         {
-            private static readonly Action<ILogger, Exception> _healthCheckPublisherProcessingBegin = LoggerMessage.Define(
+            private static readonly LogMessage _healthCheckPublisherProcessingBegin = (
                 LogLevel.Debug,
                 EventIds.HealthCheckPublisherProcessingBegin,
                 "Running health check publishers");
 
-            private static readonly Action<ILogger, double, Exception> _healthCheckPublisherProcessingEnd = LoggerMessage.Define<double>(
+            private static readonly LogMessage<double> _healthCheckPublisherProcessingEnd = (
                 LogLevel.Debug,
                 EventIds.HealthCheckPublisherProcessingEnd,
                 "Health check publisher processing completed after {ElapsedMilliseconds}ms");
 
-            private static readonly Action<ILogger, IHealthCheckPublisher, Exception> _healthCheckPublisherBegin = LoggerMessage.Define<IHealthCheckPublisher>(
+            private static readonly LogMessage<IHealthCheckPublisher> _healthCheckPublisherBegin = (
                 LogLevel.Debug,
                 EventIds.HealthCheckPublisherBegin,
                 "Running health check publisher '{HealthCheckPublisher}'");
 
-            private static readonly Action<ILogger, IHealthCheckPublisher, double, Exception> _healthCheckPublisherEnd = LoggerMessage.Define<IHealthCheckPublisher, double>(
+            private static readonly LogMessage<IHealthCheckPublisher, double> _healthCheckPublisherEnd = (
                 LogLevel.Debug,
                 EventIds.HealthCheckPublisherEnd,
                 "Health check '{HealthCheckPublisher}' completed after {ElapsedMilliseconds}ms");
 
-            private static readonly Action<ILogger, IHealthCheckPublisher, double, Exception> _healthCheckPublisherError = LoggerMessage.Define<IHealthCheckPublisher, double>(
+            private static readonly LogMessage<IHealthCheckPublisher, double> _healthCheckPublisherError = (
                 LogLevel.Error,
                 EventIds.HealthCheckPublisherError,
                 "Health check {HealthCheckPublisher} threw an unhandled exception after {ElapsedMilliseconds}ms");
 
-            private static readonly Action<ILogger, IHealthCheckPublisher, double, Exception> _healthCheckPublisherTimeout = LoggerMessage.Define<IHealthCheckPublisher, double>(
+            private static readonly LogMessage<IHealthCheckPublisher, double> _healthCheckPublisherTimeout = (
                 LogLevel.Error,
                 EventIds.HealthCheckPublisherTimeout,
                 "Health check {HealthCheckPublisher} was canceled after {ElapsedMilliseconds}ms");
 
             public static void HealthCheckPublisherProcessingBegin(ILogger logger)
             {
-                _healthCheckPublisherProcessingBegin(logger, null);
+                _healthCheckPublisherProcessingBegin.Log(logger);
             }
 
             public static void HealthCheckPublisherProcessingEnd(ILogger logger, TimeSpan duration, Exception exception = null)
             {
-                _healthCheckPublisherProcessingEnd(logger, duration.TotalMilliseconds, exception);
+                _healthCheckPublisherProcessingEnd.Log(logger, exception, duration.TotalMilliseconds);
             }
 
             public static void HealthCheckPublisherBegin(ILogger logger, IHealthCheckPublisher publisher)
             {
-                _healthCheckPublisherBegin(logger, publisher, null);
+                _healthCheckPublisherBegin.Log(logger, publisher);
             }
 
             public static void HealthCheckPublisherEnd(ILogger logger, IHealthCheckPublisher publisher, TimeSpan duration)
             {
-                _healthCheckPublisherEnd(logger, publisher, duration.TotalMilliseconds, null);
+                _healthCheckPublisherEnd.Log(logger, publisher, duration.TotalMilliseconds);
             }
 
             public static void HealthCheckPublisherError(ILogger logger, IHealthCheckPublisher publisher, TimeSpan duration, Exception exception)
             {
-                _healthCheckPublisherError(logger, publisher, duration.TotalMilliseconds, exception);
+                _healthCheckPublisherError.Log(logger, exception, publisher, duration.TotalMilliseconds);
             }
 
             public static void HealthCheckPublisherTimeout(ILogger logger, IHealthCheckPublisher publisher, TimeSpan duration)
             {
-                _healthCheckPublisherTimeout(logger, publisher, duration.TotalMilliseconds, null);
+                _healthCheckPublisherTimeout.Log(logger, publisher, duration.TotalMilliseconds);
             }
         }
     }
