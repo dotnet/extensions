@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Xunit;
 
@@ -64,7 +65,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var dispatcher = _dispatcherProperty.GetValue(Dispatcher);
             var testSnapshotManager = _createProjectSnapshotManagerMethod.Invoke(null, new object[] { dispatcher });
             _allowNotifyListenersProperty.SetValue(testSnapshotManager, allowNotifyListeners);
-            var snapshotManager = (OmniSharpProjectSnapshotManagerBase)_omniSharpProjectSnapshotMangerConstructor.Invoke(new[] { testSnapshotManager });
+            var remoteTextLoaderFactory = new DefaultRemoteTextLoaderFactory(new FilePathNormalizer());
+            var snapshotManager = (OmniSharpProjectSnapshotManagerBase)_omniSharpProjectSnapshotMangerConstructor.Invoke(new[] { testSnapshotManager, remoteTextLoaderFactory });
 
             return snapshotManager;
         }

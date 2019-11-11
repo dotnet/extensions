@@ -4,14 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.Extensions.Logging;
+using Moq;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol;
@@ -20,146 +18,37 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    // These tests are really integration tests. There isn't a good way to unit test this functionality since
-    // the only thing in here is threading.
-    public class BackgroundDocumentGeneratorTest : LanguageServerTestBase
+    public class UnsynchronizableContentDocumentProcessedListenerTest : LanguageServerTestBase
     {
-        public BackgroundDocumentGeneratorTest()
+        public UnsynchronizableContentDocumentProcessedListenerTest()
         {
-            Documents = new HostDocument[]
-            {
-                new HostDocument("c:/Test1/Index.cshtml", "Index.cshtml"),
-                new HostDocument("c:/Test1/Components/Counter.cshtml", "Components/Counter.cshtml"),
-            };
-
-            HostProject1 = new HostProject("c:/Test1/Test1.csproj", RazorConfiguration.Default, "TestRootNamespace");
-            HostProject2 = new HostProject("c:/Test2/Test2.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            var projectSnapshotManager = new Mock<ProjectSnapshotManager>();
+            projectSnapshotManager.Setup(psm => psm.IsDocumentOpen(It.IsAny<string>()))
+                .Returns(true);
+            ProjectSnapshotManager = projectSnapshotManager.Object;
         }
 
-        private IEnumerable<DocumentProcessedListener> Listeners => Enumerable.Empty<DocumentProcessedListener>();
-
-        private HostDocument[] Documents { get; }
-
-        private HostProject HostProject1 { get; }
-
-        private HostProject HostProject2 { get; }
+        private ProjectSnapshotManager ProjectSnapshotManager { get; }
 
         [Fact]
-        public void Queue_ProcessesNotifications_AndGoesBackToSleep()
-        {
-            // Arrange
-            var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
-            projectManager.ProjectAdded(HostProject1);
-            projectManager.ProjectAdded(HostProject2);
-            projectManager.DocumentAdded(HostProject1, Documents[0], null);
-            projectManager.DocumentAdded(HostProject1, Documents[1], null);
-
-            var project = projectManager.GetLoadedProject(HostProject1.FilePath);
-
-            var queue = new TestBackgroundDocumentGenerator(Dispatcher, LoggerFactory)
-            {
-                Delay = TimeSpan.FromMilliseconds(1),
-                BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
-                NotifyBackgroundWorkStarting = new ManualResetEventSlim(initialState: false),
-                BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: false),
-                NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
-            };
-
-            // Act & Assert
-            queue.Enqueue(project.GetDocument(Documents[0].FilePath));
-
-            Assert.True(queue.IsScheduledOrRunning, "Queue should be scheduled during Enqueue");
-            Assert.True(queue.HasPendingNotifications, "Queue should have a notification created during Enqueue");
-
-            // Allow the background work to proceed.
-            queue.BlockBackgroundWorkStart.Set();
-            queue.BlockBackgroundWorkCompleting.Set();
-
-            queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3));
-
-            Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
-            Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
-        }
-
-        [Fact]
-        public void Queue_ProcessesNotifications_AndRestarts()
-        {
-            // Arrange
-            var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
-            projectManager.ProjectAdded(HostProject1);
-            projectManager.ProjectAdded(HostProject2);
-            projectManager.DocumentAdded(HostProject1, Documents[0], null);
-            projectManager.DocumentAdded(HostProject1, Documents[1], null);
-
-            var project = projectManager.GetLoadedProject(HostProject1.FilePath);
-
-            var queue = new TestBackgroundDocumentGenerator(Dispatcher, LoggerFactory)
-            {
-                Delay = TimeSpan.FromMilliseconds(1),
-                BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
-                NotifyBackgroundWorkStarting = new ManualResetEventSlim(initialState: false),
-                NotifyBackgroundCapturedWorkload = new ManualResetEventSlim(initialState: false),
-                BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: false),
-                NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
-            };
-
-            // Act & Assert
-            queue.Enqueue(project.GetDocument(Documents[0].FilePath));
-
-            Assert.True(queue.IsScheduledOrRunning, "Queue should be scheduled during Enqueue");
-            Assert.True(queue.HasPendingNotifications, "Queue should have a notification created during Enqueue");
-
-            // Allow the background work to start.
-            queue.BlockBackgroundWorkStart.Set();
-
-            queue.NotifyBackgroundWorkStarting.Wait(TimeSpan.FromSeconds(1));
-            Assert.True(queue.IsScheduledOrRunning, "Worker should be processing now");
-
-            queue.NotifyBackgroundCapturedWorkload.Wait(TimeSpan.FromSeconds(1));
-            Assert.False(queue.HasPendingNotifications, "Worker should have taken all notifications");
-
-            queue.Enqueue(project.GetDocument(Documents[1].FilePath));
-            Assert.True(queue.HasPendingNotifications); // Now we should see the worker restart when it finishes.
-
-            // Allow work to complete, which should restart the timer.
-            queue.BlockBackgroundWorkCompleting.Set();
-
-            queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3));
-            queue.NotifyBackgroundWorkCompleted.Reset();
-
-            // It should start running again right away.
-            Assert.True(queue.IsScheduledOrRunning, "Queue should be scheduled during Enqueue");
-            Assert.True(queue.HasPendingNotifications, "Queue should have a notification created during Enqueue");
-
-            // Allow the background work to proceed.
-            queue.BlockBackgroundWorkStart.Set();
-
-            queue.BlockBackgroundWorkCompleting.Set();
-            queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3));
-
-            Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
-            Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
-        }
-
-        [Fact]
-        public void ReportUnsynchronizableContent_DoesNothingForOldDocuments()
+        public void DocumentProcessed_DoesNothingForOldDocuments()
         {
             // Arrange
             var router = new TestRouter();
             var cache = new TestDocumentVersionCache(new Dictionary<DocumentSnapshot, long>());
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, Listeners, router, LoggerFactory);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            listener.Initialize(ProjectSnapshotManager);
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml");
-            var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
 
             // Act
-            backgroundGenerator.ReportUnsynchronizableContent(work);
+            listener.DocumentProcessed(document);
 
             // Assert
             Assert.Empty(router.SynchronizedDocuments);
         }
 
         [Fact]
-        public void ReportUnsynchronizableContent_DoesNothingIfAlreadySynchronized()
+        public void DocumentProcessed_DoesNothingIfAlreadySynchronized()
         {
             // Arrange
             var router = new TestRouter();
@@ -174,18 +63,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             document.State.HostDocument.GeneratedCodeContainer.SetOutput(document, csharpDocument, documentVersion.GetNewerVersion(), VersionStamp.Default);
 
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, Listeners, router, LoggerFactory);
-            var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            listener.Initialize(ProjectSnapshotManager);
 
             // Act
-            backgroundGenerator.ReportUnsynchronizableContent(work);
+            listener.DocumentProcessed(document);
 
             // Assert
             Assert.Empty(router.SynchronizedDocuments);
         }
 
         [Fact]
-        public void ReportUnsynchronizableContent_DoesNothingForOlderDocuments()
+        public void DocumentProcessed_DoesNothingForOlderDocuments()
         {
             // Arrange
             var router = new TestRouter();
@@ -202,18 +91,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             oldDocument.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
 
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, Listeners, router, LoggerFactory);
-            var work = new[] { new KeyValuePair<string, DocumentSnapshot>(oldDocument.FilePath, oldDocument) };
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            listener.Initialize(ProjectSnapshotManager);
 
             // Act
-            backgroundGenerator.ReportUnsynchronizableContent(work);
+            listener.DocumentProcessed(oldDocument);
 
             // Assert
             Assert.Empty(router.SynchronizedDocuments);
         }
 
         [Fact]
-        public void ReportUnsynchronizableContent_DoesNothingIfSourceVersionsAreDifferent()
+        public void DocumentProcessed_DoesNothingIfSourceVersionsAreDifferent()
         {
             // Arrange
             var router = new TestRouter();
@@ -230,18 +119,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             document.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
 
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, Listeners, router, LoggerFactory);
-            var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            listener.Initialize(ProjectSnapshotManager);
 
             // Act
-            backgroundGenerator.ReportUnsynchronizableContent(work);
+            listener.DocumentProcessed(document);
 
             // Assert
             Assert.Empty(router.SynchronizedDocuments);
         }
 
         [Fact]
-        public void ReportUnsynchronizableContent_SynchronizesIfSourceVersionsAreIdenticalButSyncVersionNewer()
+        public void DocumentProcessed_SynchronizesIfSourceVersionsAreIdenticalButSyncVersionNewer()
         {
             // Arrange
             var router = new TestRouter();
@@ -258,26 +147,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             document.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
 
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, Listeners, router, LoggerFactory);
-            var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            listener.Initialize(ProjectSnapshotManager);
 
             // Act
-            backgroundGenerator.ReportUnsynchronizableContent(work);
+            listener.DocumentProcessed(document);
 
             // Assert
             var filePath = Assert.Single(router.SynchronizedDocuments);
             Assert.Equal(document.FilePath, filePath);
-        }
-
-        private class TestBackgroundDocumentGenerator : BackgroundDocumentGenerator
-        {
-            public TestBackgroundDocumentGenerator(ForegroundDispatcher foregroundDispatcher, ILoggerFactory loggerFactory) : base(foregroundDispatcher, loggerFactory)
-            {
-            }
-
-            internal override void ReportUnsynchronizableContent(KeyValuePair<string, DocumentSnapshot>[] work)
-            {
-            }
         }
 
         private class TestDocumentVersionCache : DocumentVersionCache
