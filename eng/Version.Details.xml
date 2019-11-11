@@ -96,6 +96,10 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>be7971c98d4ad60cdf8c3d1aa41f950f42bd466a</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.0-alpha.1.19556.7" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>475778fa982064e26a8b3a5d7545112f6586ac61</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.0-beta4-19559-01">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>f53cffe5fc8bbd4f6300dd9c917becc26f254bf4</Sha>
