@@ -12,6 +12,5 @@ namespace Microsoft.Extensions.Hosting
         /// The name used to identify the service to the system.
         /// </summary>
         public string ServiceName { get; set; } = string.Empty;
-
     }
 }
