@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) => mre.Set());
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object);
-            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", "obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     mre.Set();
                 });
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object, enqueueDelay: 10);
-            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", "obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);

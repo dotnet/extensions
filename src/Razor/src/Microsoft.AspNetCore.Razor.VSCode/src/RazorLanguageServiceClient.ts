@@ -21,11 +21,6 @@ export class RazorLanguageServiceClient {
     constructor(
         private readonly serverClient: RazorLanguageServerClient,
         private readonly logger: RazorLogger) {
-        serverClient.onStart(() => {
-            // Once the server starts we need to attach to all of the request handlers
-
-            serverClient.onRequest('getTextDocument', filePath => this.getTextDocument(filePath));
-        });
     }
 
     public async addDocument(documentUri: vscode.Uri) {
@@ -79,24 +74,6 @@ export class RazorLanguageServiceClient {
         const response = await this.serverClient.sendRequest<LanguageQueryResponse>('razor/languageQuery', request);
         response.position = new vscode.Position(response.position.line, response.position.character);
         return response;
-    }
-
-    private async getTextDocument(filePath: string) {
-        const clientUri = vscode.Uri.file(filePath);
-        try {
-            const document = await vscode.workspace.openTextDocument(clientUri);
-            return new RazorTextDocumentItem(document);
-        } catch {
-            this.logger.logVerbose(`Failed to open text document ${filePath}. Returning an empty document to the server.`);
-
-            // We were asked for a document that no longer exists. Return an empty text document as a response.
-            return {
-                languageId: RazorLanguage.id,
-                version: -1,
-                text: '',
-                uri: clientUri.toString(),
-            };
-        }
     }
 
     private async ensureStarted() {

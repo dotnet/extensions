@@ -30,8 +30,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectRootElement = ProjectRootElement.Create("/path/to/project.csproj");
             projectRootElement.AddItem("Compile", filePath);
             var projectInstance = new ProjectInstance(projectRootElement);
-            var onAddArgs = new RazorFileChangeEventArgs(filePath, filePath, projectInstance, RazorFileChangeKind.Added);
-            var onRemoveArgs = new RazorFileChangeEventArgs(filePath, filePath, changedProjectInstance, RazorFileChangeKind.Removed);
+            var onAddArgs = new RazorFileChangeEventArgs(filePath, projectInstance, RazorFileChangeKind.Added);
+            var onRemoveArgs = new RazorFileChangeEventArgs(filePath, changedProjectInstance, RazorFileChangeKind.Removed);
             refreshTrigger.RazorDocumentOutputChanged(onAddArgs);
             refreshTrigger.BlockRefreshWorkStarting.Set();
 
@@ -77,9 +77,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Not adding file3 here to ensure it doesn't get updated.
 
             var projectInstance = new ProjectInstance(projectRootElement);
-            var file1Args = new RazorFileChangeEventArgs(file1Path, file1Path, projectInstance, RazorFileChangeKind.Changed);
-            var file2Args = new RazorFileChangeEventArgs(file2Path, file2Path, projectInstance, RazorFileChangeKind.Changed);
-            var file3Args = new RazorFileChangeEventArgs(file3Path, file3Path, projectInstance, RazorFileChangeKind.Changed);
+            var file1Args = new RazorFileChangeEventArgs(file1Path, projectInstance, RazorFileChangeKind.Changed);
+            var file2Args = new RazorFileChangeEventArgs(file2Path, projectInstance, RazorFileChangeKind.Changed);
+            var file3Args = new RazorFileChangeEventArgs(file3Path, projectInstance, RazorFileChangeKind.Changed);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(file1Args);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             var refreshTrigger = CreateTestComponentRefreshTrigger();
             refreshTrigger.BlockRefreshWorkStarting = new ManualResetEventSlim(initialState: false);
-            var args = new RazorFileChangeEventArgs("/path/to/file.razor.g.cs", "file.razor.g.cs", projectInstance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/file.razor.g.cs", projectInstance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             var refreshTrigger = CreateTestComponentRefreshTrigger();
-            var args = new RazorFileChangeEventArgs("/path/to/file.razor.g.cs", "file.razor.g.cs", projectInstance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/file.razor.g.cs", projectInstance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 var hostDocument = new OmniSharpHostDocument("file.cshtml", "file.cshtml", FileKinds.Component);
                 projectManager.DocumentAdded(hostProject, hostDocument);
             });
-            var args = new RazorFileChangeEventArgs("file.cshtml", "file.cshtml", projectInstance, RazorFileChangeKind.Changed);
+            var args = new RazorFileChangeEventArgs("file.cshtml", projectInstance, RazorFileChangeKind.Changed);
 
             // Act
             await refreshTrigger.RazorDocumentChangedAsync(args);
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             var refreshTrigger = CreateTestComponentRefreshTrigger();
-            var args = new RazorFileChangeEventArgs("file.cshtml", "file.cshtml", projectInstance, changeKind);
+            var args = new RazorFileChangeEventArgs("file.cshtml", projectInstance, changeKind);
 
             // Act & Assert
 
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 projectManager.DocumentAdded(hostProject, hostDocument);
             });
 
-            var args = new RazorFileChangeEventArgs("file.cshtml", "file.cshtml", projectInstance, RazorFileChangeKind.Changed);
+            var args = new RazorFileChangeEventArgs("file.cshtml", projectInstance, RazorFileChangeKind.Changed);
 
             // Act & Assert
             await refreshTrigger.RazorDocumentChangedAsync(args);

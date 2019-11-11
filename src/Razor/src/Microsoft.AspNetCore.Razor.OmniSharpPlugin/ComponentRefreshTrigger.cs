@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     // Force update the OmniSharp Workspace for component declaration changes.
 
                     var componentDeclarationLocation = documentChangeInfo.FilePath;
-                    var isCompileItem = IsCompileItem(documentChangeInfo.RelativeFilePath, projectInstance);
+                    var isCompileItem = IsCompileItem(componentDeclarationLocation, projectInstance);
                     var wasACompileItem = false;
                     lock (_lastSeenCompileItems)
                     {
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 // On save we kick off a design time build if the file saved happened to be a component. 
                 // This replicates the VS windows world SingleFileGenerator behavior.
                 var isComponentFile = await Task.Factory.StartNew(
-                    () => IsComponentFile(args.RelativeFilePath, args.UnevaluatedProjectInstance.ProjectFileLocation.File),
+                    () => IsComponentFile(args.FilePath, args.UnevaluatedProjectInstance.ProjectFileLocation.File),
                     CancellationToken.None,
                     TaskCreationOptions.None,
                     _foregroundDispatcher.ForegroundScheduler);
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         // Internal for testing
-        internal bool IsComponentFile(string relativeDocumentFilePath, string projectFilePath)
+        internal bool IsComponentFile(string documentFilePath, string projectFilePath)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 return false;
             }
 
-            var documentSnapshot = projectSnapshot.GetDocument(relativeDocumentFilePath);
+            var documentSnapshot = projectSnapshot.GetDocument(documentFilePath);
             if (documentSnapshot == null)
             {
                 return false;
@@ -328,22 +328,19 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
                 // Always take latest project instance.
                 _projectInstance = change.UnevaluatedProjectInstance;
-                _documentChangeInfos[change.FilePath] = new DocumentChangeInfo(change.FilePath, change.RelativeFilePath, change.Kind);
+                _documentChangeInfos[change.FilePath] = new DocumentChangeInfo(change.FilePath, change.Kind);
             }
         }
 
         private struct DocumentChangeInfo
         {
-            public DocumentChangeInfo(string filePath, string relativeFilePath, RazorFileChangeKind changeKind)
+            public DocumentChangeInfo(string filePath, RazorFileChangeKind changeKind)
             {
                 FilePath = filePath;
-                RelativeFilePath = relativeFilePath;
                 ChangeKind = changeKind;
             }
 
             public string FilePath { get; }
-
-            public string RelativeFilePath { get; }
 
             public RazorFileChangeKind ChangeKind { get; }
         }
