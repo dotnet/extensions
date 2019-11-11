@@ -8,7 +8,7 @@
   <Import Project="eng\Baseline.Designer.props" />
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
-    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
     <!-- Suppress creation of .nupkg for servicing builds. -->
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
   </PropertyGroup>
