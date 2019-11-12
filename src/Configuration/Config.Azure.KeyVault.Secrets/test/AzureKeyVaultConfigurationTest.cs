@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 foreach (var secret in page)
                 {
                     mock.Setup(client => client.GetSecretAsync(secret.Name, null, default))
-                        .Callback(getSecretCallback)
+                        .Callback((string name, string label, CancellationToken token) => getSecretCallback(name))
                         .ReturnsAsync(Response.FromValue(secret, Mock.Of<Response>()));
                 }   
             }
