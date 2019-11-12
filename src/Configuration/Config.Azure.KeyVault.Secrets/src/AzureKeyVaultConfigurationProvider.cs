@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Security.KeyVault.Secrets;
 
-namespace Microsoft.Extensions.Configuration.AzureKeyVault
+namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets
 {
     /// <summary>
     /// An AzureKeyVault based <see cref="ConfigurationProvider"/>.

@@ -1,6 +1,6 @@
 
 using Azure.Security.KeyVault.Secrets;
-using Microsoft.Extensions.Configuration.AzureKeyVault;
+using Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets;
 
 namespace ConsoleApplication
 {

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Configuration.Test;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
-using Action = System.Action;
+using Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 {
