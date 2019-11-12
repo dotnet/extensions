@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.Configuration
             Uri vault,
             IKeyVaultSecretManager manager)
         {
-            return AddAzureKeyVault(configurationBuilder, vault, new DefaultAzureCredential(), new DefaultKeyVaultSecretManager());
+            return AddAzureKeyVault(configurationBuilder, vault, manager, new DefaultKeyVaultSecretManager());
         }
 
         /// <summary>
