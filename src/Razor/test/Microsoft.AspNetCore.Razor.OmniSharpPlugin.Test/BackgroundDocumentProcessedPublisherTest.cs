@@ -1,30 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
-using OmniSharp;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class BackgroundDocumentProcessedPublisherTest : OmniSharpTestBase
+    public class BackgroundDocumentProcessedPublisherTest : OmniSharpWorkspaceTestBase
     {
-        public BackgroundDocumentProcessedPublisherTest()
-        {
-            Workspace = TestOmniSharpWorkspace.Create();
-            var projectId = ProjectId.CreateNewId();
-            var projectInfo = ProjectInfo.Create(projectId, VersionStamp.Default, "TestProject", "TestAssembly", LanguageNames.CSharp, filePath: "/path/to/project.csproj");
-            Workspace.AddProject(projectInfo);
-            Project = Workspace.CurrentSolution.Projects.FirstOrDefault();
-        }
-
-        private OmniSharpWorkspace Workspace { get; }
-
-        private Project Project { get; }
-
         [Fact]
         public async Task DocumentProcessed_CSHTML_Noops()
         {
@@ -287,15 +272,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             Assert.NotSame(newSolution, Workspace.CurrentSolution);
             var currentBackgroundDocument = Workspace.CurrentSolution.GetDocument(backgroundDocument.Id);
             Assert.Null(currentBackgroundDocument);
-        }
-
-        private Document AddRoslynDocument(string filePath)
-        {
-            var backgroundDocumentId = DocumentId.CreateNewId(Project.Id);
-            var backgroundDocumentInfo = DocumentInfo.Create(backgroundDocumentId, filePath ?? "EmptyFile", filePath: filePath);
-            Workspace.AddDocument(backgroundDocumentInfo);
-            var addedDocument = Workspace.CurrentSolution.GetDocument(backgroundDocumentId);
-            return addedDocument;
         }
     }
 }

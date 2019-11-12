@@ -13,7 +13,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     [Collection("MSBuildLocator")]
-    public class OmniSharpTestBase : LanguageServerTestBase
+    public abstract class OmniSharpTestBase : LanguageServerTestBase
     {
         private readonly MethodInfo _createTestProjectSnapshotMethod;
         private readonly MethodInfo _createWithDocumentsTestProjectSnapshotMethod;

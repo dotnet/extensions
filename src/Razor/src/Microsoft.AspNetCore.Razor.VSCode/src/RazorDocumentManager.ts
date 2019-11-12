@@ -72,6 +72,10 @@ export class RazorDocumentManager implements IRazorDocumentManager {
                 continue;
             }
 
+            if (textDocument.isClosed) {
+                continue;
+            }
+
             this.openDocument(textDocument.uri);
         }
     }

@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
                 TextAndVersion textAndVersion;
 
-                using (var stream = File.OpenRead(physicalFilePath))
+                using (var stream = new FileStream(physicalFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
                 {
                     var version = VersionStamp.Create(prevLastWriteTime);
                     var text = SourceText.From(stream);
