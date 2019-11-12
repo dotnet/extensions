@@ -14,19 +14,23 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
     {
         private readonly TaskCompletionSource<object> _delayStart = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly ManualResetEventSlim _delayStop = new ManualResetEventSlim();
-        private readonly WindowsServiceLifetimeOptions _options;
+        private readonly HostOptions _hostoptions;
 
-        public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<WindowsServiceLifetimeOptions> optionsAccessor)
+        public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> hostOptionsAccessor, IOptions<WindowsServiceLifetimeOptions> windowsServiceOptionsAccessor)
         {
             Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
             Logger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
-            if (optionsAccessor == null)
+            if (hostOptionsAccessor == null)
             {
-                throw new ArgumentNullException(nameof(optionsAccessor));
+                throw new ArgumentNullException(nameof(hostOptionsAccessor));
             }
-            _options = optionsAccessor.Value;
-            ServiceName = _options.ServiceName;
+            if (windowsServiceOptionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(windowsServiceOptionsAccessor));
+            }
+            _hostoptions = hostOptionsAccessor.Value;
+            ServiceName = windowsServiceOptionsAccessor.Value.ServiceName;
         }
 
         private IHostApplicationLifetime ApplicationLifetime { get; }
@@ -88,7 +92,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
         {
             ApplicationLifetime.StopApplication();
             // Wait for the host to shutdown before marking service as stopped.
-            _delayStop.Wait(_options.ShutdownTimeout);
+            _delayStop.Wait(_hostoptions.ShutdownTimeout);
             base.OnStop();
         }
 

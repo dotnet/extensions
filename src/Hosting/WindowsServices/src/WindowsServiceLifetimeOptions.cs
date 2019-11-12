@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 namespace Microsoft.Extensions.Hosting
 
 {
-    public class WindowsServiceLifetimeOptions : HostOptions
+    public class WindowsServiceLifetimeOptions
     {
         /// <summary>
         /// The name used to identify the service to the system.
