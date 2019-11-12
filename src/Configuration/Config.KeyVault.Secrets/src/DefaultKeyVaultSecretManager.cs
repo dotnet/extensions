@@ -3,7 +3,7 @@
 
 using Azure.Security.KeyVault.Secrets;
 
-namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets
+namespace Microsoft.Extensions.Configuration.KeyVault.Secrets
 {
     /// <summary>
     /// Default implementation of <see cref="IKeyVaultSecretManager"/> that loads all secrets

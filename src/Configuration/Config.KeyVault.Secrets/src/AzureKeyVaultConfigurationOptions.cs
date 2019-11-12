@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Security.KeyVault.Secrets;
 
-namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets
+namespace Microsoft.Extensions.Configuration.KeyVault.Secrets
 {
     /// <summary>
     /// Options class used by the <see cref="AzureKeyVaultConfigurationExtensions"/>.

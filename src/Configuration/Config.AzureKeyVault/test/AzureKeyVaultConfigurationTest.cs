@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 },
                 new []
                 {
-                    CreateSecret("Secret2", "Value2")
+                    CreateSecret("Secret2", "Value2")   
                 }
                 );
 

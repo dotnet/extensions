@@ -5,7 +5,7 @@ using System;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
-using Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets;
+using Microsoft.Extensions.Configuration.KeyVault.Secrets;
 
 namespace Microsoft.Extensions.Configuration
 {
