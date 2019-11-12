@@ -95,13 +95,17 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
+            RedisValue updatedValue = value;
+            if (_options.Serialize != null)
+                updatedValue = _options.Serialize.Invoke(value);
+
             var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
                         absoluteExpiration?.Ticks ?? NotPresent,
                         options.SlidingExpiration?.Ticks ?? NotPresent,
                         GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
-                        value
+                        updatedValue
                 });
         }
 
@@ -130,13 +134,17 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
+            RedisValue updatedValue = value;
+            if (_options.Serialize != null)
+                updatedValue = _options.Serialize.Invoke(value);
+
             await _cache.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
                         absoluteExpiration?.Ticks ?? NotPresent,
                         options.SlidingExpiration?.Ticks ?? NotPresent,
                         GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
-                        value
+                        updatedValue
                 });
         }
 
@@ -253,6 +261,9 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             if (results.Length >= 3 && results[2].HasValue)
             {
+               if (_options.Deserialize != null)
+                    return _options.Deserialize.Invoke(results[2]);
+
                 return results[2];
             }
 
@@ -291,6 +302,9 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             if (results.Length >= 3 && results[2].HasValue)
             {
+                if (_options.Deserialize != null)
+                    return _options.Deserialize.Invoke(results[2]);
+
                 return results[2];
             }
 
