@@ -1,8 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.KeyVault.Models;
+using Azure.Security.KeyVault.Secrets;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
@@ -15,13 +14,13 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         internal static IKeyVaultSecretManager Instance { get; } = new DefaultKeyVaultSecretManager();
 
         /// <inheritdoc />
-        public virtual string GetKey(SecretBundle secret)
+        public virtual string GetKey(KeyVaultSecret secret)
         {
-            return secret.SecretIdentifier.Name.Replace("--", ConfigurationPath.KeyDelimiter);
+            return secret.Name.Replace("--", ConfigurationPath.KeyDelimiter);
         }
 
         /// <inheritdoc />
-        public virtual bool Load(SecretItem secret)
+        public virtual bool Load(SecretProperties secret)
         {
             return true;
         }

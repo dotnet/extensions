@@ -2,17 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Extensions.Configuration.Test;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Rest.Azure;
 using Moq;
 using Xunit;
 using Action = System.Action;
@@ -21,14 +19,57 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 {
     public class AzureKeyVaultConfigurationTest: ConfigurationProviderTestBase
     {
-        private const string VaultUri = "https://vault";
         private static readonly TimeSpan NoReloadDelay = TimeSpan.FromMilliseconds(1);
 
+        private void SetPages(Mock<SecretClient> mock, params KeyVaultSecret[][] pages)
+        {
+            SetPages(mock, pages);
+        }
+
+        private void SetPages(Mock<SecretClient> mock, Func<string, Task> getSecretCallback, params KeyVaultSecret[][] pages)
+        {
+            getSecretCallback ??= (_ => Task.CompletedTask);
+
+            var pagesOfProperties = pages.Select(
+                page => page.Select(secret => secret.Properties).ToArray()).ToArray();
+
+            mock.Setup(m => m.GetPropertiesOfSecretsAsync(default)).Returns(new MockAsyncPageable(pagesOfProperties));
+
+            foreach (var page in pages)
+            {
+                foreach (var secret in page)
+                {
+                    mock.Setup(client => client.GetSecretAsync(secret.Name, null, default))
+                        .Callback(getSecretCallback)
+                        .ReturnsAsync(Response.FromValue(secret, Mock.Of<Response>()));
+                }   
+            }
+        }
+
+        private class MockAsyncPageable: AsyncPageable<SecretProperties>
+        {
+            private readonly SecretProperties[][] _pages;
+
+            public MockAsyncPageable(SecretProperties[][] pages)
+            {
+                _pages = pages;
+            }
+
+            public override async IAsyncEnumerable<Page<SecretProperties>> AsPages(string continuationToken = null, int? pageSizeHint = null)
+            {
+                foreach (var page in _pages)
+                {
+                    yield return Page<SecretProperties>.FromValues(page, null, Mock.Of<Response>());
+                }
+
+                await Task.CompletedTask;
+            }
+        }
         [Fact]
         public void LoadsAllSecretsFromVault()
         {
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client, 
                 new []
                 {
                     CreateSecret("Secret1", "Value1")
@@ -40,7 +81,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 );
 
             // Act
-            using (var provider = new AzureKeyVaultConfigurationProvider(client, VaultUri, new DefaultKeyVaultSecretManager()))
+            using (var provider = new AzureKeyVaultConfigurationProvider(client.Object,  new DefaultKeyVaultSecretManager()))
             {
                 provider.Load();
 
@@ -51,24 +92,21 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             }
         }
 
-        private (SecretAttributes attributes, SecretBundle bundle) CreateSecret(string name, string value, Func<SecretAttributes> attributesFactory = null, Action<SecretBundle> bundleAction = null)
+        private KeyVaultSecret CreateSecret(string name, string value, bool? enabled = true, DateTimeOffset? updated = null)
         {
-            var id = new SecretIdentifier(VaultUri, name).Identifier;
-            var secretAttributes = attributesFactory?.Invoke() ?? new SecretAttributes() { Enabled = true };
-            var secretBundle = new SecretBundle(VaultUri, id);
-            secretBundle.Id = id;
-            secretBundle.Attributes = secretAttributes;
-            secretBundle.Value = value;
-            bundleAction?.Invoke(secretBundle);
+            var id = new Uri("http://azure.keyvault/" + name);
 
-            return (secretAttributes, secretBundle);
+            var secretProperties = SecretModelFactory.SecretProperties(id, name:name, updatedOn: updated);
+            secretProperties.Enabled = enabled;
+
+            return SecretModelFactory.KeyVaultSecret(secretProperties, value);
         }
 
         [Fact]
         public void DoesNotLoadFilteredItems()
         {
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client,
                 new []
                 {
                     CreateSecret("Secret1", "Value1")
@@ -80,7 +118,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act
-            using (var provider = new AzureKeyVaultConfigurationProvider(client, VaultUri, new EndsWithOneKeyVaultSecretManager()))
+            using (var provider = new AzureKeyVaultConfigurationProvider(client.Object, new EndsWithOneKeyVaultSecretManager()))
             {
                 provider.Load();
 
@@ -94,21 +132,21 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         [Fact]
         public void DoesNotLoadDisabledItems()
         {
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client,
                 new []
                 {
                     CreateSecret("Secret1", "Value1")
                 },
                 new []
                 {
-                    CreateSecret("Secret2", "Value2", () => new SecretAttributes(enabled: false)),
-                    CreateSecret("Secret3", "Value3", () => new SecretAttributes(enabled: null)),
+                    CreateSecret("Secret2", "Value2", enabled: false),
+                    CreateSecret("Secret3", "Value3", enabled: null),
                 }
             );
 
             // Act
-            using (var provider = new AzureKeyVaultConfigurationProvider(client, VaultUri, new DefaultKeyVaultSecretManager()))
+            using (var provider = new AzureKeyVaultConfigurationProvider(client.Object, new DefaultKeyVaultSecretManager()))
             {
                 provider.Load();
 
@@ -126,25 +164,25 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         {
             var updated = DateTime.Now;
 
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client,
                 new []
                 {
-                    CreateSecret("Secret1", "Value1", () => new SecretAttributes(enabled: true, updated: updated))
+                    CreateSecret("Secret1", "Value1", enabled: true, updated: updated)
                 }
             );
 
             // Act & Assert
-            using (var provider = new AzureKeyVaultConfigurationProvider(client, VaultUri, new DefaultKeyVaultSecretManager()))
+            using (var provider = new AzureKeyVaultConfigurationProvider(client.Object, new DefaultKeyVaultSecretManager()))
             {
                 provider.Load();
 
                 Assert.Equal("Value1", provider.Get("Secret1"));
 
-                client.SetPages(
+                SetPages(client,
                     new []
                     {
-                        CreateSecret("Secret1", "Value2", () => new SecretAttributes(enabled: true, updated: updated.AddSeconds(1)))
+                        CreateSecret("Secret1", "Value2", enabled: true, updated: updated.AddSeconds(1))
                     }
                 );
 
@@ -159,16 +197,16 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             var updated = DateTime.Now;
             int numOfTokensFired = 0;
 
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client,
                 new []
                 {
-                    CreateSecret("Secret1", "Value1", () => new SecretAttributes(enabled: true, updated: updated))
+                    CreateSecret("Secret1", "Value1", enabled: true, updated: updated)
                 }
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
+            using (var provider = new ReloadControlKeyVaultProvider(client.Object, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -181,11 +219,11 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 Assert.Equal("Value1", provider.Get("Secret1"));
 
                 await provider.Wait();
-            
-                client.SetPages(
-                    new []
+
+                SetPages(client,
+                        new []
                     {
-                        CreateSecret("Secret1", "Value2", () => new SecretAttributes(enabled: true, updated: updated.AddSeconds(1)))
+                        CreateSecret("Secret1", "Value2", enabled: true, updated: updated.AddSeconds(1))
                     }
                 );
 
@@ -204,16 +242,16 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             var updated = DateTime.Now;
             int numOfTokensFired = 0;
 
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client,
                 new []
                 {
-                    CreateSecret("Secret1", "Value1", () => new SecretAttributes(enabled: true, updated: updated))
+                    CreateSecret("Secret1", "Value1", enabled: true, updated: updated)
                 }
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
+            using (var provider = new ReloadControlKeyVaultProvider(client.Object, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -241,8 +279,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         {
             int numOfTokensFired = 0;
 
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client,
                 new []
                 {
                     CreateSecret("Secret1", "Value1"),
@@ -251,7 +289,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
+            using (var provider = new ReloadControlKeyVaultProvider(client.Object, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -265,7 +303,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 
                 await provider.Wait();
             
-                client.SetPages(
+                SetPages(client,
                     new []
                     {
                         CreateSecret("Secret1", "Value2")
@@ -286,8 +324,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         {
             int numOfTokensFired = 0;
 
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client,
                 new []
                 {
                     CreateSecret("Secret1", "Value1"),
@@ -296,7 +334,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
+            using (var provider = new ReloadControlKeyVaultProvider(client.Object, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -309,12 +347,12 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 Assert.Equal("Value1", provider.Get("Secret1"));
 
                 await provider.Wait();
-            
-                client.SetPages(
-                    new []
+
+                SetPages(client,
+        new []
                     {
                         CreateSecret("Secret1", "Value2"),
-                        CreateSecret("Secret2", "Value2", () => new SecretAttributes(enabled: false))
+                        CreateSecret("Secret2", "Value2", enabled: false)
                     }
                 );
 
@@ -332,8 +370,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         {
             int numOfTokensFired = 0;
 
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client,
                 new []
                 {
                     CreateSecret("Secret1", "Value1")
@@ -341,7 +379,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act & Assert
-            using (var provider = new ReloadControlKeyVaultProvider(client, VaultUri, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
+            using (var provider = new ReloadControlKeyVaultProvider(client.Object, new DefaultKeyVaultSecretManager(), reloadPollDelay: NoReloadDelay))
             {
                 ChangeToken.OnChange(
                     () => provider.GetReloadToken(),
@@ -354,8 +392,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 Assert.Equal("Value1", provider.Get("Secret1"));
 
                 await provider.Wait();
-            
-                client.SetPages(
+
+                SetPages(client,
                     new []
                     {
                         CreateSecret("Secret1", "Value1"),
@@ -379,8 +417,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         [Fact]
         public void ReplaceDoubleMinusInKeyName()
         {
-            var client = new MockKeyVaultClient();
-            client.SetPages(
+            var client = new Mock<SecretClient>();
+            SetPages(client,
                 new []
                 {
                     CreateSecret("Section--Secret1", "Value1")
@@ -388,7 +426,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act
-            using (var provider = new AzureKeyVaultConfigurationProvider(client, VaultUri, new DefaultKeyVaultSecretManager()))
+            using (var provider = new AzureKeyVaultConfigurationProvider(client.Object, new DefaultKeyVaultSecretManager()))
             {
                 provider.Load();
 
@@ -402,23 +440,19 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var expectedCount = 2;
+            var client = new Mock<SecretClient>();
 
-            var client = new Mock<MockKeyVaultClient>();
-            
-            client.Setup(c => c.GetSecretAsync(It.IsAny<string>()))
-                .Callback(async (string id) => {
+            SetPages(client,
+                async (string id) =>
+                {
                     if (Interlocked.Decrement(ref expectedCount) == 0)
                     {
                         tcs.SetResult(null);
                     }
 
                     await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
-                }).CallBase();
-
-            client.CallBase = true;
-
-            client.Object.SetPages(
-                new []
+                },
+                new[]
                 {
                     CreateSecret("Secret1", "Value1"),
                     CreateSecret("Secret2", "Value2")
@@ -426,7 +460,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             );
 
             // Act
-            var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager());
+            var provider = new AzureKeyVaultConfigurationProvider(client.Object, new DefaultKeyVaultSecretManager());
             provider.Load();
             await tcs.Task;
 
@@ -438,19 +472,19 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         [Fact]
         public void ConstructorThrowsForNullManager()
         {
-            Assert.Throws<ArgumentNullException>(() => new AzureKeyVaultConfigurationProvider(Mock.Of<IKeyVaultClient>(), VaultUri, null));
+            Assert.Throws<ArgumentNullException>(() => new AzureKeyVaultConfigurationProvider(Mock.Of<SecretClient>(), null));
         }
 
         [Fact]
         public void ConstructorThrowsForZeroRefreshPeriodValue()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new AzureKeyVaultConfigurationProvider(new MockKeyVaultClient(), VaultUri, new DefaultKeyVaultSecretManager(), TimeSpan.Zero));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new AzureKeyVaultConfigurationProvider(Mock.Of<SecretClient>(), new DefaultKeyVaultSecretManager(), TimeSpan.Zero));
         }
 
         [Fact]
         public void ConstructorThrowsForNegativeRefreshPeriodValue()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new AzureKeyVaultConfigurationProvider(new MockKeyVaultClient(), VaultUri, new DefaultKeyVaultSecretManager(), TimeSpan.FromMilliseconds(-1)));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new AzureKeyVaultConfigurationProvider(Mock.Of<SecretClient>(), new DefaultKeyVaultSecretManager(), TimeSpan.FromMilliseconds(-1)));
         }
 
         [Fact]
@@ -461,79 +495,10 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 
         private class EndsWithOneKeyVaultSecretManager : DefaultKeyVaultSecretManager
         {
-            public override bool Load(SecretItem secret)
+            public override bool Load(SecretProperties secret)
             {
-                return secret.Identifier.Name.EndsWith("1");
+                return secret.Name.EndsWith("1");
             }
-        }
-
-        private class PageMock: IPage<SecretItem>
-        {
-            public IEnumerable<SecretItem> Value { get; set; }
-
-            public IEnumerator<SecretItem> GetEnumerator()
-            {
-                return Value.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            public string NextPageLink { get; set; }
-        }
-
-        public class MockKeyVaultClient: IKeyVaultClient
-        {
-            private (SecretAttributes attributes, SecretBundle bundle)[][] _pages;
-
-            public virtual Task<IPage<SecretItem>> GetSecretsAsync(string vault)
-            {
-                return GetSecretsNextAsync("0");
-            }
-
-            public virtual Task<IPage<SecretItem>> GetSecretsNextAsync(string nextLink)
-            {
-                var i = int.Parse(nextLink);
-                return Task.FromResult((IPage<SecretItem>)new PageMock { NextPageLink = GetNextPageId(i), Value = ToSecrets(_pages[i]) });
-            }
-
-            public virtual Task<SecretBundle> GetSecretAsync(string secretIdentifier)
-            {
-                foreach (var page in _pages)
-                {
-                    foreach (var secret in page)
-                    {
-                        if (secret.bundle.Id == secretIdentifier)
-                        {
-                            return Task.FromResult(secret.bundle);
-                        }
-                    }
-                }
-
-                throw new InvalidOperationException("Secret not found");
-            }
-
-            public void SetPages(params (SecretAttributes attributes, SecretBundle bundle)[][] pages)
-            {
-                _pages = pages;
-            }
-
-            private string GetNextPageId(int i)
-            {
-                var nextPageId = i + 1;
-                return _pages.Length > nextPageId ? nextPageId.ToString() : null;
-            }
-
-            private IEnumerable<SecretItem> ToSecrets((SecretAttributes attributes, SecretBundle bundle)[] valueTuple)
-            {
-                foreach (var tuple in valueTuple)
-                {
-                    yield return new SecretItem(tuple.bundle.Id, tuple.attributes);
-                }
-            }
-
         }
 
         private class ReloadControlKeyVaultProvider : AzureKeyVaultConfigurationProvider
@@ -541,7 +506,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             private TaskCompletionSource<object> _releaseTaskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             private TaskCompletionSource<object> _signalTaskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            public ReloadControlKeyVaultProvider(IKeyVaultClient client, string vault, IKeyVaultSecretManager manager, TimeSpan? reloadPollDelay = null) : base(client, vault, manager, reloadPollDelay)
+            public ReloadControlKeyVaultProvider(SecretClient client, IKeyVaultSecretManager manager, TimeSpan? reloadPollDelay = null) : base(client, manager, reloadPollDelay)
             {
             }
 
@@ -575,10 +540,10 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             var values = new List<KeyValuePair<string, string>>();
             SectionToValues(testConfig, "", values);
 
-            var client = new MockKeyVaultClient();
-            client.SetPages(values.Select(kvp=>CreateSecret(kvp.Key, kvp.Value)).ToArray());
+            var client = new Mock<SecretClient>();
+            SetPages(client, values.Select(kvp=>CreateSecret(kvp.Key, kvp.Value)).ToArray());
 
-            return (new AzureKeyVaultConfigurationProvider(client, VaultUri, new DefaultKeyVaultSecretManager()), () => {});
+            return (new AzureKeyVaultConfigurationProvider(client.Object, new DefaultKeyVaultSecretManager()), () => {});
         }
     }
 }

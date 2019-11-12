@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <inheritdoc />
         public IConfigurationProvider Build(IConfigurationBuilder builder)
         {
-            return new AzureKeyVaultConfigurationProvider(new KeyVaultClientWrapper(_options.Client), _options.Vault, _options.Manager, _options.ReloadInterval);
+            return new AzureKeyVaultConfigurationProvider(_options.Client, _options.Manager, _options.ReloadInterval);
         }
     }
 }

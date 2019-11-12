@@ -60,6 +60,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
     <LatestPackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.0.0" />
     <LatestPackageReference Include="Azure.Identity" Version="1.0.0" />
+    <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
+    <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.3" />
     <LatestPackageReference Include="Microsoft.TypeScript.MSBuild" Version="2.9.2" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />

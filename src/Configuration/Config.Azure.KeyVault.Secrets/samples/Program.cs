@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 
 namespace ConsoleApplication
@@ -20,9 +21,11 @@ namespace ConsoleApplication
             var cert = store.Certificates.Find(X509FindType.FindByThumbprint, config["CertificateThumbprint"], false);
 
             builder.AddAzureKeyVault(
-                config["Vault"],
-                config["ClientId"],
-                cert.OfType<X509Certificate2>().Single(),
+                new Uri(config["Vault"]),
+                new ClientCertificateCredential(
+                    config["TenantId"],
+                        config["ClientId"],
+                cert.OfType<X509Certificate2>().Single()),
                 new EnvironmentSecretManager("Development"));
             store.Close();
 

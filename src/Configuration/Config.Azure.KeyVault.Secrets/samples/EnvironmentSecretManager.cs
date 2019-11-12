@@ -1,4 +1,5 @@
-using Microsoft.Azure.KeyVault.Models;
+
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration.AzureKeyVault;
 
 namespace ConsoleApplication
@@ -12,12 +13,12 @@ namespace ConsoleApplication
             _environmentPrefix = environment + "-";
         }
 
-        public override bool Load(SecretItem secret)
+        public override bool Load(SecretProperties secret)
         {
-            return HasEnvironmentPrefix(secret.Identifier.Name);
+            return HasEnvironmentPrefix(secret.Name);
         }
 
-        public override string GetKey(SecretBundle secret)
+        public override string GetKey(KeyVaultSecret secret)
         {
             var keyName = base.GetKey(secret);
 
