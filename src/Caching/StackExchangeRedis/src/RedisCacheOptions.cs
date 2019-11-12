@@ -31,5 +31,15 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         {
             get { return this; }
         }
+        
+        /// <summary>
+        /// Optional function to serialize data before storing it in redis.
+        /// </summary>
+        public System.Func<byte[], string> Serialize { get; set; }
+        
+        /// <summary>
+        /// Optional function to deserialize data after fetching it from redis.
+        /// </summary>
+        public System.Func<string, byte[]> Deserialize { get; set; }
     }
 }
