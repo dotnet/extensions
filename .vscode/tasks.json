@@ -14,6 +14,18 @@
             }
         },
         {
+          "label": "CompileLibrary",
+          "command": "dotnet",
+          "args": [ "build" ],
+          "options": {
+              "cwd": "src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/"
+          },
+          "problemMatcher": "$tsc-watch",
+          "presentation": {
+              "reveal": "silent"
+          }
+        },
+        {
             "label": "CompileExtension",
             "command": "dotnet",
             "args": [ "build" ],
@@ -23,7 +35,10 @@
             "problemMatcher": "$tsc-watch",
             "presentation": {
                 "reveal": "silent"
-            }
+            },
+            "dependsOn": [
+              "CompileLibrary"
+            ]
         },
         {
             "label": "CompileUnitTests",
@@ -47,7 +62,10 @@
             "problemMatcher": "$tsc-watch",
             "presentation": {
                 "reveal": "silent"
-            }
+            },
+            "dependsOn":[
+              "CompileExtension"
+            ]
         },
     ]
 }
