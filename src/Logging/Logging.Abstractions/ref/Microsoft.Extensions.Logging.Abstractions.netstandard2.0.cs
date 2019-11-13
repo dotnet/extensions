@@ -9,6 +9,7 @@ namespace Microsoft.Extensions.Logging
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
         public EventId(int id, string name = null) { throw null; }
+        public EventId(string name) { throw null; }
         public int Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Equals(Microsoft.Extensions.Logging.EventId other) { throw null; }
@@ -129,9 +130,9 @@ namespace Microsoft.Extensions.Logging
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string eventName, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, string eventName, string formatString) { throw null; }
-        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Log(Microsoft.Extensions.Logging.ILogger logger) { }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, System.Exception exception) { }
         public static implicit operator Microsoft.Extensions.Logging.LogMessage ((Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string formatString) parameters) { throw null; }
@@ -148,9 +149,9 @@ namespace Microsoft.Extensions.Logging
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string eventName, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, string eventName, string formatString) { throw null; }
-        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, T1 value1) { }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, T1 value1) { }
         public static implicit operator Microsoft.Extensions.Logging.LogMessage<T1> ((Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string formatString) parameters) { throw null; }
@@ -167,9 +168,9 @@ namespace Microsoft.Extensions.Logging
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string eventName, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, string eventName, string formatString) { throw null; }
-        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, T1 value1, T2 value2) { }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, T1 value1, T2 value2) { }
         public static implicit operator Microsoft.Extensions.Logging.LogMessage<T1, T2> ((Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string formatString) parameters) { throw null; }
@@ -186,9 +187,9 @@ namespace Microsoft.Extensions.Logging
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string eventName, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, string eventName, string formatString) { throw null; }
-        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, T1 value1, T2 value2, T3 value3) { }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, T1 value1, T2 value2, T3 value3) { }
         public static implicit operator Microsoft.Extensions.Logging.LogMessage<T1, T2, T3> ((Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string formatString) parameters) { throw null; }
@@ -205,9 +206,9 @@ namespace Microsoft.Extensions.Logging
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string eventName, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, string eventName, string formatString) { throw null; }
-        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, T1 value1, T2 value2, T3 value3, T4 value4) { }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, T1 value1, T2 value2, T3 value3, T4 value4) { }
         public static implicit operator Microsoft.Extensions.Logging.LogMessage<T1, T2, T3, T4> ((Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string formatString) parameters) { throw null; }
@@ -224,9 +225,9 @@ namespace Microsoft.Extensions.Logging
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string eventName, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, string eventName, string formatString) { throw null; }
-        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5) { }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5) { }
         public static implicit operator Microsoft.Extensions.Logging.LogMessage<T1, T2, T3, T4, T5> ((Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string formatString) parameters) { throw null; }
@@ -243,9 +244,9 @@ namespace Microsoft.Extensions.Logging
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, int eventId, string eventName, string formatString) { throw null; }
         public LogMessage(Microsoft.Extensions.Logging.LogLevel logLevel, string eventName, string formatString) { throw null; }
-        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Logging.EventId EventId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Logging.LogLevel LogLevel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6) { }
         public void Log(Microsoft.Extensions.Logging.ILogger logger, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6) { }
         public static implicit operator Microsoft.Extensions.Logging.LogMessage<T1, T2, T3, T4, T5, T6> ((Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, string formatString) parameters) { throw null; }
@@ -257,8 +258,9 @@ namespace Microsoft.Extensions.Logging
     public partial struct LogScope
     {
         private object _dummy;
+        private int _dummyPrimitive;
         public LogScope(string formatString) { throw null; }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.IDisposable Begin(Microsoft.Extensions.Logging.ILogger logger) { throw null; }
         public static implicit operator Microsoft.Extensions.Logging.LogScope (string formatString) { throw null; }
     }
@@ -266,8 +268,9 @@ namespace Microsoft.Extensions.Logging
     public partial struct LogScope<T1>
     {
         private object _dummy;
+        private int _dummyPrimitive;
         public LogScope(string formatString) { throw null; }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.IDisposable Begin(Microsoft.Extensions.Logging.ILogger logger, T1 value1) { throw null; }
         public static implicit operator Microsoft.Extensions.Logging.LogScope<T1> (string formatString) { throw null; }
     }
@@ -275,8 +278,9 @@ namespace Microsoft.Extensions.Logging
     public partial struct LogScope<T1, T2>
     {
         private object _dummy;
+        private int _dummyPrimitive;
         public LogScope(string formatString) { throw null; }
-        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string FormatString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.IDisposable Begin(Microsoft.Extensions.Logging.ILogger logger, T1 value1, T2 value2) { throw null; }
         public static implicit operator Microsoft.Extensions.Logging.LogScope<T1, T2> (string formatString) { throw null; }
     }
