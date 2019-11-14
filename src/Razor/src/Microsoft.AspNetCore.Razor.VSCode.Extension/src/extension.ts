@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as razorExtensionPackage from 'microsoft.aspnetcore.razor.vscode';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { registerRazorDevModeHelpers } from './RazorDevModeHelpers';
+import { ensureWorkspaceIsConfigured, registerRazorDevModeHelpers } from './RazorDevModeHelpers';
 
 let activationResolver: (value?: any) => void;
 export const extensionActivated = new Promise(resolve => {
@@ -43,11 +43,17 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.razorActivated', () => extensionActivated);
 
     await registerRazorDevModeHelpers(context);
+    const workspaceConfigured = ensureWorkspaceIsConfigured();
 
-    await razorExtensionPackage.activate(
-        context,
-        languageServerDir,
-        hostEventStream);
+    if (workspaceConfigured) {
+        await razorExtensionPackage.activate(
+            context,
+            languageServerDir,
+            hostEventStream);
+    } else {
+        console.log('Razor workspace was not configured, extension activation skipped.');
+        console.log('To configure your workspace run the following command (ctrl+shift+p) in the experimental instance "Razor: Configure workspace for Razor extension development"');
+    }
 
     activationResolver();
 }
