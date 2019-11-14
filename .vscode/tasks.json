@@ -4,7 +4,9 @@
         {
             "label": "CompilePackage",
             "command": "dotnet",
-            "args": [ "build" ],
+            "args": [
+                "build"
+            ],
             "options": {
                 "cwd": "src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/"
             },
@@ -14,21 +16,41 @@
             }
         },
         {
-          "label": "CompileLibrary",
-          "command": "dotnet",
-          "args": [ "build" ],
-          "options": {
-              "cwd": "src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/"
-          },
-          "problemMatcher": "$tsc-watch",
-          "presentation": {
-              "reveal": "silent"
-          }
+            "label": "CompileLibrary",
+            "command": "dotnet",
+            "args": [
+                "build"
+            ],
+            "options": {
+                "cwd": "src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/"
+            },
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
+        {
+            "label": "WatchLibraryAndCompileExtension",
+            "type": "npm",
+            "script": "watch",
+            "problemMatcher": "$tsc-watch",
+            "options": {
+                "cwd": "src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "silent"
+            },
+            "dependsOn": [
+                "CompileExtension"
+            ]
         },
         {
             "label": "CompileExtension",
             "command": "dotnet",
-            "args": [ "build" ],
+            "args": [
+                "build"
+            ],
             "options": {
                 "cwd": "src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.Extension/"
             },
@@ -43,7 +65,9 @@
         {
             "label": "CompileUnitTests",
             "command": "dotnet",
-            "args": [ "build" ],
+            "args": [
+                "build"
+            ],
             "options": {
                 "cwd": "src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.Test/"
             },
@@ -55,7 +79,9 @@
         {
             "label": "CompileFunctionalTest",
             "command": "dotnet",
-            "args": [ "build" ],
+            "args": [
+                "build"
+            ],
             "options": {
                 "cwd": "src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.FunctionalTest/"
             },
@@ -63,8 +89,8 @@
             "presentation": {
                 "reveal": "silent"
             },
-            "dependsOn":[
-              "CompileExtension"
+            "dependsOn": [
+                "CompileExtension"
             ]
         },
     ]

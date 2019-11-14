@@ -24,7 +24,7 @@
                 "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.Extension/dist/**/*.js",
                 "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/dist/**/*.js",
             ],
-            "preLaunchTask": "CompileExtension"
+            "preLaunchTask": "WatchLibraryAndCompileExtension"
         },
         {
             "type": "node",
