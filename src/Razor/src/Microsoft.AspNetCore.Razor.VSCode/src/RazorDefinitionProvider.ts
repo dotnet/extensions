@@ -40,8 +40,10 @@ export class RazorDefinitionProvider
                         projection.languageKind,
                         definition.range,
                         modifiedFile);
-                    definition.range = res.range;
-                    definition.uri = modifiedFile;
+                    if (!res) {
+                        definition.range = res!.range;
+                        definition.uri = modifiedFile;
+                    }
                 }
             }
         }

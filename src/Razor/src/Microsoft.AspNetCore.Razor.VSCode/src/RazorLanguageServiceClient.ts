@@ -86,9 +86,11 @@ export class RazorLanguageServiceClient {
         const serializableRange = convertRangeToSerializable(range);
         const request = new RazorMapToDocumentRangeRequest(languageKind, serializableRange, uri);
         const response = await this.serverClient.sendRequest<RazorMapToDocumentRangeResponse>('razor/mapToDocumentRange', request);
-        const remappedRange = convertRangeFromSerializable(response.range);
-        response.range = remappedRange;
-        return response;
+        if (response.range.start.line >= 0) {
+            const remappedRange = convertRangeFromSerializable(response.range);
+            response.range = remappedRange;
+            return response;
+        }
     }
 
     private async getTextDocument(filePath: string) {

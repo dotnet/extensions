@@ -22,7 +22,7 @@ export class RazorImplementationProvider
             return;
         }
 
-        const implementations = await vscode.commands.executeCommand<vscode.Definition>(
+        let implementations = await vscode.commands.executeCommand<vscode.Definition>(
             'vscode.executeImplementationProvider',
             projection.uri,
             projection.position) as vscode.Location[];
@@ -40,8 +40,10 @@ export class RazorImplementationProvider
                         projection.languageKind,
                         implementation.range,
                         modifiedFile);
-                    implementation.range = res.range;
-                    implementation.uri = modifiedFile;
+                    if (res) {
+                        implementation.range = res!.range;
+                        implementation.uri = modifiedFile;
+                    }
                 }
             }
         }
@@ -51,6 +53,11 @@ export class RazorImplementationProvider
             // Since we shim through to them we'll do nothing until we get an ask.
             return;
         }
+
+        implementations = implementations.filter(async (impl) => {
+            const uriPath = getUriPath(impl.uri);
+            return !uriPath.endsWith(virtualCSharpSuffix);
+        });
 
         return implementations;
     }
