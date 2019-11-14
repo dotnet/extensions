@@ -9,21 +9,21 @@ import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
 import { LanguageKind } from './RPC/LanguageKind';
 import { getUriPath } from './UriPaths';
 
-export class RazorDefinitionProvider
+export class RazorImplementationProvider
     extends RazorLanguageFeatureBase
-    implements vscode.DefinitionProvider {
+    implements vscode.ImplementationProvider {
 
-    public async provideDefinition(
-        document: vscode.TextDocument, position: vscode.Position,
+    public async provideImplementation(
+        document: vscode.TextDocument,
+        position: vscode.Position,
         token: vscode.CancellationToken) {
-
         const projection = await this.getProjection(document, position, token);
         if (!projection) {
             return;
         }
 
-        const definitions = await vscode.commands.executeCommand<vscode.Definition>(
-            'vscode.executeDefinitionProvider',
+        const implementations = await vscode.commands.executeCommand<vscode.Definition>(
+            'vscode.executeImplementationProvider',
             projection.uri,
             projection.position) as vscode.Location[];
 
@@ -31,31 +31,27 @@ export class RazorDefinitionProvider
             // C# knows about line pragma, if we're getting a direction to a virtual c# document
             // that means the piece we're trying to navigate to does not have a representation in the
             // top level file.
-            for (const definition of definitions) {
-                const uriPath = getUriPath(definition.uri);
+            for (const implementation of implementations) {
+                const uriPath = getUriPath(implementation.uri);
                 if (uriPath.endsWith(virtualCSharpSuffix)) {
                     const modifiedPath = uriPath.replace(virtualCSharpSuffix, '');
                     const modifiedFile = vscode.Uri.file(modifiedPath);
                     const res = await this.serviceClient.mapToDocumentRange(
                         projection.languageKind,
-                        definition.range,
+                        implementation.range,
                         modifiedFile);
-                    definition.range = res.range;
-                    definition.uri = modifiedFile;
+                    implementation.range = res.range;
+                    implementation.uri = modifiedFile;
                 }
             }
         }
 
         if (projection.languageKind === LanguageKind.Html) {
-            definitions.forEach(definition => {
-                // Because the line pragmas for html are generated referencing the projected document
-                // we need to remap their file locations to reference the top level Razor document.
-                const uriPath = getUriPath(definition.uri);
-                const path = uriPath.replace(virtualHtmlSuffix, '');
-                definition.uri = vscode.Uri.file(path);
-            });
+            // We don't think that javascript implementations are supported by VSCodes HTML support.
+            // Since we shim through to them we'll do nothing until we get an ask.
+            return;
         }
 
-        return definitions;
+        return implementations;
     }
 }

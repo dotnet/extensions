@@ -18,6 +18,7 @@ import { RazorDefinitionProvider } from './RazorDefinitionProvider';
 import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorDocumentTracker } from './RazorDocumentTracker';
+import { RazorImplementationProvider } from './RazorImplementationProvider';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageConfiguration } from './RazorLanguageConfiguration';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
@@ -74,6 +75,10 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 documentSynchronizer,
                 documentManager,
                 languageServiceClient);
+            const implementationProvider = new RazorImplementationProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient);
 
             localRegistrations.push(
                 languageConfiguration.register(),
@@ -89,6 +94,9 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 vscode.languages.registerDefinitionProvider(
                     RazorLanguage.id,
                     definitionProvider),
+                vscode.languages.registerImplementationProvider(
+                    RazorLanguage.id,
+                    implementationProvider),
                 projectTracker.register(),
                 projectManager.register(),
                 documentManager.register(),
