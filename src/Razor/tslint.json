@@ -1,6 +1,7 @@
 {
     "extends": "tslint:recommended",
     "rules": {
+        "space-within-parens": true,
         "arrow-parens": false,
         "file-header": [true, "------"],
         "interface-name": false,

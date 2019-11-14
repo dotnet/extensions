@@ -14,6 +14,7 @@ import { IEventEmitterFactory } from './IEventEmitterFactory';
 import { reportTelemetryForProjects } from './ProjectTelemetryListener';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
+import { RazorDefinitionProvider } from './RazorDefinitionProvider';
 import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorDocumentTracker } from './RazorDocumentTracker';
@@ -69,6 +70,10 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 documentSynchronizer,
                 documentManager,
                 languageServiceClient);
+            const definitionProvider = new RazorDefinitionProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient);
 
             localRegistrations.push(
                 languageConfiguration.register(),
@@ -81,6 +86,9 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                     RazorLanguage.id,
                     signatureHelpProvider,
                     '(', ','),
+                vscode.languages.registerDefinitionProvider(
+                    RazorLanguage.id,
+                    definitionProvider),
                 projectTracker.register(),
                 projectManager.register(),
                 documentManager.register(),
