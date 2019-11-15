@@ -17,7 +17,7 @@ using Microsoft.Extensions.Configuration.KeyVault.Secrets;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 {
-    public class AzureKeyVaultConfigurationTest: ConfigurationProviderTestBase
+    public class AzureKeyVaultConfigurationTest : ConfigurationProviderTestBase
     {
         private static readonly TimeSpan NoReloadDelay = TimeSpan.FromMilliseconds(1);
 
@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             }
         }
 
-        private class MockAsyncPageable: AsyncPageable<SecretProperties>
+        private class MockAsyncPageable : AsyncPageable<SecretProperties>
         {
             private readonly SecretProperties[][] _pages;
 
@@ -65,6 +65,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 await Task.CompletedTask;
             }
         }
+
         [Fact]
         public void LoadsAllSecretsFromVault()
         {
@@ -96,7 +97,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         {
             var id = new Uri("http://azure.keyvault/" + name);
 
-            var secretProperties = SecretModelFactory.SecretProperties(id, name:name, updatedOn: updated);
+            var secretProperties = SecretModelFactory.SecretProperties(id, name: name, updatedOn: updated);
             secretProperties.Enabled = enabled;
 
             return SecretModelFactory.KeyVaultSecret(secretProperties, value);
@@ -344,7 +345,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 
                 provider.Load();
 
-                Assert.Equal("Value1", provider.Get("Secret1"));
+                Assert.Equal("Value2", provider.Get("Secret2"));
 
                 await provider.Wait();
 
@@ -529,8 +530,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
                 }
 
                 var releaseTaskCompletionSource = _releaseTaskCompletionSource;
-                _releaseTaskCompletionSource = new TaskCompletionSource<object>();
-                _signalTaskCompletionSource = new TaskCompletionSource<object>();
+                _releaseTaskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _signalTaskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 releaseTaskCompletionSource.SetResult(null);
             }
         }
@@ -541,7 +542,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             SectionToValues(testConfig, "", values);
 
             var client = new Mock<SecretClient>();
-            SetPages(client, values.Select(kvp=>CreateSecret(kvp.Key, kvp.Value)).ToArray());
+            SetPages(client, values.Select(kvp => CreateSecret(kvp.Key, kvp.Value)).ToArray());
 
             return (new AzureKeyVaultConfigurationProvider(client.Object, new DefaultKeyVaultSecretManager()), () => {});
         }
