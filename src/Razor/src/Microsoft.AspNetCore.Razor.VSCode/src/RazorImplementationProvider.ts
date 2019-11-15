@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { virtualCSharpSuffix, virtualHtmlSuffix } from './RazorDocumentFactory';
+import { backgroundVirtualCSharpSuffix, virtualCSharpSuffix, virtualHtmlSuffix } from './RazorDocumentFactory';
 import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
 import { LanguageKind } from './RPC/LanguageKind';
 import { getUriPath } from './UriPaths';
@@ -29,20 +29,22 @@ export class RazorImplementationProvider
 
         if (projection.languageKind === LanguageKind.CSharp) {
             // C# knows about line pragma, if we're getting a direction to a virtual c# document
-            // that means the piece we're trying to navigate to does not have a representation in the
+            // that means the piece we're trying to navigate to may not have a representation in the
             // top level file.
             for (const implementation of implementations) {
                 const uriPath = getUriPath(implementation.uri);
                 if (uriPath.endsWith(virtualCSharpSuffix)) {
-                    const modifiedPath = uriPath.replace(virtualCSharpSuffix, '');
-                    const modifiedFile = vscode.Uri.file(modifiedPath);
+                    // The virtual file is named differently if it's not open (in the background)
+                    let razorFilePath = uriPath.replace(backgroundVirtualCSharpSuffix, '');
+                    razorFilePath = uriPath.replace(virtualCSharpSuffix, '');
+                    const razorFile = vscode.Uri.file(razorFilePath);
                     const res = await this.serviceClient.mapToDocumentRange(
                         projection.languageKind,
                         implementation.range,
-                        modifiedFile);
+                        razorFile);
                     if (res) {
                         implementation.range = res!.range;
-                        implementation.uri = modifiedFile;
+                        implementation.uri = razorFile;
                     }
                 }
             }
@@ -54,6 +56,7 @@ export class RazorImplementationProvider
             return;
         }
 
+        // Remove any non-top level Razor file implementation entries. We don't know how to navigate to them.
         implementations = implementations.filter(async (impl) => {
             const uriPath = getUriPath(impl.uri);
             return !uriPath.endsWith(virtualCSharpSuffix);

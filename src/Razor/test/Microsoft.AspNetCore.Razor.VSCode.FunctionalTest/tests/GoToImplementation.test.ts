@@ -33,23 +33,6 @@ suite('Implementation', () => {
         await pollUntil(() => vscode.window.visibleTextEditors.length === 0, 1000);
     });
 
-    test('Implementation of javascript returns nothing', async () => {
-        const firstLine = new vscode.Position(0, 0);
-        await editor.edit(edit => edit.insert(firstLine, `<script>
-    class Cheese { }
-    class Cheddar extends Cheese {}
-
-    var abc = new Cheese();
-</script>
-`));
-        const implementations = await vscode.commands.executeCommand<vscode.Location[]>(
-            'vscode.executeImplementationProvider',
-            cshtmlDoc.uri,
-            new vscode.Position(5, 22));
-
-        assert.equal(implementations!.length, 0, 'This doesn\'t work because the VSCode HTML support doesn\'t do it');
-    });
-
     test('Implementation inside file works', async () => {
         const firstLine = new vscode.Position(0, 0);
 
@@ -68,6 +51,35 @@ suite('Implementation', () => {
         const implementation = implementations![0];
         assert.ok(implementation.uri.path.endsWith('Index.cshtml'), `Expected to find 'Index.cshtml' but found '${implementation.uri.path}'`);
         assert.equal(implementation.range.start.line, 2);
+    });
+
+    test('Implementation background file works', async () => {
+        const firstLine = new vscode.Position(0, 0);
+        await editor.edit(edit => edit.insert(firstLine, `@{
+    var x = typeof(Cheese);
+}
+@functions{
+    public class Goat : Cheese {}
+}`));
+        vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+
+        const programPath = path.join(mvcWithComponentsRoot, 'Program.cs');
+        const programDoc = await vscode.workspace.openTextDocument(programPath);
+        const programEditor = await vscode.window.showTextDocument(programDoc);
+        await programEditor.edit(edit => edit.insert(new vscode.Position(3, 0), `    public abstract class Cheese {}
+    public class Cheddar : Cheese {}
+`));
+
+        const position = new vscode.Position(1, 23);
+        const implementations = await vscode.commands.executeCommand<vscode.Location[]>(
+            'vscode.executeImplementationProvider',
+            cshtmlDoc.uri,
+            position);
+
+        assert.equal(implementations!.length, 2, 'Should have had exactly two results');
+        const implementation = implementations![0];
+        assert.ok(implementation.uri.path.endsWith('Program.cs'), `Expected def to point to "Program.cs", but it pointed to ${implementation.uri.path}`);
+        assert.equal(implementation.range.start.line, 4);
     });
 
     test('Implementation outside file works', async () => {

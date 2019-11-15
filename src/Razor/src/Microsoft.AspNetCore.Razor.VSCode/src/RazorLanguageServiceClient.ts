@@ -93,24 +93,6 @@ export class RazorLanguageServiceClient {
         }
     }
 
-    private async getTextDocument(filePath: string) {
-        const clientUri = vscode.Uri.file(filePath);
-        try {
-            const document = await vscode.workspace.openTextDocument(clientUri);
-            return new RazorTextDocumentItem(document);
-        } catch {
-            this.logger.logVerbose(`Failed to open text document ${filePath}. Returning an empty document to the server.`);
-
-            // We were asked for a document that no longer exists. Return an empty text document as a response.
-            return {
-                languageId: RazorLanguage.id,
-                version: -1,
-                text: '',
-                uri: clientUri.toString(),
-            };
-        }
-    }
-
     private async ensureStarted() {
         // If the server is already started this will instantly return.
         await this.serverClient.start();
