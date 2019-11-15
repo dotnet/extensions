@@ -1,4 +1,3 @@
-
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration.KeyVault.Secrets;
 

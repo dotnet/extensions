@@ -24,7 +24,7 @@ namespace ConsoleApplication
                 new Uri(config["Vault"]),
                 new ClientCertificateCredential(
                     config["TenantId"],
-                        config["ClientId"],
+                    config["ClientId"],
                 cert.OfType<X509Certificate2>().Single()),
                 new EnvironmentSecretManager("Development"));
             store.Close();

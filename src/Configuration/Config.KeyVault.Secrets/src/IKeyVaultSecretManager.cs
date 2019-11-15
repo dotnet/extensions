@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Configuration.KeyVault.Secrets
         /// Checks if <see cref="KeyVaultSecret"/> value should be retrieved.
         /// </summary>
         /// <param name="secret">The <see cref="KeyVaultSecret"/> instance.</param>
-        /// <returns><code>true</code> is secrets value should be loaded, otherwise <code>false</code>.</returns>
+        /// <returns><code>true</code> if secrets value should be loaded, otherwise <code>false</code>.</returns>
         bool Load(SecretProperties secret);
 
         /// <summary>
