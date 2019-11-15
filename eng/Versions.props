@@ -10,7 +10,7 @@
     <MinorVersion>1</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <PreReleaseVersionLabel>preview3</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
     <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
     <!-- Blazor WASM packages will not RTM with 3.1 -->
     <BlazorWASMPreReleaseVersionLabel>preview4</BlazorWASMPreReleaseVersionLabel>
