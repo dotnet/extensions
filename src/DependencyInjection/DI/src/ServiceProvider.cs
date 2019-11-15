@@ -12,10 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    public sealed class ServiceProvider : IServiceProvider, IDisposable, IServiceProviderEngineCallback
-#if DISPOSE_ASYNC
-        , IAsyncDisposable
-#endif
+    public sealed class ServiceProvider : IServiceProvider, IDisposable, IServiceProviderEngineCallback, IAsyncDisposable
     {
         private readonly IServiceProviderEngine _engine;
 
@@ -91,8 +88,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Gets the service object of the specified type.
         /// </summary>
-        /// <param name="serviceType"></param>
-        /// <returns></returns>
+        /// <param name="serviceType">The type of the service to get.</param>
+        /// <returns>The service that was produced.</returns>
         public object GetService(Type serviceType) => _engine.GetService(serviceType);
 
         /// <inheritdoc />
@@ -111,12 +108,10 @@ namespace Microsoft.Extensions.DependencyInjection
             _callSiteValidator.ValidateResolution(serviceType, scope, _engine.RootScope);
         }
 
-#if DISPOSE_ASYNC
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
         {
             return _engine.DisposeAsync();
         }
-#endif
     }
 }

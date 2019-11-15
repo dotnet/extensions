@@ -1,15 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Implementation of IOptionsFactory.
+    /// Implementation of <see cref="IOptionsFactory{TOptions}"/>.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-    public class OptionsFactory<TOptions> : IOptionsFactory<TOptions> where TOptions : class, new()
+    public class OptionsFactory<TOptions> : IOptionsFactory<TOptions> where TOptions : class
     {
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
         private readonly IEnumerable<IPostConfigureOptions<TOptions>> _postConfigures;
@@ -37,11 +38,11 @@ namespace Microsoft.Extensions.Options
         }
 
         /// <summary>
-        /// Returns a configured TOptions instance with the given name.
+        /// Returns a configured <typeparamref name="TOptions"/> instance with the given <paramref name="name"/>.
         /// </summary>
         public TOptions Create(string name)
         {
-            var options = new TOptions();
+            var options = CreateInstance(name);
             foreach (var setup in _setups)
             {
                 if (setup is IConfigureNamedOptions<TOptions> namedSetup)
@@ -66,7 +67,7 @@ namespace Microsoft.Extensions.Options
                     var result = validate.Validate(name, options);
                     if (result.Failed)
                     {
-                        failures.Add(result.FailureMessage);
+                        failures.AddRange(result.Failures);
                     }
                 }
                 if (failures.Count > 0)
@@ -76,6 +77,14 @@ namespace Microsoft.Extensions.Options
             }
 
             return options;
+        }
+
+        /// <summary>
+        /// Creates a new instance of options type
+        /// </summary>
+        protected virtual TOptions CreateInstance(string name)
+        {
+            return Activator.CreateInstance<TOptions>();
         }
     }
 }

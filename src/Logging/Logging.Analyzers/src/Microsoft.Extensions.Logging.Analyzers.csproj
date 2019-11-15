@@ -7,8 +7,11 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <IsPackable>true</IsPackable>
     <!-- This is currently an experimental, internal-only analyzer. -->
     <IsShipping>false</IsShipping>
+    <!-- This project is not included in the shared framework -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -401,6 +401,7 @@ namespace Microsoft.Extensions.Options.Tests
             {
                 Assert.True(e.Failures.FirstOrDefault(f => f.Contains(error)) != null, "Did not find: "+error);
             }
+            Assert.Equal(e.Message, String.Join("; ", e.Failures));
         }
 
         [Fact]
@@ -430,6 +431,51 @@ namespace Microsoft.Extensions.Options.Tests
 
             var op = sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("yes");
             Assert.Equal("target", op.Virtual);
+        }
+
+        [Fact]
+        public void ValidateWithDependencies()
+        {
+            var services = new ServiceCollection()
+                .AddSingleton<Counter>()
+                .AddTransient<SomeCounterConsumer>();
+            services.AddOptions<FakeOptions>().Configure(o => o.Message = "default");
+            services.AddOptions<FakeOptions>("0dep").Configure(o => o.Message = "Foo")
+                .Validate(o => o.Message == "Foo");
+            services.AddOptions<FakeOptions>("1dep").Configure(o => o.Message = "Foo 0")
+                .Validate<SomeCounterConsumer>((o, s1) => o.Message == $"Foo {s1.Current}", "Custom failure message");
+            services.AddOptions<FakeOptions>("2dep").Configure(o => o.Message = "Foo 1 2")
+                .Validate<SomeCounterConsumer, SomeCounterConsumer>((o, s1, s2) => o.Message == $"Foo {s1.Current} {s2.Current}");
+            services.AddOptions<FakeOptions>("3dep").Configure(o => o.Message = "Foo 3 4 5")
+                .Validate<SomeCounterConsumer, SomeCounterConsumer, SomeCounterConsumer>((o, s1, s2, s3) => o.Message == $"Foo {s1.Current} {s2.Current} {s3.Current}");
+            services.AddOptions<FakeOptions>("4dep").Configure(o => o.Message = "Foo 6 7 8 9")
+                .Validate<SomeCounterConsumer, SomeCounterConsumer, SomeCounterConsumer, SomeCounterConsumer>((o, s1, s2, s3, s4) => o.Message == $"Foo {s1.Current} {s2.Current} {s3.Current} {s4.Current}");
+            services.AddOptions<FakeOptions>("5dep").Configure(o => o.Message = "Foo 10 11 12 13 14")
+                .Validate<SomeCounterConsumer, SomeCounterConsumer, SomeCounterConsumer, SomeCounterConsumer, SomeCounterConsumer>((o, s1, s2, s3, s4, s5) => o.Message == $"Foo {s1.Current} {s2.Current} {s3.Current} {s4.Current} {s5.Current}");
+
+            var sp = services.BuildServiceProvider();
+            var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+
+            Assert.Equal("default", factory.Create(Options.DefaultName).Message);
+            Assert.Equal("Foo", factory.Create("0dep").Message);
+            Assert.Equal("Foo 0", factory.Create("1dep").Message);
+            Assert.Equal("Foo 1 2", factory.Create("2dep").Message);
+            Assert.Equal("Foo 3 4 5", factory.Create("3dep").Message);
+            Assert.Equal("Foo 6 7 8 9", factory.Create("4dep").Message);
+            Assert.Equal("Foo 10 11 12 13 14", factory.Create("5dep").Message);
+
+            // factory caches configures
+            Assert.Equal("Foo 1 2", factory.Create("2dep").Message);
+
+            // A new factory will recreate validators which will resolve new SomeCounterConsumer
+            // dependencies. That means that the counters will be incremented, causing validation failures.
+            factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
+
+            var error1 = Assert.Throws<OptionsValidationException>(() => factory.Create("1dep"));
+            ValidateFailure<FakeOptions>(error1, "1dep", 1, "Custom failure message");
+
+            var error2 = Assert.Throws<OptionsValidationException>(() => factory.Create("2dep"));
+            ValidateFailure<FakeOptions>(error2, "2dep", 1);
         }
 
         // Prototype of startup validation
@@ -585,12 +631,12 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
 
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<AnnotatedOptions>>().Value);
-            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, 1,
-                "DataAnnotation validation failed for members Required with the error 'The Required field is required.'.",
-                "DataAnnotation validation failed for members StringLength with the error 'Too long.'.",
-                "DataAnnotation validation failed for members IntRange with the error 'Out of range.'.",
-                "DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.",
-                "DataAnnotation validation failed for members Dep1, Dep2 with the error 'Dep1 != Dep2'.");
+            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, 5,
+                "DataAnnotation validation failed for members: 'Required' with the error: 'The Required field is required.'.",
+                "DataAnnotation validation failed for members: 'StringLength' with the error: 'Too long.'.",
+                "DataAnnotation validation failed for members: 'IntRange' with the error: 'Out of range.'.",
+                "DataAnnotation validation failed for members: 'Custom' with the error: 'The field Custom is invalid.'.",
+                "DataAnnotation validation failed for members: 'Dep1,Dep2' with the error: 'Dep1 != Dep2'.");
         }
 
         [Fact]
@@ -611,12 +657,12 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
 
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<AnnotatedOptions>>().Value);
-            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, 2,
-                "DataAnnotation validation failed for members Required with the error 'The Required field is required.'.",
-                "DataAnnotation validation failed for members StringLength with the error 'Too long.'.",
-                "DataAnnotation validation failed for members IntRange with the error 'Out of range.'.",
-                "DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.",
-                "DataAnnotation validation failed for members Dep1, Dep2 with the error 'Dep1 != Dep2'.",
+            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, 6,
+                "DataAnnotation validation failed for members: 'Required' with the error: 'The Required field is required.'.",
+                "DataAnnotation validation failed for members: 'StringLength' with the error: 'Too long.'.",
+                "DataAnnotation validation failed for members: 'IntRange' with the error: 'Out of range.'.",
+                "DataAnnotation validation failed for members: 'Custom' with the error: 'The field Custom is invalid.'.",
+                "DataAnnotation validation failed for members: 'Dep1,Dep2' with the error: 'Dep1 != Dep2'.",
                 "I don't want to go to nowhere!");
         }
     }

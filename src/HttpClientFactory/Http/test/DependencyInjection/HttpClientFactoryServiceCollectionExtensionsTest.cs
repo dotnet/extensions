@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Logging;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
@@ -58,6 +58,44 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.NotNull(handler);
+        }
+
+        [Fact] // Verifies that AddHttpClient registers a default client
+        public void AddHttpClient_RegistersDefaultClientAsHttpClient()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            // Act
+            serviceCollection.AddHttpClient();
+
+            var services = serviceCollection.BuildServiceProvider();
+            var client = services.GetRequiredService<HttpClient>();
+
+            // Assert
+            Assert.NotNull(client);
+        }
+
+        [Fact] // Verifies that AddHttpClient does not override any existing registration
+        public void AddHttpClient_DoesNotRegisterDefaultClientIfAlreadyRegistered()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient(_ => new HttpClient() { Timeout = TimeSpan.FromSeconds(42) });
+
+            // Act
+            serviceCollection.AddHttpClient();
+
+            var services = serviceCollection.BuildServiceProvider();
+            var clients = services.GetServices<HttpClient>();
+
+            // Assert
+            Assert.NotNull(clients);
+
+            var client = Assert.Single(clients);
+
+            Assert.NotNull(client);
+            Assert.Equal(TimeSpan.FromSeconds(42), client.Timeout);
         }
 
         [Fact]
@@ -342,6 +380,78 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.Equal("http://example2.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient<TestTypedClient>("Test"));
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client types must be unique. " +
+                "Consider using inheritance to create multiple unique types with the same API surface.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_WithAddTypedClient_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient("Test").AddTypedClient<TestTypedClient>());
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client types must be unique. " +
+                "Consider using inheritance to create multiple unique types with the same API surface.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameNameWithTypedClientTwice_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient<AnotherNamespace.TestTypedClient>());
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the name 'TestTypedClient', bound to the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client names are computed based on the type name without considering the namespace ('TestTypedClient'). " +
+                "Use an overload of AddHttpClient that accepts a string and provide a unique name to resolve the conflict.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameNameWithTypedClientTwice_WithAddTypedClient_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient("TestTypedClient").AddTypedClient<AnotherNamespace.TestTypedClient>());
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the name 'TestTypedClient', bound to the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client names are computed based on the type name without considering the namespace ('TestTypedClient'). " +
+                "Use an overload of AddHttpClient that accepts a string and provide a unique name to resolve the conflict.",
+                ex.Message);
         }
 
         [Fact]
@@ -1043,35 +1153,15 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public TransientService Service { get; }
         }
+    }
+}
 
-        private class SingleThreadedSynchronizationContext : SynchronizationContext
+namespace AnotherNamespace
+{
+    public class TestTypedClient
+    {
+        public TestTypedClient(HttpClient httpClient)
         {
-            private readonly Queue<(SendOrPostCallback Callback, object State)> _queue = new Queue<(SendOrPostCallback Callback, object State)>();
-
-            public override void Post(SendOrPostCallback d, object state)
-            {
-                _queue.Enqueue((d, state));
-            }
-
-            public static void Run(Action action)
-            {
-                var previous = Current;
-                var context = new SingleThreadedSynchronizationContext();
-                SetSynchronizationContext(context);
-                try
-                {
-                    action();
-                    while (context._queue.Count > 0)
-                    {
-                        var item = context._queue.Dequeue();
-                        item.Callback(item.State);
-                    }
-                }
-                finally
-                {
-                    SetSynchronizationContext(previous);
-                }
-            }
         }
     }
 }

@@ -2,14 +2,16 @@
 
   <PropertyGroup>
     <Description>.NET hosting infrastructure for Windows Services.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>hosting</PackageTags>
+    <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Logging.EventLog" />
     <Reference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
 

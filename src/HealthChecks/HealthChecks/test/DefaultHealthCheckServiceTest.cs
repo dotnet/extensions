@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -56,6 +57,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             const string UnhealthyMessage = "Halp!";
             const string HealthyMessage = "Everything is A-OK";
             var exception = new Exception("Things are pretty bad!");
+            var healthyCheckTags = new List<string> { "healthy-check-tag" };
+            var degradedCheckTags = new List<string> { "degraded-check-tag" };
+            var unhealthyCheckTags = new List<string> { "unhealthy-check-tag" };
 
             // Arrange
             var data = new Dictionary<string, object>()
@@ -65,9 +69,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             var service = CreateHealthChecksService(b =>
             {
-                b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
-                b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
-                b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
+                b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)), healthyCheckTags);
+                b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)), degradedCheckTags);
+                b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)), unhealthyCheckTags);
             });
 
             // Act
@@ -83,6 +87,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     Assert.Equal(HealthStatus.Degraded, actual.Value.Status);
                     Assert.Null(actual.Value.Exception);
                     Assert.Empty(actual.Value.Data);
+                    Assert.Equal(actual.Value.Tags, degradedCheckTags);
                 },
                 actual =>
                 {
@@ -95,6 +100,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                         Assert.Equal(DataKey, item.Key);
                         Assert.Equal(DataValue, item.Value);
                     });
+                    Assert.Equal(actual.Value.Tags, healthyCheckTags);
                 },
                 actual =>
                 {
@@ -103,6 +109,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
                     Assert.Same(exception, actual.Value.Exception);
                     Assert.Empty(actual.Value.Data);
+                    Assert.Equal(actual.Value.Tags, unhealthyCheckTags);
                 });
         }
 
@@ -448,6 +455,39 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     Assert.Equal("timeout", actual.Key);
                     Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
                 });
+        }
+
+        [Fact]
+        public void CheckHealthAsync_WorksInSingleThreadedSyncContext()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.AddAsyncCheck("test", async () =>
+                {
+                    await Task.Delay(1).ConfigureAwait(false);
+                    return HealthCheckResult.Healthy();
+                });
+            });
+
+            var hangs = true;
+
+            // Act
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
+            {
+                var token = cts.Token;
+                token.Register(() => throw new OperationCanceledException(token));
+
+                SingleThreadedSynchronizationContext.Run(() =>
+                {
+                    // Act
+                    service.CheckHealthAsync(token).GetAwaiter().GetResult();
+                    hangs = false;
+                });
+            }
+
+            // Assert
+            Assert.False(hangs);
         }
 
         private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)

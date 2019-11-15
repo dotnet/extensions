@@ -10,13 +10,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting.Fakes;
 using Microsoft.Extensions.Hosting.Tests.Fakes;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Hosting.Internal
 {
-    public partial class HostTests
+    public class HostTests
     {
         [Fact]
         public async Task HostInjectsHostingEnvironment()
@@ -201,6 +200,20 @@ namespace Microsoft.Extensions.Hosting.Internal
         }
 
         [Fact]
+        public void HostedServiceRegisteredWithFactory()
+        {
+            using (var host = CreateBuilder()
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddSingleton<IFakeService, FakeService>();
+                    services.AddHostedService(s => new FakeHostedServiceWithDependency(s.GetRequiredService<IFakeService>()));
+                })
+                .Start())
+            {
+            }
+        }
+
+        [Fact]
         public async Task AppCrashesOnStartWhenFirstHostedServiceThrows()
         {
             bool[] events1 = null;
@@ -264,6 +277,92 @@ namespace Microsoft.Extensions.Hosting.Internal
             Assert.Equal(1, service.StartCount);
             Assert.Equal(0, service.StopCount);
             Assert.Equal(1, service.DisposeCount);
+        }
+
+        [Fact]
+        public async Task CancellableStart_CancelledByApplicationLifetime()
+        {
+            var hostedService = new AsyncFakeHostedService();
+            var builder = CreateBuilder().ConfigureServices(services =>
+            {
+                services.AddSingleton<IHostedService>(hostedService);
+            });
+
+            using (var host = builder.Build())
+            {
+                var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
+                var startTask = host.StartAsync();
+
+                // stop application
+                applicationLifetime.StopApplication();
+
+                // complete start task
+                hostedService.ContinueStart();
+
+                await Assert.ThrowsAsync<OperationCanceledException>(() => startTask);
+                Assert.False(hostedService.IsStartCompleted);
+            }
+        }
+
+        [Fact]
+        public async Task CancellableStart_CancelledByCancellationToken()
+        {
+            var hostedService = new AsyncFakeHostedService();
+            var builder = CreateBuilder().ConfigureServices(services =>
+            {
+                services.AddSingleton<IHostedService>(hostedService);
+            });
+
+            using (var host = builder.Build())
+            {
+                var cts = new CancellationTokenSource();
+                var startTask = host.StartAsync(cts.Token);
+
+                // cancel token
+                cts.Cancel();
+
+                // complete start task
+                hostedService.ContinueStart();
+
+                await Assert.ThrowsAsync<OperationCanceledException>(() => startTask);
+                Assert.False(hostedService.IsStartCompleted);
+            }
+        }
+
+        [Fact]
+        public async Task CancellableStart_CanComplete()
+        {
+            var hostedService = new AsyncFakeHostedService();
+            var builder = CreateBuilder().ConfigureServices(services =>
+            {
+                services.AddSingleton<IHostedService>(hostedService);
+            });
+
+            using (var host = builder.Build())
+            {
+                var startTask = host.StartAsync();
+
+                // complete start task
+                hostedService.ContinueStart();
+
+                await startTask;
+                Assert.True(hostedService.IsStartCompleted);
+            }
+        }
+
+        public class AsyncFakeHostedService : IHostedService
+        {
+            private TaskCompletionSource<object> source = new TaskCompletionSource<object>();
+            public bool IsStartCompleted { get; set; }
+            public async Task StartAsync(CancellationToken cancellationToken)
+            {
+                Assert.False(cancellationToken.IsCancellationRequested);
+                await source.Task;
+                cancellationToken.ThrowIfCancellationRequested();
+                IsStartCompleted = true;
+            }
+            public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+            public void ContinueStart() => source.TrySetResult(null);
         }
 
         [Fact]
@@ -709,10 +808,10 @@ namespace Microsoft.Extensions.Hosting.Internal
                 })
                 .Build())
             {
+                await host.StartAsync();
+
                 var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 lifetime.StopApplication();
-
-                await host.StartAsync();
 
                 Assert.Equal(0, stoppingCalls);
                 Assert.Equal(0, disposingCalls);
@@ -731,9 +830,6 @@ namespace Microsoft.Extensions.Hosting.Internal
                    })
                    .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-                lifetime.StopApplication();
-
                 await host.StartAsync();
                 var svc = (TestHostedService)host.Services.GetRequiredService<IHostedService>();
                 Assert.True(svc.StartCalled);
@@ -884,6 +980,153 @@ namespace Microsoft.Extensions.Hosting.Internal
             }
         }
 
+        [Fact]
+        public void Dispose_DisposesAppConfigurationProviders()
+        {
+            var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
+            providerMock.Setup(d => d.Dispose());
+
+            var sourceMock = new Mock<IConfigurationSource>();
+            sourceMock.Setup(s => s.Build(It.IsAny<IConfigurationBuilder>()))
+                .Returns((ConfigurationProvider)providerMock.Object);
+
+            var host = CreateBuilder()
+                .ConfigureAppConfiguration(configuration =>
+                {
+                    configuration.Add(sourceMock.Object);
+                })
+                .Build();
+
+            providerMock.Verify(c => c.Dispose(), Times.Never);
+
+            host.Dispose();
+
+            providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
+        }
+
+        [Fact]
+        public void Dispose_DisposesHostConfigurationProviders()
+        {
+            var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
+            providerMock.Setup(d => d.Dispose());
+
+            var sourceMock = new Mock<IConfigurationSource>();
+            sourceMock.Setup(s => s.Build(It.IsAny<IConfigurationBuilder>()))
+                .Returns((ConfigurationProvider)providerMock.Object);
+
+            var host = CreateBuilder()
+                .ConfigureHostConfiguration(configuration =>
+                {
+                    configuration.Add(sourceMock.Object);
+                })
+                .Build();
+
+            providerMock.Verify(c => c.Dispose(), Times.Never);
+
+            host.Dispose();
+
+            providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
+        }
+        [Fact]
+        public async Task HostCallsDisposeAsyncOnServiceProvider()
+        {
+            using (var host = CreateBuilder()
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddSingleton<AsyncDisposableService>();
+                })
+                .Build())
+            {
+                await host.StartAsync();
+
+                var asyncDisposableService = host.Services.GetService<AsyncDisposableService>();
+
+                Assert.False(asyncDisposableService.DisposeAsyncCalled);
+
+                await host.StopAsync();
+
+                Assert.False(asyncDisposableService.DisposeAsyncCalled);
+
+                host.Dispose();
+
+                Assert.True(asyncDisposableService.DisposeAsyncCalled);
+            }
+        }
+
+        [Fact]
+        public async Task HostCallsDisposeAsyncOnServiceProviderWhenDisposeAsyncCalled()
+        {
+            using (var host = CreateBuilder()
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddSingleton<AsyncDisposableService>();
+                })
+                .Build())
+            {
+                await host.StartAsync();
+
+                var asyncDisposableService = host.Services.GetService<AsyncDisposableService>();
+
+                Assert.False(asyncDisposableService.DisposeAsyncCalled);
+
+                await host.StopAsync();
+
+                Assert.False(asyncDisposableService.DisposeAsyncCalled);
+
+                await ((IAsyncDisposable) host).DisposeAsync();
+
+                Assert.True(asyncDisposableService.DisposeAsyncCalled);
+            }
+        }
+
+        [Fact]
+        public async Task DisposeAsync_DisposesAppConfigurationProviders()
+        {
+            var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
+            providerMock.Setup(d => d.Dispose());
+
+            var sourceMock = new Mock<IConfigurationSource>();
+            sourceMock.Setup(s => s.Build(It.IsAny<IConfigurationBuilder>()))
+                .Returns((ConfigurationProvider) providerMock.Object);
+
+            var host = CreateBuilder()
+                .ConfigureAppConfiguration(configuration =>
+                {
+                    configuration.Add(sourceMock.Object);
+                })
+                .Build();
+
+            providerMock.Verify(c => c.Dispose(), Times.Never);
+
+            await ((IAsyncDisposable) host).DisposeAsync();
+
+            providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
+        }
+
+        [Fact]
+        public async Task DisposeAsync_DisposesHostConfigurationProviders()
+        {
+            var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
+            providerMock.Setup(d => d.Dispose());
+
+            var sourceMock = new Mock<IConfigurationSource>();
+            sourceMock.Setup(s => s.Build(It.IsAny<IConfigurationBuilder>()))
+                .Returns((ConfigurationProvider) providerMock.Object);
+
+            var host = CreateBuilder()
+                .ConfigureHostConfiguration(configuration =>
+                {
+                    configuration.Add(sourceMock.Object);
+                })
+                .Build();
+
+            providerMock.Verify(c => c.Dispose(), Times.Never);
+
+            await ((IAsyncDisposable) host).DisposeAsync();
+
+            providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
+        }
+
         private IHostBuilder CreateBuilder(IConfiguration config = null)
         {
             return new HostBuilder().ConfigureHostConfiguration(builder => builder.AddConfiguration(config ?? new ConfigurationBuilder().Build()));
@@ -981,6 +1224,17 @@ namespace Microsoft.Extensions.Hosting.Internal
             }
 
             public void Dispose() => _disposing();
+        }
+
+        private class AsyncDisposableService : IAsyncDisposable
+        {
+            public bool DisposeAsyncCalled { get; set; }
+
+            public ValueTask DisposeAsync()
+            {
+                DisposeAsyncCalled = true;
+                return default;
+            }
         }
     }
 }

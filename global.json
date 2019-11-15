@@ -1,12 +1,17 @@
 {
   "sdk": {
-    "version": "3.0.100-preview3-010280"
+    "version": "5.0.100-alpha1-015536"
   },
   "tools": {
-    "dotnet": "3.0.100-preview3-010280"
+    "dotnet": "5.0.100-alpha1-015536",
+    "runtimes": {
+      "dotnet": [
+        "$(MicrosoftNETCoreAppRuntimeVersion)"
+      ]
+    }
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19124.1",
-    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.19124.1"
+    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.19563.2",
+    "Microsoft.DotNet.Helix.Sdk": "5.0.0-beta.19563.2"
   }
 }

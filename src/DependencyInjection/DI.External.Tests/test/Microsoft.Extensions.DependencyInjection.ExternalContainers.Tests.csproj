@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
@@ -9,8 +9,9 @@
   <ItemGroup>
     <Reference Include="Newtonsoft.Json" />
 
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
 
     <Reference Include="Autofac.Extensions.DependencyInjection" />
     <Reference Include="DryIoc.Microsoft.DependencyInjection" />

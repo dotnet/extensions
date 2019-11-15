@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// IOptions wrapper that returns the options instance.
+    /// <see cref="IOptions{TOptions}"/> wrapper that returns the options instance.
     /// </summary>
-    /// <typeparam name="TOptions"></typeparam>
-    public class OptionsWrapper<TOptions> : IOptions<TOptions> where TOptions : class, new()
+    /// <typeparam name="TOptions">Options type.</typeparam>
+    public class OptionsWrapper<TOptions> : IOptions<TOptions> where TOptions : class
     {
         /// <summary>
         /// Intializes the wrapper with the options instance to return.

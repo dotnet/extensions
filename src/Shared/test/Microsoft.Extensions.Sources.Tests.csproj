@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\src\**\*.cs"
              Exclude="
+              ..\src\ReferenceAssemblyInfo.cs;
               ..\src\BenchmarkRunner\**\*.cs;
               ..\src\StackTrace\ExceptionDetails\**\*.cs;
               " />

@@ -7,9 +7,9 @@ using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging.EventSource;
-using Newtonsoft.Json;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace Microsoft.Extensions.Logging.Test
 {
@@ -690,15 +690,28 @@ namespace Microsoft.Extensions.Logging.Test
             { "E5FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 5, null, LogLevel.Critical,
                 @"""FormattedMessage"":""Logger2 Event5 Critical bar 23 45") },
 
+// Starting in netcoreapp3.0 Exception.ToString() puts a newline before inner exceptions
+#if NETCOREAPP
             { "E5JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 5, null, LogLevel.Critical,
                 @"""ArgumentsJson"":{""stringParam"":""bar"",""int1Param"":""23"",""int2Param"":""45""",
-                @"""ExceptionJson"":{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops ---> System.Exception: inner oops") },
+                @$"""ExceptionJson"":{{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops{EscapedNewline()} ---\u003E System.Exception: inner oops") },
+
+            { "E5MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 5, null, LogLevel.Critical,
+                 @"{""Key"":""stringParam"",""Value"":""bar""}",
+                @"{""Key"":""int1Param"",""Value"":""23""}",
+                @"{""Key"":""int2Param"",""Value"":""45""}",
+                @$"""Exception"":{{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":-2146233088,""VerboseMessage"":""System.Exception: oops{EscapedNewline()} ---> System.Exception: inner oops") },
+#else
+            { "E5JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 5, null, LogLevel.Critical,
+                @"""ArgumentsJson"":{""stringParam"":""bar"",""int1Param"":""23"",""int2Param"":""45""",
+                @"""ExceptionJson"":{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops ---\u003E System.Exception: inner oops") },
 
             { "E5MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 5, null, LogLevel.Critical,
                  @"{""Key"":""stringParam"",""Value"":""bar""}",
                 @"{""Key"":""int1Param"",""Value"":""23""}",
                 @"{""Key"":""int2Param"",""Value"":""45""}",
                 @"""Exception"":{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":-2146233088,""VerboseMessage"":""System.Exception: oops ---> System.Exception: inner oops") },
+#endif
 
             { "E6FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 6, null, LogLevel.Warning,
                 @"""FormattedMessage"":""Logger2 Event6 Warning NoParams""") },
@@ -738,5 +751,10 @@ namespace Microsoft.Extensions.Logging.Test
             { "InnerScopeStart", (e) => VerifySingleEvent(e, "Logger3", EventTypes.ActivityStart, null, null, null) },
             { "InnerScopeStop", (e) => VerifySingleEvent(e, "Logger3", EventTypes.ActivityStop, null, null, null) },
         };
+
+        static string EscapedNewline()
+        {
+            return Environment.NewLine.Replace("\r", "\\r").Replace("\n", "\\n");
+        }
     }
 }

@@ -42,12 +42,20 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
 
         [Theory]
         [InlineData(".csproj", ".cs")]
-        [InlineData(".fsproj", ".fs")]
+        [InlineData(".fsproj", ".fs", Skip = "https://github.com/aspnet/AspNetCore/issues/13303")]
         public void GeneratesAssemblyAttributeFile(string projectExt, string sourceExt)
         {
             var testTfm = typeof(MsBuildTargetTest).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(f => f.Key == "TargetFramework")
+                .Value;
+            var runtimeVersion = typeof(MsBuildTargetTest).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(f => f.Key == "MicrosoftNETCoreAppRuntimeVersion")
+                .Value;
+            var refPackVersion = typeof(MsBuildTargetTest).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(f => f.Key == "MicrosoftNETCoreAppRefPackageVersion")
                 .Value;
             var target = Path.Combine(_solutionRoot.FullName, "src", "Configuration", "Config.UserSecrets", "src", "build", "netstandard2.0", "Microsoft.Extensions.Configuration.UserSecrets.targets");
             Directory.CreateDirectory(Path.Combine(_tempDir, "obj"));
@@ -94,18 +102,37 @@ let main argv =
                     break;
             }
 
-            foreach (var file in new[] { Path.Join(_tempDir, "Directory.Build.props"), Path.Join(_tempDir, "Directory.Build.targets") })
+            var propsFile = Path.Combine(_tempDir, "Directory.Build.props");
+            if (!File.Exists(propsFile))
             {
-                if (!File.Exists(file))
+                using (var fileStream = File.CreateText(propsFile))
                 {
-                    using (var fileStream = File.CreateText(file))
-                    {
-                        fileStream.WriteLine(@"
+                    fileStream.WriteLine(@"
 <Project>
-  <!-- Intentionally empty to isolate tools projects from the result of the repo -->
+<!-- Intentionally empty to isolate tools projects from the result of the repo -->
 </Project>
 ");
-                    }
+                }
+            }
+
+            var targetsFile = Path.Combine(_tempDir, "Directory.Build.targets");
+            if (!File.Exists(targetsFile))
+            {
+                using (var fileStream = File.CreateText(targetsFile))
+                {
+                    fileStream.WriteLine($@"
+<Project>
+<!-- Intentionally isolate tools projects from the result of the repo -->
+
+  <ItemGroup>
+    <KnownFrameworkReference
+      Update=""Microsoft.NETCore.App""
+      DefaultRuntimeFrameworkVersion=""{runtimeVersion}""
+      LatestRuntimeFrameworkVersion=""{runtimeVersion}""
+      TargetingPackVersion=""{refPackVersion}"" />
+  </ItemGroup>
+</Project>
+");
                 }
             }
 

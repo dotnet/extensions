@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Options
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">The name of the option.</param>
         public DataAnnotationValidateOptions(string name)
         {
             Name = name;
@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Options
         public string Name { get; }
 
         /// <summary>
-        /// Validates a specific named options instance (or all when name is null).
+        /// Validates a specific named options instance (or all when <paramref name="name"/> is null).
         /// </summary>
         /// <param name="name">The name of the options instance being validated.</param>
         /// <param name="options">The options instance.</param>
@@ -41,17 +41,19 @@ namespace Microsoft.Extensions.Options
             {
                 var validationResults = new List<ValidationResult>();
                 if (Validator.TryValidateObject(options,
-                    new ValidationContext(options, serviceProvider: null, items: null), 
-                    validationResults, 
+                    new ValidationContext(options, serviceProvider: null, items: null),
+                    validationResults,
                     validateAllProperties: true))
                 {
                     return ValidateOptionsResult.Success;
                 }
 
-                return ValidateOptionsResult.Fail(String.Join(Environment.NewLine,
-                    validationResults.Select(r => "DataAnnotation validation failed for members " +
-                        String.Join(", ", r.MemberNames) +
-                        " with the error '" + r.ErrorMessage + "'.")));
+                var errors = new List<string>();
+                foreach (var r in validationResults)
+                {
+                    errors.Add($"DataAnnotation validation failed for members: '{String.Join(",", r.MemberNames)}' with the error: '{r.ErrorMessage}'.");
+                }
+                return ValidateOptionsResult.Fail(errors);
             }
 
             // Ignored if not validating this instance.

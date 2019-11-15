@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Configuration.Json;
-using Microsoft.Extensions.Configuration.Xml;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.Extensions.Configuration.Xml;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -378,7 +378,7 @@ CommonKey3:CommonKey4=IniValue6";
                     .SetFileLoadExceptionHandler(jsonLoadError)
                     .Build();
             }
-            catch (FormatException e)
+            catch (Exception e)
             {
                 Assert.Equal(e, jsonError);
             }
@@ -405,7 +405,7 @@ CommonKey3:CommonKey4=IniValue6";
                     .SetFileLoadExceptionHandler(loadError)
                     .Build();
             }
-            catch (FormatException e)
+            catch (Exception e)
             {
                 Assert.Equal(e, error);
             }
@@ -463,9 +463,8 @@ IniKey1=IniValue2");
             Assert.NotNull(provider);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Fact]
+        [Flaky("File watching is flaky (particularly on non windows.", FlakyOn.All)]
         public void CanSetValuesAndReloadValues()
         {
             WriteTestFiles();
@@ -507,9 +506,8 @@ IniKey1=IniValue2");
             Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Fact]
+        [Flaky("File watching is flaky (particularly on non windows.", FlakyOn.All)]
         public async Task ReloadOnChangeWorksAfterError()
         {
             _fileSystem.WriteFile("reload.json", @"{""JsonKey1"": ""JsonValue1""}");
@@ -539,9 +537,8 @@ IniKey1=IniValue2");
             Assert.Equal("JsonValue2", config["JsonKey1"]);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Fact]
+        [Flaky("File watching is flaky (particularly on non windows.", FlakyOn.All)]
         public async Task TouchingFileWillReload()
         {
             _fileSystem.WriteFile("reload.json", @"{""JsonKey1"": ""JsonValue1""}");
@@ -577,9 +574,8 @@ IniKey1=IniValue2");
             Assert.True(token.HasChanged);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Fact]
+        [Flaky("File watching is flaky (particularly on non windows.", FlakyOn.All)]
         public async Task CreatingOptionalFileInNonExistentDirectoryWillReload()
         {
             var directory = Path.GetRandomFileName();
@@ -612,9 +608,8 @@ IniKey1=IniValue2");
             Assert.True(createToken.HasChanged);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Theory]
+        [Flaky("File watching is flaky (particularly on non windows.", FlakyOn.All)]
         [InlineData(false)]
         [InlineData(true)]
         public async Task DeletingFilesThatRedefineKeysWithReload(bool optional)
@@ -694,9 +689,8 @@ IniKey1=IniValue2");
             Assert.True(token.HasChanged);
         }
         
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Theory]
+        [Flaky("File watching is flaky (particularly on non windows.", FlakyOn.All)]
         [InlineData(false)]
         [InlineData(true)]
         public async Task DeletingFileWillReload(bool optional)
@@ -734,9 +728,8 @@ IniKey1=IniValue2");
             Assert.True(token.HasChanged);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Fact]
+        [Flaky("File watching is flaky (particularly on non windows.", FlakyOn.All)]
         public async Task CreatingWritingDeletingCreatingFileWillReload()
         {
             var config = CreateBuilder()
@@ -820,7 +813,7 @@ IniKey1=IniValue2");
         }
 
         [Fact]
-        public void LoadIncorrectJsonFile_ThrowFormatException()
+        public void LoadIncorrectJsonFile_ThrowException()
         {
             var json = @"{
                 'name': 'test',
@@ -832,7 +825,7 @@ IniKey1=IniValue2");
             _fileSystem.WriteFile(_jsonFile, json);
 
             var exception = Assert.Throws<FormatException>(() => CreateBuilder().AddJsonFile(_jsonFile).Build());
-            Assert.NotNull(exception.Message);
+            Assert.Contains("Could not parse the JSON file.", exception.Message);
         }
 
         [Fact]
@@ -913,9 +906,8 @@ IniKey1=IniValue2");
             Assert.NotNull(providers.Single(p => p is IniConfigurationProvider));
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "File watching is flaky on non windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "File watching is flaky on non windows.")]
+        [Fact]
+        [Flaky("File watching is flaky (particularly on non windows.", FlakyOn.All)]
         public async Task TouchingFileWillReloadForUserSecrets()
         {
             string userSecretsId = "Test";
@@ -944,6 +936,48 @@ IniKey1=IniValue2");
             Assert.True(token.HasChanged);
         }
 
+        [Fact]
+        public void BindingDoesNotThrowIfReloadedDuringBinding()
+        {
+            WriteTestFiles();
+
+            var configurationBuilder = CreateBuilder();
+            configurationBuilder.Add(new TestIniSourceProvider(_iniFile));
+            configurationBuilder.Add(new TestJsonSourceProvider(_jsonFile));
+            configurationBuilder.Add(new TestXmlSourceProvider(_xmlFile));
+            configurationBuilder.AddEnvironmentVariables();
+            configurationBuilder.AddCommandLine(new[] { "--CmdKey1=CmdValue1" });
+            configurationBuilder.AddInMemoryCollection(_memConfigContent);
+
+            var config = configurationBuilder.Build();
+
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(250)))
+            {
+                void ReloadLoop()
+                {
+                    while (!cts.IsCancellationRequested)
+                    {
+                        config.Reload();
+                    }
+                }
+
+                _ = Task.Run(ReloadLoop);
+
+                MyOptions options = null;
+
+                while (!cts.IsCancellationRequested)
+                {
+                    options = config.Get<MyOptions>();
+                }
+
+                Assert.Equal("CmdValue1", options.CmdKey1);
+                Assert.Equal("IniValue1", options.IniKey1);
+                Assert.Equal("JsonValue1", options.JsonKey1);
+                Assert.Equal("MemValue1", options.MemKey1);
+                Assert.Equal("XmlValue1", options.XmlKey1);
+            }
+        }
+
         public void Dispose()
         {
             _fileProvider.Dispose();
@@ -965,6 +999,19 @@ IniKey1=IniValue2");
 
                 await Task.Delay(_msDelay);
             }
+        }
+
+        private sealed class MyOptions
+        {
+            public string CmdKey1 { get; set; }
+
+            public string IniKey1 { get; set; }
+
+            public string JsonKey1 { get; set; }
+
+            public string MemKey1 { get; set; }
+
+            public string XmlKey1 { get; set; }
         }
     }
 }

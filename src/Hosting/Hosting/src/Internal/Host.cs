@@ -12,10 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Hosting.Internal
 {
-    internal class Host : IHost
-#if DISPOSE_ASYNC
-      , IAsyncDisposable
-#endif
+    internal class Host : IHost, IAsyncDisposable
     {
         private readonly ILogger<Host> _logger;
         private readonly IHostLifetime _hostLifetime;
@@ -39,15 +36,18 @@ namespace Microsoft.Extensions.Hosting.Internal
         {
             _logger.Starting();
 
-            await _hostLifetime.WaitForStartAsync(cancellationToken);
+            using var combinedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _applicationLifetime.ApplicationStopping);
+            var combinedCancellationToken = combinedCancellationTokenSource.Token;
 
-            cancellationToken.ThrowIfCancellationRequested();
+            await _hostLifetime.WaitForStartAsync(combinedCancellationToken);
+
+            combinedCancellationToken.ThrowIfCancellationRequested();
             _hostedServices = Services.GetService<IEnumerable<IHostedService>>();
 
             foreach (var hostedService in _hostedServices)
             {
                 // Fire IHostedService.Start
-                await hostedService.StartAsync(cancellationToken).ConfigureAwait(false);
+                await hostedService.StartAsync(combinedCancellationToken).ConfigureAwait(false);
             }
 
             // Fire IHostApplicationLifetime.Started
@@ -101,11 +101,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             _logger.Stopped();
         }
 
-#if DISPOSE_ASYNC
-        public void Dispose()
-        {
-            DisposeAsync().GetAwaiter().GetResult();
-        }
+        public void Dispose() => DisposeAsync().GetAwaiter().GetResult();
 
         public async ValueTask DisposeAsync()
         {
@@ -119,11 +115,5 @@ namespace Microsoft.Extensions.Hosting.Internal
                     break;
             }
         }
-#else
-        public void Dispose()
-        {
-            (Services as IDisposable)?.Dispose();
-        }
-#endif
     }
 }
