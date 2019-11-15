@@ -13,6 +13,7 @@ import { getUriPath } from './UriPaths';
 
 export const virtualCSharpSuffix = '__virtual.cs';
 export const virtualHtmlSuffix = '__virtual.html';
+export const backgroundVirtualCSharpSuffix = `__bg${virtualCSharpSuffix}`;
 
 export function createDocument(uri: vscode.Uri) {
     const csharpDocument = createProjectedCSharpDocument(uri);

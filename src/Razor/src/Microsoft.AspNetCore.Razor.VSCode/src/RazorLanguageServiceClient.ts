@@ -10,11 +10,15 @@ import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { RazorLogger } from './RazorLogger';
 import { AddDocumentRequest } from './RPC/AddDocumentRequest';
 import { AddProjectRequest } from './RPC/AddProjectRequest';
+import { LanguageKind } from './RPC/LanguageKind';
 import { LanguageQueryRequest } from './RPC/LanguageQueryRequest';
 import { LanguageQueryResponse } from './RPC/LanguageQueryResponse';
+import { RazorMapToDocumentRangeRequest } from './RPC/RazorMapToDocumentRangeRequest';
+import { RazorMapToDocumentRangeResponse } from './RPC/RazorMapToDocumentRangeResponse';
 import { RazorTextDocumentItem } from './RPC/RazorTextDocumentItem';
 import { RemoveDocumentRequest } from './RPC/RemoveDocumentRequest';
 import { RemoveProjectRequest } from './RPC/RemoveProjectRequest';
+import { convertRangeFromSerializable, convertRangeToSerializable } from './RPC/SerializableRange';
 import { UpdateProjectRequest } from './RPC/UpdateProjectRequest';
 
 export class RazorLanguageServiceClient {
@@ -74,6 +78,19 @@ export class RazorLanguageServiceClient {
         const response = await this.serverClient.sendRequest<LanguageQueryResponse>('razor/languageQuery', request);
         response.position = new vscode.Position(response.position.line, response.position.character);
         return response;
+    }
+
+    public async mapToDocumentRange(languageKind: LanguageKind, range: vscode.Range, uri: vscode.Uri) {
+        await this.ensureStarted();
+
+        const serializableRange = convertRangeToSerializable(range);
+        const request = new RazorMapToDocumentRangeRequest(languageKind, serializableRange, uri);
+        const response = await this.serverClient.sendRequest<RazorMapToDocumentRangeResponse>('razor/mapToDocumentRange', request);
+        if (response.range.start.line >= 0) {
+            const remappedRange = convertRangeFromSerializable(response.range);
+            response.range = remappedRange;
+            return response;
+        }
     }
 
     private async ensureStarted() {
