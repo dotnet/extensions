@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -37,22 +36,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             if (foregroundDispatcher == null)
             {
-                throw new ArgumentNullException(nameof(foregroundDispatcher));
+                throw new System.ArgumentNullException(nameof(foregroundDispatcher));
             }
 
             if (documentResolver == null)
             {
-                throw new ArgumentNullException(nameof(documentResolver));
+                throw new System.ArgumentNullException(nameof(documentResolver));
             }
 
             if (documentVersionCache == null)
             {
-                throw new ArgumentNullException(nameof(documentVersionCache));
+                throw new System.ArgumentNullException(nameof(documentVersionCache));
             }
 
             if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(loggerFactory));
+                throw new System.ArgumentNullException(nameof(loggerFactory));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
@@ -135,7 +134,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             if (request is null)
             {
-                throw new ArgumentNullException(nameof(request));
+                throw new System.ArgumentNullException(nameof(request));
             }
 
             long documentVersion = -1;
