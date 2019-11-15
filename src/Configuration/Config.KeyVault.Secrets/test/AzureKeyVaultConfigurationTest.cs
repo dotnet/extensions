@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Configuration.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration.Test;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
-using Microsoft.Extensions.Configuration.KeyVault.Secrets;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 {

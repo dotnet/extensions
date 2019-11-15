@@ -64,27 +64,21 @@ namespace Microsoft.Extensions.Configuration.KeyVault.Secrets
             }
         }
 
-        protected virtual async Task WaitForReload()
+        protected virtual Task WaitForReload()
         {
-            await Task.Delay(_reloadInterval.Value, _cancellationToken.Token);
+            // WaitForReload is only called when the _reloadInterval has a value.
+            return Task.Delay(_reloadInterval.Value, _cancellationToken.Token);
         }
 
         private async Task LoadAsync()
         {
             var secretPages = _client.GetPropertiesOfSecretsAsync();
 
-            var allSecrets = new List<SecretProperties>();
-
-            await foreach (var secretProperties in secretPages.ConfigureAwait(false))
-            {
-                allSecrets.Add(secretProperties);
-            }
-
             var tasks = new List<Task<Response<KeyVaultSecret>>>();
             var newLoadedSecrets = new Dictionary<string, LoadedSecret>();
             var oldLoadedSecrets = Interlocked.Exchange(ref _loadedSecrets, null);
 
-            foreach (var secret in allSecrets)
+            await foreach (var secret in secretPages.ConfigureAwait(false))
             {
                 if (!_manager.Load(secret) || secret.Enabled != true)
                 {
@@ -131,7 +125,7 @@ namespace Microsoft.Extensions.Configuration.KeyVault.Secrets
 
         private void SetData(Dictionary<string, LoadedSecret> loadedSecrets, bool fireToken)
         {
-            var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var data = new Dictionary<string, string>(loadedSecrets.Count, StringComparer.OrdinalIgnoreCase);
             foreach (var secretItem in loadedSecrets)
             {
                 data.Add(secretItem.Value.Key, secretItem.Value.Value);
