@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 
         private void SetPages(Mock<SecretClient> mock, params KeyVaultSecret[][] pages)
         {
-            SetPages(mock, pages);
+            SetPages(mock, null, pages);
         }
 
         private void SetPages(Mock<SecretClient> mock, Func<string, Task> getSecretCallback, params KeyVaultSecret[][] pages)
