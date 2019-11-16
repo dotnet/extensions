@@ -78,7 +78,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
                         services.AddSingleton<ProjectSnapshotChangeTrigger, BackgroundDocumentGenerator>();
+
+                        // Document processed listeners
                         services.AddSingleton<DocumentProcessedListener, RazorDiagnosticsPublisher>();
+                        services.AddSingleton<DocumentProcessedListener, UnsynchronizableContentDocumentProcessedListener>();
+
                         services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
                         services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
                         services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();

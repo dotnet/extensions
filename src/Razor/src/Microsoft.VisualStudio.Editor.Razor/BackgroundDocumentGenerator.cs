@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Internal;
+using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.CodeAnalysis.Razor
 {

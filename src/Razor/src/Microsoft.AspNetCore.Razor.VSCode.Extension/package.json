@@ -83,7 +83,7 @@
             },
             {
                 "command": "extension.configureRazorDevMode",
-                "title": "Configure workspace for Razor extension development.",
+                "title": "Configure workspace for Razor extension development",
                 "category": "Razor"
             },
             {

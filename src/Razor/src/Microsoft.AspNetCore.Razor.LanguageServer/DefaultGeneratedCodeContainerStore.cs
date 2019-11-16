@@ -112,6 +112,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 Task.Factory.StartNew(() =>
                 {
+                    if (!_projectSnapshotManager.IsDocumentOpen(filePath))
+                    {
+                        // Document isn't opened, no need to notify the client
+                        return;
+                    }
+
                     if (!_documentVersionCache.TryGetDocumentVersion(latestDocument, out var hostDocumentVersion))
                     {
                         // Cache entry doesn't exist, document most likely was evicted from the cache/too old.

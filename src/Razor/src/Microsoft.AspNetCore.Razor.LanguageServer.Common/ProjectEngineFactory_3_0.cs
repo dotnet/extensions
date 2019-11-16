@@ -29,12 +29,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
                 initializer.Initialize(b);
                 configure?.Invoke(b);
-
-                var componentDocumentClassifier = b.Features.OfType<ComponentDocumentClassifierPass>().FirstOrDefault();
-                if (componentDocumentClassifier != null)
-                {
-                    componentDocumentClassifier.MangleClassNames = true;
-                }
             });
         }
     }
