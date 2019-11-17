@@ -23,6 +23,7 @@ export async function registerRazorDevModeHelpers(context: vscode.ExtensionConte
 
     const configureSubscription = vscode.commands.registerCommand('extension.configureRazorDevMode', async () => {
         await razorConfiguration.update('devmode', true);
+        await razorConfiguration.update('trace', 'Verbose');
 
         const pluginPath = path.join(
             __dirname, '..', '..', '..', '..', '..', 'artifacts', 'bin', 'Microsoft.AspNetCore.Razor.OmniSharpPlugin', 'Debug', 'net472', 'Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll');

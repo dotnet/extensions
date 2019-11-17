@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             {
                 switch (args.Kind)
                 {
-                    case WorkspaceChangeKind.DocumentChanged:
+                    case WorkspaceChangeKind.DocumentAdded:
                         {
                             // We could technically listen for DocumentAdded here but just because a document gets added doesn't mean it has content included.
                             // Therefore we need to wait for content to populated for Razor files so we don't preemptively remove the corresponding background

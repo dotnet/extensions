@@ -98,6 +98,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                         var foregroundDispatcher = new VSCodeForegroundDispatcher();
                         services.AddSingleton<ForegroundDispatcher>(foregroundDispatcher);
+
+                        var csharpPublisher = new DefaultCSharpPublisher(foregroundDispatcher, new Lazy<OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer>(() => server));
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>(csharpPublisher);
+                        services.AddSingleton<CSharpPublisher>(csharpPublisher);
+
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
                         var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher);
                         services.AddSingleton<DocumentVersionCache>(documentVersionCache);
@@ -105,7 +110,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         var containerStore = new DefaultGeneratedCodeContainerStore(
                             foregroundDispatcher,
                             documentVersionCache,
-                            new Lazy<ILanguageServer>(() => server));
+                            csharpPublisher);
                         services.AddSingleton<GeneratedCodeContainerStore>(containerStore);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(containerStore);
                     }));

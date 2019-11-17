@@ -182,14 +182,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         [Fact]
-        public void WorkspaceChanged_DocumentChanged_NoFilePathRoslynDocument_Noops()
+        public void WorkspaceChanged_DocumentAdded_NoFilePathRoslynDocument_Noops()
         {
             // Arrange
             var originalSolution = Workspace.CurrentSolution;
             var addedDocument = AddRoslynDocument(filePath: null);
             var newSolution = Workspace.CurrentSolution;
             var workspaceChangeEventArgs = new WorkspaceChangeEventArgs(
-                WorkspaceChangeKind.DocumentChanged,
+                WorkspaceChangeKind.DocumentAdded,
                 originalSolution,
                 newSolution,
                 addedDocument.Project.Id,
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var addedDocument = AddRoslynDocument("/path/to/Counter.razor" + BackgroundDocumentProcessedPublisher.BackgroundVirtualDocumentSuffix);
             var newSolution = Workspace.CurrentSolution;
             var workspaceChangeEventArgs = new WorkspaceChangeEventArgs(
-                WorkspaceChangeKind.DocumentChanged,
+                WorkspaceChangeKind.DocumentAdded,
                 originalSolution,
                 newSolution,
                 addedDocument.Project.Id,
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var addedDocument = AddRoslynDocument("/path/to/Counter.razor" + BackgroundDocumentProcessedPublisher.ActiveVirtualDocumentSuffix);
             var newSolution = Workspace.CurrentSolution;
             var workspaceChangeEventArgs = new WorkspaceChangeEventArgs(
-                WorkspaceChangeKind.DocumentChanged,
+                WorkspaceChangeKind.DocumentAdded,
                 originalSolution,
                 newSolution,
                 addedDocument.Project.Id,
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var activeDocument = AddRoslynDocument(filePath + BackgroundDocumentProcessedPublisher.ActiveVirtualDocumentSuffix);
             var newSolution = Workspace.CurrentSolution;
             var workspaceChangeEventArgs = new WorkspaceChangeEventArgs(
-                WorkspaceChangeKind.DocumentChanged,
+                WorkspaceChangeKind.DocumentAdded,
                 originalSolution,
                 newSolution,
                 activeDocument.Project.Id,

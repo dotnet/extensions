@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
@@ -34,24 +35,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void DocumentProcessed_DoesNothingForOldDocuments()
         {
             // Arrange
-            var router = new TestRouter();
+            var csharpPublisher = new Mock<CSharpPublisher>(MockBehavior.Strict);
             var cache = new TestDocumentVersionCache(new Dictionary<DocumentSnapshot, long>());
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml");
 
-            // Act
+            // Act & Assert
             listener.DocumentProcessed(document);
-
-            // Assert
-            Assert.Empty(router.SynchronizedDocuments);
         }
 
         [Fact]
         public void DocumentProcessed_DoesNothingIfAlreadySynchronized()
         {
             // Arrange
-            var router = new TestRouter();
+            var csharpPublisher = new Mock<CSharpPublisher>(MockBehavior.Strict);
             var documentVersion = VersionStamp.Default.GetNewerVersion();
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml", documentVersion);
             var cache = new TestDocumentVersionCache(new Dictionary<DocumentSnapshot, long>()
@@ -63,21 +61,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             document.State.HostDocument.GeneratedCodeContainer.SetOutput(document, csharpDocument, documentVersion.GetNewerVersion(), VersionStamp.Default);
 
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
 
-            // Act
+            // Act & Assert
             listener.DocumentProcessed(document);
-
-            // Assert
-            Assert.Empty(router.SynchronizedDocuments);
         }
 
         [Fact]
         public void DocumentProcessed_DoesNothingForOlderDocuments()
         {
             // Arrange
-            var router = new TestRouter();
+            var csharpPublisher = new Mock<CSharpPublisher>(MockBehavior.Strict);
             var lastVersion = VersionStamp.Default.GetNewerVersion();
             var lastDocument = TestDocumentSnapshot.Create("C:/path/old.cshtml", lastVersion);
             var oldDocument = TestDocumentSnapshot.Create("C:/path/file.cshtml", VersionStamp.Default);
@@ -91,21 +86,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             oldDocument.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
 
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
 
-            // Act
+            // Act & Assert
             listener.DocumentProcessed(oldDocument);
-
-            // Assert
-            Assert.Empty(router.SynchronizedDocuments);
         }
 
         [Fact]
         public void DocumentProcessed_DoesNothingIfSourceVersionsAreDifferent()
         {
             // Arrange
-            var router = new TestRouter();
+            var csharpPublisher = new Mock<CSharpPublisher>(MockBehavior.Strict);
             var lastVersion = VersionStamp.Default.GetNewerVersion();
             var lastDocument = TestDocumentSnapshot.Create("C:/path/old.cshtml", lastVersion);
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml", VersionStamp.Default);
@@ -119,24 +111,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             document.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
 
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
 
-            // Act
+            // Act & Assert
             listener.DocumentProcessed(document);
-
-            // Assert
-            Assert.Empty(router.SynchronizedDocuments);
         }
 
         [Fact]
         public void DocumentProcessed_SynchronizesIfSourceVersionsAreIdenticalButSyncVersionNewer()
         {
             // Arrange
-            var router = new TestRouter();
             var lastVersion = VersionStamp.Default.GetNewerVersion();
             var lastDocument = TestDocumentSnapshot.Create("C:/path/old.cshtml", lastVersion);
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml", lastVersion);
+            var csharpPublisher = new Mock<CSharpPublisher>();
+            csharpPublisher.Setup(publisher => publisher.Publish(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<long>()))
+                .Callback<string, SourceText, long>((filePath, sourceText, hostDocumentVersion) =>
+                {
+                    Assert.Equal(document.FilePath, filePath);
+                })
+                .Verifiable();
             var cache = new TestDocumentVersionCache(new Dictionary<DocumentSnapshot, long>()
             {
                 [document] = 1338,
@@ -147,15 +142,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             document.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
 
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, router);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
 
             // Act
             listener.DocumentProcessed(document);
 
             // Assert
-            var filePath = Assert.Single(router.SynchronizedDocuments);
-            Assert.Equal(document.FilePath, filePath);
+            csharpPublisher.VerifyAll();
         }
 
         private class TestDocumentVersionCache : DocumentVersionCache
@@ -182,84 +176,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             public override void Initialize(ProjectSnapshotManagerBase projectManager)
             {
                 throw new NotImplementedException();
-            }
-        }
-
-        private class TestRouter : ILanguageServer
-        {
-            public TestRouter()
-            {
-                var synchronizedDocuments = new List<string>();
-                SynchronizedDocuments = synchronizedDocuments;
-                Client = new TestClient(synchronizedDocuments);
-            }
-
-            public IReadOnlyList<string> SynchronizedDocuments { get; set; }
-
-            public ILanguageServerClient Client { get; }
-
-            public ILanguageServerDocument Document => throw new NotImplementedException();
-
-            public ILanguageServerWindow Window => throw new NotImplementedException();
-
-            public ILanguageServerWorkspace Workspace => throw new NotImplementedException();
-
-            public IDisposable AddHandler(string method, IJsonRpcHandler handler) => throw new NotImplementedException();
-
-            public IDisposable AddHandler(string method, Func<IServiceProvider, IJsonRpcHandler> handlerFunc) => throw new NotImplementedException();
-
-            public IDisposable AddHandler<T>() where T : IJsonRpcHandler => throw new NotImplementedException();
-
-            public IDisposable AddHandlers(params IJsonRpcHandler[] handlers) => throw new NotImplementedException();
-
-            public IDisposable AddTextDocumentIdentifier(params ITextDocumentIdentifier[] handlers) => throw new NotImplementedException();
-
-            public IDisposable AddTextDocumentIdentifier<T>() where T : ITextDocumentIdentifier => throw new NotImplementedException();
-
-            public TaskCompletionSource<JToken> GetRequest(long id) => throw new NotImplementedException();
-
-            public void SendNotification(string method) => throw new NotImplementedException();
-
-            public void SendNotification<T>(string method, T @params) => throw new NotImplementedException();
-
-            public Task<TResponse> SendRequest<T, TResponse>(string method, T @params) => throw new NotImplementedException();
-
-            public Task<TResponse> SendRequest<TResponse>(string method) => throw new NotImplementedException();
-
-            public Task SendRequest<T>(string method, T @params) => throw new NotImplementedException();
-
-            private class TestClient : ILanguageServerClient
-            {
-                private readonly List<string> _synchronizedDocuments;
-
-                public TestClient(List<string> synchronizedDocuments)
-                {
-                    if (synchronizedDocuments == null)
-                    {
-                        throw new ArgumentNullException(nameof(synchronizedDocuments));
-                    }
-
-                    _synchronizedDocuments = synchronizedDocuments;
-                }
-
-                public Task SendRequest<T>(string method, T @params)
-                {
-                    var updateRequest = @params as UpdateCSharpBufferRequest;
-
-                    _synchronizedDocuments.Add(updateRequest.HostDocumentFilePath);
-
-                    return Task.CompletedTask;
-                }
-
-                public TaskCompletionSource<JToken> GetRequest(long id) => throw new NotImplementedException();
-
-                public void SendNotification(string method) => throw new NotImplementedException();
-
-                public void SendNotification<T>(string method, T @params) => throw new NotImplementedException();
-
-                public Task<TResponse> SendRequest<T, TResponse>(string method, T @params) => throw new NotImplementedException();
-
-                public Task<TResponse> SendRequest<TResponse>(string method) => throw new NotImplementedException();
             }
         }
     }
