@@ -81,10 +81,10 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             _foregroundDispatcher.AssertForegroundThread();
 
-            if (!FileKinds.IsComponent(document.FileKind) || FileKinds.IsComponentImport(document.FileKind))
+            if (FileKinds.IsComponentImport(document.FileKind))
             {
-                // Today we only support publishing Razor component files to the workspace. We could choose to publish more but we're being
-                // purposefuly restrictive.
+                // Razor component imports don't have any C# to generate anyways, don't do the work. This doesn't capture _ViewImports.cshtml because we never
+                // associated a FileKind with those files.
                 return;
             }
 

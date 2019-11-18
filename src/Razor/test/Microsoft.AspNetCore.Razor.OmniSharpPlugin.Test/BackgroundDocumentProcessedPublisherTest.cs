@@ -11,22 +11,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     public class BackgroundDocumentProcessedPublisherTest : OmniSharpWorkspaceTestBase
     {
         [Fact]
-        public async Task DocumentProcessed_CSHTML_Noops()
-        {
-            // Arrange
-            var project = CreateProjectSnapshot(Project.FilePath, new[] { "/path/to/file.cshtml" });
-            var document = project.GetDocument("/path/to/file.cshtml");
-            var originalSolution = Workspace.CurrentSolution;
-            var processedPublisher = new BackgroundDocumentProcessedPublisher(Dispatcher, Workspace, LoggerFactory);
-
-            // Act
-            await RunOnForegroundAsync(() => processedPublisher.DocumentProcessed(document));
-
-            // Assert
-            Assert.Same(originalSolution, Workspace.CurrentSolution);
-        }
-
-        [Fact]
         public async Task DocumentProcessed_Import_Noops()
         {
             // Arrange
@@ -77,11 +61,27 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         [Fact]
-        public async Task DocumentProcessed_NoActiveDocument_AddsDocument()
+        public async Task DocumentProcessed_NoActiveDocument_AddsRazorDocument()
         {
             // Arrange
             var projectSnapshot = CreateProjectSnapshot(Project.FilePath, new[] { "/path/to/Counter.razor" });
             var document = projectSnapshot.GetDocument("/path/to/Counter.razor");
+            var processedPublisher = new BackgroundDocumentProcessedPublisher(Dispatcher, Workspace, LoggerFactory);
+
+            // Act
+            await RunOnForegroundAsync(() => processedPublisher.DocumentProcessed(document));
+
+            // Assert
+            var project = Assert.Single(Workspace.CurrentSolution.Projects);
+            Assert.Contains(project.Documents, roslynDocument => roslynDocument.FilePath.StartsWith(document.FilePath));
+        }
+
+        [Fact]
+        public async Task DocumentProcessed_NoActiveDocument_AddsCSHTMLDocument()
+        {
+            // Arrange
+            var projectSnapshot = CreateProjectSnapshot(Project.FilePath, new[] { "/path/to/Index.cshtml" });
+            var document = projectSnapshot.GetDocument("/path/to/Index.cshtml");
             var processedPublisher = new BackgroundDocumentProcessedPublisher(Dispatcher, Workspace, LoggerFactory);
 
             // Act
