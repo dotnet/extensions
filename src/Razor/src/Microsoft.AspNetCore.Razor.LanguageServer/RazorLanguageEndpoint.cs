@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -14,12 +15,14 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler, IRazorMapToDocumentRangeHandler
     {
-        private static readonly Range UndefinedRange = new Range(
+        // Internal for testing
+        internal static readonly Range UndefinedRange = new Range(
             start: new Position(-1, -1),
             end: new Position(-1, -1));
 
@@ -36,22 +39,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             if (foregroundDispatcher == null)
             {
-                throw new System.ArgumentNullException(nameof(foregroundDispatcher));
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
             if (documentResolver == null)
             {
-                throw new System.ArgumentNullException(nameof(documentResolver));
+                throw new ArgumentNullException(nameof(documentResolver));
             }
 
             if (documentVersionCache == null)
             {
-                throw new System.ArgumentNullException(nameof(documentVersionCache));
+                throw new ArgumentNullException(nameof(documentVersionCache));
             }
 
             if (loggerFactory == null)
             {
-                throw new System.ArgumentNullException(nameof(loggerFactory));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
@@ -134,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             if (request is null)
             {
-                throw new System.ArgumentNullException(nameof(request));
+                throw new ArgumentNullException(nameof(request));
             }
 
             long documentVersion = -1;
