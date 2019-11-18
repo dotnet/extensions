@@ -81,49 +81,52 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             _foregroundDispatcher.AssertForegroundThread();
 
-            if (FileKinds.IsComponentImport(document.FileKind))
+            lock (_workspaceChangedLock)
             {
-                // Razor component imports don't have any C# to generate anyways, don't do the work. This doesn't capture _ViewImports.cshtml because we never
-                // associated a FileKind with those files.
-                return;
-            }
-
-            var openVirtualFilePath = document.FilePath + ActiveVirtualDocumentSuffix;
-            var openDocument = _workspace.GetDocument(openVirtualFilePath);
-            if (openDocument != null)
-            {
-                // This document is open in the editor, no reason for us to populate anything in the workspace the editor will do that.
-                return;
-            }
-
-            var backgroundVirtualFilePath = document.FilePath + BackgroundVirtualDocumentSuffix;
-            var currentDocument = _workspace.GetDocument(backgroundVirtualFilePath);
-            if (currentDocument == null)
-            {
-                // Background document doesn't exist, we need to create it
-
-                var roslynProject = GetRoslynProject(document.Project);
-                if (roslynProject == null)
+                if (FileKinds.IsComponentImport(document.FileKind))
                 {
-                    // There's no Roslyn project associated with the Razor document.
-                    _logger.LogTrace($"Could not find a Roslyn project for Razor virtual document '{backgroundVirtualFilePath}'.");
+                    // Razor component imports don't have any C# to generate anyways, don't do the work. This doesn't capture _ViewImports.cshtml because we never
+                    // associated a FileKind with those files.
                     return;
                 }
 
-                var documentId = DocumentId.CreateNewId(roslynProject.Id);
-                var name = Path.GetFileName(backgroundVirtualFilePath);
-                var emptyTextLoader = new EmptyTextLoader(backgroundVirtualFilePath);
-                var documentInfo = DocumentInfo.Create(documentId, name, filePath: backgroundVirtualFilePath, loader: emptyTextLoader);
-                _workspace.AddDocument(documentInfo);
-                currentDocument = _workspace.GetDocument(backgroundVirtualFilePath);
+                var openVirtualFilePath = document.FilePath + ActiveVirtualDocumentSuffix;
+                var openDocument = _workspace.GetDocument(openVirtualFilePath);
+                if (openDocument != null)
+                {
+                    // This document is open in the editor, no reason for us to populate anything in the workspace the editor will do that.
+                    return;
+                }
 
-                Debug.Assert(currentDocument != null, "We just added the document, it should definitely be there.");
+                var backgroundVirtualFilePath = document.FilePath + BackgroundVirtualDocumentSuffix;
+                var currentDocument = _workspace.GetDocument(backgroundVirtualFilePath);
+                if (currentDocument == null)
+                {
+                    // Background document doesn't exist, we need to create it
+
+                    var roslynProject = GetRoslynProject(document.Project);
+                    if (roslynProject == null)
+                    {
+                        // There's no Roslyn project associated with the Razor document.
+                        _logger.LogTrace($"Could not find a Roslyn project for Razor virtual document '{backgroundVirtualFilePath}'.");
+                        return;
+                    }
+
+                    var documentId = DocumentId.CreateNewId(roslynProject.Id);
+                    var name = Path.GetFileName(backgroundVirtualFilePath);
+                    var emptyTextLoader = new EmptyTextLoader(backgroundVirtualFilePath);
+                    var documentInfo = DocumentInfo.Create(documentId, name, filePath: backgroundVirtualFilePath, loader: emptyTextLoader);
+                    _workspace.AddDocument(documentInfo);
+                    currentDocument = _workspace.GetDocument(backgroundVirtualFilePath);
+
+                    Debug.Assert(currentDocument != null, "We just added the document, it should definitely be there.");
+                }
+
+                // Update document content
+
+                var sourceText = document.GetGeneratedCodeSourceText();
+                _workspace.OnDocumentChanged(currentDocument.Id, sourceText);
             }
-
-            // Update document content
-
-            var sourceText = document.GetGeneratedCodeSourceText();
-            _workspace.OnDocumentChanged(currentDocument.Id, sourceText);
         }
 
         public override void Initialize(OmniSharpProjectSnapshotManager projectManager)
