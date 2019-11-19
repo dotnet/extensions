@@ -15,12 +15,12 @@
   <PropertyGroup>
     <MajorVersion>3</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>1</PatchVersion>
+    <PatchVersion>2</PatchVersion>
     <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
-    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
   </PropertyGroup>
   <!--
