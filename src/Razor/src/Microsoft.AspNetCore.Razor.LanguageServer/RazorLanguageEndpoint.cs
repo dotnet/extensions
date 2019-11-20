@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -25,6 +24,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         internal static readonly Range UndefinedRange = new Range(
             start: new Position(-1, -1),
             end: new Position(-1, -1));
+        private static readonly long UndefinedDocumentVersion = -1;
 
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
@@ -72,7 +72,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 _documentResolver.TryResolveDocument(request.Uri.AbsolutePath, out documentSnapshot);
                 if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
                 {
-                    Debug.Fail("Document should always be available here.");
+                    // This typically happens for closed documents.
+                    documentVersion = UndefinedDocumentVersion;
                 }
 
                 return documentSnapshot;
@@ -147,7 +148,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 _documentResolver.TryResolveDocument(request.RazorDocumentUri.AbsolutePath, out documentSnapshot);
                 if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
                 {
-                    Debug.Fail("Document should always be available here.");
+                    documentVersion = UndefinedDocumentVersion;
                 }
 
                 return documentSnapshot;

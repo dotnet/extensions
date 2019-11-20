@@ -9,11 +9,8 @@ import { CSharpProjectedDocumentContentProvider } from './CSharp/CSharpProjected
 import { HtmlProjectedDocument } from './Html/HtmlProjectedDocument';
 import { HtmlProjectedDocumentContentProvider } from './Html/HtmlProjectedDocumentContentProvider';
 import { IRazorDocument } from './IRazorDocument';
+import { virtualCSharpSuffix, virtualHtmlSuffix } from './RazorConventions';
 import { getUriPath } from './UriPaths';
-
-export const virtualCSharpSuffix = '__virtual.cs';
-export const virtualHtmlSuffix = '__virtual.html';
-export const backgroundVirtualCSharpSuffix = `__bg${virtualCSharpSuffix}`;
 
 export function createDocument(uri: vscode.Uri) {
     const csharpDocument = createProjectedCSharpDocument(uri);

@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { backgroundVirtualCSharpSuffix, virtualCSharpSuffix, virtualHtmlSuffix } from './RazorDocumentFactory';
+import { getRazorDocumentUri, isRazorCSharpFile } from './RazorConventions';
 import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
 import { LanguageKind } from './RPC/LanguageKind';
 import { getUriPath } from './UriPaths';
@@ -32,20 +32,24 @@ export class RazorImplementationProvider
             // that means the piece we're trying to navigate to may not have a representation in the
             // top level file.
             for (const implementation of implementations) {
-                const uriPath = getUriPath(implementation.uri);
-                if (uriPath.endsWith(virtualCSharpSuffix)) {
-                    // The virtual file is named differently if it's not open (in the background)
-                    let razorFilePath = uriPath.replace(backgroundVirtualCSharpSuffix, '');
-                    razorFilePath = uriPath.replace(virtualCSharpSuffix, '');
-                    const razorFile = vscode.Uri.file(razorFilePath);
-                    const res = await this.serviceClient.mapToDocumentRange(
-                        projection.languageKind,
-                        implementation.range,
-                        razorFile);
-                    if (res) {
-                        implementation.range = res!.range;
-                        implementation.uri = razorFile;
-                    }
+                if (!isRazorCSharpFile(implementation.uri)) {
+                    // This is a regular C# file. No need to re-map.
+                    continue;
+                }
+
+                // C# knows about line pragma, if we're getting a direction to a virtual c# document
+                // that means the piece we're trying to navigate to may not have a representation in the
+                // top level file.
+                const razorFile = getRazorDocumentUri(implementation.uri);
+
+                const result = await this.serviceClient.mapToDocumentRange(
+                    projection.languageKind,
+                    implementation.range,
+                    razorFile);
+
+                if (result) {
+                    implementation.range = result!.range;
+                    implementation.uri = razorFile;
                 }
             }
         }
@@ -57,10 +61,7 @@ export class RazorImplementationProvider
         }
 
         // Remove any non-top level Razor file implementation entries. We don't know how to navigate to them.
-        implementations = implementations.filter(async (impl) => {
-            const uriPath = getUriPath(impl.uri);
-            return !uriPath.endsWith(virtualCSharpSuffix);
-        });
+        implementations = implementations.filter(impl => !isRazorCSharpFile(impl.uri));
 
         return implementations;
     }

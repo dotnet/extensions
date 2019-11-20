@@ -29,6 +29,7 @@ import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorLogger } from './RazorLogger';
 import { RazorProjectManager } from './RazorProjectManager';
 import { RazorProjectTracker } from './RazorProjectTracker';
+import { RazorRenameFeature } from './RazorRenameFeature';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
 import { TelemetryReporter } from './TelemetryReporter';
 
@@ -71,19 +72,28 @@ export async function activate(context: ExtensionContext, languageServerDir: str
             const signatureHelpProvider = new RazorSignatureHelpProvider(
                 documentSynchronizer,
                 documentManager,
-                languageServiceClient);
+                languageServiceClient,
+                logger);
             const definitionProvider = new RazorDefinitionProvider(
                 documentSynchronizer,
                 documentManager,
-                languageServiceClient);
+                languageServiceClient,
+                logger);
             const implementationProvider = new RazorImplementationProvider(
                 documentSynchronizer,
                 documentManager,
-                languageServiceClient);
+                languageServiceClient,
+                logger);
             const hoverProvider = new RazorHoverProvider(
                 documentSynchronizer,
                 documentManager,
-                languageServiceClient);
+                languageServiceClient,
+                logger);
+            const renameFeature = new RazorRenameFeature(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger);
 
             localRegistrations.push(
                 languageConfiguration.register(),
@@ -111,6 +121,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 documentTracker.register(),
                 csharpFeature.register(),
                 htmlFeature.register(),
+                renameFeature.register(),
                 documentSynchronizer.register(),
                 reportIssueCommand.register());
         });

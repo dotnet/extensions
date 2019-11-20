@@ -91,8 +91,8 @@ export class RazorCompletionItemProvider
         documentManager: RazorDocumentManager,
         serviceClient: RazorLanguageServiceClient,
         private readonly provisionalCompletionOrchestrator: ProvisionalCompletionOrchestrator,
-        private readonly logger: RazorLogger) {
-        super(documentSynchronizer, documentManager, serviceClient);
+        logger: RazorLogger) {
+        super(documentSynchronizer, documentManager, serviceClient, logger);
     }
 
     public async provideCompletionItems(
