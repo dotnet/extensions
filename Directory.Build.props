@@ -32,13 +32,7 @@
   <PropertyGroup Label="Package and Assembly Metadata">
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Product>Microsoft ASP.NET Core</Product>
-    <PackageIcon>packageIcon.png</PackageIcon>
-    <PackageIconFullPath>$(MSBuildThisFileDirectory)packageIcon.png</PackageIconFullPath>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="$(PackageIconFullPath)" Pack="true" PackagePath="\"/>
-  </ItemGroup>
 
   <PropertyGroup Label="Warning Suppressions">
     <!--
