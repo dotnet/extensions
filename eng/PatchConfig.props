@@ -6,24 +6,12 @@
       Microsoft.Extensions.Primitives;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.7' ">
-    <PackagesInPatch>
-    </PackagesInPatch>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.10' ">
     <PackagesInPatch>
       Microsoft.Extensions.Configuration.Binder;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.11' ">
-    <PackagesInPatch>
-    </PackagesInPatch>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.12' ">
-    <PackagesInPatch>
-    </PackagesInPatch>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.14' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.15' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
