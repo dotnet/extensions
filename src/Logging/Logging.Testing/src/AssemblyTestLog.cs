@@ -209,13 +209,14 @@ namespace Microsoft.Extensions.Logging.Testing
             return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assembly, serviceProvider);
         }
 
-        public static AssemblyTestLog ForAssembly(Assembly assembly)
+        public static AssemblyTestLog ForAssembly(Assembly assembly, Func<string, string> baseDirectoryDelegate = null)
         {
             lock (_lock)
             {
                 if (!_logs.TryGetValue(assembly, out var log))
                 {
                     var baseDirectory = TestFileOutputContext.GetOutputDirectory(assembly);
+                    baseDirectory = baseDirectoryDelegate?.Invoke(baseDirectory);
 
                     log = Create(assembly, baseDirectory);
                     _logs[assembly] = log;

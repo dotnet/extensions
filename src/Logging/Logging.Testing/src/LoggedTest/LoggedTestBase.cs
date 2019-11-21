@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -63,12 +64,17 @@ namespace Microsoft.Extensions.Logging.Testing
                 var logLevelAttribute = methodInfo.GetCustomAttribute<LogLevelAttribute>()
                                         ?? methodInfo.DeclaringType.GetCustomAttribute<LogLevelAttribute>()
                                         ?? methodInfo.DeclaringType.Assembly.GetCustomAttribute<LogLevelAttribute>();
+                var flakyAttribute = methodInfo.GetCustomAttribute<FlakyAttribute>()
+                                        ?? methodInfo.DeclaringType.GetCustomAttribute<FlakyAttribute>()
+                                        ?? methodInfo.DeclaringType.Assembly.GetCustomAttribute<FlakyAttribute>();
 
                 // internal for testing
                 ResolvedTestClassName = context.FileOutput.TestClassName;
 
                 _testLog = AssemblyTestLog
-                    .ForAssembly(classType.GetTypeInfo().Assembly)
+                    .ForAssembly(
+                        classType.GetTypeInfo().Assembly,
+                        baseDirectory => flakyAttribute == null ? baseDirectory : Path.Combine(baseDirectory, "Flaky"))
                     .StartTestLog(
                         TestOutputHelper,
                         context.FileOutput.TestClassName,
