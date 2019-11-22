@@ -11,6 +11,10 @@ variables:
     value: true
   - name: _DotNetArtifactsCategory
     value: ASPNETEXTENSIONS
+    
+  # used for post-build phases, internal builds only
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - group: DotNet-AspNet-SDLValidation-Params
 
 # CI and PR triggers
 trigger:
@@ -270,18 +274,6 @@ stages:
         chmod +x $HOME/bin/jq
         echo "##vso[task.prependpath]$HOME/bin"
       displayName: Install jq
-    - task: UseDotNet@2
-      displayName: 'Use .NET Core sdk'
-      inputs:
-        packageType: sdk
-        # The SDK version selected here is intentionally supposed to use the latest release
-        # For the purpose of building Linux distros, we can't depend on features of the SDK
-        # which may not exist in pre-built versions of the SDK
-        # Pinning to preview 8 since preview 9 has breaking changes
-        # version: 3.0.x
-        version: 3.0.100-preview8-013656
-        installationPath: $(DotNetCoreSdkDir)
-        includePreviewVersions: true
     - script: ./eng/scripts/ci-source-build.sh --ci --configuration Release
       displayName: Run ci-source-build.sh
     - task: PublishBuildArtifacts@1
@@ -309,3 +301,17 @@ stages:
       # Symbol validation isn't being very reliable lately. This should be enabled back
       # once this issue is resolved: https://github.com/dotnet/arcade/issues/2871
       enableSymbolValidation: false
+      # This is to enable SDL runs part of Post-Build Validation Stage
+      SDLValidationParameters:
+        enable: true
+        continueOnError: false
+        params: ' -SourceToolsList @("policheck","credscan")
+        -TsaInstanceURL $(_TsaInstanceURL)
+        -TsaProjectName $(_TsaProjectName)
+        -TsaNotificationEmail $(_TsaNotificationEmail)
+        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+        -TsaBugAreaPath $(_TsaBugAreaPath)
+        -TsaIterationPath $(_TsaIterationPath)
+        -TsaRepositoryName "Extensions"
+        -TsaCodebaseName "Extensions"
+        -TsaPublish $True'
