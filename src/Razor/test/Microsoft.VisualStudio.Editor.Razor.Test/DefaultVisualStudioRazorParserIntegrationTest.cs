@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
@@ -36,12 +37,34 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private CodeAnalysis.Workspace Workspace { get; }
 
         [ForegroundFact]
+        public async Task NoDocumentSnapshotParsesComponentFileCorrectly()
+        {
+            // Arrange
+            var snapshot = new StringTextSnapshot("@code { }");
+            var testBuffer = new TestTextBuffer(snapshot);
+            var documentTracker = CreateDocumentTracker(testBuffer, filePath: "C:\\This\\Path\\Is\\Just\\For\\component.razor");
+            using (var manager = CreateParserManager(documentTracker))
+            {
+                // Act
+                await manager.InitializeWithDocumentAsync(snapshot);
+
+                // Assert
+                Assert.Equal(1, manager.ParseCount);
+
+                var codeDocument = await manager.InnerParser.GetLatestCodeDocumentAsync(snapshot);
+                Assert.Equal(FileKinds.Component, codeDocument.GetFileKind());
+
+                // @code is only applicable in component files so we're verifying that `@code` was treated as a directive.
+                var directiveNodes = manager.CurrentSyntaxTree.Root.DescendantNodes().Where(child => child.Kind == SyntaxKind.RazorDirective);
+                Assert.Single(directiveNodes);
+            }
+        }
+
+        [ForegroundFact]
         public async Task BufferChangeStartsFullReparseIfChangeOverlapsMultipleSpans()
         {
             // Arrange
             var original = new StringTextSnapshot("Foo @bar Baz");
-            var testBuffer = new TestTextBuffer(original);
-            var documentTracker = CreateDocumentTracker(testBuffer);
             using (var manager = CreateParserManager(original))
             {
                 var changed = new StringTextSnapshot("Foo @bap Daz");
@@ -513,10 +536,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             BaselineTest(manager.CurrentSyntaxTree);
         }
 
-        private TestParserManager CreateParserManager(ITextSnapshot originalSnapshot)
+        private TestParserManager CreateParserManager(VisualStudioDocumentTracker documentTracker)
         {
-            var textBuffer = new TestTextBuffer(originalSnapshot);
-            var documentTracker = CreateDocumentTracker(textBuffer);
             var templateEngineFactory = CreateProjectEngineFactory();
             var parser = new DefaultVisualStudioRazorParser(
                 Dispatcher,
@@ -534,6 +555,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
             parser.StartParser();
 
             return new TestParserManager(parser);
+        }
+
+        private TestParserManager CreateParserManager(ITextSnapshot originalSnapshot)
+        {
+            var textBuffer = new TestTextBuffer(originalSnapshot);
+            var documentTracker = CreateDocumentTracker(textBuffer);
+
+            return CreateParserManager(documentTracker);
         }
 
         private static ProjectSnapshotProjectEngineFactory CreateProjectEngineFactory(
@@ -596,13 +625,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
 #endif
         }
 
-        private VisualStudioDocumentTracker CreateDocumentTracker(Text.ITextBuffer textBuffer)
+        private VisualStudioDocumentTracker CreateDocumentTracker(Text.ITextBuffer textBuffer, string filePath = TestLinePragmaFileName)
         {
             var focusedTextView = Mock.Of<ITextView>(textView => textView.HasAggregateFocus == true);
             var documentTracker = Mock.Of<VisualStudioDocumentTracker>(tracker =>
                 tracker.TextBuffer == textBuffer &&
                 tracker.TextViews == new[] { focusedTextView } &&
-                tracker.FilePath == TestLinePragmaFileName &&
+                tracker.FilePath == filePath &&
                 tracker.ProjectPath == TestProjectPath &&
                 tracker.ProjectSnapshot == ProjectSnapshot &&
                 tracker.IsSupportedProject == true);

@@ -1,0 +1,31 @@
+{
+    "name": "razor-vscode-functional-test",
+    "private": true,
+    "displayName": "Razor Functional Tests",
+    "engines": {
+        "vscode": "^1.30.0"
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run compile",
+        "clean": "rimraf dist",
+        "build": "yarn run clean && yarn run lint && tsc -p ./",
+        "lint": "tslint --project ./",
+        "watch": "yarn run clean && yarn run lint && tsc -watch -p ./",
+        "test": "yarn build && node ./dist/runTest.js"
+    },
+    "devDependencies": {
+        "@types/node": "9.4.7",
+        "@types/glob": "^7.1.1",
+        "@types/mocha": "^5.2.6",
+        "@types/vscode": "^1.30.0",
+        "@types/rimraf": "2.0.2",
+        "mocha": "^6.1.4",
+        "glob": "^7.1.4",
+        "ts-node": "^7.0.1",
+        "tslint": "^5.11.0",
+        "typescript": "3.3.4000",
+        "rimraf": "2.6.3",
+        "vscode-test": "1.2.0"
+    },
+    "dependencies": {}
+}
