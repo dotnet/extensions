@@ -1,24 +1,28 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto">
-    <InternalAspNetCoreSdkPackageVersion>2.1.7-build-20190104.4</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>2.1.6</MicrosoftNETCoreAppPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.1-build-20190104.5</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.2.1</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.5.0</MicrosoftWin32RegistryPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
-    <SystemDataSqlClientPackageVersion>4.5.2-servicing-27114-05</SystemDataSqlClientPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.5.0</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.6.0</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.5.0</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.3-servicing-27114-05</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.5.2-servicing-27114-05</SystemMemoryPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.3</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
+    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.6.0</SystemReflectionMetadataPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.5.1-servicing-27114-05</SystemSecurityCryptographyCngPackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.5.0</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>4.5.0</SystemSecurityCryptographyXmlPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.5.0</SystemTextEncodingsWebPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.2-servicing-27114-05</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
   </PropertyGroup>
 
@@ -26,13 +30,17 @@
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 
   <ItemGroup Label=".NET Core dependencies">
+    <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
+    <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <LatestPackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
+    <LatestPackageReference Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
     <LatestPackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
+    <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="$(SystemRuntimeInteropServicesRuntimeInformationPackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <LatestPackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
@@ -49,7 +57,6 @@
 
   <ItemGroup Label="External dependencies">
     <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="2.1.0" />
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
     <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.1" />
@@ -61,11 +68,13 @@
     <LatestPackageReference Include="Polly.Extensions.Http" Version="2.0.1" />
     <LatestPackageReference Include="Polly" Version="6.0.1" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
-    <LatestPackageReference Include="Serilog.Sinks.File" Version="3.2.0" />
-    <LatestPackageReference Include="StackExchange.Redis.StrongName" Version="1.2.4" />
+    <LatestPackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
+    <LatestPackageReference Include="StackExchange.Redis.StrongName" Version="1.2.6" />
+    <LatestPackageReference Include="StackExchange.Redis" Version="2.0.593" />
     <LatestPackageReference Include="xunit.abstractions" Version="2.0.1" />
     <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
     <LatestPackageReference Include="xunit.assert" Version="2.3.1" />
+    <LatestPackageReference Include="xunit.extensibility.core" Version="2.3.1" />
     <LatestPackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
     <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <LatestPackageReference Include="xunit" Version="2.4.0" />
