@@ -82,17 +82,16 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     IncludeSubdirectories = true,
                 };
 
-                documentWatcher.Created += (sender, args) => FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Added);
-                documentWatcher.Deleted += (sender, args) => FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Removed);
-                documentWatcher.Changed += (sender, args) => FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Changed);
+                documentWatcher.Created += (sender, args) => FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectInstance, RazorFileChangeKind.Added);
+                documentWatcher.Deleted += (sender, args) => FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectInstance, RazorFileChangeKind.Removed);
+                documentWatcher.Changed += (sender, args) => FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectInstance, RazorFileChangeKind.Changed);
                 documentWatcher.Renamed += (sender, args) =>
                 {
                     // Translate file renames into remove->add
-                    FileSystemWatcher_RazorDocumentEvent(args.OldFullPath, projectDirectory, projectInstance, RazorFileChangeKind.Removed);
-                    FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Added);
+                    FileSystemWatcher_RazorDocumentEvent(args.OldFullPath, projectInstance, RazorFileChangeKind.Removed);
+                    FileSystemWatcher_RazorDocumentEvent(args.FullPath, projectInstance, RazorFileChangeKind.Added);
                 };
                 watchers.Add(documentWatcher);
-
 
                 var documentOutputWatcher = new FileSystemWatcher(projectDirectory, "*." + RazorFileExtensions[i] + ".g.cs")
                 {
@@ -100,14 +99,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     IncludeSubdirectories = true,
                 };
 
-                documentOutputWatcher.Created += (sender, args) => FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Added);
-                documentOutputWatcher.Deleted += (sender, args) => FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Removed);
-                documentOutputWatcher.Changed += (sender, args) => FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Changed);
+                documentOutputWatcher.Created += (sender, args) => FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectInstance, RazorFileChangeKind.Added);
+                documentOutputWatcher.Deleted += (sender, args) => FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectInstance, RazorFileChangeKind.Removed);
+                documentOutputWatcher.Changed += (sender, args) => FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectInstance, RazorFileChangeKind.Changed);
                 documentOutputWatcher.Renamed += (sender, args) =>
                 {
                     // Translate file renames into remove->add
-                    FileSystemWatcher_RazorDocumentOutputEvent(args.OldFullPath, projectDirectory, projectInstance, RazorFileChangeKind.Removed);
-                    FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectDirectory, projectInstance, RazorFileChangeKind.Added);
+                    FileSystemWatcher_RazorDocumentOutputEvent(args.OldFullPath, projectInstance, RazorFileChangeKind.Removed);
+                    FileSystemWatcher_RazorDocumentOutputEvent(args.FullPath, projectInstance, RazorFileChangeKind.Added);
                 };
                 watchers.Add(documentOutputWatcher);
 
@@ -119,10 +118,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
         
         // Internal for testing
-        internal void FileSystemWatcher_RazorDocumentEvent(string filePath, string projectDirectory, ProjectInstance projectInstance, RazorFileChangeKind changeKind)
+        internal void FileSystemWatcher_RazorDocumentEvent(string filePath, ProjectInstance projectInstance, RazorFileChangeKind changeKind)
         {
-            var relativeFilePath = ResolveRelativeFilePath(filePath, projectDirectory);
-            var args = new RazorFileChangeEventArgs(filePath, relativeFilePath, projectInstance, changeKind);
+            var args = new RazorFileChangeEventArgs(filePath, projectInstance, changeKind);
             for (var i = 0; i < _documentChangeListeners.Count; i++)
             {
                 _documentChangeListeners[i].RazorDocumentChanged(args);
@@ -130,26 +128,13 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         // Internal for testing
-        internal void FileSystemWatcher_RazorDocumentOutputEvent(string filePath, string projectDirectory, ProjectInstance projectInstance, RazorFileChangeKind changeKind)
+        internal void FileSystemWatcher_RazorDocumentOutputEvent(string filePath, ProjectInstance projectInstance, RazorFileChangeKind changeKind)
         {
-            var relativeFilePath = ResolveRelativeFilePath(filePath, projectDirectory);
-            var args = new RazorFileChangeEventArgs(filePath, relativeFilePath, projectInstance, changeKind);
+            var args = new RazorFileChangeEventArgs(filePath, projectInstance, changeKind);
             for (var i = 0; i < _documentOutputChangeListeners.Count; i++)
             {
                 _documentOutputChangeListeners[i].RazorDocumentOutputChanged(args);
             }
-        }
-
-        // Internal for testing
-        internal static string ResolveRelativeFilePath(string filePath, string projectDirectory)
-        {
-            if (filePath.StartsWith(projectDirectory, FilePathComparison.Instance))
-            {
-                var relativePath = filePath.Substring(projectDirectory.Length + 1 /* Trailing slash */ );
-                return relativePath;
-            }
-
-            return filePath;
         }
     }
 }

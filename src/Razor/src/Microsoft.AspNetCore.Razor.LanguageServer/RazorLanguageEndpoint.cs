@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -15,11 +14,18 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler
+    internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler, IRazorMapToDocumentRangeHandler
     {
+        // Internal for testing
+        internal static readonly Range UndefinedRange = new Range(
+            start: new Position(-1, -1),
+            end: new Position(-1, -1));
+        private static readonly long UndefinedDocumentVersion = -1;
+
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly DocumentVersionCache _documentVersionCache;
@@ -66,7 +72,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 _documentResolver.TryResolveDocument(request.Uri.AbsolutePath, out documentSnapshot);
                 if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
                 {
-                    Debug.Fail("Document should always be available here.");
+                    // This typically happens for closed documents.
+                    documentVersion = UndefinedDocumentVersion;
                 }
 
                 return documentSnapshot;
@@ -124,6 +131,84 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 Position = responsePosition,
                 PositionIndex = responsePositionIndex,
                 HostDocumentVersion = documentVersion
+            };
+        }
+
+        public async Task<RazorMapToDocumentRangeResponse> Handle(RazorMapToDocumentRangeParams request, CancellationToken cancellationToken)
+        {
+            if (request is null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            long documentVersion = -1;
+            DocumentSnapshot documentSnapshot = null;
+            await Task.Factory.StartNew(() =>
+            {
+                _documentResolver.TryResolveDocument(request.RazorDocumentUri.AbsolutePath, out documentSnapshot);
+                if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
+                {
+                    documentVersion = UndefinedDocumentVersion;
+                }
+
+                return documentSnapshot;
+            }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+
+            if (request.Kind != RazorLanguageKind.CSharp)
+            {
+                // All other non-C# requests map directly to where they are in the document.
+                return new RazorMapToDocumentRangeResponse()
+                {
+                    Range = request.ProjectedRange,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+
+            var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
+            if (codeDocument.IsUnsupported())
+            {
+                // All maping requests on unsupported documents return undefined ranges. This is equivalent to what pre-VSCode Razor was capable of.
+                return new RazorMapToDocumentRangeResponse()
+                {
+                    Range = UndefinedRange,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+
+            var csharpSourceText = SourceText.From(codeDocument.GetCSharpDocument().GeneratedCode);
+            var range = request.ProjectedRange;
+            var startPosition = range.Start;
+            var lineStartPosition = new LinePosition((int)startPosition.Line, (int)startPosition.Character);
+            var startIndex = csharpSourceText.Lines.GetPosition(lineStartPosition);
+            if (!TryGetHostDocumentPosition(codeDocument, startIndex, out var hostDocumentStart))
+            {
+                return new RazorMapToDocumentRangeResponse()
+                {
+                    Range = UndefinedRange,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+
+            var endPosition = range.End;
+            var lineEndPosition = new LinePosition((int)endPosition.Line, (int)endPosition.Character);
+            var endIndex = csharpSourceText.Lines.GetPosition(lineEndPosition);
+            if (!TryGetHostDocumentPosition(codeDocument, endIndex, out var hostDocumentEnd))
+            {
+                return new RazorMapToDocumentRangeResponse()
+                {
+                    Range = UndefinedRange,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+
+            var remappedDocumentRange = new Range(
+                hostDocumentStart,
+                hostDocumentEnd);
+
+            return new RazorMapToDocumentRangeResponse()
+            {
+                Range = remappedDocumentRange,
+                HostDocumentVersion = documentVersion,
             };
         }
 
@@ -223,6 +308,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             projectedPosition = default;
             projectedIndex = default;
+            return false;
+        }
+
+        // Internal for testing
+        internal static bool TryGetHostDocumentPosition(RazorCodeDocument codeDocument, int csharpAbsoluteIndex, out Position hostDocumentPosition)
+        {
+            var csharpDoc = codeDocument.GetCSharpDocument();
+            foreach (var mapping in csharpDoc.SourceMappings)
+            {
+                var generatedSpan = mapping.GeneratedSpan;
+                var generatedAbsoluteIndex = generatedSpan.AbsoluteIndex;
+                if (generatedAbsoluteIndex <= csharpAbsoluteIndex)
+                {
+                    // Treat the mapping as owning the edge at its end (hence <= originalSpan.Length),
+                    // otherwise we wouldn't handle the cursor being right after the final C# char
+                    var distanceIntoGeneratedSpan = csharpAbsoluteIndex - generatedAbsoluteIndex;
+                    if (distanceIntoGeneratedSpan <= generatedSpan.Length)
+                    {
+                        // Found the generated span that contains the csharp absolute index
+
+                        var hostDocumentIndex = mapping.OriginalSpan.AbsoluteIndex + distanceIntoGeneratedSpan;
+                        var originalLocation = codeDocument.Source.Lines.GetLocation(hostDocumentIndex);
+                        hostDocumentPosition = new Position(originalLocation.LineIndex, originalLocation.CharacterIndex);
+                        return true;
+                    }
+                }
+            }
+
+            hostDocumentPosition = default;
             return false;
         }
     }

@@ -14,9 +14,12 @@ import { IEventEmitterFactory } from './IEventEmitterFactory';
 import { reportTelemetryForProjects } from './ProjectTelemetryListener';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
+import { RazorDefinitionProvider } from './RazorDefinitionProvider';
 import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorDocumentTracker } from './RazorDocumentTracker';
+import { RazorHoverProvider } from './RazorHoverProvider';
+import { RazorImplementationProvider } from './RazorImplementationProvider';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageConfiguration } from './RazorLanguageConfiguration';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
@@ -26,6 +29,7 @@ import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorLogger } from './RazorLogger';
 import { RazorProjectManager } from './RazorProjectManager';
 import { RazorProjectTracker } from './RazorProjectTracker';
+import { RazorRenameFeature } from './RazorRenameFeature';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
 import { TelemetryReporter } from './TelemetryReporter';
 
@@ -68,7 +72,28 @@ export async function activate(context: ExtensionContext, languageServerDir: str
             const signatureHelpProvider = new RazorSignatureHelpProvider(
                 documentSynchronizer,
                 documentManager,
-                languageServiceClient);
+                languageServiceClient,
+                logger);
+            const definitionProvider = new RazorDefinitionProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger);
+            const implementationProvider = new RazorImplementationProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger);
+            const hoverProvider = new RazorHoverProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger);
+            const renameFeature = new RazorRenameFeature(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger);
 
             localRegistrations.push(
                 languageConfiguration.register(),
@@ -81,12 +106,22 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                     RazorLanguage.id,
                     signatureHelpProvider,
                     '(', ','),
+                vscode.languages.registerDefinitionProvider(
+                    RazorLanguage.id,
+                    definitionProvider),
+                vscode.languages.registerImplementationProvider(
+                    RazorLanguage.id,
+                    implementationProvider),
+                vscode.languages.registerHoverProvider(
+                    RazorLanguage.documentSelector,
+                    hoverProvider),
                 projectTracker.register(),
                 projectManager.register(),
                 documentManager.register(),
                 documentTracker.register(),
                 csharpFeature.register(),
                 htmlFeature.register(),
+                renameFeature.register(),
                 documentSynchronizer.register(),
                 reportIssueCommand.register());
         });
