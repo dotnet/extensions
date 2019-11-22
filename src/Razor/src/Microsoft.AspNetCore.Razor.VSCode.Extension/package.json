@@ -1,0 +1,181 @@
+{
+    "name": "razor-vscode",
+    "private": true,
+    "displayName": "Razor",
+    "description": "Razor VS Code extension bootstrapper. This extension attempts to replicate what O# does to bootstrap Razor's VSCode extension library. ",
+    "version": "0.0.1",
+    "defaults": {
+        "razor": "0.0.1"
+    },
+    "publisher": "ms-vscode",
+    "engines": {
+        "vscode": "^1.31.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onWebviewPanel:razorReportIssue",
+        "onDebugInitialConfigurations",
+        "onDebugResolve:coreclr",
+        "onDebugResolve:clr",
+        "onLanguage:csharp",
+        "onLanguage:aspnetcorerazor",
+        "onCommand:o.restart",
+        "onCommand:o.pickProjectAndStart",
+        "onCommand:o.showOutput",
+        "onCommand:dotnet.restore.project",
+        "onCommand:dotnet.restore.all",
+        "onCommand:dotnet.generateAssets",
+        "onCommand:csharp.downloadDebugger",
+        "onCommand:csharp.listProcess",
+        "onCommand:csharp.listRemoteProcess",
+        "onCommand:extension.configureRazorDevMode",
+        "onCommand:extension.resetRazorDevModeConfiguration",
+        "onCommand:extension.razorActivated",
+        "workspaceContains:project.json",
+        "workspaceContains:*.csproj",
+        "workspaceContains:*.sln",
+        "workspaceContains:*.csx",
+        "workspaceContains:*.cake",
+        "workspaceContains:**/*.csproj",
+        "workspaceContains:**/*.sln",
+        "workspaceContains:**/*.csx",
+        "workspaceContains:**/*.cake"
+    ],
+    "main": "./dist/extension",
+    "contributes": {
+        "languages": [
+            {
+                "id": "aspnetcorerazor",
+                "extensions": [
+                    ".cshtml",
+                    ".razor"
+                ],
+                "mimetypes": [
+                    "text/x-cshtml"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "aspnetcorerazor",
+                "scopeName": "text.aspnetcorerazor",
+                "path": "./syntaxes/aspnetcorerazor.tmLanguage.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "extension.showRazorCSharpWindow",
+                "title": "Show Razor CSharp",
+                "category": "Razor"
+            },
+            {
+                "command": "extension.showRazorHtmlWindow",
+                "title": "Show Razor Html",
+                "category": "Razor"
+            },
+            {
+                "command": "razor.reportIssue",
+                "title": "Report a Razor issue",
+                "category": "Razor"
+            },
+            {
+                "command": "extension.configureRazorDevMode",
+                "title": "Configure workspace for Razor extension development.",
+                "category": "Razor"
+            },
+            {
+                "command": "extension.resetRazorDevModeConfiguration",
+                "title": "Reset workspace Razor dev mode configuration",
+                "category": "Razor"
+            },
+            {
+                "command": "extension.razorActivated",
+                "title": "Force activation of Razor extension",
+                "category": "Razor"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "extension.showRazorCSharpWindow",
+                    "when": "resourceLangId == aspnetcorerazor"
+                },
+                {
+                    "command": "extension.showRazorHtmlWindow",
+                    "when": "resourceLangId == aspnetcorerazor"
+                },
+                {
+                    "command": "razor.reportIssue",
+                    "when": "resourceLangId == aspnetcorerazor"
+                },
+                {
+                    "command": "extension.configureRazorDevMode"
+                },
+                {
+                    "command": "extension.resetRazorDevModeConfiguration"
+                },
+                {
+                    "command": "extension.razorActivated"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Razor Configuration",
+            "properties": {
+                "razor.plugin.path": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "default": null,
+                    "description": "Overrides the path to the Razor plugin dll."
+                  },
+                "razor.languageServer.debug": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Specifies whether to wait for debug attach when launching the language server."
+                },
+                "razor.trace": {
+                    "type": "string",
+                    "default": "Messages",
+                    "enum": [
+                        "Off",
+                        "Messages",
+                        "Verbose"
+                    ],
+                    "enumDescriptions": [
+                        "Does not log messages from the Razor extension",
+                        "Logs only some messages from the Razor extension",
+                        "Logs all messages from the Razor extension"
+                    ],
+                    "description": "Specifies whether to output all messages [Verbose], some messages [Messages] or not at all [Off]."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run compile",
+        "clean": "rimraf dist",
+        "build": "yarn run clean && yarn run lint && tsc -p ./",
+        "lint": "tslint --project ./",
+        "watch": "yarn run clean && yarn run lint && tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install"
+    },
+    "devDependencies": {
+        "@types/node": "9.4.7",
+        "cross-env": "^5.2.0",
+        "ts-node": "^7.0.1",
+        "tslint": "^5.11.0",
+        "typescript": "3.3.4000",
+        "rimraf": "2.6.3",
+        "js-yaml": ">=3.13.1"
+    },
+    "dependencies": {
+        "microsoft.aspnetcore.razor.vscode": "link:../Microsoft.AspNetCore.Razor.VSCode",
+        "diff": ">=3.5.0",
+        "vscode": "1.1.33"
+    }
+}
