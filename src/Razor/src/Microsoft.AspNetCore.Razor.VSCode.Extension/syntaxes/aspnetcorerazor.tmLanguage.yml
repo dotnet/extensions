@@ -1,0 +1,10 @@
+name: ASP.NET Razor
+scopeName: text.aspnetcorerazor
+patterns:
+  - include: '#escaped-transition'
+  - include: 'text.html.basic'
+
+repository:
+  escaped-transition:
+    name: constant.character.escape.razor.transition
+    match: '@@'

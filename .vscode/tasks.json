@@ -2,6 +2,15 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "CompileTextMate",
+            "type": "npm",
+            "script": "compile:TextMate",
+            "problemMatcher": ["$eslint-stylish"],
+            "options": {
+                "cwd": "src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.Extension/"
+            }
+        },
+        {
             "label": "CompilePackage",
             "command": "dotnet",
             "args": [
