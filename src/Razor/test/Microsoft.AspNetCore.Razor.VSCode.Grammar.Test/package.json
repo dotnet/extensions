@@ -1,0 +1,24 @@
+{
+  "name": "razor-vscode-grammar-test",
+  "private": true,
+  "displayName": "Razor Grammar Tests",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "yarn run clean && yarn run lint && tsc -p ./",
+    "lint": "tslint --project ./",
+    "test": "jest",
+    "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --colors"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.6",
+    "@types/node": "9.4.7",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.0",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "typescript": "3.3.4000",
+    "rimraf": "2.6.3",
+    "vscode-textmate": "4.4.0",
+    "oniguruma": "7.2.1"
+  }
+}

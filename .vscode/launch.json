@@ -41,6 +41,20 @@
             "preLaunchTask": "CompileUnitTests"
         },
         {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Grammar Tests",
+            "runtimeExecutable": "yarn",
+            "cwd": "${workspaceFolder}/src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.Grammar.Test",
+            "runtimeArgs": [
+                "test:debug"
+            ],
+            "port": 9229,
+            "sourceMaps": true,
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "CompileGrammarTests"
+        },
+        {
             "name": "Run Functional Tests",
             "type": "extensionHost",
             "request": "launch",

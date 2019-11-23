@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Grammar tests Transitions Escaped transitions 1`] = `
+"Line: @@
+ - token from 0 to 2 (@@) with scopes text.aspnetcorerazor, constant.character.escape.razor.transition
+"
+`;

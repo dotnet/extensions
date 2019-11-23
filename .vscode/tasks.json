@@ -86,6 +86,20 @@
             }
         },
         {
+            "label": "CompileGrammarTests",
+            "command": "dotnet",
+            "args": [
+                "build"
+            ],
+            "options": {
+                "cwd": "src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.Grammar.Test/"
+            },
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
+        {
             "label": "CompileFunctionalTest",
             "command": "dotnet",
             "args": [
