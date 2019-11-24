@@ -1,5 +1,186 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Grammar tests Explicit transitions Empty 1`] = `
+"Line: @()
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 2 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
+ - token from 2 to 3 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
+"
+`;
+
+exports[`Grammar tests Explicit transitions Multi line 1`] = `
+"Line: @(
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 2 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
+
+Line:     Html.BeginForm(
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 4 to 8 (Html) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, variable.other.object.cs
+ - token from 8 to 9 (.) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.accessor.cs
+ - token from 9 to 18 (BeginForm) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, entity.name.function.cs
+ - token from 18 to 19 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.open.cs
+
+Line:         \\"Login\\",
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 8 to 9 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 9 to 14 (Login) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs
+ - token from 14 to 15 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 15 to 16 (,) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.separator.comma.cs
+
+Line:         \\"Home\\",
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 8 to 9 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 9 to 13 (Home) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs
+ - token from 13 to 14 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 14 to 15 (,) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.separator.comma.cs
+
+Line:         new
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 8 to 11 (new) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.other.new.cs
+
+Line:         {
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 8 to 9 ({) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.curlybrace.open.cs
+
+Line:             @class = \\"someClass\\",
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 12 to 18 (@class) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, variable.other.readwrite.cs
+ - token from 18 to 19 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 19 to 20 (=) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.operator.assignment.cs
+ - token from 20 to 21 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 21 to 22 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 22 to 31 (someClass) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs
+ - token from 31 to 32 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 32 to 33 (,) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.separator.comma.cs
+
+Line:             notValid = Html.DisplayFor<object>(
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 12 to 20 (notValid) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, variable.other.readwrite.cs
+ - token from 20 to 21 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 21 to 22 (=) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.operator.assignment.cs
+ - token from 22 to 23 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 23 to 27 (Html) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, variable.other.object.cs
+ - token from 27 to 28 (.) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.accessor.cs
+ - token from 28 to 38 (DisplayFor) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, entity.name.function.cs
+ - token from 38 to 39 (<) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.definition.typeparameters.begin.cs
+ - token from 39 to 45 (object) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.type.cs
+ - token from 45 to 46 (>) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.definition.typeparameters.end.cs
+ - token from 46 to 47 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.open.cs
+
+Line:                 (_) => Model,
+ - token from 0 to 16 (                ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 16 to 17 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.open.cs
+ - token from 17 to 18 (_) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, entity.name.variable.parameter.cs
+ - token from 18 to 19 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.close.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 20 to 22 (=>) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.operator.arrow.cs
+ - token from 22 to 23 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 23 to 28 (Model) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, variable.other.readwrite.cs
+ - token from 28 to 29 (,) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.separator.comma.cs
+
+Line:                 \\"name\\",
+ - token from 0 to 16 (                ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 16 to 17 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 17 to 21 (name) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs
+ - token from 21 to 22 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 22 to 23 (,) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.separator.comma.cs
+
+Line:                 \\"someName\\",
+ - token from 0 to 16 (                ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 16 to 17 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 17 to 25 (someName) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs
+ - token from 25 to 26 (\\") with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 26 to 27 (,) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.separator.comma.cs
+
+Line:                 new { })
+ - token from 0 to 16 (                ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 16 to 19 (new) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.other.new.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 20 to 21 ({) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.curlybrace.open.cs
+ - token from 21 to 22 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 22 to 23 (}) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.curlybrace.close.cs
+ - token from 23 to 24 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.close.cs
+
+Line:         })
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.curlybrace.close.cs
+ - token from 9 to 10 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.close.cs
+
+Line: )
+ - token from 0 to 1 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
+"
+`;
+
+exports[`Grammar tests Explicit transitions Single line complex 1`] = `
+"Line: @(456 + new Array<int>(){1,2,3}[0] + await GetValueAsync<string>() ?? someArray[await DoMoreAsync(() => {})])
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 2 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
+ - token from 2 to 5 (456) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, constant.numeric.decimal.cs
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 6 to 7 (+) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.operator.arithmetic.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 8 to 11 (new) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.other.new.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 12 to 17 (Array) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, storage.type.cs
+ - token from 17 to 18 (<) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.definition.typeparameters.begin.cs
+ - token from 18 to 21 (int) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.type.cs
+ - token from 21 to 22 (>) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.definition.typeparameters.end.cs
+ - token from 22 to 23 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.open.cs
+ - token from 23 to 24 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.close.cs
+ - token from 24 to 25 ({) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.curlybrace.open.cs
+ - token from 25 to 26 (1) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, constant.numeric.decimal.cs
+ - token from 26 to 27 (,) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.separator.comma.cs
+ - token from 27 to 28 (2) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, constant.numeric.decimal.cs
+ - token from 28 to 29 (,) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.separator.comma.cs
+ - token from 29 to 30 (3) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, constant.numeric.decimal.cs
+ - token from 30 to 31 (}) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.curlybrace.close.cs
+ - token from 31 to 32 ([) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.squarebracket.open.cs
+ - token from 32 to 33 (0) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, constant.numeric.decimal.cs
+ - token from 33 to 34 (]) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.squarebracket.close.cs
+ - token from 34 to 35 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 35 to 36 (+) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.operator.arithmetic.cs
+ - token from 36 to 37 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 37 to 42 (await) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.other.await.cs
+ - token from 42 to 43 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 43 to 56 (GetValueAsync) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, entity.name.function.cs
+ - token from 56 to 57 (<) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.definition.typeparameters.begin.cs
+ - token from 57 to 63 (string) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.type.cs
+ - token from 63 to 64 (>) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.definition.typeparameters.end.cs
+ - token from 64 to 65 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.open.cs
+ - token from 65 to 66 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.close.cs
+ - token from 66 to 67 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 67 to 69 (??) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.operator.null-coalescing.cs
+ - token from 69 to 70 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 70 to 79 (someArray) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, variable.other.object.property.cs
+ - token from 79 to 80 ([) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.squarebracket.open.cs
+ - token from 80 to 85 (await) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.other.await.cs
+ - token from 85 to 86 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 86 to 97 (DoMoreAsync) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, entity.name.function.cs
+ - token from 97 to 98 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.open.cs
+ - token from 98 to 99 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.open.cs
+ - token from 99 to 100 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.close.cs
+ - token from 100 to 101 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 101 to 103 (=>) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.operator.arrow.cs
+ - token from 103 to 104 ( ) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml
+ - token from 104 to 105 ({) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.curlybrace.open.cs
+ - token from 105 to 106 (}) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.curlybrace.close.cs
+ - token from 106 to 107 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.parenthesis.close.cs
+ - token from 107 to 108 (]) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.squarebracket.close.cs
+ - token from 108 to 109 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
+"
+`;
+
+exports[`Grammar tests Explicit transitions Single line simple 1`] = `
+"Line: @(DateTime.Now)
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 2 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
+ - token from 2 to 10 (DateTime) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, variable.other.object.cs
+ - token from 10 to 11 (.) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, punctuation.accessor.cs
+ - token from 11 to 14 (Now) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, variable.other.object.property.cs
+ - token from 14 to 15 ()) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
+"
+`;
+
 exports[`Grammar tests Transitions Escaped transitions 1`] = `
 "Line: @@
  - token from 0 to 2 (@@) with scopes text.aspnetcorerazor, constant.character.escape.razor.transition

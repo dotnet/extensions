@@ -1,6 +1,7 @@
 name: ASP.NET Razor
 scopeName: text.aspnetcorerazor
 patterns:
+  - include: '#explicit-razor-expression'
   - include: '#escaped-transition'
   - include: 'text.html.basic'
 
@@ -8,3 +9,19 @@ repository:
   escaped-transition:
     name: constant.character.escape.razor.transition
     match: '@@'
+
+  transition:
+    match: '@'
+    name: keyword.control.cshtml.transition
+
+  explicit-razor-expression:
+    name: 'meta.expression.explicit.cshtml'
+    begin: '(@)\('
+    beginCaptures:
+      0: { name: 'keyword.control.cshtml' }
+      1: { patterns: [ include: '#transition' ] }
+    patterns:
+      - include: 'source.cs#expression'
+    end: '\)'
+    endCaptures:
+      0: { name: 'keyword.control.cshtml' }
