@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Logging.CodeGenerator
 
         public static IEnumerable<(string fileName, string fileContent)> Generate()
         {
-            var infos = Enumerable.Range(0, 3).Select(BuildInfo);
+            var infos = Enumerable.Range(1, 3).Select(BuildInfo);
 
             var fileName = $"LogScope.cs";
             var fileContent =
