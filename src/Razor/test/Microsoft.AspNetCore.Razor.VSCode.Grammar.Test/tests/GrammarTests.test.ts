@@ -3,7 +3,9 @@
 * Licensed under the MIT License. See License.txt in the project root for license information.
 * ------------------------------------------------------------------------------------------ */
 
+import { RunCodeDirectiveSuite } from './CodeDirective';
 import { RunExplicitExpressionSuite } from './ExplicitExpressions';
+import { RunFunctionsDirectiveSuite } from './FunctionsDirective';
 import { RunImplicitExpressionSuite } from './ImplicitExpressions';
 import { RunTransitionsSuite } from './Transitions';
 
@@ -16,4 +18,6 @@ describe('Grammar tests', () => {
     RunTransitionsSuite();
     RunExplicitExpressionSuite();
     RunImplicitExpressionSuite();
+    RunCodeDirectiveSuite();
+    RunFunctionsDirectiveSuite();
 });

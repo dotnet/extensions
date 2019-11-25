@@ -3,6 +3,7 @@ scopeName: text.aspnetcorerazor
 patterns:
   - include: '#explicit-razor-expression'
   - include: '#escaped-transition'
+  - include: '#directives'
   - include: '#implicit-expression'
   - include: 'text.html.basic'
 
@@ -15,7 +16,7 @@ repository:
     match: '@'
     name: keyword.control.cshtml.transition
 
-  # ----------  Explicit Expression ------------
+# ----------  Explicit Expression ------------
 
   explicit-razor-expression:
     name: 'meta.expression.explicit.cshtml'
@@ -29,7 +30,7 @@ repository:
     endCaptures:
       0: { name: 'keyword.control.cshtml' }
 
-  # ----------  Implicit Expression ------------
+# ----------  Implicit Expression ------------
 
   implicit-expression:
     name: 'meta.expression.implicit.cshtml'
@@ -127,16 +128,45 @@ repository:
     endCaptures:
       1: { name: 'punctuation.squarebracket.close.cs' }
 
-  balanced-curlybraces-csharp:
+# ----------  Directives ------------
+
+  #>>>>> @code and @functions <<<<<
+
+  directives:
+    patterns:
+      - include: '#code-directive'
+      - include: '#functions-directive'
+
+  code-directive:
+    begin: '(@)(code)\s*'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.razor.directive.code'}
+    patterns:
+      - include: '#directive-codeblock'
+    end: '(?<=})|\s'
+
+  functions-directive:
+    begin: '(@)(functions)\s*'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.razor.directive.functions'}
+    patterns:
+      - include: '#directive-codeblock'
+    end: '(?<=})|\s'
+
+  directive-codeblock:
     begin: '(\{)'
     beginCaptures:
-      1: { name: 'punctuation.curlybrace.open.cs' }
-    name: 'razor.test.balanced.curlybraces'
+      1: { name: 'keyword.control.razor.directive.codeblock.open' }
+    name: 'meta.structure.razor.directive.codeblock'
     patterns:
       - include: 'source.cs'
     end: '(\})'
     endCaptures:
-      1: { name: 'punctuation.curlybrace.close.cs' }
+      1: { name: 'keyword.control.razor.directive.codeblock.close' }
+
+  # ----------  Misc C# ------------
 
   await-prefix:
     name: 'keyword.other.await.cs'

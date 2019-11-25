@@ -9,6 +9,9 @@
       "include": "#escaped-transition"
     },
     {
+      "include": "#directives"
+    },
+    {
       "include": "#implicit-expression"
     },
     {
@@ -72,10 +75,6 @@
         }
       ],
       "end": "(?=[\\s<])"
-    },
-    "await-prefix": {
-      "name": "keyword.other.await.cs",
-      "match": "(await)\\s+"
     },
     "implicit-expression-body": {
       "patterns": [
@@ -221,11 +220,63 @@
         }
       }
     },
-    "balanced-curlybraces-csharp": {
+    "directives": {
+      "patterns": [
+        {
+          "include": "#code-directive"
+        },
+        {
+          "include": "#functions-directive"
+        }
+      ]
+    },
+    "code-directive": {
+      "begin": "(@)(code)\\s*",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.code"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#directive-codeblock"
+        }
+      ],
+      "end": "(?<=})|\\s"
+    },
+    "functions-directive": {
+      "begin": "(@)(functions)\\s*",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.functions"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#directive-codeblock"
+        }
+      ],
+      "end": "(?<=})|\\s"
+    },
+    "directive-codeblock": {
       "begin": "(\\{)",
       "beginCaptures": {
         "1": {
-          "name": "punctuation.curlybrace.open.cs"
+          "name": "keyword.control.razor.directive.codeblock.open"
         }
       },
       "name": "razor.test.balanced.curlybraces",
@@ -237,9 +288,13 @@
       "end": "(\\})",
       "endCaptures": {
         "1": {
-          "name": "punctuation.curlybrace.close.cs"
+          "name": "keyword.control.razor.directive.codeblock.close"
         }
       }
+    },
+    "await-prefix": {
+      "name": "keyword.other.await.cs",
+      "match": "(await)\\s+"
     }
   }
 }
