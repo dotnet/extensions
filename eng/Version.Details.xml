@@ -62,9 +62,9 @@
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.0.2-servicing-19572-01">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.0.2-servicing-19572-09">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>d8780975138879dcbbdda4aee1534d67ca6d3e29</Sha>
+      <Sha>626c14488261f91192e39a4c6c2d9480a7cd1f37</Sha>
     </Dependency>
     <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
       <Uri>https://github.com/dotnet/core-setup</Uri>
@@ -77,21 +77,21 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19569.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19572.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e34d933e18ba1cd393bbafcb6018e0f858d3e89e</Sha>
+      <Sha>0e0d227c57e69c03427d6e668716d62cf4ceb36e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19569.2">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19572.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e34d933e18ba1cd393bbafcb6018e0f858d3e89e</Sha>
+      <Sha>0e0d227c57e69c03427d6e668716d62cf4ceb36e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19569.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19572.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e34d933e18ba1cd393bbafcb6018e0f858d3e89e</Sha>
+      <Sha>0e0d227c57e69c03427d6e668716d62cf4ceb36e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.1-servicing.19572.6" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>4ac4c0367003fe3973a3648eb0715ddb0e3bbcea</Sha>
+      <Sha>a2b312cfb6b50fa9c224c1954a6ba2fe3095796b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.1-beta4-19462-11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
