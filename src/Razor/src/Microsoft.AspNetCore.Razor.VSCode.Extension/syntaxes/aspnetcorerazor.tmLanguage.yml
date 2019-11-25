@@ -3,6 +3,7 @@ scopeName: text.aspnetcorerazor
 patterns:
   - include: '#explicit-razor-expression'
   - include: '#escaped-transition'
+  - include: '#implicit-expression'
   - include: 'text.html.basic'
 
 repository:
@@ -13,6 +14,8 @@ repository:
   transition:
     match: '@'
     name: keyword.control.cshtml.transition
+
+  # ----------  Explicit Expression ------------
 
   explicit-razor-expression:
     name: 'meta.expression.explicit.cshtml'
@@ -25,3 +28,116 @@ repository:
     end: '\)'
     endCaptures:
       0: { name: 'keyword.control.cshtml' }
+
+  # ----------  Implicit Expression ------------
+
+  implicit-expression:
+    name: 'meta.expression.implicit.cshtml'
+    begin: '(@)'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+    patterns:
+      - include: '#await-prefix'
+      - include: '#implicit-expression-body'
+    end: '(?=[\s<])'
+
+  implicit-expression-body:
+    patterns:
+      - include: '#implicit-expression-invocation-start'
+      - include: '#implicit-expression-accessor-start'
+    end: '(?=[\s<])'
+
+  # CSharp colors method invocations differently than accessors
+  # This captures situations where you do @SomeMethod()
+  implicit-expression-invocation-start:
+    begin: '([_[:alpha:]][_[:alnum:]]*)(?=\()'
+    beginCaptures:
+      1: { name: 'entity.name.function.cs' }
+    patterns:
+      - include: '#implicit-expression-continuation'
+    end: '(?=[\s<])'
+
+  # CSharp colors property accessors differently than methods
+  # This captures situations where you do @SomeProperty
+  implicit-expression-accessor-start:
+    begin: '([_[:alpha:]][_[:alnum:]]*)'
+    beginCaptures:
+      1: { name: 'variable.other.object.cs' }
+    patterns:
+      - include: '#implicit-expression-continuation'
+    end: '(?=[\s<])'
+
+  implicit-expression-continuation:
+    patterns:
+      - include: '#balanced-parenthesis-csharp'
+      - include: '#balanced-brackets-csharp'
+      - include: '#implicit-expression-invocation'
+      - include: '#implicit-expression-accessor'
+      - include: '#implicit-expression-extension'
+    end: '(?=[\s<])'
+
+  implicit-expression-accessor:
+    match: '(?<=\.)[_[:alpha:]][_[:alnum:]]*'
+    name: 'variable.other.object.property.cs'
+
+  implicit-expression-invocation:
+    match: '(?<=\.)[_[:alpha:]][_[:alnum:]]*(?=\()'
+    name: 'entity.name.function.cs'
+
+  implicit-expression-operator:
+    patterns:
+      - include: '#implicit-expression-dot-operator'
+      - include: '#implicit-expression-null-conditional-operator'
+      - include: '#implicit-expression-null-forgiveness-operator'
+
+  implicit-expression-dot-operator:
+    match: '(\.)(?=[_[:alpha:]][_[:alnum:]]*)'
+    captures:
+      1: { name: 'punctuation.accessor.cs' }
+
+  implicit-expression-null-conditional-operator:
+    match: '(\?)(?=[.\[])'
+    captures:
+      1: { name: 'keyword.operator.null-conditional.cs' }
+
+  implicit-expression-null-forgiveness-operator:
+    match: '(\!)(?=(?:\.[_[:alpha:]][_[:alnum:]]*)|\?|[\[\(])'
+    captures:
+      1: { name: 'keyword.operator.logical.cs' }
+
+  balanced-parenthesis-csharp:
+    begin: '(\()'
+    beginCaptures:
+      1: { name: 'punctuation.parenthesis.open.cs' }
+    name: 'razor.test.balanced.parenthesis'
+    patterns:
+      - include: 'source.cs'
+    end: '(\))'
+    endCaptures:
+      1: { name: 'punctuation.parenthesis.close.cs' }
+
+  balanced-brackets-csharp:
+    begin: '(\[)'
+    beginCaptures:
+      1: { name: 'punctuation.squarebracket.open.cs' }
+    name: 'razor.test.balanced.brackets'
+    patterns:
+      - include: 'source.cs'
+    end: '(\])'
+    endCaptures:
+      1: { name: 'punctuation.squarebracket.close.cs' }
+
+  balanced-curlybraces-csharp:
+    begin: '(\{)'
+    beginCaptures:
+      1: { name: 'punctuation.curlybrace.open.cs' }
+    name: 'razor.test.balanced.curlybraces'
+    patterns:
+      - include: 'source.cs'
+    end: '(\})'
+    endCaptures:
+      1: { name: 'punctuation.curlybrace.close.cs' }
+
+  await-prefix:
+    name: 'keyword.other.await.cs'
+    match: '(await)\s+'

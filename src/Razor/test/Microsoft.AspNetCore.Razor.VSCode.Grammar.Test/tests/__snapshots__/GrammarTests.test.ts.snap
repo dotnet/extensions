@@ -181,6 +181,207 @@ exports[`Grammar tests Explicit transitions Single line simple 1`] = `
 "
 `;
 
+exports[`Grammar tests Implicit Expressions Awaited method invocation 1`] = `
+"Line: @await AsyncMethod()
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (await ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.other.await.cs
+ - token from 7 to 18 (AsyncMethod) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, entity.name.function.cs
+ - token from 18 to 19 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 19 to 20 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Awaited property 1`] = `
+"Line: @await AsyncProperty
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (await ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.other.await.cs
+ - token from 7 to 20 (AsyncProperty) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Combined with HTML 1`] = `
+"Line: <p>@DateTime.Now</p>
+ - token from 0 to 1 (<) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, punctuation.definition.tag.begin.html
+ - token from 1 to 2 (p) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, entity.name.tag.html
+ - token from 2 to 3 (>) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, punctuation.definition.tag.end.html
+ - token from 3 to 4 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 4 to 12 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 12 to 13 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 13 to 16 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 16 to 18 (</) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, punctuation.definition.tag.begin.html
+ - token from 18 to 19 (p) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, entity.name.tag.html
+ - token from 19 to 20 (>) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, punctuation.definition.tag.end.html
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Empty 1`] = `
+"Line: @
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Multi line 1`] = `
+"Line: @DateTime!.Now()[1234 +
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 9 to 11 (!.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 11 to 14 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, entity.name.function.cs
+ - token from 14 to 15 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 15 to 16 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 16 to 17 ([) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, punctuation.squarebracket.open.cs
+ - token from 17 to 21 (1234) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, constant.numeric.decimal.cs
+ - token from 21 to 22 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets
+ - token from 22 to 23 (+) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, keyword.operator.arithmetic.cs
+
+Line: 5678](
+ - token from 0 to 4 (5678) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, constant.numeric.decimal.cs
+ - token from 4 to 5 (]) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, punctuation.squarebracket.close.cs
+ - token from 5 to 6 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+
+Line: abc()!.Current,
+ - token from 0 to 3 (abc) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, entity.name.function.cs
+ - token from 3 to 4 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 4 to 5 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 5 to 6 (!) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.logical.cs
+ - token from 6 to 7 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.accessor.cs
+ - token from 7 to 14 (Current) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, variable.other.object.property.cs
+ - token from 14 to 16 (,) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+
+Line: 1 + 2 + getValue())?.ToString[123](
+ - token from 0 to 1 (1) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, constant.numeric.decimal.cs
+ - token from 1 to 2 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 2 to 3 (+) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.arithmetic.cs
+ - token from 3 to 4 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 4 to 5 (2) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, constant.numeric.decimal.cs
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 6 to 7 (+) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.arithmetic.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 8 to 16 (getValue) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, entity.name.function.cs
+ - token from 16 to 17 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 17 to 18 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 18 to 19 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 19 to 21 (?.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 21 to 29 (ToString) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 29 to 30 ([) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, punctuation.squarebracket.open.cs
+ - token from 30 to 33 (123) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, constant.numeric.decimal.cs
+ - token from 33 to 34 (]) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, punctuation.squarebracket.close.cs
+ - token from 34 to 35 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+
+Line: () =>
+ - token from 0 to 1 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 1 to 2 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 2 to 3 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 3 to 5 (=>) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.arrow.cs
+
+Line: {
+ - token from 0 to 1 ({) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.curlybrace.open.cs
+
+Line:     var x = 123;
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 4 to 7 (var) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.other.var.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 8 to 9 (x) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, entity.name.variable.local.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 10 to 11 (=) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.assignment.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 12 to 15 (123) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, constant.numeric.decimal.cs
+ - token from 15 to 16 (;) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.terminator.statement.cs
+
+Line:     var y = true;
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 4 to 7 (var) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.other.var.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 8 to 9 (y) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, entity.name.variable.local.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 10 to 11 (=) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.assignment.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 12 to 16 (true) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, constant.language.boolean.true.cs
+ - token from 16 to 17 (;) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.terminator.statement.cs
+
+Line: 
+ - token from 0 to 1 () with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+
+Line:     return y ? x : 457;
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 4 to 10 (return) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.control.flow.return.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 11 to 12 (y) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, variable.other.readwrite.cs
+ - token from 12 to 13 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 13 to 14 (?) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.conditional.question-mark.cs
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 15 to 16 (x) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, variable.other.readwrite.cs
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 17 to 18 (:) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.conditional.colon.cs
+ - token from 18 to 19 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 19 to 22 (457) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, constant.numeric.decimal.cs
+ - token from 22 to 23 (;) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.terminator.statement.cs
+
+Line: })
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.curlybrace.close.cs
+ - token from 1 to 2 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Single line complex 1`] = `
+"Line: @DateTime!.Now()[1234 + 5678](abc()!.Current, 1 + 2 + getValue())?.ToString[123](() => 456)
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 9 to 11 (!.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 11 to 14 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, entity.name.function.cs
+ - token from 14 to 15 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 15 to 16 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 16 to 17 ([) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, punctuation.squarebracket.open.cs
+ - token from 17 to 21 (1234) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, constant.numeric.decimal.cs
+ - token from 21 to 22 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets
+ - token from 22 to 23 (+) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, keyword.operator.arithmetic.cs
+ - token from 23 to 24 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets
+ - token from 24 to 28 (5678) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, constant.numeric.decimal.cs
+ - token from 28 to 29 (]) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, punctuation.squarebracket.close.cs
+ - token from 29 to 30 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 30 to 33 (abc) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, entity.name.function.cs
+ - token from 33 to 34 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 34 to 35 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 35 to 36 (!) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.logical.cs
+ - token from 36 to 37 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.accessor.cs
+ - token from 37 to 44 (Current) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, variable.other.object.property.cs
+ - token from 44 to 46 (, ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 46 to 47 (1) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, constant.numeric.decimal.cs
+ - token from 47 to 48 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 48 to 49 (+) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.arithmetic.cs
+ - token from 49 to 50 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 50 to 51 (2) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, constant.numeric.decimal.cs
+ - token from 51 to 52 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 52 to 53 (+) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.arithmetic.cs
+ - token from 53 to 54 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 54 to 62 (getValue) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, entity.name.function.cs
+ - token from 62 to 63 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 63 to 64 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 64 to 65 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 65 to 67 (?.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 67 to 75 (ToString) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 75 to 76 ([) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, punctuation.squarebracket.open.cs
+ - token from 76 to 79 (123) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, constant.numeric.decimal.cs
+ - token from 79 to 80 (]) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.brackets, punctuation.squarebracket.close.cs
+ - token from 80 to 81 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 81 to 82 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 82 to 83 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+ - token from 83 to 84 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 84 to 86 (=>) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, keyword.operator.arrow.cs
+ - token from 86 to 87 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis
+ - token from 87 to 90 (456) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, constant.numeric.decimal.cs
+ - token from 90 to 91 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Single line simple 1`] = `
+"Line: @DateTime.Now
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 9 to 10 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 10 to 13 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+"
+`;
+
 exports[`Grammar tests Transitions Escaped transitions 1`] = `
 "Line: @@
  - token from 0 to 2 (@@) with scopes text.aspnetcorerazor, constant.character.escape.razor.transition

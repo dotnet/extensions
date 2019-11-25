@@ -4,6 +4,7 @@
 * ------------------------------------------------------------------------------------------ */
 
 import { RunExplicitExpressionSuite } from './ExplicitExpressions';
+import { RunImplicitExpressionSuite } from './ImplicitExpressions';
 import { RunTransitionsSuite } from './Transitions';
 
 // We bring together all test suites and wrap them in one here. The reason behind this is that
@@ -14,4 +15,5 @@ import { RunTransitionsSuite } from './Transitions';
 describe('Grammar tests', () => {
     RunTransitionsSuite();
     RunExplicitExpressionSuite();
+    RunImplicitExpressionSuite();
 });
