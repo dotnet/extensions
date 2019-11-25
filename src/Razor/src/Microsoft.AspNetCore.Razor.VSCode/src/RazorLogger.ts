@@ -36,6 +36,12 @@ export class RazorLogger implements vscode.Disposable {
         this.logWithmarker(message);
     }
 
+    public logWarning(message: string) {
+        // Always log warnings
+        const warningPrefixedMessage = `(Warning) ${message}`;
+        this.logAlways(warningPrefixedMessage);
+    }
+
     public logError(message: string, error: Error) {
         // Always log errors
         const errorPrefixedMessage = `(Error) ${message}
