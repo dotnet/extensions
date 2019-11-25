@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
     {
         public WindowsServiceLifetime(Microsoft.Extensions.Hosting.IHostEnvironment environment, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Hosting.HostOptions> optionsAccessor) { }
         protected override void Dispose(bool disposing) { }
+        protected override void OnShutdown() { }
         protected override void OnStart(string[] args) { }
         protected override void OnStop() { }
         public System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
