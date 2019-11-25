@@ -41,13 +41,23 @@ export class RazorCompletionItemProvider
             const completionCharacterOffset = projectedPosition.character - hostDocumentPosition.character;
             for (const completionItem of completionItems) {
                 if (completionItem.range) {
-                    const rangeStart = new vscode.Position(
-                        hostDocumentPosition.line,
-                        completionItem.range.start.character - completionCharacterOffset);
-                    const rangeEnd = new vscode.Position(
-                        hostDocumentPosition.line,
-                        completionItem.range.end.character - completionCharacterOffset);
+                    const rangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, completionItem.range.start);
+                    const rangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, completionItem.range.end);
                     completionItem.range = new vscode.Range(rangeStart, rangeEnd);
+                } else if ((completionItem as any).range2) {
+                    const insertRange = (completionItem as any).range2.insert;
+                    if (insertRange) {
+                        const insertRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertRange.start);
+                        const insertRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertRange.end);
+                        (completionItem as any).range2.insert = new vscode.Range(insertRangeStart, insertRangeEnd);
+                    }
+
+                    const replaceRange = (completionItem as any).range2.replace;
+                    if (replaceRange) {
+                        const replaceRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replaceRange.start);
+                        const replaceRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replaceRange.end);
+                        (completionItem as any).range2.replace = new vscode.Range(replaceRangeStart, replaceRangeEnd);
+                    }
                 }
 
                 // textEdit is deprecated in favor of .range. Clear out its value to avoid any unexpected behavior.
@@ -69,13 +79,20 @@ export class RazorCompletionItemProvider
         }
     }
 
+    private static offsetColumn(offset: number, hostDocumentLine: number, projectedPosition: vscode.Position) {
+        const offsetPosition = new vscode.Position(
+            hostDocumentLine,
+            projectedPosition.character - offset);
+        return offsetPosition;
+    }
+
     constructor(
         documentSynchronizer: RazorDocumentSynchronizer,
         documentManager: RazorDocumentManager,
         serviceClient: RazorLanguageServiceClient,
         private readonly provisionalCompletionOrchestrator: ProvisionalCompletionOrchestrator,
-        private readonly logger: RazorLogger) {
-        super(documentSynchronizer, documentManager, serviceClient);
+        logger: RazorLogger) {
+        super(documentSynchronizer, documentManager, serviceClient, logger);
     }
 
     public async provideCompletionItems(

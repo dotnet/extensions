@@ -5,6 +5,12 @@
 {
 	"version": "0.2.0",
     "configurations": [
+      {
+        "name": ".NET Core Attach",
+        "type": "coreclr",
+        "request": "attach",
+        "processId": "${command:pickProcess}"
+      },
         {
             "name": "Run Extension",
             "type": "extensionHost",
@@ -18,7 +24,7 @@
                 "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.Extension/dist/**/*.js",
                 "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/dist/**/*.js",
             ],
-            "preLaunchTask": "CompileExtension"
+            "preLaunchTask": "WatchLibraryAndCompileExtension"
         },
         {
             "type": "node",

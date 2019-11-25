@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             HostProject1 = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
             HostProject2 = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.AnotherProject.RootNamespace);
 
-            DynamicFileInfoProvider = new RazorDynamicFileInfoProvider(new DefaultDocumentServiceProviderFactory());
+            DynamicFileInfoProvider = new DefaultRazorDynamicFileInfoProvider(new DefaultDocumentServiceProviderFactory());
         }
 
         private HostDocument[] Documents { get; }
@@ -37,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private HostProject HostProject2 { get; }
 
-        private RazorDynamicFileInfoProvider DynamicFileInfoProvider { get; }
+        private DefaultRazorDynamicFileInfoProvider DynamicFileInfoProvider { get; }
 
         protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {

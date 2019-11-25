@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Build.Execution;
@@ -105,14 +106,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             {
                 if (item.ItemType == RazorGenerateWithTargetPathItemType)
                 {
-                    var filePath = item.EvaluatedInclude;
+                    var filePath = Path.Combine(item.Project.Directory, item.EvaluatedInclude);
                     var targetPath = item.GetMetadataValue(RazorTargetPathMetadataName);
                     var hostDocument = new OmniSharpHostDocument(filePath, targetPath, FileKinds.Legacy);
                     hostDocuments.Add(hostDocument);
                 }
                 else if (item.ItemType == RazorComponentWithTargetPathItemType)
                 {
-                    var filePath = item.EvaluatedInclude;
+                    var filePath = Path.Combine(item.Project.Directory, item.EvaluatedInclude);
                     var targetPath = item.GetMetadataValue(RazorTargetPathMetadataName);
                     var fileKind = FileKinds.GetComponentFileKindFromFilePath(filePath);
                     var hostDocument = new OmniSharpHostDocument(filePath, targetPath, fileKind);
