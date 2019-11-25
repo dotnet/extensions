@@ -243,6 +243,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             void UpdateCompletions(string tagName, TagHelperDescriptor possibleDescriptor)
             {
+                if (possibleDescriptor.BoundAttributes.Any(boundAttribute => boundAttribute.IsDirectiveAttribute()))
+                {
+                    // This is a TagHelper that ultimately represents a DirectiveAttribute. In classic Razor TagHelper land TagHelpers with bound attribute descriptors
+                    // are valuable to show in the completion list to understand what was possible for a certain tag; however, with Blazor directive attributes stand
+                    // on their own and shouldn't be indicated at the element level completion.
+                    return;
+                }
+
                 if (!elementCompletions.TryGetValue(tagName, out var existingRuleDescriptors))
                 {
                     existingRuleDescriptors = new HashSet<TagHelperDescriptor>();

@@ -229,8 +229,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             Debug.Assert(_projectEngine.FileSystem != null);
 
             // We might not have a document snapshot in the case of an ephemeral project.
-            // If we can't be sure, then just assume it's an MVC view since that's likely anyway.
-            var fileKind = _documentTracker.ProjectSnapshot?.GetDocument(_documentTracker.FilePath)?.FileKind ?? FileKinds.Legacy;
+            // If we don't have a document then infer the FileKind from the FilePath.
+            var fileKind = _documentTracker.ProjectSnapshot?.GetDocument(_documentTracker.FilePath)?.FileKind ?? FileKinds.GetFileKindFromFilePath(_documentTracker.FilePath);
 
             var projectDirectory = Path.GetDirectoryName(_documentTracker.ProjectPath);
             _parser = new BackgroundParser(_projectEngine, FilePath, projectDirectory, fileKind);
