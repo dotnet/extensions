@@ -16,20 +16,25 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
         private readonly ManualResetEventSlim _delayStop = new ManualResetEventSlim();
         private readonly HostOptions _hostOptions;
 
-        public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> hostOptionsAccessor, IOptions<WindowsServiceLifetimeOptions> windowsServiceOptionsAccessor)
+        public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> optionsAccessor)
+            : this(environment, applicationLifetime, loggerFactory, optionsAccessor, Options.Options.Create(new WindowsServiceLifetimeOptions()))
+        {
+        }
+
+        public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> optionsAccessor, IOptions<WindowsServiceLifetimeOptions> windowsServiceOptionsAccessor)
         {
             Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
             Logger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
-            if (hostOptionsAccessor == null)
+            if (optionsAccessor == null)
             {
-                throw new ArgumentNullException(nameof(hostOptionsAccessor));
+                throw new ArgumentNullException(nameof(optionsAccessor));
             }
             if (windowsServiceOptionsAccessor == null)
             {
                 throw new ArgumentNullException(nameof(windowsServiceOptionsAccessor));
             }
-            _hostOptions = hostOptionsAccessor.Value;
+            _hostOptions = optionsAccessor.Value;
             ServiceName = windowsServiceOptionsAccessor.Value.ServiceName;
         }
 
