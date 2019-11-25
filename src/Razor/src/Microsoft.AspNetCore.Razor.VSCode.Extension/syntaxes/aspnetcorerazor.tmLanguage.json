@@ -3,22 +3,32 @@
   "scopeName": "text.aspnetcorerazor",
   "patterns": [
     {
-      "include": "#explicit-razor-expression"
-    },
-    {
-      "include": "#escaped-transition"
-    },
-    {
-      "include": "#directives"
-    },
-    {
-      "include": "#implicit-expression"
+      "include": "#razor-control-structures"
     },
     {
       "include": "text.html.basic"
     }
   ],
   "repository": {
+    "razor-control-structures": {
+      "patterns": [
+        {
+          "include": "#razor-codeblock"
+        },
+        {
+          "include": "#explicit-razor-expression"
+        },
+        {
+          "include": "#escaped-transition"
+        },
+        {
+          "include": "#directives"
+        },
+        {
+          "include": "#implicit-expression"
+        }
+      ]
+    },
     "escaped-transition": {
       "name": "constant.character.escape.razor.transition",
       "match": "@@"
@@ -26,6 +36,208 @@
     "transition": {
       "match": "@",
       "name": "keyword.control.cshtml.transition"
+    },
+    "razor-codeblock": {
+      "begin": "(@)(\\{)",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.codeblock.open"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#razor-csharp-statement"
+        }
+      ],
+      "end": "(\\})",
+      "endCaptures": {
+        "1": {
+          "name": "keyword.control.razor.directive.codeblock.close"
+        }
+      }
+    },
+    "razor-csharp-statement": {
+      "patterns": [
+        {
+          "include": "#text-tag"
+        },
+        {
+          "include": "#wellformed-html"
+        },
+        {
+          "include": "#razor-single-line-markup"
+        },
+        {
+          "include": "#razor-control-structures"
+        },
+        {
+          "include": "source.cs"
+        }
+      ]
+    },
+    "razor-single-line-markup": {
+      "match": "(\\@\\:)([^$]*)$",
+      "captures": {
+        "1": {
+          "name": "keyword.control.razor.singleLineMarkup"
+        },
+        "2": {
+          "patterns": [
+            {
+              "include": "#razor-control-structures"
+            },
+            {
+              "include": "text.html.basic"
+            }
+          ]
+        }
+      }
+    },
+    "text-tag": {
+      "begin": "(<text\\s*>)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.cshtml.transition.textTag.open"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#balanced-open-close-tag-body"
+        },
+        {
+          "include": "#wellformed-html"
+        }
+      ],
+      "end": "(</text>)",
+      "endCaptures": {
+        "1": {
+          "name": "keyword.control.cshtml.transition.textTag.close"
+        }
+      }
+    },
+    "wellformed-html": {
+      "patterns": [
+        {
+          "include": "#void-tag"
+        },
+        {
+          "include": "#balanced-open-close-tag"
+        }
+      ]
+    },
+    "void-tag": {
+      "name": "meta.tag.structure.$3.void.html",
+      "begin": "(?i)(<)(!?)(area|base|br|col|command|embed|hr|img|input|keygen|link|meta|param|source|track|wbr)(?=\\s|/?>)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.html"
+        },
+        "2": {
+          "name": "constant.character.escape.razor.tagHelperOptOut"
+        },
+        "3": {
+          "name": "entity.name.tag.html"
+        }
+      },
+      "patterns": [
+        {
+          "include": "text.html.basic#attribute"
+        }
+      ],
+      "end": "/?>",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.tag.end.html"
+        }
+      }
+    },
+    "balanced-open-close-tag": {
+      "begin": "(?=<([^/\\s>]+))",
+      "patterns": [
+        {
+          "include": "#balanced-open-close-tag-start"
+        },
+        {
+          "include": "#balanced-open-close-tag-end"
+        },
+        {
+          "include": "#balanced-open-close-tag-body"
+        }
+      ],
+      "end": "(?<=(</\\1>))|(/>)"
+    },
+    "balanced-open-close-tag-start": {
+      "begin": "(<)(?!(/))([^/\\s>]+)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.html"
+        },
+        "2": {
+          "name": "constant.character.escape.razor.tagHelperOptOut"
+        },
+        "3": {
+          "name": "entity.name.tag.html"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#balanced-open-close-tag-attributes"
+        }
+      ],
+      "end": "/?>",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.tag.end.html"
+        }
+      }
+    },
+    "balanced-open-close-tag-attributes": {
+      "begin": "(?=\\s)",
+      "patterns": [
+        {
+          "include": "#razor-control-structures"
+        },
+        {
+          "include": "text.html.basic#attribute"
+        }
+      ],
+      "end": "(?=/?>)"
+    },
+    "balanced-open-close-tag-body": {
+      "begin": "(?<=([^/])>)",
+      "patterns": [
+        {
+          "include": "#wellformed-html"
+        },
+        {
+          "include": "$self"
+        }
+      ],
+      "end": "(?=\\</)"
+    },
+    "balanced-open-close-tag-end": {
+      "match": "(</)(!?)([^/\\s>]+)\\s*(>)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.tag.begin.html"
+        },
+        "2": {
+          "name": "constant.character.escape.razor.tagHelperOptOut"
+        },
+        "3": {
+          "name": "entity.name.tag.html"
+        },
+        "4": {
+          "name": "punctuation.definition.tag.end.html"
+        }
+      }
     },
     "explicit-razor-expression": {
       "name": "meta.expression.explicit.cshtml",
@@ -74,7 +286,7 @@
           "include": "#implicit-expression-body"
         }
       ],
-      "end": "(?=[\\s<])"
+      "end": "(?=[\\s<>])"
     },
     "implicit-expression-body": {
       "patterns": [
@@ -85,7 +297,7 @@
           "include": "#implicit-expression-accessor-start"
         }
       ],
-      "end": "(?=[\\s<])"
+      "end": "(?=[\\s<>])"
     },
     "implicit-expression-invocation-start": {
       "begin": "([_[:alpha:]][_[:alnum:]]*)(?=\\()",
@@ -99,7 +311,7 @@
           "include": "#implicit-expression-continuation"
         }
       ],
-      "end": "(?=[\\s<])"
+      "end": "(?=[\\s<>])"
     },
     "implicit-expression-accessor-start": {
       "begin": "([_[:alpha:]][_[:alnum:]]*)",
@@ -113,7 +325,7 @@
           "include": "#implicit-expression-continuation"
         }
       ],
-      "end": "(?=[\\s<])"
+      "end": "(?=[\\s<>])"
     },
     "implicit-expression-continuation": {
       "patterns": [
@@ -133,7 +345,7 @@
           "include": "#implicit-expression-extension"
         }
       ],
-      "end": "(?=[\\s<])"
+      "end": "(?=[\\s<>])"
     },
     "implicit-expression-accessor": {
       "match": "(?<=\\.)[_[:alpha:]][_[:alnum:]]*",

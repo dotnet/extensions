@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See License.txt in the project root for license information.
 * ------------------------------------------------------------------------------------------ */
 
+import { RunCodeBlockSuite } from './CodeBlock';
 import { RunCodeDirectiveSuite } from './CodeDirective';
 import { RunExplicitExpressionSuite } from './ExplicitExpressions';
 import { RunFunctionsDirectiveSuite } from './FunctionsDirective';
@@ -20,4 +21,5 @@ describe('Grammar tests', () => {
     RunImplicitExpressionSuite();
     RunCodeDirectiveSuite();
     RunFunctionsDirectiveSuite();
+    RunCodeBlockSuite();
 });

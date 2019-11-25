@@ -562,6 +562,431 @@ exports[`Grammar tests Implicit Expressions Single line simple 1`] = `
 "
 `;
 
+exports[`Grammar tests Razor code blocks @{ ... } Complex HTML tag structures 1`] = `
+"Line: @{<p><input      /><strong>Hello <hr/> <br> World</strong></p>}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+ - token from 2 to 3 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 3 to 4 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 4 to 5 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 5 to 6 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 6 to 11 (input) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 11 to 17 (      ) with scopes text.aspnetcorerazor
+ - token from 17 to 19 (/>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 19 to 20 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 20 to 26 (strong) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 26 to 27 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 27 to 33 (Hello ) with scopes text.aspnetcorerazor
+ - token from 33 to 34 (<) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, punctuation.definition.tag.begin.html
+ - token from 34 to 36 (hr) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, entity.name.tag.html
+ - token from 36 to 38 (/>) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, punctuation.definition.tag.end.html
+ - token from 38 to 39 ( ) with scopes text.aspnetcorerazor
+ - token from 39 to 40 (<) with scopes text.aspnetcorerazor, meta.tag.structure.br.void.html, punctuation.definition.tag.begin.html
+ - token from 40 to 42 (br) with scopes text.aspnetcorerazor, meta.tag.structure.br.void.html, entity.name.tag.html
+ - token from 42 to 43 (>) with scopes text.aspnetcorerazor, meta.tag.structure.br.void.html, punctuation.definition.tag.end.html
+ - token from 43 to 49 ( World) with scopes text.aspnetcorerazor
+ - token from 49 to 51 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 51 to 57 (strong) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 57 to 58 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 58 to 60 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 60 to 61 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 61 to 62 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 62 to 63 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Empty code block 1`] = `
+"Line: @{}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+ - token from 2 to 3 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Incomplete code block 1`] = `
+"Line: @{
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Malformed code block 1`] = `
+"Line: @ {}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 5 ( {}) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Multi line complex 1`] = `
+"Line: @{
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+
+Line:     var x = true;
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 7 (var) with scopes text.aspnetcorerazor, keyword.other.var.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor
+ - token from 8 to 9 (x) with scopes text.aspnetcorerazor, entity.name.variable.local.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor
+ - token from 10 to 11 (=) with scopes text.aspnetcorerazor, keyword.operator.assignment.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor
+ - token from 12 to 16 (true) with scopes text.aspnetcorerazor, constant.language.boolean.true.cs
+ - token from 16 to 17 (;) with scopes text.aspnetcorerazor, punctuation.terminator.statement.cs
+
+Line:     <text>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 10 (<text>) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition.textTag.open
+
+Line:         @{
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor
+ - token from 8 to 9 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 9 to 10 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+
+Line:             @DateTime.Now
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor
+ - token from 12 to 13 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 13 to 21 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 21 to 22 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 22 to 25 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+
+Line:             @{
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor
+ - token from 12 to 13 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 13 to 14 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+
+Line:                 @{
+ - token from 0 to 16 (                ) with scopes text.aspnetcorerazor
+ - token from 16 to 17 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 17 to 18 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+
+Line: 
+ - token from 0 to 1 () with scopes text.aspnetcorerazor
+
+Line:                 }
+ - token from 0 to 16 (                ) with scopes text.aspnetcorerazor
+ - token from 16 to 17 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+
+Line:             }
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor
+ - token from 12 to 13 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+
+Line:         }
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+
+Line:     </text>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 11 (</text>) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition.textTag.close
+
+Line: 
+ - token from 0 to 1 () with scopes text.aspnetcorerazor
+
+Line:     <p></p>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 5 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 5 to 6 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 6 to 7 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 7 to 9 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 9 to 10 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 10 to 11 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+
+Line: <p class=\\"hello <world></p>\\" @DateTime.Now> Foo<strong @{ <text> can't believe this works </text>}>Bar</strong> Baz
+ - token from 0 to 1 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 1 to 2 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 2 to 3 ( ) with scopes text.aspnetcorerazor
+ - token from 3 to 8 (class) with scopes text.aspnetcorerazor, meta.attribute.class.html, entity.other.attribute-name.html
+ - token from 8 to 9 (=) with scopes text.aspnetcorerazor, meta.attribute.class.html, punctuation.separator.key-value.html
+ - token from 9 to 10 (\\") with scopes text.aspnetcorerazor, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.begin.html
+ - token from 10 to 27 (hello <world></p>) with scopes text.aspnetcorerazor, meta.attribute.class.html, string.quoted.double.html
+ - token from 27 to 28 (\\") with scopes text.aspnetcorerazor, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.end.html
+ - token from 28 to 29 ( ) with scopes text.aspnetcorerazor
+ - token from 29 to 30 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 30 to 38 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 38 to 39 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 39 to 42 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 42 to 43 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 43 to 47 ( Foo) with scopes text.aspnetcorerazor
+ - token from 47 to 48 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 48 to 54 (strong) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 54 to 55 ( ) with scopes text.aspnetcorerazor
+ - token from 55 to 56 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 56 to 57 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+ - token from 57 to 58 ( ) with scopes text.aspnetcorerazor
+ - token from 58 to 64 (<text>) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition.textTag.open
+ - token from 64 to 90 ( can't believe this works ) with scopes text.aspnetcorerazor
+ - token from 90 to 97 (</text>) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition.textTag.close
+ - token from 97 to 98 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+ - token from 98 to 99 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 99 to 102 (Bar) with scopes text.aspnetcorerazor
+ - token from 102 to 104 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 104 to 110 (strong) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 110 to 111 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 111 to 116 ( Baz) with scopes text.aspnetcorerazor
+
+Line:         <p class=\\"hello world\\">
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor
+ - token from 8 to 9 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 9 to 10 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor
+ - token from 11 to 16 (class) with scopes text.aspnetcorerazor, meta.attribute.class.html, entity.other.attribute-name.html
+ - token from 16 to 17 (=) with scopes text.aspnetcorerazor, meta.attribute.class.html, punctuation.separator.key-value.html
+ - token from 17 to 18 (\\") with scopes text.aspnetcorerazor, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.begin.html
+ - token from 18 to 29 (hello world) with scopes text.aspnetcorerazor, meta.attribute.class.html, string.quoted.double.html
+ - token from 29 to 30 (\\") with scopes text.aspnetcorerazor, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.end.html
+ - token from 30 to 31 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+
+Line:             Below is an incomplete tag
+ - token from 0 to 39 (            Below is an incomplete tag) with scopes text.aspnetcorerazor
+
+Line:             </strong>
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor
+ - token from 12 to 14 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 14 to 20 (strong) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 20 to 21 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+
+Line:         </p>
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor
+ - token from 8 to 10 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 10 to 11 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 11 to 12 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+
+Line: 
+ - token from 0 to 1 () with scopes text.aspnetcorerazor
+
+Line:         <text>This is not a special transition tag</text>
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor
+ - token from 8 to 9 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 9 to 13 (text) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 13 to 14 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 14 to 50 (This is not a special transition tag) with scopes text.aspnetcorerazor
+ - token from 50 to 52 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 52 to 56 (text) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 56 to 57 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+
+Line:         Hello World
+ - token from 0 to 20 (        Hello World) with scopes text.aspnetcorerazor
+
+Line:     </p>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 6 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 6 to 7 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 7 to 8 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+
+Line:     @: <strong> <-- This is incomplete @DateTime.Now
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 6 (@:) with scopes text.aspnetcorerazor, keyword.control.razor.singleLineMarkup
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor
+ - token from 7 to 8 (<) with scopes text.aspnetcorerazor, meta.tag.inline.strong.start.html, punctuation.definition.tag.begin.html
+ - token from 8 to 14 (strong) with scopes text.aspnetcorerazor, meta.tag.inline.strong.start.html, entity.name.tag.html
+ - token from 14 to 15 (>) with scopes text.aspnetcorerazor, meta.tag.inline.strong.start.html, punctuation.definition.tag.end.html
+ - token from 15 to 39 ( <-- This is incomplete ) with scopes text.aspnetcorerazor
+ - token from 39 to 40 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 40 to 48 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 48 to 49 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 49 to 52 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+
+Line: 
+ - token from 0 to 1 () with scopes text.aspnetcorerazor
+
+Line:     <input class=\\"hello world\\">
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 5 (<) with scopes text.aspnetcorerazor, meta.tag.structure.input.void.html, punctuation.definition.tag.begin.html
+ - token from 5 to 10 (input) with scopes text.aspnetcorerazor, meta.tag.structure.input.void.html, entity.name.tag.html
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.tag.structure.input.void.html
+ - token from 11 to 16 (class) with scopes text.aspnetcorerazor, meta.tag.structure.input.void.html, meta.attribute.class.html, entity.other.attribute-name.html
+ - token from 16 to 17 (=) with scopes text.aspnetcorerazor, meta.tag.structure.input.void.html, meta.attribute.class.html, punctuation.separator.key-value.html
+ - token from 17 to 18 (\\") with scopes text.aspnetcorerazor, meta.tag.structure.input.void.html, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.begin.html
+ - token from 18 to 29 (hello world) with scopes text.aspnetcorerazor, meta.tag.structure.input.void.html, meta.attribute.class.html, string.quoted.double.html
+ - token from 29 to 30 (\\") with scopes text.aspnetcorerazor, meta.tag.structure.input.void.html, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.end.html
+ - token from 30 to 31 (>) with scopes text.aspnetcorerazor, meta.tag.structure.input.void.html, punctuation.definition.tag.end.html
+
+Line:     <p>aHello</p>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 5 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 5 to 6 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 6 to 7 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 7 to 13 (aHello) with scopes text.aspnetcorerazor
+ - token from 13 to 15 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 15 to 16 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 16 to 17 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+
+Line: 
+ - token from 0 to 1 () with scopes text.aspnetcorerazor
+
+Line:     if (true) {
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 6 (if) with scopes text.aspnetcorerazor, keyword.control.conditional.if.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor
+ - token from 7 to 8 (() with scopes text.aspnetcorerazor, punctuation.parenthesis.open.cs
+ - token from 8 to 12 (true) with scopes text.aspnetcorerazor, constant.language.boolean.true.cs
+ - token from 12 to 13 ()) with scopes text.aspnetcorerazor, punctuation.parenthesis.close.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor
+ - token from 14 to 15 ({) with scopes text.aspnetcorerazor, punctuation.curlybrace.open.cs
+
+Line:         <p>alksdjfl</p>
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor
+ - token from 8 to 9 (<) with scopes text.aspnetcorerazor, keyword.operator.relational.cs
+ - token from 9 to 10 (p) with scopes text.aspnetcorerazor, variable.other.readwrite.cs
+ - token from 10 to 11 (>) with scopes text.aspnetcorerazor, keyword.operator.relational.cs
+ - token from 11 to 19 (alksdjfl) with scopes text.aspnetcorerazor, variable.other.readwrite.cs
+ - token from 19 to 20 (<) with scopes text.aspnetcorerazor, keyword.operator.relational.cs
+ - token from 20 to 21 (/) with scopes text.aspnetcorerazor, keyword.operator.arithmetic.cs
+ - token from 21 to 22 (p) with scopes text.aspnetcorerazor, variable.other.readwrite.cs
+ - token from 22 to 23 (>) with scopes text.aspnetcorerazor, keyword.operator.relational.cs
+
+Line:     }
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 5 (}) with scopes text.aspnetcorerazor, punctuation.curlybrace.close.cs
+
+Line: }
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Nested text tag 1`] = `
+"Line: @{ <p><text>Hello</text></p> }
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+ - token from 2 to 3 ( ) with scopes text.aspnetcorerazor
+ - token from 3 to 4 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 4 to 5 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 5 to 6 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 6 to 7 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 7 to 11 (text) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 11 to 12 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 12 to 17 (Hello) with scopes text.aspnetcorerazor
+ - token from 17 to 19 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 19 to 23 (text) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 23 to 24 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 24 to 26 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 26 to 27 (p) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 27 to 28 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 28 to 29 ( ) with scopes text.aspnetcorerazor
+ - token from 29 to 30 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Nested text text tag 1`] = `
+"Line: @{ <text><text>Hello</text></text> }
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+ - token from 2 to 3 ( ) with scopes text.aspnetcorerazor
+ - token from 3 to 9 (<text>) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition.textTag.open
+ - token from 9 to 10 (<) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 10 to 14 (text) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 14 to 15 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 15 to 20 (Hello) with scopes text.aspnetcorerazor
+ - token from 20 to 22 (</) with scopes text.aspnetcorerazor, punctuation.definition.tag.begin.html
+ - token from 22 to 26 (text) with scopes text.aspnetcorerazor, entity.name.tag.html
+ - token from 26 to 27 (>) with scopes text.aspnetcorerazor, punctuation.definition.tag.end.html
+ - token from 27 to 34 (</text>) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition.textTag.close
+ - token from 34 to 35 ( ) with scopes text.aspnetcorerazor
+ - token from 35 to 36 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Pure C# 1`] = `
+"Line: @{var x = true; Console.WriteLine(\\"Hello World\\");}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+ - token from 2 to 5 (var) with scopes text.aspnetcorerazor, keyword.other.var.cs
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor
+ - token from 6 to 7 (x) with scopes text.aspnetcorerazor, entity.name.variable.local.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor
+ - token from 8 to 9 (=) with scopes text.aspnetcorerazor, keyword.operator.assignment.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor
+ - token from 10 to 14 (true) with scopes text.aspnetcorerazor, constant.language.boolean.true.cs
+ - token from 14 to 15 (;) with scopes text.aspnetcorerazor, punctuation.terminator.statement.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor
+ - token from 16 to 23 (Console) with scopes text.aspnetcorerazor, variable.other.object.cs
+ - token from 23 to 24 (.) with scopes text.aspnetcorerazor, punctuation.accessor.cs
+ - token from 24 to 33 (WriteLine) with scopes text.aspnetcorerazor, entity.name.function.cs
+ - token from 33 to 34 (() with scopes text.aspnetcorerazor, punctuation.parenthesis.open.cs
+ - token from 34 to 35 (\\") with scopes text.aspnetcorerazor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 35 to 46 (Hello World) with scopes text.aspnetcorerazor, string.quoted.double.cs
+ - token from 46 to 47 (\\") with scopes text.aspnetcorerazor, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 47 to 48 ()) with scopes text.aspnetcorerazor, punctuation.parenthesis.close.cs
+ - token from 48 to 49 (;) with scopes text.aspnetcorerazor, punctuation.terminator.statement.cs
+ - token from 49 to 50 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Single line local function 1`] = `
+"Line: @{ void Foo() {} }
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+ - token from 2 to 3 ( ) with scopes text.aspnetcorerazor
+ - token from 3 to 7 (void) with scopes text.aspnetcorerazor, keyword.type.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor
+ - token from 8 to 11 (Foo) with scopes text.aspnetcorerazor, entity.name.function.cs
+ - token from 11 to 12 (() with scopes text.aspnetcorerazor, punctuation.parenthesis.open.cs
+ - token from 12 to 13 ()) with scopes text.aspnetcorerazor, punctuation.parenthesis.close.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor
+ - token from 14 to 15 ({) with scopes text.aspnetcorerazor, punctuation.curlybrace.open.cs
+ - token from 15 to 16 (}) with scopes text.aspnetcorerazor, punctuation.curlybrace.close.cs
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor
+ - token from 17 to 18 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Single line markup complex 1`] = `
+"Line: @{
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+
+Line:     @:@DateTime.Now <text>Nope</text>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 6 (@:) with scopes text.aspnetcorerazor, keyword.control.razor.singleLineMarkup
+ - token from 6 to 7 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 7 to 15 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 15 to 16 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 16 to 19 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor
+ - token from 20 to 21 (<) with scopes text.aspnetcorerazor, meta.tag.other.text.html, punctuation.definition.tag.begin.html
+ - token from 21 to 25 (text) with scopes text.aspnetcorerazor, meta.tag.other.text.html, entity.name.tag.html, invalid.illegal.unrecognized-tag.html
+ - token from 25 to 26 (>) with scopes text.aspnetcorerazor, meta.tag.other.text.html, punctuation.definition.tag.end.html
+ - token from 26 to 30 (Nope) with scopes text.aspnetcorerazor
+ - token from 30 to 32 (</) with scopes text.aspnetcorerazor, meta.tag.other.text.html, punctuation.definition.tag.begin.html
+ - token from 32 to 36 (text) with scopes text.aspnetcorerazor, meta.tag.other.text.html, entity.name.tag.html, invalid.illegal.unrecognized-tag.html
+ - token from 36 to 37 (>) with scopes text.aspnetcorerazor, meta.tag.other.text.html, punctuation.definition.tag.end.html
+
+Line: }
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Single line markup simple 1`] = `
+"Line: @{
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+
+Line:     @: <p> Incomplete
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor
+ - token from 4 to 6 (@:) with scopes text.aspnetcorerazor, keyword.control.razor.singleLineMarkup
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor
+ - token from 7 to 8 (<) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, punctuation.definition.tag.begin.html
+ - token from 8 to 9 (p) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, entity.name.tag.html
+ - token from 9 to 10 (>) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, punctuation.definition.tag.end.html
+ - token from 10 to 22 ( Incomplete) with scopes text.aspnetcorerazor
+
+Line: }
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests Razor code blocks @{ ... } Top level text tag 1`] = `
+"Line: @{ <text>Hello</text> }
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
+ - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
+ - token from 2 to 3 ( ) with scopes text.aspnetcorerazor
+ - token from 3 to 9 (<text>) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition.textTag.open
+ - token from 9 to 14 (Hello) with scopes text.aspnetcorerazor
+ - token from 14 to 21 (</text>) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition.textTag.close
+ - token from 21 to 22 ( ) with scopes text.aspnetcorerazor
+ - token from 22 to 23 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+"
+`;
+
 exports[`Grammar tests Transitions Escaped transitions 1`] = `
 "Line: @@
  - token from 0 to 2 (@@) with scopes text.aspnetcorerazor, constant.character.escape.razor.transition
