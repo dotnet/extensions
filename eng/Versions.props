@@ -15,8 +15,8 @@
   <PropertyGroup>
     <MajorVersion>3</MajorVersion>
     <MinorVersion>1</MinorVersion>
-    <PatchVersion>0</PatchVersion>
-    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
+    <PatchVersion>1</PatchVersion>
+    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
