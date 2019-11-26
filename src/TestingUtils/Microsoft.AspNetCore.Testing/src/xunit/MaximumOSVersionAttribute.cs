@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Testing
         private readonly Version _currentVersion;
         private readonly bool _skip;
 
-        public MaximumOSVersionAttribute(OperatingSystems operatingSystem, string minVersion) :
-            this(operatingSystem, Version.Parse(minVersion), GetCurrentOS(), GetCurrentOSVersion())
+        public MaximumOSVersionAttribute(OperatingSystems operatingSystem, string maxVersion) :
+            this(operatingSystem, Version.Parse(maxVersion), GetCurrentOS(), GetCurrentOSVersion())
         {
         }
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             if (targetOS != OperatingSystems.Windows)
             {
-                throw new NotImplementedException("Min version support is only implemented for Windows.");
+                throw new NotImplementedException("Max version support is only implemented for Windows.");
             }
             _targetOS = targetOS;
             _maxVersion = maxVersion;

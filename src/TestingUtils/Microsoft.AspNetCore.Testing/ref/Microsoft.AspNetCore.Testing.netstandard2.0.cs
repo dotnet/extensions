@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Testing
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly | System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=true)]
     public partial class MaximumOSVersionAttribute : System.Attribute, Microsoft.AspNetCore.Testing.ITestCondition
     {
-        public MaximumOSVersionAttribute(Microsoft.AspNetCore.Testing.OperatingSystems operatingSystem, string minVersion) { }
+        public MaximumOSVersionAttribute(Microsoft.AspNetCore.Testing.OperatingSystems operatingSystem, string maxVersion) { }
         public bool IsMet { get { throw null; } }
         public string SkipReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
