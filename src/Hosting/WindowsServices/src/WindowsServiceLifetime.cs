@@ -95,6 +95,8 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
         protected override void OnShutdown()
         {
              ApplicationLifetime.StopApplication();
+             // Wait for the host to shutdown before marking service as stopped.
+             _delayStop.Wait(_hostOptions.ShutdownTimeout);
              base.OnShutdown();                
         }
 
