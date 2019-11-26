@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.Hosting
-
 {
     public class WindowsServiceLifetimeOptions
     {
