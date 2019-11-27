@@ -180,7 +180,7 @@ exports[`Grammar tests @functions directive Single line 1`] = `
 "
 `;
 
-exports[`Grammar tests Explicit transitions Empty 1`] = `
+exports[`Grammar tests Explicit expressions Empty 1`] = `
 "Line: @()
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
  - token from 1 to 2 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
@@ -188,7 +188,7 @@ exports[`Grammar tests Explicit transitions Empty 1`] = `
 "
 `;
 
-exports[`Grammar tests Explicit transitions Multi line 1`] = `
+exports[`Grammar tests Explicit expressions Multi line 1`] = `
 "Line: @(
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
  - token from 1 to 2 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
@@ -291,7 +291,7 @@ Line: )
 "
 `;
 
-exports[`Grammar tests Explicit transitions Single line complex 1`] = `
+exports[`Grammar tests Explicit expressions Single line complex 1`] = `
 "Line: @(456 + new Array<int>(){1,2,3}[0] + await GetValueAsync<string>() ?? someArray[await DoMoreAsync(() => {})])
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
  - token from 1 to 2 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
@@ -350,7 +350,7 @@ exports[`Grammar tests Explicit transitions Single line complex 1`] = `
 "
 `;
 
-exports[`Grammar tests Explicit transitions Single line simple 1`] = `
+exports[`Grammar tests Explicit expressions Single line simple 1`] = `
 "Line: @(DateTime.Now)
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
  - token from 1 to 2 (() with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml
