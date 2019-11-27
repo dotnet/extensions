@@ -36,6 +36,7 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
             }
             _hostOptions = optionsAccessor.Value;
             ServiceName = windowsServiceOptionsAccessor.Value.ServiceName;
+            CanShutdown = true;
         }
 
         private IHostApplicationLifetime ApplicationLifetime { get; }
@@ -99,6 +100,14 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
             // Wait for the host to shutdown before marking service as stopped.
             _delayStop.Wait(_hostOptions.ShutdownTimeout);
             base.OnStop();
+        }
+        
+        protected override void OnShutdown()
+        {
+             ApplicationLifetime.StopApplication();
+             // Wait for the host to shutdown before marking service as stopped.
+             _delayStop.Wait(_hostOptions.ShutdownTimeout);
+             base.OnShutdown();                
         }
 
         protected override void Dispose(bool disposing)
