@@ -279,7 +279,7 @@
           "name": "keyword.control.razor.directive.codeblock.open"
         }
       },
-      "name": "razor.test.balanced.curlybraces",
+      "name": "meta.structure.razor.directive.codeblock",
       "patterns": [
         {
           "include": "source.cs"
