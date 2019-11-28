@@ -5,7 +5,7 @@ exports[`Grammar tests @code directive Incomplete code block 1`] = `
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
  - token from 1 to 5 (code) with scopes text.aspnetcorerazor, keyword.control.razor.directive.code
  - token from 5 to 6 ( ) with scopes text.aspnetcorerazor
- - token from 6 to 7 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.open
+ - token from 6 to 7 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.open
 "
 `;
 
@@ -14,50 +14,50 @@ exports[`Grammar tests @code directive Multi line 1`] = `
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
  - token from 1 to 5 (code) with scopes text.aspnetcorerazor, keyword.control.razor.directive.code
  - token from 5 to 6 ( ) with scopes text.aspnetcorerazor
- - token from 6 to 7 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.open
+ - token from 6 to 7 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.open
 
 Line:     private int currentCount = 0;
- - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 4 to 11 (private) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, storage.modifier.cs
- - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 12 to 15 (int) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.type.cs
- - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 16 to 28 (currentCount) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, entity.name.variable.local.cs
- - token from 28 to 29 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 29 to 30 (=) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.operator.assignment.cs
- - token from 30 to 31 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 31 to 32 (0) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, constant.numeric.decimal.cs
- - token from 32 to 33 (;) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.terminator.statement.cs
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 4 to 11 (private) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, storage.modifier.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 12 to 15 (int) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.type.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 16 to 28 (currentCount) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, entity.name.variable.local.cs
+ - token from 28 to 29 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 29 to 30 (=) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.operator.assignment.cs
+ - token from 30 to 31 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 31 to 32 (0) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, constant.numeric.decimal.cs
+ - token from 32 to 33 (;) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.terminator.statement.cs
 
 Line: 
- - token from 0 to 1 () with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
+ - token from 0 to 1 () with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
 
 Line:     private void IncrementCount()
- - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 4 to 11 (private) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, storage.modifier.cs
- - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 12 to 16 (void) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.type.cs
- - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 17 to 31 (IncrementCount) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, entity.name.function.cs
- - token from 31 to 32 (() with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.parenthesis.open.cs
- - token from 32 to 33 ()) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.parenthesis.close.cs
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 4 to 11 (private) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, storage.modifier.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 12 to 16 (void) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.type.cs
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 17 to 31 (IncrementCount) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, entity.name.function.cs
+ - token from 31 to 32 (() with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.parenthesis.open.cs
+ - token from 32 to 33 ()) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.parenthesis.close.cs
 
 Line:     {
- - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 4 to 5 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.curlybrace.open.cs
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 4 to 5 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.curlybrace.open.cs
 
 Line:         currentCount++;
- - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 8 to 20 (currentCount) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, variable.other.readwrite.cs
- - token from 20 to 22 (++) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.operator.increment.cs
- - token from 22 to 23 (;) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.terminator.statement.cs
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 8 to 20 (currentCount) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, variable.other.readwrite.cs
+ - token from 20 to 22 (++) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.operator.increment.cs
+ - token from 22 to 23 (;) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.terminator.statement.cs
 
 Line:     }
- - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 4 to 5 (}) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.curlybrace.close.cs
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 4 to 5 (}) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.curlybrace.close.cs
 
 Line: }
- - token from 0 to 1 (}) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.close
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.close
 "
 `;
 
@@ -73,20 +73,20 @@ exports[`Grammar tests @code directive Single line 1`] = `
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
  - token from 1 to 5 (code) with scopes text.aspnetcorerazor, keyword.control.razor.directive.code
  - token from 5 to 6 ( ) with scopes text.aspnetcorerazor
- - token from 6 to 7 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.open
- - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 8 to 14 (public) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, storage.modifier.cs
- - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 15 to 19 (void) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.type.cs
- - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 20 to 23 (Foo) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, entity.name.function.cs
- - token from 23 to 24 (() with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.parenthesis.open.cs
- - token from 24 to 25 ()) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.parenthesis.close.cs
- - token from 25 to 26 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 26 to 27 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.curlybrace.open.cs
- - token from 27 to 28 (}) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.curlybrace.close.cs
- - token from 28 to 29 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 29 to 30 (}) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.close
+ - token from 6 to 7 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.open
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 8 to 14 (public) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, storage.modifier.cs
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 15 to 19 (void) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.type.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 20 to 23 (Foo) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, entity.name.function.cs
+ - token from 23 to 24 (() with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.parenthesis.open.cs
+ - token from 24 to 25 ()) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.parenthesis.close.cs
+ - token from 25 to 26 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 26 to 27 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.curlybrace.open.cs
+ - token from 27 to 28 (}) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.curlybrace.close.cs
+ - token from 28 to 29 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 29 to 30 (}) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.close
 "
 `;
 
@@ -95,7 +95,7 @@ exports[`Grammar tests @functions directive Incomplete code block 1`] = `
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
  - token from 1 to 10 (functions) with scopes text.aspnetcorerazor, keyword.control.razor.directive.functions
  - token from 10 to 11 ( ) with scopes text.aspnetcorerazor
- - token from 11 to 12 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.open
+ - token from 11 to 12 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.open
 "
 `;
 
@@ -104,50 +104,50 @@ exports[`Grammar tests @functions directive Multi line 1`] = `
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
  - token from 1 to 10 (functions) with scopes text.aspnetcorerazor, keyword.control.razor.directive.functions
  - token from 10 to 11 ( ) with scopes text.aspnetcorerazor
- - token from 11 to 12 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.open
+ - token from 11 to 12 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.open
 
 Line:     private int currentCount = 0;
- - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 4 to 11 (private) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, storage.modifier.cs
- - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 12 to 15 (int) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.type.cs
- - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 16 to 28 (currentCount) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, entity.name.variable.local.cs
- - token from 28 to 29 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 29 to 30 (=) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.operator.assignment.cs
- - token from 30 to 31 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 31 to 32 (0) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, constant.numeric.decimal.cs
- - token from 32 to 33 (;) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.terminator.statement.cs
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 4 to 11 (private) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, storage.modifier.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 12 to 15 (int) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.type.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 16 to 28 (currentCount) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, entity.name.variable.local.cs
+ - token from 28 to 29 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 29 to 30 (=) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.operator.assignment.cs
+ - token from 30 to 31 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 31 to 32 (0) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, constant.numeric.decimal.cs
+ - token from 32 to 33 (;) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.terminator.statement.cs
 
 Line: 
- - token from 0 to 1 () with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
+ - token from 0 to 1 () with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
 
 Line:     private void IncrementCount()
- - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 4 to 11 (private) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, storage.modifier.cs
- - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 12 to 16 (void) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.type.cs
- - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 17 to 31 (IncrementCount) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, entity.name.function.cs
- - token from 31 to 32 (() with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.parenthesis.open.cs
- - token from 32 to 33 ()) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.parenthesis.close.cs
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 4 to 11 (private) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, storage.modifier.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 12 to 16 (void) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.type.cs
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 17 to 31 (IncrementCount) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, entity.name.function.cs
+ - token from 31 to 32 (() with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.parenthesis.open.cs
+ - token from 32 to 33 ()) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.parenthesis.close.cs
 
 Line:     {
- - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 4 to 5 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.curlybrace.open.cs
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 4 to 5 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.curlybrace.open.cs
 
 Line:         currentCount++;
- - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 8 to 20 (currentCount) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, variable.other.readwrite.cs
- - token from 20 to 22 (++) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.operator.increment.cs
- - token from 22 to 23 (;) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.terminator.statement.cs
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 8 to 20 (currentCount) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, variable.other.readwrite.cs
+ - token from 20 to 22 (++) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.operator.increment.cs
+ - token from 22 to 23 (;) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.terminator.statement.cs
 
 Line:     }
- - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 4 to 5 (}) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.curlybrace.close.cs
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 4 to 5 (}) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.curlybrace.close.cs
 
 Line: }
- - token from 0 to 1 (}) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.close
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.close
 "
 `;
 
@@ -163,20 +163,20 @@ exports[`Grammar tests @functions directive Single line 1`] = `
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
  - token from 1 to 10 (functions) with scopes text.aspnetcorerazor, keyword.control.razor.directive.functions
  - token from 10 to 11 ( ) with scopes text.aspnetcorerazor
- - token from 11 to 12 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.open
- - token from 12 to 13 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 13 to 19 (public) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, storage.modifier.cs
- - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 20 to 24 (void) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.type.cs
- - token from 24 to 25 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 25 to 28 (Foo) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, entity.name.function.cs
- - token from 28 to 29 (() with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.parenthesis.open.cs
- - token from 29 to 30 ()) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.parenthesis.close.cs
- - token from 30 to 31 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 31 to 32 ({) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.curlybrace.open.cs
- - token from 32 to 33 (}) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, punctuation.curlybrace.close.cs
- - token from 33 to 34 ( ) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces
- - token from 34 to 35 (}) with scopes text.aspnetcorerazor, razor.test.balanced.curlybraces, keyword.control.razor.directive.codeblock.close
+ - token from 11 to 12 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.open
+ - token from 12 to 13 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 13 to 19 (public) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, storage.modifier.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 20 to 24 (void) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.type.cs
+ - token from 24 to 25 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 25 to 28 (Foo) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, entity.name.function.cs
+ - token from 28 to 29 (() with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.parenthesis.open.cs
+ - token from 29 to 30 ()) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.parenthesis.close.cs
+ - token from 30 to 31 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 31 to 32 ({) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.curlybrace.open.cs
+ - token from 32 to 33 (}) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, punctuation.curlybrace.close.cs
+ - token from 33 to 34 ( ) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock
+ - token from 34 to 35 (}) with scopes text.aspnetcorerazor, meta.structure.razor.directive.codeblock, keyword.control.razor.directive.codeblock.close
 "
 `;
 
