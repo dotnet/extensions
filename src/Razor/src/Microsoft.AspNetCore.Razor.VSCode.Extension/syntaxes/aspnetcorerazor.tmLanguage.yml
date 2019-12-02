@@ -239,12 +239,13 @@ repository:
 
 # ----------  Directives ------------
 
-  #>>>>> @code and @functions <<<<<
-
   directives:
     patterns:
       - include: '#code-directive'
       - include: '#functions-directive'
+      - include: '#page-directive'
+
+  #>>>>> @code and @functions <<<<<
 
   code-directive:
     begin: '(@)(code)\s*'
@@ -274,6 +275,16 @@ repository:
     end: '(\})'
     endCaptures:
       1: { name: 'keyword.control.razor.directive.codeblock.close' }
+
+  #>>>>> @page <<<<<
+
+  page-directive:
+    name: meta.directive.page.cshtml
+    match: '(@)(page)\s+([^$]+)?'
+    captures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.razor.directive.page'}
+      3: { patterns: [ include: 'source.cs#string-literal' ] }
 
   # ----------  Misc C# ------------
 

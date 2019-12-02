@@ -8,6 +8,7 @@ import { RunCodeDirectiveSuite } from './CodeDirective';
 import { RunExplicitExpressionSuite } from './ExplicitExpressions';
 import { RunFunctionsDirectiveSuite } from './FunctionsDirective';
 import { RunImplicitExpressionSuite } from './ImplicitExpressions';
+import { RunPageDirectiveSuite } from './PageDirective';
 import { RunTransitionsSuite } from './Transitions';
 
 // We bring together all test suites and wrap them in one here. The reason behind this is that
@@ -19,7 +20,10 @@ describe('Grammar tests', () => {
     RunTransitionsSuite();
     RunExplicitExpressionSuite();
     RunImplicitExpressionSuite();
+    RunCodeBlockSuite();
+
+    // Directives
     RunCodeDirectiveSuite();
     RunFunctionsDirectiveSuite();
-    RunCodeBlockSuite();
+    RunPageDirectiveSuite();
 });

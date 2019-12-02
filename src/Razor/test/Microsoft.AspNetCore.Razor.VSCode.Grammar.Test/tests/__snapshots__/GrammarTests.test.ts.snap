@@ -180,6 +180,53 @@ exports[`Grammar tests @functions directive Single line 1`] = `
 "
 `;
 
+exports[`Grammar tests @page directive Incomplete route 1`] = `
+"Line: @page \\"
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 5 (page) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.razor.directive.page
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor, meta.directive.page.cshtml
+ - token from 6 to 7 (\\") with scopes text.aspnetcorerazor, meta.directive.page.cshtml, string.quoted.double.cs, punctuation.definition.string.begin.cs
+"
+`;
+
+exports[`Grammar tests @page directive No route 1`] = `
+"Line: @page
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 5 (page) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.razor.directive.page
+"
+`;
+
+exports[`Grammar tests @page directive No route spaced 1`] = `
+"Line: @page              
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 5 (page) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.razor.directive.page
+ - token from 5 to 20 (              ) with scopes text.aspnetcorerazor, meta.directive.page.cshtml
+"
+`;
+
+exports[`Grammar tests @page directive Routed 1`] = `
+"Line: @page \\"/counter\\"
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 5 (page) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.razor.directive.page
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor, meta.directive.page.cshtml
+ - token from 6 to 7 (\\") with scopes text.aspnetcorerazor, meta.directive.page.cshtml, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 7 to 15 (/counter) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, string.quoted.double.cs
+ - token from 15 to 16 (\\") with scopes text.aspnetcorerazor, meta.directive.page.cshtml, string.quoted.double.cs, punctuation.definition.string.end.cs
+"
+`;
+
+exports[`Grammar tests @page directive Routed spaced 1`] = `
+"Line: @page              \\"/counter\\"         
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 5 (page) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.razor.directive.page
+ - token from 5 to 19 (              ) with scopes text.aspnetcorerazor, meta.directive.page.cshtml
+ - token from 19 to 20 (\\") with scopes text.aspnetcorerazor, meta.directive.page.cshtml, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 20 to 28 (/counter) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, string.quoted.double.cs
+ - token from 28 to 29 (\\") with scopes text.aspnetcorerazor, meta.directive.page.cshtml, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 29 to 39 (         ) with scopes text.aspnetcorerazor, meta.directive.page.cshtml
+"
+`;
+
 exports[`Grammar tests Explicit expressions Empty 1`] = `
 "Line: @()
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
