@@ -451,6 +451,9 @@
         },
         {
           "include": "#tagHelperPrefix-directive"
+        },
+        {
+          "include": "#model-directive"
         }
       ]
     },
@@ -621,6 +624,29 @@
     "unquoted-string-argument": {
       "name": "string.quoted.double.cs",
       "match": "[^$]+"
+    },
+    "model-directive": {
+      "name": "meta.directive.model.cshtml",
+      "match": "(@)(model)\\s+([^$]+)?",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.model"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "source.cs#type"
+            }
+          ]
+        }
+      }
     },
     "await-prefix": {
       "name": "keyword.other.await.cs",

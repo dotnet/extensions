@@ -236,6 +236,68 @@ exports[`Grammar tests @functions directive Single line 1`] = `
 "
 `;
 
+exports[`Grammar tests @model directive Incomplete model, generic 1`] = `
+"Line: @model List<string
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (model) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.razor.directive.model
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.model.cshtml
+ - token from 7 to 11 (List) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, storage.type.cs
+ - token from 11 to 12 (<) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, punctuation.definition.typeparameters.begin.cs
+ - token from 12 to 18 (string) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.type.cs
+"
+`;
+
+exports[`Grammar tests @model directive Incomplete model, tuple 1`] = `
+"Line: @model (string abc, bool def
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (model) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.razor.directive.model
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.model.cshtml
+ - token from 7 to 8 (() with scopes text.aspnetcorerazor, meta.directive.model.cshtml, punctuation.parenthesis.open.cs
+ - token from 8 to 14 (string) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.type.cs
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.directive.model.cshtml
+ - token from 15 to 18 (abc) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, entity.name.variable.tuple-element.cs
+ - token from 18 to 19 (,) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, punctuation.separator.comma.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.directive.model.cshtml
+ - token from 20 to 24 (bool) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.type.cs
+ - token from 24 to 25 ( ) with scopes text.aspnetcorerazor, meta.directive.model.cshtml
+ - token from 25 to 28 (def) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, entity.name.variable.tuple-element.cs
+"
+`;
+
+exports[`Grammar tests @model directive Model provided 1`] = `
+"Line: @model Person
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (model) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.razor.directive.model
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.model.cshtml
+ - token from 7 to 13 (Person) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, storage.type.cs
+"
+`;
+
+exports[`Grammar tests @model directive Model provided spaced 1`] = `
+"Line: @model              Person         
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (model) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.razor.directive.model
+ - token from 6 to 20 (              ) with scopes text.aspnetcorerazor, meta.directive.model.cshtml
+ - token from 20 to 26 (Person) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, storage.type.cs
+ - token from 26 to 36 (         ) with scopes text.aspnetcorerazor, meta.directive.model.cshtml
+"
+`;
+
+exports[`Grammar tests @model directive No model 1`] = `
+"Line: @model
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (model) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.razor.directive.model
+"
+`;
+
+exports[`Grammar tests @model directive No model spaced 1`] = `
+"Line: @model              
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (model) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.razor.directive.model
+ - token from 6 to 21 (              ) with scopes text.aspnetcorerazor, meta.directive.model.cshtml
+"
+`;
+
 exports[`Grammar tests @page directive Incomplete route 1`] = `
 "Line: @page \\"
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.cshtml.transition

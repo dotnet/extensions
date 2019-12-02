@@ -247,6 +247,7 @@ repository:
       - include: '#addTagHelper-directive'
       - include: '#removeTagHelper-directive'
       - include: '#tagHelperPrefix-directive'
+      - include: '#model-directive'
 
   #>>>>> @code and @functions <<<<<
 
@@ -323,6 +324,16 @@ repository:
   unquoted-string-argument:
     name: 'string.quoted.double.cs'
     match: '[^$]+'
+
+  #>>>>> @model <<<<<
+
+  model-directive:
+    name: meta.directive.model.cshtml
+    match: '(@)(model)\s+([^$]+)?'
+    captures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.razor.directive.model'}
+      3: { patterns: [ include: 'source.cs#type' ] }
 
   # ----------  Misc C# ------------
 
