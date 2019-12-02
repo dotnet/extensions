@@ -298,6 +298,64 @@ exports[`Grammar tests @model directive No model spaced 1`] = `
 "
 `;
 
+exports[`Grammar tests @namespace directive Broken up namespace 1`] = `
+"Line: @namespace     MyApp  .  Models  .   Data    
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (namespace) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.razor.directive.namespace
+ - token from 10 to 15 (     ) with scopes text.aspnetcorerazor, meta.directive.namespace.razor
+ - token from 15 to 20 (MyApp) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, entity.name.type.namespace.cs
+ - token from 20 to 46 (  .  Models  .   Data    ) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests @namespace directive Incomplete namespace 1`] = `
+"Line: @namespace MyApp.
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (namespace) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.razor.directive.namespace
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.directive.namespace.razor
+ - token from 11 to 16 (MyApp) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, entity.name.type.namespace.cs
+ - token from 16 to 17 (.) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, punctuation.accessor.cs
+"
+`;
+
+exports[`Grammar tests @namespace directive Namespace provided 1`] = `
+"Line: @namespace MyApp
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (namespace) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.razor.directive.namespace
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.directive.namespace.razor
+ - token from 11 to 16 (MyApp) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, entity.name.type.namespace.cs
+"
+`;
+
+exports[`Grammar tests @namespace directive Namespace provided spaced 1`] = `
+"Line: @namespace     MyApp.Models.Data    
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (namespace) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.razor.directive.namespace
+ - token from 10 to 15 (     ) with scopes text.aspnetcorerazor, meta.directive.namespace.razor
+ - token from 15 to 20 (MyApp) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, entity.name.type.namespace.cs
+ - token from 20 to 21 (.) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, punctuation.accessor.cs
+ - token from 21 to 27 (Models) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, entity.name.type.namespace.cs
+ - token from 27 to 28 (.) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, punctuation.accessor.cs
+ - token from 28 to 32 (Data) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, entity.name.type.namespace.cs
+ - token from 32 to 37 (    ) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests @namespace directive No namespace 1`] = `
+"Line: @namespace
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (namespace) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.razor.directive.namespace
+"
+`;
+
+exports[`Grammar tests @namespace directive No namespace spaced 1`] = `
+"Line: @namespace              
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (namespace) with scopes text.aspnetcorerazor, meta.directive.namespace.razor, keyword.control.razor.directive.namespace
+ - token from 10 to 25 (              ) with scopes text.aspnetcorerazor, meta.directive.namespace.razor
+"
+`;
+
 exports[`Grammar tests @page directive Incomplete route 1`] = `
 "Line: @page \\"
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, keyword.control.cshtml.transition

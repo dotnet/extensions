@@ -10,6 +10,7 @@ import { RunExplicitExpressionSuite } from './ExplicitExpressions';
 import { RunFunctionsDirectiveSuite } from './FunctionsDirective';
 import { RunImplicitExpressionSuite } from './ImplicitExpressions';
 import { RunModelDirectiveSuite } from './ModelDirective';
+import { RunNamespaceDirectiveSuite } from './NamespaceDirective';
 import { RunPageDirectiveSuite } from './PageDirective';
 import { RunRemoveTagHelperDirectiveSuite } from './RemoveTagHelperDirective';
 import { RunTagHelperPrefixDirectiveSuite } from './TagHelperPrefixDirective';
@@ -34,4 +35,5 @@ describe('Grammar tests', () => {
     RunRemoveTagHelperDirectiveSuite();
     RunTagHelperPrefixDirectiveSuite();
     RunModelDirectiveSuite();
+    RunNamespaceDirectiveSuite();
 });

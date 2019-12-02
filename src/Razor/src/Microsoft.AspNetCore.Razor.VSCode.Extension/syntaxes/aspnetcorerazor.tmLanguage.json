@@ -454,6 +454,9 @@
         },
         {
           "include": "#model-directive"
+        },
+        {
+          "include": "#namespace-directive"
         }
       ]
     },
@@ -645,6 +648,40 @@
               "include": "source.cs#type"
             }
           ]
+        }
+      }
+    },
+    "namespace-directive": {
+      "name": "meta.directive.namespace.razor",
+      "match": "(@)(namespace)\\s+([^\\s]+)?",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.namespace"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "#namespace-directive-argument"
+            }
+          ]
+        }
+      }
+    },
+    "namespace-directive-argument": {
+      "match": "([_[:alpha:]][_[:alnum:]]*)(\\.)?",
+      "captures": {
+        "1": {
+          "name": "entity.name.type.namespace.cs"
+        },
+        "2": {
+          "name": "punctuation.accessor.cs"
         }
       }
     },

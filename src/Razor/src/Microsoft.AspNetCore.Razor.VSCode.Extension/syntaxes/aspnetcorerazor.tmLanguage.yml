@@ -248,6 +248,7 @@ repository:
       - include: '#removeTagHelper-directive'
       - include: '#tagHelperPrefix-directive'
       - include: '#model-directive'
+      - include: '#namespace-directive'
 
   #>>>>> @code and @functions <<<<<
 
@@ -283,7 +284,7 @@ repository:
   #>>>>> @page <<<<<
 
   page-directive:
-    name: meta.directive.page.cshtml
+    name: 'meta.directive.page.cshtml'
     match: '(@)(page)\s+([^$]+)?'
     captures:
       1: { patterns: [ include: '#transition' ] }
@@ -293,7 +294,7 @@ repository:
   #>>>>> @addTagHelper, @removeTagHelper and @tagHelperPrefix <<<<<
 
   addTagHelper-directive:
-    name: meta.directive.addTagHelper.razor
+    name: 'meta.directive.addTagHelper.razor'
     match: '(@)(addTagHelper)\s+([^$]+)?'
     captures:
       1: { patterns: [ include: '#transition' ] }
@@ -301,7 +302,7 @@ repository:
       3: { patterns: [ include: '#tagHelper-directive-argument' ] }
 
   removeTagHelper-directive:
-    name: meta.directive.removeTagHelper.razor
+    name: 'meta.directive.removeTagHelper.razor'
     match: '(@)(removeTagHelper)\s+([^$]+)?'
     captures:
       1: { patterns: [ include: '#transition' ] }
@@ -309,7 +310,7 @@ repository:
       3: { patterns: [ include: '#tagHelper-directive-argument' ] }
 
   tagHelperPrefix-directive:
-    name: meta.directive.tagHelperPrefix.razor
+    name: 'meta.directive.tagHelperPrefix.razor'
     match: '(@)(tagHelperPrefix)\s+([^$]+)?'
     captures:
       1: { patterns: [ include: '#transition' ] }
@@ -328,12 +329,28 @@ repository:
   #>>>>> @model <<<<<
 
   model-directive:
-    name: meta.directive.model.cshtml
+    name: 'meta.directive.model.cshtml'
     match: '(@)(model)\s+([^$]+)?'
     captures:
       1: { patterns: [ include: '#transition' ] }
       2: { name: 'keyword.control.razor.directive.model'}
       3: { patterns: [ include: 'source.cs#type' ] }
+
+  #>>>>> @namespace <<<<<
+
+  namespace-directive:
+    name: 'meta.directive.namespace.razor'
+    match: '(@)(namespace)\s+([^\s]+)?'
+    captures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.razor.directive.namespace'}
+      3: { patterns: [ include: '#namespace-directive-argument' ] }
+
+  namespace-directive-argument:
+    match: '([_[:alpha:]][_[:alnum:]]*)(\.)?'
+    captures:
+      1: { name: 'entity.name.type.namespace.cs' }
+      2: { name: 'punctuation.accessor.cs' }
 
   # ----------  Misc C# ------------
 
