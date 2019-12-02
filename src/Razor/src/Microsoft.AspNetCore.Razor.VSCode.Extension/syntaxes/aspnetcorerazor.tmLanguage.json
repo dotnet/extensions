@@ -442,6 +442,15 @@
         },
         {
           "include": "#page-directive"
+        },
+        {
+          "include": "#addTagHelper-directive"
+        },
+        {
+          "include": "#removeTagHelper-directive"
+        },
+        {
+          "include": "#tagHelperPrefix-directive"
         }
       ]
     },
@@ -529,6 +538,89 @@
           ]
         }
       }
+    },
+    "addTagHelper-directive": {
+      "name": "meta.directive.addTagHelper.razor",
+      "match": "(@)(addTagHelper)\\s+([^$]+)?",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.addTagHelper"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "#tagHelper-directive-argument"
+            }
+          ]
+        }
+      }
+    },
+    "removeTagHelper-directive": {
+      "name": "meta.directive.removeTagHelper.razor",
+      "match": "(@)(removeTagHelper)\\s+([^$]+)?",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.removeTagHelper"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "#tagHelper-directive-argument"
+            }
+          ]
+        }
+      }
+    },
+    "tagHelperPrefix-directive": {
+      "name": "meta.directive.tagHelperPrefix.razor",
+      "match": "(@)(tagHelperPrefix)\\s+([^$]+)?",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.tagHelperPrefix"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "#tagHelper-directive-argument"
+            }
+          ]
+        }
+      }
+    },
+    "tagHelper-directive-argument": {
+      "patterns": [
+        {
+          "include": "source.cs#string-literal"
+        },
+        {
+          "include": "#unquoted-string-argument"
+        }
+      ]
+    },
+    "unquoted-string-argument": {
+      "name": "string.quoted.double.cs",
+      "match": "[^$]+"
     },
     "await-prefix": {
       "name": "keyword.other.await.cs",

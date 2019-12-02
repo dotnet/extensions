@@ -3,12 +3,15 @@
 * Licensed under the MIT License. See License.txt in the project root for license information.
 * ------------------------------------------------------------------------------------------ */
 
+import { RunAddTagHelperDirectiveSuite } from './AddTagHelperDirective';
 import { RunCodeBlockSuite } from './CodeBlock';
 import { RunCodeDirectiveSuite } from './CodeDirective';
 import { RunExplicitExpressionSuite } from './ExplicitExpressions';
 import { RunFunctionsDirectiveSuite } from './FunctionsDirective';
 import { RunImplicitExpressionSuite } from './ImplicitExpressions';
 import { RunPageDirectiveSuite } from './PageDirective';
+import { RunRemoveTagHelperDirectiveSuite } from './RemoveTagHelperDirective';
+import { RunTagHelperPrefixDirectiveSuite } from './TagHelperPrefixDirective';
 import { RunTransitionsSuite } from './Transitions';
 
 // We bring together all test suites and wrap them in one here. The reason behind this is that
@@ -26,4 +29,7 @@ describe('Grammar tests', () => {
     RunCodeDirectiveSuite();
     RunFunctionsDirectiveSuite();
     RunPageDirectiveSuite();
+    RunAddTagHelperDirectiveSuite();
+    RunRemoveTagHelperDirectiveSuite();
+    RunTagHelperPrefixDirectiveSuite();
 });

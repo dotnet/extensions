@@ -1,5 +1,61 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Grammar tests @addTagHelper directive Incomplete parameter 1`] = `
+"Line: @addTagHelper \\"
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 13 (addTagHelper) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.razor.directive.addTagHelper
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor
+ - token from 14 to 15 (\\") with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+"
+`;
+
+exports[`Grammar tests @addTagHelper directive No parameter 1`] = `
+"Line: @addTagHelper
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 13 (addTagHelper) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.razor.directive.addTagHelper
+"
+`;
+
+exports[`Grammar tests @addTagHelper directive No parameter, spaced 1`] = `
+"Line: @addTagHelper                 
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 13 (addTagHelper) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.razor.directive.addTagHelper
+ - token from 13 to 31 (                 ) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor
+"
+`;
+
+exports[`Grammar tests @addTagHelper directive Quoted parameter 1`] = `
+"Line: @addTagHelper \\"*, Microsoft.AspNetCore.Mvc.TagHelpers\\"
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 13 (addTagHelper) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.razor.directive.addTagHelper
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor
+ - token from 14 to 15 (\\") with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 15 to 53 (*, Microsoft.AspNetCore.Mvc.TagHelpers) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, string.quoted.double.cs
+ - token from 53 to 54 (\\") with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+"
+`;
+
+exports[`Grammar tests @addTagHelper directive Quoted parameter spaced 1`] = `
+"Line: @addTagHelper       \\"*     ,      Microsoft.AspNetCore.Mvc.TagHelpers   \\"            
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 13 (addTagHelper) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.razor.directive.addTagHelper
+ - token from 13 to 20 (       ) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor
+ - token from 20 to 21 (\\") with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 21 to 72 (*     ,      Microsoft.AspNetCore.Mvc.TagHelpers   ) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, string.quoted.double.cs
+ - token from 72 to 73 (\\") with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 73 to 86 (            ) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, string.quoted.double.cs
+"
+`;
+
+exports[`Grammar tests @addTagHelper directive Unquoted parameter 1`] = `
+"Line: @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 13 (addTagHelper) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, keyword.control.razor.directive.addTagHelper
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor
+ - token from 14 to 53 (*, Microsoft.AspNetCore.Mvc.TagHelpers) with scopes text.aspnetcorerazor, meta.directive.addTagHelper.razor, string.quoted.double.cs
+"
+`;
+
 exports[`Grammar tests @code directive Incomplete code block 1`] = `
 "Line: @code {
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
@@ -224,6 +280,118 @@ exports[`Grammar tests @page directive Routed spaced 1`] = `
  - token from 20 to 28 (/counter) with scopes text.aspnetcorerazor, meta.directive.page.cshtml, string.quoted.double.cs
  - token from 28 to 29 (\\") with scopes text.aspnetcorerazor, meta.directive.page.cshtml, string.quoted.double.cs, punctuation.definition.string.end.cs
  - token from 29 to 39 (         ) with scopes text.aspnetcorerazor, meta.directive.page.cshtml
+"
+`;
+
+exports[`Grammar tests @removeTagHelper directive Incomplete parameter 1`] = `
+"Line: @removeTagHelper \\"
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (removeTagHelper) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.razor.directive.removeTagHelper
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor
+ - token from 17 to 18 (\\") with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+"
+`;
+
+exports[`Grammar tests @removeTagHelper directive No parameter 1`] = `
+"Line: @removeTagHelper
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (removeTagHelper) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.razor.directive.removeTagHelper
+"
+`;
+
+exports[`Grammar tests @removeTagHelper directive No parameter, spaced 1`] = `
+"Line: @removeTagHelper                 
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (removeTagHelper) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.razor.directive.removeTagHelper
+ - token from 16 to 34 (                 ) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor
+"
+`;
+
+exports[`Grammar tests @removeTagHelper directive Quoted parameter 1`] = `
+"Line: @removeTagHelper \\"*, Microsoft.AspNetCore.Mvc.TagHelpers\\"
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (removeTagHelper) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.razor.directive.removeTagHelper
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor
+ - token from 17 to 18 (\\") with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 18 to 56 (*, Microsoft.AspNetCore.Mvc.TagHelpers) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, string.quoted.double.cs
+ - token from 56 to 57 (\\") with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+"
+`;
+
+exports[`Grammar tests @removeTagHelper directive Quoted parameter spaced 1`] = `
+"Line: @removeTagHelper       \\"*     ,      Microsoft.AspNetCore.Mvc.TagHelpers   \\"            
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (removeTagHelper) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.razor.directive.removeTagHelper
+ - token from 16 to 23 (       ) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor
+ - token from 23 to 24 (\\") with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 24 to 75 (*     ,      Microsoft.AspNetCore.Mvc.TagHelpers   ) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, string.quoted.double.cs
+ - token from 75 to 76 (\\") with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 76 to 89 (            ) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, string.quoted.double.cs
+"
+`;
+
+exports[`Grammar tests @removeTagHelper directive Unquoted parameter 1`] = `
+"Line: @removeTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (removeTagHelper) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, keyword.control.razor.directive.removeTagHelper
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor
+ - token from 17 to 56 (*, Microsoft.AspNetCore.Mvc.TagHelpers) with scopes text.aspnetcorerazor, meta.directive.removeTagHelper.razor, string.quoted.double.cs
+"
+`;
+
+exports[`Grammar tests @tagHelperPrefix directive Incomplete parameter 1`] = `
+"Line: @tagHelperPrefix \\"
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (tagHelperPrefix) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.razor.directive.tagHelperPrefix
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor
+ - token from 17 to 18 (\\") with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+"
+`;
+
+exports[`Grammar tests @tagHelperPrefix directive No parameter 1`] = `
+"Line: @tagHelperPrefix
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (tagHelperPrefix) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.razor.directive.tagHelperPrefix
+"
+`;
+
+exports[`Grammar tests @tagHelperPrefix directive No parameter, spaced 1`] = `
+"Line: @tagHelperPrefix                 
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (tagHelperPrefix) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.razor.directive.tagHelperPrefix
+ - token from 16 to 34 (                 ) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor
+"
+`;
+
+exports[`Grammar tests @tagHelperPrefix directive Quoted parameter 1`] = `
+"Line: @tagHelperPrefix \\"th:\\"
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (tagHelperPrefix) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.razor.directive.tagHelperPrefix
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor
+ - token from 17 to 18 (\\") with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 18 to 21 (th:) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, string.quoted.double.cs
+ - token from 21 to 22 (\\") with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+"
+`;
+
+exports[`Grammar tests @tagHelperPrefix directive Quoted parameter spaced 1`] = `
+"Line: @tagHelperPrefix       \\"th:   \\"            
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (tagHelperPrefix) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.razor.directive.tagHelperPrefix
+ - token from 16 to 23 (       ) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor
+ - token from 23 to 24 (\\") with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 24 to 30 (th:   ) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, string.quoted.double.cs
+ - token from 30 to 31 (\\") with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 31 to 44 (            ) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, string.quoted.double.cs
+"
+`;
+
+exports[`Grammar tests @tagHelperPrefix directive Unquoted parameter 1`] = `
+"Line: @tagHelperPrefix th:
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.cshtml.transition
+ - token from 1 to 16 (tagHelperPrefix) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.razor.directive.tagHelperPrefix
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor
+ - token from 17 to 21 (th:) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, string.quoted.double.cs
 "
 `;
 
