@@ -8,6 +8,7 @@ import { RunCodeBlockSuite } from './CodeBlock';
 import { RunCodeDirectiveSuite } from './CodeDirective';
 import { RunExplicitExpressionSuite } from './ExplicitExpressions';
 import { RunFunctionsDirectiveSuite } from './FunctionsDirective';
+import { RunImplementsDirectiveSuite } from './ImplementsDirective';
 import { RunImplicitExpressionSuite } from './ImplicitExpressions';
 import { RunInheritsDirectiveSuite } from './InheritsDirective';
 import { RunInjectDirectiveSuite } from './InjectDirective';
@@ -37,6 +38,7 @@ describe('Grammar tests', () => {
     RunRemoveTagHelperDirectiveSuite();
     RunTagHelperPrefixDirectiveSuite();
     RunModelDirectiveSuite();
+    RunImplementsDirectiveSuite();
     RunInheritsDirectiveSuite();
     RunNamespaceDirectiveSuite();
     RunInjectDirectiveSuite();

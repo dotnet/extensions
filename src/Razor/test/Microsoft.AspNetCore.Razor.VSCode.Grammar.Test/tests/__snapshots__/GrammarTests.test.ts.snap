@@ -236,6 +236,51 @@ exports[`Grammar tests @functions directive Single line 1`] = `
 "
 `;
 
+exports[`Grammar tests @implements directive Incomplete type, generic 1`] = `
+"Line: @implements SomeInterface<string
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.cshtml.transition
+ - token from 1 to 11 (implements) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.razor.directive.implements
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.directive.implements.razor
+ - token from 12 to 25 (SomeInterface) with scopes text.aspnetcorerazor, meta.directive.implements.razor, storage.type.cs
+ - token from 25 to 26 (<) with scopes text.aspnetcorerazor, meta.directive.implements.razor, punctuation.definition.typeparameters.begin.cs
+ - token from 26 to 32 (string) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.type.cs
+"
+`;
+
+exports[`Grammar tests @implements directive No type 1`] = `
+"Line: @implements
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.cshtml.transition
+ - token from 1 to 11 (implements) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.razor.directive.implements
+"
+`;
+
+exports[`Grammar tests @implements directive No type spaced 1`] = `
+"Line: @implements              
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.cshtml.transition
+ - token from 1 to 11 (implements) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.razor.directive.implements
+ - token from 11 to 26 (              ) with scopes text.aspnetcorerazor, meta.directive.implements.razor
+"
+`;
+
+exports[`Grammar tests @implements directive Type provided 1`] = `
+"Line: @implements Person
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.cshtml.transition
+ - token from 1 to 11 (implements) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.razor.directive.implements
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.directive.implements.razor
+ - token from 12 to 18 (Person) with scopes text.aspnetcorerazor, meta.directive.implements.razor, storage.type.cs
+"
+`;
+
+exports[`Grammar tests @implements directive Type provided spaced 1`] = `
+"Line: @implements              Person         
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.cshtml.transition
+ - token from 1 to 11 (implements) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.razor.directive.implements
+ - token from 11 to 25 (              ) with scopes text.aspnetcorerazor, meta.directive.implements.razor
+ - token from 25 to 31 (Person) with scopes text.aspnetcorerazor, meta.directive.implements.razor, storage.type.cs
+ - token from 31 to 41 (         ) with scopes text.aspnetcorerazor, meta.directive.implements.razor
+"
+`;
+
 exports[`Grammar tests @inherits directive Incomplete type, generic 1`] = `
 "Line: @inherits SomeViewBase<string
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.cshtml.transition

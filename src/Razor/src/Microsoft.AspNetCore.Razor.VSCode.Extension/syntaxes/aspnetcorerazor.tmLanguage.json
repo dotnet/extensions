@@ -459,6 +459,9 @@
           "include": "#inherits-directive"
         },
         {
+          "include": "#implements-directive"
+        },
+        {
           "include": "#namespace-directive"
         },
         {
@@ -670,6 +673,29 @@
         },
         "2": {
           "name": "keyword.control.razor.directive.inherits"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "source.cs#type"
+            }
+          ]
+        }
+      }
+    },
+    "implements-directive": {
+      "name": "meta.directive.implements.razor",
+      "match": "(@)(implements)\\s+([^$]+)?",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.implements"
         },
         "3": {
           "patterns": [
