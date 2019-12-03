@@ -456,6 +456,9 @@
           "include": "#model-directive"
         },
         {
+          "include": "#inherits-directive"
+        },
+        {
           "include": "#namespace-directive"
         },
         {
@@ -644,6 +647,29 @@
         },
         "2": {
           "name": "keyword.control.razor.directive.model"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "source.cs#type"
+            }
+          ]
+        }
+      }
+    },
+    "inherits-directive": {
+      "name": "meta.directive.inherits.cshtml",
+      "match": "(@)(inherits)\\s+([^$]+)?",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.inherits"
         },
         "3": {
           "patterns": [

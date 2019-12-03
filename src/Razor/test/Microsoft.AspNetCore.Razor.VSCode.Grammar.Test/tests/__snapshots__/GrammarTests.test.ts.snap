@@ -236,6 +236,51 @@ exports[`Grammar tests @functions directive Single line 1`] = `
 "
 `;
 
+exports[`Grammar tests @inherits directive Incomplete type, generic 1`] = `
+"Line: @inherits SomeViewBase<string
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (inherits) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.razor.directive.inherits
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml
+ - token from 10 to 22 (SomeViewBase) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, storage.type.cs
+ - token from 22 to 23 (<) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, punctuation.definition.typeparameters.begin.cs
+ - token from 23 to 29 (string) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.type.cs
+"
+`;
+
+exports[`Grammar tests @inherits directive No type 1`] = `
+"Line: @inherits
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (inherits) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.razor.directive.inherits
+"
+`;
+
+exports[`Grammar tests @inherits directive No type spaced 1`] = `
+"Line: @inherits              
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (inherits) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.razor.directive.inherits
+ - token from 9 to 24 (              ) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml
+"
+`;
+
+exports[`Grammar tests @inherits directive Type provided 1`] = `
+"Line: @inherits Person
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (inherits) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.razor.directive.inherits
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml
+ - token from 10 to 16 (Person) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, storage.type.cs
+"
+`;
+
+exports[`Grammar tests @inherits directive Type provided spaced 1`] = `
+"Line: @inherits              Person         
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (inherits) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, keyword.control.razor.directive.inherits
+ - token from 9 to 23 (              ) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml
+ - token from 23 to 29 (Person) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml, storage.type.cs
+ - token from 29 to 39 (         ) with scopes text.aspnetcorerazor, meta.directive.inherits.cshtml
+"
+`;
+
 exports[`Grammar tests @inject directive Fulfilled inject 1`] = `
 "Line: @inject DateTime TheTime
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.cshtml.transition
