@@ -466,6 +466,9 @@
         },
         {
           "include": "#inject-directive"
+        },
+        {
+          "include": "#attribute-directive"
         }
       ]
     },
@@ -765,6 +768,28 @@
           "name": "entity.name.variable.property.cs"
         }
       }
+    },
+    "attribute-directive": {
+      "name": "meta.directive.attribute.razor",
+      "begin": "(@)(attribute)\\b",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.attribute"
+        }
+      },
+      "patterns": [
+        {
+          "include": "source.cs#attribute-section"
+        }
+      ],
+      "end": "(?<=\\])|$"
     },
     "await-prefix": {
       "name": "keyword.other.await.cs",

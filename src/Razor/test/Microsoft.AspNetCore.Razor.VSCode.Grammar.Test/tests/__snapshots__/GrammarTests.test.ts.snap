@@ -56,6 +56,106 @@ exports[`Grammar tests @addTagHelper directive Unquoted parameter 1`] = `
 "
 `;
 
+exports[`Grammar tests @attribute directive Incomplete attribute, generic 1`] = `
+"Line: @attribute [CustomAttribute(info = typeof(GenericClass1<string
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (attribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.razor.directive.attribute
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 11 to 12 ([) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.squarebracket.open.cs
+ - token from 12 to 27 (CustomAttribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, storage.type.cs
+ - token from 27 to 28 (() with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.parenthesis.open.cs
+ - token from 28 to 32 (info) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, entity.name.variable.property.cs
+ - token from 32 to 33 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 33 to 34 (=) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.operator.assignment.cs
+ - token from 34 to 35 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 35 to 41 (typeof) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.other.typeof.cs
+ - token from 41 to 42 (() with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.parenthesis.open.cs
+ - token from 42 to 55 (GenericClass1) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, storage.type.cs
+ - token from 55 to 56 (<) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.definition.typeparameters.begin.cs
+ - token from 56 to 62 (string) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.type.cs
+"
+`;
+
+exports[`Grammar tests @attribute directive Incomplete attribute, simple 1`] = `
+"Line: @attribute [CustomAttribute
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (attribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.razor.directive.attribute
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 11 to 12 ([) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.squarebracket.open.cs
+ - token from 12 to 27 (CustomAttribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, storage.type.cs
+"
+`;
+
+exports[`Grammar tests @attribute directive Multi line, complex 1`] = `
+"Line: @attribute [
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (attribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.razor.directive.attribute
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 11 to 12 ([) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.squarebracket.open.cs
+
+Line:     CustomAttribute(
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 4 to 19 (CustomAttribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, storage.type.cs
+ - token from 19 to 20 (() with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.parenthesis.open.cs
+
+Line:         Info = typeof(GenericClass<string>),
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 8 to 12 (Info) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, entity.name.variable.property.cs
+ - token from 12 to 13 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 13 to 14 (=) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.operator.assignment.cs
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 15 to 21 (typeof) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.other.typeof.cs
+ - token from 21 to 22 (() with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.parenthesis.open.cs
+ - token from 22 to 34 (GenericClass) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, storage.type.cs
+ - token from 34 to 35 (<) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.definition.typeparameters.begin.cs
+ - token from 35 to 41 (string) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.type.cs
+ - token from 41 to 42 (>) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.definition.typeparameters.end.cs
+ - token from 42 to 43 ()) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.parenthesis.close.cs
+ - token from 43 to 44 (,) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.separator.comma.cs
+
+Line:         Foo = true
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 8 to 11 (Foo) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, entity.name.variable.property.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 12 to 13 (=) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.operator.assignment.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 14 to 18 (true) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, constant.language.boolean.true.cs
+
+Line:     )
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 4 to 5 ()) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.parenthesis.close.cs
+
+Line: ]
+ - token from 0 to 1 (]) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.squarebracket.close.cs
+"
+`;
+
+exports[`Grammar tests @attribute directive No attribute 1`] = `
+"Line: @attribute
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (attribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.razor.directive.attribute
+"
+`;
+
+exports[`Grammar tests @attribute directive No attribute spaced 1`] = `
+"Line: @attribute              
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (attribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.razor.directive.attribute
+ - token from 10 to 24 (              ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+"
+`;
+
+exports[`Grammar tests @attribute directive Single line, simple 1`] = `
+"Line: @attribute [Authorize]
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.cshtml.transition
+ - token from 1 to 10 (attribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.razor.directive.attribute
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 11 to 12 ([) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.squarebracket.open.cs
+ - token from 12 to 21 (Authorize) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, storage.type.cs
+ - token from 21 to 22 (]) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, punctuation.squarebracket.close.cs
+"
+`;
+
 exports[`Grammar tests @code directive Incomplete code block 1`] = `
 "Line: @code {
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition

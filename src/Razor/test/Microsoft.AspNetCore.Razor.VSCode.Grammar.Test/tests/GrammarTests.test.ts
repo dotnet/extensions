@@ -4,6 +4,7 @@
 * ------------------------------------------------------------------------------------------ */
 
 import { RunAddTagHelperDirectiveSuite } from './AddTagHelperDirective';
+import { RunAttributeDirectiveSuite } from './AttributeDirective';
 import { RunCodeBlockSuite } from './CodeBlock';
 import { RunCodeDirectiveSuite } from './CodeDirective';
 import { RunExplicitExpressionSuite } from './ExplicitExpressions';
@@ -42,4 +43,5 @@ describe('Grammar tests', () => {
     RunInheritsDirectiveSuite();
     RunNamespaceDirectiveSuite();
     RunInjectDirectiveSuite();
+    RunAttributeDirectiveSuite();
 });
