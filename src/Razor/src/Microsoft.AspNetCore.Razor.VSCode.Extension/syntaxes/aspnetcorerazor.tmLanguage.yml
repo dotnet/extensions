@@ -249,6 +249,7 @@ repository:
       - include: '#tagHelperPrefix-directive'
       - include: '#model-directive'
       - include: '#namespace-directive'
+      - include: '#inject-directive'
 
   #>>>>> @code and @functions <<<<<
 
@@ -351,6 +352,17 @@ repository:
     captures:
       1: { name: 'entity.name.type.namespace.cs' }
       2: { name: 'punctuation.accessor.cs' }
+
+  #>>>>> @inject <<<<<
+
+  inject-directive:
+    name: 'meta.directive.inject.cshtml'
+    match: '(@)(inject)\s*([\S\s]+?)?\s*([_[:alpha:]][_[:alnum:]]*)?\s*(?=$)'
+    captures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.razor.directive.inject'}
+      3: { patterns: [ include: 'source.cs#type' ] }
+      4: { name: 'entity.name.variable.property.cs' }
 
   # ----------  Misc C# ------------
 

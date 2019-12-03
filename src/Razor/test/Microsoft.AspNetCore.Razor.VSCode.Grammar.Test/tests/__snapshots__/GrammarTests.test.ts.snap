@@ -236,6 +236,83 @@ exports[`Grammar tests @functions directive Single line 1`] = `
 "
 `;
 
+exports[`Grammar tests @inject directive Fulfilled inject 1`] = `
+"Line: @inject DateTime TheTime
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (inject) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.razor.directive.inject
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 8 to 16 (DateTime) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, storage.type.cs
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 17 to 24 (TheTime) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, entity.name.variable.property.cs
+"
+`;
+
+exports[`Grammar tests @inject directive Fulfilled inject spaced 1`] = `
+"Line: @inject      DateTime        TheTime         
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (inject) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.razor.directive.inject
+ - token from 7 to 13 (      ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 13 to 21 (DateTime) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, storage.type.cs
+ - token from 21 to 29 (        ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 29 to 36 (TheTime) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, entity.name.variable.property.cs
+ - token from 36 to 46 (         ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+"
+`;
+
+exports[`Grammar tests @inject directive Incomplete type, generic 1`] = `
+"Line: @inject List<string
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (inject) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.razor.directive.inject
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 8 to 12 (List) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, storage.type.cs
+ - token from 12 to 13 (<) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, punctuation.definition.typeparameters.begin.cs
+ - token from 13 to 19 (string) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, entity.name.variable.property.cs
+"
+`;
+
+exports[`Grammar tests @inject directive Incomplete type, tuple 1`] = `
+"Line: @inject (string abc, bool def
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (inject) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.razor.directive.inject
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, punctuation.parenthesis.open.cs
+ - token from 9 to 15 (string) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.type.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 16 to 19 (abc) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, entity.name.variable.tuple-element.cs
+ - token from 19 to 20 (,) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, punctuation.separator.comma.cs
+ - token from 20 to 21 ( ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 21 to 25 (bool) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.type.cs
+ - token from 25 to 26 ( ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 26 to 29 (def) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, entity.name.variable.property.cs
+"
+`;
+
+exports[`Grammar tests @inject directive Invalid property 1`] = `
+"Line: @inject DateTime !Something
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (inject) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.razor.directive.inject
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 8 to 16 (DateTime) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, storage.type.cs
+ - token from 16 to 18 ( !) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+ - token from 18 to 27 (Something) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, entity.name.variable.property.cs
+"
+`;
+
+exports[`Grammar tests @inject directive No parameters 1`] = `
+"Line: @inject
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (inject) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.razor.directive.inject
+"
+`;
+
+exports[`Grammar tests @inject directive No parameters spaced 1`] = `
+"Line: @inject              
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (inject) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml, keyword.control.razor.directive.inject
+ - token from 7 to 22 (              ) with scopes text.aspnetcorerazor, meta.directive.inject.cshtml
+"
+`;
+
 exports[`Grammar tests @model directive Incomplete model, generic 1`] = `
 "Line: @model List<string
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.cshtml.transition
