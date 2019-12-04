@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
     public partial struct ServiceState
     {
         private object _dummy;
+        private int _dummyPrimitive;
         public static readonly Microsoft.Extensions.Hosting.Systemd.ServiceState Ready;
         public static readonly Microsoft.Extensions.Hosting.Systemd.ServiceState Stopping;
         public ServiceState(string state) { throw null; }
