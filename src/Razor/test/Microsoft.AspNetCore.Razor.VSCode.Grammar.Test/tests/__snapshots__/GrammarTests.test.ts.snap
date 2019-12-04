@@ -726,6 +726,113 @@ exports[`Grammar tests @removeTagHelper directive Unquoted parameter 1`] = `
 "
 `;
 
+exports[`Grammar tests @section directive Invalid name 1`] = `
+"Line: @section -$*&^
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.cshtml.transition
+ - token from 1 to 8 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.razor.directive.section
+ - token from 8 to 9 ( ) with scopes text.aspnetcorerazor, meta.directive.section.razor
+ - token from 9 to 15 (-$*&^) with scopes text.aspnetcorerazor, meta.directive.section.razor
+"
+`;
+
+exports[`Grammar tests @section directive Multi line complex 1`] = `
+"Line: @section Name {
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.cshtml.transition
+ - token from 1 to 8 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.razor.directive.section
+ - token from 8 to 9 ( ) with scopes text.aspnetcorerazor, meta.directive.section.razor
+ - token from 9 to 13 (Name) with scopes text.aspnetcorerazor, meta.directive.section.razor, variable.other.razor.directive.sectionName
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.directive.section.razor
+ - token from 14 to 15 ({) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, keyword.control.razor.directive.codeblock.open
+
+Line:     <section>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock
+ - token from 4 to 5 (<) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.tag.structure.section.start.html, punctuation.definition.tag.begin.html
+ - token from 5 to 12 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.tag.structure.section.start.html, entity.name.tag.html
+ - token from 12 to 13 (>) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.tag.structure.section.start.html, punctuation.definition.tag.end.html
+
+Line:         @DateTime.Now
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock
+ - token from 8 to 9 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 9 to 17 (DateTime) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 17 to 18 (.) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.expression.implicit.cshtml
+ - token from 18 to 21 (Now) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.expression.implicit.cshtml, variable.other.object.property.cs
+
+Line:         @section INVALID {}
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock
+ - token from 8 to 9 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.directive.section.razor, keyword.control.cshtml.transition
+ - token from 9 to 16 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.directive.section.razor, keyword.control.razor.directive.section
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.directive.section.razor
+ - token from 17 to 24 (INVALID) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.directive.section.razor, variable.other.razor.directive.sectionName
+ - token from 24 to 25 ( ) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.directive.section.razor
+ - token from 25 to 26 ({) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.directive.section.razor, meta.structure.razor.directive.markblock, keyword.control.razor.directive.codeblock.open
+ - token from 26 to 27 (}) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.directive.section.razor, meta.structure.razor.directive.markblock, keyword.control.razor.directive.codeblock.close
+
+Line:     </section>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock
+ - token from 4 to 6 (</) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.tag.structure.section.end.html, punctuation.definition.tag.begin.html
+ - token from 6 to 13 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.tag.structure.section.end.html, entity.name.tag.html
+ - token from 13 to 14 (>) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.tag.structure.section.end.html, punctuation.definition.tag.end.html
+
+Line: }
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests @section directive Multi line incomplete body 1`] = `
+"Line: @section
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.cshtml.transition
+ - token from 1 to 8 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.razor.directive.section
+
+Line: Name
+ - token from 0 to 5 (Name) with scopes text.aspnetcorerazor, meta.directive.section.razor
+
+Line: {
+ - token from 0 to 1 ({) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, keyword.control.razor.directive.codeblock.open
+"
+`;
+
+exports[`Grammar tests @section directive No name 1`] = `
+"Line: @section
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.cshtml.transition
+ - token from 1 to 8 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.razor.directive.section
+"
+`;
+
+exports[`Grammar tests @section directive No name, spaced 1`] = `
+"Line: @section                 
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.cshtml.transition
+ - token from 1 to 8 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.razor.directive.section
+ - token from 8 to 26 (                 ) with scopes text.aspnetcorerazor, meta.directive.section.razor
+"
+`;
+
+exports[`Grammar tests @section directive Single line 1`] = `
+"Line: @section Name {@DateTime.Now}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.cshtml.transition
+ - token from 1 to 8 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.razor.directive.section
+ - token from 8 to 9 ( ) with scopes text.aspnetcorerazor, meta.directive.section.razor
+ - token from 9 to 13 (Name) with scopes text.aspnetcorerazor, meta.directive.section.razor, variable.other.razor.directive.sectionName
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.directive.section.razor
+ - token from 14 to 15 ({) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, keyword.control.razor.directive.codeblock.open
+ - token from 15 to 16 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 16 to 24 (DateTime) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 24 to 25 (.) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.expression.implicit.cshtml
+ - token from 25 to 28 (Now) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 28 to 29 (}) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, keyword.control.razor.directive.codeblock.close
+"
+`;
+
+exports[`Grammar tests @section directive Single line incomplete body 1`] = `
+"Line: @section Name {
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.cshtml.transition
+ - token from 1 to 8 (section) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.razor.directive.section
+ - token from 8 to 9 ( ) with scopes text.aspnetcorerazor, meta.directive.section.razor
+ - token from 9 to 13 (Name) with scopes text.aspnetcorerazor, meta.directive.section.razor, variable.other.razor.directive.sectionName
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.directive.section.razor
+ - token from 14 to 15 ({) with scopes text.aspnetcorerazor, meta.directive.section.razor, meta.structure.razor.directive.markblock, keyword.control.razor.directive.codeblock.open
+"
+`;
+
 exports[`Grammar tests @tagHelperPrefix directive Incomplete parameter 1`] = `
 "Line: @tagHelperPrefix \\"
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.cshtml.transition
@@ -981,6 +1088,36 @@ exports[`Grammar tests Implicit Expressions Awaited property 1`] = `
 "
 `;
 
+exports[`Grammar tests Implicit Expressions Close curly suffix 1`] = `
+"Line: @DateTime.Now}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 9 to 10 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 10 to 13 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 13 to 15 (}) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Close parenthesis suffix 1`] = `
+"Line: @DateTime.Now)
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 9 to 10 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 10 to 13 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 13 to 15 ()) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Close parenthesis suffix 2`] = `
+"Line: @DateTime.Now]
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 9 to 10 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 10 to 13 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 13 to 15 (]) with scopes text.aspnetcorerazor
+"
+`;
+
 exports[`Grammar tests Implicit Expressions Combined with HTML 1`] = `
 "Line: <p>@DateTime.Now</p>
  - token from 0 to 1 (<) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, punctuation.definition.tag.begin.html
@@ -1101,6 +1238,16 @@ Line:     return y ? x : 457;
 Line: })
  - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.curlybrace.close.cs
  - token from 1 to 2 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Open curly suffix 1`] = `
+"Line: @DateTime.Now{
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 9 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 9 to 10 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 10 to 13 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+ - token from 13 to 15 ({) with scopes text.aspnetcorerazor
 "
 `;
 

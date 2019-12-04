@@ -286,7 +286,7 @@
           "include": "#implicit-expression-body"
         }
       ],
-      "end": "(?=[\\s<>])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]])"
     },
     "implicit-expression-body": {
       "patterns": [
@@ -297,7 +297,7 @@
           "include": "#implicit-expression-accessor-start"
         }
       ],
-      "end": "(?=[\\s<>])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]])"
     },
     "implicit-expression-invocation-start": {
       "begin": "([_[:alpha:]][_[:alnum:]]*)(?=\\()",
@@ -311,7 +311,7 @@
           "include": "#implicit-expression-continuation"
         }
       ],
-      "end": "(?=[\\s<>])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]])"
     },
     "implicit-expression-accessor-start": {
       "begin": "([_[:alpha:]][_[:alnum:]]*)",
@@ -325,7 +325,7 @@
           "include": "#implicit-expression-continuation"
         }
       ],
-      "end": "(?=[\\s<>])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]])"
     },
     "implicit-expression-continuation": {
       "patterns": [
@@ -345,7 +345,7 @@
           "include": "#implicit-expression-extension"
         }
       ],
-      "end": "(?=[\\s<>])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]])"
     },
     "implicit-expression-accessor": {
       "match": "(?<=\\.)[_[:alpha:]][_[:alnum:]]*",
@@ -469,6 +469,9 @@
         },
         {
           "include": "#attribute-directive"
+        },
+        {
+          "include": "#section-directive"
         }
       ]
     },
@@ -790,6 +793,51 @@
         }
       ],
       "end": "(?<=\\])|$"
+    },
+    "section-directive": {
+      "name": "meta.directive.section.razor",
+      "begin": "(@)(section)\\b\\s*([_[:alpha:]][_[:alnum:]]*)?",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.section"
+        },
+        "3": {
+          "name": "variable.other.razor.directive.sectionName"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#directive-markupblock"
+        }
+      ],
+      "end": "(?<=})"
+    },
+    "directive-markupblock": {
+      "name": "meta.structure.razor.directive.markblock",
+      "begin": "(\\{)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.razor.directive.codeblock.open"
+        }
+      },
+      "patterns": [
+        {
+          "include": "$self"
+        }
+      ],
+      "end": "(\\})",
+      "endCaptures": {
+        "1": {
+          "name": "keyword.control.razor.directive.codeblock.close"
+        }
+      }
     },
     "await-prefix": {
       "name": "keyword.other.await.cs",

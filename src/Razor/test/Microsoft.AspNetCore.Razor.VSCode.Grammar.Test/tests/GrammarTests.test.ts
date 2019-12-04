@@ -17,6 +17,7 @@ import { RunModelDirectiveSuite } from './ModelDirective';
 import { RunNamespaceDirectiveSuite } from './NamespaceDirective';
 import { RunPageDirectiveSuite } from './PageDirective';
 import { RunRemoveTagHelperDirectiveSuite } from './RemoveTagHelperDirective';
+import { RunSectionDirectiveSuite } from './SectionDirective';
 import { RunTagHelperPrefixDirectiveSuite } from './TagHelperPrefixDirective';
 import { RunTransitionsSuite } from './Transitions';
 
@@ -44,4 +45,5 @@ describe('Grammar tests', () => {
     RunNamespaceDirectiveSuite();
     RunInjectDirectiveSuite();
     RunAttributeDirectiveSuite();
+    RunSectionDirectiveSuite();
 });

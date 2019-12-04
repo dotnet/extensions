@@ -13,6 +13,22 @@ export function RunImplicitExpressionSuite() {
             await assertMatchesSnapshot('@');
         });
 
+        it('Open curly suffix', async () => {
+            await assertMatchesSnapshot('@DateTime.Now{');
+        });
+
+        it('Close curly suffix', async () => {
+            await assertMatchesSnapshot('@DateTime.Now}');
+        });
+
+        it('Close parenthesis suffix', async () => {
+            await assertMatchesSnapshot('@DateTime.Now)');
+        });
+
+        it('Close parenthesis suffix', async () => {
+            await assertMatchesSnapshot('@DateTime.Now]');
+        });
+
         it('Single line simple', async () => {
             await assertMatchesSnapshot('@DateTime.Now');
         });
