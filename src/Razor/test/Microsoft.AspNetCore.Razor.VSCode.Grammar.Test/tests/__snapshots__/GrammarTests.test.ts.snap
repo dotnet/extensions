@@ -503,6 +503,51 @@ exports[`Grammar tests @inject directive No parameters spaced 1`] = `
 "
 `;
 
+exports[`Grammar tests @layout directive Incomplete type, generic 1`] = `
+"Line: @layout MainLayout<string
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (layout) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.razor.directive.layout
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.directive.layout.razor
+ - token from 8 to 18 (MainLayout) with scopes text.aspnetcorerazor, meta.directive.layout.razor, storage.type.cs
+ - token from 18 to 19 (<) with scopes text.aspnetcorerazor, meta.directive.layout.razor, punctuation.definition.typeparameters.begin.cs
+ - token from 19 to 25 (string) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.type.cs
+"
+`;
+
+exports[`Grammar tests @layout directive No type 1`] = `
+"Line: @layout
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (layout) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.razor.directive.layout
+"
+`;
+
+exports[`Grammar tests @layout directive No type spaced 1`] = `
+"Line: @layout              
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (layout) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.razor.directive.layout
+ - token from 7 to 22 (              ) with scopes text.aspnetcorerazor, meta.directive.layout.razor
+"
+`;
+
+exports[`Grammar tests @layout directive Type provided 1`] = `
+"Line: @layout MainLayout
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (layout) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.razor.directive.layout
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.directive.layout.razor
+ - token from 8 to 18 (MainLayout) with scopes text.aspnetcorerazor, meta.directive.layout.razor, storage.type.cs
+"
+`;
+
+exports[`Grammar tests @layout directive Type provided spaced 1`] = `
+"Line: @layout              MainLayout         
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (layout) with scopes text.aspnetcorerazor, meta.directive.layout.razor, keyword.control.razor.directive.layout
+ - token from 7 to 21 (              ) with scopes text.aspnetcorerazor, meta.directive.layout.razor
+ - token from 21 to 31 (MainLayout) with scopes text.aspnetcorerazor, meta.directive.layout.razor, storage.type.cs
+ - token from 31 to 41 (         ) with scopes text.aspnetcorerazor, meta.directive.layout.razor
+"
+`;
+
 exports[`Grammar tests @model directive Incomplete model, generic 1`] = `
 "Line: @model List<string
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.model.cshtml, keyword.control.cshtml.transition

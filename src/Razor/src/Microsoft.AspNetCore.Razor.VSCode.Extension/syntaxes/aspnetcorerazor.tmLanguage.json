@@ -472,6 +472,9 @@
         },
         {
           "include": "#section-directive"
+        },
+        {
+          "include": "#layout-directive"
         }
       ]
     },
@@ -702,6 +705,29 @@
         },
         "2": {
           "name": "keyword.control.razor.directive.implements"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "source.cs#type"
+            }
+          ]
+        }
+      }
+    },
+    "layout-directive": {
+      "name": "meta.directive.layout.razor",
+      "match": "(@)(layout)\\s+([^$]+)?",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.razor.directive.layout"
         },
         "3": {
           "patterns": [

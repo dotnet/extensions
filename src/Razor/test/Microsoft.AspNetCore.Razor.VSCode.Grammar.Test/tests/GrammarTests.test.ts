@@ -13,6 +13,7 @@ import { RunImplementsDirectiveSuite } from './ImplementsDirective';
 import { RunImplicitExpressionSuite } from './ImplicitExpressions';
 import { RunInheritsDirectiveSuite } from './InheritsDirective';
 import { RunInjectDirectiveSuite } from './InjectDirective';
+import { RunLayoutDirectiveSuite } from './LayoutDirective';
 import { RunModelDirectiveSuite } from './ModelDirective';
 import { RunNamespaceDirectiveSuite } from './NamespaceDirective';
 import { RunPageDirectiveSuite } from './PageDirective';
@@ -46,4 +47,5 @@ describe('Grammar tests', () => {
     RunInjectDirectiveSuite();
     RunAttributeDirectiveSuite();
     RunSectionDirectiveSuite();
+    RunLayoutDirectiveSuite();
 });

@@ -254,6 +254,7 @@ repository:
       - include: '#inject-directive'
       - include: '#attribute-directive'
       - include: '#section-directive'
+      - include: '#layout-directive'
 
   #>>>>> @code and @functions <<<<<
 
@@ -331,7 +332,7 @@ repository:
     name: 'string.quoted.double.cs'
     match: '[^$]+'
 
-  #>>>>> @model, @implements and @inherits <<<<<
+  #>>>>> @model, layout, @implements and @inherits <<<<<
 
   model-directive:
     name: 'meta.directive.model.cshtml'
@@ -355,6 +356,14 @@ repository:
     captures:
       1: { patterns: [ include: '#transition' ] }
       2: { name: 'keyword.control.razor.directive.implements'}
+      3: { patterns: [ include: 'source.cs#type' ] }
+
+  layout-directive:
+    name: 'meta.directive.layout.razor'
+    match: '(@)(layout)\s+([^$]+)?'
+    captures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.razor.directive.layout'}
       3: { patterns: [ include: 'source.cs#type' ] }
 
   #>>>>> @namespace <<<<<
