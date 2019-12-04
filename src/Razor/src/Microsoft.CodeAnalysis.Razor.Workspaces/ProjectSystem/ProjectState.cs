@@ -333,7 +333,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(hostProject));
             }
 
-            if (HostProject.Configuration.Equals(hostProject.Configuration))
+            if (HostProject.Configuration.Equals(hostProject.Configuration) &&
+                HostProject.RootNamespace == hostProject.RootNamespace)
             {
                 return this;
             }
@@ -355,8 +356,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public ProjectState WithProjectWorkspaceState(ProjectWorkspaceState projectWorkspaceState)
         {
-            var difference = ProjectDifference.ProjectWorkspaceStateChanged;
+            if (ProjectWorkspaceState == projectWorkspaceState)
+            {
+                return this;
+            }
 
+            if (ProjectWorkspaceState != null && ProjectWorkspaceState.Equals(projectWorkspaceState))
+            {
+                return this;
+            }
+
+            var difference = ProjectDifference.ProjectWorkspaceStateChanged;
             var documents = Documents.ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value.WithProjectWorkspaceStateChange(), FilePathComparer.Instance);
             var state = new ProjectState(this, difference, HostProject, projectWorkspaceState, documents, ImportsToRelatedDocuments);
             return state;

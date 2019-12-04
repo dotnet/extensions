@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     {
         public RazorFileChangeEventArgs(
             string filePath,
-            string relativeFilePath,
             ProjectInstance projectInstance,
             RazorFileChangeKind kind)
         {
@@ -19,25 +18,17 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            if (relativeFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(relativeFilePath));
-            }
-
             if (projectInstance == null)
             {
                 throw new ArgumentNullException(nameof(projectInstance));
             }
 
             FilePath = filePath;
-            RelativeFilePath = relativeFilePath;
             UnevaluatedProjectInstance = projectInstance;
             Kind = kind;
         }
 
         public string FilePath { get; }
-
-        public string RelativeFilePath { get; }
 
         public ProjectInstance UnevaluatedProjectInstance { get; }
 

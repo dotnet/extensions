@@ -5,6 +5,12 @@
 {
 	"version": "0.2.0",
     "configurations": [
+      {
+        "name": ".NET Core Attach",
+        "type": "coreclr",
+        "request": "attach",
+        "processId": "${command:pickProcess}"
+      },
         {
             "name": "Run Extension",
             "type": "extensionHost",
@@ -18,7 +24,7 @@
                 "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.Extension/dist/**/*.js",
                 "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/dist/**/*.js",
             ],
-            "preLaunchTask": "CompileExtension"
+            "preLaunchTask": "WatchLibraryAndCompileExtension"
         },
         {
             "type": "node",
@@ -33,6 +39,20 @@
             "sourceMaps": true,
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": "CompileUnitTests"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Grammar Tests",
+            "runtimeExecutable": "yarn",
+            "cwd": "${workspaceFolder}/src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.Grammar.Test",
+            "runtimeArgs": [
+                "test:debug"
+            ],
+            "port": 9229,
+            "sourceMaps": true,
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "CompileGrammarTests"
         },
         {
             "name": "Run Functional Tests",

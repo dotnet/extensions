@@ -5,5 +5,8 @@
     "*.props": "xml",
     "*.targets": "xml",
     "*.tasks": "xml"
+  },
+  "[yaml]": {
+    "editor.tabSize": 2
   }
 }

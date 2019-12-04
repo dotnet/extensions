@@ -83,7 +83,7 @@
             },
             {
                 "command": "extension.configureRazorDevMode",
-                "title": "Configure workspace for Razor extension development.",
+                "title": "Configure workspace for Razor extension development",
                 "category": "Razor"
             },
             {
@@ -159,10 +159,11 @@
     "scripts": {
         "vscode:prepublish": "yarn run compile",
         "clean": "rimraf dist",
-        "build": "yarn run clean && yarn run lint && tsc -p ./",
+        "build": "yarn run clean && yarn run lint && tsc -p ./ && yarn run compile:TextMate",
         "lint": "tslint --project ./",
         "watch": "yarn run clean && yarn run lint && tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install"
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "compile:TextMate": "npx js-yaml syntaxes/aspnetcorerazor.tmLanguage.yml > syntaxes/aspnetcorerazor.tmLanguage.json"
     },
     "devDependencies": {
         "@types/node": "9.4.7",
