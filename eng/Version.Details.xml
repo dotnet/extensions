@@ -78,11 +78,6 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>4ac4c0367003fe3973a3648eb0715ddb0e3bbcea</Sha>
     </Dependency>
-    <!-- Keep this dependency at the bottom of ProductDependencies, else it will be picked as the parent for CoherentParentDependencies -->
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0" Pinned="true">
-      <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>65f04fb6db7a5e198d05dbebd5c4ad21eb018f89</Sha>
-    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.19601.1">
