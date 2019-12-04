@@ -13,6 +13,7 @@ import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { IEventEmitterFactory } from './IEventEmitterFactory';
 import { reportTelemetryForProjects } from './ProjectTelemetryListener';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
+import { RazorCodeLensProvider } from './RazorCodeLensProvider';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
 import { RazorDefinitionProvider } from './RazorDefinitionProvider';
 import { RazorDocumentManager } from './RazorDocumentManager';
@@ -89,6 +90,11 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 documentManager,
                 languageServiceClient,
                 logger);
+            const codeLensProvider = new RazorCodeLensProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger);
             const renameFeature = new RazorRenameFeature(
                 documentSynchronizer,
                 documentManager,
@@ -115,6 +121,9 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 vscode.languages.registerHoverProvider(
                     RazorLanguage.documentSelector,
                     hoverProvider),
+                vscode.languages.registerCodeLensProvider(
+                    RazorLanguage.id,
+                    codeLensProvider),
                 projectTracker.register(),
                 projectManager.register(),
                 documentManager.register(),
