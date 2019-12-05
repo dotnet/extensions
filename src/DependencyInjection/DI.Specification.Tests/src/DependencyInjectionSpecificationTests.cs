@@ -730,6 +730,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var serviceProvider = CreateServiceProvider(serviceCollection);
 
             var enumerable = serviceProvider.GetService<IEnumerable<IFakeOpenGenericService<PocoClass>>>().ToArray();
+            var service = serviceProvider.GetService<IFakeOpenGenericService<PocoClass>>();
 
             // Assert
             Assert.Equal(3, enumerable.Length);
@@ -737,8 +738,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.NotNull(enumerable[1]);
             Assert.NotNull(enumerable[2]);
 
-            Assert.Equal(instance, enumerable[2]);
-            Assert.IsType<FakeService>(enumerable[0]);
+            Assert.Contains(instance, enumerable);
+            Assert.Equal(instance, service);
         }
 
         [Theory]
