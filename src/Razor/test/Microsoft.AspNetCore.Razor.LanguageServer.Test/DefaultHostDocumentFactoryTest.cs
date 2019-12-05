@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var store = new DefaultGeneratedCodeContainerStore(
                 Dispatcher,
                 Mock.Of<DocumentVersionCache>(),
-                new Lazy<ILanguageServer>(() => null));
+                Mock.Of<CSharpPublisher>());
             Factory = new DefaultHostDocumentFactory(Dispatcher, store);
         }
 

@@ -17,7 +17,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public DefaultProjectSnapshotManagerTest()
         {
-            TagHelperResolver = new TestTagHelperResolver();
+            var someTagHelpers = new List<TagHelperDescriptor>();
+            someTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
+            TagHelperResolver = new TestTagHelperResolver()
+            {
+                TagHelpers = someTagHelpers,
+            };
 
             Documents = new HostDocument[]
             {

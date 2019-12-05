@@ -1,6 +1,7 @@
 {
     "extends": "tslint:recommended",
     "rules": {
+        "space-within-parens": true,
         "arrow-parens": false,
         "file-header": [true, "------"],
         "interface-name": false,
@@ -15,6 +16,7 @@
             "options": {
                 "limit": 200
             }
-        }
+        },
+        "one-line": [true, "check-open-brace", "check-catch", "check-finally", "check-else", "check-whitespace"]
     }
 }
