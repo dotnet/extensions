@@ -97,7 +97,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         public IKeyVaultSecretManager Manager { get; set; }
 
         /// <summary>
-        /// Gets or sets the timespan to wait between attempts at polling the Azure KeyVault for changes. <c>null</c> to disable reloading.
+        /// Gets or sets the timespan to wait between attempts at polling the Azure KeyVault for changes. <see langword="null" /> to disable reloading.
         /// </summary>
         public TimeSpan? ReloadInterval { get; set; }
 

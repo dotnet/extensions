@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// Checks if <see cref="SecretItem"/> value should be retrieved.
         /// </summary>
         /// <param name="secret">The <see cref="SecretItem"/> instance.</param>
-        /// <returns><c>true</c> is secrets value should be loaded, otherwise <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if secrets value should be loaded, otherwise <see langword="false" />.</returns>
         bool Load(SecretItem secret);
 
         /// <summary>
