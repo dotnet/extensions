@@ -30,6 +30,7 @@ import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorLogger } from './RazorLogger';
 import { RazorProjectManager } from './RazorProjectManager';
 import { RazorProjectTracker } from './RazorProjectTracker';
+import { RazorReferenceProvider } from './RazorReferenceProvider';
 import { RazorRenameFeature } from './RazorRenameFeature';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
 import { TelemetryReporter } from './TelemetryReporter';
@@ -100,6 +101,11 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 documentManager,
                 languageServiceClient,
                 logger);
+            const referenceProvider = new RazorReferenceProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger);
 
             localRegistrations.push(
                 languageConfiguration.register(),
@@ -121,6 +127,9 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 vscode.languages.registerHoverProvider(
                     RazorLanguage.documentSelector,
                     hoverProvider),
+                vscode.languages.registerReferenceProvider(
+                    RazorLanguage.id,
+                    referenceProvider),
                 vscode.languages.registerCodeLensProvider(
                     RazorLanguage.id,
                     codeLensProvider),
