@@ -31,8 +31,6 @@
     <DebugType>portable</DebugType>
     <Serviceable Condition="'$(Configuration)' == 'Release'">true</Serviceable>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageIcon>packageIcon.png</PackageIcon>
-    <PackageIconFullPath>$(MSBuildThisFileDirectory)packageIcon.png</PackageIconFullPath>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <LangVersion>8.0</LangVersion>
@@ -56,10 +54,6 @@
     <ShippingNpmPackageOutputPath>$(NpmPackageDir)Shipping\</ShippingNpmPackageOutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="$(PackageIconFullPath)" Pack="true" PackagePath="\"/>
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
@@ -78,7 +72,6 @@
   </ItemGroup>
 
   <Import Project="eng\Dependencies.props" />
-  <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\targets\Csharp.Refs.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
   <Import Project="eng\targets\Npm.Common.props" Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />

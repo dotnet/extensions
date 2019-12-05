@@ -54,11 +54,11 @@
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
 
     <!-- Specifies if reference assembly projects should be resolved for Reference items -->
-    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND ('$(IsReferenceAssemblyProject)' == 'true' OR '$(IsImplementationAssemblyProject)' == 'true')">true</ReferenceReferenceAssemblies>
+    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND ('$(IsReferenceAssemblyProject)' == 'true' OR '$(IsImplementationProject)' == 'true')">true</ReferenceReferenceAssemblies>
     <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
 
     <!-- Specifies if implementation assembly projects should be resolved for Reference items -->
-    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true' AND '$(IsImplementationAssemblyProject)' != 'true'">true</ReferenceImplementationAssemblies>
+    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true' AND '$(IsImplementationProject)' != 'true'">true</ReferenceImplementationAssemblies>
     <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' ">false</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
