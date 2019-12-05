@@ -475,6 +475,9 @@
         },
         {
           "include": "#layout-directive"
+        },
+        {
+          "include": "#using-directive"
         }
       ]
     },
@@ -862,6 +865,79 @@
       "endCaptures": {
         "1": {
           "name": "keyword.control.razor.directive.codeblock.close"
+        }
+      }
+    },
+    "using-directive": {
+      "name": "meta.directive.using.cshtml",
+      "match": "(@)(using)\\b\\s*(?!\\()(.+?)?(;)?$",
+      "captures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.other.using.cs"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "#using-static-directive"
+            },
+            {
+              "include": "#using-alias-directive"
+            },
+            {
+              "include": "#using-standard-directive"
+            }
+          ]
+        },
+        "4": {
+          "name": "keyword.control.razor.optionalSemicolon"
+        }
+      }
+    },
+    "using-static-directive": {
+      "match": "(static)\\b\\s+(.+)",
+      "captures": {
+        "1": {
+          "name": "keyword.other.static.cs"
+        },
+        "2": {
+          "patterns": [
+            {
+              "include": "source.cs#type"
+            }
+          ]
+        }
+      }
+    },
+    "using-alias-directive": {
+      "match": "([_[:alpha:]][_[:alnum:]]*)\\b\\s*(=)\\s*(.+)\\s*",
+      "captures": {
+        "1": {
+          "name": "entity.name.type.alias.cs"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.cs"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "source.cs#type"
+            }
+          ]
+        }
+      }
+    },
+    "using-standard-directive": {
+      "match": "([_[:alpha:]][_[:alnum:]]*)\\s*",
+      "captures": {
+        "1": {
+          "name": "entity.name.type.namespace.cs"
         }
       }
     },

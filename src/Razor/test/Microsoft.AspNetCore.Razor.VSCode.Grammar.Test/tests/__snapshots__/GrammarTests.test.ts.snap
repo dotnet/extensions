@@ -934,6 +934,209 @@ exports[`Grammar tests @tagHelperPrefix directive Unquoted parameter 1`] = `
 "
 `;
 
+exports[`Grammar tests @using directive Standard using 1`] = `
+"Line: @using System.IO
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 7 to 13 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.namespace.cs
+ - token from 13 to 14 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 14 to 16 (IO) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.namespace.cs
+"
+`;
+
+exports[`Grammar tests @using directive Standard using spaced 1`] = `
+"Line: @using              System.IO         
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 20 (              ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 20 to 26 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.namespace.cs
+ - token from 26 to 27 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 27 to 29 (IO) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.namespace.cs
+ - token from 29 to 38 (         ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+"
+`;
+
+exports[`Grammar tests @using directive Standard using, no namespace 1`] = `
+"Line: @using
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+"
+`;
+
+exports[`Grammar tests @using directive Standard using, no namespace spaced 1`] = `
+"Line: @using              
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 21 (              ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+"
+`;
+
+exports[`Grammar tests @using directive Standard using, optional semicolon 1`] = `
+"Line: @using System.IO;
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 7 to 13 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.namespace.cs
+ - token from 13 to 14 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 14 to 16 (IO) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.namespace.cs
+ - token from 16 to 17 (;) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.razor.optionalSemicolon
+"
+`;
+
+exports[`Grammar tests @using directive Static using 1`] = `
+"Line: @using static System.Math
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 7 to 13 (static) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.static.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 14 to 20 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 20 to 21 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.accessor.cs
+ - token from 21 to 25 (Math) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+"
+`;
+
+exports[`Grammar tests @using directive Static using spaced 1`] = `
+"Line: @using    static          System.Math         
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 10 (    ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 10 to 16 (static) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.static.cs
+ - token from 16 to 26 (          ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 26 to 32 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 32 to 33 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.accessor.cs
+ - token from 33 to 37 (Math) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 37 to 46 (         ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+"
+`;
+
+exports[`Grammar tests @using directive Static using, no namespace 1`] = `
+"Line: @using static
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 7 to 13 (static) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.namespace.cs
+"
+`;
+
+exports[`Grammar tests @using directive Static using, no namespace spaced 1`] = `
+"Line: @using        static      
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 14 (        ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 14 to 20 (static) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.static.cs
+ - token from 20 to 25 (     ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 25 to 26 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+"
+`;
+
+exports[`Grammar tests @using directive Static using, optional semicolon 1`] = `
+"Line: @using static System.Math;
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 7 to 13 (static) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.static.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 14 to 20 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 20 to 21 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.accessor.cs
+ - token from 21 to 25 (Math) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 25 to 26 (;) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.razor.optionalSemicolon
+"
+`;
+
+exports[`Grammar tests @using directive Using alias 1`] = `
+"Line: @using TheConsole = System.Console
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 7 to 17 (TheConsole) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.alias.cs
+ - token from 17 to 18 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 18 to 19 (=) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.operator.assignment.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 20 to 26 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 26 to 27 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.accessor.cs
+ - token from 27 to 34 (Console) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+"
+`;
+
+exports[`Grammar tests @using directive Using alias spaced 1`] = `
+"Line: @using     TheConsole     =    System.Console   
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 11 (     ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 11 to 21 (TheConsole) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.alias.cs
+ - token from 21 to 26 (     ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 26 to 27 (=) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.operator.assignment.cs
+ - token from 27 to 31 (    ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 31 to 37 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 37 to 38 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.accessor.cs
+ - token from 38 to 45 (Console) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 45 to 48 (   ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+"
+`;
+
+exports[`Grammar tests @using directive Using alias, incomplete type, generic 1`] = `
+"Line: @using TheTime = System.Collections.Generic.List<string
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 7 to 14 (TheTime) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.alias.cs
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 15 to 16 (=) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.operator.assignment.cs
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 17 to 23 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 23 to 24 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.accessor.cs
+ - token from 24 to 35 (Collections) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 35 to 36 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.accessor.cs
+ - token from 36 to 43 (Generic) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 43 to 44 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.accessor.cs
+ - token from 44 to 48 (List) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 48 to 49 (<) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.definition.typeparameters.begin.cs
+ - token from 49 to 55 (string) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.type.cs
+"
+`;
+
+exports[`Grammar tests @using directive Using alias, no type 1`] = `
+"Line: @using Something =
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 7 to 16 (Something) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.namespace.cs
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 17 to 18 (=) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+"
+`;
+
+exports[`Grammar tests @using directive Using alias, no type spaced 1`] = `
+"Line: @using        Something   =    
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 14 (        ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 14 to 23 (Something) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.alias.cs
+ - token from 23 to 26 (   ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 26 to 27 (=) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.operator.assignment.cs
+ - token from 27 to 30 (   ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 30 to 31 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+"
+`;
+
+exports[`Grammar tests @using directive Using alias, optional semicolon 1`] = `
+"Line: @using TheConsole = System.Console;
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.other.using.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 7 to 17 (TheConsole) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, entity.name.type.alias.cs
+ - token from 17 to 18 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 18 to 19 (=) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.operator.assignment.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.directive.using.cshtml
+ - token from 20 to 26 (System) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 26 to 27 (.) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, punctuation.accessor.cs
+ - token from 27 to 34 (Console) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, storage.type.cs
+ - token from 34 to 35 (;) with scopes text.aspnetcorerazor, meta.directive.using.cshtml, keyword.control.razor.optionalSemicolon
+"
+`;
+
 exports[`Grammar tests Explicit expressions Empty 1`] = `
 "Line: @()
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.explicit.cshtml, keyword.control.cshtml.transition
