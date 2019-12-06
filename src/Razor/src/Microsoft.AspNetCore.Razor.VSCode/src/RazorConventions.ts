@@ -15,6 +15,11 @@ export function isRazorCSharpFile(uri: vscode.Uri) {
     return path.endsWith(virtualCSharpSuffix);
 }
 
+export function isRazorHtmlFile(uri: vscode.Uri) {
+    const path = getUriPath(uri);
+    return path.endsWith(virtualHtmlSuffix);
+}
+
 export function getRazorDocumentUri(uri: vscode.Uri) {
     const path = getUriPath(uri);
     let originalDocumentPath = path.replace(backgroundVirtualCSharpSuffix, '');
