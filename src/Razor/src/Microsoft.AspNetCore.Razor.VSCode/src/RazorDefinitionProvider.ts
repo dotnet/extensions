@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { getRazorDocumentUri, isRazorCSharpFile } from './RazorConventions';
+import { getRazorDocumentUri, isRazorHtmlFile } from './RazorConventions';
 import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
 import { LanguageKind } from './RPC/LanguageKind';
 
@@ -17,7 +17,7 @@ export class RazorDefinitionProvider
         token: vscode.CancellationToken) {
 
         const projection = await this.getProjection(document, position, token);
-        if (!projection) {
+        if (!projection || projection.languageKind === LanguageKind.Razor) {
             return;
         }
 
@@ -26,38 +26,25 @@ export class RazorDefinitionProvider
             projection.uri,
             projection.position) as vscode.Location[];
 
-        if (projection.languageKind === LanguageKind.CSharp) {
-            for (const definition of definitions) {
-                if (!isRazorCSharpFile(definition.uri)) {
-                    // This is a regular C# file. No need to re-map.
-                    continue;
-                }
+        const result = new Array<vscode.Location>();
+        for (const definition of definitions) {
+            if (projection.languageKind === LanguageKind.Html && isRazorHtmlFile(definition.uri)) {
 
-                // C# knows about line pragma, if we're getting a direction to a virtual c# document
-                // that means the piece we're trying to navigate to may not have a representation in the
-                // top level file.
-                const razorFile = getRazorDocumentUri(definition.uri);
-                const result = await this.serviceClient.mapToDocumentRange(
-                    projection.languageKind,
-                    definition.range,
-                    razorFile);
-
-                if (result) {
-                    definition.range = result!.range;
-                    definition.uri = razorFile;
-                }
-            }
-        }
-
-        if (projection.languageKind === LanguageKind.Html) {
-            definitions.forEach(definition => {
                 // Because the line pragmas for html are generated referencing the projected document
                 // we need to remap their file locations to reference the top level Razor document.
                 const razorFile = getRazorDocumentUri(definition.uri);
-                definition.uri = razorFile;
-            });
+                result.push(new vscode.Location(razorFile, definition.range));
+
+            } else {
+                // This means it is one of the following,
+                // 1. A .razor/.cshtml file (because Omnisharp already remapped the background C# to the original document)
+                // 2. A .cs file
+                // 3. A .html/.js file
+                // In all of these cases, we don't need to remap. So accept it as is and move on.
+                result.push(definition);
+            }
         }
 
-        return definitions;
+        return result;
     }
 }
