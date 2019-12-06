@@ -4,10 +4,9 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { getRazorDocumentUri } from './RazorConventions';
+import { getRazorDocumentUri, isRazorHtmlFile } from './RazorConventions';
 import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
 import { LanguageKind } from './RPC/LanguageKind';
-import { RazorMapToDocumentRangeResponse } from './RPC/RazorMapToDocumentRangeResponse';
 
 export class RazorReferenceProvider
     extends RazorLanguageFeatureBase
@@ -20,7 +19,7 @@ export class RazorReferenceProvider
         token: vscode.CancellationToken) {
 
         const projection = await this.getProjection(document, position, token);
-        if (!projection) {
+        if (!projection || projection.languageKind === LanguageKind.Razor) {
             return;
         }
 
@@ -29,41 +28,25 @@ export class RazorReferenceProvider
             projection.uri,
             projection.position) as vscode.Location[];
 
-        const results = new Array<vscode.Location>();
-        if (projection.languageKind === LanguageKind.CSharp) {
-            for (const reference of references) {
-                const razorFile = getRazorDocumentUri(reference.uri);
+        const result = new Array<vscode.Location>();
+        for (const reference of references) {
+            if (projection.languageKind === LanguageKind.Html && isRazorHtmlFile(reference.uri)) {
 
-                let result: RazorMapToDocumentRangeResponse | undefined;
-                if (razorFile.path !== reference.uri.path) {
-                    // Re-map the projected reference range to the host document range
-                    result = await this.serviceClient.mapToDocumentRange(
-                        projection.languageKind,
-                        reference.range,
-                        razorFile);
-                } else {
-                    result = {
-                        range: reference.range,
-                        hostDocumentVersion: document.version,
-                    };
-                }
-
-                if (result && document.version === result.hostDocumentVersion) {
-                    results.push(new vscode.Location(razorFile, result.range));
-                }
-            }
-        }
-
-        if (projection.languageKind === LanguageKind.Html) {
-            references.forEach(reference => {
                 // Because the line pragmas for html are generated referencing the projected document
                 // we need to remap their file locations to reference the top level Razor document.
                 const razorFile = getRazorDocumentUri(reference.uri);
+                result.push(new vscode.Location(razorFile, reference.range));
 
-                results.push(new vscode.Location(razorFile, reference.range));
-            });
+            } else {
+                // This means it is one of the following,
+                // 1. A .razor/.cshtml file (because Omnisharp already remapped the background C# to the original document)
+                // 2. A .cs file
+                // 3. A .html/.js file
+                // In all of these cases, we don't need to remap. So accept it as is and move on.
+                result.push(reference);
+            }
         }
 
-        return results;
+        return result;
     }
 }
