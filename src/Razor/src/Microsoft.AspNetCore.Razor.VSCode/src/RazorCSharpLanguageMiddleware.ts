@@ -10,6 +10,7 @@ import { RazorLogger } from './RazorLogger';
 import { LanguageKind } from './RPC/LanguageKind';
 
 // This interface should exactly match the `LanguageMiddleware` interface defined in Omnisharp.
+// https://github.com/OmniSharp/omnisharp-vscode/blob/master/src/omnisharp/LanguageMiddlewareFeature.ts#L9-L16
 interface LanguageMiddleware {
 
     language: string;
@@ -19,7 +20,7 @@ interface LanguageMiddleware {
     remapLocations?(locations: vscode.Location[], token: vscode.CancellationToken): vscode.ProviderResult<vscode.Location[]>;
 }
 
-export class RazorLanguageMiddleware implements LanguageMiddleware {
+export class RazorCSharpLanguageMiddleware implements LanguageMiddleware {
     public readonly language = 'Razor';
 
     constructor(
@@ -59,6 +60,9 @@ export class RazorLanguageMiddleware implements LanguageMiddleware {
 
                 const newEdit = new vscode.TextEdit(remappedResponse.range, edit.newText);
                 newEdits.push(newEdit);
+
+                this.logger.logVerbose(
+                    `Re-mapping text ${edit.newText} at ${edit.range} in ${uri.path} to ${remappedResponse.range} in ${documentUri.path}`);
             }
 
             result.set(documentUri, newEdits);
@@ -92,6 +96,9 @@ export class RazorLanguageMiddleware implements LanguageMiddleware {
 
             const newLocation = new vscode.Location(documentUri, remappedResponse.range);
             result.push(newLocation);
+
+            this.logger.logVerbose(
+                `Re-mapping location ${location.range} in ${location.uri.path} to ${remappedResponse.range} in ${documentUri.path}`);
         }
 
         return result;

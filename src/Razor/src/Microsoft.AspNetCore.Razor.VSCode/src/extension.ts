@@ -15,6 +15,7 @@ import { reportTelemetryForProjects } from './ProjectTelemetryListener';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorCodeLensProvider } from './RazorCodeLensProvider';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
+import { RazorCSharpLanguageMiddleware } from './RazorCSharpLanguageMiddleware';
 import { RazorDefinitionProvider } from './RazorDefinitionProvider';
 import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
@@ -23,7 +24,6 @@ import { RazorHoverProvider } from './RazorHoverProvider';
 import { RazorImplementationProvider } from './RazorImplementationProvider';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageConfiguration } from './RazorLanguageConfiguration';
-import { RazorLanguageMiddleware } from './RazorLanguageMiddleware';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsResolver';
 import { resolveRazorLanguageServerTrace } from './RazorLanguageServerTraceResolver';
@@ -48,7 +48,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
         const languageServiceClient = new RazorLanguageServiceClient(languageServerClient, logger);
 
-        const razorLanguageMiddleware = new RazorLanguageMiddleware(languageServiceClient, logger);
+        const razorLanguageMiddleware = new RazorCSharpLanguageMiddleware(languageServiceClient, logger);
 
         const documentManager = new RazorDocumentManager(languageServerClient, logger);
         reportTelemetryForDocuments(documentManager, telemetryReporter);

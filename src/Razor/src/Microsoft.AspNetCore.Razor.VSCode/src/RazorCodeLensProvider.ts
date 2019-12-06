@@ -6,7 +6,6 @@
 import * as vscode from 'vscode';
 import { CancellationToken } from 'vscode-jsonrpc';
 import { RazorCodeLens } from './RazorCodeLens';
-import { getRazorDocumentUri, isRazorCSharpFile } from './RazorConventions';
 import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
 import { LanguageKind } from './RPC/LanguageKind';
 
@@ -86,34 +85,11 @@ export class RazorCodeLensProvider
                 projection.position) as vscode.Location[];
 
             // We now have a list of references to show in the CodeLens.
-            // Let's remap any locations pointing to any background documents back to the original documents.
-            // Technically, Omnisharp should have already remapped those. We're just being extra cautious here.
-            const remappedLocations = new Array<vscode.Location>();
-            for (const reference of references) {
-                if (!isRazorCSharpFile(reference.uri)) {
-                    // This is a regular C# file. No need to re-map.
-                    remappedLocations.push(reference);
-                    continue;
-                }
-
-                const razorFile = getRazorDocumentUri(reference.uri);
-
-                // Re-map the projected reference range to the host document range
-                const result = await this.serviceClient.mapToDocumentRange(
-                    projection.languageKind,
-                    reference.range,
-                    razorFile);
-
-                if (result) {
-                    remappedLocations.push(new vscode.Location(razorDocument.uri, result.range));
-                }
-            }
-
-            const count = remappedLocations.length;
+            const count = references.length;
             codeLens.command = {
                 title: count === 1 ? '1 reference' : `${count} references`,
                 command: 'editor.action.showReferences',
-                arguments: [razorDocument.uri, codeLens.range.start, remappedLocations],
+                arguments: [razorDocument.uri, codeLens.range.start, references],
             };
 
             return codeLens;
