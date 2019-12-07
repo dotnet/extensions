@@ -993,6 +993,9 @@
         },
         {
           "include": "#for-statement"
+        },
+        {
+          "include": "#while-statement"
         }
       ]
     },
@@ -1189,6 +1192,34 @@
           "include": "source.cs#expression"
         }
       ]
+    },
+    "while-statement": {
+      "name": "meta.statement.while.razor",
+      "begin": "(@)(while)\\b\\s*",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.loop.while.cs"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#csharp-condition"
+        },
+        {
+          "include": "#csharp-code-block"
+        },
+        {
+          "include": "#razor-codeblock-body"
+        }
+      ],
+      "end": "(?<=})"
     },
     "await-prefix": {
       "name": "keyword.other.await.cs",

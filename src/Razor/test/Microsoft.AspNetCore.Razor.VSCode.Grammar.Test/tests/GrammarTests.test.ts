@@ -28,6 +28,7 @@ import { RunTagHelperPrefixDirectiveSuite } from './TagHelperPrefixDirective';
 import { RunTransitionsSuite } from './Transitions';
 import { RunUsingDirectiveSuite } from './UsingDirective';
 import { RunUsingStatementSuite } from './UsingStatement';
+import { RunWhileStatementSuite } from './WhileStatement';
 
 // We bring together all test suites and wrap them in one here. The reason behind this is that
 // modules get reloaded per test suite and the vscode-textmate library doesn't support the way
@@ -64,4 +65,5 @@ describe('Grammar tests', () => {
     RunElsePartSuite();
     RunForStatementSuite();
     RunForeachStatementSuite();
+    RunWhileStatementSuite();
 });

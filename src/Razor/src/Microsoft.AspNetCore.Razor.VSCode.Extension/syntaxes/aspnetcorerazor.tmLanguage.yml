@@ -487,6 +487,7 @@ repository:
       - include: '#else-part'
       - include: '#foreach-statement'
       - include: '#for-statement'
+      - include: '#while-statement'
 
   #>>>>> @using (...) { ... } <<<<<
 
@@ -612,6 +613,20 @@ repository:
               - include: 'source.cs#tuple-declaration-deconstruction-element-list'
           3: { name: 'keyword.control.loop.in.cs' }
       - include: 'source.cs#expression'
+
+  #>>>>> @while (...) { ... } <<<<<
+
+  while-statement:
+    name: 'meta.statement.while.razor'
+    begin: '(@)(while)\b\s*'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.loop.while.cs' }
+    patterns:
+      - include: '#csharp-condition'
+      - include: '#csharp-code-block'
+      - include: '#razor-codeblock-body'
+    end: '(?<=})'
 
   # ----------  Misc C# ------------
 
