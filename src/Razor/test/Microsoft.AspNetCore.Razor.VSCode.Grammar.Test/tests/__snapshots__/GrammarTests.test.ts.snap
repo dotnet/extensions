@@ -1537,6 +1537,236 @@ exports[`Grammar tests @section directive Single line incomplete body 1`] = `
 "
 `;
 
+exports[`Grammar tests @switch ( ... ) { ... } Incomplete switch statement, no cases 1`] = `
+"Line: @switch (condition) {Console.WriteLine(\\"Invalid?\\")}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (switch) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.switch.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.open.cs
+ - token from 9 to 18 (condition) with scopes text.aspnetcorerazor, meta.statement.switch.razor, variable.other.readwrite.cs
+ - token from 18 to 19 ()) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.close.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 20 to 21 ({) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.open.cs
+ - token from 21 to 28 (Console) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, variable.other.object.cs
+ - token from 28 to 29 (.) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.accessor.cs
+ - token from 29 to 38 (WriteLine) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.function.cs
+ - token from 38 to 39 (() with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.parenthesis.open.cs
+ - token from 39 to 40 (\\") with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 40 to 48 (Invalid?) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, string.quoted.double.cs
+ - token from 48 to 49 (\\") with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 49 to 50 ()) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.parenthesis.close.cs
+ - token from 50 to 51 (}) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests @switch ( ... ) { ... } Incomplete switch statement, no condition 1`] = `
+"Line: @switch {}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (switch) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.switch.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 8 to 9 ({) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.open.cs
+ - token from 9 to 10 (}) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests @switch ( ... ) { ... } Incomplete switch statement, no condition or body 1`] = `
+"Line: @switch
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (switch) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.switch.cs
+"
+`;
+
+exports[`Grammar tests @switch ( ... ) { ... } Multi line body 1`] = `
+"Line: @switch (SomeProperty)
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (switch) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.switch.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.open.cs
+ - token from 9 to 21 (SomeProperty) with scopes text.aspnetcorerazor, meta.statement.switch.razor, variable.other.readwrite.cs
+ - token from 21 to 22 ()) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.close.cs
+
+Line: {
+ - token from 0 to 1 ({) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.open.cs
+
+Line:     case 123:
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 4 to 8 (case) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, keyword.control.case.cs
+ - token from 8 to 9 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 9 to 12 (123) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, constant.numeric.decimal.cs
+ - token from 12 to 13 (:) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.separator.colon.cs
+
+Line:         var x = 123;
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 8 to 11 (var) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, keyword.other.var.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 12 to 13 (x) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.variable.local.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 14 to 15 (=) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, keyword.operator.assignment.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 16 to 19 (123) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, constant.numeric.decimal.cs
+ - token from 19 to 20 (;) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.terminator.statement.cs
+
+Line:         <div>
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 8 to 9 (<) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.begin.html
+ - token from 9 to 12 (div) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.tag.html
+ - token from 12 to 13 (>) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.end.html
+
+Line:             @switch (GetAnotherValue()) {
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 12 to 13 (@) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, keyword.control.cshtml.transition
+ - token from 13 to 19 (switch) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, keyword.control.switch.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor
+ - token from 20 to 21 (() with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, punctuation.parenthesis.open.cs
+ - token from 21 to 36 (GetAnotherValue) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, entity.name.function.cs
+ - token from 36 to 37 (() with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, punctuation.parenthesis.open.cs
+ - token from 37 to 38 ()) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, punctuation.parenthesis.close.cs
+ - token from 38 to 39 ()) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, punctuation.parenthesis.close.cs
+ - token from 39 to 40 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor
+ - token from 40 to 41 ({) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.open.cs
+
+Line:                 case: 456
+ - token from 0 to 16 (                ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 16 to 20 (case) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.label.cs
+ - token from 20 to 21 (:) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.separator.colon.cs
+ - token from 21 to 22 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 22 to 25 (456) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, constant.numeric.decimal.cs
+
+Line:                     <p></p>
+ - token from 0 to 20 (                    ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 20 to 21 (<) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.begin.html
+ - token from 21 to 22 (p) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.tag.html
+ - token from 22 to 23 (>) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.end.html
+ - token from 23 to 25 (</) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.begin.html
+ - token from 25 to 26 (p) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.tag.html
+ - token from 26 to 27 (>) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.end.html
+
+Line:                 break;
+ - token from 0 to 16 (                ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 16 to 21 (break) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, keyword.control.flow.break.cs
+ - token from 21 to 22 (;) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.terminator.statement.cs
+
+Line:             }
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 12 to 13 (}) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.close.cs
+
+Line:         </div>
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 8 to 10 (</) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.begin.html
+ - token from 10 to 13 (div) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.tag.html
+ - token from 13 to 14 (>) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.end.html
+
+Line:         break;
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 8 to 13 (break) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, keyword.control.flow.break.cs
+ - token from 13 to 14 (;) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.terminator.statement.cs
+
+Line: }
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests @switch ( ... ) { ... } Multi line condition 1`] = `
+"Line: @switch (
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (switch) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.switch.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.open.cs
+
+Line:     await GetAValue(
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 4 to 9 (await) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.other.await.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 10 to 19 (GetAValue) with scopes text.aspnetcorerazor, meta.statement.switch.razor, entity.name.function.cs
+ - token from 19 to 20 (() with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.open.cs
+
+Line:         () => true,
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.open.cs
+ - token from 9 to 10 ()) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.close.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 11 to 13 (=>) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.operator.arrow.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 14 to 18 (true) with scopes text.aspnetcorerazor, meta.statement.switch.razor, constant.language.boolean.true.cs
+ - token from 18 to 19 (,) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.separator.comma.cs
+
+Line:         name: \\"Hello\\",
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 8 to 12 (name) with scopes text.aspnetcorerazor, meta.statement.switch.razor, entity.name.variable.parameter.cs
+ - token from 12 to 13 (:) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.separator.colon.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 14 to 15 (\\") with scopes text.aspnetcorerazor, meta.statement.switch.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 15 to 20 (Hello) with scopes text.aspnetcorerazor, meta.statement.switch.razor, string.quoted.double.cs
+ - token from 20 to 21 (\\") with scopes text.aspnetcorerazor, meta.statement.switch.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 21 to 22 (,) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.separator.comma.cs
+
+Line:         new {
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 8 to 11 (new) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.other.new.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 12 to 13 ({) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.curlybrace.open.cs
+
+Line:             Foo = false,
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 12 to 15 (Foo) with scopes text.aspnetcorerazor, meta.statement.switch.razor, variable.other.readwrite.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 16 to 17 (=) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.operator.assignment.cs
+ - token from 17 to 18 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 18 to 23 (false) with scopes text.aspnetcorerazor, meta.statement.switch.razor, constant.language.boolean.false.cs
+ - token from 23 to 24 (,) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.separator.comma.cs
+
+Line:         }
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.curlybrace.close.cs
+
+Line: )){}
+ - token from 0 to 1 ()) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.close.cs
+ - token from 1 to 2 ()) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.close.cs
+ - token from 2 to 3 ({) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.open.cs
+ - token from 3 to 4 (}) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests @switch ( ... ) { ... } Single line 1`] = `
+"Line: @switch (   value  ) { case 123: var x = 123;<p>Hello World</p>break; }
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (switch) with scopes text.aspnetcorerazor, meta.statement.switch.razor, keyword.control.switch.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.open.cs
+ - token from 9 to 12 (   ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 12 to 17 (value) with scopes text.aspnetcorerazor, meta.statement.switch.razor, variable.other.readwrite.cs
+ - token from 17 to 19 (  ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 19 to 20 ()) with scopes text.aspnetcorerazor, meta.statement.switch.razor, punctuation.parenthesis.close.cs
+ - token from 20 to 21 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor
+ - token from 21 to 22 ({) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.open.cs
+ - token from 22 to 23 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 23 to 27 (case) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, keyword.control.case.cs
+ - token from 27 to 28 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 28 to 31 (123) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, constant.numeric.decimal.cs
+ - token from 31 to 32 (:) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.separator.colon.cs
+ - token from 32 to 33 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 33 to 36 (var) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, keyword.other.var.cs
+ - token from 36 to 37 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 37 to 38 (x) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.variable.local.cs
+ - token from 38 to 39 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 39 to 40 (=) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, keyword.operator.assignment.cs
+ - token from 40 to 41 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 41 to 44 (123) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, constant.numeric.decimal.cs
+ - token from 44 to 45 (;) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.terminator.statement.cs
+ - token from 45 to 46 (<) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.begin.html
+ - token from 46 to 47 (p) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.tag.html
+ - token from 47 to 48 (>) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.end.html
+ - token from 48 to 59 (Hello World) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 59 to 61 (</) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.begin.html
+ - token from 61 to 62 (p) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, entity.name.tag.html
+ - token from 62 to 63 (>) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.definition.tag.end.html
+ - token from 63 to 68 (break) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, keyword.control.flow.break.cs
+ - token from 68 to 69 (;) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.terminator.statement.cs
+ - token from 69 to 70 ( ) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch
+ - token from 70 to 71 (}) with scopes text.aspnetcorerazor, meta.statement.switch.razor, meta.structure.razor.csharp.codeblock.switch, punctuation.curlybrace.close.cs
+"
+`;
+
 exports[`Grammar tests @tagHelperPrefix directive Incomplete parameter 1`] = `
 "Line: @tagHelperPrefix \\"
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.tagHelperPrefix.razor, keyword.control.cshtml.transition

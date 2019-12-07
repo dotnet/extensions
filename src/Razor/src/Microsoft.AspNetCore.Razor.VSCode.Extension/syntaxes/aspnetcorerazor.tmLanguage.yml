@@ -488,6 +488,7 @@ repository:
       - include: '#foreach-statement'
       - include: '#for-statement'
       - include: '#while-statement'
+      - include: '#switch-statement'
 
   #>>>>> @using (...) { ... } <<<<<
 
@@ -627,6 +628,32 @@ repository:
       - include: '#csharp-code-block'
       - include: '#razor-codeblock-body'
     end: '(?<=})'
+
+  #>>>>> @switch (...) { ... } <<<<<
+
+  switch-statement:
+    name: 'meta.statement.switch.razor'
+    begin: '(@)(switch)\b\s*'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.switch.cs' }
+    patterns:
+      - include: '#csharp-condition'
+      - include: '#switch-code-block'
+      - include: '#razor-codeblock-body'
+    end: '(?<=})'
+
+  switch-code-block:
+    name: 'meta.structure.razor.csharp.codeblock.switch'
+    begin: '(\{)'
+    beginCaptures:
+      1: { name: 'punctuation.curlybrace.open.cs' }
+    patterns:
+      - include: 'source.cs#switch-label'
+      - include: '#razor-codeblock-body'
+    end: '(\})'
+    endCaptures:
+      1: { name: 'punctuation.curlybrace.close.cs' }
 
   # ----------  Misc C# ------------
 
