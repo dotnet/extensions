@@ -336,6 +336,198 @@ exports[`Grammar tests @functions directive Single line 1`] = `
 "
 `;
 
+exports[`Grammar tests @if ( ... ) { ... } Incomplete if statement, no condition 1`] = `
+"Line: @if {}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 3 (if) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 3 to 7 ( {}) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests @if ( ... ) { ... } Incomplete if statement, no condition or body 1`] = `
+"Line: @if
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 3 (if) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+"
+`;
+
+exports[`Grammar tests @if ( ... ) { ... } Multi line body 1`] = `
+"Line: @if (1 + 1 == 2)
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (if) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.control.conditional.if.cs
+ - token from 3 to 4 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 4 to 5 (() with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.open.cs
+ - token from 5 to 6 (1) with scopes text.aspnetcorerazor, meta.statement.if.razor, constant.numeric.decimal.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 7 to 8 (+) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.operator.arithmetic.cs
+ - token from 8 to 9 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 9 to 10 (1) with scopes text.aspnetcorerazor, meta.statement.if.razor, constant.numeric.decimal.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 11 to 13 (==) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.operator.comparison.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 14 to 15 (2) with scopes text.aspnetcorerazor, meta.statement.if.razor, constant.numeric.decimal.cs
+ - token from 15 to 16 ()) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.close.cs
+
+Line: {
+ - token from 0 to 1 ({) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line:     var x = 123;
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 7 (var) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (x) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 10 to 11 (=) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 15 (123) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 15 to 16 (;) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+
+Line:     <div>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 5 (<) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 5 to 8 (div) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 8 to 9 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line:         @if ( AnotherCondition() ) {
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (@) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, keyword.control.cshtml.transition
+ - token from 9 to 11 (if) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, keyword.control.conditional.if.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 12 to 13 (() with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.open.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 14 to 30 (AnotherCondition) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, entity.name.function.cs
+ - token from 30 to 31 (() with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.open.cs
+ - token from 31 to 32 ()) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.close.cs
+ - token from 32 to 33 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 33 to 34 ()) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.close.cs
+ - token from 34 to 35 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 35 to 36 ({) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line:             <p></p>
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 13 (<) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 13 to 14 (p) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 14 to 15 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 15 to 17 (</) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 17 to 18 (p) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 18 to 19 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line:         }
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+
+Line:     </div>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 6 (</) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 6 to 9 (div) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 9 to 10 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line: }else if (true){}
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+ - token from 1 to 5 (else) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.else.cs
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 6 to 8 (if) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.if.cs
+ - token from 8 to 9 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 9 to 10 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.open.cs
+ - token from 10 to 14 (true) with scopes text.aspnetcorerazor, meta.statement.else.razor, constant.language.boolean.true.cs
+ - token from 14 to 15 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.close.cs
+ - token from 15 to 16 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 16 to 17 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests @if ( ... ) { ... } Multi line condition 1`] = `
+"Line: @if (
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (if) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.control.conditional.if.cs
+ - token from 3 to 4 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 4 to 5 (() with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.open.cs
+
+Line:     await GetTrueValue(
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 4 to 9 (await) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.other.await.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 10 to 22 (GetTrueValue) with scopes text.aspnetcorerazor, meta.statement.if.razor, entity.name.function.cs
+ - token from 22 to 23 (() with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.open.cs
+
+Line:         () => true,
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.open.cs
+ - token from 9 to 10 ()) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.close.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 11 to 13 (=>) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.operator.arrow.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 14 to 18 (true) with scopes text.aspnetcorerazor, meta.statement.if.razor, constant.language.boolean.true.cs
+ - token from 18 to 19 (,) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.separator.comma.cs
+
+Line:         name: \\"The Good Identifier\\",
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 8 to 12 (name) with scopes text.aspnetcorerazor, meta.statement.if.razor, entity.name.variable.parameter.cs
+ - token from 12 to 13 (:) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.separator.colon.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 14 to 15 (\\") with scopes text.aspnetcorerazor, meta.statement.if.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 15 to 34 (The Good Identifier) with scopes text.aspnetcorerazor, meta.statement.if.razor, string.quoted.double.cs
+ - token from 34 to 35 (\\") with scopes text.aspnetcorerazor, meta.statement.if.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 35 to 36 (,) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.separator.comma.cs
+
+Line:         new {
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 8 to 11 (new) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.other.new.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 12 to 13 ({) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.curlybrace.open.cs
+
+Line:             Foo = false,
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 12 to 15 (Foo) with scopes text.aspnetcorerazor, meta.statement.if.razor, variable.other.readwrite.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 16 to 17 (=) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.operator.assignment.cs
+ - token from 17 to 18 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 18 to 23 (false) with scopes text.aspnetcorerazor, meta.statement.if.razor, constant.language.boolean.false.cs
+ - token from 23 to 24 (,) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.separator.comma.cs
+
+Line:         }
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.curlybrace.close.cs
+
+Line: )){}
+ - token from 0 to 1 ()) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.close.cs
+ - token from 1 to 2 ()) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.close.cs
+ - token from 2 to 3 ({) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 3 to 4 (}) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests @if ( ... ) { ... } Single line 1`] = `
+"Line: @if (true) { var x = 123;<p>Hello World</p> }
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (if) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.control.conditional.if.cs
+ - token from 3 to 4 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 4 to 5 (() with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.open.cs
+ - token from 5 to 9 (true) with scopes text.aspnetcorerazor, meta.statement.if.razor, constant.language.boolean.true.cs
+ - token from 9 to 10 ()) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.close.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 11 to 12 ({) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 12 to 13 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 13 to 16 (var) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 17 to 18 (x) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 18 to 19 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 19 to 20 (=) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 20 to 21 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 21 to 24 (123) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 24 to 25 (;) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+ - token from 25 to 26 (<) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 26 to 27 (p) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 27 to 28 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 28 to 39 (Hello World) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 39 to 41 (</) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 41 to 42 (p) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 42 to 43 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 43 to 44 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 44 to 45 (}) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
 exports[`Grammar tests @implements directive Incomplete type, generic 1`] = `
 "Line: @implements SomeInterface<string
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.implements.razor, keyword.control.cshtml.transition
@@ -2205,5 +2397,356 @@ exports[`Grammar tests Razor comment Single line 1`] = `
 exports[`Grammar tests Transitions Escaped transitions 1`] = `
 "Line: @@
  - token from 0 to 2 (@@) with scopes text.aspnetcorerazor, constant.character.escape.razor.transition
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Else integrates with @if, complex 1`] = `
+"Line: @if (1 + 1 == 2)
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (if) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.control.conditional.if.cs
+ - token from 3 to 4 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 4 to 5 (() with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.open.cs
+ - token from 5 to 6 (1) with scopes text.aspnetcorerazor, meta.statement.if.razor, constant.numeric.decimal.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 7 to 8 (+) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.operator.arithmetic.cs
+ - token from 8 to 9 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 9 to 10 (1) with scopes text.aspnetcorerazor, meta.statement.if.razor, constant.numeric.decimal.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 11 to 13 (==) with scopes text.aspnetcorerazor, meta.statement.if.razor, keyword.operator.comparison.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor
+ - token from 14 to 15 (2) with scopes text.aspnetcorerazor, meta.statement.if.razor, constant.numeric.decimal.cs
+ - token from 15 to 16 ()) with scopes text.aspnetcorerazor, meta.statement.if.razor, punctuation.parenthesis.close.cs
+
+Line: {
+ - token from 0 to 1 ({) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line:     <p>If else!</p>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 5 (<) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 5 to 6 (p) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 6 to 7 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 7 to 15 (If else!) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 15 to 17 (</) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 17 to 18 (p) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 18 to 19 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line: } else
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+ - token from 1 to 2 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 2 to 6 (else) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.else.cs
+
+Line: {
+ - token from 0 to 1 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line:     var x = 123;
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 7 (var) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (x) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 10 to 11 (=) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 15 (123) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 15 to 16 (;) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+
+Line:     <div>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 5 (<) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 5 to 8 (div) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 8 to 9 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line:         @if (true) {} else if (false) {
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (@) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, keyword.control.cshtml.transition
+ - token from 9 to 11 (if) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, keyword.control.conditional.if.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 12 to 13 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.open.cs
+ - token from 13 to 17 (true) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, constant.language.boolean.true.cs
+ - token from 17 to 18 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.close.cs
+ - token from 18 to 19 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 19 to 20 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 20 to 21 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+ - token from 21 to 22 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor
+ - token from 22 to 26 (else) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, keyword.control.conditional.else.cs
+ - token from 26 to 27 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor
+ - token from 27 to 29 (if) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, keyword.control.conditional.if.cs
+ - token from 29 to 30 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor
+ - token from 30 to 31 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, punctuation.parenthesis.open.cs
+ - token from 31 to 36 (false) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, constant.language.boolean.false.cs
+ - token from 36 to 37 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, punctuation.parenthesis.close.cs
+ - token from 37 to 38 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor
+ - token from 38 to 39 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line:             <strong> Woa! </strong>
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 13 (<) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 13 to 19 (strong) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 19 to 20 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 20 to 26 ( Woa! ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 26 to 28 (</) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 28 to 34 (strong) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 34 to 35 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line:             var y = 456;
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 15 (var) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 16 to 17 (y) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 17 to 18 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 18 to 19 (=) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 20 to 23 (456) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 23 to 24 (;) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+
+Line:         }
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+
+Line:     </div>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 6 (</) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 6 to 9 (div) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 9 to 10 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line: }
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Incomplete else if part, no condition 1`] = `
+"Line: else if {}
+ - token from 0 to 4 (else) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.else.cs
+ - token from 4 to 5 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 5 to 7 (if) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.if.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 8 to 9 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 9 to 10 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Incomplete else, no condition or body 1`] = `
+"Line: else
+ - token from 0 to 4 (else) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.else.cs
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Invalid else part 1`] = `
+"Line: <p> else if (shouldNotBeElse) {}</p>
+ - token from 0 to 1 (<) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, punctuation.definition.tag.begin.html
+ - token from 1 to 2 (p) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, entity.name.tag.html
+ - token from 2 to 3 (>) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, punctuation.definition.tag.end.html
+ - token from 3 to 32 ( else if (shouldNotBeElse) {}) with scopes text.aspnetcorerazor
+ - token from 32 to 34 (</) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, punctuation.definition.tag.begin.html
+ - token from 34 to 35 (p) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, entity.name.tag.html
+ - token from 35 to 36 (>) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, punctuation.definition.tag.end.html
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Invalid else suffix 1`] = `
+"Line: else notValid
+ - token from 0 to 14 (else notValid) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Multi line body 1`] = `
+"Line: else if (1 + 1 == 2)
+ - token from 0 to 4 (else) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.else.cs
+ - token from 4 to 5 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 5 to 7 (if) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.if.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.open.cs
+ - token from 9 to 10 (1) with scopes text.aspnetcorerazor, meta.statement.else.razor, constant.numeric.decimal.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 11 to 12 (+) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.operator.arithmetic.cs
+ - token from 12 to 13 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 13 to 14 (1) with scopes text.aspnetcorerazor, meta.statement.else.razor, constant.numeric.decimal.cs
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 15 to 17 (==) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.operator.comparison.cs
+ - token from 17 to 18 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 18 to 19 (2) with scopes text.aspnetcorerazor, meta.statement.else.razor, constant.numeric.decimal.cs
+ - token from 19 to 20 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.close.cs
+
+Line: {
+ - token from 0 to 1 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line:     var x = 123;
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 7 (var) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (x) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 10 to 11 (=) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 15 (123) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 15 to 16 (;) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+
+Line:     <div>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 5 (<) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 5 to 8 (div) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 8 to 9 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line:         @if ( AnotherCondition() ) {
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (@) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, keyword.control.cshtml.transition
+ - token from 9 to 11 (if) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, keyword.control.conditional.if.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 12 to 13 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.open.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 14 to 30 (AnotherCondition) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, entity.name.function.cs
+ - token from 30 to 31 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.open.cs
+ - token from 31 to 32 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.close.cs
+ - token from 32 to 33 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 33 to 34 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, punctuation.parenthesis.close.cs
+ - token from 34 to 35 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor
+ - token from 35 to 36 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line:             <p></p>
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 13 (<) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 13 to 14 (p) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 14 to 15 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 15 to 17 (</) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 17 to 18 (p) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 18 to 19 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line:         }
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+
+Line:     </div>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 6 (</) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 6 to 9 (div) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 9 to 10 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line: }
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Multi line condition 1`] = `
+"Line: else if (
+ - token from 0 to 4 (else) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.else.cs
+ - token from 4 to 5 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 5 to 7 (if) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.if.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.open.cs
+
+Line:     await GetTrueValue(
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 4 to 9 (await) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.other.await.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 10 to 22 (GetTrueValue) with scopes text.aspnetcorerazor, meta.statement.else.razor, entity.name.function.cs
+ - token from 22 to 23 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.open.cs
+
+Line:         () => true,
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.open.cs
+ - token from 9 to 10 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.close.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 11 to 13 (=>) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.operator.arrow.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 14 to 18 (true) with scopes text.aspnetcorerazor, meta.statement.else.razor, constant.language.boolean.true.cs
+ - token from 18 to 19 (,) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.separator.comma.cs
+
+Line:         name: \\"The Good Identifier\\",
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 8 to 12 (name) with scopes text.aspnetcorerazor, meta.statement.else.razor, entity.name.variable.parameter.cs
+ - token from 12 to 13 (:) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.separator.colon.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 14 to 15 (\\") with scopes text.aspnetcorerazor, meta.statement.else.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 15 to 34 (The Good Identifier) with scopes text.aspnetcorerazor, meta.statement.else.razor, string.quoted.double.cs
+ - token from 34 to 35 (\\") with scopes text.aspnetcorerazor, meta.statement.else.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 35 to 36 (,) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.separator.comma.cs
+
+Line:         new {
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 8 to 11 (new) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.other.new.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 12 to 13 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.curlybrace.open.cs
+
+Line:             Foo = false,
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 12 to 15 (Foo) with scopes text.aspnetcorerazor, meta.statement.else.razor, variable.other.readwrite.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 16 to 17 (=) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.operator.assignment.cs
+ - token from 17 to 18 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 18 to 23 (false) with scopes text.aspnetcorerazor, meta.statement.else.razor, constant.language.boolean.false.cs
+ - token from 23 to 24 (,) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.separator.comma.cs
+
+Line:         }
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.curlybrace.close.cs
+
+Line: )){}
+ - token from 0 to 1 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.close.cs
+ - token from 1 to 2 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.close.cs
+ - token from 2 to 3 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 3 to 4 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Single line 1`] = `
+"Line: else { var x = 123;<p>Hello World</p> }
+ - token from 0 to 4 (else) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.else.cs
+ - token from 4 to 5 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 5 to 6 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 6 to 7 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 7 to 10 (var) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 11 to 12 (x) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 12 to 13 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 13 to 14 (=) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 15 to 18 (123) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 18 to 19 (;) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+ - token from 19 to 20 (<) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 20 to 21 (p) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 21 to 22 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 22 to 33 (Hello World) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 33 to 35 (</) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 35 to 36 (p) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 36 to 37 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 37 to 38 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 38 to 39 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Single line, condition 1`] = `
+"Line: else if (true) { var x = 123;<p>Hello World</p> }
+ - token from 0 to 4 (else) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.else.cs
+ - token from 4 to 5 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 5 to 7 (if) with scopes text.aspnetcorerazor, meta.statement.else.razor, keyword.control.conditional.if.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.open.cs
+ - token from 9 to 13 (true) with scopes text.aspnetcorerazor, meta.statement.else.razor, constant.language.boolean.true.cs
+ - token from 13 to 14 ()) with scopes text.aspnetcorerazor, meta.statement.else.razor, punctuation.parenthesis.close.cs
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor
+ - token from 15 to 16 ({) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 16 to 17 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 17 to 20 (var) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 20 to 21 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 21 to 22 (x) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 22 to 23 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 23 to 24 (=) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 24 to 25 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 25 to 28 (123) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 28 to 29 (;) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+ - token from 29 to 30 (<) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 30 to 31 (p) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 31 to 32 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 32 to 43 (Hello World) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 43 to 45 (</) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 45 to 46 (p) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 46 to 47 (>) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 47 to 48 ( ) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock
+ - token from 48 to 49 (}) with scopes text.aspnetcorerazor, meta.statement.else.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests else [if ( ... )] { ... } Unspaced else if part 1`] = `
+"Line: elseif (true) { /* The elseif should not be control scoped */ }
+ - token from 0 to 64 (elseif (true) { /* The elseif should not be control scoped */ }) with scopes text.aspnetcorerazor
 "
 `;

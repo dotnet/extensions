@@ -981,6 +981,12 @@
       "patterns": [
         {
           "include": "#using-statement"
+        },
+        {
+          "include": "#if-statement"
+        },
+        {
+          "include": "#else-part"
         }
       ]
     },
@@ -997,6 +1003,58 @@
         },
         "2": {
           "name": "keyword.other.using.cs"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#csharp-condition"
+        },
+        {
+          "include": "#csharp-code-block"
+        },
+        {
+          "include": "#razor-codeblock-body"
+        }
+      ],
+      "end": "(?<=})"
+    },
+    "if-statement": {
+      "name": "meta.statement.if.razor",
+      "begin": "(@)(if)\\s*(?=\\()",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.conditional.if.cs"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#csharp-condition"
+        },
+        {
+          "include": "#csharp-code-block"
+        },
+        {
+          "include": "#razor-codeblock-body"
+        }
+      ],
+      "end": "(?<=})"
+    },
+    "else-part": {
+      "name": "meta.statement.else.razor",
+      "begin": "(?:^|(?<=}))\\s*(else)\\s*?(?: (if))?\\s*?(?=[\\n\\(\\{])",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.conditional.else.cs"
+        },
+        "2": {
+          "name": "keyword.control.conditional.if.cs"
         }
       },
       "patterns": [

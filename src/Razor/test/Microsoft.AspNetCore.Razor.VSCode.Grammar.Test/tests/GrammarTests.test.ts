@@ -7,8 +7,10 @@ import { RunAddTagHelperDirectiveSuite } from './AddTagHelperDirective';
 import { RunAttributeDirectiveSuite } from './AttributeDirective';
 import { RunCodeBlockSuite } from './CodeBlock';
 import { RunCodeDirectiveSuite } from './CodeDirective';
+import { RunElsePartSuite } from './ElsePart';
 import { RunExplicitExpressionSuite } from './ExplicitExpressions';
 import { RunFunctionsDirectiveSuite } from './FunctionsDirective';
+import { RunIfStatementSuite } from './IfStatement';
 import { RunImplementsDirectiveSuite } from './ImplementsDirective';
 import { RunImplicitExpressionSuite } from './ImplicitExpressions';
 import { RunInheritsDirectiveSuite } from './InheritsDirective';
@@ -56,4 +58,6 @@ describe('Grammar tests', () => {
 
     // Razor C# Control Structures
     RunUsingStatementSuite();
+    RunIfStatementSuite();
+    RunElsePartSuite();
 });
