@@ -999,6 +999,9 @@
         },
         {
           "include": "#switch-statement"
+        },
+        {
+          "include": "#lock-statement"
         }
       ]
     },
@@ -1084,7 +1087,7 @@
     },
     "for-statement": {
       "name": "meta.statement.for.razor",
-      "begin": "(@)(for)\\b\\s*",
+      "begin": "(@)(for)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1112,7 +1115,7 @@
     },
     "foreach-statement": {
       "name": "meta.statement.foreach.razor",
-      "begin": "(@)(foreach)\\b\\s*",
+      "begin": "(@)(foreach)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1198,7 +1201,7 @@
     },
     "while-statement": {
       "name": "meta.statement.while.razor",
-      "begin": "(@)(while)\\b\\s*",
+      "begin": "(@)(while)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1226,7 +1229,7 @@
     },
     "switch-statement": {
       "name": "meta.statement.switch.razor",
-      "begin": "(@)(switch)\\b\\s*",
+      "begin": "(@)(switch)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1274,6 +1277,34 @@
           "name": "punctuation.curlybrace.close.cs"
         }
       }
+    },
+    "lock-statement": {
+      "name": "meta.statement.lock.razor",
+      "begin": "(@)(lock)\\b\\s*(?=\\()",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.other.lock.cs"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#csharp-condition"
+        },
+        {
+          "include": "#csharp-code-block"
+        },
+        {
+          "include": "#razor-codeblock-body"
+        }
+      ],
+      "end": "(?<=})"
     },
     "await-prefix": {
       "name": "keyword.other.await.cs",

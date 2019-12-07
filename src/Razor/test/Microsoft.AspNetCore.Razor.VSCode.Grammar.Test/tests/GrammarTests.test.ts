@@ -18,6 +18,7 @@ import { RunImplicitExpressionSuite } from './ImplicitExpressions';
 import { RunInheritsDirectiveSuite } from './InheritsDirective';
 import { RunInjectDirectiveSuite } from './InjectDirective';
 import { RunLayoutDirectiveSuite } from './LayoutDirective';
+import { RunLockStatementSuite } from './LockStatement';
 import { RunModelDirectiveSuite } from './ModelDirective';
 import { RunNamespaceDirectiveSuite } from './NamespaceDirective';
 import { RunPageDirectiveSuite } from './PageDirective';
@@ -68,4 +69,5 @@ describe('Grammar tests', () => {
     RunForeachStatementSuite();
     RunWhileStatementSuite();
     RunSwitchStatementSuite();
+    RunLockStatementSuite();
 });
