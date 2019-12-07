@@ -485,6 +485,7 @@ repository:
       - include: '#using-statement'
       - include: '#if-statement'
       - include: '#else-part'
+      - include: '#foreach-statement'
       - include: '#for-statement'
 
   #>>>>> @using (...) { ... } <<<<<
@@ -542,6 +543,75 @@ repository:
       - include: '#csharp-code-block'
       - include: '#razor-codeblock-body'
     end: '(?<=})'
+
+  #>>>>> @foreach (...) { ... } <<<<<
+
+  foreach-statement:
+    name: 'meta.statement.foreach.razor'
+    begin: '(@)(foreach)\b\s*'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.loop.foreach.cs' }
+    patterns:
+      - include: '#foreach-condition'
+      - include: '#csharp-code-block'
+      - include: '#razor-codeblock-body'
+    end: '(?<=})'
+
+  # This condition is pulled directly from the C# grammar for foreach statements
+  foreach-condition:
+    begin: '\('
+    beginCaptures:
+      0: { name: 'punctuation.parenthesis.open.cs' }
+    end: '\)'
+    endCaptures:
+      0: { name: 'punctuation.parenthesis.close.cs' }
+    patterns:
+      - match: |-
+          (?x)
+          (?:
+            (\bvar\b)|
+            (?<type-name>
+              (?:
+                (?:
+                  (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                  (?<name-and-type-args> # identifier + type arguments (if any)
+                    \g<identifier>\s*
+                    (?<type-args>\s*<(?:[^<>]|\g<type-args>)+>\s*)?
+                  )
+                  (?:\s*\.\s*\g<name-and-type-args>)* | # Are there any more names being dotted into?
+                  (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+                )
+                (?:\s*\?\s*)? # nullable suffix?
+                (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+              )
+            )
+          )\s+
+          (\g<identifier>)\s+
+          \b(in)\b
+        captures:
+          1: { name: 'keyword.other.var.cs' }
+          2:
+            patterns:
+              - include: 'source.cs#type'
+          # '3': ?<identifier> is a sub-expression. It's final value is not considered.
+          # '4': ?<name-and-type-args> is a sub-expression. It's final value is not considered.
+          # '5': ?<type-args> is a sub-expression. It's final value is not considered.
+          # '6': ?<tuple> is a sub-expression. It's final value is not considered.
+          7: { name: 'entity.name.variable.local.cs' }
+          8: { name: 'keyword.control.loop.in.cs' }
+      - match: |-
+          (?x) # match foreach (var (x, y) in ...)
+          (?:\b(var)\b\s*)?
+          (?<tuple>\((?:[^\(\)]|\g<tuple>)+\))\s+
+          \b(in)\b
+        captures:
+          1: { name: 'keyword.other.var.cs' }
+          2:
+            patterns:
+              - include: 'source.cs#tuple-declaration-deconstruction-element-list'
+          3: { name: 'keyword.control.loop.in.cs' }
+      - include: 'source.cs#expression'
 
   # ----------  Misc C# ------------
 
