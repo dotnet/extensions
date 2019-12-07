@@ -485,12 +485,13 @@ repository:
       - include: '#using-statement'
       - include: '#if-statement'
       - include: '#else-part'
+      - include: '#for-statement'
 
   #>>>>> @using (...) { ... } <<<<<
 
   using-statement:
     name: 'meta.statement.using.razor'
-    begin: '(@)(using)\s*(?=\()'
+    begin: '(@)(using)\b\s*(?=\()'
     beginCaptures:
       1: { patterns: [ include: '#transition' ] }
       2: { name: 'keyword.other.using.cs' }
@@ -498,13 +499,13 @@ repository:
       - include: '#csharp-condition'
       - include: '#csharp-code-block'
       - include: '#razor-codeblock-body'
-    end: (?<=})
+    end: '(?<=})'
 
   #>>>>> @if (...) { ... } <<<<<
 
   if-statement:
     name: 'meta.statement.if.razor'
-    begin: '(@)(if)\s*(?=\()'
+    begin: '(@)(if)\b\s*(?=\()'
     beginCaptures:
       1: { patterns: [ include: '#transition' ] }
       2: { name: 'keyword.control.conditional.if.cs' }
@@ -512,13 +513,13 @@ repository:
       - include: '#csharp-condition'
       - include: '#csharp-code-block'
       - include: '#razor-codeblock-body'
-    end: (?<=})
+    end: '(?<=})'
 
   #>>>>> @else [if (...)] { ... } <<<<<
 
   else-part:
     name: 'meta.statement.else.razor'
-    begin: '(?:^|(?<=}))\s*(else)\s*?(?: (if))?\s*?(?=[\n\(\{])'
+    begin: '(?:^|(?<=}))\s*(else)\b\s*?(?: (if))?\s*?(?=[\n\(\{])'
     beginCaptures:
       1: { name: 'keyword.control.conditional.else.cs' }
       2: { name: 'keyword.control.conditional.if.cs' }
@@ -526,7 +527,21 @@ repository:
       - include: '#csharp-condition'
       - include: '#csharp-code-block'
       - include: '#razor-codeblock-body'
-    end: (?<=})
+    end: '(?<=})'
+
+  #>>>>> @for (...) { ... } <<<<<
+
+  for-statement:
+    name: 'meta.statement.for.razor'
+    begin: '(@)(for)\b\s*'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.loop.for.cs' }
+    patterns:
+      - include: '#csharp-condition'
+      - include: '#csharp-code-block'
+      - include: '#razor-codeblock-body'
+    end: '(?<=})'
 
   # ----------  Misc C# ------------
 
@@ -550,7 +565,10 @@ repository:
     beginCaptures:
       1: { name: 'punctuation.parenthesis.open.cs' }
     patterns:
+      - include: 'source.cs#local-variable-declaration'
       - include: 'source.cs#expression'
+      - include: 'source.cs#punctuation-comma'
+      - include: 'source.cs#punctuation-semicolon'
     end: '(\))'
     endCaptures:
       1: { name: 'punctuation.parenthesis.close.cs' }

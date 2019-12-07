@@ -9,6 +9,7 @@ import { RunCodeBlockSuite } from './CodeBlock';
 import { RunCodeDirectiveSuite } from './CodeDirective';
 import { RunElsePartSuite } from './ElsePart';
 import { RunExplicitExpressionSuite } from './ExplicitExpressions';
+import { RunForStatementSuite } from './ForStatement';
 import { RunFunctionsDirectiveSuite } from './FunctionsDirective';
 import { RunIfStatementSuite } from './IfStatement';
 import { RunImplementsDirectiveSuite } from './ImplementsDirective';
@@ -60,4 +61,5 @@ describe('Grammar tests', () => {
     RunUsingStatementSuite();
     RunIfStatementSuite();
     RunElsePartSuite();
+    RunForStatementSuite();
 });
