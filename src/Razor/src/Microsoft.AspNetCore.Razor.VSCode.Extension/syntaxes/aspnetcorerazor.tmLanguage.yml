@@ -490,6 +490,7 @@ repository:
       - include: '#while-statement'
       - include: '#switch-statement'
       - include: '#lock-statement'
+      - include: '#do-statement'
 
   #>>>>> @using (...) { ... } <<<<<
 
@@ -616,11 +617,25 @@ repository:
           3: { name: 'keyword.control.loop.in.cs' }
       - include: 'source.cs#expression'
 
+  #>>>>> @do (...) while { ... } <<<<<
+
+  do-statement:
+    name: 'meta.statement.do.razor'
+    begin: '(@)(do)\b\s*'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.loop.do.cs' }
+    patterns:
+      - include: '#csharp-condition'
+      - include: '#csharp-code-block'
+      - include: '#razor-codeblock-body'
+    end: '(?<=})'
+
   #>>>>> @while (...) { ... } <<<<<
 
   while-statement:
     name: 'meta.statement.while.razor'
-    begin: '(@)(while)\b\s*(?=\()'
+    begin: '(?:(@)|^\s*|(?<=})\s*)(while)\b\s*(?=\()'
     beginCaptures:
       1: { patterns: [ include: '#transition' ] }
       2: { name: 'keyword.control.loop.while.cs' }
@@ -628,7 +643,9 @@ repository:
       - include: '#csharp-condition'
       - include: '#csharp-code-block'
       - include: '#razor-codeblock-body'
-    end: '(?<=})'
+    end: '(?<=})|(;)'
+    endCaptures:
+      1: { name: 'punctuation.terminator.statement.cs'}
 
   #>>>>> @switch (...) { ... } <<<<<
 

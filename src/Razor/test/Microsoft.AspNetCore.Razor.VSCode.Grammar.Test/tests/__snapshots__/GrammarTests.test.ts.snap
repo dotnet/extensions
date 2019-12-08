@@ -246,6 +246,210 @@ exports[`Grammar tests @code directive Single line 1`] = `
 "
 `;
 
+exports[`Grammar tests @do { ... } while ( ... ); Incomplete do statement, no body 1`] = `
+"Line: @do
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (do) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.loop.do.cs
+"
+`;
+
+exports[`Grammar tests @do { ... } while ( ... ); Incomplete do while statement, no condition 1`] = `
+"Line: @do { } while ;
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (do) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.loop.do.cs
+ - token from 3 to 4 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor
+ - token from 4 to 5 ({) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 6 to 7 (}) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+ - token from 7 to 16 ( while ;) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests @do { ... } while ( ... ); Incomplete do while statement, no terminator 1`] = `
+"Line: @do { } while
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (do) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.loop.do.cs
+ - token from 3 to 4 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor
+ - token from 4 to 5 ({) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 6 to 7 (}) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+ - token from 7 to 14 ( while) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests @do { ... } while ( ... ); Multi line body 1`] = `
+"Line: @do
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (do) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.loop.do.cs
+
+Line: {
+ - token from 0 to 1 ({) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line:     var x = 123;
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 7 (var) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 7 to 8 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (x) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 10 to 11 (=) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 15 (123) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 15 to 16 (;) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+
+Line:     <div>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 5 (<) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 5 to 8 (div) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 8 to 9 (>) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line:         @do {
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (@) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, keyword.control.cshtml.transition
+ - token from 9 to 11 (do) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, keyword.control.loop.do.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor
+ - token from 12 to 13 ({) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line:             <p></p>
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 13 (<) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 13 to 14 (p) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 14 to 15 (>) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 15 to 17 (</) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 17 to 18 (p) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 18 to 19 (>) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line:         } while(GetAnotherValue());
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor
+ - token from 10 to 15 (while) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, keyword.control.loop.while.cs
+ - token from 15 to 16 (() with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, punctuation.parenthesis.open.cs
+ - token from 16 to 31 (GetAnotherValue) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, entity.name.function.cs
+ - token from 31 to 32 (() with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, punctuation.parenthesis.open.cs
+ - token from 32 to 33 ()) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, punctuation.parenthesis.close.cs
+ - token from 33 to 34 ()) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, punctuation.parenthesis.close.cs
+ - token from 34 to 35 (;) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, punctuation.terminator.statement.cs
+
+Line:     </div>
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 4 to 6 (</) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 6 to 9 (div) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 9 to 10 (>) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+
+Line: }while(true);
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+ - token from 1 to 6 (while) with scopes text.aspnetcorerazor, meta.statement.while.razor, keyword.control.loop.while.cs
+ - token from 6 to 7 (() with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.open.cs
+ - token from 7 to 11 (true) with scopes text.aspnetcorerazor, meta.statement.while.razor, constant.language.boolean.true.cs
+ - token from 11 to 12 ()) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.close.cs
+ - token from 12 to 13 (;) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.terminator.statement.cs
+"
+`;
+
+exports[`Grammar tests @do { ... } while ( ... ); Multi line condition 1`] = `
+"Line: @do
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (do) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.loop.do.cs
+
+Line: {
+ - token from 0 to 1 ({) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+
+Line: }
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+
+Line: while (
+ - token from 0 to 5 (while) with scopes text.aspnetcorerazor, meta.statement.while.razor, keyword.control.loop.while.cs
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 6 to 7 (() with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.open.cs
+
+Line:     await GetATruthyValue(
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 4 to 9 (await) with scopes text.aspnetcorerazor, meta.statement.while.razor, keyword.other.await.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 10 to 25 (GetATruthyValue) with scopes text.aspnetcorerazor, meta.statement.while.razor, entity.name.function.cs
+ - token from 25 to 26 (() with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.open.cs
+
+Line:         () => true,
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 8 to 9 (() with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.open.cs
+ - token from 9 to 10 ()) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.close.cs
+ - token from 10 to 11 ( ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 11 to 13 (=>) with scopes text.aspnetcorerazor, meta.statement.while.razor, keyword.operator.arrow.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 14 to 18 (true) with scopes text.aspnetcorerazor, meta.statement.while.razor, constant.language.boolean.true.cs
+ - token from 18 to 19 (,) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.separator.comma.cs
+
+Line:         name: \\"Hello\\",
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 8 to 12 (name) with scopes text.aspnetcorerazor, meta.statement.while.razor, entity.name.variable.parameter.cs
+ - token from 12 to 13 (:) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.separator.colon.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 14 to 15 (\\") with scopes text.aspnetcorerazor, meta.statement.while.razor, string.quoted.double.cs, punctuation.definition.string.begin.cs
+ - token from 15 to 20 (Hello) with scopes text.aspnetcorerazor, meta.statement.while.razor, string.quoted.double.cs
+ - token from 20 to 21 (\\") with scopes text.aspnetcorerazor, meta.statement.while.razor, string.quoted.double.cs, punctuation.definition.string.end.cs
+ - token from 21 to 22 (,) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.separator.comma.cs
+
+Line:         new {
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 8 to 11 (new) with scopes text.aspnetcorerazor, meta.statement.while.razor, keyword.other.new.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 12 to 13 ({) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.curlybrace.open.cs
+
+Line:             Foo = false,
+ - token from 0 to 12 (            ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 12 to 15 (Foo) with scopes text.aspnetcorerazor, meta.statement.while.razor, variable.other.readwrite.cs
+ - token from 15 to 16 ( ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 16 to 17 (=) with scopes text.aspnetcorerazor, meta.statement.while.razor, keyword.operator.assignment.cs
+ - token from 17 to 18 ( ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 18 to 23 (false) with scopes text.aspnetcorerazor, meta.statement.while.razor, constant.language.boolean.false.cs
+ - token from 23 to 24 (,) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.separator.comma.cs
+
+Line:         }
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 8 to 9 (}) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.curlybrace.close.cs
+
+Line: ));
+ - token from 0 to 1 ()) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.close.cs
+ - token from 1 to 2 ()) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.close.cs
+ - token from 2 to 3 (;) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.terminator.statement.cs
+"
+`;
+
+exports[`Grammar tests @do { ... } while ( ... ); Single line 1`] = `
+"Line: @do { var x = 123;<p>Hello World</p> }while (   true  );
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.cshtml.transition
+ - token from 1 to 3 (do) with scopes text.aspnetcorerazor, meta.statement.do.razor, keyword.control.loop.do.cs
+ - token from 3 to 4 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor
+ - token from 4 to 5 ({) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 5 to 6 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 6 to 9 (var) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 10 to 11 (x) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 11 to 12 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 12 to 13 (=) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 13 to 14 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 14 to 17 (123) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 17 to 18 (;) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+ - token from 18 to 19 (<) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 19 to 20 (p) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 20 to 21 (>) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 21 to 32 (Hello World) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 32 to 34 (</) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 34 to 35 (p) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 35 to 36 (>) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 36 to 37 ( ) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock
+ - token from 37 to 38 (}) with scopes text.aspnetcorerazor, meta.statement.do.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+ - token from 38 to 43 (while) with scopes text.aspnetcorerazor, meta.statement.while.razor, keyword.control.loop.while.cs
+ - token from 43 to 44 ( ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 44 to 45 (() with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.open.cs
+ - token from 45 to 48 (   ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 48 to 52 (true) with scopes text.aspnetcorerazor, meta.statement.while.razor, constant.language.boolean.true.cs
+ - token from 52 to 54 (  ) with scopes text.aspnetcorerazor, meta.statement.while.razor
+ - token from 54 to 55 ()) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.parenthesis.close.cs
+ - token from 55 to 56 (;) with scopes text.aspnetcorerazor, meta.statement.while.razor, punctuation.terminator.statement.cs
+"
+`;
+
 exports[`Grammar tests @for ( ... ) { ... } Incomplete for statement, no condition 1`] = `
 "Line: @for {}
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
