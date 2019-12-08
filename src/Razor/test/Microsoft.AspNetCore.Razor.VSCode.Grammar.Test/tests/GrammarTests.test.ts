@@ -29,6 +29,7 @@ import { RunSectionDirectiveSuite } from './SectionDirective';
 import { RunSwitchStatementSuite } from './SwitchStatement';
 import { RunTagHelperPrefixDirectiveSuite } from './TagHelperPrefixDirective';
 import { RunTransitionsSuite } from './Transitions';
+import { RunTryStatementSuite } from './TryStatement';
 import { RunUsingDirectiveSuite } from './UsingDirective';
 import { RunUsingStatementSuite } from './UsingStatement';
 import { RunWhileStatementSuite } from './WhileStatement';
@@ -72,4 +73,5 @@ describe('Grammar tests', () => {
     RunSwitchStatementSuite();
     RunLockStatementSuite();
     RunDoStatementSuite();
+    RunTryStatementSuite();
 });

@@ -1005,6 +1005,9 @@
         },
         {
           "include": "#do-statement"
+        },
+        {
+          "include": "#try-statement"
         }
       ]
     },
@@ -1333,6 +1336,120 @@
         {
           "include": "#csharp-condition"
         },
+        {
+          "include": "#csharp-code-block"
+        },
+        {
+          "include": "#razor-codeblock-body"
+        }
+      ],
+      "end": "(?<=})"
+    },
+    "try-statement": {
+      "patterns": [
+        {
+          "include": "#try-block"
+        },
+        {
+          "include": "#catch-clause"
+        },
+        {
+          "include": "#finally-clause"
+        }
+      ]
+    },
+    "try-block": {
+      "name": "meta.statement.try.razor",
+      "begin": "(@)(try)\\b\\s*",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#transition"
+            }
+          ]
+        },
+        "2": {
+          "name": "keyword.control.try.cs"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#csharp-condition"
+        },
+        {
+          "include": "#csharp-code-block"
+        },
+        {
+          "include": "#razor-codeblock-body"
+        }
+      ],
+      "end": "(?<=})"
+    },
+    "catch-clause": {
+      "name": "meta.statement.catch.razor",
+      "begin": "(?:^|(?<=}))\\s*(catch)\\b\\s*?(?=[\\n\\(\\{])",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.try.catch.cs"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#catch-condition"
+        },
+        {
+          "include": "source.cs#when-clause"
+        },
+        {
+          "include": "#csharp-code-block"
+        },
+        {
+          "include": "#razor-codeblock-body"
+        }
+      ],
+      "end": "(?<=})"
+    },
+    "catch-condition": {
+      "begin": "\\(",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.parenthesis.open.cs"
+        }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.parenthesis.close.cs"
+        }
+      },
+      "patterns": [
+        {
+          "match": "(?x)\n(?<type-name>\n  (?:\n    (?:\n      (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\\s*\\:\\:\\s*)? # alias-qualification\n      (?<name-and-type-args> # identifier + type arguments (if any)\n        \\g<identifier>\\s*\n        (?<type-args>\\s*<(?:[^<>]|\\g<type-args>)+>\\s*)?\n      )\n      (?:\\s*\\.\\s*\\g<name-and-type-args>)* | # Are there any more names being dotted into?\n      (?<tuple>\\s*\\((?:[^\\(\\)]|\\g<tuple>)+\\))\n    )\n    (?:\\s*\\?\\s*)? # nullable suffix?\n    (?:\\s*\\[(?:\\s*,\\s*)*\\]\\s*)* # array suffix?\n  )\n)\\s*\n(?:(\\g<identifier>)\\b)?",
+          "captures": {
+            "1": {
+              "patterns": [
+                {
+                  "include": "source.cs#type"
+                }
+              ]
+            },
+            "6": {
+              "name": "entity.name.variable.local.cs"
+            }
+          }
+        }
+      ]
+    },
+    "finally-clause": {
+      "name": "meta.statement.finally.razor",
+      "begin": "(?:^|(?<=}))\\s*(finally)\\b\\s*?(?=[\\n\\{])",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.try.finally.cs"
+        }
+      },
+      "patterns": [
         {
           "include": "#csharp-code-block"
         },

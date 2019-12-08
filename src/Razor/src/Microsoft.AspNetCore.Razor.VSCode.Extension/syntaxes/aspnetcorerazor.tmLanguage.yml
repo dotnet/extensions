@@ -491,6 +491,7 @@ repository:
       - include: '#switch-statement'
       - include: '#lock-statement'
       - include: '#do-statement'
+      - include: '#try-statement'
 
   #>>>>> @using (...) { ... } <<<<<
 
@@ -683,6 +684,85 @@ repository:
       2: { name: 'keyword.other.lock.cs' }
     patterns:
       - include: '#csharp-condition'
+      - include: '#csharp-code-block'
+      - include: '#razor-codeblock-body'
+    end: '(?<=})'
+
+  #>>>>> @try { ... } [catch|finally] (...) { ... } <<<<<
+
+  try-statement:
+    patterns:
+      - include: '#try-block'
+      - include: '#catch-clause'
+      - include: '#finally-clause'
+
+  try-block:
+    name: 'meta.statement.try.razor'
+    begin: '(@)(try)\b\s*'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.try.cs' }
+    patterns:
+      - include: '#csharp-condition'
+      - include: '#csharp-code-block'
+      - include: '#razor-codeblock-body'
+    end: '(?<=})'
+
+  catch-clause:
+    name: 'meta.statement.catch.razor'
+    begin: '(?:^|(?<=}))\s*(catch)\b\s*?(?=[\n\(\{])'
+    beginCaptures:
+      1: { name: 'keyword.control.try.catch.cs' }
+    patterns:
+      - include: '#catch-condition'
+      - include: 'source.cs#when-clause'
+      - include: '#csharp-code-block'
+      - include: '#razor-codeblock-body'
+    end: '(?<=})'
+
+  # This condition is pulled directly from the C# grammar for catch clauses
+  catch-condition:
+    begin: '\('
+    beginCaptures:
+      0: { name: 'punctuation.parenthesis.open.cs' }
+    end: '\)'
+    endCaptures:
+      0: { name: 'punctuation.parenthesis.close.cs' }
+    patterns:
+      - match: |-
+          (?x)
+          (?<type-name>
+            (?:
+              (?:
+                (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                (?<name-and-type-args> # identifier + type arguments (if any)
+                  \g<identifier>\s*
+                  (?<type-args>\s*<(?:[^<>]|\g<type-args>)+>\s*)?
+                )
+                (?:\s*\.\s*\g<name-and-type-args>)* | # Are there any more names being dotted into?
+                (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+              )
+              (?:\s*\?\s*)? # nullable suffix?
+              (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+            )
+          )\s*
+          (?:(\g<identifier>)\b)?
+        captures:
+          1:
+            patterns:
+              - include: 'source.cs#type'
+          # '2': ?<identifier> is a sub-expression. It's final value is not considered.
+          # '3': ?<name-and-type-args> is a sub-expression. It's final value is not considered.
+          # '4': ?<type-args> is a sub-expression. It's final value is not considered.
+          # '5': ?<tuple> is a sub-expression. It's final value is not considered.
+          6: { name: entity.name.variable.local.cs }
+
+  finally-clause:
+    name: 'meta.statement.finally.razor'
+    begin: '(?:^|(?<=}))\s*(finally)\b\s*?(?=[\n\{])'
+    beginCaptures:
+      1: { name: 'keyword.control.try.finally.cs' }
+    patterns:
       - include: '#csharp-code-block'
       - include: '#razor-codeblock-body'
     end: '(?<=})'
