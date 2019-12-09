@@ -7,6 +7,7 @@ patterns:
 repository:
   razor-control-structures:
     patterns:
+      - include: '#razor-comment'
       - include: '#razor-codeblock'
       - include: '#explicit-razor-expression'
       - include: '#escaped-transition'
@@ -63,6 +64,19 @@ repository:
     endCaptures:
       1: { name: 'keyword.control.cshtml.transition.textTag.close' }
 
+# --------- Razor Comment -----------
+
+  razor-comment:
+    name: 'meta.comment.razor'
+    begin: '(@)(\*)'
+    beginCaptures:
+      1: { patterns: [ include: '#transition' ] }
+      2: { name: 'keyword.control.razor.comment.star' }
+    contentName: 'comment.block.razor'
+    end: '(\*)(@)'
+    endCaptures:
+      1: { name: 'keyword.control.razor.comment.star' }
+      2: { patterns: [ include: '#transition']}
 
 # ----------  HTML ------------
 
