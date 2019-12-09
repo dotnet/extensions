@@ -2158,6 +2158,50 @@ exports[`Grammar tests Razor code blocks @{ ... } Top level text tag 1`] = `
 "
 `;
 
+exports[`Grammar tests Razor comment Empty 1`] = `
+"Line: @**@
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.cshtml.transition
+ - token from 1 to 2 (*) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.razor.comment.star
+ - token from 2 to 3 (*) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.razor.comment.star
+ - token from 3 to 4 (@) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.cshtml.transition
+"
+`;
+
+exports[`Grammar tests Razor comment Multiple line 1`] = `
+"Line: @* Hello, this is a
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.cshtml.transition
+ - token from 1 to 2 (*) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.razor.comment.star
+ - token from 2 to 20 ( Hello, this is a) with scopes text.aspnetcorerazor, meta.comment.razor, comment.block.razor
+
+Line: multiline Razor comment. *@
+ - token from 0 to 25 (multiline Razor comment. ) with scopes text.aspnetcorerazor, meta.comment.razor, comment.block.razor
+ - token from 25 to 26 (*) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.razor.comment.star
+ - token from 26 to 27 (@) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.cshtml.transition
+"
+`;
+
+exports[`Grammar tests Razor comment Nested 1`] = `
+"Line: @* Hello @* World *@ *@
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.cshtml.transition
+ - token from 1 to 2 (*) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.razor.comment.star
+ - token from 2 to 18 ( Hello @* World ) with scopes text.aspnetcorerazor, meta.comment.razor, comment.block.razor
+ - token from 18 to 19 (*) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.razor.comment.star
+ - token from 19 to 20 (@) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.cshtml.transition
+ - token from 20 to 22 ( *) with scopes text.aspnetcorerazor
+ - token from 22 to 23 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+"
+`;
+
+exports[`Grammar tests Razor comment Single line 1`] = `
+"Line: @* Hello *@
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.cshtml.transition
+ - token from 1 to 2 (*) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.razor.comment.star
+ - token from 2 to 9 ( Hello ) with scopes text.aspnetcorerazor, meta.comment.razor, comment.block.razor
+ - token from 9 to 10 (*) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.razor.comment.star
+ - token from 10 to 11 (@) with scopes text.aspnetcorerazor, meta.comment.razor, keyword.control.cshtml.transition
+"
+`;
+
 exports[`Grammar tests Transitions Escaped transitions 1`] = `
 "Line: @@
  - token from 0 to 2 (@@) with scopes text.aspnetcorerazor, constant.character.escape.razor.transition

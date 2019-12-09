@@ -17,6 +17,7 @@ import { RunLayoutDirectiveSuite } from './LayoutDirective';
 import { RunModelDirectiveSuite } from './ModelDirective';
 import { RunNamespaceDirectiveSuite } from './NamespaceDirective';
 import { RunPageDirectiveSuite } from './PageDirective';
+import { RunRazorCommentSuite } from './RazorComment';
 import { RunRemoveTagHelperDirectiveSuite } from './RemoveTagHelperDirective';
 import { RunSectionDirectiveSuite } from './SectionDirective';
 import { RunTagHelperPrefixDirectiveSuite } from './TagHelperPrefixDirective';
@@ -34,6 +35,7 @@ describe('Grammar tests', () => {
     RunExplicitExpressionSuite();
     RunImplicitExpressionSuite();
     RunCodeBlockSuite();
+    RunRazorCommentSuite();
 
     // Directives
     RunCodeDirectiveSuite();
