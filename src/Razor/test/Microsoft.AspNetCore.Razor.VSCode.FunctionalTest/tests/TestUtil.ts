@@ -38,10 +38,10 @@ export async function pollUntil(fn: () => (boolean | Promise<boolean>), timeoutM
 }
 
 export async function ensureNoChangesFor(documentUri: vscode.Uri, durationMs: number) {
-    let changeOccured = false;
+    let changeOccurred = false;
     const registration = vscode.workspace.onDidChangeTextDocument(args => {
         if (documentUri === args.document.uri) {
-            changeOccured = true;
+            changeOccurred = true;
         }
     });
 
@@ -49,8 +49,8 @@ export async function ensureNoChangesFor(documentUri: vscode.Uri, durationMs: nu
 
     registration.dispose();
 
-    if (changeOccured) {
-        throw new Error('Change occured while ensuring no changes.');
+    if (changeOccurred) {
+        throw new Error('Change occurred while ensuring no changes.');
     }
 }
 
@@ -123,7 +123,7 @@ export async function waitForProjectReady(directory: string) {
     await csharpExtensionReady();
     await htmlLanguageFeaturesExtensionReady();
     await dotnetRestore(directory);
-    await restartOmnisharp();
+    await restartOmniSharp();
     await razorExtensionReady();
     await waitForProjectConfigured(directory);
 }
@@ -145,13 +145,13 @@ export async function waitForProjectConfigured(directory: string) {
     }, /* timeout */ 60000, /* pollInterval */ 250);
 }
 
-export async function restartOmnisharp() {
+export async function restartOmniSharp() {
     try {
         await vscode.commands.executeCommand('o.restart');
-        console.log('Omnisharp restarted successfully.');
+        console.log('OmniSharp restarted successfully.');
         await new Promise(r => setTimeout(r, 30000));
     } catch (error) {
-        console.log(`Omnisharp restart failed with ${error}.`);
+        console.log(`OmniSharp restart failed with ${error}.`);
     }
 }
 
@@ -239,15 +239,15 @@ function findInDir(directoryPath: string, fileQuery: string): string | undefined
 
     const files = fs.readdirSync(directoryPath);
     for (const filename of files) {
-        const fullpath = path.join(directoryPath, filename);
+        const fullPath = path.join(directoryPath, filename);
 
-        if (fs.lstatSync(fullpath).isDirectory()) {
-            const result = findInDir(fullpath, fileQuery);
+        if (fs.lstatSync(fullPath).isDirectory()) {
+            const result = findInDir(fullPath, fileQuery);
             if (result) {
                 return result;
             }
-        } else if (fullpath.indexOf(fileQuery) >= 0) {
-            return fullpath;
+        } else if (fullPath.indexOf(fileQuery) >= 0) {
+            return fullPath;
         }
     }
 }
