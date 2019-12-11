@@ -23,6 +23,7 @@ export async function registerRazorDevModeHelpers(context: vscode.ExtensionConte
 
     const configureSubscription = vscode.commands.registerCommand('extension.configureRazorDevMode', async () => {
         await razorConfiguration.update('devmode', true);
+        await razorConfiguration.update('trace', 'Verbose');
 
         const pluginPath = path.join(
             __dirname, '..', '..', '..', '..', '..', 'artifacts', 'bin', 'Microsoft.AspNetCore.Razor.OmniSharpPlugin', 'Debug', 'net472', 'Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll');
@@ -39,15 +40,22 @@ export async function registerRazorDevModeHelpers(context: vscode.ExtensionConte
         await vscode.commands.executeCommand('workbench.action.reloadWindow');
     });
     context.subscriptions.push(configureSubscription);
+}
 
+export function ensureWorkspaceIsConfigured() {
+    const razorConfiguration = vscode.workspace.getConfiguration('razor');
     if (!razorConfiguration.get('devmode')) {
         // Running in a workspace without devmode enabled. We should prompt the user to configure the workspace.
-        vscode.window.showWarningMessage(
+        vscode.window.showErrorMessage(
             'This workspace is not configured to use the local Razor extension.',
-            'Configure and Reload', 'Cancel').then(async (reloadResponse) => {
-                if (reloadResponse === 'Configure and reload?') {
+            'Configure and Reload').then(async (reloadResponse) => {
+                if (reloadResponse === 'Configure and Reload') {
                     await vscode.commands.executeCommand('extension.configureRazorDevMode');
                 }
             });
+
+        return false;
     }
+
+    return true;
 }
