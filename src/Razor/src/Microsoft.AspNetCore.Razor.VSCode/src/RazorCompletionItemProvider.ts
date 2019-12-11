@@ -58,6 +58,20 @@ export class RazorCompletionItemProvider
                         const replaceRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replaceRange.end);
                         (completionItem as any).range2.replace = new vscode.Range(replaceRangeStart, replaceRangeEnd);
                     }
+
+                    const insertingRange = (completionItem as any).range2.inserting;
+                    if (insertingRange) {
+                        const insertingRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertingRange.start);
+                        const insertingRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertingRange.end);
+                        (completionItem as any).range2.inserting = new vscode.Range(insertingRangeStart, insertingRangeEnd);
+                    }
+
+                    const replacingRange = (completionItem as any).range2.replacing;
+                    if (replacingRange) {
+                        const replacingRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replacingRange.start);
+                        const replacingRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replacingRange.end);
+                        (completionItem as any).range2.replacing = new vscode.Range(replacingRangeStart, replacingRangeEnd);
+                    }
                 }
 
                 // textEdit is deprecated in favor of .range. Clear out its value to avoid any unexpected behavior.
