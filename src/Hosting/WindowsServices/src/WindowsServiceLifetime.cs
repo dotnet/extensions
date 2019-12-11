@@ -17,6 +17,11 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
         private readonly HostOptions _hostOptions;
 
         public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> optionsAccessor)
+            : this(environment, applicationLifetime, loggerFactory, optionsAccessor, Options.Options.Create(new WindowsServiceLifetimeOptions()))
+        {
+        }
+
+        public WindowsServiceLifetime(IHostEnvironment environment, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory, IOptions<HostOptions> optionsAccessor, IOptions<WindowsServiceLifetimeOptions> windowsServiceOptionsAccessor)
         {
             Environment = environment ?? throw new ArgumentNullException(nameof(environment));
             ApplicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
@@ -25,7 +30,13 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
             {
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
+            if (windowsServiceOptionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(windowsServiceOptionsAccessor));
+            }
             _hostOptions = optionsAccessor.Value;
+            ServiceName = windowsServiceOptionsAccessor.Value.ServiceName;
+            CanShutdown = true;
         }
 
         private IHostApplicationLifetime ApplicationLifetime { get; }
@@ -89,6 +100,14 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
             // Wait for the host to shutdown before marking service as stopped.
             _delayStop.Wait(_hostOptions.ShutdownTimeout);
             base.OnStop();
+        }
+        
+        protected override void OnShutdown()
+        {
+             ApplicationLifetime.StopApplication();
+             // Wait for the host to shutdown before marking service as stopped.
+             _delayStop.Wait(_hostOptions.ShutdownTimeout);
+             base.OnShutdown();                
         }
 
         protected override void Dispose(bool disposing)

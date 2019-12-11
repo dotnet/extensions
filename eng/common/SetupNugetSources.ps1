@@ -130,14 +130,14 @@ InsertMaestroPrivateFeedCredentials -Sources $sources -Creds $creds -Username $u
 
 $dotnet3Source = $sources.SelectSingleNode("add[@key='dotnet3']")
 if ($dotnet3Source -ne $null) {
-    AddPackageSource -Sources $sources -SourceName "dotnet3-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2" -Creds $creds -Username $userName -Password $Password
-    AddPackageSource -Sources $sources -SourceName "dotnet3-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2" -Creds $creds -Username $userName -Password $Password
+    AddPackageSource -Sources $sources -SourceName "dotnet3-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
+    AddPackageSource -Sources $sources -SourceName "dotnet3-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3-internal-transport/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
 }
 
 $dotnet31Source = $sources.SelectSingleNode("add[@key='dotnet3.1']")
 if ($dotnet31Source -ne $null) {
-    AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v2" -Creds $creds -Username $userName -Password $Password
-    AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v2" -Creds $creds -Username $userName -Password $Password
+    AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
+    AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v2" -Creds $creds -Username "dn-bot" -Password $Password
 }
 
 $doc.Save($filename)

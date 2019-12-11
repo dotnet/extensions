@@ -6,14 +6,14 @@
 -->
 <Project>
   <PropertyGroup Label="Version settings">
-    <MajorVersion>3</MajorVersion>
-    <MinorVersion>1</MinorVersion>
-    <PatchVersion>1</PatchVersion>
+    <MajorVersion>5</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>alpha1</PreReleaseVersionLabel>
     <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
     <!-- Blazor WASM packages will not RTM with 3.1 -->
-    <BlazorWASMPreReleaseVersionLabel>preview4</BlazorWASMPreReleaseVersionLabel>
+    <BlazorWASMPreReleaseVersionLabel>preview3</BlazorWASMPreReleaseVersionLabel>
     <!--
       We do not support changing reference assemblies in a patch. This ignores
       the patch version number to ensure assembly version of ref assemblies stays constant
@@ -22,7 +22,7 @@
     <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
     <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
     <!--
-      Until package baselines are updated (see aspnet/AspNetCore#12702), ignore them. This also
+      Until package baselines are updated (see aspnet/AspNetCore#12702), ignore them and PatchConfig.props. This also
       gives us time to build the entire repo and settle the infrastructure. Do _not_ do this when stabilizing versions.
     -->
     <DisableServicingFeatures Condition=" '$(DisableServicingFeatures)' == '' AND '$(StabilizePackageVersion)' != 'true' ">true</DisableServicingFeatures>
@@ -54,30 +54,30 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.1-servicing.19576.9</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.1-servicing.19576.9</MicrosoftNETCoreAppInternalPackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-alpha.1.19562.8</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-alpha.1.19562.8</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-alpha.1.19562.8</MicrosoftNETCoreAppInternalPackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0-alpha.1.19562.8</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftBclAsyncInterfacesPackageVersion>1.1.0</MicrosoftBclAsyncInterfacesPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.7.0</MicrosoftWin32RegistryPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>4.7.0</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.7.0</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>4.7.0</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.7.0</SystemIOPipelinesPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.8.0</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.7.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.7.0</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>4.7.0</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemServiceProcessServiceControllerPackageVersion>4.7.0</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.7.0</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>4.7.0</SystemTextJsonPackageVersion>
+    <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha.1.19556.7</MicrosoftWin32RegistryPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha.1.19556.7</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-alpha.1.19556.7</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>5.0.0-alpha.1.19556.7</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>5.0.0-alpha.1.19556.7</SystemIOPipelinesPackageVersion>
+    <SystemReflectionMetadataPackageVersion>5.0.0-alpha.1.19556.7</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-alpha.1.19556.7</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>5.0.0-alpha.1.19556.7</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-alpha.1.19556.7</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-alpha.1.19556.7</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-alpha.1.19556.7</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>5.0.0-alpha.1.19556.7</SystemTextJsonPackageVersion>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
-    <MicrosoftNETCorePlatformsPackageVersion>3.1.0</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-alpha.1.19556.7</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19607.3</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.19608.1</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetVersion>3.4.0-beta4-19569-03</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetVersion>3.4.0-beta1-19456-03</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
