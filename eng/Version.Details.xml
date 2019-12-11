@@ -70,10 +70,6 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
       <Sha>a1388f194c30cb21b36b75982962cb5e35954e4e</Sha>
     </Dependency>
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
-      <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.1-servicing.19608.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
       <Sha>a1388f194c30cb21b36b75982962cb5e35954e4e</Sha>
@@ -82,6 +78,10 @@
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0" Pinned="true">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>65f04fb6db7a5e198d05dbebd5c4ad21eb018f89</Sha>
+    </Dependency>
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
+      <Uri>https://github.com/dotnet/core-setup</Uri>
+      <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
