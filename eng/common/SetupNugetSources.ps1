@@ -83,7 +83,7 @@ function AddCredential($creds, $source, $username, $password) {
     $passwordElement.SetAttribute("value", $Password)
 }
 
-function InsertMaestroPrivateFeedCredentials($Sources, $Creds, $Username, $Password) {
+function InsertMaestroPrivateFeedCredentials($Sources, $Creds, $Password) {
     $maestroPrivateSources = $Sources.SelectNodes("add[contains(@key,'darc-int')]")
 
     Write-Host "Inserting credentials for $($maestroPrivateSources.Count) Maestro's private feeds."
@@ -123,10 +123,8 @@ if ($creds -eq $null) {
     $doc.DocumentElement.AppendChild($creds) | Out-Null
 }
 
-$userName = "dn-bot"
-
 # Insert credential nodes for Maestro's private feeds
-InsertMaestroPrivateFeedCredentials -Sources $sources -Creds $creds -Username $userName -Password $Password
+InsertMaestroPrivateFeedCredentials -Sources $sources -Creds $creds -Password $Password
 
 $dotnet3Source = $sources.SelectSingleNode("add[@key='dotnet3']")
 if ($dotnet3Source -ne $null) {
