@@ -37,7 +37,7 @@ export class RazorDefinitionProvider
 
             } else {
                 // This means it is one of the following,
-                // 1. A .razor/.cshtml file (because Omnisharp already remapped the background C# to the original document)
+                // 1. A .razor/.cshtml file (because OmniSharp already remapped the background C# to the original document)
                 // 2. A .cs file
                 // 3. A .html/.js file
                 // In all of these cases, we don't need to remap. So accept it as is and move on.

@@ -29,7 +29,7 @@ export class CSharpPreviewPanel {
                 'Razor C# Preview',
                 vscode.ViewColumn.Two, {
                 enableScripts: true,
-                // Dissallow any remote sources
+                // Disallow any remote sources
                 localResourceRoots: [],
             });
             this.attachToCurrentPanel();
@@ -86,7 +86,7 @@ export class CSharpPreviewPanel {
         let virtualDocumentFilePath = '';
 
         if (document) {
-            // The document is guarunteed to be a Razor document
+            // The document is guaranteed to be a Razor document
             this.csharpContent = document.csharpDocument.getContent();
             hostDocumentFilePath = getUriPath(document.uri);
             virtualDocumentFilePath = getUriPath(document.htmlDocument.uri);
