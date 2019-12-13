@@ -3195,6 +3195,16 @@ exports[`Grammar tests Implicit Expressions Awaited property 1`] = `
 "
 `;
 
+exports[`Grammar tests Implicit Expressions Close curly prefix 1`] = `
+"Line: }@DateTime.Now
+ - token from 0 to 1 (}) with scopes text.aspnetcorerazor
+ - token from 1 to 2 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 2 to 10 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 10 to 11 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 11 to 14 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+"
+`;
+
 exports[`Grammar tests Implicit Expressions Close curly suffix 1`] = `
 "Line: @DateTime.Now}
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
@@ -3237,6 +3247,12 @@ exports[`Grammar tests Implicit Expressions Combined with HTML 1`] = `
  - token from 16 to 18 (</) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, punctuation.definition.tag.begin.html
  - token from 18 to 19 (p) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, entity.name.tag.html
  - token from 19 to 20 (>) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, punctuation.definition.tag.end.html
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Email address, not implicit expression 1`] = `
+"Line: abc@DateTime.Now
+ - token from 0 to 17 (abc@DateTime.Now) with scopes text.aspnetcorerazor
 "
 `;
 
@@ -3355,6 +3371,26 @@ exports[`Grammar tests Implicit Expressions Open curly suffix 1`] = `
  - token from 9 to 10 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
  - token from 10 to 13 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
  - token from 13 to 15 ({) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Parenthesis prefix 1`] = `
+"Line: )@DateTime.Now
+ - token from 0 to 1 ()) with scopes text.aspnetcorerazor
+ - token from 1 to 2 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 2 to 10 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 10 to 11 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 11 to 14 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
+"
+`;
+
+exports[`Grammar tests Implicit Expressions Punctuation prefix 1`] = `
+"Line: .@DateTime.Now
+ - token from 0 to 1 (.) with scopes text.aspnetcorerazor
+ - token from 1 to 2 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 2 to 10 (DateTime) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 10 to 11 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 11 to 14 (Now) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.property.cs
 "
 `;
 

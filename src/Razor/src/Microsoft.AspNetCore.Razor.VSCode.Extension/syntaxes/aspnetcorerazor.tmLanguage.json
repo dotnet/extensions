@@ -304,7 +304,7 @@
     },
     "implicit-expression": {
       "name": "meta.expression.implicit.cshtml",
-      "begin": "(@)",
+      "begin": "(?<![[:alpha:][:alnum:]])(@)",
       "beginCaptures": {
         "1": {
           "patterns": [

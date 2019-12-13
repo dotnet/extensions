@@ -9,6 +9,22 @@ import { assertMatchesSnapshot } from './infrastructure/TestUtilities';
 
 export function RunImplicitExpressionSuite() {
     describe('Implicit Expressions', () => {
+        it('Email address, not implicit expression', async () => {
+            await assertMatchesSnapshot('abc@DateTime.Now');
+        });
+
+        it('Parenthesis prefix', async () => {
+            await assertMatchesSnapshot(')@DateTime.Now');
+        });
+
+        it('Punctuation prefix', async () => {
+            await assertMatchesSnapshot('.@DateTime.Now');
+        });
+
+        it('Close curly prefix', async () => {
+            await assertMatchesSnapshot('}@DateTime.Now');
+        });
+
         it('Empty', async () => {
             await assertMatchesSnapshot('@');
         });
