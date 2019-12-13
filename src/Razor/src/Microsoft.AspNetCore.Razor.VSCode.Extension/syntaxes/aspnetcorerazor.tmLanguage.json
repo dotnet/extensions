@@ -1013,7 +1013,7 @@
     },
     "using-statement": {
       "name": "meta.statement.using.razor",
-      "begin": "(@)(using)\\b\\s*(?=\\()",
+      "begin": "(?:^\\s*|(@))(using)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1041,7 +1041,7 @@
     },
     "if-statement": {
       "name": "meta.statement.if.razor",
-      "begin": "(@)(if)\\b\\s*(?=\\()",
+      "begin": "(?:^\\s*|(@))(if)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1093,7 +1093,7 @@
     },
     "for-statement": {
       "name": "meta.statement.for.razor",
-      "begin": "(@)(for)\\b\\s*(?=\\()",
+      "begin": "(?:^\\s*|(@))(for)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1121,7 +1121,7 @@
     },
     "foreach-statement": {
       "name": "meta.statement.foreach.razor",
-      "begin": "(@)(foreach)\\b\\s*(?=\\()",
+      "begin": "(?:^\\s*|(@))(foreach)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1207,7 +1207,7 @@
     },
     "do-statement": {
       "name": "meta.statement.do.razor",
-      "begin": "(@)(do)\\b\\s*",
+      "begin": "(?:^\\s*|(@))(do)\\b\\s*",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1268,7 +1268,7 @@
     },
     "switch-statement": {
       "name": "meta.statement.switch.razor",
-      "begin": "(@)(switch)\\b\\s*(?=\\()",
+      "begin": "(?:^\\s*|(@))(switch)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1319,7 +1319,7 @@
     },
     "lock-statement": {
       "name": "meta.statement.lock.razor",
-      "begin": "(@)(lock)\\b\\s*(?=\\()",
+      "begin": "(?:^\\s*|(@))(lock)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1360,7 +1360,7 @@
     },
     "try-block": {
       "name": "meta.statement.try.razor",
-      "begin": "(@)(try)\\b\\s*",
+      "begin": "(?:^\\s*|(@))(try)\\b\\s*",
       "beginCaptures": {
         "1": {
           "patterns": [

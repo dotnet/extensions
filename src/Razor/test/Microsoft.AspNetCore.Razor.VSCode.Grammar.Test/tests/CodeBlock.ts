@@ -39,14 +39,14 @@ export function RunCodeBlockSuite() {
 
         it('Single line markup simple', async () => {
             await assertMatchesSnapshot(
-`@{
+                `@{
     @: <p> Incomplete
 }`);
         });
 
         it('Single line markup complex', async () => {
             await assertMatchesSnapshot(
-`@{
+                `@{
     @:@DateTime.Now <text>Nope</text>
 }`);
         });
@@ -91,6 +91,118 @@ export function RunCodeBlockSuite() {
 
     if (true) {
         <p>alksdjfl</p>
+    }
+}`);
+        });
+
+        it('Nested if statement with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    if (true)
+    {
+        <p>Hello World!</p>
+    }
+}`);
+        });
+
+        it('Nested for statement with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    for (var i = 0; i % 2 == 0; i++)
+    {
+        <p>@i</p>
+    }
+}`);
+        });
+
+        it('Nested foreach statement with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    foreach (var person in people)
+    {
+        <p>@person</p>
+    }
+}`);
+        });
+
+        it('Nested do while statement with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    var i = 0;
+    do
+    {
+        <p>@i</p>
+    } while (i++ != 10);
+}`);
+        });
+
+        it('Nested while statement with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    var i = 0;
+    while (i++ != 10)
+    {
+        <p>@i</p>
+    }
+}`);
+        });
+
+        it('Nested lock statement with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    lock (someObject)
+    {
+        <p>Hello World</p>
+    }
+}`);
+        });
+
+        it('Nested using statement with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    using (someDisposable)
+    {
+        <p>Hello World</p>
+    }
+}`);
+        });
+
+        it('Nested try statement with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    try
+    {
+        <p>Hello World</p>
+    } catch (Exception ex){}
+}`);
+        });
+
+        it('Nested switch statement with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    switch (something)
+    {
+        case true:
+            <p>Hello World</p>
+            break;
+    }
+}`);
+        });
+
+        it('Complex with various nested statements', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    if (true) {
+        <div>
+        @using (someDisposable) {
+            <p>Foo!</p>
+            var x = 123;
+            while (i++ % 2 == 0)
+            {
+                <strong>Bar</strong>
+            }
+        }
+        </div>
     }
 }`);
         });
