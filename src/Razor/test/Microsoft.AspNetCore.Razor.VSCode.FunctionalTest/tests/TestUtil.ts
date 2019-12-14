@@ -11,16 +11,27 @@ import * as vscode from 'vscode';
 
 export const razorRoot = path.join(__dirname, '..', '..', '..');
 export const testAppsRoot = path.join(razorRoot, 'test', 'testapps');
+export const componentRoot = path.join(testAppsRoot, 'ComponentApp');
 export const mvcWithComponentsRoot = path.join(testAppsRoot, 'MvcWithComponents');
 export const simpleMvc21Root = path.join(testAppsRoot, 'SimpleMvc21');
+export const simpleMvc22Root = path.join(testAppsRoot, 'SimpleMvc22');
 
-export async function pollUntil(fn: () => boolean, timeoutMs: number, pollInterval?: number) {
+export async function pollUntil(fn: () => (boolean | Promise<boolean>), timeoutMs: number, pollInterval?: number, suppressError?: boolean) {
     const resolvedPollInterval = pollInterval ? pollInterval : 50;
 
     let timeWaited = 0;
-    while (!fn()) {
+    let fnEval = fn();
+    if (fnEval instanceof Promise) {
+        fnEval = await fnEval;
+    }
+
+    while (!fnEval) {
         if (timeWaited >= timeoutMs) {
-            throw new Error(`Timed out after ${timeoutMs}ms.`);
+            if (suppressError) {
+                return;
+            } else {
+                throw new Error(`Timed out after ${timeoutMs}ms.`);
+            }
         }
 
         await new Promise(r => setTimeout(r, resolvedPollInterval));
@@ -29,10 +40,10 @@ export async function pollUntil(fn: () => boolean, timeoutMs: number, pollInterv
 }
 
 export async function ensureNoChangesFor(documentUri: vscode.Uri, durationMs: number) {
-    let changeOccured = false;
+    let changeOccurred = false;
     const registration = vscode.workspace.onDidChangeTextDocument(args => {
         if (documentUri === args.document.uri) {
-            changeOccured = true;
+            changeOccurred = true;
         }
     });
 
@@ -40,8 +51,8 @@ export async function ensureNoChangesFor(documentUri: vscode.Uri, durationMs: nu
 
     registration.dispose();
 
-    if (changeOccured) {
-        throw new Error('Change occured while ensuring no changes.');
+    if (changeOccurred) {
+        throw new Error('Change occurred while ensuring no changes.');
     }
 }
 
@@ -62,6 +73,8 @@ export async function waitForDocumentUpdate(
         }
     };
 
+    // Add a slight delay before checking for the first time.
+    await new Promise(r => setTimeout(r, 500));
     checkUpdated(updatedDocument);
 
     const registration = vscode.workspace.onDidChangeTextDocument(args => {
@@ -112,6 +125,7 @@ export async function waitForProjectReady(directory: string) {
     await csharpExtensionReady();
     await htmlLanguageFeaturesExtensionReady();
     await dotnetRestore(directory);
+    await restartOmniSharp();
     await razorExtensionReady();
     await waitForProjectConfigured(directory);
 }
@@ -131,6 +145,16 @@ export async function waitForProjectConfigured(directory: string) {
 
         return false;
     }, /* timeout */ 60000, /* pollInterval */ 250);
+}
+
+export async function restartOmniSharp() {
+    try {
+        await vscode.commands.executeCommand('o.restart');
+        console.log('OmniSharp restarted successfully.');
+        await new Promise(r => setTimeout(r, 30000));
+    } catch (error) {
+        console.log(`OmniSharp restart failed with ${error}.`);
+    }
 }
 
 export async function cleanBinAndObj(directory: string): Promise<void> {
@@ -202,7 +226,12 @@ export async function htmlLanguageFeaturesExtensionReady() {
 }
 
 async function razorExtensionReady() {
-    await vscode.commands.executeCommand('extension.razorActivated');
+    try {
+        await vscode.commands.executeCommand('extension.razorActivated');
+        console.log('Razor activated successfully.');
+    } catch (error) {
+        console.log(`Razor activation failed with ${error}.`);
+    }
 }
 
 function findInDir(directoryPath: string, fileQuery: string): string | undefined {
@@ -212,15 +241,15 @@ function findInDir(directoryPath: string, fileQuery: string): string | undefined
 
     const files = fs.readdirSync(directoryPath);
     for (const filename of files) {
-        const fullpath = path.join(directoryPath, filename);
+        const fullPath = path.join(directoryPath, filename);
 
-        if (fs.lstatSync(fullpath).isDirectory()) {
-            const result = findInDir(fullpath, fileQuery);
+        if (fs.lstatSync(fullPath).isDirectory()) {
+            const result = findInDir(fullPath, fileQuery);
             if (result) {
                 return result;
             }
-        } else if (fullpath.indexOf(fileQuery) >= 0) {
-            return fullpath;
+        } else if (fullPath.indexOf(fileQuery) >= 0) {
+            return fullPath;
         }
     }
 }

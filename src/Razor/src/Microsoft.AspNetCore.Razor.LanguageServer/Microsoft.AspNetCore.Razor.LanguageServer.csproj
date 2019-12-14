@@ -52,8 +52,6 @@
       </ProjectToPublish>
     </ItemGroup>
 
-    <MSBuild Projects="@(ProjectToPublish)"
-             Targets="Publish;_IncludeOmniSharpPlugin"
-             BuildInParallel="false" />
+    <MSBuild Projects="@(ProjectToPublish)" Targets="Publish;_IncludeOmniSharpPlugin" BuildInParallel="false" />
   </Target>
 </Project>

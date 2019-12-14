@@ -33,7 +33,13 @@ export class RazorLogger implements vscode.Disposable {
     public get onLog() { return this.onLogEmitter.event; }
 
     public logAlways(message: string) {
-        this.logWithmarker(message);
+        this.logWithMarker(message);
+    }
+
+    public logWarning(message: string) {
+        // Always log warnings
+        const warningPrefixedMessage = `(Warning) ${message}`;
+        this.logAlways(warningPrefixedMessage);
     }
 
     public logError(message: string, error: Error) {
@@ -47,13 +53,13 @@ ${error.stack}`;
 
     public logMessage(message: string) {
         if (this.messageEnabled) {
-            this.logWithmarker(message);
+            this.logWithMarker(message);
         }
     }
 
     public logVerbose(message: string) {
         if (this.verboseEnabled) {
-            this.logWithmarker(message);
+            this.logWithMarker(message);
         }
     }
 
@@ -61,7 +67,7 @@ ${error.stack}`;
         this.outputChannel.dispose();
     }
 
-    private logWithmarker(message: string) {
+    private logWithMarker(message: string) {
         const timeString = new Date().toLocaleTimeString();
         const markedMessage = `[Client - ${timeString}] ${message}`;
 

@@ -3,28 +3,25 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.CodeAnalysis.Text;
-using OmniSharp.Extensions.LanguageServer.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultGeneratedCodeContainerStore : GeneratedCodeContainerStore
     {
         private readonly ConcurrentDictionary<string, GeneratedCodeContainer> _store;
-        private readonly Lazy<ILanguageServer> _server;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentVersionCache _documentVersionCache;
+        private readonly CSharpPublisher _csharpPublisher;
         private ProjectSnapshotManagerBase _projectSnapshotManager;
 
         public DefaultGeneratedCodeContainerStore(
             ForegroundDispatcher foregroundDispatcher,
             DocumentVersionCache documentVersionCache,
-            Lazy<ILanguageServer> server)
+            CSharpPublisher csharpPublisher)
         {
             if (foregroundDispatcher == null)
             {
@@ -36,14 +33,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentVersionCache));
             }
 
-            if (server == null)
+            if (csharpPublisher is null)
             {
-                throw new ArgumentNullException(nameof(server));
+                throw new ArgumentNullException(nameof(csharpPublisher));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentVersionCache = documentVersionCache;
-            _server = server;
+            _csharpPublisher = csharpPublisher;
             _store = new ConcurrentDictionary<string, GeneratedCodeContainer>(FilePathComparer.Instance);
         }
 
@@ -96,36 +93,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 var generatedCodeContainer = (GeneratedCodeContainer)sender;
 
-                IReadOnlyList<TextChange> textChanges;
-
-                if (args.NewText.ContentEquals(args.OldText))
-                {
-                    // If the content is equal then no need to update the underlying CSharp buffer.
-                    textChanges = Array.Empty<TextChange>();
-                }
-                else
-                {
-                    textChanges = args.NewText.GetTextChanges(args.OldText);
-                }
-
                 var latestDocument = generatedCodeContainer.LatestDocument;
 
                 Task.Factory.StartNew(() =>
                 {
+                    if (!_projectSnapshotManager.IsDocumentOpen(filePath))
+                    {
+                        // Document isn't opened, no need to notify the client
+                        return;
+                    }
+
                     if (!_documentVersionCache.TryGetDocumentVersion(latestDocument, out var hostDocumentVersion))
                     {
                         // Cache entry doesn't exist, document most likely was evicted from the cache/too old.
                         return;
                     }
 
-                    var request = new UpdateCSharpBufferRequest()
-                    {
-                        HostDocumentFilePath = filePath,
-                        Changes = textChanges,
-                        HostDocumentVersion = hostDocumentVersion,
-                    };
-
-                    _server.Value.Client.SendRequest("updateCSharpBuffer", request);
+                    _csharpPublisher.Publish(filePath, args.NewText, hostDocumentVersion);
                 }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
             };
 
