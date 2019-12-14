@@ -17,6 +17,14 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>d40e21ccc14908a054b2181b1d6aeb22c49c630d</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.1-servicing.19604.6">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>d40e21ccc14908a054b2181b1d6aeb22c49c630d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.1-servicing.19604.6">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>d40e21ccc14908a054b2181b1d6aeb22c49c630d</Sha>
+    </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.7.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
@@ -37,6 +45,11 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>f3f2dd583fffa254015fc21ff0e45784b333256d</Sha>
     </Dependency>
+    <!-- Listed as a dependency to workaround https://github.com/dotnet/cli/issues/10528 -->
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.1.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
+    </Dependency>
     <!--
       Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
       All Runtime.$rid packages should have the same version.
@@ -52,19 +65,6 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <!-- Listed as a dependency to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.1.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.1-servicing.19604.6">
-      <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>d40e21ccc14908a054b2181b1d6aeb22c49c630d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.1-servicing.19604.6">
-      <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>d40e21ccc14908a054b2181b1d6aeb22c49c630d</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19607.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>4d80b9cfa53e309c8f685abff3512f60c3d8a3d1</Sha>
