@@ -11,8 +11,10 @@ import * as vscode from 'vscode';
 
 export const razorRoot = path.join(__dirname, '..', '..', '..');
 export const testAppsRoot = path.join(razorRoot, 'test', 'testapps');
+export const componentRoot = path.join(testAppsRoot, 'ComponentApp');
 export const mvcWithComponentsRoot = path.join(testAppsRoot, 'MvcWithComponents');
 export const simpleMvc21Root = path.join(testAppsRoot, 'SimpleMvc21');
+export const simpleMvc22Root = path.join(testAppsRoot, 'SimpleMvc22');
 
 export async function pollUntil(fn: () => (boolean | Promise<boolean>), timeoutMs: number, pollInterval?: number, suppressError?: boolean) {
     const resolvedPollInterval = pollInterval ? pollInterval : 50;

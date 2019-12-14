@@ -8,7 +8,7 @@ import { afterEach, before, beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
-    mvcWithComponentsRoot,
+    componentRoot,
     pollUntil,
     waitForProjectReady,
 } from './TestUtil';
@@ -16,13 +16,13 @@ import {
 let cshtmlDoc: vscode.TextDocument;
 let editor: vscode.TextEditor;
 
-suite('Hover', () => {
+suite('Hover Components', () => {
     before(async () => {
-        await waitForProjectReady(mvcWithComponentsRoot);
+        await waitForProjectReady(componentRoot);
     });
 
     beforeEach(async () => {
-        const filePath = path.join(mvcWithComponentsRoot, 'Views', 'Home', 'Index.cshtml');
+        const filePath = path.join(componentRoot, 'Components', 'Shared', 'MainLayout.razor');
         cshtmlDoc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(cshtmlDoc);
     });
@@ -39,45 +39,28 @@ suite('Hover', () => {
         }, /* timeout */ 3000, /* pollInterval */ 500, true /* suppress timeout */);
     });
 
-    test('Can perform hovers on C#', async () => {
+    test('Can perform hovers on Components', async () => {
         const firstLine = new vscode.Position(0, 0);
-        await editor.edit(edit => edit.insert(firstLine, '<p>@DateTime.Now</p>\n'));
+        await editor.edit(edit => edit.insert(firstLine, '<NavMenu />\n'));
         const hoverResult = await vscode.commands.executeCommand<vscode.Hover[]>(
             'vscode.executeHoverProvider',
             cshtmlDoc.uri,
-            new vscode.Position(0, 6));
-        const expectedRange = new vscode.Range(
-            new vscode.Position(0, 4),
-            new vscode.Position(0, 12));
-
-        assert.ok(hoverResult, 'Should have a hover result for DateTime.Now');
-        if (!hoverResult) {
-            // Not possible, but strict TypeScript doesn't know about assert.ok above.
-            return;
-        }
-
-        assert.equal(hoverResult.length, 1, 'Someone else unexpectedly may be providing hover results');
-        assert.deepEqual(hoverResult[0].range, expectedRange, 'C# hover range should be DateTime.Now');
-    });
-
-    test('Can perform hovers on HTML', async () => {
-        const firstLine = new vscode.Position(0, 0);
-        await editor.edit(edit => edit.insert(firstLine, '<p>@DateTime.Now</p>\n'));
-        const hoverResult = await vscode.commands.executeCommand<vscode.Hover[]>(
-            'vscode.executeHoverProvider',
-            cshtmlDoc.uri,
-            new vscode.Position(0, 1));
+            new vscode.Position(0, 3));
         const expectedRange = new vscode.Range(
             new vscode.Position(0, 1),
-            new vscode.Position(0, 2));
+            new vscode.Position(0, 8));
 
-        assert.ok(hoverResult, 'Should have a hover result for <p>');
+        assert.ok(hoverResult, 'Should have a hover result for NavMenu');
         if (!hoverResult) {
             // Not possible, but strict TypeScript doesn't know about assert.ok above.
             return;
         }
 
-        assert.equal(hoverResult.length, 1, 'Someone else unexpectedly may be providing hover results');
-        assert.deepEqual(hoverResult[0].range, expectedRange, 'HTML hover range should be p');
+        assert.equal(hoverResult.length, 1, 'Something else may be providing hover results');
+
+        const navMenuResult = hoverResult[0];
+        assert.deepEqual(navMenuResult.range, expectedRange, 'Component range should be <NavMenu>');
+        const mStr = navMenuResult.contents[0] as vscode.MarkdownString;
+        assert.ok(mStr.value.includes('**NavMenu**'), `**NavMenu** not included in '${mStr.value}'`);
     });
 });

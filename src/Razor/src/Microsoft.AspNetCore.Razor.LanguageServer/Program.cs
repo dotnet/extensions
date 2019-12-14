@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
+using Microsoft.AspNetCore.Razor.LanguageServer.Hover;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Completion;
@@ -68,6 +69,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithMinimumLogLevel(logLevel)
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionEndpoint>()
+                    .WithHandler<RazorHoverEndpoint>()
                     .WithHandler<RazorLanguageEndpoint>()
                     .WithHandler<RazorProjectEndpoint>()
                     .WithServices(services =>
@@ -104,6 +106,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<CSharpPublisher>(csharpPublisher);
 
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
+                        services.AddSingleton<RazorHoverInfoService, DefaultRazorHoverInfoService>();
+                        services.AddSingleton<HtmlFactsService, DefaultHtmlFactsService>();
                         var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher);
                         services.AddSingleton<DocumentVersionCache>(documentVersionCache);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(documentVersionCache);
