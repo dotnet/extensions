@@ -228,8 +228,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     {
                         var id = reader.GetFieldValue<string>(Columns.Indexes.CacheItemIdIndex);
 
-                        var expirationTimeStr = reader.GetFieldValue<string>(Columns.Indexes.ExpiresAtTimeIndex);
-                        DateTimeOffset.TryParse(expirationTimeStr, out expirationTime);
+                        var expirationTimeStr = reader.GetFieldValue<object>(Columns.Indexes.ExpiresAtTimeIndex);
+                        DateTimeOffset.TryParse(expirationTimeStr?.ToString(), out expirationTime);
 
                         if (!reader.IsDBNull(Columns.Indexes.SlidingExpirationInSecondsIndex))
                         {
@@ -239,9 +239,9 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
                         if (!reader.IsDBNull(Columns.Indexes.AbsoluteExpirationIndex))
                         {
-                            var absoluteExpirationStr = reader.GetFieldValue<string>(
+                            var absoluteExpirationStr = reader.GetFieldValue<object>(
                                 Columns.Indexes.AbsoluteExpirationIndex);
-                            DateTimeOffset.TryParse(absoluteExpirationStr, out var currentAbsoluteExpiration);
+                            DateTimeOffset.TryParse(absoluteExpirationStr?.ToString(), out var currentAbsoluteExpiration);
                             absoluteExpiration = currentAbsoluteExpiration;
                         }
 
@@ -297,9 +297,9 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     {
                         var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex, token);
 
-                        var expirationTimeStr = await reader.GetFieldValueAsync<string>(
+                        var expirationTimeStr = await reader.GetFieldValueAsync<object>(
                             Columns.Indexes.ExpiresAtTimeIndex, token);
-                        DateTimeOffset.TryParse(expirationTimeStr, out expirationTime);
+                        DateTimeOffset.TryParse(expirationTimeStr?.ToString(), out expirationTime);
 
                         if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token))
                         {
@@ -309,10 +309,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
                         if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token))
                         {
-                            var absoluteExpirationStr = await reader.GetFieldValueAsync<string>(
+                            var absoluteExpirationStr = await reader.GetFieldValueAsync<object>(
                                 Columns.Indexes.AbsoluteExpirationIndex,
                                 token);
-                            DateTimeOffset.TryParse(absoluteExpirationStr, out var currentAbsoluteExpiration);
+                            DateTimeOffset.TryParse(absoluteExpirationStr?.ToString(), out var currentAbsoluteExpiration);
                             absoluteExpiration = currentAbsoluteExpiration;
                         }
 
