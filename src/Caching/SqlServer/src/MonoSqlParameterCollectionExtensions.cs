@@ -22,9 +22,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             this SqlParameterCollection parameters,
             DateTimeOffset utcTime)
         {
-            return parameters.AddWithValue(Columns.Names.ExpiresAtTime, SqlDbType.DateTime, utcTime.UtcDateTime);
+            return parameters.AddWithValue(Columns.Names.ExpiresAtTime, SqlDbType.VarChar, utcTime.UtcDateTime.ToString());
         }
-
 
         public static SqlParameterCollection AddAbsoluteExpirationMono(
                     this SqlParameterCollection parameters,
@@ -33,12 +32,12 @@ namespace Microsoft.Extensions.Caching.SqlServer
             if (utcTime.HasValue)
             {
                 return parameters.AddWithValue(
-                    Columns.Names.AbsoluteExpiration, SqlDbType.DateTime, utcTime.Value.UtcDateTime);
+                    Columns.Names.AbsoluteExpiration, SqlDbType.VarChar, utcTime.Value.UtcDateTime.ToString());
             }
             else
             {
                 return parameters.AddWithValue(
-                Columns.Names.AbsoluteExpiration, SqlDbType.DateTime, DBNull.Value);
+                Columns.Names.AbsoluteExpiration, SqlDbType.VarChar, DBNull.Value);
             }
         }
     }

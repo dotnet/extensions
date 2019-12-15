@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             token.ThrowIfCancellationRequested();
 
-            await GetCacheItemAsync(key, includeValue: false, token:token);
+            await GetCacheItemAsync(key, includeValue: false, token: token);
         }
 
         public virtual void DeleteExpiredCacheItems()
@@ -164,7 +164,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
             using (var connection = new SqlConnection(ConnectionString))
-            using(var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
+            using (var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
             {
                 upsertCommand.Parameters
                     .AddCacheItemId(key)
@@ -228,7 +228,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     {
                         var id = reader.GetFieldValue<string>(Columns.Indexes.CacheItemIdIndex);
 
-                        expirationTime = reader.GetFieldValue<DateTimeOffset>(Columns.Indexes.ExpiresAtTimeIndex);
+                        var expirationTimeStr = reader.GetFieldValue<string>(Columns.Indexes.ExpiresAtTimeIndex);
+                        DateTimeOffset.TryParse(expirationTimeStr, out expirationTime);
 
                         if (!reader.IsDBNull(Columns.Indexes.SlidingExpirationInSecondsIndex))
                         {
@@ -238,8 +239,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
                         if (!reader.IsDBNull(Columns.Indexes.AbsoluteExpirationIndex))
                         {
-                            absoluteExpiration = reader.GetFieldValue<DateTimeOffset>(
+                            var absoluteExpirationStr = reader.GetFieldValue<string>(
                                 Columns.Indexes.AbsoluteExpirationIndex);
+                            DateTimeOffset.TryParse(absoluteExpirationStr, out var currentAbsoluteExpiration);
+                            absoluteExpiration = currentAbsoluteExpiration;
                         }
 
                         if (includeValue)
@@ -294,8 +297,9 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     {
                         var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex, token);
 
-                        expirationTime = await reader.GetFieldValueAsync<DateTimeOffset>(
+                        var expirationTimeStr = await reader.GetFieldValueAsync<string>(
                             Columns.Indexes.ExpiresAtTimeIndex, token);
+                        DateTimeOffset.TryParse(expirationTimeStr, out expirationTime);
 
                         if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token))
                         {
@@ -305,9 +309,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
                         if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token))
                         {
-                            absoluteExpiration = await reader.GetFieldValueAsync<DateTimeOffset>(
+                            var absoluteExpirationStr = await reader.GetFieldValueAsync<string>(
                                 Columns.Indexes.AbsoluteExpirationIndex,
                                 token);
+                            DateTimeOffset.TryParse(absoluteExpirationStr, out var currentAbsoluteExpiration);
+                            absoluteExpiration = currentAbsoluteExpiration;
                         }
 
                         if (includeValue)

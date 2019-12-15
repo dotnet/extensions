@@ -61,12 +61,12 @@ namespace Microsoft.Extensions.Caching.SqlServer
             if (utcTime.HasValue)
             {
                 return parameters.AddWithValue(
-                    Columns.Names.AbsoluteExpiration, SqlDbType.DateTimeOffset, utcTime.Value);
+                    Columns.Names.AbsoluteExpiration, SqlDbType.VarChar, utcTime.Value.ToString());
             }
             else
             {
                 return parameters.AddWithValue(
-                    Columns.Names.AbsoluteExpiration, SqlDbType.DateTimeOffset, DBNull.Value);
+                    Columns.Names.AbsoluteExpiration, SqlDbType.VarChar, DBNull.Value);
             }
         }
 
