@@ -709,6 +709,63 @@ exports[`Grammar tests @for ( ... ) { ... } Single line 1`] = `
 "
 `;
 
+exports[`Grammar tests @foreach ( ... ) { ... } Awaited foreach 1`] = `
+"Line: @await foreach (var value in Values)) { var x = 123;<p>Hello World @value</p> }
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, keyword.control.cshtml.transition
+ - token from 1 to 7 (await ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, keyword.other.await.cs
+ - token from 7 to 14 (foreach) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, keyword.control.loop.foreach.cs
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor
+ - token from 15 to 16 (() with scopes text.aspnetcorerazor, meta.statement.foreach.razor, punctuation.parenthesis.open.cs
+ - token from 16 to 19 (var) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, keyword.other.var.cs
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor
+ - token from 20 to 25 (value) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, entity.name.variable.local.cs
+ - token from 25 to 26 ( ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor
+ - token from 26 to 28 (in) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, keyword.control.loop.in.cs
+ - token from 28 to 29 ( ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor
+ - token from 29 to 35 (Values) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, variable.other.readwrite.cs
+ - token from 35 to 36 ()) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, punctuation.parenthesis.close.cs
+ - token from 36 to 38 () ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor
+ - token from 38 to 39 ({) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
+ - token from 39 to 40 ( ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock
+ - token from 40 to 43 (var) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, keyword.other.var.cs
+ - token from 43 to 44 ( ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock
+ - token from 44 to 45 (x) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, entity.name.variable.local.cs
+ - token from 45 to 46 ( ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock
+ - token from 46 to 47 (=) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, keyword.operator.assignment.cs
+ - token from 47 to 48 ( ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock
+ - token from 48 to 51 (123) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, constant.numeric.decimal.cs
+ - token from 51 to 52 (;) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+ - token from 52 to 53 (<) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 53 to 54 (p) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 54 to 55 (>) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 55 to 67 (Hello World ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock
+ - token from 67 to 68 (@) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 68 to 73 (value) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 73 to 75 (</) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.begin.html
+ - token from 75 to 76 (p) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, entity.name.tag.html
+ - token from 76 to 77 (>) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
+ - token from 77 to 78 ( ) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock
+ - token from 78 to 79 (}) with scopes text.aspnetcorerazor, meta.statement.foreach.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests @foreach ( ... ) { ... } Incomplete await foreach statement, no condition 1`] = `
+"Line: @await foreach {}
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (await ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.other.await.cs
+ - token from 7 to 14 (foreach) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 14 to 18 ( {}) with scopes text.aspnetcorerazor
+"
+`;
+
+exports[`Grammar tests @foreach ( ... ) { ... } Incomplete await foreach statement, no condition or body 1`] = `
+"Line: @await foreach
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 7 (await ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.other.await.cs
+ - token from 7 to 14 (foreach) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+"
+`;
+
 exports[`Grammar tests @foreach ( ... ) { ... } Incomplete foreach statement, no condition 1`] = `
 "Line: @foreach {}
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition

@@ -9,6 +9,10 @@ import { assertMatchesSnapshot } from './infrastructure/TestUtilities';
 
 export function RunForeachStatementSuite() {
     describe('@foreach ( ... ) { ... }', () => {
+        it('Incomplete await foreach statement, no condition or body', async () => {
+            await assertMatchesSnapshot('@await foreach');
+        });
+
         it('Incomplete foreach statement, no condition or body', async () => {
             await assertMatchesSnapshot('@foreach');
         });
@@ -17,8 +21,16 @@ export function RunForeachStatementSuite() {
             await assertMatchesSnapshot('@foreach {}');
         });
 
+        it('Incomplete await foreach statement, no condition', async () => {
+            await assertMatchesSnapshot('@await foreach {}');
+        });
+
         it('Single line', async () => {
             await assertMatchesSnapshot('@foreach (var value in Values)) { var x = 123;<p>Hello World @value</p> }');
+        });
+
+        it('Awaited foreach', async () => {
+            await assertMatchesSnapshot('@await foreach (var value in Values)) { var x = 123;<p>Hello World @value</p> }');
         });
 
         it('Multi line condition', async () => {

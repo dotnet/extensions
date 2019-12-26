@@ -1121,7 +1121,7 @@
     },
     "foreach-statement": {
       "name": "meta.statement.foreach.razor",
-      "begin": "(?:^\\s*|(@))(foreach)\\b\\s*(?=\\()",
+      "begin": "(?:^\\s*|(@)(await\\s+)?)(foreach)\\b\\s*(?=\\()",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -1131,6 +1131,13 @@
           ]
         },
         "2": {
+          "patterns": [
+            {
+              "include": "#await-prefix"
+            }
+          ]
+        },
+        "3": {
           "name": "keyword.control.loop.foreach.cs"
         }
       },
