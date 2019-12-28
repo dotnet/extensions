@@ -321,7 +321,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
 
         internal void RaiseCallback()
         {
-            _callback();
+            _callback?.Invoke();
         }
     }
 
