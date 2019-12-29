@@ -197,17 +197,16 @@ namespace Microsoft.Extensions.Configuration
                 return;
             }
 
-            var propertyValue = property.GetValue(instance);
             var hasSetter = property.SetMethod != null && (property.SetMethod.IsPublic || options.BindNonPublicProperties);
 
-            if (propertyValue == null && !hasSetter)
+            if (!hasSetter)
             {
                 // Property doesn't have a value and we cannot set it so there is no
                 // point in going further down the graph
                 return;
             }
 
-            propertyValue = BindInstance(property.PropertyType, propertyValue, config.GetSection(property.Name), options);
+            var propertyValue = GetPropertyValue(property, instance, config, options);
 
             if (propertyValue != null && hasSetter)
             {
@@ -536,7 +535,7 @@ namespace Microsoft.Extensions.Configuration
         private static Type FindOpenGenericInterface(Type expected, Type actual)
         {
             var actualTypeInfo = actual.GetTypeInfo();
-            if(actualTypeInfo.IsGenericType &&
+            if (actualTypeInfo.IsGenericType &&
                 actual.GetGenericTypeDefinition() == expected)
             {
                 return actual;
@@ -554,6 +553,26 @@ namespace Microsoft.Extensions.Configuration
             return null;
         }
 
+        private static object GetPropertyValue(PropertyInfo property, object instance, IConfiguration config, BinderOptions options)
+        {
+            var propertyValue = property.GetValue(instance);
+
+            if (!options.BindPropertyUsingAttributeNames)
+                return BindInstance(property.PropertyType, propertyValue, config.GetSection(property.Name), options);
+
+            var propertyNames = GetPropertyAttributeNames(property);
+
+            foreach (var propertyName in propertyNames)
+            {
+                propertyValue = BindInstance(property.PropertyType, propertyValue, config.GetSection(propertyName), options);
+
+                if (propertyValue != null)
+                    return propertyValue;
+            }
+
+            return BindInstance(property.PropertyType, propertyValue, config.GetSection(property.Name), options);
+        }
+
         private static IEnumerable<PropertyInfo> GetAllProperties(TypeInfo type)
         {
             var allProperties = new List<PropertyInfo>();
@@ -566,6 +585,18 @@ namespace Microsoft.Extensions.Configuration
             while (type != typeof(object).GetTypeInfo());
 
             return allProperties;
+        }
+
+        private static IEnumerable<string> GetPropertyAttributeNames(MemberInfo property)
+        {
+            if (property == null)
+                return Enumerable.Empty<string>();
+
+            return from attributeData in property.GetCustomAttributesData()
+                   from namedArgument in attributeData?.NamedArguments
+                   where string.Equals(namedArgument.MemberName, "Name", StringComparison.InvariantCultureIgnoreCase)
+                   where namedArgument.TypedValue.ArgumentType == typeof(string)
+                   select namedArgument.TypedValue.Value.ToString();
         }
     }
 }
