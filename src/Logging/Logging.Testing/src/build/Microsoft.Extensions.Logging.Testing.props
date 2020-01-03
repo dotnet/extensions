@@ -10,8 +10,8 @@
     BeforeTargets="GetAssemblyAttributes"
     Condition="'$(GenerateLoggingTestingAssemblyAttributes)' != 'false'">
     <PropertyGroup>
-      <PreserveExistingLogsInOutput>false</PreserveExistingLogsInOutput>
       <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">true</PreserveExistingLogsInOutput>
+      <PreserveExistingLogsInOutput Condition="'$(PreserveExistingLogsInOutput)' == ''">false</PreserveExistingLogsInOutput>
     </PropertyGroup>
 
     <ItemGroup>
