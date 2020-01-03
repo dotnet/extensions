@@ -172,12 +172,12 @@ namespace Microsoft.Extensions.CommandLineUtils
                             {
                                 processed = true;
                                 arguments.Current.Values.Add(arg);
-                                argumentsAssigned = true;
+                                argumentsAssigned = false;
                                 continue;
                             }
                             else
                             {
-                                argumentsAssigned = false;
+                                argumentsAssigned = true;
                             }
                         }
 
@@ -251,12 +251,12 @@ namespace Microsoft.Extensions.CommandLineUtils
                             {
                                 processed = true;
                                 arguments.Current.Values.Add(arg);
-                                argumentsAssigned = true;
+                                argumentsAssigned = false;
                                 continue;
                             }
                             else
                             {
-                                argumentsAssigned = false;
+                                argumentsAssigned = true;
                             }
                         }
 
