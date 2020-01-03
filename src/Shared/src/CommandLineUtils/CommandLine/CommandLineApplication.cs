@@ -163,6 +163,20 @@ namespace Microsoft.Extensions.CommandLineUtils
 
                         if (option == null)
                         {
+                            if (arguments == null)
+                            {
+                                arguments = new CommandArgumentEnumerator(command.Arguments.GetEnumerator());
+                            }
+                            if (arguments.MoveNext())
+                            {
+                                processed = true;
+                                arguments.Current.Values.Add(arg);
+                                continue;
+                            }
+                        }
+
+                        if (option == null)
+                        {
                             var ignoreContinueAfterUnexpectedArg = false;
                             if (string.IsNullOrEmpty(longOptionName) &&
                                 !command._throwOnUnexpectedArg &&
@@ -220,6 +234,20 @@ namespace Microsoft.Extensions.CommandLineUtils
                     {
                         processed = true;
                         option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.ShortName, shortOption[0], StringComparison.Ordinal));
+
+                        if (option == null)
+                        {
+                            if (arguments == null)
+                            {
+                                arguments = new CommandArgumentEnumerator(command.Arguments.GetEnumerator());
+                            }
+                            if (arguments.MoveNext())
+                            {
+                                processed = true;
+                                arguments.Current.Values.Add(arg);
+                                continue;
+                            }
+                        }
 
                         // If not a short option, try symbol option
                         if (option == null)
