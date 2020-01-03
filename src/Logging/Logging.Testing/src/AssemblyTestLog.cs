@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.Logging.Testing
                 }
 
                 normalizedTestName = testName;
-                serilogLoggerProvider = ConfigureFileLogging(testOutputFile, logStart);
+                serilogLoggerProvider = ConfigureFileLogging(testOutputFile, logStart, _assembly);
             }
 
             var serviceCollection = new ServiceCollection();
@@ -241,7 +241,7 @@ namespace Microsoft.Extensions.Logging.Testing
                     + "The attribute is added via msbuild properties of the Microsoft.Extensions.Logging.Testing. "
                     + "Please ensure the msbuild property is imported or a direct reference to Microsoft.Extensions.Logging.Testing is added.");
 
-        private static SerilogLoggerProvider ConfigureFileLogging(string fileName, DateTimeOffset? logStart)
+        private static SerilogLoggerProvider ConfigureFileLogging(string fileName, DateTimeOffset? logStart, Assembly assembly = null)
         {
             var dir = Path.GetDirectoryName(fileName);
             if (!Directory.Exists(dir))
@@ -254,11 +254,13 @@ namespace Microsoft.Extensions.Logging.Testing
                 File.Delete(fileName);
             }
 
+            var diagnostics = assembly == null ? "" : $"[1: {TestFileOutputContext.GetPreserveExistingLogsInOutput(assembly)} 2: {TestFileOutputContext.GetAssemblyBaseDirectory(assembly)} ] ";
+
             var serilogger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.With(new AssemblyLogTimestampOffsetEnricher(logStart))
                 .MinimumLevel.Verbose()
-                .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
+                .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}]" + diagnostics + " {Message:l}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
                 .CreateLogger();
             return new SerilogLoggerProvider(serilogger, dispose: true);
         }
