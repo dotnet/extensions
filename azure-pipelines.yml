@@ -137,6 +137,15 @@ stages:
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
           displayName: Upload package artifacts
           condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
           inputs:
@@ -206,6 +215,15 @@ stages:
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
           displayName: Upload NPM artifacts
           condition: and(succeeded(), eq(variables['_BuildConfig'], 'Release'))
           inputs:
@@ -257,6 +275,15 @@ stages:
           inputs:
             pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
   - job: Source_Build
