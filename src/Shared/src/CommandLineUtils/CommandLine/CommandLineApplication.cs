@@ -136,7 +136,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             CommandLineApplication command = this;
             CommandOption option = null;
             IEnumerator<CommandArgument> arguments = null;
-            var argumentsAssigned = false;
+            var argumentsAssigned = true;
 
             for (var index = 0; index < args.Length; index++)
             {
@@ -174,6 +174,10 @@ namespace Microsoft.Extensions.CommandLineUtils
                                 arguments.Current.Values.Add(arg);
                                 argumentsAssigned = true;
                                 continue;
+                            }
+                            else
+                            {
+                                argumentsAssigned = false;
                             }
                         }
 
@@ -249,6 +253,10 @@ namespace Microsoft.Extensions.CommandLineUtils
                                 arguments.Current.Values.Add(arg);
                                 argumentsAssigned = true;
                                 continue;
+                            }
+                            else
+                            {
+                                argumentsAssigned = false;
                             }
                         }
 
