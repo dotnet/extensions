@@ -136,6 +136,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             CommandLineApplication command = this;
             CommandOption option = null;
             IEnumerator<CommandArgument> arguments = null;
+            var argumentsAssigned = false;
 
             for (var index = 0; index < args.Length; index++)
             {
@@ -171,6 +172,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                             {
                                 processed = true;
                                 arguments.Current.Values.Add(arg);
+                                argumentsAssigned = true;
                                 continue;
                             }
                         }
@@ -245,6 +247,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                             {
                                 processed = true;
                                 arguments.Current.Values.Add(arg);
+                                argumentsAssigned = true;
                                 continue;
                             }
                         }
@@ -306,7 +309,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                     option = null;
                 }
 
-                if (!processed && arguments == null)
+                if (!processed && argumentsAssigned)
                 {
                     var currentCommand = command;
                     foreach (var subcommand in command.Commands)
