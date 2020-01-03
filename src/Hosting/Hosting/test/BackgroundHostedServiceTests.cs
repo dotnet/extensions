@@ -120,6 +120,14 @@ namespace Microsoft.Extensions.Hosting.Tests
             await Assert.ThrowsAsync<TaskCanceledException>(() => service.ExecutingTask);
         }
 
+        [Fact]
+        public void CreateAndDisposeShouldNotThrow()
+        {
+            var service = new WaitForCancelledTokenService();
+
+            service.Dispose();
+        }
+
         private class WaitForCancelledTokenService : BackgroundService
         {
             public Task ExecutingTask { get; private set; }
