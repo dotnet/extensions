@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Caching.Memory.Infrastructure;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging.Testing;
@@ -14,6 +15,7 @@ namespace Microsoft.Extensions.Caching.Memory
     public class CapacityTests : LoggedTestBase
     {
         [Fact]
+        [Flaky("http://example.com", FlakyOn.All)]
         public void MemoryDistributedCacheOptionsDefaultsTo200MBSizeLimit()
         {
             Assert.Equal(200 * 1024 * 1024, new MemoryDistributedCacheOptions().SizeLimit);
