@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.Hosting
         /// Triggered when the application host is performing a graceful shutdown.
         /// </summary>
         /// <param name="cancellationToken">Indicates that the shutdown process should no longer be graceful.</param>
-        public virtual async Task StopAsync(CancellationToken cancellationToken)
+        public virtual Task StopAsync(CancellationToken cancellationToken)
         {
             // Stop called without start
             if (_executingTask == null)
@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Hosting
             finally
             {
                 // Wait until the task completes or the stop token triggers
-                await Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancellationToken));
+                return Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancellationToken));
             }
 
         }
