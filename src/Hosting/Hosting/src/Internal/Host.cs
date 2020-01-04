@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Hosting.Internal
     {
         private readonly ILogger<Host> _logger;
         private readonly IHostLifetime _hostLifetime;
-        private readonly ApplicationLifetime _applicationLifetime;
+        private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly HostOptions _options;
         private IEnumerable<IHostedService> _hostedServices;
 
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             IHostLifetime hostLifetime, IOptions<HostOptions> options)
         {
             Services = services ?? throw new ArgumentNullException(nameof(services));
-            _applicationLifetime = (applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime))) as ApplicationLifetime;
+            _applicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _hostLifetime = hostLifetime ?? throw new ArgumentNullException(nameof(hostLifetime));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -51,7 +51,10 @@ namespace Microsoft.Extensions.Hosting.Internal
             }
 
             // Fire IHostApplicationLifetime.Started
-            _applicationLifetime?.NotifyStarted();
+            if (_applicationLifetime is ApplicationLifetime applicationLifetime)
+            {
+                applicationLifetime.NotifyStarted();
+            }
 
             _logger.Started();
         }
@@ -88,7 +91,10 @@ namespace Microsoft.Extensions.Hosting.Internal
                 await _hostLifetime.StopAsync(token);
 
                 // Fire IHostApplicationLifetime.Stopped
-                _applicationLifetime?.NotifyStopped();
+                if (_applicationLifetime is ApplicationLifetime applicationLifetime)
+                {
+                    applicationLifetime.NotifyStopped();
+                }
 
                 if (exceptions.Count > 0)
                 {
