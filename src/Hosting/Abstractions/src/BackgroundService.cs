@@ -51,9 +51,10 @@ namespace Microsoft.Extensions.Hosting
             // Stop called without start
             if (_executingTask == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
+            Task task;
             try
             {
                 // Signal cancellation to the executing method
@@ -62,8 +63,10 @@ namespace Microsoft.Extensions.Hosting
             finally
             {
                 // Wait until the task completes or the stop token triggers
-                return Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancellationToken));
+                task = Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancellationToken));
             }
+
+            return task;
 
         }
 
