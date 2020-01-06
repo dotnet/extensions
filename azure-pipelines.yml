@@ -11,7 +11,7 @@ variables:
     value: true
   - name: _DotNetArtifactsCategory
     value: ASPNETEXTENSIONS
-    
+
   # used for post-build phases, internal builds only
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: DotNet-AspNet-SDLValidation-Params
@@ -111,11 +111,17 @@ stages:
           inputs:
             command: custom
             arguments: 'locals all -clear'
-        - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_BuildArgs)
+        - script: eng\common\cibuild.cmd
+            -configuration $(_BuildConfig)
+            -prepareMachine
+            $(_BuildArgs)
+            /bl:artifacts/log/build.windows.binlog
           displayName: Build and Publish
         - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
           displayName: Run Flaky Tests
           continueOnError: true
+        - script: dotnet msbuild eng/repo.targets /t:EnsureFunctionalTestLogsPreserved
+          displayName: Ensure functional test logs preserved
         - powershell: eng\scripts\KillProcesses.ps1
           displayName: Kill processes
           condition: always()
@@ -134,6 +140,15 @@ stages:
           inputs:
             pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
@@ -181,6 +196,7 @@ stages:
             --prepareMachine
             -p:BuildNodeJS=true
             $(_OfficialBuildArgs)
+            /bl:artifacts/log/build.linux.binlog
           displayName: Build
         - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
           displayName: Run Flaky Tests
@@ -203,6 +219,15 @@ stages:
           inputs:
             pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
@@ -235,6 +260,7 @@ stages:
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
+            /bl:artifacts/log/build.linux.binlog
           displayName: Build
         - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
           displayName: Run Flaky Tests
@@ -257,6 +283,15 @@ stages:
           inputs:
             pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
   - job: Source_Build
