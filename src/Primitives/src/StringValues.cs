@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <summary>
-        /// Defines an implicit conversion of a given <see cref="StringValues"/> to a string.
+        /// Defines an implicit conversion of a given <see cref="StringValues"/> to a string, with multiple values joined as a comma separated string.
         /// </summary>
         /// <remarks>
         /// Returns <c>null</c> where <see cref="StringValues"/> has been initialized from an empty string array or is <see cref="StringValues.Empty"/>.
@@ -160,7 +160,7 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <summary>
-        /// Converts the value of the current <see cref="StringValues"/> object to its equivalent string representation.
+        /// Converts the value of the current <see cref="StringValues"/> object to its equivalent string representation, with multiple values joined as a comma separated string.
         /// </summary>
         /// <returns>A string representation of the value of the current <see cref="StringValues"/> object.</returns>
         public override string ToString()
