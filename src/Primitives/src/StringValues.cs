@@ -272,7 +272,7 @@ namespace Microsoft.Extensions.Primitives
         /// </summary>
         /// <returns>A string array represented by this instance.</returns>
         /// <remarks>
-        /// <para>If the <see cref="StringValues"/> contains a string internally, it is copied to a new array.</para>
+        /// <para>If the <see cref="StringValues"/> contains a single string internally, it is copied to a new array.</para>
         /// <para>If the <see cref="StringValues"/> contains an array internally it returns that array instance.</para>
         /// </remarks>
         public string[] ToArray()
@@ -300,7 +300,7 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <summary>
-        /// Returns the zero-based index of the first occurrence of a item in the <see cref="StringValues" />.
+        /// Returns the zero-based index of the first occurrence of an item in the <see cref="StringValues" />.
         /// </summary>
         /// <param name="item">The string to locate in the <see cref="StringValues"></see>.</param>
         /// <returns>the zero-based index of the first occurrence of <paramref name="item" /> within the <see cref="StringValues"></see>, if found; otherwise, –1.</returns>
@@ -521,7 +521,7 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <summary>
-        /// Determines whether two specified <see cref="StringValues"/> objects have the same values. 
+        /// Determines whether two specified <see cref="StringValues"/> objects have the same values in the same order. 
         /// </summary>
         /// <param name="left">The first <see cref="StringValues"/> to compare.</param>
         /// <param name="right">The second <see cref="StringValues"/> to compare.</param>
