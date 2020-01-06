@@ -4,5 +4,7 @@
   <PropertyGroup>
     <!-- These projects depend on a 3rd party source. -->
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <PreReleaseVersionLabel>preview1</PreReleaseVersionLabel>
+    <DotNetFinalVersionKind />
   </PropertyGroup>
 </Project>

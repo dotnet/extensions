@@ -1,12 +1,12 @@
+# Workaround namespace conflicts with Azure.* and Microsoft.Extensions.Azure.*
+M:Microsoft.Extensions.Configuration.AzureKeyVaultConfigurationExtensions.AddAzureKeyVault(Microsoft.Extensions.Configuration.IConfigurationBuilder,Azure.Security.KeyVault.Secrets.SecretClient,Microsoft.Extensions.Configuration.KeyVault.Secrets.IKeyVaultSecretManager)
+M:Microsoft.Extensions.Configuration.AzureKeyVaultConfigurationExtensions.AddAzureKeyVault(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.Uri,Azure.Core.TokenCredential)
+M:Microsoft.Extensions.Configuration.AzureKeyVaultConfigurationExtensions.AddAzureKeyVault(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.Uri,Azure.Core.TokenCredential,Microsoft.Extensions.Configuration.KeyVault.Secrets.IKeyVaultSecretManager)
+M:Microsoft.Extensions.Configuration.KeyVault.Secrets.AzureKeyVaultConfigurationOptions.#ctor(System.Uri,Azure.Core.TokenCredential)
+P:Microsoft.Extensions.Configuration.KeyVault.Secrets.AzureKeyVaultConfigurationOptions.Client
+M:Microsoft.Extensions.Configuration.KeyVault.Secrets.AzureKeyVaultConfigurationOptions.set_Client(Azure.Security.KeyVault.Secrets.SecretClient)
 T:Microsoft.Extensions.Configuration.KeyVault.Secrets.IKeyVaultSecretManager
 M:Microsoft.Extensions.Configuration.KeyVault.Secrets.IKeyVaultSecretManager.GetKey(Azure.Security.KeyVault.Secrets.KeyVaultSecret)
 M:Microsoft.Extensions.Configuration.KeyVault.Secrets.IKeyVaultSecretManager.Load(Azure.Security.KeyVault.Secrets.SecretProperties)
-M:Microsoft.Extensions.Configuration.KeyVault.Secrets.AzureKeyVaultConfigurationOptions.#ctor(System.Uri,Azure.Core.TokenCredential)
-M:Microsoft.Extensions.Configuration.AzureKeyVaultConfigurationExtensions.AddAzureKeyVault(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.Uri,Azure.Core.TokenCredential)
-M:Microsoft.Extensions.Configuration.AzureKeyVaultConfigurationExtensions.AddAzureKeyVault(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.Uri,Azure.Core.TokenCredential,Microsoft.Extensions.Configuration.KeyVault.Secrets.IKeyVaultSecretManager)
-M:Microsoft.Extensions.Configuration.AzureKeyVaultConfigurationExtensions.AddAzureKeyVault(Microsoft.Extensions.Configuration.IConfigurationBuilder,Azure.Security.KeyVault.Secrets.SecretClient,Microsoft.Extensions.Configuration.KeyVault.Secrets.IKeyVaultSecretManager)
-M:Microsoft.Extensions.Configuration.KeyVault.Secrets.AzureKeyVaultConfigurationOptions.#ctor(System.Uri,Azure.Core.TokenCredential)
-M:Microsoft.Extensions.Configuration.KeyVault.Secrets.AzureKeyVaultConfigurationOptions.set_Client(Azure.Security.KeyVault.Secrets.SecretClient)
 M:Microsoft.Extensions.Configuration.KeyVault.Secrets.DefaultKeyVaultSecretManager.GetKey(Azure.Security.KeyVault.Secrets.KeyVaultSecret)
 M:Microsoft.Extensions.Configuration.KeyVault.Secrets.DefaultKeyVaultSecretManager.Load(Azure.Security.KeyVault.Secrets.SecretProperties)
-P:Microsoft.Extensions.Configuration.KeyVault.Secrets.AzureKeyVaultConfigurationOptions.Client

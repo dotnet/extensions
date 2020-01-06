@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Security.KeyVault.Secrets;
 
-namespace Microsoft.Extensions.Configuration.KeyVault.Secrets
+namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets
 {
     /// <summary>
     /// Options class used by the <see cref="AzureKeyVaultConfigurationExtensions"/>.
