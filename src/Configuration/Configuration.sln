@@ -85,11 +85,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Config
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Config.Azure.KeyVault.Secrets", "Config.Azure.KeyVault.Secrets", "{977051C9-CB05-4D11-A368-5AF867477857}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets", "Config.KeyVault.Secrets\ref\Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets.csproj", "{BDF54192-2BDB-4860-AF54-4D2AC6612C31}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets", "Config.Azure.KeyVault.Secrets\ref\Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets.csproj", "{BDF54192-2BDB-4860-AF54-4D2AC6612C31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVaultSecretsSample", "Config.KeyVault.Secrets\samples\KeyVaultSecretsSample.csproj", "{94300D15-CA85-49A5-ADE5-56B5A93DBC74}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyVaultSecretsSample", "Config.Azure.KeyVault.Secrets\samples\KeyVaultSecretsSample.csproj", "{94300D15-CA85-49A5-ADE5-56B5A93DBC74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets", "Config.KeyVault.Secrets\src\Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets.csproj", "{FEA13E69-0912-4316-B027-DBE596A8D9DF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets", "Config.Azure.KeyVault.Secrets\src\Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets.csproj", "{FEA13E69-0912-4316-B027-DBE596A8D9DF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets.Tests", "Config.Azure.KeyVault.Secrets\test\Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets.Tests.csproj", "{4212B9F3-888D-4AAA-A050-978EE070FA14}"
 EndProject
