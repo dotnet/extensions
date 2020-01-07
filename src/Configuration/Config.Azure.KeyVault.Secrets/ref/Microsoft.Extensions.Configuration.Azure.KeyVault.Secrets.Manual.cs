@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Configuration
         public static Microsoft.Extensions.Configuration.IConfigurationBuilder AddAzureKeyVault(this Microsoft.Extensions.Configuration.IConfigurationBuilder configurationBuilder, System.Uri vault, global::Azure.Core.TokenCredential credential, Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets.IKeyVaultSecretManager manager) { throw null; }
     }
 }
-namespace Microsoft.Extensions.Configuration.KeyVault.Secrets
+namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets
 {
     public partial class AzureKeyVaultConfigurationOptions
     {
