@@ -16,12 +16,12 @@ namespace ConsoleApplication
 
             var config = builder.Build();
 
-            var store = new X509Store(StoreLocation.CurrentUser);
+            using var store = new X509Store(StoreLocation.CurrentUser);
             store.Open(OpenFlags.ReadOnly);
             var cert = store.Certificates.Find(X509FindType.FindByThumbprint, config["CertificateThumbprint"], false);
 
             builder.AddAzureKeyVault(
-                new Uri(config["Vault"]),
+                new Uri(config["VaultUri"]),
                 new ClientCertificateCredential(
                     config["TenantId"],
                     config["ClientId"],

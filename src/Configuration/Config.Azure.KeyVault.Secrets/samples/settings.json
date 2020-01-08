@@ -1,5 +1,6 @@
-﻿{
+{
   "CertificateThumbprint": "",
-  "Vault": "",
-  "ClientId": ""
+  "VaultUri": "",
+  "ClientId": "",
+  "TenantId": ""
 }

@@ -80,7 +80,7 @@ namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets
 
             await foreach (var secret in secretPages.ConfigureAwait(false))
             {
-                if (!_manager.Load(secret) || secret.Enabled != true)
+                if (secret.Enabled != true || !_manager.Load(secret))
                 {
                     continue;
                 }

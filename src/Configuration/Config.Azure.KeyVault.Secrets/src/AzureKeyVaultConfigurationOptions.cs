@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Azure.Core;
+using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 
 namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets
@@ -24,13 +24,13 @@ namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets
         /// <summary>
         /// Creates a new instance of <see cref="AzureKeyVaultConfigurationOptions"/>.
         /// </summary>
-        /// <param name="vault">Azure KeyVault uri.</param>
-        /// <param name="credential">The <see cref="TokenCredential"/> to use for authentication.</param>
+        /// <param name="vaultUri">Azure KeyVault uri.</param>
+        /// <param name="credential">The <see cref="TokenCredential"/> to use for authentication, like <see cref="DefaultAzureCredential"/>.</param>
         public AzureKeyVaultConfigurationOptions(
-            Uri vault,
+            Uri vaultUri,
             TokenCredential credential) : this()
         {
-            Client = new SecretClient(vault, credential);
+            Client = new SecretClient(vaultUri, credential);
         }
 
         /// <summary>
