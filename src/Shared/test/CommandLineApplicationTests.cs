@@ -1173,21 +1173,52 @@ Examples:
             CommandArgument first = null;
             CommandArgument second = null;
 
-            var firstOption = "-firstUnmatchedOption";
-            var secondOption = "--secondUnmatchedOption";
+            CommandOption firstOption = null;
+            CommandOption secondOption = null;
+
+            var firstUnmatchedOption = "-firstUnmatchedOption";
+            var firstActualOption = "-firstActualOption";
+            var seconUnmatchedOption = "--secondUnmatchedOption";
+            var secondActualOption = "--secondActualOption";
 
             var app = new CommandLineApplication(treatUnmatchedOptionsAsArguments: true);
+
             app.Command("test", c =>
             {
+                firstOption = c.Option("-firstActualOption", "first option", CommandOptionType.NoValue);
+                secondOption = c.Option("--secondActualOption", "second option", CommandOptionType.NoValue);
+
                 first = c.Argument("first", "First argument");
                 second = c.Argument("second", "Second argument");
                 c.OnExecute(() => 0);
             });
 
-            app.Execute("test", firstOption, secondOption);
+            app.Execute("test", firstUnmatchedOption, firstActualOption, seconUnmatchedOption, secondActualOption);
 
-            Assert.Equal(firstOption, first.Value);
-            Assert.Equal(secondOption, second.Value);
+            Assert.Equal(firstUnmatchedOption, first.Value);
+            Assert.Equal(seconUnmatchedOption, second.Value);
+
+            Assert.Equal(firstActualOption, firstOption.Template);
+            Assert.Equal(secondActualOption, secondOption.Template);
+        }
+
+        [Fact]
+        public void ThrowExceptionWhenUnmatchedOptionAndTreatUnmatchedOptionsAsArgumentsIsFalse()
+        {
+            CommandArgument first = null;
+
+            var firstOption = "-firstUnmatchedOption";
+
+            var app = new CommandLineApplication(treatUnmatchedOptionsAsArguments: false);
+            app.Command("test", c =>
+            {
+                first = c.Argument("first", "First argument");
+                c.OnExecute(() => 0);
+            });
+
+            var exception = Assert.Throws<CommandParsingException>(() => app.Execute("test", firstOption));
+
+            Assert.Equal($"Unrecognized option '{firstOption}'", exception.Message);
         }
     }
 }
