@@ -1166,5 +1166,28 @@ Examples:
 
             Assert.Equal($"Unrecognized option '{inputOption}'", exception.Message);
         }
+
+        [Fact]
+        public void TreatUnmatchedOptionsAsArguments()
+        {
+            CommandArgument first = null;
+            CommandArgument second = null;
+
+            var firstOption = "-firstUnmatchedOption";
+            var secondOption = "--secondUnmatchedOption";
+
+            var app = new CommandLineApplication(treatUnmatchedOptionsAsArguments: true);
+            app.Command("test", c =>
+            {
+                first = c.Argument("first", "First argument");
+                second = c.Argument("second", "Second argument");
+                c.OnExecute(() => 0);
+            });
+
+            app.Execute("test", firstOption, secondOption);
+
+            Assert.Equal(firstOption, first.Value);
+            Assert.Equal(secondOption, second.Value);
+        }
     }
 }

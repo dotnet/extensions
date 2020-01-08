@@ -26,10 +26,13 @@ namespace Microsoft.Extensions.CommandLineUtils
         // options.
         private readonly bool _continueAfterUnexpectedArg;
 
-        public CommandLineApplication(bool throwOnUnexpectedArg = true, bool continueAfterUnexpectedArg = false)
+        private readonly bool _treatUnmatchedOptionsAsArguments;
+
+        public CommandLineApplication(bool throwOnUnexpectedArg = true, bool continueAfterUnexpectedArg = false, bool treatUnmatchedOptionsAsArguments = false)
         {
             _throwOnUnexpectedArg = throwOnUnexpectedArg;
             _continueAfterUnexpectedArg = continueAfterUnexpectedArg;
+            _treatUnmatchedOptionsAsArguments = treatUnmatchedOptionsAsArguments;
             Options = new List<CommandOption>();
             Arguments = new List<CommandArgument>();
             Commands = new List<CommandLineApplication>();
@@ -136,7 +139,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             CommandLineApplication command = this;
             CommandOption option = null;
             IEnumerator<CommandArgument> arguments = null;
-            var argumentsAssigned = true;
+            var argumentsAssigned = false;
 
             for (var index = 0; index < args.Length; index++)
             {
@@ -162,7 +165,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                         var longOptionName = longOption[0];
                         option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.LongName, longOptionName, StringComparison.Ordinal));
 
-                        if (option == null)
+                        if (option == null && _treatUnmatchedOptionsAsArguments)
                         {
                             if (arguments == null)
                             {
@@ -172,13 +175,13 @@ namespace Microsoft.Extensions.CommandLineUtils
                             {
                                 processed = true;
                                 arguments.Current.Values.Add(arg);
-                                argumentsAssigned = false;
+                                argumentsAssigned = true;
                                 continue;
                             }
-                            else
-                            {
-                                argumentsAssigned = true;
-                            }
+                            //else
+                            //{
+                            //    argumentsAssigned = false;
+                            //}
                         }
 
                         if (option == null)
@@ -241,7 +244,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                         processed = true;
                         option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.ShortName, shortOption[0], StringComparison.Ordinal));
 
-                        if (option == null)
+                        if (option == null && _treatUnmatchedOptionsAsArguments)
                         {
                             if (arguments == null)
                             {
@@ -251,13 +254,13 @@ namespace Microsoft.Extensions.CommandLineUtils
                             {
                                 processed = true;
                                 arguments.Current.Values.Add(arg);
-                                argumentsAssigned = false;
+                                argumentsAssigned = true;
                                 continue;
                             }
-                            else
-                            {
-                                argumentsAssigned = true;
-                            }
+                            //else
+                            //{
+                            //    argumentsAssigned = false;
+                            //}
                         }
 
                         // If not a short option, try symbol option
@@ -317,7 +320,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                     option = null;
                 }
 
-                if (!processed && argumentsAssigned)
+                if (!processed && !argumentsAssigned)
                 {
                     var currentCommand = command;
                     foreach (var subcommand in command.Commands)
