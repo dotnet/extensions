@@ -209,7 +209,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [ForegroundFact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/14805", FlakyOn.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore/issues/14805", FlakyOn.All)]
         public async Task DocumentChanged_ReparsesRelatedFiles()
         {
             // Arrange
