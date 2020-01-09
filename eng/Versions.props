@@ -124,7 +124,6 @@
     <OmniSharpMSBuildPackageVersion>1.33.0</OmniSharpMSBuildPackageVersion>
     <VS_NewtonsoftJsonPackageVersion>12.0.2</VS_NewtonsoftJsonPackageVersion>
     <VSMAC_NewtonsoftJsonPackageVersion>12.0.2</VSMAC_NewtonsoftJsonPackageVersion>
-    <TEST_NewtonsoftJsonPackageVersion>12.0.1</TEST_NewtonsoftJsonPackageVersion>
     <StreamJsonRpcPackageVersion>2.2.34</StreamJsonRpcPackageVersion>
     <VSIX_MicrosoftVisualStudioTelemetryPackageVersion>16.0.4-master</VSIX_MicrosoftVisualStudioTelemetryPackageVersion>
     <VSIX_MicrosoftCodeAnalysisAnalyzersPackageVersion>2.9.4</VSIX_MicrosoftCodeAnalysisAnalyzersPackageVersion>
