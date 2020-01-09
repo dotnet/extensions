@@ -64,9 +64,9 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>08aa4560e589002f8f2444e4b27b8f0930cfbb46</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20055.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20058.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>111d78c79ac38f596688af152779d7a39e4bf973</Sha>
+      <Sha>48bae09d7d8ec0e6879fe2b8d08872cd87f084ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.5.0-beta1-19606-04" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>
