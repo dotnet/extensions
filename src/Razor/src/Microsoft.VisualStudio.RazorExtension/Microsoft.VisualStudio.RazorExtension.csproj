@@ -65,6 +65,10 @@
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <GenerateSource>true</GenerateSource>
+      <Generator>MSBuild:_GenerateResxSource</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
