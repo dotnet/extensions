@@ -5,6 +5,7 @@
 
 import * as cp from 'child_process';
 import * as fs from 'fs';
+import * as glob from 'glob';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as vscode from 'vscode';
@@ -15,17 +16,16 @@ export const componentRoot = path.join(testAppsRoot, 'ComponentApp');
 export const mvcWithComponentsRoot = path.join(testAppsRoot, 'MvcWithComponents');
 export const simpleMvc21Root = path.join(testAppsRoot, 'SimpleMvc21');
 export const simpleMvc22Root = path.join(testAppsRoot, 'SimpleMvc22');
+const projectConfigFile = 'project.razor.json';
 
 export async function pollUntil(fn: () => (boolean | Promise<boolean>), timeoutMs: number, pollInterval?: number, suppressError?: boolean) {
     const resolvedPollInterval = pollInterval ? pollInterval : 50;
 
     let timeWaited = 0;
-    let fnEval = fn();
-    if (fnEval instanceof Promise) {
-        fnEval = await fnEval;
-    }
+    let fnEval;
 
-    while (!fnEval) {
+    do {
+        fnEval = fn();
         if (timeWaited >= timeoutMs) {
             if (suppressError) {
                 return;
@@ -37,6 +37,7 @@ export async function pollUntil(fn: () => (boolean | Promise<boolean>), timeoutM
         await new Promise(r => setTimeout(r, resolvedPollInterval));
         timeWaited += resolvedPollInterval;
     }
+    while (!fnEval);
 }
 
 export async function ensureNoChangesFor(documentUri: vscode.Uri, durationMs: number) {
@@ -121,6 +122,7 @@ export async function dotnetRestore(cwd: string): Promise<void> {
 }
 
 export async function waitForProjectReady(directory: string) {
+    await removeOldProjectRazorJsons();
     await cleanBinAndObj(directory);
     await csharpExtensionReady();
     await htmlLanguageFeaturesExtensionReady();
@@ -128,11 +130,32 @@ export async function waitForProjectReady(directory: string) {
     await restartOmniSharp();
     await razorExtensionReady();
     await waitForProjectConfigured(directory);
+    await waitForProjectsConfigured();
+}
+
+export async function waitForProjectsConfigured() {
+    await pollUntil(() => {
+        const files = glob.sync(`**/${projectConfigFile}`, { cwd: testAppsRoot});
+        return files.length === 16;
+    }, /* timeout */10000, /* pollInterval */ 500);
+}
+
+async function removeOldProjectRazorJsons() {
+    const folders = fs.readdirSync(testAppsRoot);
+    let count = 0;
+    for (const folder of folders) {
+        const objDir = path.join(testAppsRoot, folder, 'obj');
+        if (findInDir(objDir, projectConfigFile)) {
+            const projFile = findInDir(objDir, projectConfigFile) as string;
+            fs.unlinkSync(projFile);
+            count++;
+        }
+    }
+
+    console.log(`${count} project.razor.json's`);
 }
 
 export async function waitForProjectConfigured(directory: string) {
-    const projectConfigFile = 'project.razor.json';
-
     if (!fs.existsSync(directory)) {
         throw new Error(`Project does not exist: ${directory}`);
     }
@@ -212,7 +235,6 @@ export async function extensionActivated<T>(identifier: string) {
 
 export async function csharpExtensionReady() {
     const csharpExtension = await extensionActivated<CSharpExtensionExports>('ms-vscode.csharp');
-
     try {
         await csharpExtension.exports.initializationFinished();
         console.log('C# extension activated');

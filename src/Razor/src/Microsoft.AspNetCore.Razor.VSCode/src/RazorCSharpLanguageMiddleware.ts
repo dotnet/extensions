@@ -4,6 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { CompositeCodeActionTranslator } from './CodeActions/CompositeRazorCodeActionTranslator';
 import { getRazorDocumentUri, isRazorCSharpFile } from './RazorConventions';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorLogger } from './RazorLogger';
@@ -25,10 +26,11 @@ export class RazorCSharpLanguageMiddleware implements LanguageMiddleware {
 
     constructor(
         private readonly serviceClient: RazorLanguageServiceClient,
-        private readonly logger: RazorLogger) {}
+        private readonly logger: RazorLogger,
+        private readonly compositeCodeActionTranslator: CompositeCodeActionTranslator) {}
 
     public async remapWorkspaceEdit(workspaceEdit: vscode.WorkspaceEdit, token: vscode.CancellationToken) {
-        const result = new vscode.WorkspaceEdit();
+        const map = new Map<vscode.Uri, vscode.TextEdit[]>();
 
         // The returned edits will be for the projected C# documents. We now need to re-map that to the original document.
         for (const entry of workspaceEdit.entries()) {
@@ -37,13 +39,12 @@ export class RazorCSharpLanguageMiddleware implements LanguageMiddleware {
 
             if (!isRazorCSharpFile(uri)) {
                 // This edit happens outside of a Razor document. Let the edit go through as is.
-                result.set(uri, edits);
+                map.set(uri, edits);
                 continue;
             }
 
             // We're now working with a Razor CSharp document.
             const documentUri = getRazorDocumentUri(uri);
-            const newEdits = new Array<vscode.TextEdit>();
 
             // Re-map each edit to its position in the original Razor document.
             for (const edit of edits) {
@@ -53,20 +54,30 @@ export class RazorCSharpLanguageMiddleware implements LanguageMiddleware {
                     documentUri);
 
                 if (!remappedResponse || !remappedResponse.range) {
-                    // Something went wrong when re-mapping to the original document. Ignore this edit.
-                    this.logger.logWarning(`Unable to remap file ${uri.path} at ${edit.range}.`);
-                    continue;
+                    // This is kind of wrong. Workspace edits commonly consist of a bunch of different edits which
+                    // don't make sense individually. If we try to introspect on them individually there won't be
+                    // enough context to do anything intelligent. But we also need to know if the edit can just be handled by mapToDocumentRange.
+                    // We're not solving that now, because we're going to have to change how we handle CodeAction edits from a per-action model
+                    // to a symantic model anyway, but I needed to call it out here so we remember.
+                    const [codeActionUri, codeActionEdit] = this.tryApplyingCodeActions(uri, edit);
+
+                    if (codeActionUri && codeActionEdit) {
+                        this.addElementToDictionary(map, codeActionUri, codeActionEdit);
+                    } else {
+                        // Something went wrong when re-mapping to the original document. Ignore this edit.
+                        this.logger.logWarning(`Unable to remap file ${uri.path} at ${edit.range}.`);
+                        continue;
+                    }
+                } else {
+                    this.logger.logVerbose(
+                        `Re-mapping text ${edit.newText} at ${edit.range} in ${uri.path} to ${remappedResponse.range} in ${documentUri.path}`);
+
+                    const newEdit = new vscode.TextEdit(remappedResponse.range, edit.newText);
+                    this.addElementToDictionary(map, documentUri, newEdit);
                 }
-
-                const newEdit = new vscode.TextEdit(remappedResponse.range, edit.newText);
-                newEdits.push(newEdit);
-
-                this.logger.logVerbose(
-                    `Re-mapping text ${edit.newText} at ${edit.range} in ${uri.path} to ${remappedResponse.range} in ${documentUri.path}`);
             }
-
-            result.set(documentUri, newEdits);
         }
+        const result = this.mapToTextEdit(map);
 
         return result;
     }
@@ -104,4 +115,31 @@ export class RazorCSharpLanguageMiddleware implements LanguageMiddleware {
         return result;
     }
 
+    private mapToTextEdit(map: Map<vscode.Uri, vscode.TextEdit[]>): vscode.WorkspaceEdit {
+        const result = new vscode.WorkspaceEdit();
+        map.forEach((value, key) => {
+            result.set(key, value);
+        });
+
+        return result;
+    }
+
+    private addElementToDictionary(map: Map<vscode.Uri, vscode.TextEdit[]>, uri: vscode.Uri, edit: vscode.TextEdit) {
+        let mapArray: vscode.TextEdit[] | undefined;
+
+        if (map.has(uri)) {
+            mapArray = map.get(uri);
+            if (mapArray) {
+                mapArray.push(edit);
+            }
+        } else {
+            const editArray = new Array<vscode.TextEdit>();
+            editArray.push(edit);
+            map.set(uri, editArray);
+        }
+    }
+
+    private tryApplyingCodeActions(uri: vscode.Uri, edit: vscode.TextEdit): [ vscode.Uri?, vscode.TextEdit?] {
+        return this.compositeCodeActionTranslator.applyEdit(uri, edit);
+    }
 }

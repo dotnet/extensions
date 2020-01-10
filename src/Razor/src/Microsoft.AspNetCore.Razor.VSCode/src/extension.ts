@@ -5,6 +5,9 @@
 
 import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode';
+import { CompositeCodeActionTranslator } from './CodeActions/CompositeRazorCodeActionTranslator';
+import { RazorCodeActionProvider } from './CodeActions/RazorCodeActionProvider';
+import { RazorFullyQualifiedCodeActionTranslator } from './CodeActions/RazorFullyQualifiedCodeActionTranslator';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { ReportIssueCommand } from './Diagnostics/ReportIssueCommand';
 import { reportTelemetryForDocuments } from './DocumentTelemetryListener';
@@ -48,7 +51,12 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
         const languageServiceClient = new RazorLanguageServiceClient(languageServerClient, logger);
 
-        const razorLanguageMiddleware = new RazorCSharpLanguageMiddleware(languageServiceClient, logger);
+        const codeActionTranslators = [
+            new RazorFullyQualifiedCodeActionTranslator(),
+        ];
+        const compositeCodeActionTranslator = new CompositeCodeActionTranslator(codeActionTranslators);
+
+        const razorLanguageMiddleware = new RazorCSharpLanguageMiddleware(languageServiceClient, logger, compositeCodeActionTranslator);
 
         const documentManager = new RazorDocumentManager(languageServerClient, logger);
         reportTelemetryForDocuments(documentManager, telemetryReporter);
@@ -70,6 +78,12 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 csharpFeature.projectionProvider,
                 languageServiceClient,
                 logger);
+            const codeActionProvider = new RazorCodeActionProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger,
+                compositeCodeActionTranslator);
             const completionItemProvider = new RazorCompletionItemProvider(
                 documentSynchronizer,
                 documentManager,
@@ -115,6 +129,9 @@ export async function activate(context: ExtensionContext, languageServerDir: str
             localRegistrations.push(
                 languageConfiguration.register(),
                 provisionalCompletionOrchestrator.register(),
+                vscode.languages.registerCodeActionsProvider(
+                    RazorLanguage.id,
+                    codeActionProvider),
                 vscode.languages.registerCompletionItemProvider(
                     RazorLanguage.id,
                     completionItemProvider,
