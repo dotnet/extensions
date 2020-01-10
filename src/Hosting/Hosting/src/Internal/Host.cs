@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             _applicationLifetime = (applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime))) as ApplicationLifetime;
             if (_applicationLifetime is null)
             {
-                throw new ArgumentException("The only acceptable implementation of Microsoft.Extensions.Hosting.IHostApplicationLifetime is Microsoft.Extensions.Hosting.Internal.ApplicationLifetime", nameof(applicationLifetime));
+                throw new ArgumentException("Replacing IHostApplicationLifetime is not supported.", nameof(applicationLifetime));
             }
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _hostLifetime = hostLifetime ?? throw new ArgumentNullException(nameof(hostLifetime));
