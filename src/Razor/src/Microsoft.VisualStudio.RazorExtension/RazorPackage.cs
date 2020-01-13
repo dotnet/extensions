@@ -12,8 +12,8 @@ namespace Microsoft.VisualStudio.RazorExtension
 {
     // We attach to the 51st priority order because the traditional Web + XML editors have priority 50. We need to be loaded prior to them
     // since we want to have the option to own the experience for Razor files
-    [ProvideEditorExtension(typeof(RazorEditorFactory), RazorLSPContentTypeDefinition.CSHTMLFileExtension, 52, NameResourceID = 101)]
-    [ProvideEditorExtension(typeof(RazorEditorFactory), RazorLSPContentTypeDefinition.RazorFileExtension, 52, NameResourceID = 101)]
+    [ProvideEditorExtension(typeof(RazorEditorFactory), RazorLSPContentTypeDefinition.CSHTMLFileExtension, 51, NameResourceID = 101)]
+    [ProvideEditorExtension(typeof(RazorEditorFactory), RazorLSPContentTypeDefinition.RazorFileExtension, 51, NameResourceID = 101)]
     [ProvideEditorFactory(typeof(RazorEditorFactory), 101)]
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [AboutDialogInfo(PackageGuidString, "ASP.NET Core Razor Language Services", "#110", "#112", IconResourceID = "#400")]

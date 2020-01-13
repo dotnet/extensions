@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Runtime.InteropServices;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -13,7 +16,7 @@ using Microsoft.VisualStudio.Utilities;
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [Guid(EditorFactoryGuidString)]
-    public class RazorEditorFactory : EditorFactory
+    internal class RazorEditorFactory : EditorFactory
     {
         private const string EditorFactoryGuidString = "3dfdce9e-1799-4372-8aa6-d8e65182fdfc";
         private const string RazorLSPEditorFeatureFlag = "Razor.LSP.Editor";
@@ -45,7 +48,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             });
         }
 
-        private bool IsLSPRazorEditorEnabled
+        private bool IsRazorLSPEditorEnabled
         {
             get
             {
@@ -74,7 +77,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             out Guid cmdUI,
             out int cancelled)
         {
-            if (!IsLSPRazorEditorEnabled)
+            if (!IsRazorLSPEditorEnabled)
             {
                 docView = default;
                 docData = default;
