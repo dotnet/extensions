@@ -118,7 +118,7 @@
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <!-- STOP!!! We need to reference the version of JSON that our HOSTS supprt. -->
     <NewtonsoftJsonPackageVersion>9.0.1</NewtonsoftJsonPackageVersion>
-    <OmniSharpExtensionsLanguageServerPackageVersion>0.13.1</OmniSharpExtensionsLanguageServerPackageVersion>
+    <OmniSharpExtensionsLanguageServerPackageVersion>0.14.1</OmniSharpExtensionsLanguageServerPackageVersion>
     <OmniSharpMSBuildPackageVersion>1.33.0</OmniSharpMSBuildPackageVersion>
     <VS_NewtonsoftJsonPackageVersion>12.0.1</VS_NewtonsoftJsonPackageVersion>
     <VSMAC_NewtonsoftJsonPackageVersion>12.0.2</VSMAC_NewtonsoftJsonPackageVersion>

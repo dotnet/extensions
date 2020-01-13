@@ -58,15 +58,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
 
-            var factory = new LoggerFactory();
             ILanguageServer server = null;
             server = await OmniSharp.Extensions.LanguageServer.Server.LanguageServer.From(options =>
                 options
                     .WithInput(Console.OpenStandardInput())
                     .WithOutput(Console.OpenStandardOutput())
-                    .WithLoggerFactory(factory)
-                    .AddDefaultLoggingProvider()
-                    .WithMinimumLogLevel(logLevel)
+                    .ConfigureLogging(builder => builder.SetMinimumLevel(logLevel))
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionEndpoint>()
                     .WithHandler<RazorHoverEndpoint>()
@@ -121,10 +118,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/106
             var languageServer = (OmniSharp.Extensions.LanguageServer.Server.LanguageServer)server;
-            languageServer.MinimumLogLevel = logLevel;
 
             try
             {
+                var factory = new LoggerFactory();
                 var logger = factory.CreateLogger<Program>();
                 var assemblyInformationAttribute = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
                 logger.LogInformation("Razor Language Server version " + assemblyInformationAttribute.InformationalVersion);
