@@ -9,7 +9,7 @@ using Azure.Security.KeyVault.Secrets;
 namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Secrets
 {
     /// <summary>
-    /// Options class used by the <see cref="AzureKeyVaultConfigurationExtensions"/>.
+    /// Options class used by the <see cref="AzureKeyVaultSecretsConfigurationExtensions"/>.
     /// </summary>
     public class AzureKeyVaultConfigurationOptions
     {
