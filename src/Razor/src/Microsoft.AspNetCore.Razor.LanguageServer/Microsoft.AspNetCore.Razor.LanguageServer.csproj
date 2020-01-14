@@ -17,6 +17,13 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer.Common\Microsoft.AspNetCore.Razor.LanguageServer.Common.csproj" />
   </ItemGroup>
 
+  <Target Name="_GetOutputPath" Returns="@(_ServerOutputPath)">
+    <ItemGroup>
+      <_ServerOutputPath Include="$(OutputPath)">
+      </_ServerOutputPath>
+    </ItemGroup>
+  </Target>
+
   <Target Name="_IncludeOmniSharpPlugin" Condition="Exists('$(PublishDir)')">
     <PropertyGroup>
       <TargetPluginOutputPath>$(PublishDir)\OmniSharpPlugin</TargetPluginOutputPath>

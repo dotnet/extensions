@@ -23,7 +23,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-    <!-- Include Razor SDK design time assets in the VSIX -->
+  <!-- Include Razor SDK design time assets in the VSIX -->
   <ItemGroup>
     <Content Include="..\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Microsoft.NET.Sdk.Razor.DesignTime.targets">
       <IncludeInVsix>true</IncludeInVsix>
@@ -112,6 +112,29 @@
   <PropertyGroup>
     <_GeneratedVSIXBindingRedirectFile>$(IntermediateOutputPath)$(MSBuildProjectName).BindingRedirects.cs</_GeneratedVSIXBindingRedirectFile>
   </PropertyGroup>
+
+  <Target Name="_BuildLanguageServer">
+    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj"
+        Targets="Build" />
+  </Target>
+
+  <Target Name="_IncludeLanguageServer" DependsOnTargets="PrepareForBuild;_BuildLanguageServer"  BeforeTargets="CoreCompile">
+    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj"
+        Targets="_GetOutputPath">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <_ResolvedPackageVersionInfoProperty>@(_ResolvedPackageVersionInfo)</_ResolvedPackageVersionInfoProperty>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="$(_ResolvedPackageVersionInfoProperty)\*">
+        <IncludeInVsix>true</IncludeInVsix>
+        <VSIXSubPath>LanguageServer\</VSIXSubPath>
+      </Content>
+    </ItemGroup>
+  </Target>
 
   <Target Name="_GenerateVSIXBindingRedirects" DependsOnTargets="PrepareForBuild;GetAssemblyVersion" BeforeTargets="CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(_GeneratedVSIXBindingRedirectFile)">
     <ItemGroup>
