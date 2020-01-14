@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Configuration
     /// <summary>
     /// Extension methods for registering <see cref="AzureKeyVaultConfigurationProvider"/> with <see cref="IConfigurationBuilder"/>.
     /// </summary>
-    public static class AzureKeyVaultConfigurationExtensions
+    public static class AzureKeyVaultSecretsConfigurationExtensions
     {
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
