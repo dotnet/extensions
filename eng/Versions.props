@@ -55,17 +55,10 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-<<<<<<< HEAD
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0-alpha.1.20064.4</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-alpha.1.20064.4</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-alpha.1.20064.4</MicrosoftNETCoreAppInternalPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-alpha.1.20064.4</NETStandardLibraryRefPackageVersion>
-=======
-    <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.1-servicing.19608.4</MicrosoftNETCoreAppInternalPackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
->>>>>>> release/3.1
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha.1.20064.4</MicrosoftWin32RegistryPackageVersion>
