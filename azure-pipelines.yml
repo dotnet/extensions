@@ -15,6 +15,14 @@ variables:
   value: .NETCORE
 - name: _DotNetValidationArtifactsCategory
   value: .NETCOREVALIDATION
+- ${{ if ne(variables['System.TeamProject'], 'public') }}:
+  - group: DotNet-MSRC-Storage
+  - name: _InternalRuntimeDownloadArgs
+    value: /p:DotNetRuntimeSourceFeed=https://dotnetclimsrc.blob.core.windows.net/dotnet
+           /p:DotNetRuntimeSourceFeedKey=$(dotnetclimsrc-read-sas-token-base64)
+- ${{ if eq(variables['System.TeamProject'], 'public') }}:
+  - name: _InternalRuntimeDownloadArgs
+    value: ''
 
 # used for post-build phases, internal builds only
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -65,7 +73,15 @@ stages:
           inputs:
             command: custom
             arguments: 'locals all -clear'
-        - powershell: ./restore.cmd -ci; ./eng/scripts/CodeCheck.ps1 -ci
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: PowerShell@2
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+              arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
+        - powershell: ./restore.cmd -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
           displayName: Run eng/scripts/CodeCheck.ps1
 
       - job: Source_Build
@@ -92,6 +108,14 @@ stages:
             chmod +x $HOME/bin/jq
             echo "##vso[task.prependpath]$HOME/bin"
           displayName: Install jq
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: ./eng/scripts/ci-source-build.sh --ci --configuration $(_BuildConfig) /p:BuildNodeJs=false
           displayName: Run ci-source-build.sh
 
@@ -188,11 +212,20 @@ stages:
           displayName: Install ProcDump
         - powershell: ./eng/scripts/StartDumpCollectionForHangingBuilds.ps1 $(ProcDumpPath)procdump.exe artifacts/log/$(_BuildConfig) (Get-Date).AddMinutes(25) dotnet, msbuild
           displayName: Start background dump collection
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: PowerShell@2
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+              arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: eng\common\cibuild.cmd
             -configuration $(_BuildConfig)
             -prepareMachine
             $(_BuildArgs)
             $(_PublishArgs)
+            $(_InternalRuntimeDownloadArgs)
           name: Build
           displayName: Build
           condition: succeeded()
@@ -249,9 +282,18 @@ stages:
           displayName: Install Node 10.x
           inputs:
             versionSpec: 10.x
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
+            $(_InternalRuntimeDownloadArgs)
           name: Build
           displayName: Build
           condition: succeeded()
@@ -282,9 +324,18 @@ stages:
           displayName: Install Node 10.x
           inputs:
             versionSpec: 10.x
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
+            $(_InternalRuntimeDownloadArgs)
           name: Build
           displayName: Build
           condition: succeeded()
