@@ -97,9 +97,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>4d80b9cfa53e309c8f685abff3512f60c3d8a3d1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.1-beta4-19462-11">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.1-beta4-19476-06">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>66a912c9463eebe832cf742d2fe8bb2e1a4600ec</Sha>
+      <Sha>39d545dc14bc4d5a546e5e2f58d1ebaca72fcd61</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
