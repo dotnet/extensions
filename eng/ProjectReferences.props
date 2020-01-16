@@ -56,7 +56,6 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Options.DataAnnotations" ProjectPath="$(RepoRoot)src\Options\DataAnnotations\src\Microsoft.Extensions.Options.DataAnnotations.csproj" RefProjectPath="$(RepoRoot)src\Options\DataAnnotations\ref\Microsoft.Extensions.Options.DataAnnotations.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Options" ProjectPath="$(RepoRoot)src\Options\Options\src\Microsoft.Extensions.Options.csproj" RefProjectPath="$(RepoRoot)src\Options\Options\ref\Microsoft.Extensions.Options.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Primitives" ProjectPath="$(RepoRoot)src\Primitives\src\Microsoft.Extensions.Primitives.csproj" RefProjectPath="$(RepoRoot)src\Primitives\ref\Microsoft.Extensions.Primitives.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Testing" ProjectPath="$(RepoRoot)src\TestingUtils\Microsoft.AspNetCore.Testing\src\Microsoft.AspNetCore.Testing.csproj" RefProjectPath="$(RepoRoot)src\TestingUtils\Microsoft.AspNetCore.Testing\ref\Microsoft.AspNetCore.Testing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.WebEncoders" ProjectPath="$(RepoRoot)src\WebEncoders\src\Microsoft.Extensions.WebEncoders.csproj" RefProjectPath="$(RepoRoot)src\WebEncoders\ref\Microsoft.Extensions.WebEncoders.csproj" />
   </ItemGroup>
 </Project>
