@@ -70,6 +70,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
+        public void GetImportDocumentTargetPaths_DoesNotIncludeCurrentImport()
+        {
+            // Arrange
+            var state = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState);
+
+            // Act
+            var paths = state.GetImportDocumentTargetPaths(TestProjectData.SomeProjectComponentImportFile1);
+
+            // Assert
+            Assert.DoesNotContain(TestProjectData.SomeProjectComponentImportFile1.TargetPath, paths);
+        }
+
+        [Fact]
         public void ProjectState_ConstructedNew()
         {
             // Arrange

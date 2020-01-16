@@ -440,6 +440,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             foreach (var importItem in importItems)
             {
                 var itemTargetPath = importItem.FilePath.Replace('/', '\\').TrimStart('\\');
+
+                if (FilePathComparer.Instance.Equals(itemTargetPath, hostDocument.TargetPath))
+                {
+                    // If an import change it can't impact itself. The above filepath normalization occasionally results in something like _Imports.razor mapping to /_Imports.razor because the leading / is trimmed.
+                    continue;
+                }
+
                 targetPaths.Add(itemTargetPath);
             }
 
