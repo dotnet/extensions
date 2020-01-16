@@ -84,11 +84,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<ProjectSnapshotChangeTrigger, BackgroundDocumentGenerator>();
                         services.AddSingleton<RazorFileChangeDetectorManager>();
 
-                        // Project configuration changed listeners
+                        // File change listeners
                         services.AddSingleton<IProjectConfigurationFileChangeListener, ProjectConfigurationStateSynchronizer>();
+                        services.AddSingleton<IProjectFileChangeListener, ProjectFileSynchronizer>();
 
                         // File Change detectors
                         services.AddSingleton<IRazorFileChangeDetector, ProjectConfigurationFileChangeDetector>();
+                        services.AddSingleton<IRazorFileChangeDetector, ProjectFileChangeDetector>();
 
                         // Document processed listeners
                         services.AddSingleton<DocumentProcessedListener, RazorDiagnosticsPublisher>();

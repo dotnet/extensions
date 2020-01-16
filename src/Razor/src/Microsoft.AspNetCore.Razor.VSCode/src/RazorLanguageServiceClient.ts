@@ -7,14 +7,12 @@ import * as vscode from 'vscode';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { RazorLogger } from './RazorLogger';
 import { AddDocumentRequest } from './RPC/AddDocumentRequest';
-import { AddProjectRequest } from './RPC/AddProjectRequest';
 import { LanguageKind } from './RPC/LanguageKind';
 import { LanguageQueryRequest } from './RPC/LanguageQueryRequest';
 import { LanguageQueryResponse } from './RPC/LanguageQueryResponse';
 import { RazorMapToDocumentRangeRequest } from './RPC/RazorMapToDocumentRangeRequest';
 import { RazorMapToDocumentRangeResponse } from './RPC/RazorMapToDocumentRangeResponse';
 import { RemoveDocumentRequest } from './RPC/RemoveDocumentRequest';
-import { RemoveProjectRequest } from './RPC/RemoveProjectRequest';
 import { convertRangeFromSerializable, convertRangeToSerializable } from './RPC/SerializableRange';
 
 export class RazorLanguageServiceClient {
@@ -35,20 +33,6 @@ export class RazorLanguageServiceClient {
 
         const request = new RemoveDocumentRequest(documentUri.fsPath);
         await this.serverClient.sendRequest<RemoveDocumentRequest>('projects/removeDocument', request);
-    }
-
-    public async addProject(projectFileUri: vscode.Uri) {
-        await this.ensureStarted();
-
-        const request = new AddProjectRequest(projectFileUri.fsPath);
-        await this.serverClient.sendRequest<AddProjectRequest>('projects/addProject', request);
-    }
-
-    public async removeProject(projectFileUri: vscode.Uri) {
-        await this.ensureStarted();
-
-        const request = new RemoveProjectRequest(projectFileUri.fsPath);
-        await this.serverClient.sendRequest<RemoveProjectRequest>('projects/removeProject', request);
     }
 
     public async languageQuery(position: vscode.Position, uri: vscode.Uri) {

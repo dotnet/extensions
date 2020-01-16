@@ -33,7 +33,6 @@ import { resolveRazorLanguageServerTrace } from './RazorLanguageServerTraceResol
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorLogger } from './RazorLogger';
 import { RazorProjectManager } from './RazorProjectManager';
-import { RazorProjectTracker } from './RazorProjectTracker';
 import { RazorReferenceProvider } from './RazorReferenceProvider';
 import { RazorRenameProvider } from './RazorRenameProvider';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
@@ -65,7 +64,6 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const languageConfiguration = new RazorLanguageConfiguration();
         const csharpFeature = new RazorCSharpFeature(documentManager, eventEmitterFactory, logger);
         const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient, eventEmitterFactory, logger);
-        const projectTracker = new RazorProjectTracker(projectManager, languageServiceClient);
         const documentTracker = new RazorDocumentTracker(documentManager, languageServiceClient);
         const localRegistrations: vscode.Disposable[] = [];
         const reportIssueCommand = new ReportIssueCommand(vscode, documentManager, logger);
@@ -158,7 +156,6 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 vscode.languages.registerRenameProvider(
                     RazorLanguage.id,
                     renameProvider),
-                projectTracker.register(),
                 projectManager.register(),
                 documentManager.register(),
                 documentTracker.register(),

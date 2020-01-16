@@ -11,8 +11,6 @@ using Microsoft.CodeAnalysis.Razor;
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class RazorProjectEndpoint :
-        IRazorAddProjectHandler,
-        IRazorRemoveProjectHandler,
         IRazorAddDocumentHandler,
         IRazorRemoveDocumentHandler
     {
@@ -35,38 +33,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher = foregroundDispatcher;
             _projectService = projectService;
-        }
-
-        public async Task<Unit> Handle(RazorAddProjectParams request, CancellationToken cancellationToken)
-        {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            await Task.Factory.StartNew(
-                () => _projectService.AddProject(request.FilePath),
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                _foregroundDispatcher.ForegroundScheduler);
-
-            return Unit.Value;
-        }
-
-        public async Task<Unit> Handle(RazorRemoveProjectParams request, CancellationToken cancellationToken)
-        {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            await Task.Factory.StartNew(
-                () => _projectService.RemoveProject(request.FilePath),
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                _foregroundDispatcher.ForegroundScheduler);
-
-            return Unit.Value;
         }
 
         public async Task<Unit> Handle(AddDocumentParams request, CancellationToken cancellationToken)
