@@ -63,7 +63,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 options
                     .WithInput(Console.OpenStandardInput())
                     .WithOutput(Console.OpenStandardOutput())
-                    .ConfigureLogging(builder => builder.SetMinimumLevel(logLevel))
+                    .ConfigureLogging(builder => builder
+                        .AddLanguageServer()
+                        .SetMinimumLevel(logLevel))
                     .OnInitialized(async (languageServer, request, response) =>
                     {
                         var fileChangeDetectorManager = languageServer.Services.GetRequiredService<RazorFileChangeDetectorManager>();
