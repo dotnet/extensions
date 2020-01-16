@@ -26,7 +26,7 @@
   "scripts": {
     "clean": "rimraf out && rimraf dist",
     "build": "yarn run clean && yarn run lint && tsc -p ./",
-    "lint": "tslint ./src/**/*.ts",
+    "lint": "tslint ./src/**/*.ts --project ./",
     "watch": "tsc -watch -p ./"
   }
 }

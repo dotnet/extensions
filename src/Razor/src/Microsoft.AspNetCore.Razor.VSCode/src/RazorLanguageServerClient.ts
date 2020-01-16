@@ -136,6 +136,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
             const startDisposable = this.client.start();
             this.startDisposable = vscode.Disposable.from(startDisposable, didChangeStateDisposable);
             this.logger.logMessage('Server started, waiting for client to be ready...');
+            // tslint:disable-next-line: no-floating-promises
             this.client.onReady().then(async () => {
                 if (currentState !== State.Running) {
                     // Unexpected scenario, if we fall into this scenario the above onDidChangeState

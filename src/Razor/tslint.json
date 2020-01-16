@@ -6,6 +6,7 @@
         "file-header": [true, "------"],
         "interface-name": false,
         "no-console": false,
+        "no-floating-promises": true,
         "no-return-await": true,
         "no-inferrable-types": true,
         "object-literal-sort-keys": false,

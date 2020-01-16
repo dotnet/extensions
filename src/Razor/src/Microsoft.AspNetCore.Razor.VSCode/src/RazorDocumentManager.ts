@@ -106,11 +106,12 @@ export class RazorDocumentManager implements IRazorDocumentManager {
                 return;
             }
 
-            this.documentChanged(args.document.uri);
+            await this.documentChanged(args.document.uri);
         });
+        // tslint:disable-next-line: no-floating-promises
         this.serverClient.onRequest(
             'updateCSharpBuffer',
-            updateBufferRequest => this.updateCSharpBuffer(updateBufferRequest));
+            async updateBufferRequest => this.updateCSharpBuffer(updateBufferRequest));
 
         return vscode.Disposable.from(
             watcher,
