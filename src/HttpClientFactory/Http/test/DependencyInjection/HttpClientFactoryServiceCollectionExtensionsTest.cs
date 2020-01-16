@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -28,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var serviceCollection = new ServiceCollection();
 
             // Act1
-            serviceCollection.AddHttpClient(); 
+            serviceCollection.AddHttpClient();
 
             var services = serviceCollection.BuildServiceProvider();
             var options = services.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>();
@@ -347,39 +348,82 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void AddHttpClient_AddSameTypedClientTwice_ThrowsError()
+        public void AddHttpClient_AddSameTypedClientTwice_WithSameName_Works()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddHttpClient<TestTypedClient>();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient<TestTypedClient>("Test"));
+            serviceCollection.AddHttpClient<TestTypedClient>(c =>
+            {
+                c.BaseAddress = new Uri("http://example.com");
+            });
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act2
+            var client = services.GetRequiredService<TestTypedClient>();
 
             // Assert
-            Assert.Equal(
-                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
-                "Client types must be unique. " +
-                "Consider using inheritance to create multiple unique types with the same API surface.",
-                ex.Message);
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
         }
 
         [Fact]
-        public void AddHttpClient_AddSameTypedClientTwice_WithAddTypedClient_ThrowsError()
+        public void AddHttpClient_AddSameTypedClientTwice_WithSameName_WithAddTypedClient_Works()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddHttpClient<TestTypedClient>();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient("Test").AddTypedClient<TestTypedClient>());
+            serviceCollection.AddHttpClient(nameof(TestTypedClient), c =>
+            {
+                c.BaseAddress = new Uri("http://example.com");
+            })
+            .AddTypedClient<TestTypedClient>();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act2
+            var client = services.GetRequiredService<TestTypedClient>();
 
             // Assert
-            Assert.Equal(
-                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
-                "Client types must be unique. " +
-                "Consider using inheritance to create multiple unique types with the same API surface.",
-                ex.Message);
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_WithDifferentNames_IsAllowed()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>("Test1");
+            serviceCollection.AddHttpClient<TestTypedClient>("Test2");
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act
+            var clients = services.GetRequiredService<IEnumerable<TestTypedClient>>();
+
+            // Assert
+            Assert.Equal(2, clients.Count());
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_WithDifferentNames_WithAddTypedClient_IsAllowed()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+            serviceCollection.AddHttpClient("Test").AddTypedClient<TestTypedClient>();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act
+            var clients = services.GetRequiredService<IEnumerable<TestTypedClient>>();
+
+            // Assert
+            Assert.Equal(2, clients.Count());
         }
 
         [Fact]
@@ -401,21 +445,88 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void AddHttpClient_AddSameNameWithTypedClientTwice_WithAddTypedClient_ThrowsError()
+        public void AddHttpClient_AddSameNameWithTypedClientTwice_WithAddTypedClient_IsAllowed()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddHttpClient<TestTypedClient>();
+            serviceCollection.AddHttpClient<TestTypedClient>(c =>
+            {
+                c.BaseAddress = new Uri("http://example.com");
+            });
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient("TestTypedClient").AddTypedClient<AnotherNamespace.TestTypedClient>());
+            serviceCollection.AddHttpClient("TestTypedClient").AddTypedClient<AnotherNamespace.TestTypedClient>();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act
+            var client = services.GetRequiredService<TestTypedClient>();
 
             // Assert
-            Assert.Equal(
-                "The HttpClient factory already has a registered client with the name 'TestTypedClient', bound to the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
-                "Client names are computed based on the type name without considering the namespace ('TestTypedClient'). " +
-                "Use an overload of AddHttpClient that accepts a string and provide a unique name to resolve the conflict.",
-                ex.Message);
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+
+            // Act
+            var client2 = services.GetRequiredService<AnotherNamespace.TestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client2.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameNameWithTypedClientTwice_WithExplicitName_IsAllowed()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>(c =>
+            {
+                c.BaseAddress = new Uri("http://example.com");
+            });
+
+            // Act
+            serviceCollection.AddHttpClient<AnotherNamespace.TestTypedClient>("TestTypedClient");
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act
+            var client = services.GetRequiredService<TestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+
+            // Act
+            var client2 = services.GetRequiredService<AnotherNamespace.TestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client2.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpClient_RegisteringMultipleTypes_WithAddTypedClient_IsAllowed()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            // Act
+            serviceCollection.AddHttpClient("Test", c =>
+            {
+                c.BaseAddress = new Uri("http://example.com");
+            })
+            .AddTypedClient<TestTypedClient>()
+            .AddTypedClient<AnotherNamespace.TestTypedClient>();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act
+            var client = services.GetRequiredService<TestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+
+            // Act
+            var client2 = services.GetRequiredService<AnotherNamespace.TestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client2.HttpClient.BaseAddress.AbsoluteUri);
         }
 
         [Fact]
@@ -430,7 +541,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             // Act
-            serviceCollection.AddHttpClient("test").AddTypedClient<TestTypedClient>((c,s) =>
+            serviceCollection.AddHttpClient("test").AddTypedClient<TestTypedClient>((c, s) =>
             {
                 Assert.Equal("http://example.com/", c.BaseAddress.AbsoluteUri);
                 c.BaseAddress = new Uri("http://example2.com");
@@ -519,7 +630,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             // Act1
-            serviceCollection.AddHttpClient<TestTypedClient>((s,c) =>
+            serviceCollection.AddHttpClient<TestTypedClient>((s, c) =>
             {
                 var options = s.GetRequiredService<IOptions<OtherTestOptions>>();
                 c.BaseAddress = new Uri(options.Value.BaseAddress);
@@ -529,7 +640,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Act2
             var client = services.GetRequiredService<TestTypedClient>();
-        
+
             // Assert
             Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
         }
@@ -546,7 +657,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             // Act1
-            serviceCollection.AddHttpClient<ITestTypedClient, TestTypedClient>((s,c) =>
+            serviceCollection.AddHttpClient<ITestTypedClient, TestTypedClient>((s, c) =>
             {
                 var options = s.GetRequiredService<IOptions<OtherTestOptions>>();
                 c.BaseAddress = new Uri(options.Value.BaseAddress);
@@ -556,7 +667,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Act2
             var client = services.GetRequiredService<ITestTypedClient>();
-        
+
             // Assert
             Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
         }
@@ -573,7 +684,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             // Act1
-            serviceCollection.AddHttpClient<TestTypedClient>("test", (s,c) =>
+            serviceCollection.AddHttpClient<TestTypedClient>("test", (s, c) =>
             {
                 var options = s.GetRequiredService<IOptions<OtherTestOptions>>();
                 c.BaseAddress = new Uri(options.Value.BaseAddress);
@@ -583,7 +694,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Act2
             var client = services.GetRequiredService<TestTypedClient>();
-        
+
             // Assert
             Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
         }
@@ -600,7 +711,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             // Act1
-            serviceCollection.AddHttpClient<ITestTypedClient, TestTypedClient>("test", (s,c) =>
+            serviceCollection.AddHttpClient<ITestTypedClient, TestTypedClient>("test", (s, c) =>
             {
                 var options = s.GetRequiredService<IOptions<OtherTestOptions>>();
                 c.BaseAddress = new Uri(options.Value.BaseAddress);
@@ -610,7 +721,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Act2
             var client = services.GetRequiredService<ITestTypedClient>();
-        
+
             // Assert
             Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
         }
@@ -1126,6 +1237,9 @@ namespace AnotherNamespace
     {
         public TestTypedClient(HttpClient httpClient)
         {
+            HttpClient = httpClient;
         }
+
+        public HttpClient HttpClient { get; }
     }
 }
