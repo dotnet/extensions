@@ -25,8 +25,6 @@ export class RazorProjectTracker {
             await this.languageServiceClient.addProject(event.project.uri);
         } else if (event.kind === RazorProjectChangeKind.removed) {
             await this.languageServiceClient.removeProject(event.project.uri);
-        } else if (event.kind === RazorProjectChangeKind.changed) {
-            await this.languageServiceClient.updateProject(event.project);
         }
     }
 }

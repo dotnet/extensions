@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            var normalizedPath = _filePathNormalizer.Normalize(filePath);
+            var normalizedPath = _filePathNormalizer.NormalizeForRead(filePath);
             return new RemoteTextLoader(normalizedPath);
         }
 
@@ -53,34 +52,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
             public override Task<TextAndVersion> LoadTextAndVersionAsync(Workspace workspace, DocumentId documentId, CancellationToken cancellationToken)
             {
-                var physicalFilePath = _filePath;
-                if (physicalFilePath[0] == '/')
-                {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        // VSLS path, not understood by File.OpenRead so we need to strip the leading separator.
-                        physicalFilePath = physicalFilePath.Substring(1);
-                    }
-                    else
-                    {
-                        // Unix system, path starts with / which is allowed by File.OpenRead on non-windows.
-                    }
-                }
-                var prevLastWriteTime = File.GetLastWriteTimeUtc(physicalFilePath);
+                var prevLastWriteTime = File.GetLastWriteTimeUtc(_filePath);
 
                 TextAndVersion textAndVersion;
 
-                using (var stream = new FileStream(physicalFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                using (var stream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
                 {
                     var version = VersionStamp.Create(prevLastWriteTime);
                     var text = SourceText.From(stream);
                     textAndVersion = TextAndVersion.Create(text, version);
                 }
 
-                var newLastWriteTime = File.GetLastWriteTimeUtc(physicalFilePath);
+                var newLastWriteTime = File.GetLastWriteTimeUtc(_filePath);
                 if (!newLastWriteTime.Equals(prevLastWriteTime))
                 {
-                    throw new IOException($"File was externally modified: {physicalFilePath}");
+                    throw new IOException($"File was externally modified: {_filePath}");
                 }
 
                 return Task.FromResult(textAndVersion);

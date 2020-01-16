@@ -4,8 +4,6 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { IRazorProject } from './IRazorProject';
-import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { RazorLogger } from './RazorLogger';
 import { AddDocumentRequest } from './RPC/AddDocumentRequest';
@@ -15,11 +13,9 @@ import { LanguageQueryRequest } from './RPC/LanguageQueryRequest';
 import { LanguageQueryResponse } from './RPC/LanguageQueryResponse';
 import { RazorMapToDocumentRangeRequest } from './RPC/RazorMapToDocumentRangeRequest';
 import { RazorMapToDocumentRangeResponse } from './RPC/RazorMapToDocumentRangeResponse';
-import { RazorTextDocumentItem } from './RPC/RazorTextDocumentItem';
 import { RemoveDocumentRequest } from './RPC/RemoveDocumentRequest';
 import { RemoveProjectRequest } from './RPC/RemoveProjectRequest';
 import { convertRangeFromSerializable, convertRangeToSerializable } from './RPC/SerializableRange';
-import { UpdateProjectRequest } from './RPC/UpdateProjectRequest';
 
 export class RazorLanguageServiceClient {
     constructor(
@@ -53,22 +49,6 @@ export class RazorLanguageServiceClient {
 
         const request = new RemoveProjectRequest(projectFileUri.fsPath);
         await this.serverClient.sendRequest<RemoveProjectRequest>('projects/removeProject', request);
-    }
-
-    public async updateProject(project: IRazorProject) {
-        await this.ensureStarted();
-
-        const request: UpdateProjectRequest = {
-            ProjectSnapshotHandle: {
-                FilePath: project.uri.fsPath,
-                ProjectWorkspaceState: project.configuration ? project.configuration.projectWorkspaceState : null,
-                Configuration: project.configuration ? project.configuration.configuration : undefined,
-                RootNamespace: project.configuration ? project.configuration.rootNamespace : undefined,
-                Documents: project.configuration ? project.configuration.documents : undefined,
-                SerializationFormat: project.configuration ? project.configuration.serializationFormat : null,
-            },
-        };
-        await this.serverClient.sendRequest<UpdateProjectRequest>('projects/updateProject', request);
     }
 
     public async languageQuery(position: vscode.Position, uri: vscode.Uri) {

@@ -223,6 +223,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var normalizedPath = _filePathNormalizer.Normalize(filePath);
+
+            var project = _projectSnapshotManagerAccessor.Instance.GetLoadedProject(normalizedPath);
+
+            if (project != null)
+            {
+                // Project already exists, noop.
+                return;
+            }
+
             var hostProject = new HostProject(normalizedPath, RazorDefaults.Configuration, RazorDefaults.RootNamespace);
             _projectSnapshotManagerAccessor.Instance.ProjectAdded(hostProject);
             _logger.LogInformation($"Added project '{filePath}' to project system.");

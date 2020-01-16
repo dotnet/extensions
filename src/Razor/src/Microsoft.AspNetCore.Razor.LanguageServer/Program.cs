@@ -64,6 +64,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithInput(Console.OpenStandardInput())
                     .WithOutput(Console.OpenStandardOutput())
                     .ConfigureLogging(builder => builder.SetMinimumLevel(logLevel))
+                    .OnInitialized(async (languageServer, request, response) =>
+                    {
+                        var fileChangeDetectorManager = languageServer.Services.GetRequiredService<RazorFileChangeDetectorManager>();
+                        await fileChangeDetectorManager.InitializedAsync(languageServer);
+                    })
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionEndpoint>()
                     .WithHandler<RazorHoverEndpoint>()
@@ -77,6 +82,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
                         services.AddSingleton<ProjectSnapshotChangeTrigger, BackgroundDocumentGenerator>();
+                        services.AddSingleton<RazorFileChangeDetectorManager>();
+
+                        // Project configuration changed listeners
+                        services.AddSingleton<IProjectConfigurationFileChangeListener, ProjectConfigurationStateSynchronizer>();
+
+                        // File Change detectors
+                        services.AddSingleton<IRazorFileChangeDetector, ProjectConfigurationFileChangeDetector>();
 
                         // Document processed listeners
                         services.AddSingleton<DocumentProcessedListener, RazorDiagnosticsPublisher>();

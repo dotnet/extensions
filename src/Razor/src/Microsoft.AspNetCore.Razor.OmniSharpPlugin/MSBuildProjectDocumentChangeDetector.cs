@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Composition;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Build.Execution;
 using OmniSharp.MSBuild.Notification;
 
