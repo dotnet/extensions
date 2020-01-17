@@ -69,7 +69,7 @@ stages:
       enablePublishBuildAssets: true
       enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       enableTelemetry: true
-      helixRepo: aspnet/Extensions
+      helixRepo: dotnet/extensions
       jobs:
       - job: Windows
         pool:
@@ -140,6 +140,8 @@ stages:
         - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
           displayName: Run Flaky Tests
           continueOnError: true
+        - script: dotnet msbuild eng/repo.targets /t:EnsureFunctionalTestLogsPreserved
+          displayName: Ensure functional test logs preserved
         - powershell: eng\scripts\KillProcesses.ps1
           displayName: Kill processes
           condition: always()
@@ -158,6 +160,15 @@ stages:
           inputs:
             pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
@@ -239,6 +250,15 @@ stages:
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
           displayName: Upload NPM artifacts
           condition: and(succeeded(), eq(variables['_BuildConfig'], 'Release'))
           inputs:
@@ -299,6 +319,15 @@ stages:
           inputs:
             pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
   - job: Source_Build

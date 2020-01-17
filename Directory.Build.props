@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dotnet/extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
