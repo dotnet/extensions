@@ -58,9 +58,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="4.7.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="System.Text.Json" Version="4.7.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
+      <Sha>07080ceab1e5b305d8a5fecd9d5b793fb502d57a</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
@@ -68,11 +68,11 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.1.2">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>1213474f57d85484c2bc0646198976b8f29fb030</Sha>
+      <Sha>08d54755cdc438ae06b4d8b26cc76f0908fe1209</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.2-servicing.20066.6">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.2-servicing.20066.9">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>1213474f57d85484c2bc0646198976b8f29fb030</Sha>
+      <Sha>08d54755cdc438ae06b4d8b26cc76f0908fe1209</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="3.1.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -101,9 +101,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>4d80b9cfa53e309c8f685abff3512f60c3d8a3d1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.0-beta4-19569-03">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.1-beta4-19614-01">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>82f2e2541478e239dc4b04f231e90dc2b3dcb422</Sha>
+      <Sha>165046097562cfe65b09c2e9a9d8f7cd88526f2c</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
