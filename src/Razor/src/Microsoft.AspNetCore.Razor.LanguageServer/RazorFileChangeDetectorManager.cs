@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class RazorFileChangeDetectorManager
     {
-        private readonly IEnumerable<IRazorFileChangeDetector> _fileChangeDetectors;
+        private readonly IEnumerable<IFileChangeDetector> _fileChangeDetectors;
 
-        public RazorFileChangeDetectorManager(IEnumerable<IRazorFileChangeDetector> fileChangeDetectors)
+        public RazorFileChangeDetectorManager(IEnumerable<IFileChangeDetector> fileChangeDetectors)
         {
             if (fileChangeDetectors is null)
             {

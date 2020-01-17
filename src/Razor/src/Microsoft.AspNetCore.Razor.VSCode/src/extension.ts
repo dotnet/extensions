@@ -22,7 +22,6 @@ import { RazorCSharpLanguageMiddleware } from './RazorCSharpLanguageMiddleware';
 import { RazorDefinitionProvider } from './RazorDefinitionProvider';
 import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
-import { RazorDocumentTracker } from './RazorDocumentTracker';
 import { RazorHoverProvider } from './RazorHoverProvider';
 import { RazorImplementationProvider } from './RazorImplementationProvider';
 import { RazorLanguage } from './RazorLanguage';
@@ -48,7 +47,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
     try {
         const languageServerOptions = resolveRazorLanguageServerOptions(vscode, languageServerDir, languageServerTrace, logger);
         const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
-        const languageServiceClient = new RazorLanguageServiceClient(languageServerClient, logger);
+        const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
 
         const codeActionTranslators = [
             new RazorFullyQualifiedCodeActionTranslator(),
@@ -64,7 +63,6 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const languageConfiguration = new RazorLanguageConfiguration();
         const csharpFeature = new RazorCSharpFeature(documentManager, eventEmitterFactory, logger);
         const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient, eventEmitterFactory, logger);
-        const documentTracker = new RazorDocumentTracker(documentManager, languageServiceClient);
         const localRegistrations: vscode.Disposable[] = [];
         const reportIssueCommand = new ReportIssueCommand(vscode, documentManager, logger);
 
@@ -158,7 +156,6 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                     renameProvider),
                 projectManager.register(),
                 documentManager.register(),
-                documentTracker.register(),
                 csharpFeature.register(),
                 htmlFeature.register(),
                 documentSynchronizer.register(),

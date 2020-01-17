@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class ProjectFileChangeDetector : IRazorFileChangeDetector
+    internal class ProjectFileChangeDetector : IFileChangeDetector
     {
         private const string ProjectFileExtension = ".csproj";
         private const string ProjectFileExtensionPattern = "*" + ProjectFileExtension;

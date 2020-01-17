@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class ProjectConfigurationFileChangeDetector : IRazorFileChangeDetector
+    internal class ProjectConfigurationFileChangeDetector : IFileChangeDetector
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly FilePathNormalizer _filePathNormalizer;

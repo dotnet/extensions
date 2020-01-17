@@ -6,33 +6,15 @@
 import * as vscode from 'vscode';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { RazorLogger } from './RazorLogger';
-import { AddDocumentRequest } from './RPC/AddDocumentRequest';
 import { LanguageKind } from './RPC/LanguageKind';
 import { LanguageQueryRequest } from './RPC/LanguageQueryRequest';
 import { LanguageQueryResponse } from './RPC/LanguageQueryResponse';
 import { RazorMapToDocumentRangeRequest } from './RPC/RazorMapToDocumentRangeRequest';
 import { RazorMapToDocumentRangeResponse } from './RPC/RazorMapToDocumentRangeResponse';
-import { RemoveDocumentRequest } from './RPC/RemoveDocumentRequest';
 import { convertRangeFromSerializable, convertRangeToSerializable } from './RPC/SerializableRange';
 
 export class RazorLanguageServiceClient {
-    constructor(
-        private readonly serverClient: RazorLanguageServerClient,
-        private readonly logger: RazorLogger) {
-    }
-
-    public async addDocument(documentUri: vscode.Uri) {
-        await this.ensureStarted();
-
-        const request = new AddDocumentRequest(documentUri.fsPath);
-        await this.serverClient.sendRequest<AddDocumentRequest>('projects/addDocument', request);
-    }
-
-    public async removeDocument(documentUri: vscode.Uri) {
-        await this.ensureStarted();
-
-        const request = new RemoveDocumentRequest(documentUri.fsPath);
-        await this.serverClient.sendRequest<RemoveDocumentRequest>('projects/removeDocument', request);
+    constructor(private readonly serverClient: RazorLanguageServerClient) {
     }
 
     public async languageQuery(position: vscode.Position, uri: vscode.Uri) {

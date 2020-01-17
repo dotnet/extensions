@@ -75,7 +75,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorCompletionEndpoint>()
                     .WithHandler<RazorHoverEndpoint>()
                     .WithHandler<RazorLanguageEndpoint>()
-                    .WithHandler<RazorProjectEndpoint>()
                     .WithServices(services =>
                     {
                         services.AddSingleton<RemoteTextLoaderFactory, DefaultRemoteTextLoaderFactory>();
@@ -89,10 +88,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         // File change listeners
                         services.AddSingleton<IProjectConfigurationFileChangeListener, ProjectConfigurationStateSynchronizer>();
                         services.AddSingleton<IProjectFileChangeListener, ProjectFileSynchronizer>();
+                        services.AddSingleton<IRazorFileChangeListener, RazorFileSynchronizer>();
 
                         // File Change detectors
-                        services.AddSingleton<IRazorFileChangeDetector, ProjectConfigurationFileChangeDetector>();
-                        services.AddSingleton<IRazorFileChangeDetector, ProjectFileChangeDetector>();
+                        services.AddSingleton<IFileChangeDetector, ProjectConfigurationFileChangeDetector>();
+                        services.AddSingleton<IFileChangeDetector, ProjectFileChangeDetector>();
+                        services.AddSingleton<IFileChangeDetector, RazorFileChangeDetector>();
 
                         // Document processed listeners
                         services.AddSingleton<DocumentProcessedListener, RazorDiagnosticsPublisher>();

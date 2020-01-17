@@ -58,11 +58,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 RootUri = new Uri(expectedWorkspaceDirectory),
             };
             var languageServer = Mock.Of<ILanguageServer>(server => server.ClientSettings == clientSettings);
-            var detector1 = new Mock<IRazorFileChangeDetector>(MockBehavior.Strict);
+            var detector1 = new Mock<IFileChangeDetector>(MockBehavior.Strict);
             detector1.Setup(detector => detector.StartAsync(expectedWorkspaceDirectory, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
-            var detector2 = new Mock<IRazorFileChangeDetector>(MockBehavior.Strict);
+            var detector2 = new Mock<IFileChangeDetector>(MockBehavior.Strict);
             detector2.Setup(detector => detector.StartAsync(expectedWorkspaceDirectory, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
