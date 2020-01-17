@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Editor.Razor;
+using TextSpan = Microsoft.AspNetCore.Razor.Language.Syntax.TextSpan;
 
 namespace Microsoft.CodeAnalysis.Razor.Completion
 {
@@ -54,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (!TryGetAttributeInfo(owner, out var attributeName, out var attributeNameLocation, out _, out _))
+            if (!TryGetAttributeInfo(owner, out _, out var attributeName, out var attributeNameLocation, out _, out _))
             {
                 // Either we're not in an attribute or the attribute is so malformed that we can't provide proper completions.
                 return Array.Empty<RazorCompletionItem>();
