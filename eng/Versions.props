@@ -64,7 +64,7 @@
     <SystemIOPipelinesPackageVersion>4.6.0</SystemIOPipelinesPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.7.0</SystemReflectionMetadataPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.6.0</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.1</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>4.6.0</SystemSecurityCryptographyXmlPackageVersion>
     <SystemServiceProcessServiceControllerPackageVersion>4.6.0</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0</SystemTextEncodingsWebPackageVersion>
