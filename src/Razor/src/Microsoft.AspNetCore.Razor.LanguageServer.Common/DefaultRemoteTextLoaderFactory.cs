@@ -52,21 +52,31 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
             public override Task<TextAndVersion> LoadTextAndVersionAsync(Workspace workspace, DocumentId documentId, CancellationToken cancellationToken)
             {
-                var prevLastWriteTime = File.GetLastWriteTimeUtc(_filePath);
 
                 TextAndVersion textAndVersion;
 
-                using (var stream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                try
                 {
-                    var version = VersionStamp.Create(prevLastWriteTime);
-                    var text = SourceText.From(stream);
-                    textAndVersion = TextAndVersion.Create(text, version);
-                }
+                    var prevLastWriteTime = File.GetLastWriteTimeUtc(_filePath);
 
-                var newLastWriteTime = File.GetLastWriteTimeUtc(_filePath);
-                if (!newLastWriteTime.Equals(prevLastWriteTime))
+                    using (var stream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                    {
+                        var version = VersionStamp.Create(prevLastWriteTime);
+                        var text = SourceText.From(stream);
+                        textAndVersion = TextAndVersion.Create(text, version);
+                    }
+
+                    var newLastWriteTime = File.GetLastWriteTimeUtc(_filePath);
+                    if (!newLastWriteTime.Equals(prevLastWriteTime))
+                    {
+                        throw new IOException($"File was externally modified: {_filePath}");
+                    }
+                }
+                catch (FileNotFoundException)
                 {
-                    throw new IOException($"File was externally modified: {_filePath}");
+                    // This can typically occur when a file is renamed. What happens is the client "closes" the old file before any file system "rename" event makes it to us. Resulting
+                    // in us trying to refresh the "closed" files buffer with what's on disk; however, there's nothing actually on disk because the file was renamed.
+                    textAndVersion = TextAndVersion.Create(SourceText.From(string.Empty), VersionStamp.Default, filePath: _filePath);
                 }
 
                 return Task.FromResult(textAndVersion);
