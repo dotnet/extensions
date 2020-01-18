@@ -51,6 +51,54 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
         }
 
         [Fact]
+        public void GetHoverInfo_TagHelper_AttributeValue_ReturnsNull()
+        {
+            // Arrange
+            var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1>";
+            var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
+            var service = GetDefaultRazorHoverInfoService();
+            var location = new SourceSpan(txt.IndexOf("true"), 0);
+
+            // Act
+            var hover = service.GetHoverInfo(codeDocument, location);
+
+            // Assert
+            Assert.Null(hover);
+        }
+
+        [Fact]
+        public void GetHoverInfo_TagHelper_AfterAttributeEquals_ReturnsNull()
+        {
+            // Arrange
+            var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1>";
+            var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
+            var service = GetDefaultRazorHoverInfoService();
+            var location = new SourceSpan(txt.IndexOf("=") + 1, 0);
+
+            // Act
+            var hover = service.GetHoverInfo(codeDocument, location);
+
+            // Assert
+            Assert.Null(hover);
+        }
+
+        [Fact]
+        public void GetHoverInfo_TagHelper_AttributeEnd_ReturnsNull()
+        {
+            // Arrange
+            var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1>";
+            var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
+            var service = GetDefaultRazorHoverInfoService();
+            var location = new SourceSpan(txt.IndexOf("true'") + 5, 0);
+
+            // Act
+            var hover = service.GetHoverInfo(codeDocument, location);
+
+            // Assert
+            Assert.Null(hover);
+        }
+
+        [Fact]
         public void GetHoverInfo_TagHelper_MinimizedAttribute()
         {
             // Arrange

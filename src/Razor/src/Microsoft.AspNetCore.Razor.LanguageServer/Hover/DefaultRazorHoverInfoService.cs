@@ -101,8 +101,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                 }
             }
 
-            if (_htmlFactsService.TryGetAttributeInfo(parent, out containingTagNameToken, out _, out var selectedAttributeName, out _, out attributes) &&
-                attributes.Span.IntersectsWith(location.AbsoluteIndex))
+            if (_htmlFactsService.TryGetAttributeInfo(parent, out containingTagNameToken, out _, out var selectedAttributeName, out var selectedAttributeNameLocation, out attributes) &&
+                selectedAttributeNameLocation?.IntersectsWith(location.AbsoluteIndex) == true)
             {
                 // Hovering over HTML attribute name
                 var stringifiedAttributes = _tagHelperFactsService.StringifyAttributes(attributes);
