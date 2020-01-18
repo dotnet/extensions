@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
             _shutdownBlock.WaitOne();
 
             // On Linux if the shutdown is triggered by SIGTERM then that's signaled with the 143 exit code.
-            // Suppress that since we shut down gracefully. https://github.com/aspnet/AspNetCore/issues/6526
+            // Suppress that since we shut down gracefully. https://github.com/dotnet/aspnetcore/issues/6526
             System.Environment.ExitCode = 0;
         }
 
