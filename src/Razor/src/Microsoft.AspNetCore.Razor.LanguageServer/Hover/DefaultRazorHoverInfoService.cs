@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                 }
             }
 
-            if (_htmlFactsService.TryGetAttributeInfo(parent, out containingTagNameToken, out var selectedAttributeName, out attributes) &&
+            if (_htmlFactsService.TryGetAttributeInfo(parent, out containingTagNameToken, out _, out var selectedAttributeName, out _, out attributes) &&
                 attributes.Span.IntersectsWith(location.AbsoluteIndex))
             {
                 // Hovering over HTML attribute name

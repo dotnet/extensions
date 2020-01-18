@@ -353,5 +353,39 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 completion => Assert.Equal("bool-val", completion.FilterText),
                 completion => Assert.Equal("int-val", completion.FilterText));
         }
+
+        [Fact]
+        public void GetCompletionAt_HtmlAttributeValue_DoesNotReturnCompletions()
+        {
+            // Arrange
+            var service = new DefaultTagHelperCompletionService(RazorTagHelperCompletionService, HtmlFactsService, TagHelperFactsService);
+            var codeDocument = CreateCodeDocument($"@addTagHelper *, TestAssembly{Environment.NewLine}<test2 class='' />", DefaultTagHelpers);
+            var sourceSpan = new SourceSpan(43 + Environment.NewLine.Length, 0);
+
+            // Act
+            var completions = service.GetCompletionsAt(sourceSpan, codeDocument);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
+        public void GetCompletionsAt_AttributePrefix_ReturnsCompletions()
+        {
+            // Arrange
+            var service = new DefaultTagHelperCompletionService(RazorTagHelperCompletionService, HtmlFactsService, TagHelperFactsService);
+            var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test2        class=''>";
+            var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
+            var sourceSpan = new SourceSpan(38 + Environment.NewLine.Length, 0);
+
+            // Act
+            var completions = service.GetCompletionsAt(sourceSpan, codeDocument);
+
+            // Assert
+            Assert.Collection(
+                completions,
+                completion => Assert.Equal("bool-val", completion.FilterText),
+                completion => Assert.Equal("int-val", completion.FilterText));
+        }
     }
 }

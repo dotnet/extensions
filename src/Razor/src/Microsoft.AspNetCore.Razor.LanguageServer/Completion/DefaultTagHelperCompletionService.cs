@@ -199,8 +199,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 return elementCompletions;
             }
 
-            if (_htmlFactsService.TryGetAttributeInfo(parent, out containingTagNameToken, out var selectedAttributeName, out attributes) &&
-                attributes.Span.IntersectsWith(location.AbsoluteIndex))
+            if (_htmlFactsService.TryGetAttributeInfo(
+                    parent,
+                    out containingTagNameToken,
+                    out var prefixLocation,
+                    out var selectedAttributeName,
+                    out var selectedAttributeNameLocation,
+                    out attributes) &&
+                (selectedAttributeName == null ||
+                selectedAttributeNameLocation.Value.IntersectsWith(location.AbsoluteIndex) ||
+                prefixLocation.Value.IntersectsWith(location.AbsoluteIndex)))
             {
                 var stringifiedAttributes = _tagHelperFactsService.StringifyAttributes(attributes);
                 var attributeCompletions = GetAttributeCompletions(parent, containingTagNameToken.Content, selectedAttributeName, stringifiedAttributes, codeDocument);
