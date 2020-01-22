@@ -18,7 +18,7 @@ export const simpleMvc21Root = path.join(testAppsRoot, 'SimpleMvc21');
 export const simpleMvc22Root = path.join(testAppsRoot, 'SimpleMvc22');
 const projectConfigFile = 'project.razor.json';
 
-export async function pollUntil(fn: () => (boolean | Promise<boolean>), timeoutMs: number, pollInterval?: number, suppressError?: boolean) {
+export async function pollUntil(fn: () => (boolean | Promise<boolean>), timeoutMs: number, pollInterval?: number, suppressError?: boolean, errorMessage?: string) {
     const resolvedPollInterval = pollInterval ? pollInterval : 50;
 
     let timeWaited = 0;
@@ -30,7 +30,11 @@ export async function pollUntil(fn: () => (boolean | Promise<boolean>), timeoutM
             if (suppressError) {
                 return;
             } else {
-                throw new Error(`Timed out after ${timeoutMs}ms.`);
+                let message = `Timed out after ${timeoutMs}ms.`;
+                if (errorMessage) {
+                    message += `\n{errorMessage}`;
+                }
+                throw new Error(message);
             }
         }
 
@@ -134,10 +138,13 @@ export async function waitForProjectReady(directory: string) {
 }
 
 export async function waitForProjectsConfigured() {
+    const csProjFiles = glob.sync(`**/*.csproj`, {cwd: testAppsRoot});
+    const expectedProjects = csProjFiles.length - 1;
+
     await pollUntil(() => {
         const files = glob.sync(`**/${projectConfigFile}`, { cwd: testAppsRoot});
-        return files.length === 16;
-    }, /* timeout */10000, /* pollInterval */ 500);
+        return files.length === expectedProjects;
+    }, /* timeout */10000, /* pollInterval */ 500, /*suppressError */ false, `Expected to have ${expectedProjects} ${projectConfigFile}'s`);
 }
 
 async function removeOldProjectRazorJsons() {
@@ -151,8 +158,6 @@ async function removeOldProjectRazorJsons() {
             count++;
         }
     }
-
-    console.log(`${count} project.razor.json's`);
 }
 
 export async function waitForProjectConfigured(directory: string) {

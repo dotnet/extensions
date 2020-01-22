@@ -77,15 +77,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
             else if (attribute is MarkupTagHelperDirectiveAttributeSyntax tagHelperDirectiveAttribute)
             {
                 prefixLocation = tagHelperDirectiveAttribute.NamePrefix.Span;
-                selectedAttributeName = tagHelperDirectiveAttribute.Name.GetContent();
-                selectedAttributeNameLocation = tagHelperDirectiveAttribute.Name.Span;
+                selectedAttributeName = tagHelperDirectiveAttribute.FullName;
+                var fullNameSpan = TextSpan.FromBounds(tagHelperDirectiveAttribute.Transition.Span.Start, tagHelperDirectiveAttribute.Name.Span.End);
+                selectedAttributeNameLocation = fullNameSpan;
                 return true;
             }
             else if (attribute is MarkupMinimizedTagHelperDirectiveAttributeSyntax minimizedTagHelperDirectiveAttribute)
             {
                 prefixLocation = minimizedTagHelperDirectiveAttribute.NamePrefix.Span;
-                selectedAttributeName = minimizedTagHelperDirectiveAttribute.Name.GetContent();
-                selectedAttributeNameLocation = minimizedTagHelperDirectiveAttribute.Name.Span;
+                selectedAttributeName = minimizedTagHelperDirectiveAttribute.FullName;
+                var fullNameSpan = TextSpan.FromBounds(minimizedTagHelperDirectiveAttribute.Transition.Span.Start, minimizedTagHelperDirectiveAttribute.Name.Span.End);
+                selectedAttributeNameLocation = fullNameSpan;
                 return true;
             }
             else if (attribute is MarkupMiscAttributeContentSyntax)
