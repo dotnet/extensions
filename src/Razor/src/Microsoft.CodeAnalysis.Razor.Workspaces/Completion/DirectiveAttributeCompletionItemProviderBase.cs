@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
             if (attributeNameLocation.IntersectsWith(location.AbsoluteIndex))
             {
-                // <input cl|ass="test" />
+                // <input cla|ss="test" />
                 return true;
             }
 
