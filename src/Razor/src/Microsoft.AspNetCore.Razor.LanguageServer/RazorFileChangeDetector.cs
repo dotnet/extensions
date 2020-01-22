@@ -105,12 +105,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     }
                 };
 
-                _watchers.Add(watcher);
-            }
+                watcher.EnableRaisingEvents = true;
 
-            for (var i = 0; i < _watchers.Count; i++)
-            {
-                _watchers[i].EnableRaisingEvents = true;
+                _watchers.Add(watcher);
             }
         }
 
