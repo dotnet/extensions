@@ -443,7 +443,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 if (FilePathComparer.Instance.Equals(itemTargetPath, hostDocument.TargetPath))
                 {
-                    // If an import change it can't impact itself. The above filepath normalization occasionally results in something like _Imports.razor mapping to /_Imports.razor because the leading / is trimmed.
+                    // We've normalized the original importItem.FilePath into the HostDocument.TargetPath. For instance, if the HostDocument.TargetPath
+                    // was '/_Imports.razor' it'd be normalized down into '_Imports.razor'. The purpose of this method is to get the associated document
+                    // paths for a given import file (_Imports.razor / _ViewImports.cshtml); therefore, an import importing itself doesn't make sense.
                     continue;
                 }
 
