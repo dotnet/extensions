@@ -55,7 +55,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)src\TestingUtils\Microsoft.AspNetCore.Testing\src\Microsoft.AspNetCore.Testing.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
   </ItemGroup>
 
