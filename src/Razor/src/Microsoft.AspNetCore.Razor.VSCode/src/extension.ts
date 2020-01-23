@@ -14,7 +14,6 @@ import { reportTelemetryForDocuments } from './DocumentTelemetryListener';
 import { HostEventStream } from './HostEventStream';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { IEventEmitterFactory } from './IEventEmitterFactory';
-import { reportTelemetryForProjects } from './ProjectTelemetryListener';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorCodeLensProvider } from './RazorCodeLensProvider';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
@@ -31,7 +30,6 @@ import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsR
 import { resolveRazorLanguageServerTrace } from './RazorLanguageServerTraceResolver';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorLogger } from './RazorLogger';
-import { RazorProjectManager } from './RazorProjectManager';
 import { RazorReferenceProvider } from './RazorReferenceProvider';
 import { RazorRenameProvider } from './RazorRenameProvider';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
@@ -58,8 +56,6 @@ export async function activate(context: ExtensionContext, languageServerDir: str
 
         const documentManager = new RazorDocumentManager(languageServerClient, logger);
         reportTelemetryForDocuments(documentManager, telemetryReporter);
-        const projectManager = new RazorProjectManager(logger);
-        reportTelemetryForProjects(projectManager, telemetryReporter);
         const languageConfiguration = new RazorLanguageConfiguration();
         const csharpFeature = new RazorCSharpFeature(documentManager, eventEmitterFactory, logger);
         const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient, eventEmitterFactory, logger);
@@ -154,7 +150,6 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 vscode.languages.registerRenameProvider(
                     RazorLanguage.id,
                     renameProvider),
-                projectManager.register(),
                 documentManager.register(),
                 csharpFeature.register(),
                 htmlFeature.register(),
@@ -168,7 +163,6 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         });
 
         languageServerClient.onStarted(async () => {
-            await projectManager.initialize();
             await documentManager.initialize();
         });
 
