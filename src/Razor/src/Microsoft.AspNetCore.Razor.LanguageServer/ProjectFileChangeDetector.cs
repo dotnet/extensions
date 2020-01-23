@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _watcher = new FileSystemWatcher(workspaceDirectory, ProjectFileExtensionPattern)
             {
-                NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
                 IncludeSubdirectories = true,
             };
 

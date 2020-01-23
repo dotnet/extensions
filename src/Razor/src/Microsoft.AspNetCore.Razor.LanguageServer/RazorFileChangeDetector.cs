@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 var extension = RazorFileExtensions[i];
                 var watcher = new FileSystemWatcher(workspaceDirectory, "*" + extension)
                 {
-                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
+                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
                     IncludeSubdirectories = true,
                 };
 

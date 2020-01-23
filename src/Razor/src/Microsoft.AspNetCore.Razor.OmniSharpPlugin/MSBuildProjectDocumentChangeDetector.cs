@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             {
                 var documentWatcher = new FileSystemWatcher(projectDirectory, "*" + RazorFileExtensions[i])
                 {
-                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
+                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
                     IncludeSubdirectories = true,
                 };
 
