@@ -72,6 +72,10 @@ export class RazorDocumentManager implements IRazorDocumentManager {
                 continue;
             }
 
+            if (textDocument.isClosed) {
+                continue;
+            }
+
             this.openDocument(textDocument.uri);
         }
     }
@@ -102,11 +106,12 @@ export class RazorDocumentManager implements IRazorDocumentManager {
                 return;
             }
 
-            this.documentChanged(args.document.uri);
+            await this.documentChanged(args.document.uri);
         });
+        // tslint:disable-next-line: no-floating-promises
         this.serverClient.onRequest(
             'updateCSharpBuffer',
-            updateBufferRequest => this.updateCSharpBuffer(updateBufferRequest));
+            async updateBufferRequest => this.updateCSharpBuffer(updateBufferRequest));
 
         return vscode.Disposable.from(
             watcher,
@@ -194,6 +199,8 @@ export class RazorDocumentManager implements IRazorDocumentManager {
             csharpProjectedDocument.update(updateBufferRequest.changes, updateBufferRequest.hostDocumentVersion);
 
             this.notifyDocumentChange(document, RazorDocumentChangeKind.csharpChanged);
+        } else {
+            this.logger.logWarning('Failed to update the C# document buffer. This is unexpected and may result in incorrect C# interactions.');
         }
     }
 

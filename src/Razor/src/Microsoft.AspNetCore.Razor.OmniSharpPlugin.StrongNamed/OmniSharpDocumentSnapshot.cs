@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
@@ -10,6 +12,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     {
         private readonly DocumentSnapshot _documentSnapshot;
         private OmniSharpHostDocument _hostDocument;
+        private OmniSharpProjectSnapshot _project;
+        private object _projectLock;
 
         internal OmniSharpDocumentSnapshot(DocumentSnapshot documentSnapshot)
         {
@@ -19,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             }
 
             _documentSnapshot = documentSnapshot;
+            _projectLock = new object();
         }
 
         public OmniSharpHostDocument HostDocument
@@ -41,5 +46,28 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public string FilePath => _documentSnapshot.FilePath;
 
         public string TargetPath => _documentSnapshot.TargetPath;
+
+        public OmniSharpProjectSnapshot Project
+        {
+            get
+            {
+                lock (_projectLock)
+                {
+                    if (_project == null)
+                    {
+                        _project = new OmniSharpProjectSnapshot(_documentSnapshot.Project);
+                    }
+                }
+
+                return _project;
+            }
+        }
+
+        public SourceText GetGeneratedCodeSourceText()
+        {
+            var generatedCodeContainer = ((DefaultDocumentSnapshot)_documentSnapshot).State.HostDocument.GeneratedCodeContainer;
+            var sourceText = generatedCodeContainer.SourceTextContainer.CurrentText;
+            return sourceText;
+        }
     }
 }

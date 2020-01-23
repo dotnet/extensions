@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Build.Execution;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
@@ -10,7 +11,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     {
         public RazorFileChangeEventArgs(
             string filePath,
-            string relativeFilePath,
             ProjectInstance projectInstance,
             RazorFileChangeKind kind)
         {
@@ -19,25 +19,17 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            if (relativeFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(relativeFilePath));
-            }
-
             if (projectInstance == null)
             {
                 throw new ArgumentNullException(nameof(projectInstance));
             }
 
             FilePath = filePath;
-            RelativeFilePath = relativeFilePath;
             UnevaluatedProjectInstance = projectInstance;
             Kind = kind;
         }
 
         public string FilePath { get; }
-
-        public string RelativeFilePath { get; }
 
         public ProjectInstance UnevaluatedProjectInstance { get; }
 

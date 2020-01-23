@@ -93,6 +93,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Same(item, TransitionCompletionItem);
         }
 
+        [Fact]
+        public void GetCompletionItems_AttributeAreaInIncompleteComponent_ReturnsTransitionCompletionItem()
+        {
+            // Arrange
+            var syntaxTree = GetSyntaxTree("<input   @{");
+            var location = new SourceSpan(7, 0);
+
+            // Act
+            var result = Provider.GetCompletionItems(syntaxTree, TagHelperDocumentContext, location);
+
+            // Assert
+            var item = Assert.Single(result);
+            Assert.Same(item, TransitionCompletionItem);
+        }
+
         private static RazorSyntaxTree GetSyntaxTree(string text, string fileKind = null)
         {
             fileKind = fileKind ?? FileKinds.Component;

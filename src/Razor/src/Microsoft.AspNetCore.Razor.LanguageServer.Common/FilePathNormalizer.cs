@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
@@ -37,6 +38,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             }
 
             return normalized;
+        }
+
+        public string NormalizeForRead(string filePath)
+        {
+            filePath = Normalize(filePath);
+
+            if (filePath[0] == '/')
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // VSLS path, not understood by File.OpenRead so we need to strip the leading separator.
+                    filePath = filePath.Substring(1);
+                }
+                else
+                {
+                    // Unix system, path starts with / which is allowed by File.OpenRead on non-windows.
+                }
+            }
+
+            return filePath;
         }
 
         public string GetDirectory(string filePath)

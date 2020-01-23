@@ -694,6 +694,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.Equal(projectFilePath, hostProject.FilePath);
                     Assert.Same(RazorDefaults.Configuration, hostProject.Configuration);
                 });
+            projectSnapshotManager.Setup(manager => manager.GetLoadedProject(It.IsAny<string>())).Returns<ProjectSnapshot>(null);
+            var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
+
+            // Act
+            projectService.AddProject(projectFilePath);
+
+            // Assert
+            projectSnapshotManager.VerifyAll();
+        }
+
+        [Fact]
+        public void AddProject_AlreadyAdded_Noops()
+        {
+            // Arrange
+            var projectFilePath = "/C:/path/to/project.csproj";
+            var miscellaneousProject = TestProjectSnapshot.Create("/__MISC_PROJECT__");
+            var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
+                .Returns(Mock.Of<ProjectSnapshot>());
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
 
             // Act

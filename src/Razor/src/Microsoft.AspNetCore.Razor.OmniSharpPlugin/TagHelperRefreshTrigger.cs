@@ -7,6 +7,7 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed;
 using Microsoft.CodeAnalysis;
 using OmniSharp;
@@ -16,9 +17,10 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     [Shared]
     [Export(typeof(IMSBuildEventSink))]
+    [Export(typeof(IRazorDocumentChangeListener))]
     [Export(typeof(IRazorDocumentOutputChangeListener))]
     [Export(typeof(IOmniSharpProjectSnapshotManagerChangeTrigger))]
-    internal class TagHelperRefreshTrigger : IMSBuildEventSink, IRazorDocumentOutputChangeListener, IOmniSharpProjectSnapshotManagerChangeTrigger
+    internal class TagHelperRefreshTrigger : IMSBuildEventSink, IRazorDocumentOutputChangeListener, IOmniSharpProjectSnapshotManagerChangeTrigger, IRazorDocumentChangeListener
     {
         private readonly OmniSharpForegroundDispatcher _foregroundDispatcher;
         private readonly Workspace _omniSharpWorkspace;
@@ -90,6 +92,30 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 _foregroundDispatcher.ForegroundScheduler);
         }
 
+        public void RazorDocumentChanged(RazorFileChangeEventArgs args)
+        {
+            if (args is null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            // Razor document changed
+
+            Task.Factory.StartNew(
+                () =>
+                {
+                    if (IsComponentFile(args.FilePath, args.UnevaluatedProjectInstance.ProjectFileLocation.File))
+                    {
+                        // Razor component file changed.
+
+                        EnqueueUpdate(args.UnevaluatedProjectInstance.ProjectFileLocation.File);
+                    }
+                },
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _foregroundDispatcher.ForegroundScheduler);
+        }
+
         public void RazorDocumentOutputChanged(RazorFileChangeEventArgs args)
         {
             if (args == null)
@@ -146,6 +172,27 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             projectSnapshot = _projectManager.GetLoadedProject(projectFilePath);
             return projectSnapshot != null;
+        }
+
+        // Internal for testing
+        internal bool IsComponentFile(string relativeDocumentFilePath, string projectFilePath)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            var projectSnapshot = _projectManager.GetLoadedProject(projectFilePath);
+            if (projectSnapshot == null)
+            {
+                return false;
+            }
+
+            var documentSnapshot = projectSnapshot.GetDocument(relativeDocumentFilePath);
+            if (documentSnapshot == null)
+            {
+                return false;
+            }
+
+            var isComponentKind = FileKinds.IsComponent(documentSnapshot.FileKind);
+            return isComponentKind;
         }
     }
 }

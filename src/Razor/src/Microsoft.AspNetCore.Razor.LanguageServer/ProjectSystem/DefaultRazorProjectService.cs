@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var textDocumentPath = _filePathNormalizer.Normalize(filePath);
-            if (!_documentResolver.TryResolveDocument(textDocumentPath, out var _))
+            if (!_documentResolver.TryResolveDocument(textDocumentPath, out _))
             {
                 // Document hasn't been added. This usually occurs when VSCode trumps all other initialization 
                 // processes and pre-initializes already open documents.
@@ -153,8 +153,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             _logger.LogInformation($"Opening document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
             _projectSnapshotManagerAccessor.Instance.DocumentOpened(defaultProject.HostProject.FilePath, textDocumentPath, sourceText);
+
             TrackDocumentVersion(textDocumentPath, version);
 
+            if (_documentResolver.TryResolveDocument(textDocumentPath, out var documentSnapshot))
+            {
+                // Start generating the C# for the document so it can immediately be ready for incoming requests.
+                documentSnapshot.GetGeneratedOutputAsync();
+            }
         }
 
         public override void CloseDocument(string filePath)
@@ -217,6 +223,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var normalizedPath = _filePathNormalizer.Normalize(filePath);
+
+            var project = _projectSnapshotManagerAccessor.Instance.GetLoadedProject(normalizedPath);
+
+            if (project != null)
+            {
+                // Project already exists, noop.
+                return;
+            }
+
             var hostProject = new HostProject(normalizedPath, RazorDefaults.Configuration, RazorDefaults.RootNamespace);
             _projectSnapshotManagerAccessor.Instance.ProjectAdded(hostProject);
             _logger.LogInformation($"Added project '{filePath}' to project system.");

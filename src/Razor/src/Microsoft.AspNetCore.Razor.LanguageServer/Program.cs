@@ -3,12 +3,15 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
+using Microsoft.AspNetCore.Razor.LanguageServer.Converters;
+using Microsoft.AspNetCore.Razor.LanguageServer.Hover;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Completion;
@@ -16,6 +19,7 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Editor.Razor;
+using OmniSharp.Extensions.JsonRpc.Serialization.Converters;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 using OmniSharp.Extensions.LanguageServer.Server;
 
@@ -55,21 +59,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 }
             }
 
+            ReplaceResponseConverter();
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
 
-            var factory = new LoggerFactory();
             ILanguageServer server = null;
             server = await OmniSharp.Extensions.LanguageServer.Server.LanguageServer.From(options =>
                 options
                     .WithInput(Console.OpenStandardInput())
                     .WithOutput(Console.OpenStandardOutput())
-                    .WithLoggerFactory(factory)
-                    .AddDefaultLoggingProvider()
-                    .WithMinimumLogLevel(logLevel)
+                    .ConfigureLogging(builder => builder
+                        .AddLanguageServer()
+                        .SetMinimumLevel(logLevel))
+                    .OnInitialized(async (languageServer, request, response) =>
+                    {
+                        var fileChangeDetectorManager = languageServer.Services.GetRequiredService<RazorFileChangeDetectorManager>();
+                        await fileChangeDetectorManager.InitializedAsync(languageServer);
+                    })
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionEndpoint>()
+                    .WithHandler<RazorHoverEndpoint>()
                     .WithHandler<RazorLanguageEndpoint>()
-                    .WithHandler<RazorProjectEndpoint>()
                     .WithServices(services =>
                     {
                         services.AddSingleton<RemoteTextLoaderFactory, DefaultRemoteTextLoaderFactory>();
@@ -78,7 +87,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
                         services.AddSingleton<ProjectSnapshotChangeTrigger, BackgroundDocumentGenerator>();
+                        services.AddSingleton<RazorFileChangeDetectorManager>();
+
+                        // File change listeners
+                        services.AddSingleton<IProjectConfigurationFileChangeListener, ProjectConfigurationStateSynchronizer>();
+                        services.AddSingleton<IProjectFileChangeListener, ProjectFileSynchronizer>();
+                        services.AddSingleton<IRazorFileChangeListener, RazorFileSynchronizer>();
+
+                        // File Change detectors
+                        services.AddSingleton<IFileChangeDetector, ProjectConfigurationFileChangeDetector>();
+                        services.AddSingleton<IFileChangeDetector, ProjectFileChangeDetector>();
+                        services.AddSingleton<IFileChangeDetector, RazorFileChangeDetector>();
+
+                        // Document processed listeners
                         services.AddSingleton<DocumentProcessedListener, RazorDiagnosticsPublisher>();
+                        services.AddSingleton<DocumentProcessedListener, UnsynchronizableContentDocumentProcessedListener>();
+
                         services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
                         services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
                         services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();
@@ -94,24 +118,31 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                         var foregroundDispatcher = new VSCodeForegroundDispatcher();
                         services.AddSingleton<ForegroundDispatcher>(foregroundDispatcher);
+
+                        var csharpPublisher = new DefaultCSharpPublisher(foregroundDispatcher, new Lazy<OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer>(() => server));
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>(csharpPublisher);
+                        services.AddSingleton<CSharpPublisher>(csharpPublisher);
+
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
+                        services.AddSingleton<RazorHoverInfoService, DefaultRazorHoverInfoService>();
+                        services.AddSingleton<HtmlFactsService, DefaultHtmlFactsService>();
                         var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher);
                         services.AddSingleton<DocumentVersionCache>(documentVersionCache);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(documentVersionCache);
                         var containerStore = new DefaultGeneratedCodeContainerStore(
                             foregroundDispatcher,
                             documentVersionCache,
-                            new Lazy<ILanguageServer>(() => server));
+                            csharpPublisher);
                         services.AddSingleton<GeneratedCodeContainerStore>(containerStore);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(containerStore);
                     }));
 
             // Workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/106
             var languageServer = (OmniSharp.Extensions.LanguageServer.Server.LanguageServer)server;
-            languageServer.MinimumLogLevel = logLevel;
 
             try
             {
+                var factory = new LoggerFactory();
                 var logger = factory.CreateLogger<Program>();
                 var assemblyInformationAttribute = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
                 logger.LogInformation("Razor Language Server version " + assemblyInformationAttribute.InformationalVersion);
@@ -124,6 +155,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             await server.WaitForExit;
 
             TempDirectory.Instance.Dispose();
+        }
+
+        // This is a temporary workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/202
+        // The fix was not available on a non-alpha release, but this can be reverted once it is.
+        private static void ReplaceResponseConverter()
+        {
+            var responseConverter = Serializer.Instance.JsonSerializer.Converters.FirstOrDefault(converter =>
+            {
+                return converter.GetType() == typeof(ClientResponseConverter);
+            });
+
+            if (responseConverter != null)
+            {
+                Serializer.Instance.Settings.Converters.Remove(responseConverter);
+            }
+
+            Serializer.Instance.Settings.Converters.Add(new ResponseRazorConverter());
         }
     }
 }

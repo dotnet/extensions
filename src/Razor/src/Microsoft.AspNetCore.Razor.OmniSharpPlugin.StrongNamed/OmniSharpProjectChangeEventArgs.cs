@@ -11,12 +11,13 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         internal OmniSharpProjectChangeEventArgs(ProjectChangeEventArgs args) : this(
             OmniSharpProjectSnapshot.Convert(args.Older),
             OmniSharpProjectSnapshot.Convert(args.Newer),
+            args.DocumentFilePath,
             (OmniSharpProjectChangeKind)args.Kind)
         {
             InternalProjectChangeEventArgs = args;
         }
 
-        private OmniSharpProjectChangeEventArgs(OmniSharpProjectSnapshot older, OmniSharpProjectSnapshot newer, OmniSharpProjectChangeKind kind)
+        private OmniSharpProjectChangeEventArgs(OmniSharpProjectSnapshot older, OmniSharpProjectSnapshot newer, string documentFilePath, OmniSharpProjectChangeKind kind)
         {
             if (older == null && newer == null)
             {
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             Older = older;
             Newer = newer;
+            DocumentFilePath = documentFilePath;
             Kind = kind;
 
             ProjectFilePath = older?.FilePath ?? newer.FilePath;
@@ -42,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         public OmniSharpProjectChangeKind Kind { get; }
 
-        public static OmniSharpProjectChangeEventArgs CreateTestInstance(OmniSharpProjectSnapshot older, OmniSharpProjectSnapshot newer, OmniSharpProjectChangeKind kind) =>
-            new OmniSharpProjectChangeEventArgs(older, newer, kind);
+        public static OmniSharpProjectChangeEventArgs CreateTestInstance(OmniSharpProjectSnapshot older, OmniSharpProjectSnapshot newer, string documentFilePath, OmniSharpProjectChangeKind kind) =>
+            new OmniSharpProjectChangeEventArgs(older, newer, documentFilePath, kind);
     }
 }
