@@ -41,9 +41,26 @@ export class RazorCompletionItemProvider
             const completionCharacterOffset = projectedPosition.character - hostDocumentPosition.character;
             for (const completionItem of completionItems) {
                 if (completionItem.range) {
-                    const rangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, completionItem.range.start);
-                    const rangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, completionItem.range.end);
-                    completionItem.range = new vscode.Range(rangeStart, rangeEnd);
+                    const range = completionItem.range;
+                    const insertingRange = (range as any).inserting;
+                    if (insertingRange) {
+                        const insertingRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertingRange.start);
+                        const insertingRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertingRange.end);
+                        (range as any).inserting = new vscode.Range(insertingRangeStart, insertingRangeEnd);
+                    }
+
+                    const replacingRange = (range as any).replacing;
+                    if (replacingRange) {
+                        const replacingRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replacingRange.start);
+                        const replacingRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replacingRange.end);
+                        (range as any).replacing = new vscode.Range(replacingRangeStart, replacingRangeEnd);
+                    }
+
+                    if (range.start && range.end) {
+                        const rangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, range.start);
+                        const rangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, range.end);
+                        completionItem.range = new vscode.Range(rangeStart, rangeEnd);
+                    }
                 } else if ((completionItem as any).range2) {
                     const insertRange = (completionItem as any).range2.insert;
                     if (insertRange) {
