@@ -118,6 +118,31 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
         }
 
         [Fact]
+        public void GetHoverInfo_DirectiveAttribute_HasResult()
+        {
+            // Arrange
+            var txt = @"@addTagHelper *, TestAssembly
+<any @test=""Increment"" />
+@code{
+    public void Increment(){
+    }
+}";
+            var codeDocument = CreateCodeDocument(txt, "text.razor", DefaultTagHelpers);
+            var service = GetDefaultRazorHoverInfoService();
+            var charIndex = txt.IndexOf("@test") + 2;
+            var location = new SourceSpan(charIndex, 0);
+
+            // Act
+            var hover = service.GetHoverInfo(codeDocument, location);
+
+            // Assert
+            Assert.NotNull(hover);
+            Assert.Contains("**Test**", hover.Contents.MarkupContent.Value);
+            var expectedRange = new RangeModel(new Position(1, 4), new Position(1, 22));
+            Assert.Equal(expectedRange, hover.Range);
+        }
+
+        [Fact]
         public void GetHoverInfo_TagHelper_MalformedElement()
         {
             // Arrange

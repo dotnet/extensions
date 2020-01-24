@@ -110,10 +110,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         internal static RazorCodeDocument CreateCodeDocument(string text, params TagHelperDescriptor[] tagHelpers)
         {
+            return CreateCodeDocument(text, "test.cshtml", tagHelpers);
+        }
+
+        internal static RazorCodeDocument CreateCodeDocument(string text, string filePath, params TagHelperDescriptor[] tagHelpers)
+        {
             tagHelpers = tagHelpers ?? Array.Empty<TagHelperDescriptor>();
-            var sourceDocument = TestRazorSourceDocument.Create(text);
+            var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
             var projectEngine = RazorProjectEngine.Create(builder => { });
-            var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, "mvc", Array.Empty<RazorSourceDocument>(), tagHelpers);
+            var fileKind = filePath.EndsWith(".razor") ? FileKinds.Component : FileKinds.Legacy;
+            var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), tagHelpers);
             return codeDocument;
         }
     }
