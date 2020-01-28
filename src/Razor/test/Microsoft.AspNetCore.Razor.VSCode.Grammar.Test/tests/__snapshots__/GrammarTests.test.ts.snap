@@ -4631,7 +4631,7 @@ Line:                     @{
  - token from 20 to 21 (@) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, keyword.control.cshtml.transition
  - token from 21 to 22 ({) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, keyword.control.razor.directive.codeblock.open
 
-Line:                         Action anotherTemplate = @<strong>LOUD</strong>;
+Line:                         Action anotherTemplate = @<strong class='really loud!'>LOUD</strong>;
  - token from 0 to 24 (                        ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor
  - token from 24 to 30 (Action) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, storage.type.cs
  - token from 30 to 31 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor
@@ -4642,12 +4642,18 @@ Line:                         Action anotherTemplate = @<strong>LOUD</strong>;
  - token from 49 to 50 (@) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, keyword.control.cshtml.transition
  - token from 50 to 51 (<) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.begin.html
  - token from 51 to 57 (strong) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, entity.name.tag.html
- - token from 57 to 58 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.end.html
- - token from 58 to 62 (LOUD) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor
- - token from 62 to 64 (</) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.begin.html
- - token from 64 to 70 (strong) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, entity.name.tag.html
- - token from 70 to 71 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.end.html
- - token from 71 to 72 (;) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, punctuation.terminator.statement.cs
+ - token from 57 to 58 ( ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor
+ - token from 58 to 63 (class) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, entity.other.attribute-name.html
+ - token from 63 to 64 (=) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, punctuation.separator.key-value.html
+ - token from 64 to 65 (') with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, string.quoted.single.html, punctuation.definition.string.begin.html
+ - token from 65 to 77 (really loud!) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, string.quoted.single.html
+ - token from 77 to 78 (') with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, string.quoted.single.html, punctuation.definition.string.end.html
+ - token from 78 to 79 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.end.html
+ - token from 79 to 83 (LOUD) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor
+ - token from 83 to 85 (</) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.begin.html
+ - token from 85 to 91 (strong) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, entity.name.tag.html
+ - token from 91 to 92 (>) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.end.html
+ - token from 92 to 93 (;) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, punctuation.terminator.statement.cs
 
 Line:                     }
  - token from 0 to 20 (                    ) with scopes text.aspnetcorerazor, meta.statement.if.razor, meta.structure.razor.csharp.codeblock, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, meta.statement.while.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor
@@ -4714,6 +4720,19 @@ exports[`Grammar tests Razor templates @<p>....</p> Malformed 1`] = `
  - token from 5 to 7 (</) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, punctuation.definition.tag.begin.html
  - token from 7 to 8 (p) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, entity.name.tag.html
  - token from 8 to 9 (>) with scopes text.aspnetcorerazor, meta.tag.structure.p.end.html, punctuation.definition.tag.end.html
+"
+`;
+
+exports[`Grammar tests Razor templates @<p>....</p> Malformed attributes 1`] = `
+"Line: @<p class=\\"></p>
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 2 (<) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, punctuation.definition.tag.begin.html
+ - token from 2 to 3 (p) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, entity.name.tag.html
+ - token from 3 to 4 ( ) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html
+ - token from 4 to 9 (class) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, meta.attribute.class.html, entity.other.attribute-name.html
+ - token from 9 to 10 (=) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, meta.attribute.class.html, punctuation.separator.key-value.html
+ - token from 10 to 11 (\\") with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.begin.html
+ - token from 11 to 17 (></p>) with scopes text.aspnetcorerazor, meta.tag.structure.p.start.html, meta.attribute.class.html, string.quoted.double.html
 "
 `;
 
@@ -4948,7 +4967,7 @@ Line:     {
  - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.statement.lock.razor
  - token from 4 to 5 ({) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.open.cs
 
-Line:         Action<string> template = @<p>@item</p>;
+Line:         Action<string> template = @<p class=\\"world\\">@item</p>;
  - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock
  - token from 8 to 14 (Action) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, storage.type.cs
  - token from 14 to 15 (<) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.typeparameters.begin.cs
@@ -4962,13 +4981,19 @@ Line:         Action<string> template = @<p>@item</p>;
  - token from 34 to 35 (@) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, keyword.control.cshtml.transition
  - token from 35 to 36 (<) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, punctuation.definition.tag.begin.html
  - token from 36 to 37 (p) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, entity.name.tag.html
- - token from 37 to 38 (>) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, punctuation.definition.tag.end.html
- - token from 38 to 39 (@) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
- - token from 39 to 43 (item) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.expression.implicit.cshtml, variable.other.object.cs
- - token from 43 to 45 (</) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, punctuation.definition.tag.begin.html
- - token from 45 to 46 (p) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, entity.name.tag.html
- - token from 46 to 47 (>) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, punctuation.definition.tag.end.html
- - token from 47 to 48 (;) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
+ - token from 37 to 38 ( ) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor
+ - token from 38 to 43 (class) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.attribute.class.html, entity.other.attribute-name.html
+ - token from 43 to 44 (=) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.attribute.class.html, punctuation.separator.key-value.html
+ - token from 44 to 45 (\\") with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.begin.html
+ - token from 45 to 50 (world) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.attribute.class.html, string.quoted.double.html
+ - token from 50 to 51 (\\") with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.end.html
+ - token from 51 to 52 (>) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, punctuation.definition.tag.end.html
+ - token from 52 to 53 (@) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 53 to 57 (item) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 57 to 59 (</) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, punctuation.definition.tag.begin.html
+ - token from 59 to 60 (p) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, entity.name.tag.html
+ - token from 60 to 61 (>) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, meta.structure.template.razor, punctuation.definition.tag.end.html
+ - token from 61 to 62 (;) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock, punctuation.terminator.statement.cs
 
 Line:         @template(someObject.ToString())
  - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.statement.lock.razor, meta.structure.razor.csharp.codeblock
@@ -5052,7 +5077,7 @@ Line: }
 `;
 
 exports[`Grammar tests Razor templates @<p>....</p> Nested template 1`] = `
-"Line: @{ Action<object> abc = @<div>@{ Action<object> def = @<p>Hello World</p>; }</div>; }
+"Line: @{ Action<object> abc = @<div>@{ Action<object> def = @<p class=\\"john\\" onclick='someMethod'>Hello World</p>; }</div>; }
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, keyword.control.cshtml.transition
  - token from 1 to 2 ({) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.open
  - token from 2 to 3 ( ) with scopes text.aspnetcorerazor
@@ -5084,20 +5109,32 @@ exports[`Grammar tests Razor templates @<p>....</p> Nested template 1`] = `
  - token from 54 to 55 (@) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, keyword.control.cshtml.transition
  - token from 55 to 56 (<) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.begin.html
  - token from 56 to 57 (p) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, entity.name.tag.html
- - token from 57 to 58 (>) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.end.html
- - token from 58 to 69 (Hello World) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor
- - token from 69 to 71 (</) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.begin.html
- - token from 71 to 72 (p) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, entity.name.tag.html
- - token from 72 to 73 (>) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.end.html
- - token from 73 to 74 (;) with scopes text.aspnetcorerazor, meta.structure.template.razor, punctuation.terminator.statement.cs
- - token from 74 to 75 ( ) with scopes text.aspnetcorerazor, meta.structure.template.razor
- - token from 75 to 76 (}) with scopes text.aspnetcorerazor, meta.structure.template.razor, keyword.control.razor.directive.codeblock.close
- - token from 76 to 78 (</) with scopes text.aspnetcorerazor, meta.structure.template.razor, punctuation.definition.tag.begin.html
- - token from 78 to 81 (div) with scopes text.aspnetcorerazor, meta.structure.template.razor, entity.name.tag.html
- - token from 81 to 82 (>) with scopes text.aspnetcorerazor, meta.structure.template.razor, punctuation.definition.tag.end.html
- - token from 82 to 83 (;) with scopes text.aspnetcorerazor, punctuation.terminator.statement.cs
- - token from 83 to 84 ( ) with scopes text.aspnetcorerazor
- - token from 84 to 85 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
+ - token from 57 to 58 ( ) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor
+ - token from 58 to 63 (class) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, entity.other.attribute-name.html
+ - token from 63 to 64 (=) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, punctuation.separator.key-value.html
+ - token from 64 to 65 (\\") with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.begin.html
+ - token from 65 to 69 (john) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, string.quoted.double.html
+ - token from 69 to 70 (\\") with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.end.html
+ - token from 70 to 71 ( ) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor
+ - token from 71 to 78 (onclick) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.event-handler.click.html, entity.other.attribute-name.html
+ - token from 78 to 79 (=) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.event-handler.click.html, punctuation.separator.key-value.html
+ - token from 79 to 80 (') with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.event-handler.click.html, meta.embedded.line.js, string.quoted.single.html, punctuation.definition.string.begin.html
+ - token from 80 to 90 (someMethod) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.event-handler.click.html, meta.embedded.line.js, string.quoted.single.html, source.js, variable.other.readwrite.js
+ - token from 90 to 91 (') with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, meta.attribute.event-handler.click.html, meta.embedded.line.js, string.quoted.single.html, punctuation.definition.string.end.html, source.js
+ - token from 91 to 92 (>) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.end.html
+ - token from 92 to 103 (Hello World) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor
+ - token from 103 to 105 (</) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.begin.html
+ - token from 105 to 106 (p) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, entity.name.tag.html
+ - token from 106 to 107 (>) with scopes text.aspnetcorerazor, meta.structure.template.razor, meta.structure.template.razor, punctuation.definition.tag.end.html
+ - token from 107 to 108 (;) with scopes text.aspnetcorerazor, meta.structure.template.razor, punctuation.terminator.statement.cs
+ - token from 108 to 109 ( ) with scopes text.aspnetcorerazor, meta.structure.template.razor
+ - token from 109 to 110 (}) with scopes text.aspnetcorerazor, meta.structure.template.razor, keyword.control.razor.directive.codeblock.close
+ - token from 110 to 112 (</) with scopes text.aspnetcorerazor, meta.structure.template.razor, punctuation.definition.tag.begin.html
+ - token from 112 to 115 (div) with scopes text.aspnetcorerazor, meta.structure.template.razor, entity.name.tag.html
+ - token from 115 to 116 (>) with scopes text.aspnetcorerazor, meta.structure.template.razor, punctuation.definition.tag.end.html
+ - token from 116 to 117 (;) with scopes text.aspnetcorerazor, punctuation.terminator.statement.cs
+ - token from 117 to 118 ( ) with scopes text.aspnetcorerazor
+ - token from 118 to 119 (}) with scopes text.aspnetcorerazor, keyword.control.razor.directive.codeblock.close
 "
 `;
 
@@ -5249,14 +5286,20 @@ Line: </p>))
 `;
 
 exports[`Grammar tests Razor templates @<p>....</p> Nested template in implicit expression 1`] = `
-"Line: @CallSomeMethod(@<p>
+"Line: @CallSomeMethod(@<p style=\\"margin:1px;\\">
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
  - token from 1 to 15 (CallSomeMethod) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, entity.name.function.cs
  - token from 15 to 16 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
  - token from 16 to 17 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, keyword.control.cshtml.transition
  - token from 17 to 18 (<) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, punctuation.definition.tag.begin.html
  - token from 18 to 19 (p) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, entity.name.tag.html
- - token from 19 to 20 (>) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, punctuation.definition.tag.end.html
+ - token from 19 to 20 ( ) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor
+ - token from 20 to 25 (style) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, meta.attribute.style.html, entity.other.attribute-name.html
+ - token from 25 to 26 (=) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, meta.attribute.style.html, punctuation.separator.key-value.html
+ - token from 26 to 27 (\\") with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, meta.attribute.style.html, meta.embedded.line.css, string.quoted.double.html, punctuation.definition.string.begin.html
+ - token from 27 to 38 (margin:1px;) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, meta.attribute.style.html, meta.embedded.line.css, string.quoted.double.html, source.css
+ - token from 38 to 39 (\\") with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, meta.attribute.style.html, meta.embedded.line.css, string.quoted.double.html, punctuation.definition.string.end.html, source.css
+ - token from 39 to 40 (>) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor, punctuation.definition.tag.end.html
 
 Line:     The Template
  - token from 0 to 17 (    The Template) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, meta.structure.template.razor
@@ -5444,11 +5487,18 @@ Line: }
 `;
 
 exports[`Grammar tests Razor templates @<p>....</p> Self-closing 1`] = `
-"Line: @<hr>
+"Line: @<hr class=\\"stuff\\" />
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
  - token from 1 to 2 (<) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, punctuation.definition.tag.begin.html
  - token from 2 to 4 (hr) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, entity.name.tag.html
- - token from 4 to 5 (>) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, punctuation.definition.tag.end.html
+ - token from 4 to 5 ( ) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html
+ - token from 5 to 10 (class) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, meta.attribute.class.html, entity.other.attribute-name.html
+ - token from 10 to 11 (=) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, meta.attribute.class.html, punctuation.separator.key-value.html
+ - token from 11 to 12 (\\") with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.begin.html
+ - token from 12 to 17 (stuff) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, meta.attribute.class.html, string.quoted.double.html
+ - token from 17 to 18 (\\") with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, meta.attribute.class.html, string.quoted.double.html, punctuation.definition.string.end.html
+ - token from 18 to 19 ( ) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html
+ - token from 19 to 21 (/>) with scopes text.aspnetcorerazor, meta.tag.structure.hr.void.html, punctuation.definition.tag.end.html
 "
 `;
 

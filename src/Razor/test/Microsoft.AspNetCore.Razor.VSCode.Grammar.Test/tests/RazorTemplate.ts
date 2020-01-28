@@ -13,6 +13,10 @@ export function RunRazorTemplateSuite() {
             await assertMatchesSnapshot('@ <p></p>');
         });
 
+        it('Malformed attributes', async () => {
+            await assertMatchesSnapshot('@<p class="></p>');
+        });
+
         it('Incomplete', async () => {
             await assertMatchesSnapshot('@<strong>');
         });
@@ -26,7 +30,7 @@ export function RunRazorTemplateSuite() {
         });
 
         it('Self-closing', async () => {
-            await assertMatchesSnapshot('@<hr>');
+            await assertMatchesSnapshot('@<hr class="stuff" />');
         });
 
         it('Single line local variable', async () => {
@@ -34,7 +38,7 @@ export function RunRazorTemplateSuite() {
         });
 
         it('Nested template', async () => {
-            await assertMatchesSnapshot('@{ Action<object> abc = @<div>@{ Action<object> def = @<p>Hello World</p>; }</div>; }');
+            await assertMatchesSnapshot('@{ Action<object> abc = @<div>@{ Action<object> def = @<p class="john" onclick=\'someMethod\'>Hello World</p>; }</div>; }');
         });
 
         it('Complex HTML tag structure non-template', async () => {
@@ -65,7 +69,7 @@ export function RunRazorTemplateSuite() {
 
         it('Nested template in implicit expression', async () => {
             await assertMatchesSnapshot(
-                `@CallSomeMethod(@<p>
+                `@CallSomeMethod(@<p style="margin:1px;">
     The Template
 </p>)`);
         });
@@ -128,7 +132,7 @@ export function RunRazorTemplateSuite() {
                 `@{
     lock (someObject)
     {
-        Action<string> template = @<p>@item</p>;
+        Action<string> template = @<p class="world">@item</p>;
         @template(someObject.ToString())
     }
 }`);
@@ -180,7 +184,7 @@ export function RunRazorTemplateSuite() {
                     @item
 
                     @{
-                        Action anotherTemplate = @<strong>LOUD</strong>;
+                        Action anotherTemplate = @<strong class='really loud!'>LOUD</strong>;
                     }
                     </p>;
             }
