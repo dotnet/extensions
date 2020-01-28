@@ -4,6 +4,17 @@ patterns:
   - include: '#razor-control-structures'
   - include: 'text.html.basic'
 
+injections:
+  'R:text.aspnetcorerazor':
+    patterns:
+      - name: 'meta.structure.template.razor'
+        begin: '(@)(?=\<)'
+        beginCaptures:
+          1: { patterns: [ include: '#transition' ] }
+        patterns:
+          - include: '#wellformed-html'
+        end: '(?<=\>)'
+
 repository:
   razor-control-structures:
     patterns:

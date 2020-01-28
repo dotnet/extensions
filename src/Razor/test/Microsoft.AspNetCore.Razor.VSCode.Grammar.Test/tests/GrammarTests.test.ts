@@ -24,6 +24,7 @@ import { RunModelDirectiveSuite } from './ModelDirective';
 import { RunNamespaceDirectiveSuite } from './NamespaceDirective';
 import { RunPageDirectiveSuite } from './PageDirective';
 import { RunRazorCommentSuite } from './RazorComment';
+import { RunRazorTemplateSuite } from './RazorTemplate';
 import { RunRemoveTagHelperDirectiveSuite } from './RemoveTagHelperDirective';
 import { RunSectionDirectiveSuite } from './SectionDirective';
 import { RunSwitchStatementSuite } from './SwitchStatement';
@@ -45,6 +46,7 @@ describe('Grammar tests', () => {
     RunImplicitExpressionSuite();
     RunCodeBlockSuite();
     RunRazorCommentSuite();
+    RunRazorTemplateSuite();
 
     // Directives
     RunCodeDirectiveSuite();
