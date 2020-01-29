@@ -37,6 +37,7 @@ repository:
 # ----------  Razor Code Block ------------
 
   razor-codeblock:
+    name: 'meta.structure.razor.codeblock'
     begin: '(@)(\{)'
     beginCaptures:
       1: { patterns: [ include: '#transition' ] }
@@ -141,12 +142,12 @@ repository:
     patterns:
       - include: '#wellformed-html'
       - include: '$self'
-    end: (?=\</)
+    end: '(?=\</)'
 
   balanced-open-close-tag-end:
     match: '(</)(!?)([^/\s>]+)\s*(>)'
     captures:
-      1: { name: 'punctuation.definition.tag.begin.html'}
+      1: { name: 'punctuation.definition.tag.begin.html' }
       2: { name: 'constant.character.escape.razor.tagHelperOptOut' }
       3: { name: 'entity.name.tag.html' }
       4: { name: 'punctuation.definition.tag.end.html' }

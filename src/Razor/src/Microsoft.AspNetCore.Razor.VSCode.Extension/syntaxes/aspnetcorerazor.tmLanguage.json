@@ -69,6 +69,7 @@
       "name": "keyword.control.cshtml.transition"
     },
     "razor-codeblock": {
+      "name": "meta.structure.razor.codeblock",
       "begin": "(@)(\\{)",
       "beginCaptures": {
         "1": {
