@@ -87,11 +87,27 @@ export function RunCodeBlockSuite() {
     @: <strong> <-- This is incomplete @DateTime.Now
 
     <input class="hello world">
+
+    void SomeMethod(int value)
+    {
+        Action<int> template = @<strong>Value: @item</strong>;
+        <section>
+            This section is rendered when called: @template(1337)
+        </section>
+    }
+
     <p>aHello</p>
 
     if (true) {
         <p>alksdjfl</p>
     }
+}`);
+        });
+
+        it('Nested local function with markup', async () => {
+            await assertMatchesSnapshot(
+                `@{
+    void SomeMethod() { <p class="priority"><strong>Hello World</strong></p> }
 }`);
         });
 

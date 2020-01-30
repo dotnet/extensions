@@ -32,6 +32,29 @@
           "end": "(?<=\\>)"
         }
       ]
+    },
+    "L:meta.structure.razor.codeblock - (meta.statement | string.quoted | comment), L:meta.structure.razor.directive.codeblock - (meta.statement | string.quoted | comment)": {
+      "patterns": [
+        {
+          "begin": "(\\{)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.curlybrace.open.cs"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#razor-codeblock-body"
+            }
+          ],
+          "end": "(\\})",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.curlybrace.close.cs"
+            }
+          }
+        }
+      ]
     }
   },
   "repository": {

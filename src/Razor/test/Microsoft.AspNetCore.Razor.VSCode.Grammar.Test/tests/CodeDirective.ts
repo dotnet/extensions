@@ -21,6 +21,17 @@ export function RunCodeDirectiveSuite() {
             await assertMatchesSnapshot('@code { public void Foo() {} }');
         });
 
+        it('Single-line comment with curly braces', async () => {
+            await assertMatchesSnapshot(`
+@code {
+    // { var ThisShouldNotBeCSharp = true; }
+}`);
+        });
+
+        it('Multi-line comment with curly braces', async () => {
+            await assertMatchesSnapshot('@code { /* { var ThisShouldNotBeCSharp = true; } */ }');
+        });
+
         it('Multi line', async () => {
             await assertMatchesSnapshot(
                 `@code {
@@ -28,7 +39,27 @@ export function RunCodeDirectiveSuite() {
 
     private void IncrementCount()
     {
+        var someString = "{ var ThisShouldNotBeCSharp = true; }";
         currentCount++;
+    }
+}`);
+        });
+
+        it('With Razor and markup', async () => {
+            await assertMatchesSnapshot(
+                `@code {
+    private void SomeMethod()
+    {
+        <p>This method <strong>is really</strong> nice!
+
+            @if(true) {
+                <input type="checkbox" value="true" name="Something" />
+            }
+        </p>
+
+        @DateTime.Now
+
+        <input type="hidden" value=" { true }" name="Something">
     }
 }`);
         });
