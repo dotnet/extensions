@@ -5,6 +5,10 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>275e691f7e575f208290d1cbb8cb450f4a3a85d6</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-alpha.1.20079.1">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>275e691f7e575f208290d1cbb8cb450f4a3a85d6</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="5.0.0-alpha.1.20079.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>275e691f7e575f208290d1cbb8cb450f4a3a85d6</Sha>

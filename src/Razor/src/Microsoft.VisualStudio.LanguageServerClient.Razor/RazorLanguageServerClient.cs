@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -40,7 +43,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var languageServerPath = Path.Combine(extensionDirectory, "LanguageServer", "rzls.exe");
             var info = new ProcessStartInfo();
             info.FileName = languageServerPath;
-            info.Arguments = "-lsp --logLevel Trace";
+            info.Arguments = "-lsp --trace Verbose";
             info.RedirectStandardInput = true;
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;

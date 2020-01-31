@@ -15,7 +15,6 @@ import {
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
 import { RazorLogger } from './RazorLogger';
 import { TelemetryReporter } from './TelemetryReporter';
-import { Trace } from './Trace';
 
 const events = {
     ServerStart: 'ServerStart',
@@ -54,11 +53,11 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this.logger.logMessage(`Razor language server path: ${options.serverPath}`);
 
         args.push('-lsp');
-        args.push('--logLevel');
-        const logLevelString = this.getLogLevelString(options.trace);
+        args.push('--trace');
+
         this.telemetryReporter.reportTraceLevel(options.trace);
 
-        args.push(logLevelString);
+        args.push(options.trace.toString());
 
         if (options.debug) {
             this.telemetryReporter.reportDebugLanguageServer();
@@ -196,18 +195,5 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this.isStarted = false;
         this.startHandle = undefined;
         this.eventBus.emit(events.ServerStop);
-    }
-
-    private getLogLevelString(trace: Trace) {
-        switch (trace) {
-            case Trace.Off:
-                return 'None';
-            case Trace.Messages:
-                return 'Information';
-            case Trace.Verbose:
-                return 'Trace';
-        }
-
-        throw new Error(`Unexpected trace value: '${Trace[trace]}'`);
     }
 }

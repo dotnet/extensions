@@ -152,6 +152,12 @@
                         "Logs all messages from the Razor extension"
                     ],
                     "description": "Specifies whether to output all messages [Verbose], some messages [Messages] or not at all [Off]."
+                },
+                "razor.format.enable": {
+                    "type": "boolean",
+                    "scope": "window",
+                    "default": true,
+                    "description": "Enable/disable default Razor formatter."
                 }
             }
         }
