@@ -22,6 +22,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private const string EditorFactoryGuidString = "3dfdce9e-1799-4372-8aa6-d8e65182fdfc";
         private const string RazorLSPEditorFeatureFlag = "Razor.LSP.Editor";
+        private static readonly Guid LiveShareHostUIContextGuid = Guid.Parse("62de1aa5-70b0-4934-9324-680896466fe1");
+        private static readonly Guid LiveShareGuestUIContextGuid = Guid.Parse("fd93f3eb-60da-49cd-af15-acda729e357e");
         private readonly Lazy<IVsEditorAdaptersFactoryService> _adaptersFactory;
         private readonly Lazy<IContentType> _razorLSPContentType;
         private readonly Lazy<IVsFeatureFlags> _featureFlags;
@@ -76,6 +78,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 {
                     // We default to "on" in Visual Studio remotely joined cloud environment clients
                     return true;
+                }
+
+                if (IsLiveShareHost())
+                {
+                    // Placeholder for when we turn on LiveShare support by default
+                    return false;
+                }
+
+                if (IsLiveShareGuest())
+                {
+                    // Placeholder for when we turn on LiveShare support by default
+                    return false;
                 }
 
                 return false;
@@ -159,6 +173,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return context.IsActive;
         }
 
+        private static bool IsLiveShareGuest()
+        {
+            var context = UIContext.FromUIContextGuid(LiveShareGuestUIContextGuid);
+            return context.IsActive;
+        }
+
+        private bool IsLiveShareHost()
+        {
+            var context = UIContext.FromUIContextGuid(LiveShareHostUIContextGuid);
+            return context.IsActive;
+        }
+
         private class TextBufferContentTypeSetter : IVsTextBufferDataEvents
         {
             private readonly IVsTextLines _textLines;
@@ -199,7 +225,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 {
                     var diskBuffer = _adaptersFactory.GetDocumentBuffer(_textLines);
 
-                    if (IsVSRemoteClient())
+                    if (IsVSRemoteClient() || IsLiveShareGuest())
                     {
                         // We purposefully do not set ClientName's in remote client scenarios because we don't want to boot 2 langauge servers (one for both host and client).
                         // The ClientName controls whether or not an ILanguageClient instantiates.
