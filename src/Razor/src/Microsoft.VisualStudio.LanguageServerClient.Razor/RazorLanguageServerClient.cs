@@ -14,10 +14,16 @@ using Microsoft.VisualStudio.Utilities;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
+    [ClientName(ClientName)]
     [Export(typeof(ILanguageClient))]
     [ContentType(RazorLSPContentTypeDefinition.Name)]
     internal class RazorLanguageServerClient : ILanguageClient
     {
+        // ClientName enables us to turn on-off the ILanguageClient functionality for specific TextBuffers of content type RazorLSPContentTypeDefinition.Name.
+        // This typically is used in cloud scenarios where we want to utilize an ILanguageClient on the server but not the client; therefore we disable this
+        // ILanguageClient infrastructure on the guest to ensure that two language servers don't provide results.
+        public const string ClientName = "RazorLSPClientName";
+
         public string Name => "Razor Language Server Client";
 
         public IEnumerable<string> ConfigurationSections => null;

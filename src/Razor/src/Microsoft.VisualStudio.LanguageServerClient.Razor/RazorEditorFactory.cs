@@ -6,12 +6,14 @@ using System.Runtime.InteropServices;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Package;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
+using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
@@ -59,8 +61,24 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     return true;
                 }
 
-                enabled = _featureFlags.Value.IsFeatureEnabled(RazorLSPEditorFeatureFlag, defaultValue: false);
-                return enabled;
+                if (_featureFlags.Value.IsFeatureEnabled(RazorLSPEditorFeatureFlag, defaultValue: false))
+                {
+                    return true;
+                }
+
+                if (IsVSServer())
+                {
+                    // We default to "on" in Visual Studio server cloud environments
+                    return true;
+                }
+
+                if (IsVSRemoteClient())
+                {
+                    // We default to "on" in Visual Studio remotely joined cloud environment clients
+                    return true;
+                }
+
+                return false;
             }
         }
 
@@ -116,6 +134,31 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             ErrorHandler.ThrowOnFailure(hresult);
         }
 
+        private static bool IsVSServer()
+        {
+            var shell = AsyncPackage.GetGlobalService(typeof(SVsShell)) as IVsShell;
+            var result = shell.GetProperty((int)__VSSPROPID11.VSSPROPID_ShellMode, out var mode);
+
+            if (!ErrorHandler.Succeeded(result))
+            {
+                return false;
+            }
+
+            // VSSPROPID_ShellMode is set to VSSM_Server when /server is used in devenv command
+            if ((int)mode != (int)__VSShellMode.VSSM_Server)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsVSRemoteClient()
+        {
+            var context = UIContext.FromUIContextGuid(VSConstants.UICONTEXT.CloudEnvironmentConnected_guid);
+            return context.IsActive;
+        }
+
         private class TextBufferContentTypeSetter : IVsTextBufferDataEvents
         {
             private readonly IVsTextLines _textLines;
@@ -155,6 +198,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 try
                 {
                     var diskBuffer = _adaptersFactory.GetDocumentBuffer(_textLines);
+
+                    if (IsVSRemoteClient())
+                    {
+                        // We purposefully do not set ClientName's in remote client scenarios because we don't want to boot 2 langauge servers (one for both host and client).
+                        // The ClientName controls whether or not an ILanguageClient instantiates.
+                    }
+                    else
+                    {
+                        diskBuffer.Properties.AddProperty(LanguageClientConstants.ClientNamePropertyKey, RazorLanguageServerClient.ClientName);
+                    }
+
                     diskBuffer.ChangeContentType(_razorLSPContentType, editTag: null);
                 }
                 finally
