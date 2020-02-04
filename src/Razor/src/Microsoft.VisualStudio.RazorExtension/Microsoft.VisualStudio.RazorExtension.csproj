@@ -55,6 +55,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="Microsoft.VisualStudio.RazorExtension.Custom.pkgdef">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -132,6 +137,21 @@
       <Content Include="$(_ResolvedPackageVersionInfoProperty)\*">
         <IncludeInVsix>true</IncludeInVsix>
         <VSIXSubPath>LanguageServer\</VSIXSubPath>
+      </Content>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_BuildRazorGrammar">
+    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.VSCode.Extension\Microsoft.AspNetCore.Razor.VSCode.Extension.npmproj"
+        Targets="Build" />
+  </Target>
+
+  <Target Name="_IncludeRazorGrammar" DependsOnTargets="PrepareForBuild;_BuildRazorGrammar"  BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Content Include="..\Microsoft.AspNetCore.Razor.VSCode.Extension\syntaxes\aspnetcorerazor.tmLanguage.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <IncludeInVSIX>true</IncludeInVSIX>
+        <VSIXSubPath>Grammars\</VSIXSubPath>
       </Content>
     </ItemGroup>
   </Target>

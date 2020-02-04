@@ -1,5 +1,8 @@
 name: ASP.NET Razor
 scopeName: text.aspnetcorerazor
+fileTypes:
+  - 'razor'
+  - 'cshtml'
 patterns:
   - include: '#razor-control-structures'
   - include: 'text.html.basic'
