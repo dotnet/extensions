@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -71,8 +72,11 @@ namespace Microsoft.Extensions.Hosting
             {
                 var env = hostingContext.HostingEnvironment;
 
-                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                      .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                var reloadOnChange = Convert.ToBoolean(
+                    Environment.GetEnvironmentVariable("ASPNETCORE_BUILDER_CONFIG_RELOAD") ?? "true");
+
+                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: reloadOnChange)
+                      .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: reloadOnChange);
 
                 if (env.IsDevelopment() && !string.IsNullOrEmpty(env.ApplicationName))
                 {
