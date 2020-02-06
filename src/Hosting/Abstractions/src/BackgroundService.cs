@@ -29,26 +29,49 @@ namespace Microsoft.Extensions.Hosting
         /// <param name="cancellationToken">Indicates that the start process has been aborted.</param>
         public virtual Task StartAsync(CancellationToken cancellationToken)
         {
-            // Only if task not started before
+            CancellationToken stoppingCtsToken;
+
+            // Only if _stoppingCts not created before or created and canceled
             if (_stoppingCts?.IsCancellationRequested != false)
             {
-                // Create linked token to allow cancelling executing task from provided token
-                _stoppingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                _stoppingCts = CancellationTokenSource.CreateLinkedTokenSource();
+
+                stoppingCtsToken = _stoppingCts.Token;
 
                 // Clear resources on cancel
-                _stoppingCts.Token.Register(() =>
+                stoppingCtsToken.Register(() =>
                 {
                     _stoppingCts.Dispose();
                 });
             }
             else
             {
-                // link token to allow cancelling executing task from provided token
-                cancellationToken.Register(() => _stoppingCts.Cancel());
+                try
+                {
+                    // If _stoppingCts already disposed
+                    stoppingCtsToken = _stoppingCts.Token;
+                }
+                catch (ObjectDisposedException)
+                {
+                    return Task.CompletedTask;
+                }
             }
 
+            // link token to allow cancelling executing task from provided token
+            cancellationToken.Register(() =>
+            {
+                try
+                {
+                    // If _stoppingCts already disposed
+                    _stoppingCts.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+            });
+            
             // Store the task we're executing
-            _executingTask = ExecuteAsync(_stoppingCts.Token);
+            _executingTask = ExecuteAsync(stoppingCtsToken);
 
             // If the task is completed then return it, this will bubble cancellation and failure to the caller
             if (_executingTask.IsCompleted)
@@ -76,6 +99,10 @@ namespace Microsoft.Extensions.Hosting
             {
                 // Signal cancellation to the executing method
                 _stoppingCts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // If _stoppingCts already disposed
             }
             finally
             {
