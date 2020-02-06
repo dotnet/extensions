@@ -29,8 +29,23 @@ namespace Microsoft.Extensions.Hosting
         /// <param name="cancellationToken">Indicates that the start process has been aborted.</param>
         public virtual Task StartAsync(CancellationToken cancellationToken)
         {
-            // Create linked token to allow cancelling executing task from provided token
-            _stoppingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            // Only if task not started before
+            if (_stoppingCts?.IsCancellationRequested != false)
+            {
+                // Create linked token to allow cancelling executing task from provided token
+                _stoppingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+                // Clear resources on cancel
+                _stoppingCts.Token.Register(() =>
+                {
+                    _stoppingCts.Dispose();
+                });
+            }
+            else
+            {
+                // link token to allow cancelling executing task from provided token
+                cancellationToken.Register(() => _stoppingCts.Cancel());
+            }
 
             // Store the task we're executing
             _executingTask = ExecuteAsync(_stoppingCts.Token);
