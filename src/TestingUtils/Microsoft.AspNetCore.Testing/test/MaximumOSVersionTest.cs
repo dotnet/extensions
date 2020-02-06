@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Testing
             Assert.NotNull(versionKey);
             var currentVersion = (string)versionKey.GetValue("CurrentBuildNumber");
             Assert.NotNull(currentVersion);
-            Assert.True(18363 >= int.Parse(currentVersion), $"Unexpected build number {currentVersion} on {Environment.OSVersion}.");
+            Assert.True(18363 >= int.Parse(currentVersion), $"Unexpected build number {currentVersion} on {Environment.OSVersion.Version}.");
         }
     }
 
