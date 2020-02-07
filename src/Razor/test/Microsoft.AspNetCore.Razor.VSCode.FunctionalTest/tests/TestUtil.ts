@@ -3,6 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import * as assert from 'assert';
 import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as glob from 'glob';
@@ -42,6 +43,16 @@ export async function pollUntil(fn: () => (boolean | Promise<boolean>), timeoutM
         timeWaited += resolvedPollInterval;
     }
     while (!fnEval);
+}
+
+export function assertHasNoCompletion(completions: vscode.CompletionList | undefined, name: string) {
+    const ok = completions!.items.some(item => item.label === name);
+    assert.ok(!ok, `Should not have had completion "${name}"`);
+}
+
+export function assertHasCompletion(completions: vscode.CompletionList | undefined, name: string) {
+    const ok = completions!.items.some(item => item.label === name);
+    assert.ok(ok, `Should have had completion "${name}"`);
 }
 
 export async function ensureNoChangesFor(documentUri: vscode.Uri, durationMs: number) {
@@ -149,13 +160,11 @@ export async function waitForProjectsConfigured() {
 
 async function removeOldProjectRazorJsons() {
     const folders = fs.readdirSync(testAppsRoot);
-    let count = 0;
     for (const folder of folders) {
         const objDir = path.join(testAppsRoot, folder, 'obj');
         if (findInDir(objDir, projectConfigFile)) {
             const projFile = findInDir(objDir, projectConfigFile) as string;
             fs.unlinkSync(projFile);
-            count++;
         }
     }
 }

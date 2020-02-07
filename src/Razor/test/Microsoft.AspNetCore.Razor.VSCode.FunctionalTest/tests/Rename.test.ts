@@ -119,7 +119,6 @@ suite('Rename', () => {
     test('Rename symbol in .cs also changes .razor', async () => {
         const expectedNewText = 'Oof';
         const csDoc = await vscode.workspace.openTextDocument(csPath);
-        const csEditor = await vscode.window.showTextDocument(csDoc);
 
         await new Promise(r => setTimeout(r, 3000));
         const renames = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(

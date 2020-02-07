@@ -5,7 +5,6 @@
 
 import * as vscode from 'vscode';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
-import { RazorLogger } from './RazorLogger';
 import { LanguageKind } from './RPC/LanguageKind';
 import { LanguageQueryRequest } from './RPC/LanguageQueryRequest';
 import { LanguageQueryResponse } from './RPC/LanguageQueryResponse';

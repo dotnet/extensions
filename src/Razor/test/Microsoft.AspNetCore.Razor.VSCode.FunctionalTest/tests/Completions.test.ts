@@ -3,11 +3,12 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as assert from 'assert';
 import { afterEach, before, beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
+    assertHasCompletion,
+    assertHasNoCompletion,
     mvcWithComponentsRoot,
     pollUntil,
     waitForDocumentUpdate,
@@ -16,6 +17,7 @@ import {
 
 let cshtmlDoc: vscode.TextDocument;
 let editor: vscode.TextEditor;
+const homeDirectory = path.join(mvcWithComponentsRoot, 'Views', 'Home');
 
 suite('Completions', () => {
     before(async () => {
@@ -23,7 +25,7 @@ suite('Completions', () => {
     });
 
     beforeEach(async () => {
-        const filePath = path.join(mvcWithComponentsRoot, 'Views', 'Home', 'Index.cshtml');
+        const filePath = path.join(homeDirectory, 'Index.cshtml');
         cshtmlDoc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(cshtmlDoc);
     });
@@ -51,11 +53,9 @@ suite('Completions', () => {
             razorDoc.uri,
             new vscode.Position(0, 1));
 
-        const hasCompletion = (text: string) => completions!.items.some(item => item.insertText === text);
-
-        assert.ok(hasCompletion('page'), 'Should have completion for "page"');
-        assert.ok(hasCompletion('inject'), 'Should have completion for "inject"');
-        assert.ok(!hasCompletion('div'), 'Should not have completion for "div"');
+        assertHasCompletion(completions, 'page');
+        assertHasCompletion(completions, 'inject');
+        assertHasNoCompletion(completions, 'div');
     });
 
     test('Can complete Razor directive in .cshtml', async () => {
@@ -66,11 +66,9 @@ suite('Completions', () => {
             cshtmlDoc.uri,
             new vscode.Position(0, 1));
 
-        const hasCompletion = (text: string) => completions!.items.some(item => item.insertText === text);
-
-        assert.ok(hasCompletion('page'), 'Should have completion for "page"');
-        assert.ok(hasCompletion('inject'), 'Should have completion for "inject"');
-        assert.ok(!hasCompletion('div'), 'Should not have completion for "div"');
+        assertHasCompletion(completions, 'page');
+        assertHasCompletion(completions, 'inject');
+        assertHasNoCompletion(completions, 'div');
     });
 
     test('Can complete C# code blocks in .cshtml', async () => {
@@ -82,11 +80,10 @@ suite('Completions', () => {
             'vscode.executeCompletionItemProvider',
             cshtmlDoc.uri,
             new vscode.Position(cshtmlDoc.lineCount - 1, 2));
-        const matchingCompletions = completions!.items
-            .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('DateTime'))
-            .map(item => item.insertText as string);
 
-        assert.deepEqual(matchingCompletions, ['DateTime', 'DateTimeKind', 'DateTimeOffset']);
+        assertHasCompletion(completions, 'DateTime');
+        assertHasCompletion(completions, 'DateTimeKind');
+        assertHasCompletion(completions, 'DateTimeOffset');
     });
 
     test('Can complete C# implicit expressions in .cshtml', async () => {
@@ -98,11 +95,10 @@ suite('Completions', () => {
             'vscode.executeCompletionItemProvider',
             cshtmlDoc.uri,
             new vscode.Position(lastLine.line, 1));
-        const matchingCompletions = completions!.items
-            .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('DateTime'))
-            .map(item => item.insertText as string);
 
-        assert.deepEqual(matchingCompletions, ['DateTime', 'DateTimeKind', 'DateTimeOffset']);
+        assertHasCompletion(completions, 'DateTime');
+        assertHasCompletion(completions, 'DateTimeKind');
+        assertHasCompletion(completions, 'DateTimeOffset');
     });
 
     test('Can complete imported C# in .cshtml', async () => {
@@ -114,11 +110,8 @@ suite('Completions', () => {
             'vscode.executeCompletionItemProvider',
             cshtmlDoc.uri,
             new vscode.Position(cshtmlDoc.lineCount - 1, 1));
-        const matchingCompletions = completions!.items
-            .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('TheTime'))
-            .map(item => item.insertText as string);
 
-        assert.deepEqual(matchingCompletions, ['TheTime']);
+        assertHasCompletion(completions, 'TheTime');
     });
 
     test('Can complete HTML tag in .cshtml', async () => {
@@ -128,10 +121,7 @@ suite('Completions', () => {
             'vscode.executeCompletionItemProvider',
             cshtmlDoc.uri,
             new vscode.Position(0, 4));
-        const matchingCompletions = completions!.items
-            .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('str'))
-            .map(item => item.insertText as string);
 
-        assert.deepEqual(matchingCompletions, ['strong']);
+        assertHasCompletion(completions, 'strong');
     });
 });

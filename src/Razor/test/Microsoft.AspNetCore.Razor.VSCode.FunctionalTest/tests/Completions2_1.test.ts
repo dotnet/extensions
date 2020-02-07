@@ -3,11 +3,12 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as assert from 'assert';
 import { afterEach, before, beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
+    assertHasCompletion,
+    assertHasNoCompletion,
     pollUntil,
     simpleMvc21Root,
     waitForDocumentUpdate,
@@ -52,11 +53,8 @@ suite('Completions 2.1', () => {
             'vscode.executeCompletionItemProvider',
             doc.uri,
             docPosition);
-        const matchingCompletions = completions!.items
-            .filter(item => (typeof item.insertText === 'string') && item.insertText === 'iframe')
-            .map(item => item.insertText as string);
 
-        assert.deepEqual(matchingCompletions, ['iframe']);
+        assertHasCompletion(completions, 'iframe');
     });
 
     test('Can complete C# code blocks', async () => {
@@ -68,11 +66,10 @@ suite('Completions 2.1', () => {
             'vscode.executeCompletionItemProvider',
             doc.uri,
             new vscode.Position(doc.lineCount - 1, 2));
-        const matchingCompletions = completions!.items
-            .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('DateTime'))
-            .map(item => item.insertText as string);
 
-        assert.deepEqual(matchingCompletions, ['DateTime', 'DateTimeKind', 'DateTimeOffset']);
+        assertHasCompletion(completions, 'DateTime');
+        assertHasCompletion(completions, 'DateTimeKind');
+        assertHasCompletion(completions, 'DateTimeOffset');
     });
 
     test('Can complete C# implicit expressions', async () => {
@@ -84,11 +81,10 @@ suite('Completions 2.1', () => {
             'vscode.executeCompletionItemProvider',
             doc.uri,
             new vscode.Position(doc.lineCount - 1, 1));
-        const matchingCompletions = completions!.items
-            .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('DateTime'))
-            .map(item => item.insertText as string);
 
-        assert.deepEqual(matchingCompletions, ['DateTime', 'DateTimeKind', 'DateTimeOffset']);
+        assertHasCompletion(completions, 'DateTime');
+        assertHasCompletion(completions, 'DateTimeKind');
+        assertHasCompletion(completions, 'DateTimeOffset');
     });
 
     test('Can complete imported C#', async () => {
@@ -100,11 +96,8 @@ suite('Completions 2.1', () => {
             'vscode.executeCompletionItemProvider',
             doc.uri,
             new vscode.Position(doc.lineCount - 1, 1));
-        const matchingCompletions = completions!.items
-            .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('TheTime'))
-            .map(item => item.insertText as string);
 
-        assert.deepEqual(matchingCompletions, ['TheTime']);
+        assertHasCompletion(completions, 'TheTime');
     });
 
     test('Can complete Razor directive', async () => {
@@ -115,11 +108,9 @@ suite('Completions 2.1', () => {
             doc.uri,
             new vscode.Position(0, 1));
 
-        const hasCompletion = (text: string) => completions!.items.some(item => item.insertText === text);
-
-        assert.ok(hasCompletion('page'), 'Should have completion for "page"');
-        assert.ok(hasCompletion('inject'), 'Should have completion for "inject"');
-        assert.ok(!hasCompletion('div'), 'Should not have completion for "div"');
+        assertHasCompletion(completions, 'page');
+        assertHasCompletion(completions, 'inject');
+        assertHasNoCompletion(completions, 'div');
     });
 
     test('Can complete HTML tag', async () => {
@@ -129,10 +120,6 @@ suite('Completions 2.1', () => {
             'vscode.executeCompletionItemProvider',
             doc.uri,
             new vscode.Position(0, 4));
-        const matchingCompletions = completions!.items
-            .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('str'))
-            .map(item => item.insertText as string);
-
-        assert.deepEqual(matchingCompletions, ['strong']);
+        assertHasCompletion(completions, 'strong');
     });
 });

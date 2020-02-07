@@ -3,11 +3,11 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as assert from 'assert';
 import { afterEach, before, beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
+    assertHasCompletion,
     componentRoot,
     pollUntil,
     waitForProjectReady,
@@ -15,6 +15,7 @@ import {
 
 let counterDoc: vscode.TextDocument;
 let counterEditor: vscode.TextEditor;
+const pagesDirectory = path.join(componentRoot, 'Components', 'Pages');
 
 suite('Completions Components', () => {
     before(async () => {
@@ -22,7 +23,7 @@ suite('Completions Components', () => {
     });
 
     beforeEach(async () => {
-        const counterPath = path.join(componentRoot, 'Components', 'Pages', 'Counter.razor');
+        const counterPath =  path.join(pagesDirectory, 'Counter.razor');
         counterDoc = await vscode.workspace.openTextDocument(counterPath);
         counterEditor = await vscode.window.showTextDocument(counterDoc);
     });
@@ -47,10 +48,7 @@ suite('Completions Components', () => {
             'vscode.executeCompletionItemProvider',
             counterDoc.uri,
             new vscode.Position(1, 50));
-        const matchingCompletions = completions!.items
-            .filter(item => item.label === 'OnValidSubmit')
-            .map(item => item.label as string);
 
-        assert.deepEqual(matchingCompletions, ['OnValidSubmit']);
+        assertHasCompletion(completions, 'OnValidSubmit');
     });
 });
