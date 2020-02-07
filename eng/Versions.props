@@ -77,7 +77,7 @@
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.20101.2</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetVersion>3.5.0-beta2-20074-05</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetVersion>3.5.0-beta3-20106-02</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
