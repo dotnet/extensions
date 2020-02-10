@@ -124,10 +124,12 @@ export class RazorDocumentManager implements IRazorDocumentManager {
 
     private _getDocument(uri: vscode.Uri) {
         const path = getUriPath(uri);
-        const document = this.razorDocuments[path];
+        let document = this.razorDocuments[path];
 
+        // This might happen in the case that a file is opened outside the workspace
         if (!document) {
-            throw new Error('Requested document does not exist.');
+            this.logger.logMessage(`File '${path}' didn't exist in the Razor document list. This is likely because it's from outside the workspace.`);
+            document = this.addDocument(uri);
         }
 
         return document;
@@ -151,6 +153,13 @@ export class RazorDocumentManager implements IRazorDocumentManager {
         // Reset the projected documents, VSCode resets all sync versions when a document closes.
         csharpProjectedDocument.reset();
         htmlProjectedDocument.reset();
+
+        // Files outside of the workspace will return undefined from getWorkspaceFolder
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+        if (!workspaceFolder) {
+            // Out of workspace files should be removed once they're closed
+            this.removeDocument(uri);
+        }
 
         this.notifyDocumentChange(document, RazorDocumentChangeKind.closed);
     }

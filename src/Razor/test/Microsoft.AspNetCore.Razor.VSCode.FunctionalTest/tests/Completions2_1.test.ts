@@ -120,6 +120,7 @@ suite('Completions 2.1', () => {
             'vscode.executeCompletionItemProvider',
             doc.uri,
             new vscode.Position(0, 4));
+
         assertHasCompletion(completions, 'strong');
     });
 });
