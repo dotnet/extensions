@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 : value;
 
         /// <summary>
-        /// Loads the docker secrets.
+        /// Loads the configuration values.
         /// </summary>
         public override void Load()
         {

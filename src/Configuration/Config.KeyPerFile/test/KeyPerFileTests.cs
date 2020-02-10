@@ -238,8 +238,6 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
                 new TestFile("Secret1", "NewSecretValue1"),
                 new TestFile("Secret3", "NewSecretValue3"));
 
-            testFileProvider.ChangeToken.RaiseCallback();
-
             Assert.Equal("NewSecretValue1", config["Secret1"]);
             Assert.Null(config["NewSecret2"]);
             Assert.Equal("NewSecretValue3", config["Secret3"]);
@@ -266,7 +264,27 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
                 new TestFile("Secret1", "NewSecretValue1"),
                 new TestFile("Secret3", "NewSecretValue3"));
 
-            testFileProvider.ChangeToken.RaiseCallback();
+            Assert.Equal("SecretValue1", config["Secret1"]);
+            Assert.Equal("SecretValue2", config["Secret2"]);
+        }
+
+        [Fact]
+        public void NoFilesReloadWhenAddedFiles()
+        {
+            var testFileProvider = new TestFileProvider();
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o =>
+                {
+                    o.FileProvider = testFileProvider;
+                    o.ReloadOnChange = true;
+                }).Build();
+
+            Assert.Empty(config.AsEnumerable());
+
+            testFileProvider.ChangeFiles(
+                new TestFile("Secret1", "SecretValue1"),
+                new TestFile("Secret2", "SecretValue2"));
 
             Assert.Equal("SecretValue1", config["Secret1"]);
             Assert.Equal("SecretValue2", config["Secret2"]);
@@ -299,9 +317,8 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
         internal void ChangeFiles(params IFileInfo[] files)
         {
             _contents = new TestDirectoryContents(files);
+            _changeToken.RaiseCallback();
         }
-
-        internal MockChangeToken ChangeToken => _changeToken;
     }
 
     class MockChangeToken : IChangeToken
