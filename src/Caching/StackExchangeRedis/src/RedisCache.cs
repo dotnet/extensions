@@ -29,8 +29,8 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         private const string DataKey = "data";
         private const long NotPresent = -1;
 
-        private volatile ConnectionMultiplexer _connection;
-        private IDatabase _cache;
+        private ConnectionMultiplexer _connection;
+        private volatile IDatabase _cache;
 
         private readonly RedisCacheOptions _options;
         private readonly string _instance;
