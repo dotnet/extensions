@@ -131,6 +131,7 @@
                         "null"
                     ],
                     "default": null,
+                    "scope": "machine",
                     "description": "Overrides the path to the Razor plugin dll."
                 },
                 "razor.languageServer.debug": {
