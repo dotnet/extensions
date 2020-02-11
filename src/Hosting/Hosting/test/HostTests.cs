@@ -85,18 +85,26 @@ namespace Microsoft.Extensions.Hosting
         [Fact]
         public void CreateDefaultBuilder_ConfigJsonDoesNotReload()
         {
-            Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER_CONFIG_RELOAD", "false");
-            Environment.CurrentDirectory = Path.GetTempPath();
+            var reloadFlagConfig = new Dictionary<string, string>() {{ "HOSTBUILDER_CONFIG_RELOAD", "false" }};
+            var appSettingsPath = Path.Combine(Path.GetTempPath(), "appsettings.json");
 
             string SaveRandomConfig()
             {
                 var newMessage = $"Hello ASP.NET Core: {Guid.NewGuid():N}";
-                File.WriteAllText(Path.Combine(Path.GetTempPath(), "appsettings.json"), $"{{ \"Hello\": \"{newMessage}\" }}");
+                File.WriteAllText(appSettingsPath, $"{{ \"Hello\": \"{newMessage}\" }}");
                 return newMessage;
             }
 
             var dynamicConfigMessage1 = SaveRandomConfig();
-            var host = Host.CreateDefaultBuilder().Build();
+
+            var host = Host.CreateDefaultBuilder()
+                .UseContentRoot(Path.GetDirectoryName(appSettingsPath))
+                .ConfigureHostConfiguration(builder =>
+                {
+                    builder.AddInMemoryCollection(reloadFlagConfig);
+                })
+                .Build();
+
             var config = host.Services.GetRequiredService<IConfiguration>();
 
             Assert.Equal(dynamicConfigMessage1, config["Hello"]);
@@ -110,18 +118,26 @@ namespace Microsoft.Extensions.Hosting
         [Fact]
         public void CreateDefaultBuilder_ConfigJsonDoesReload()
         {
-            Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER_CONFIG_RELOAD", "true");
-            Environment.CurrentDirectory = Path.GetTempPath();
+            var reloadFlagConfig = new Dictionary<string, string>() { { "HOSTBUILDER_CONFIG_RELOAD", "true" } };
+            var appSettingsPath = Path.Combine(Path.GetTempPath(), "appsettings.json");
 
             string SaveRandomConfig()
             {
                 var newMessage = $"Hello ASP.NET Core: {Guid.NewGuid():N}";
-                File.WriteAllText(Path.Combine(Path.GetTempPath(), "appsettings.json"), $"{{ \"Hello\": \"{newMessage}\" }}");
+                File.WriteAllText(appSettingsPath, $"{{ \"Hello\": \"{newMessage}\" }}");
                 return newMessage;
             }
 
             var dynamicConfigMessage1 = SaveRandomConfig();
-            var host = Host.CreateDefaultBuilder().Build();
+
+            var host = Host.CreateDefaultBuilder()
+                .UseContentRoot(Path.GetDirectoryName(appSettingsPath))
+                .ConfigureHostConfiguration(builder =>
+                {
+                    builder.AddInMemoryCollection(reloadFlagConfig);
+                })
+                .Build();
+
             var config = host.Services.GetRequiredService<IConfiguration>();
 
             Assert.Equal(dynamicConfigMessage1, config["Hello"]);
@@ -129,7 +145,7 @@ namespace Microsoft.Extensions.Hosting
             var dynamicConfigMessage2 = SaveRandomConfig();
             Task.Delay(1000).Wait(); // Give reload time to fire if it's going to.
             Assert.NotEqual(dynamicConfigMessage1, dynamicConfigMessage2); // Messages are different.
-            Assert.Equal(dynamicConfigMessage2, config["Hello"]); // Config DID reload.
+            Assert.Equal(dynamicConfigMessage2, config["Hello"]); // Config DID reload from disk
         }
 
         internal class ServiceA { }
