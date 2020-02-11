@@ -26,8 +26,22 @@ export async function run(): Promise<void> {
         await vscode.commands.executeCommand('extension.configureRazorDevMode');
     }
 
+    let testFilter: string | undefined;
+    if (process.env.runSingleTest === 'true') {
+        testFilter = await vscode.window.showInputBox({
+                prompt: 'Test file filter',
+                placeHolder: '**.test.js',
+            });
+    }
+
+    if (!testFilter) {
+        testFilter = '**.test.js';
+    } else if (!testFilter.endsWith('.test.js')) {
+        testFilter += '**.test.js';
+    }
+
     return new Promise((c, e) => {
-        glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
+        glob(`**/${testFilter}`, { cwd: testsRoot }, (err, files) => {
             if (err) {
                 return e(err);
             }
