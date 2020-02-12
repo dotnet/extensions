@@ -60,6 +60,14 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
 
+    <!-- Embedded grammars -->
+
+    <Content Include="EmbeddedGrammars\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>Grammars\</VSIXSubPath>
+    </Content>
+
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
