@@ -15,6 +15,7 @@ export const razorRoot = path.join(__dirname, '..', '..', '..');
 export const testAppsRoot = path.join(razorRoot, 'test', 'testapps');
 export const componentRoot = path.join(testAppsRoot, 'ComponentApp');
 export const mvcWithComponentsRoot = path.join(testAppsRoot, 'MvcWithComponents');
+export const simpleMvc11Root = path.join(testAppsRoot, 'SimpleMvc11');
 export const simpleMvc21Root = path.join(testAppsRoot, 'SimpleMvc21');
 export const simpleMvc22Root = path.join(testAppsRoot, 'SimpleMvc22');
 const projectConfigFile = 'project.razor.json';
