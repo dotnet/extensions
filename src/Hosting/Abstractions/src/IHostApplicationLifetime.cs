@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Hosting
 
         /// <summary>
         /// Triggered when the application host has completed a graceful shutdown.
-        /// The application will not exit until any callbacks registered on this token have returned.
+        /// The application will not exit until all callbacks registered on this token have completed.
         /// </summary>
         CancellationToken ApplicationStopped { get; }
 
