@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Hosting
         CancellationToken ApplicationStarted { get; }
 
         /// <summary>
-        /// Triggered when the application host is beginning a graceful shutdown.
+        /// Triggered when the application host is starting a graceful shutdown.
         /// Shutdown will block until any callbacks registered on this token have returned.
         /// </summary>
         CancellationToken ApplicationStopping { get; }
