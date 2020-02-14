@@ -2,7 +2,7 @@
   <PropertyGroup>
     <MajorVersion>2</MajorVersion>
     <MinorVersion>1</MinorVersion>
-    <PatchVersion>16</PatchVersion>
+    <PatchVersion>17</PatchVersion>
     <PreReleaseLabel>servicing</PreReleaseLabel>
     <PreReleaseBrandingLabel></PreReleaseBrandingLabel>
     <OfficialBuildId Condition="'$(OfficialBuildId)' == ''">$(BUILD_BUILDNUMBER)</OfficialBuildId>
