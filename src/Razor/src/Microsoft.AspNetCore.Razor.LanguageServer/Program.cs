@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
 using Microsoft.AspNetCore.Razor.LanguageServer.Converters;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.LanguageServer.Hover;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
@@ -81,14 +82,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorHoverEndpoint>()
                     .WithHandler<RazorLanguageEndpoint>()
                     .WithHandler<RazorConfigurationEndpoint>()
+                    .WithHandler<RazorFormattingEndpoint>()
                     .WithServices(services =>
                     {
+                        services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RemoteTextLoaderFactory, DefaultRemoteTextLoaderFactory>();
                         services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
                         services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
-                        services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
                         services.AddSingleton<ProjectSnapshotChangeTrigger, BackgroundDocumentGenerator>();
+                        services.AddSingleton<RazorDocumentMappingService, DefaultRazorDocumentMappingService>();
                         services.AddSingleton<RazorFileChangeDetectorManager>();
 
                         // Options
@@ -129,6 +132,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         var csharpPublisher = new DefaultCSharpPublisher(foregroundDispatcher, new Lazy<OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer>(() => server));
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(csharpPublisher);
                         services.AddSingleton<CSharpPublisher>(csharpPublisher);
+
+                        // Formatting
+                        services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();
 
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
                         services.AddSingleton<RazorHoverInfoService, DefaultRazorHoverInfoService>();

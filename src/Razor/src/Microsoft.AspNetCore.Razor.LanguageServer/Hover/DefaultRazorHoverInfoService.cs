@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
             _htmlFactsService = htmlFactsService;
         }
 
-        public override HoverModel GetHoverInfo(RazorCodeDocument codeDocument, SourceSpan location)
+        public override HoverModel GetHoverInfo(RazorCodeDocument codeDocument, SourceLocation location)
         {
             if (codeDocument is null)
             {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
             }
 
             var syntaxTree = codeDocument.GetSyntaxTree();
-            var change = new SourceChange(location, "");
+            var change = new SourceChange(location.AbsoluteIndex, length: 0, newText: "");
             var owner = syntaxTree.Root.LocateOwner(change);
 
             if (owner == null)

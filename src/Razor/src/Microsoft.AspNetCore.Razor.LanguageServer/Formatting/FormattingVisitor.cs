@@ -4,19 +4,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    internal class ClassifiedSpanVisitor : SyntaxWalker
+    internal class FormattingVisitor : SyntaxWalker
     {
         private RazorSourceDocument _source;
-        private List<ClassifiedSpanInternal> _spans;
-        private BlockKindInternal _currentBlockKind;
+        private List<FormattingSpan> _spans;
+        private FormattingBlockKind _currentBlockKind;
         private SyntaxNode _currentBlock;
+        private int _currentIndentationLevel = 0;
 
-        public ClassifiedSpanVisitor(RazorSourceDocument source)
+        public FormattingVisitor(RazorSourceDocument source)
         {
             if (source is null)
             {
@@ -24,29 +26,29 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             _source = source;
-            _spans = new List<ClassifiedSpanInternal>();
-            _currentBlockKind = BlockKindInternal.Markup;
+            _spans = new List<FormattingSpan>();
+            _currentBlockKind = FormattingBlockKind.Markup;
         }
 
-        public IReadOnlyList<ClassifiedSpanInternal> ClassifiedSpans => _spans;
+        public IReadOnlyList<FormattingSpan> FormattingSpans => _spans;
 
         public override void VisitRazorCommentBlock(RazorCommentBlockSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Comment, razorCommentSyntax =>
+            WriteBlock(node, FormattingBlockKind.Comment, razorCommentSyntax =>
             {
-                WriteSpan(razorCommentSyntax.StartCommentTransition, SpanKindInternal.Transition, AcceptedCharactersInternal.None);
-                WriteSpan(razorCommentSyntax.StartCommentStar, SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
+                WriteSpan(razorCommentSyntax.StartCommentTransition, FormattingSpanKind.Transition);
+                WriteSpan(razorCommentSyntax.StartCommentStar, FormattingSpanKind.MetaCode);
 
                 var comment = razorCommentSyntax.Comment;
                 if (comment.IsMissing)
                 {
-                    // We need to generate a classified span at this position. So insert a marker in its place.
+                    // We need to generate a formatting span at this position. So insert a marker in its place.
                     comment = (SyntaxToken)SyntaxFactory.Token(SyntaxKind.Marker, string.Empty).Green.CreateRed(razorCommentSyntax, razorCommentSyntax.StartCommentStar.EndPosition);
                 }
-                WriteSpan(comment, SpanKindInternal.Comment, AcceptedCharactersInternal.Any);
+                WriteSpan(comment, FormattingSpanKind.Comment);
 
-                WriteSpan(razorCommentSyntax.EndCommentStar, SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
-                WriteSpan(razorCommentSyntax.EndCommentTransition, SpanKindInternal.Transition, AcceptedCharactersInternal.None);
+                WriteSpan(razorCommentSyntax.EndCommentStar, FormattingSpanKind.MetaCode);
+                WriteSpan(razorCommentSyntax.EndCommentTransition, FormattingSpanKind.Transition);
             });
         }
 
@@ -56,65 +58,70 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node.Parent is CSharpExplicitExpressionBodySyntax ||
                 node.Parent is CSharpImplicitExpressionBodySyntax ||
                 node.Parent is RazorDirectiveBodySyntax ||
-                (_currentBlockKind == BlockKindInternal.Directive &&
+                (_currentBlockKind == FormattingBlockKind.Directive &&
                 node.Children.Count == 1 &&
                 node.Children[0] is CSharpStatementLiteralSyntax))
             {
+                if (!(node.Parent is RazorDirectiveBodySyntax))
+                {
+                    _currentIndentationLevel++;
+                }
                 base.VisitCSharpCodeBlock(node);
+                if (!(node.Parent is RazorDirectiveBodySyntax))
+                {
+                    _currentIndentationLevel--;
+                }
                 return;
             }
 
-            WriteBlock(node, BlockKindInternal.Statement, base.VisitCSharpCodeBlock);
+            WriteBlock(node, FormattingBlockKind.Statement, base.VisitCSharpCodeBlock);
         }
 
         public override void VisitCSharpStatement(CSharpStatementSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Statement, base.VisitCSharpStatement);
+            WriteBlock(node, FormattingBlockKind.Statement, base.VisitCSharpStatement);
         }
 
         public override void VisitCSharpExplicitExpression(CSharpExplicitExpressionSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Expression, base.VisitCSharpExplicitExpression);
+            WriteBlock(node, FormattingBlockKind.Expression, base.VisitCSharpExplicitExpression);
         }
 
         public override void VisitCSharpImplicitExpression(CSharpImplicitExpressionSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Expression, base.VisitCSharpImplicitExpression);
+            WriteBlock(node, FormattingBlockKind.Expression, base.VisitCSharpImplicitExpression);
         }
 
         public override void VisitRazorDirective(RazorDirectiveSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Directive, base.VisitRazorDirective);
+            WriteBlock(node, FormattingBlockKind.Directive, base.VisitRazorDirective);
         }
 
         public override void VisitCSharpTemplateBlock(CSharpTemplateBlockSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Template, base.VisitCSharpTemplateBlock);
+            WriteBlock(node, FormattingBlockKind.Template, base.VisitCSharpTemplateBlock);
         }
 
         public override void VisitMarkupBlock(MarkupBlockSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Markup, base.VisitMarkupBlock);
+            WriteBlock(node, FormattingBlockKind.Markup, base.VisitMarkupBlock);
         }
 
-        public override void VisitMarkupTagHelperAttributeValue(MarkupTagHelperAttributeValueSyntax node)
+        public override void VisitMarkupElement(MarkupElementSyntax node)
         {
-            // We don't generate a classified span when the attribute value is a simple literal value.
-            // This is done so we maintain the classified spans generated in 2.x which
-            // used ConditionalAttributeCollapser (combines markup literal attribute values into one span with no block parent).
-            if (node.Children.Count > 1 ||
-                (node.Children.Count == 1 && node.Children[0] is MarkupDynamicAttributeValueSyntax))
+            Visit(node.StartTag);
+            _currentIndentationLevel++;
+            foreach (var child in node.Body)
             {
-                WriteBlock(node, BlockKindInternal.Markup, base.VisitMarkupTagHelperAttributeValue);
-                return;
+                Visit(child);
             }
-
-            base.VisitMarkupTagHelperAttributeValue(node);
+            _currentIndentationLevel--;
+            Visit(node.EndTag);
         }
 
         public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Tag, n =>
+            WriteBlock(node, FormattingBlockKind.Tag, n =>
             {
                 var children = GetRewrittenMarkupStartTagChildren(node);
                 foreach (var child in children)
@@ -126,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override void VisitMarkupEndTag(MarkupEndTagSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Tag, n =>
+            WriteBlock(node, FormattingBlockKind.Tag, n =>
             {
                 var children = GetRewrittenMarkupEndTagChildren(node);
                 foreach (var child in children)
@@ -138,30 +145,41 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Tag, base.VisitMarkupTagHelperElement);
+            Visit(node.StartTag);
+            _currentIndentationLevel++;
+            foreach (var child in node.Body)
+            {
+                Visit(child);
+            }
+            _currentIndentationLevel--;
+            Visit(node.EndTag);
         }
 
         public override void VisitMarkupTagHelperStartTag(MarkupTagHelperStartTagSyntax node)
         {
-            foreach (var child in node.Attributes)
+            WriteBlock(node, FormattingBlockKind.Tag, n =>
             {
-                if (child is MarkupTagHelperAttributeSyntax ||
-                    child is MarkupTagHelperDirectiveAttributeSyntax ||
-                    child is MarkupMinimizedTagHelperDirectiveAttributeSyntax)
+                foreach (var child in n.Children)
                 {
                     Visit(child);
                 }
-            }
+            });
         }
 
         public override void VisitMarkupTagHelperEndTag(MarkupTagHelperEndTagSyntax node)
         {
-            // We don't want to generate a classified span for a tag helper end tag. Do nothing.
+            WriteBlock(node, FormattingBlockKind.Tag, n =>
+            {
+                foreach (var child in n.Children)
+                {
+                    Visit(child);
+                }
+            });
         }
 
         public override void VisitMarkupAttributeBlock(MarkupAttributeBlockSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Markup, n =>
+            WriteBlock(node, FormattingBlockKind.Markup, n =>
             {
                 var equalsSyntax = SyntaxFactory.MarkupTextLiteral(new SyntaxList<SyntaxToken>(node.EqualsToken));
                 var mergedAttributePrefix = SyntaxUtilities.MergeTextLiterals(node.NamePrefix, node.Name, node.NameSuffix, equalsSyntax, node.ValuePrefix);
@@ -191,7 +209,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override void VisitMarkupMinimizedAttributeBlock(MarkupMinimizedAttributeBlockSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Markup, n =>
+            WriteBlock(node, FormattingBlockKind.Markup, n =>
             {
                 var mergedAttributePrefix = SyntaxUtilities.MergeTextLiterals(node.NamePrefix, node.Name);
                 Visit(mergedAttributePrefix);
@@ -200,59 +218,64 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override void VisitMarkupCommentBlock(MarkupCommentBlockSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.HtmlComment, base.VisitMarkupCommentBlock);
+            WriteBlock(node, FormattingBlockKind.HtmlComment, base.VisitMarkupCommentBlock);
         }
 
         public override void VisitMarkupDynamicAttributeValue(MarkupDynamicAttributeValueSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Markup, base.VisitMarkupDynamicAttributeValue);
+            WriteBlock(node, FormattingBlockKind.Markup, base.VisitMarkupDynamicAttributeValue);
+        }
+
+        public override void VisitMarkupTagHelperAttributeValue(MarkupTagHelperAttributeValueSyntax node)
+        {
+            WriteBlock(node, FormattingBlockKind.Markup, base.VisitMarkupTagHelperAttributeValue);
         }
 
         public override void VisitRazorMetaCode(RazorMetaCodeSyntax node)
         {
-            WriteSpan(node, SpanKindInternal.MetaCode);
+            WriteSpan(node, FormattingSpanKind.MetaCode);
             base.VisitRazorMetaCode(node);
         }
 
         public override void VisitCSharpTransition(CSharpTransitionSyntax node)
         {
-            WriteSpan(node, SpanKindInternal.Transition);
+            WriteSpan(node, FormattingSpanKind.Transition);
             base.VisitCSharpTransition(node);
         }
 
         public override void VisitMarkupTransition(MarkupTransitionSyntax node)
         {
-            WriteSpan(node, SpanKindInternal.Transition);
+            WriteSpan(node, FormattingSpanKind.Transition);
             base.VisitMarkupTransition(node);
         }
 
         public override void VisitCSharpStatementLiteral(CSharpStatementLiteralSyntax node)
         {
-            WriteSpan(node, SpanKindInternal.Code);
+            WriteSpan(node, FormattingSpanKind.Code);
             base.VisitCSharpStatementLiteral(node);
         }
 
         public override void VisitCSharpExpressionLiteral(CSharpExpressionLiteralSyntax node)
         {
-            WriteSpan(node, SpanKindInternal.Code);
+            WriteSpan(node, FormattingSpanKind.Code);
             base.VisitCSharpExpressionLiteral(node);
         }
 
         public override void VisitCSharpEphemeralTextLiteral(CSharpEphemeralTextLiteralSyntax node)
         {
-            WriteSpan(node, SpanKindInternal.Code);
+            WriteSpan(node, FormattingSpanKind.Code);
             base.VisitCSharpEphemeralTextLiteral(node);
         }
 
         public override void VisitUnclassifiedTextLiteral(UnclassifiedTextLiteralSyntax node)
         {
-            WriteSpan(node, SpanKindInternal.None);
+            WriteSpan(node, FormattingSpanKind.None);
             base.VisitUnclassifiedTextLiteral(node);
         }
 
         public override void VisitMarkupLiteralAttributeValue(MarkupLiteralAttributeValueSyntax node)
         {
-            WriteSpan(node, SpanKindInternal.Markup);
+            WriteSpan(node, FormattingSpanKind.Markup);
             base.VisitMarkupLiteralAttributeValue(node);
         }
 
@@ -264,17 +287,17 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return;
             }
 
-            WriteSpan(node, SpanKindInternal.Markup);
+            WriteSpan(node, FormattingSpanKind.Markup);
             base.VisitMarkupTextLiteral(node);
         }
 
         public override void VisitMarkupEphemeralTextLiteral(MarkupEphemeralTextLiteralSyntax node)
         {
-            WriteSpan(node, SpanKindInternal.Markup);
+            WriteSpan(node, FormattingSpanKind.Markup);
             base.VisitMarkupEphemeralTextLiteral(node);
         }
 
-        private void WriteBlock<TNode>(TNode node, BlockKindInternal kind, Action<TNode> handler) where TNode : SyntaxNode
+        private void WriteBlock<TNode>(TNode node, FormattingBlockKind kind, Action<TNode> handler) where TNode : SyntaxNode
         {
             var previousBlock = _currentBlock;
             var previousKind = _currentBlockKind;
@@ -288,26 +311,17 @@ namespace Microsoft.AspNetCore.Razor.Language
             _currentBlockKind = previousKind;
         }
 
-        private void WriteSpan(SyntaxNode node, SpanKindInternal kind, AcceptedCharactersInternal? acceptedCharacters = null)
+        private void WriteSpan(SyntaxNode node, FormattingSpanKind kind)
         {
             if (node.IsMissing)
             {
                 return;
             }
 
-            var spanSource = node.GetSourceSpan(_source);
-            var blockSource = _currentBlock.GetSourceSpan(_source);
-            if (!acceptedCharacters.HasValue)
-            {
-                acceptedCharacters = AcceptedCharactersInternal.Any;
-                var context = node.GetSpanContext();
-                if (context != null)
-                {
-                    acceptedCharacters = context.EditHandler.AcceptedCharacters;
-                }
-            }
+            var spanSource = new TextSpan(node.Position, node.FullWidth);
+            var blockSource = new TextSpan(_currentBlock.Position, _currentBlock.FullWidth);
 
-            var span = new ClassifiedSpanInternal(spanSource, blockSource, kind, _currentBlockKind, acceptedCharacters.Value);
+            var span = new FormattingSpan(spanSource, blockSource, kind, _currentBlockKind, _currentIndentationLevel);
             _spans.Add(span);
         }
 

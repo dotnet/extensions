@@ -30,9 +30,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 .Returns(true);
 
             DocumentVersionCache = documentVersionCache.Object;
+            MappingService = new DefaultRazorDocumentMappingService();
         }
 
         private DocumentVersionCache DocumentVersionCache { get; }
+
+        private RazorDocumentMappingService MappingService { get; }
 
         // These are more integration tests to validate that all the pieces work together
         [Fact]
@@ -49,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorMapToDocumentRangeParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -80,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorMapToDocumentRangeParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -110,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorMapToDocumentRangeParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -140,7 +143,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorMapToDocumentRangeParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -163,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<p>@DateTime.Now</p>");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorMapToDocumentRangeParams()
             {
                 Kind = RazorLanguageKind.Html,
@@ -186,7 +189,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<p>@DateTime.Now</p>");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorMapToDocumentRangeParams()
             {
                 Kind = RazorLanguageKind.Razor,
@@ -217,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 });
             codeDocument.SetUnsupported();
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorMapToDocumentRangeParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -240,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("@{}");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -264,7 +267,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<s");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -291,7 +294,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 "/* CSharp */",
                 new[] { new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 12)) });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -320,7 +323,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 new[] { new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 12)) });
             codeDocument.SetUnsupported();
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -490,198 +493,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Assert
             Assert.Equal(RazorLanguageKind.Html, languageKind);
-        }
-
-        [Fact]
-        public void TryGetCSharpProjectedPosition_NotMatchingAnyMapping()
-        {
-            // Arrange
-            var codeDoc = CreateCodeDocumentWithCSharpProjection(
-                "test razor source",
-                "test C# source",
-                new[] { new SourceMapping(new SourceSpan(2, 100), new SourceSpan(0, 100)) });
-
-            // Act
-            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
-                codeDoc,
-                1,
-                out var projectedPosition,
-                out var projectedPositionIndex);
-
-            // Assert
-            Assert.False(result);
-            Assert.Equal(default, projectedPosition);
-            Assert.Equal(default, projectedPositionIndex);
-        }
-
-        [Fact]
-        public void TryGetCSharpProjectedPosition_CSharp_OnLeadingEdge()
-        {
-            // Arrange
-            var codeDoc = CreateCodeDocumentWithCSharpProjection(
-                "Line 1\nLine 2 @{ var abc;\nvar def; }",
-                "\n// Prefix\n var abc;\nvar def; \n// Suffix",
-                new[] {
-                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
-                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
-                });
-
-            // Act
-            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
-                codeDoc,
-                16,
-                out var projectedPosition,
-                out var projectedPositionIndex);
-
-            // Assert
-            Assert.True(result);
-            Assert.Equal(2, projectedPosition.Line);
-            Assert.Equal(0, projectedPosition.Character);
-            Assert.Equal(11, projectedPositionIndex);
-        }
-
-        [Fact]
-        public void TryGetCSharpProjectedPosition_CSharp_InMiddle()
-        {
-            // Arrange
-            var codeDoc = CreateCodeDocumentWithCSharpProjection(
-                "Line 1\nLine 2 @{ var abc;\nvar def; }",
-                "\n// Prefix\n var abc;\nvar def; \n// Suffix",
-                new[] {
-                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
-                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
-                });
-
-            // Act
-            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
-                codeDoc,
-                28,
-                out var projectedPosition,
-                out var projectedPositionIndex);
-
-            // Assert
-            Assert.True(result);
-            Assert.Equal(3, projectedPosition.Line);
-            Assert.Equal(2, projectedPosition.Character);
-            Assert.Equal(23, projectedPositionIndex);
-        }
-
-        [Fact]
-        public void TryGetCSharpProjectedPosition_CSharp_OnTrailingEdge()
-        {
-            // Arrange
-            var codeDoc = CreateCodeDocumentWithCSharpProjection(
-                "Line 1\nLine 2 @{ var abc;\nvar def; }",
-                "\n// Prefix\n var abc;\nvar def; \n// Suffix",
-                new[] {
-                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
-                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
-                });
-
-            // Act
-            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
-                codeDoc,
-                35,
-                out var projectedPosition,
-                out var projectedPositionIndex);
-
-            // Assert
-            Assert.True(result);
-            Assert.Equal(3, projectedPosition.Line);
-            Assert.Equal(9, projectedPosition.Character);
-            Assert.Equal(30, projectedPositionIndex);
-        }
-
-        [Fact]
-        public void TryGetHostDocumentPosition_NotMatchingAnyMapping()
-        {
-            // Arrange
-            var codeDoc = CreateCodeDocumentWithCSharpProjection(
-                razorSource: "test razor source",
-                projectedCSharpSource: "projectedCSharpSource: test C# source",
-                new[] { new SourceMapping(new SourceSpan(2, 100), new SourceSpan(2, 100)) });
-
-            // Act
-            var result = RazorLanguageEndpoint.TryGetHostDocumentPosition(
-                codeDoc,
-                1,
-                out var hostDocumentPosition);
-
-            // Assert
-            Assert.False(result);
-            Assert.Equal(default, hostDocumentPosition);
-        }
-
-        [Fact]
-        public void TryGetHostDocumentPosition_CSharp_OnLeadingEdge()
-        {
-            // Arrange
-            var codeDoc = CreateCodeDocumentWithCSharpProjection(
-                razorSource: "Line 1\nLine 2 @{ var abc;\nvar def; }",
-                projectedCSharpSource: "\n// Prefix\n var abc;\nvar def; \n// Suffix",
-                new[] {
-                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
-                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
-                });
-
-            // Act
-            var result = RazorLanguageEndpoint.TryGetHostDocumentPosition(
-                codeDoc,
-                11, // @{|
-                out var hostDocumentPosition);
-
-            // Assert
-            Assert.True(result);
-            Assert.Equal(1, hostDocumentPosition.Line);
-            Assert.Equal(9, hostDocumentPosition.Character);
-        }
-
-        [Fact]
-        public void TryGetHostDocumentPosition_CSharp_InMiddle()
-        {
-            // Arrange
-            var codeDoc = CreateCodeDocumentWithCSharpProjection(
-                razorSource: "Line 1\nLine 2 @{ var abc;\nvar def; }",
-                projectedCSharpSource: "\n// Prefix\n var abc;\nvar def; \n// Suffix",
-                new[] {
-                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
-                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
-                });
-
-            // Act
-            var result = RazorLanguageEndpoint.TryGetHostDocumentPosition(
-                codeDoc,
-                21, // |var def
-                out var hostDocumentPosition);
-
-            // Assert
-            Assert.True(result);
-            Assert.Equal(2, hostDocumentPosition.Line);
-            Assert.Equal(0, hostDocumentPosition.Character);
-        }
-
-        [Fact]
-        public void TryGetHostDocumentPosition_CSharp_OnTrailingEdge()
-        {
-            // Arrange
-            var codeDoc = CreateCodeDocumentWithCSharpProjection(
-                razorSource: "Line 1\nLine 2 @{ var abc;\nvar def; }",
-                projectedCSharpSource: "\n// Prefix\n var abc;\nvar def; \n// Suffix",
-                new[] {
-                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
-                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
-                });
-
-            // Act
-            var result = RazorLanguageEndpoint.TryGetHostDocumentPosition(
-                codeDoc,
-                30, // def; |}
-                out var hostDocumentPosition);
-
-            // Assert
-            Assert.True(result);
-            Assert.Equal(2, hostDocumentPosition.Line);
-            Assert.Equal(9, hostDocumentPosition.Character);
         }
 
         private (IReadOnlyList<ClassifiedSpanInternal> classifiedSpans, IReadOnlyList<TagHelperSpanInternal> tagHelperSpans) GetClassifiedSpans(string text, IReadOnlyList<TagHelperDescriptor> tagHelpers = null)

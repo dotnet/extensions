@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1>";
             var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
             var service = GetDefaultRazorHoverInfoService();
-            var location = new SourceSpan(txt.IndexOf("test1"), 0);
+            var location = new SourceLocation(txt.IndexOf("test1"), -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1>";
             var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
             var service = GetDefaultRazorHoverInfoService();
-            var location = new SourceSpan(txt.IndexOf("bool-val"), 0);
+            var location = new SourceLocation(txt.IndexOf("bool-val"), -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1>";
             var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
             var service = GetDefaultRazorHoverInfoService();
-            var location = new SourceSpan(txt.IndexOf("true"), 0);
+            var location = new SourceLocation(txt.IndexOf("true"), -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1>";
             var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
             var service = GetDefaultRazorHoverInfoService();
-            var location = new SourceSpan(txt.IndexOf("=") + 1, 0);
+            var location = new SourceLocation(txt.IndexOf("=") + 1, -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1>";
             var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
             var service = GetDefaultRazorHoverInfoService();
-            var location = new SourceSpan(txt.IndexOf("true'") + 5, 0);
+            var location = new SourceLocation(txt.IndexOf("true'") + 5, -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val></test1>";
             var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
             var service = GetDefaultRazorHoverInfoService();
-            var location = new SourceSpan(txt.IndexOf("bool-val"), 0);
+            var location = new SourceLocation(txt.IndexOf("bool-val"), -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var codeDocument = CreateCodeDocument(txt, "text.razor", DefaultTagHelpers);
             var service = GetDefaultRazorHoverInfoService();
             var charIndex = txt.IndexOf("@test") + 2;
-            var location = new SourceSpan(charIndex, 0);
+            var location = new SourceLocation(charIndex, -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1<hello";
             var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
             var service = GetDefaultRazorHoverInfoService();
-            var location = new SourceSpan(txt.IndexOf("test1"), 0);
+            var location = new SourceLocation(txt.IndexOf("test1"), -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val=\"aslj alsk<strong>";
             var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
             var service = GetDefaultRazorHoverInfoService();
-            var location = new SourceSpan(txt.IndexOf("bool-val"), 0);
+            var location = new SourceLocation(txt.IndexOf("bool-val"), -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<p><strong></strong></p>";
             var codeDocument = CreateCodeDocument(txt);
             var service = GetDefaultRazorHoverInfoService();
-            var location = new SourceSpan(txt.IndexOf("strong"), 0);
+            var location = new SourceLocation(txt.IndexOf("strong"), -1, -1);
 
             // Act
             var hover = service.GetHoverInfo(codeDocument, location);

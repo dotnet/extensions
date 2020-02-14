@@ -55,6 +55,5 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return Task.CompletedTask;
             }
         }
-
     }
 }

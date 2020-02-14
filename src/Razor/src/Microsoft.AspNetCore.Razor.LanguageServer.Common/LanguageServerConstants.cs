@@ -6,5 +6,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
     public static class LanguageServerConstants
     {
         public const string ProjectConfigurationFile = "project.razor.json";
+
+        public const string RazorRangeFormattingEndpoint = "razor/rangeFormatting";
     }
 }
