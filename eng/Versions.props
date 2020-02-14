@@ -48,14 +48,14 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>5.0.0-preview.1.20113.9</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>5.0.0-preview.1.20113.9</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>5.0.0-preview.1.20113.9</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.1.20113.9</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>5.0.0-preview.1.20113.10</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>5.0.0-preview.1.20113.10</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>5.0.0-preview.1.20113.10</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.1.20113.10</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.1.20112.12</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>5.0.0-preview.1.20113.9</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.1.20113.9</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>5.0.0-preview.1.20113.9</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>5.0.0-preview.1.20113.10</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.1.20113.10</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>5.0.0-preview.1.20113.10</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.1.20112.12</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.1.20112.12</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.1.20112.12</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
@@ -64,7 +64,7 @@
     <SystemTextEncodingsWebPackageVersion>5.0.0-preview.1.20112.12</SystemTextEncodingsWebPackageVersion>
     <SystemReflectionMetadataPackageVersion>5.0.0-preview.1.20112.12</SystemReflectionMetadataPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>3.5.0-beta3-20114-01</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.5.0-beta3-20114-02</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
