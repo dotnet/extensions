@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectSnapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
             var hostProject = new OmniSharpHostProject("/path/to/unknownproject.csproj", RazorConfiguration.Default, rootNamespace: "TestRootNamespace");
-            var hostDocument = new OmniSharpHostDocument("/path/to/Counter.razor", "/path/to/Counter.razor", FileKinds.Component);
+            var hostDocument = new OmniSharpHostDocument("/path/to/Counter.razor", "path\\to\\Counter.razor", FileKinds.Component);
             await RunOnForegroundAsync(() =>
             {
                 projectSnapshotManager.ProjectAdded(hostProject);
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectSnapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
             var hostProject = new OmniSharpHostProject(Project.FilePath, RazorConfiguration.Default, rootNamespace: "TestRootNamespace");
-            var hostDocument = new OmniSharpHostDocument("/path/to/Counter.razor", "/path/to/Counter.razor", FileKinds.Component);
+            var hostDocument = new OmniSharpHostDocument("/path/to/Counter.razor", "path\\to\\Counter.razor", FileKinds.Component);
             await RunOnForegroundAsync(() =>
             {
                 projectSnapshotManager.ProjectAdded(hostProject);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             var projectSnapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
             var hostProject = new OmniSharpHostProject(Project.FilePath, RazorConfiguration.Default, rootNamespace: "TestRootNamespace");
-            var hostDocument = new OmniSharpHostDocument("/path/to/Counter.razor", "/path/to/Counter.razor", FileKinds.Component);
+            var hostDocument = new OmniSharpHostDocument("/path/to/Counter.razor", "path\\to\\Counter.razor", FileKinds.Component);
             await RunOnForegroundAsync(() =>
             {
                 projectSnapshotManager.ProjectAdded(hostProject);
