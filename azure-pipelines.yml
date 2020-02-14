@@ -258,14 +258,6 @@ stages:
             artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
-        - task: PublishBuildArtifacts@1
-          displayName: Upload NPM artifacts
-          condition: and(succeeded(), eq(variables['_BuildConfig'], 'Release'))
-          inputs:
-            pathtoPublish: artifacts/npm/
-            artifactName: NpmArtifacts
-            artifactType: Container
-            parallel: true
 
       - job: OSX_10_13
         displayName: 'OSX'
