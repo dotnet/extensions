@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.Text.Editor;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
-    internal abstract class LSPDocumentManagerBase : LSPDocumentManager
+    internal abstract class TrackingLSPDocumentManager : LSPDocumentManager
     {
         public abstract void TrackDocumentView(ITextBuffer buffer, ITextView textView);
 

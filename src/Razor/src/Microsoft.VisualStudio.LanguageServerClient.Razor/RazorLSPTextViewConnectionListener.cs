@@ -16,7 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Export(typeof(ITextViewConnectionListener))]
     internal class RazorLSPTextViewConnectionListener : ITextViewConnectionListener
     {
-        private readonly LSPDocumentManagerBase _lspDocumentManager;
+        private readonly TrackingLSPDocumentManager _lspDocumentManager;
 
         [ImportingConstructor]
         public RazorLSPTextViewConnectionListener(
@@ -27,9 +27,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(lspDocumentManager));
             }
 
-            _lspDocumentManager = lspDocumentManager as LSPDocumentManagerBase;
+            _lspDocumentManager = lspDocumentManager as TrackingLSPDocumentManager;
 
-            Debug.Assert(_lspDocumentManager != null);
+            if (_lspDocumentManager is null)
+            {
+                throw new ArgumentNullException(nameof(_lspDocumentManager));
+            }
         }
 
         public void SubjectBuffersConnected(ITextView textView, ConnectionReason reason, IReadOnlyCollection<ITextBuffer> subjectBuffers)
@@ -55,7 +58,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     continue;
                 }
 
-                // This initializes the Razor LSP world and constructs C#/HTML buffers for the embedded language parts of the Razor document.
                 _lspDocumentManager.UntrackDocumentView(textBuffer, textView);
             }
         }

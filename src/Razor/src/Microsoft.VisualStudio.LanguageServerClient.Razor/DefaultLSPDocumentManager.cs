@@ -5,16 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
-    [Shared]
     [Export(typeof(LSPDocumentManager))]
-    internal class DefaultLSPDocumentManager : LSPDocumentManagerBase
+    internal class DefaultLSPDocumentManager : TrackingLSPDocumentManager
     {
         private readonly JoinableTaskContext _joinableTaskContext;
         private readonly FileUriProvider _fileUriProvider;

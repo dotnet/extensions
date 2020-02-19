@@ -3,16 +3,15 @@
 
 using System;
 using System.Composition;
-using System.IO;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
-    [Shared]
     [Export(typeof(FileUriProvider))]
     internal class DefaultFileUriProvider : FileUriProvider
     {
         private readonly ITextDocumentFactoryService _textDocumentFactory;
+        private readonly string TextBufferUri = "__RazorTextBufferUri";
 
         [ImportingConstructor]
         public DefaultFileUriProvider(ITextDocumentFactoryService textDocumentFactory)
@@ -32,6 +31,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
+            if (textBuffer.Properties.TryGetProperty<Uri>(TextBufferUri, out var uri))
+            {
+                return uri;
+            }
+
             string filePath;
             if (_textDocumentFactory.TryGetTextDocument(textBuffer, out var textDocument))
             {
@@ -43,7 +47,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 filePath = Uri.UriSchemeFile + Uri.SchemeDelimiter + Guid.NewGuid().ToString();
             }
 
-            var uri = new Uri(filePath, UriKind.Absolute);
+            uri = new Uri(filePath, UriKind.Absolute);
+            textBuffer.Properties.AddProperty(TextBufferUri, uri);
             return uri;
         }
     }
