@@ -6,7 +6,7 @@
     <PackageTags>wasm;javascript;interop</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>true</IsPackable>
-    <IsShipping>true</IsShipping>
+    <IsShipping>false</IsShipping>
     <!-- This project is not included in the shared framework -->
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
