@@ -31,7 +31,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (_lspDocumentManager is null)
             {
-                throw new ArgumentNullException(nameof(_lspDocumentManager));
+                throw new ArgumentException("The LSP document manager should be of type " + typeof(TrackingLSPDocumentManager).FullName, nameof(_lspDocumentManager));
             }
         }
 
