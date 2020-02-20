@@ -23,5 +23,26 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         /// A collection of <see cref="VirtualDocument"/>s that represent the embedded documents for the top level <see cref="LSPDocument"/>.
         /// </summary>
         public abstract IReadOnlyList<VirtualDocument> VirtualDocuments { get; }
+
+        /// <summary>
+        /// Retrieves a virtual document of the provided <typeparamref name="TDocument"/> type.
+        /// </summary>
+        /// <typeparam name="TDocument">The type of <see cref="VirtualDocument"/> to find.</typeparam>
+        /// <param name="virtualDocument">The virtual document of the provided <typeparamref name="TDocument"/> type.</param>
+        /// <returns><c>true</c> if <see cref="VirtualDocuments"/> contains a <see cref="VirtualDocument"/> of the provided <typeparamref name="TDocument"/> type; <c>false</c> otherwise.</returns>
+        public bool TryGetVirtualDocument<TDocument>(out TDocument virtualDocument) where TDocument : VirtualDocument
+        {
+            for (var i = 0; i < VirtualDocuments.Count; i++)
+            {
+                if (VirtualDocuments[i] is TDocument actualVirtualDocument)
+                {
+                    virtualDocument = actualVirtualDocument;
+                    return true;
+                }
+            }
+
+            virtualDocument = null;
+            return false;
+        }
     }
 }
