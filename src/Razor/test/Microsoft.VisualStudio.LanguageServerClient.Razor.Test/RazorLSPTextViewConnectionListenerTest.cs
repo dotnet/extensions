@@ -1,10 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Documents;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
@@ -32,7 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void SubjectBuffersConnected_NoLSPRazorBuffers_Noops()
         {
             // Arrange
-            var lspDocumentManager = new Mock<LSPDocumentManagerBase>(MockBehavior.Strict);
+            var lspDocumentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
             var listener = new RazorLSPTextViewConnectionListener(lspDocumentManager.Object);
             var subjectBuffers = new List<ITextBuffer>() { NonRazorLSPBuffer };
             var textView = Mock.Of<ITextView>();
@@ -49,7 +46,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var textView = Mock.Of<ITextView>();
-            var lspDocumentManager = new Mock<LSPDocumentManagerBase>(MockBehavior.Strict);
+            var lspDocumentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
             lspDocumentManager.Setup(manager => manager.TrackDocumentView(RazorLSPBuffer, textView))
                 .Verifiable();
             var listener = new RazorLSPTextViewConnectionListener(lspDocumentManager.Object);
@@ -66,7 +63,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void SubjectBuffersDisconnected_NoLSPRazorBuffers_Noops()
         {
             // Arrange
-            var lspDocumentManager = new Mock<LSPDocumentManagerBase>(MockBehavior.Strict);
+            var lspDocumentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
             var listener = new RazorLSPTextViewConnectionListener(lspDocumentManager.Object);
             var subjectBuffers = new List<ITextBuffer>() { NonRazorLSPBuffer };
             var textView = Mock.Of<ITextView>();
@@ -83,7 +80,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var textView = Mock.Of<ITextView>();
-            var lspDocumentManager = new Mock<LSPDocumentManagerBase>(MockBehavior.Strict);
+            var lspDocumentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
             lspDocumentManager.Setup(manager => manager.UntrackDocumentView(RazorLSPBuffer, textView))
                 .Verifiable();
             var listener = new RazorLSPTextViewConnectionListener(lspDocumentManager.Object);
