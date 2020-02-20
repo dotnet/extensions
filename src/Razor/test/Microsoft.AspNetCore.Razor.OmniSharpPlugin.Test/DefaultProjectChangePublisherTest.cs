@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 });
             publisher.EnqueueDelay = 10;
             publisher.SetPublishFilePath(projectSnapshot.FilePath, expectedPublishFilePath);
-            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, projectSnapshot, changeKind);
+            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, projectSnapshot, documentFilePath: null, changeKind);
 
             // Act
             publisher.ProjectManager_Changed(null, args);
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             publisher.EnqueueDelay = 10;
             publisher.SetPublishFilePath(projectSnapshot.FilePath, expectedPublishFilePath);
             publisher.EnqueuePublish(projectSnapshot);
-            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, newer: null, OmniSharpProjectChangeKind.ProjectRemoved);
+            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, newer: null, documentFilePath: null, OmniSharpProjectChangeKind.ProjectRemoved);
 
             // Act
             publisher.ProjectManager_Changed(null, args);

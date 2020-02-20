@@ -9,13 +9,14 @@ import {
     GenericRequestHandler,
     LanguageClient,
     LanguageClientOptions,
+    RequestHandler,
+    RequestType,
     ServerOptions,
     State,
 } from 'vscode-languageclient/lib/main';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
 import { RazorLogger } from './RazorLogger';
 import { TelemetryReporter } from './TelemetryReporter';
-import { Trace } from './Trace';
 
 const events = {
     ServerStart: 'ServerStart',
@@ -54,11 +55,11 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this.logger.logMessage(`Razor language server path: ${options.serverPath}`);
 
         args.push('-lsp');
-        args.push('--logLevel');
-        const logLevelString = this.getLogLevelString(options.trace);
+        args.push('--trace');
+
         this.telemetryReporter.reportTraceLevel(options.trace);
 
-        args.push(logLevelString);
+        args.push(options.trace.toString());
 
         if (options.debug) {
             this.telemetryReporter.reportDebugLanguageServer();
@@ -136,6 +137,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
             const startDisposable = this.client.start();
             this.startDisposable = vscode.Disposable.from(startDisposable, didChangeStateDisposable);
             this.logger.logMessage('Server started, waiting for client to be ready...');
+            // tslint:disable-next-line: no-floating-promises
             this.client.onReady().then(async () => {
                 if (currentState !== State.Running) {
                     // Unexpected scenario, if we fall into this scenario the above onDidChangeState
@@ -177,7 +179,15 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         return this.client.sendRequest<TResponseType>(method, param);
     }
 
-    public async onRequest<TRequest, TReturn>(method: string, handler: GenericRequestHandler<TRequest, TReturn>) {
+    public async onRequest<TResponse, TError>(method: string, handler: GenericRequestHandler<TResponse, TError>) {
+        if (!this.isStarted) {
+            throw new Error('Tried to bind on request logic while server is not started.');
+        }
+
+        this.client.onRequest(method, handler);
+    }
+
+    public async onRequestWithParams<P, R, E, RO>(method: RequestType<P, R, E, RO>, handler: RequestHandler<P, R, E>) {
         if (!this.isStarted) {
             throw new Error('Tried to bind on request logic while server is not started.');
         }
@@ -195,18 +205,5 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this.isStarted = false;
         this.startHandle = undefined;
         this.eventBus.emit(events.ServerStop);
-    }
-
-    private getLogLevelString(trace: Trace) {
-        switch (trace) {
-            case Trace.Off:
-                return 'None';
-            case Trace.Messages:
-                return 'Information';
-            case Trace.Verbose:
-                return 'Trace';
-        }
-
-        throw new Error(`Unexpected trace value: '${Trace[trace]}'`);
     }
 }

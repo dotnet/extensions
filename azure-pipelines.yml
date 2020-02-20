@@ -23,7 +23,7 @@ variables:
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - name: _InternalRuntimeDownloadArgs
     value: ''
-  
+
 # used for post-build phases, internal builds only
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - group: DotNet-AspNet-SDLValidation-Params
@@ -144,9 +144,9 @@ stages:
     parameters:
       enablePublishBuildArtifacts: true
       enablePublishTestResults: true
-      enablePublishUsingPipelines: $(_PublishUsingPipelines)
+      enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       enableTelemetry: true
-      helixRepo: aspnet/AspNetCore-Tooling
+      helixRepo: dotnet/aspnetcore-tooling
       helixType: build.product/
       # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
       ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -191,7 +191,7 @@ stages:
               /p:OfficialBuildId=$(Build.BuildNumber)
               /p:ManifestBuildBranch=$(Build.SourceBranchName)
               /p:ManifestBuildNumber=$(Build.BuildNumber)
-              /p:VisualStudioDropName=Products/AspNet/AspNetCore-Tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
+              /p:VisualStudioDropName=Products/dotnet/aspnetcore-tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
 
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           - group: DotNet-Blob-Feed

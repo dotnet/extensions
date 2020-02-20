@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Build.Execution;
@@ -105,24 +106,25 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             {
                 if (item.ItemType == RazorGenerateWithTargetPathItemType)
                 {
-                    var filePath = item.EvaluatedInclude;
-                    var targetPath = item.GetMetadataValue(RazorTargetPathMetadataName);
-                    var hostDocument = new OmniSharpHostDocument(filePath, targetPath, FileKinds.Legacy);
+                    var filePath = Path.Combine(item.Project.Directory, item.EvaluatedInclude);
+                    var originalTargetPath = item.GetMetadataValue(RazorTargetPathMetadataName);
+                    var normalizedTargetPath = NormalizeTargetPath(originalTargetPath);
+                    var hostDocument = new OmniSharpHostDocument(filePath, normalizedTargetPath, FileKinds.Legacy);
                     hostDocuments.Add(hostDocument);
                 }
                 else if (item.ItemType == RazorComponentWithTargetPathItemType)
                 {
-                    var filePath = item.EvaluatedInclude;
-                    var targetPath = item.GetMetadataValue(RazorTargetPathMetadataName);
+                    var filePath = Path.Combine(item.Project.Directory, item.EvaluatedInclude);
+                    var originalTargetPath = item.GetMetadataValue(RazorTargetPathMetadataName);
+                    var normalizedTargetPath = NormalizeTargetPath(originalTargetPath);
                     var fileKind = FileKinds.GetComponentFileKindFromFilePath(filePath);
-                    var hostDocument = new OmniSharpHostDocument(filePath, targetPath, fileKind);
+                    var hostDocument = new OmniSharpHostDocument(filePath, normalizedTargetPath, fileKind);
                     hostDocuments.Add(hostDocument);
                 }
             }
 
             return hostDocuments.ToList();
         }
-
 
         // Internal for testing
         internal static bool TryGetDefaultConfiguration(ProjectInstance projectInstance, out string defaultConfiguration)
@@ -211,6 +213,23 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             }
 
             return extensions.ToArray();
+        }
+
+        /// <summary>
+        /// TargetPath is defined as using '\' but some Tasks used to set that parameter don't respect that, so we normalize.
+        /// </summary>
+        /// <param name="targetPath">The TargetPath to be normalized.</param>
+        /// <returns>A normalized TargetPath</returns>
+        internal static string NormalizeTargetPath(string targetPath)
+        {
+            if (targetPath is null)
+            {
+                throw new ArgumentNullException(nameof(targetPath));
+            }
+
+            var normalizedTargetPath = targetPath.Replace('/', '\\');
+            normalizedTargetPath = normalizedTargetPath.TrimStart('\\');
+            return normalizedTargetPath;
         }
 
         private class ProjectSystemRazorConfiguration : RazorConfiguration

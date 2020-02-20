@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -15,20 +14,29 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler
+    internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler, IRazorMapToDocumentRangeHandler
     {
+        // Internal for testing
+        internal static readonly Range UndefinedRange = new Range(
+            start: new Position(-1, -1),
+            end: new Position(-1, -1));
+        private static readonly long UndefinedDocumentVersion = -1;
+
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly DocumentVersionCache _documentVersionCache;
+        private readonly RazorDocumentMappingService _documentMappingservice;
         private readonly ILogger _logger;
 
         public RazorLanguageEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             DocumentVersionCache documentVersionCache,
+            RazorDocumentMappingService documentMappingService,
             ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
@@ -46,6 +54,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentVersionCache));
             }
 
+            if (documentMappingService == null)
+            {
+                throw new ArgumentNullException(nameof(documentMappingService));
+            }
+
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
@@ -54,6 +67,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _documentVersionCache = documentVersionCache;
+            _documentMappingservice = documentMappingService;
             _logger = loggerFactory.CreateLogger<RazorLanguageEndpoint>();
         }
 
@@ -66,7 +80,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 _documentResolver.TryResolveDocument(request.Uri.AbsolutePath, out documentSnapshot);
                 if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
                 {
-                    Debug.Fail("Document should always be available here.");
+                    // This typically happens for closed documents.
+                    documentVersion = UndefinedDocumentVersion;
                 }
 
                 return documentSnapshot;
@@ -99,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             if (languageKind == RazorLanguageKind.CSharp)
             {
-                if (TryGetCSharpProjectedPosition(codeDocument, hostDocumentIndex, out var projectedPosition, out var projectedIndex))
+                if (_documentMappingservice.TryMapToProjectedDocumentPosition(codeDocument, hostDocumentIndex, out var projectedPosition, out var projectedIndex))
                 {
                     // For C# locations, we attempt to return the corresponding position
                     // within the projected document
@@ -124,6 +139,55 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 Position = responsePosition,
                 PositionIndex = responsePositionIndex,
                 HostDocumentVersion = documentVersion
+            };
+        }
+
+        public async Task<RazorMapToDocumentRangeResponse> Handle(RazorMapToDocumentRangeParams request, CancellationToken cancellationToken)
+        {
+            if (request is null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            long documentVersion = -1;
+            DocumentSnapshot documentSnapshot = null;
+            await Task.Factory.StartNew(() =>
+            {
+                _documentResolver.TryResolveDocument(request.RazorDocumentUri.AbsolutePath, out documentSnapshot);
+                if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
+                {
+                    documentVersion = UndefinedDocumentVersion;
+                }
+
+                return documentSnapshot;
+            }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+
+            if (request.Kind != RazorLanguageKind.CSharp)
+            {
+                // All other non-C# requests map directly to where they are in the document.
+                return new RazorMapToDocumentRangeResponse()
+                {
+                    Range = request.ProjectedRange,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+
+            var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
+            if (codeDocument.IsUnsupported() ||
+                !_documentMappingservice.TryMapFromProjectedDocumentRange(codeDocument, request.ProjectedRange, out var originalRange))
+            {
+                // All language queries on unsupported documents return Html. This is equivalent to what pre-VSCode Razor was capable of.
+                return new RazorMapToDocumentRangeResponse()
+                {
+                    Range = UndefinedRange,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+
+            return new RazorMapToDocumentRangeResponse()
+            {
+                Range = originalRange,
+                HostDocumentVersion = documentVersion,
             };
         }
 
@@ -195,35 +259,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Default to Razor
             return RazorLanguageKind.Razor;
-        }
-
-        // Internal for testing
-        internal static bool TryGetCSharpProjectedPosition(RazorCodeDocument codeDocument, int absoluteIndex, out Position projectedPosition, out int projectedIndex)
-        {
-            var csharpDoc = codeDocument.GetCSharpDocument();
-            foreach (var mapping in csharpDoc.SourceMappings)
-            {
-                var originalSpan = mapping.OriginalSpan;
-                var originalAbsoluteIndex = originalSpan.AbsoluteIndex;
-                if (originalAbsoluteIndex <= absoluteIndex)
-                {
-                    // Treat the mapping as owning the edge at its end (hence <= originalSpan.Length),
-                    // otherwise we wouldn't handle the cursor being right after the final C# char
-                    var distanceIntoOriginalSpan = absoluteIndex - originalAbsoluteIndex;
-                    if (distanceIntoOriginalSpan <= originalSpan.Length)
-                    {
-                        var generatedSource = SourceText.From(csharpDoc.GeneratedCode);
-                        projectedIndex = mapping.GeneratedSpan.AbsoluteIndex + distanceIntoOriginalSpan;
-                        var generatedLinePosition = generatedSource.Lines.GetLinePosition(projectedIndex);
-                        projectedPosition = new Position(generatedLinePosition.Line, generatedLinePosition.Character);
-                        return true;
-                    }
-                }
-            }
-
-            projectedPosition = default;
-            projectedIndex = default;
-            return false;
         }
     }
 }

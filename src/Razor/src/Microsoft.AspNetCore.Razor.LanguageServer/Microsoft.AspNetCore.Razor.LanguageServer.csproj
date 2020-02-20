@@ -10,12 +10,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
     <PackageReference Include="OmniSharp.Extensions.LanguageServer" Version="$(OmniSharpExtensionsLanguageServerPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer.Common\Microsoft.AspNetCore.Razor.LanguageServer.Common.csproj" />
   </ItemGroup>
+
+  <Target Name="_GetOutputPath" Returns="@(_ServerOutputPath)">
+    <ItemGroup>
+      <_ServerOutputPath Include="$(OutputPath)">
+      </_ServerOutputPath>
+    </ItemGroup>
+  </Target>
 
   <Target Name="_IncludeOmniSharpPlugin" Condition="Exists('$(PublishDir)')">
     <PropertyGroup>
@@ -52,8 +60,6 @@
       </ProjectToPublish>
     </ItemGroup>
 
-    <MSBuild Projects="@(ProjectToPublish)"
-             Targets="Publish;_IncludeOmniSharpPlugin"
-             BuildInParallel="false" />
+    <MSBuild Projects="@(ProjectToPublish)" Targets="Publish;_IncludeOmniSharpPlugin" BuildInParallel="false" />
   </Target>
 </Project>

@@ -22,7 +22,8 @@
 
   <ItemGroup>
     <TSFiles Include="src\**\*.ts" />
-    <TSFiles Include="test\**\*.ts" />
+    <TSFiles Include="tests\**\*.ts" />
+    <TSFiles Include="**\*.yml" />
     <TSFiles Include="package.json" />
     <TSFiles Include="*.npmproj" />
 

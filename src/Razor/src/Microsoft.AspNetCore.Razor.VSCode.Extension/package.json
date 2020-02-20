@@ -83,7 +83,7 @@
             },
             {
                 "command": "extension.configureRazorDevMode",
-                "title": "Configure workspace for Razor extension development.",
+                "title": "Configure workspace for Razor extension development",
                 "category": "Razor"
             },
             {
@@ -127,12 +127,12 @@
             "properties": {
                 "razor.plugin.path": {
                     "type": [
-                      "string",
-                      "null"
+                        "string",
+                        "null"
                     ],
                     "default": null,
                     "description": "Overrides the path to the Razor plugin dll."
-                  },
+                },
                 "razor.languageServer.debug": {
                     "type": "boolean",
                     "default": false,
@@ -152,6 +152,12 @@
                         "Logs all messages from the Razor extension"
                     ],
                     "description": "Specifies whether to output all messages [Verbose], some messages [Messages] or not at all [Off]."
+                },
+                "razor.format.enable": {
+                    "type": "boolean",
+                    "scope": "window",
+                    "default": true,
+                    "description": "Enable/disable default Razor formatter."
                 }
             }
         }
@@ -159,23 +165,23 @@
     "scripts": {
         "vscode:prepublish": "yarn run compile",
         "clean": "rimraf dist",
-        "build": "yarn run clean && yarn run lint && tsc -p ./",
+        "build": "yarn run clean && yarn run lint && tsc -p ./ && yarn run compile:TextMate",
         "lint": "tslint --project ./",
         "watch": "yarn run clean && yarn run lint && tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install"
+        "compile:TextMate": "npx js-yaml syntaxes/aspnetcorerazor.tmLanguage.yml > syntaxes/aspnetcorerazor.tmLanguage.json"
     },
     "devDependencies": {
         "@types/node": "9.4.7",
+        "@types/vscode": "1.31.0",
         "cross-env": "^5.2.0",
+        "js-yaml": ">=3.13.1",
+        "rimraf": "2.6.3",
         "ts-node": "^7.0.1",
         "tslint": "^5.11.0",
-        "typescript": "3.3.4000",
-        "rimraf": "2.6.3",
-        "js-yaml": ">=3.13.1"
+        "typescript": "3.3.4000"
     },
     "dependencies": {
-        "microsoft.aspnetcore.razor.vscode": "link:../Microsoft.AspNetCore.Razor.VSCode",
         "diff": ">=3.5.0",
-        "vscode": "1.1.33"
+        "microsoft.aspnetcore.razor.vscode": "link:../Microsoft.AspNetCore.Razor.VSCode"
     }
 }

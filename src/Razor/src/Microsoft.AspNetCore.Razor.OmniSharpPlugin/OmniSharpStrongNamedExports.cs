@@ -27,14 +27,25 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     }
 
     [Shared]
+    [Export(typeof(RemoteTextLoaderFactory))]
+    internal class ExportRemoteTextLoaderFactory : DefaultRemoteTextLoaderFactory
+    {
+        [ImportingConstructor]
+        public ExportRemoteTextLoaderFactory(FilePathNormalizer filePathNormalizer) : base(filePathNormalizer)
+        {
+        }
+    }
+
+    [Shared]
     [Export(typeof(OmniSharpProjectSnapshotManagerAccessor))]
     internal class ExportDefaultOmniSharpProjectSnapshotManagerAccessor : DefaultOmniSharpProjectSnapshotManagerAccessor
     {
         [ImportingConstructor]
         public ExportDefaultOmniSharpProjectSnapshotManagerAccessor(
+            RemoteTextLoaderFactory remoteTextLoaderFactory,
             [ImportMany] IEnumerable<IOmniSharpProjectSnapshotManagerChangeTrigger> projectChangeTriggers,
             OmniSharpForegroundDispatcher foregroundDispatcher,
-            OmniSharpWorkspace workspace) : base(projectChangeTriggers, foregroundDispatcher, workspace)
+            OmniSharpWorkspace workspace) : base(remoteTextLoaderFactory, projectChangeTriggers, foregroundDispatcher, workspace)
         {
         }
     }
@@ -58,6 +69,19 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     {
         [ImportingConstructor]
         public ExportOmniSharpProjectWorkspaceStateGenerator(OmniSharpForegroundDispatcher foregroundDispatcher) : base(foregroundDispatcher)
+        {
+        }
+    }
+
+    [Shared]
+    [Export(typeof(IOmniSharpProjectSnapshotManagerChangeTrigger))]
+    public class ExportOmniSharpBackgroundDocumentGenerator : OmniSharpBackgroundDocumentGenerator
+    {
+        [ImportingConstructor]
+        public ExportOmniSharpBackgroundDocumentGenerator(
+            OmniSharpForegroundDispatcher foregroundDispatcher,
+            RemoteTextLoaderFactory remoteTextLoaderFactory,
+            [ImportMany] IEnumerable<OmniSharpDocumentProcessedListener> documentProcessedListeners) : base(foregroundDispatcher, remoteTextLoaderFactory, documentProcessedListeners)
         {
         }
     }
