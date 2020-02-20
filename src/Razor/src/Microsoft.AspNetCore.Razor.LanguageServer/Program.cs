@@ -3,14 +3,12 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
-using Microsoft.AspNetCore.Razor.LanguageServer.Converters;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.LanguageServer.Hover;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
@@ -21,7 +19,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.Editor.Razor;
-using OmniSharp.Extensions.JsonRpc.Serialization.Converters;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 using OmniSharp.Extensions.LanguageServer.Server;
 
@@ -61,7 +58,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 }
             }
 
-            ReplaceResponseConverter();
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
 
             ILanguageServer server = null;
@@ -172,23 +168,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             await server.WaitForExit;
 
             TempDirectory.Instance.Dispose();
-        }
-
-        // This is a temporary workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/202
-        // The fix was not available on a non-alpha release, but this can be reverted once it is.
-        private static void ReplaceResponseConverter()
-        {
-            var responseConverter = Serializer.Instance.JsonSerializer.Converters.FirstOrDefault(converter =>
-            {
-                return converter.GetType() == typeof(ClientResponseConverter);
-            });
-
-            if (responseConverter != null)
-            {
-                Serializer.Instance.Settings.Converters.Remove(responseConverter);
-            }
-
-            Serializer.Instance.Settings.Converters.Add(new ResponseRazorConverter());
         }
     }
 }
