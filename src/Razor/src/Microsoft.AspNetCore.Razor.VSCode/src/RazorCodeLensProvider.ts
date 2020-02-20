@@ -6,12 +6,46 @@
 import * as vscode from 'vscode';
 import { CancellationToken } from 'vscode-jsonrpc';
 import { RazorCodeLens } from './RazorCodeLens';
+import { RazorDocumentChangeKind } from './RazorDocumentChangeKind';
+import { RazorDocumentManager } from './RazorDocumentManager';
+import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
+import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
+import { RazorLogger } from './RazorLogger';
 import { LanguageKind } from './RPC/LanguageKind';
 
 export class RazorCodeLensProvider
     extends RazorLanguageFeatureBase
     implements vscode.CodeLensProvider {
+
+    public onDidChangeCodeLenses: vscode.Event<void>;
+
+    constructor(
+        documentSynchronizer: RazorDocumentSynchronizer,
+        documentManager: RazorDocumentManager,
+        serviceClient: RazorLanguageServiceClient,
+        logger: RazorLogger) {
+
+        super(documentSynchronizer, documentManager, serviceClient, logger);
+
+        const onCodeLensChangedEmitter = new vscode.EventEmitter<void>();
+        this.onDidChangeCodeLenses = onCodeLensChangedEmitter.event;
+
+        documentManager.onChange(async (event) => {
+            if (event.kind !== RazorDocumentChangeKind.added) {
+                return;
+            }
+
+            // Sometimes when a file already open in the editor is renamed, provideCodeLens would return empty
+            // because the background C# document is not ready yet. So, when that happens we should manually invoke
+            // a code lens refresh after waiting for a little while.
+            const openDocumentUris = vscode.workspace.textDocuments.filter(doc => !doc.isClosed).map(doc => doc.uri);
+            if (openDocumentUris.includes(event.document.uri)) {
+                await new Promise(r => setTimeout(r, 5000));
+                onCodeLensChangedEmitter.fire();
+            }
+        });
+    }
 
     public async provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken) {
         try {
