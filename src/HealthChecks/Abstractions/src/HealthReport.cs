@@ -28,13 +28,13 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// </summary>
         /// <remarks>
         /// The keys in this dictionary map the name of each executed health check to a <see cref="HealthReportEntry"/> for the
-        /// result data retruned from the corresponding health check.
+        /// result data returned from the corresponding health check.
         /// </remarks>
         public IReadOnlyDictionary<string, HealthReportEntry> Entries { get; }
 
         /// <summary>
         /// Gets a <see cref="HealthStatus"/> representing the aggregate status of all the health checks. The value of <see cref="Status"/>
-        /// will be the most servere status reported by a health check. If no checks were executed, the value is always <see cref="HealthStatus.Healthy"/>.
+        /// will be the most severe status reported by a health check. If no checks were executed, the value is always <see cref="HealthStatus.Healthy"/>.
         /// </summary>
         public HealthStatus Status { get; }
 
