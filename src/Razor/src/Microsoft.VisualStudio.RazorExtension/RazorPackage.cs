@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio.LanguageServerClient.Razor;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.VisualStudio.RazorExtension
@@ -14,7 +15,7 @@ namespace Microsoft.VisualStudio.RazorExtension
     // since we want to have the option to own the experience for Razor files
     [ProvideEditorExtension(typeof(RazorEditorFactory), RazorLSPContentTypeDefinition.CSHTMLFileExtension, 51, NameResourceID = 101)]
     [ProvideEditorExtension(typeof(RazorEditorFactory), RazorLSPContentTypeDefinition.RazorFileExtension, 51, NameResourceID = 101)]
-    [ProvideEditorFactory(typeof(RazorEditorFactory), 101)]
+    [ProvideEditorFactory(typeof(RazorEditorFactory), 101, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview)]
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [AboutDialogInfo(PackageGuidString, "ASP.NET Core Razor Language Services", "#110", "#112", IconResourceID = "#400")]
     [Guid(PackageGuidString)]
