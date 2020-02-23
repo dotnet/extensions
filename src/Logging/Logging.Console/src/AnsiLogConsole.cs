@@ -11,9 +11,6 @@ namespace Microsoft.Extensions.Logging.Console
     /// </summary>
     internal class AnsiLogConsole : IConsole
     {
-        private const string DefaultForegroundColor = "\x1B[39m\x1B[22m";
-        private const string DefaultBackgroundColor = "\x1B[49m";
-
         private readonly StringBuilder _outputBuilder;
         private readonly IAnsiSystemConsole _systemConsole;
 
@@ -26,39 +23,26 @@ namespace Microsoft.Extensions.Logging.Console
         public void Write(string message, ConsoleColor? background, ConsoleColor? foreground)
         {
             // Order: backgroundcolor, foregroundcolor, Message, reset foregroundcolor, reset backgroundcolor
-            bool backgroundColorChanged = false;
-            bool foregroundColorChanged = false;
-
             if (background.HasValue)
             {
-                string backgroundColor = GetBackgroundColorEscapeCode(background.Value);
-                if (DefaultBackgroundColor != backgroundColor)
-                {
-                    backgroundColorChanged = true;
-                    _outputBuilder.Append(backgroundColor);
-                }
+                _outputBuilder.Append(GetBackgroundColorEscapeCode(background.Value));
             }
 
             if (foreground.HasValue)
             {
-                string foregroundColor = GetForegroundColorEscapeCode(foreground.Value);
-                if (DefaultForegroundColor != foregroundColor)
-                {
-                    foregroundColorChanged = true;
-                    _outputBuilder.Append(foregroundColor);
-                }
+                _outputBuilder.Append(GetForegroundColorEscapeCode(foreground.Value));
             }
 
             _outputBuilder.Append(message);
 
-            if (foregroundColorChanged)
+            if (foreground.HasValue)
             {
-                _outputBuilder.Append(DefaultForegroundColor); // reset to default foreground color
+                _outputBuilder.Append("\x1B[39m\x1B[22m"); // reset to default foreground color
             }
 
-            if (backgroundColorChanged)
+            if (background.HasValue)
             {
-                _outputBuilder.Append(DefaultBackgroundColor); // reset to default background color
+                _outputBuilder.Append("\x1B[49m"); // reset to the background color
             }
         }
 
@@ -109,7 +93,7 @@ namespace Microsoft.Extensions.Logging.Console
                 case ConsoleColor.White:
                     return "\x1B[1m\x1B[37m";
                 default:
-                    return DefaultForegroundColor;
+                    return "\x1B[39m\x1B[22m"; // default foreground color
             }
         }
 
@@ -134,7 +118,7 @@ namespace Microsoft.Extensions.Logging.Console
                 case ConsoleColor.White:
                     return "\x1B[47m";
                 default:
-                    return DefaultBackgroundColor;
+                    return "\x1B[49m"; // Use default background color
             }
         }
     }
