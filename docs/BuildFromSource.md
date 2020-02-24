@@ -47,15 +47,6 @@ On macOS/Linux:
 ./build.sh
 ```
 
-## Building the NodeJS packages
-
-This repo contains source code for NPM packages. Building these is optional.
-Add this parameter to the command line to build the NPM package.
-
-```sh
-./build.sh /p:BuildNodeJS=true
-```
-
 ## Using `dotnet` on command line in this repo
 
 Because we are using pre-release versions of .NET Core, you have to set a handful of environment variables

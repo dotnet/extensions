@@ -49,9 +49,6 @@
 
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
-
-    <NpmPackageDir>$(ArtifactsDir)npm\$(Configuration)\</NpmPackageDir>
-    <ShippingNpmPackageOutputPath>$(NpmPackageDir)Shipping\</ShippingNpmPackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
@@ -74,5 +71,4 @@
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\targets\Csharp.Refs.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
-  <Import Project="eng\targets\Npm.Common.props" Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 </Project>
