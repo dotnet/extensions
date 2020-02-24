@@ -1,19 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="5.0.0-preview.2.20121.3">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>bc91b865ad4e746e7e3f281351e8d4a8d1dc80a0</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.2.20121.3">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>bc91b865ad4e746e7e3f281351e8d4a8d1dc80a0</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="5.0.0-preview.2.20121.3">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>bc91b865ad4e746e7e3f281351e8d4a8d1dc80a0</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.NonCapturingTimer.Sources" Version="5.0.0-preview.2.20121.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>bc91b865ad4e746e7e3f281351e8d4a8d1dc80a0</Sha>
     </Dependency>
@@ -59,14 +47,6 @@
     <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.0-preview.2.20120.8" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cfac865f9d44a443843d7dfc660a497f7d5bdf5a</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="5.0.0-preview.2.20121.3">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>bc91b865ad4e746e7e3f281351e8d4a8d1dc80a0</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="5.0.0-preview.2.20121.3">
-      <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>bc91b865ad4e746e7e3f281351e8d4a8d1dc80a0</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20123.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
