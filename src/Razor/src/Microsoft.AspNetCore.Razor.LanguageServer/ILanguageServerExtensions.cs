@@ -12,8 +12,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public static Task InitializedAsync(this ILanguageServer languageServer, CancellationToken cancellationToken)
         {
-            var assembly = Assembly.Load("OmniSharp.Extensions.LanguageServer");
-            var type = assembly.GetType("OmniSharp.Extensions.LanguageServer.Server.LanguageServer");
+            var type = typeof(OmniSharp.Extensions.LanguageServer.Server.LanguageServer);
             var method = type.GetMethod("Initialize", BindingFlags.NonPublic | BindingFlags.Instance);
             var task = (Task)method.Invoke(languageServer, new object[] { cancellationToken });
 
