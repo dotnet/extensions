@@ -127,12 +127,12 @@
   </PropertyGroup>
 
   <Target Name="_BuildLanguageServer">
-    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj"
+    <MSBuild Projects="..\rzls\rzls.csproj"
         Targets="Build" />
   </Target>
 
   <Target Name="_IncludeLanguageServer" DependsOnTargets="PrepareForBuild;_BuildLanguageServer"  BeforeTargets="CoreCompile">
-    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj"
+    <MSBuild Projects="..\rzls\rzls.csproj"
         Targets="_GetOutputPath">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
     </MSBuild>

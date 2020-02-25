@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var firstOffset = lineText.GetFirstNonWhitespaceOffset();
 
             return firstOffset.HasValue
-                ? lineText[0..firstOffset.Value]
+                ? lineText.Substring(0, firstOffset.Value)
                 : lineText;
         }
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var lastOffset = lineText.GetLastNonWhitespaceOffset();
 
             return lastOffset.HasValue
-                ? lineText[lastOffset.Value..]
+                ? lineText.Substring(lastOffset.Value)
                 : lineText;
         }
     }

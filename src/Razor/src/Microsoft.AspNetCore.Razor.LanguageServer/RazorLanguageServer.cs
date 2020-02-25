@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
@@ -19,59 +19,45 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.Editor.Razor;
+using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server;
+using ILanguageServer = OmniSharp.Extensions.LanguageServer.Server.ILanguageServer;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    public class Program
+    public sealed class RazorLanguageServer
     {
-        public static void Main(string[] args)
+        private RazorLanguageServer()
         {
-            MainAsync(args).Wait();
         }
 
-        public static async Task MainAsync(string[] args)
+        public static Task<ILanguageServer> CreateAsync(Stream input, Stream output, Trace trace)
         {
-            var trace = Trace.Messages;
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (args[i].IndexOf("debug", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    while (!Debugger.IsAttached)
-                    {
-                        Thread.Sleep(1000);
-                    }
-
-                    Debugger.Break();
-                    continue;
-                }
-
-                if (args[i] == "--trace" && i + 1 < args.Length)
-                {
-                    var traceArg = args[++i];
-                    if (!Enum.TryParse(traceArg, out trace))
-                    {
-                        trace = Trace.Messages;
-                        Console.WriteLine($"Invalid Razor trace '{traceArg}'. Defaulting to {trace.ToString()}.");
-                    }
-                }
-            }
-
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
 
             ILanguageServer server = null;
-            server = await OmniSharp.Extensions.LanguageServer.Server.LanguageServer.From(options =>
+            server = OmniSharp.Extensions.LanguageServer.Server.LanguageServer.PreInit(options =>
                 options
-                    .WithInput(Console.OpenStandardInput())
-                    .WithOutput(Console.OpenStandardOutput())
+                    .WithInput(input)
+                    .WithOutput(output)
                     .ConfigureLogging(builder => builder
                         .AddLanguageServer()
                         .SetMinimumLevel(RazorLSPOptions.GetLogLevelForTrace(trace)))
-                    .OnInitialized(async (languageServer, request, response) =>
+                    .OnInitialized(async (s, request, response) =>
                     {
-                        var fileChangeDetectorManager = languageServer.Services.GetRequiredService<RazorFileChangeDetectorManager>();
-                        await fileChangeDetectorManager.InitializedAsync(languageServer);
+                        var fileChangeDetectorManager = s.Services.GetRequiredService<RazorFileChangeDetectorManager>();
+                        await fileChangeDetectorManager.InitializedAsync(s);
+
+                        // Workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/106
+                        var languageServer = (OmniSharp.Extensions.LanguageServer.Server.LanguageServer)server;
+                        if (request.Capabilities.Workspace.Configuration.IsSupported)
+                        {
+                            // Initialize our options for the first time.
+                            var optionsMonitor = languageServer.Services.GetRequiredService<RazorLSPOptionsMonitor>();
+                            _ = Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(async (_) => await optionsMonitor.UpdateAsync());
+                        }
                     })
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionEndpoint>()
@@ -146,18 +132,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(containerStore);
                     }));
 
-            // Workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/106
-            var languageServer = (OmniSharp.Extensions.LanguageServer.Server.LanguageServer)server;
-
-            // Initialize our options for the first time.
-            var optionsMonitor = languageServer.Services.GetRequiredService<RazorLSPOptionsMonitor>();
-            await optionsMonitor.UpdateAsync();
+            server.OnShutdown(() =>
+            {
+                TempDirectory.Instance.Dispose();
+                return Unit.Task;
+            });
 
             try
             {
                 var factory = new LoggerFactory();
-                var logger = factory.CreateLogger<Program>();
-                var assemblyInformationAttribute = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                var logger = factory.CreateLogger<RazorLanguageServer>();
+                var assemblyInformationAttribute = typeof(RazorLanguageServer).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
                 logger.LogInformation("Razor Language Server version " + assemblyInformationAttribute.InformationalVersion);
             }
             catch
@@ -165,9 +150,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 // Swallow exceptions from determining assembly information.
             }
 
-            await server.WaitForExit;
-
-            TempDirectory.Instance.Dispose();
+            return Task.FromResult(server);
         }
     }
 }

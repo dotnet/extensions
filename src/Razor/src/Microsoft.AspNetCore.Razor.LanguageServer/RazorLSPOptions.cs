@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             };
         }
 
-        public bool Equals([AllowNull] RazorLSPOptions other)
+        public bool Equals(RazorLSPOptions other)
         {
             return
                 other != null &&
