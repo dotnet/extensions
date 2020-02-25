@@ -165,6 +165,7 @@ stages:
           matrix:
             debug:
               _BuildConfig: Debug
+              _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
             release:
               _BuildConfig: Release
               ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
