@@ -21,13 +21,6 @@
     <MSBuild Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj" Properties="PublishDir=$(TargetPluginOutputPath);RuntimeIdentifier=" Targets="Publish" />
   </Target>
 
-  <Target Name="_GetOutputPath" Returns="@(_ServerOutputPath)">
-    <ItemGroup>
-      <_ServerOutputPath Include="$(OutputPath)">
-      </_ServerOutputPath>
-    </ItemGroup>
-  </Target>
-
   <!--
     Technique for publishing multiple RIDs from
     https://github.com/dotnet/cli/issues/9221#issuecomment-387512008

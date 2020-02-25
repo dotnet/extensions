@@ -19,6 +19,7 @@ namespace Microsoft.VisualStudio.RazorExtension
     [ProvideEditorLogicalView(typeof(RazorEditorFactory), VSConstants.LOGVIEWID.TextView_string)]
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [AboutDialogInfo(PackageGuidString, "ASP.NET Core Razor Language Services", "#110", "#112", IconResourceID = "#400")]
+    [ProvideBindingPath]
     [Guid(PackageGuidString)]
     public sealed class RazorPackage : AsyncPackage
     {

@@ -73,6 +73,27 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.JsonRpc.dll" />
+    <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageProtocol.dll" />
+    <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageServer.dll" />
+    <VSIXSourceItem Include="$(OutputPath)MediatR.dll" />
+    <VSIXSourceItem Include="$(OutputPath)MediatR.Extensions.Microsoft.DependencyInjection.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Options.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.Json.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.FileExtensions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.Abstractions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Logging.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Logging.Abstractions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.FileSystemGlobbing.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.FileProviders.Abstractions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.FileProviders.Physical.dll" />
+    <VSIXSourceItem Include="$(OutputPath)System.Reactive.dll" />
+  </ItemGroup>
+
   <!-- Resources are a little bit special in a VSIX -->
   <PropertyGroup>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -125,29 +146,6 @@
   <PropertyGroup>
     <_GeneratedVSIXBindingRedirectFile>$(IntermediateOutputPath)$(MSBuildProjectName).BindingRedirects.cs</_GeneratedVSIXBindingRedirectFile>
   </PropertyGroup>
-
-  <Target Name="_BuildLanguageServer">
-    <MSBuild Projects="..\rzls\rzls.csproj"
-        Targets="Build" />
-  </Target>
-
-  <Target Name="_IncludeLanguageServer" DependsOnTargets="PrepareForBuild;_BuildLanguageServer"  BeforeTargets="CoreCompile">
-    <MSBuild Projects="..\rzls\rzls.csproj"
-        Targets="_GetOutputPath">
-      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
-    </MSBuild>
-
-    <PropertyGroup>
-      <_ResolvedPackageVersionInfoProperty>@(_ResolvedPackageVersionInfo)</_ResolvedPackageVersionInfoProperty>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <Content Include="$(_ResolvedPackageVersionInfoProperty)\*">
-        <IncludeInVsix>true</IncludeInVsix>
-        <VSIXSubPath>LanguageServer\</VSIXSubPath>
-      </Content>
-    </ItemGroup>
-  </Target>
 
   <Target Name="_BuildRazorGrammar">
     <MSBuild Projects="..\Microsoft.AspNetCore.Razor.VSCode.Extension\Microsoft.AspNetCore.Razor.VSCode.Extension.npmproj"

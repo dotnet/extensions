@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
+using Nerdbank.Streams;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
@@ -41,29 +42,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public async Task<Connection> ActivateAsync(CancellationToken token)
         {
-            await Task.Yield();
+            var (clientStream, serverStream) = FullDuplexStream.CreatePair();
 
-            var currentAssembly = typeof(RazorLanguageServerClient).Assembly;
-            var currentAssemblyLocation = currentAssembly.Location;
-            var extensionDirectory = Path.GetDirectoryName(currentAssemblyLocation);
-            var languageServerPath = Path.Combine(extensionDirectory, "LanguageServer", "rzls.exe");
-            var info = new ProcessStartInfo();
-            info.FileName = languageServerPath;
-            info.Arguments = "-lsp --trace Verbose";
-            info.RedirectStandardInput = true;
-            info.RedirectStandardOutput = true;
-            info.UseShellExecute = false;
-            info.CreateNoWindow = true;
+            // Need an auto-flushing stream for the server because O# doesn't currently flush after writing responses. Without this
+            // performing the Initialize handshake with the LanguageServer hangs.
+            var autoFlushingStream = new AutoFlushingStream(serverStream);
+            var server = await RazorLanguageServer.CreateAsync(autoFlushingStream, autoFlushingStream, Trace.Verbose);
 
-            Process process = new Process();
-            process.StartInfo = info;
-
-            if (process.Start())
-            {
-                return new Connection(process.StandardOutput.BaseStream, process.StandardInput.BaseStream);
-            }
-
-            return null;
+            // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize.
+            _ = server.InitializedAsync(token);
+            var connection = new Connection(clientStream, clientStream);
+            return connection;
         }
 
         public async Task OnLoadedAsync()
@@ -79,6 +68,40 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public Task OnServerInitializedAsync()
         {
             return Task.CompletedTask;
+        }
+
+        private class AutoFlushingStream : Stream
+        {
+            private readonly Stream _inner;
+
+            public AutoFlushingStream(Stream inner)
+            {
+                _inner = inner;
+            }
+
+            public override bool CanRead => _inner.CanRead;
+
+            public override bool CanSeek => _inner.CanSeek;
+
+            public override bool CanWrite => _inner.CanWrite;
+
+            public override long Length => _inner.Length;
+
+            public override long Position { get => _inner.Position; set => _inner.Position = value; }
+
+            public override void Flush() => _inner.Flush();
+
+            public override int Read(byte[] buffer, int offset, int count) => _inner.Read(buffer, offset, count);
+
+            public override long Seek(long offset, SeekOrigin origin) => _inner.Seek(offset, origin);
+
+            public override void SetLength(long value) => _inner.SetLength(value);
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                _inner.Write(buffer, offset, count);
+                _inner.Flush();
+            }
         }
     }
 }
