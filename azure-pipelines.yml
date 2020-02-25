@@ -224,6 +224,7 @@ stages:
             --prepareMachine
             $(_OfficialBuildArgs)
             $(_InternalRuntimeDownloadArgs)
+            /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
           displayName: Build
         - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
           displayName: Run Flaky Tests
