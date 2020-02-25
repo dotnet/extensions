@@ -25,8 +25,9 @@ export async function registerRazorDevModeHelpers(context: vscode.ExtensionConte
         await razorConfiguration.update('devmode', true);
         await razorConfiguration.update('trace', 'Verbose');
 
+        const config = process.env.config ? process.env.config : 'Debug';
         const pluginPath = path.join(
-            __dirname, '..', '..', '..', '..', '..', 'artifacts', 'bin', 'Microsoft.AspNetCore.Razor.OmniSharpPlugin', 'Debug', 'net472', 'Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll');
+            __dirname, '..', '..', '..', '..', '..', 'artifacts', 'bin', 'Microsoft.AspNetCore.Razor.OmniSharpPlugin', config, 'net472', 'Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll');
 
         if (!fs.existsSync(pluginPath)) {
             vscode.window.showErrorMessage(`The Razor Language Server O# plugin has not yet been built - could not find ${pluginPath}`);

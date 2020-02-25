@@ -4,40 +4,20 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as assert from 'assert';
-import { afterEach, before, beforeEach } from 'mocha';
+import { beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {
-    mvcWithComponentsRoot,
-    pollUntil,
-    waitForProjectReady,
-} from './TestUtil';
+import { mvcWithComponentsRoot } from './TestUtil';
 
 let cshtmlDoc: vscode.TextDocument;
 let editor: vscode.TextEditor;
 let cshtmlPath: string;
 
 suite('References', () => {
-    before(async () => {
-        await waitForProjectReady(mvcWithComponentsRoot);
-    });
-
     beforeEach(async () => {
         cshtmlPath = path.join(mvcWithComponentsRoot, 'Views', 'Home', 'Index.cshtml');
         cshtmlDoc = await vscode.workspace.openTextDocument(cshtmlPath);
         editor = await vscode.window.showTextDocument(cshtmlDoc);
-    });
-
-    afterEach(async () => {
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        await pollUntil(async () => {
-            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-            if (vscode.window.visibleTextEditors.length === 0) {
-                return true;
-            }
-
-            return false;
-        }, /* timeout */ 3000, /* pollInterval */ 500, true /* suppress timeout */);
     });
 
     test('Reference for javascript', async () => {
@@ -79,8 +59,9 @@ suite('References', () => {
             new vscode.Position(1, 17));
 
         assert.equal(references!.length, 2 , 'Should have had exactly 2 results');
+        references!.sort((a, b) => a.uri.path > b.uri.path ? 1 : -1);
         const programRef = references![0];
-        assert.ok(programRef.uri.path.endsWith('Program.cs'), `Expected ref to point to "Program.cs" but got ${references![1].uri.path}`);
+        assert.ok(programRef.uri.path.endsWith('Program.cs'), `Expected ref to point to "Program.cs" but got ${references![0].uri.path}`);
         assert.equal(programRef.range.start.line, 7);
 
         const cshtmlRef = references![1];

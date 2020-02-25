@@ -3,42 +3,24 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { afterEach, before, beforeEach } from 'mocha';
+import { beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
     assertHasCompletion,
     assertHasNoCompletion,
-    pollUntil,
     simpleMvc21Root,
     waitForDocumentUpdate,
-    waitForProjectReady,
 } from './TestUtil';
 
 let doc: vscode.TextDocument;
 let editor: vscode.TextEditor;
 
 suite('Completions 2.1', () => {
-    before(async () => {
-        await waitForProjectReady(simpleMvc21Root);
-    });
-
     beforeEach(async () => {
         const filePath = path.join(simpleMvc21Root, 'Views', 'Home', 'Index.cshtml');
         doc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(doc);
-    });
-
-    afterEach(async () => {
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        await pollUntil(async () => {
-            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-            if (vscode.window.visibleTextEditors.length === 0) {
-                return true;
-            }
-
-            return false;
-        }, /* timeout */ 3000, /* pollInterval */ 500, true /* suppress timeout */);
     });
 
     test('Can get HTML completions on document open', async () => {

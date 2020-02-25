@@ -106,7 +106,7 @@
                 "build"
             ],
             "options": {
-                "cwd": "src/Razor/test/Microsoft.AspNetCore.Razor.VSCode.FunctionalTest/"
+                "cwd": "src/Razor/test/VSCode.FunctionalTest/"
             },
             "problemMatcher": "$tsc-watch",
             "presentation": {

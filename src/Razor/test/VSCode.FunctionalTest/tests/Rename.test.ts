@@ -4,51 +4,32 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as assert from 'assert';
-import { afterEach, before, beforeEach } from 'mocha';
+import { beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {
-    mvcWithComponentsRoot,
-    pollUntil,
-    waitForProjectReady,
-} from './TestUtil';
+import { mvcWithComponentsRoot } from './TestUtil';
 
 let csPath: string;
 let cshtmlPath: string;
 let razorPath: string;
 
 suite('Rename', () => {
-    before(async () => {
-        await waitForProjectReady(mvcWithComponentsRoot);
-    });
-
     beforeEach(async () => {
         razorPath = path.join(mvcWithComponentsRoot, 'Views', 'Shared', 'NavMenu.razor');
         cshtmlPath = path.join(mvcWithComponentsRoot, 'Views', 'Home', 'Index.cshtml');
         csPath = path.join(mvcWithComponentsRoot, 'Test.cs');
     });
 
-    afterEach(async () => {
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        await pollUntil(async () => {
-            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-            if (vscode.window.visibleTextEditors.length === 0) {
-                return true;
-            }
-
-            return false;
-        }, /* timeout */ 3000, /* pollInterval */ 500, true /* suppress timeout */);
-    });
-
     test('Can rename symbol within .razor', async () => {
         const razorDoc = await vscode.workspace.openTextDocument(razorPath);
         const razorEditor = await vscode.window.showTextDocument(razorDoc);
+        await new Promise(r => setTimeout(r, 5000));
         const expectedNewText = 'World';
         const firstLine = new vscode.Position(0, 0);
         await razorEditor.edit(edit => edit.insert(firstLine, '@hello\n'));
         await razorEditor.edit(edit => edit.insert(firstLine, '@{ var hello = "Hello"; }\n'));
 
-        await new Promise(r => setTimeout(r, 3000));
+        await new Promise(r => setTimeout(r, 5000));
         const renames = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(
             'vscode.executeDocumentRenameProvider',
             razorDoc.uri,
@@ -56,7 +37,7 @@ suite('Rename', () => {
             expectedNewText);
 
         const entries = renames!.entries();
-        assert.equal(entries.length, 1, 'Should only rename within the document.');
+        assert.equal(entries.length, 1, `Should only rename within the document. Expected: 1 Actual: ${entries.length}`);
         const uri = entries[0][0];
         assert.equal(uri.path, razorDoc.uri.path);
         const edits = entries[0][1];
@@ -71,7 +52,7 @@ suite('Rename', () => {
         await cshtmlEditor.edit(edit => edit.insert(firstLine, '@hello\n'));
         await cshtmlEditor.edit(edit => edit.insert(firstLine, '@{ var hello = "Hello"; }\n'));
 
-        await new Promise(r => setTimeout(r, 3000));
+        await new Promise(r => setTimeout(r, 5000));
         const renames = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(
             'vscode.executeDocumentRenameProvider',
             cshtmlDoc.uri,

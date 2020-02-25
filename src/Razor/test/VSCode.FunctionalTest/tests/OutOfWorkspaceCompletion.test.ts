@@ -9,17 +9,14 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import {
     assertHasCompletion,
-    mvcWithComponentsRoot,
     pollUntil,
     testAppsRoot,
-    waitForProjectReady,
 } from './TestUtil';
 
 const outsideWorkspaceFile = path.join(testAppsRoot, '..', 'OutOfWorkspaceFile.razor');
 
 suite('Out of workspace Completions', () => {
     before(async () => {
-        await waitForProjectReady(mvcWithComponentsRoot);
         fs.writeFileSync(outsideWorkspaceFile, /* data */ '');
     });
 

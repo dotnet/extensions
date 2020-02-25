@@ -4,32 +4,19 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as assert from 'assert';
-import { afterEach, before, beforeEach } from 'mocha';
+import { beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {
-    pollUntil,
-    simpleMvc11Root,
-    waitForProjectReady,
-} from './TestUtil';
+import { simpleMvc11Root } from './TestUtil';
 
 let doc: vscode.TextDocument;
 let editor: vscode.TextEditor;
 
 suite('Completions 1.0', () => {
-    before(async () => {
-        await waitForProjectReady(simpleMvc11Root);
-    });
-
     beforeEach(async () => {
         const filePath = path.join(simpleMvc11Root, 'Views', 'Home', 'Index.cshtml');
         doc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(doc);
-    });
-
-    afterEach(async () => {
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        await pollUntil(() => vscode.window.visibleTextEditors.length === 0, 1000);
     });
 
     test('Can complete Razor directive', async () => {

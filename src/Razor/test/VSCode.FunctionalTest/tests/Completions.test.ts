@@ -3,16 +3,14 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { afterEach, before, beforeEach } from 'mocha';
+import { beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
     assertHasCompletion,
     assertHasNoCompletion,
     mvcWithComponentsRoot,
-    pollUntil,
     waitForDocumentUpdate,
-    waitForProjectReady,
 } from './TestUtil';
 
 let cshtmlDoc: vscode.TextDocument;
@@ -20,26 +18,10 @@ let editor: vscode.TextEditor;
 const homeDirectory = path.join(mvcWithComponentsRoot, 'Views', 'Home');
 
 suite('Completions', () => {
-    before(async () => {
-        await waitForProjectReady(mvcWithComponentsRoot);
-    });
-
     beforeEach(async () => {
         const filePath = path.join(homeDirectory, 'Index.cshtml');
         cshtmlDoc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(cshtmlDoc);
-    });
-
-    afterEach(async () => {
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        await pollUntil(async () => {
-            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-            if (vscode.window.visibleTextEditors.length === 0) {
-                return true;
-            }
-
-            return false;
-        }, /* timeout */ 3000, /* pollInterval */ 500, true /* suppress timeout */);
     });
 
     test('Can complete Razor directive in .razor', async () => {

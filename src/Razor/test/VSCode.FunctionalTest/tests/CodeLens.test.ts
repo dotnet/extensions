@@ -4,13 +4,11 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as assert from 'assert';
-import { afterEach, before, beforeEach } from 'mocha';
+import { beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
     mvcWithComponentsRoot,
-    pollUntil,
-    waitForProjectReady,
 } from './TestUtil';
 
 let razorPath: string;
@@ -18,26 +16,11 @@ let razorDoc: vscode.TextDocument;
 let razorEditor: vscode.TextEditor;
 
 suite('CodeLens', () => {
-    before(async () => {
-        await waitForProjectReady(mvcWithComponentsRoot);
-    });
-
     beforeEach(async () => {
         razorPath = path.join(mvcWithComponentsRoot, 'Views', 'Shared', 'NavMenu.razor');
         razorDoc = await vscode.workspace.openTextDocument(razorPath);
         razorEditor = await vscode.window.showTextDocument(razorDoc);
-    });
-
-    afterEach(async () => {
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        await pollUntil(async () => {
-            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-            if (vscode.window.visibleTextEditors.length === 0) {
-                return true;
-            }
-
-            return false;
-        }, /* timeout */ 3000, /* pollInterval */ 500, true /* suppress timeout */);
+        await new Promise(r => setTimeout(r, 5000));
     });
 
     test('Can provide CodeLens in .razor file', async () => {
@@ -69,6 +52,7 @@ suite('CodeLens', () => {
     });
 
     async function GetCodeLenses(fileUri: vscode.Uri, resolvedItemCount?: number) {
+        await new Promise(r => setTimeout(r, 10000));
         return await vscode.commands.executeCommand('vscode.executeCodeLensProvider', fileUri, resolvedItemCount) as vscode.CodeLens[];
     }
 });

@@ -4,39 +4,19 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as assert from 'assert';
-import { afterEach, before, beforeEach } from 'mocha';
+import { beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {
-    pollUntil,
-    simpleMvc22Root,
-    waitForProjectReady,
-} from './TestUtil';
+import { simpleMvc22Root } from './TestUtil';
 
 let cshtmlDoc: vscode.TextDocument;
 let editor: vscode.TextEditor;
 
 suite('Hover 2.2', () => {
-    before(async () => {
-        await waitForProjectReady(simpleMvc22Root);
-    });
-
     beforeEach(async () => {
         const filePath = path.join(simpleMvc22Root, 'Views', 'Home', 'Index.cshtml');
         cshtmlDoc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(cshtmlDoc);
-    });
-
-    afterEach(async () => {
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        await pollUntil(async () => {
-            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-            if (vscode.window.visibleTextEditors.length === 0) {
-                return true;
-            }
-
-            return false;
-        }, /* timeout */ 3000, /* pollInterval */ 500, true /* suppress timeout */);
     });
 
     test('Hover over attribute value does not return TagHelper info', async () => {

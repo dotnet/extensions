@@ -4,39 +4,19 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as assert from 'assert';
-import { afterEach, before, beforeEach } from 'mocha';
+import { beforeEach } from 'mocha';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {
-    componentRoot,
-    pollUntil,
-    waitForProjectReady,
-} from './TestUtil';
+import { componentRoot } from './TestUtil';
 
 let cshtmlDoc: vscode.TextDocument;
 let editor: vscode.TextEditor;
 
 suite('Hover Components', () => {
-    before(async () => {
-        await waitForProjectReady(componentRoot);
-    });
-
     beforeEach(async () => {
         const filePath = path.join(componentRoot, 'Components', 'Shared', 'MainLayout.razor');
         cshtmlDoc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(cshtmlDoc);
-    });
-
-    afterEach(async () => {
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        await pollUntil(async () => {
-            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-            if (vscode.window.visibleTextEditors.length === 0) {
-                return true;
-            }
-
-            return false;
-        }, /* timeout */ 3000, /* pollInterval */ 500, true /* suppress timeout */);
     });
 
     test('Can perform hovers on directive attributes', async () => {
