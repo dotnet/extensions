@@ -13,8 +13,9 @@ namespace Microsoft.Extensions.Options
 {
     public partial class DataAnnotationValidateOptions<TOptions> : Microsoft.Extensions.Options.IValidateOptions<TOptions> where TOptions : class
     {
-        public DataAnnotationValidateOptions(string name) { }
+        public DataAnnotationValidateOptions(string name, System.IServiceProvider serviceProvider = null) { }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.IServiceProvider ServiceProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.Extensions.Options.ValidateOptionsResult Validate(string name, TOptions options) { throw null; }
     }
 }
