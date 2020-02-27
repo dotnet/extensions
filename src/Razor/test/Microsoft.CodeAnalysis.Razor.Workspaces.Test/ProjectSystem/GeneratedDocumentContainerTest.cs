@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class GeneratedCodeContainerTest : RazorProjectEngineTestBase
+    public class GeneratedDocumentContainerTest : RazorProjectEngineTestBase
     {
         protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
 
@@ -30,13 +30,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var newDocument = new DefaultDocumentSnapshot(project, documentState);
 
             var csharpDocument = RazorCSharpDocument.Create("...", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
+            var htmlDocument = RazorHtmlDocument.Create("...", RazorCodeGenerationOptions.CreateDefault());
 
             var version = VersionStamp.Create();
-            var container = new GeneratedCodeContainer();
-            container.SetOutput(document, csharpDocument, version, version);
+            var container = new GeneratedDocumentContainer();
+            container.SetOutput(document, csharpDocument, htmlDocument, version, version, version);
 
             // Act
-            container.SetOutput(newDocument, csharpDocument, version, version);
+            container.SetOutput(newDocument, csharpDocument, htmlDocument, version, version, version);
 
             // Assert
             Assert.Same(newDocument, container.LatestDocument);
@@ -57,27 +58,49 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var documentState = new DocumentState(services, hostDocument, text, VersionStamp.Default, () => Task.FromResult(textAndVersion));
             var document = new DefaultDocumentSnapshot(project, documentState);
             var csharpDocument = RazorCSharpDocument.Create("...", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
+            var htmlDocument = RazorHtmlDocument.Create("...", RazorCodeGenerationOptions.CreateDefault());
 
             var version = VersionStamp.Create();
-            var container = new GeneratedCodeContainer();
+            var container = new GeneratedDocumentContainer();
 
             // Act
-            container.SetOutput(document, csharpDocument, version, version);
+            container.SetOutput(document, csharpDocument, htmlDocument, version, version, version);
 
             // Assert
             Assert.NotNull(container.LatestDocument);
         }
 
-        private RazorCodeDocument GetCodeDocument(string content)
+        [Fact]
+        public void SetOutput_InvokesChangedEvent()
         {
-            var sourceProjectItem = new TestRazorProjectItem("test.cshtml")
-            {
-                Content = content,
-            };
+            // Arrange
+            var services = TestWorkspace.Create().Services;
+            var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default, "project");
+            var projectState = ProjectState.Create(services, hostProject);
+            var project = new DefaultProjectSnapshot(projectState);
 
-            var engine = CreateProjectEngine();
-            var codeDocument = engine.ProcessDesignTime(sourceProjectItem);
-            return codeDocument;
+            var text = SourceText.From("...");
+            var textAndVersion = TextAndVersion.Create(text, VersionStamp.Default);
+            var hostDocument = new HostDocument("C:/file.cshtml", "C:/file.cshtml");
+            var documentState = new DocumentState(services, hostDocument, text, VersionStamp.Default, () => Task.FromResult(textAndVersion));
+            var document = new DefaultDocumentSnapshot(project, documentState);
+            var csharpDocument = RazorCSharpDocument.Create("...", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
+            var htmlDocument = RazorHtmlDocument.Create("...", RazorCodeGenerationOptions.CreateDefault());
+
+            var version = VersionStamp.Create();
+            var container = new GeneratedDocumentContainer();
+            var csharpChanged = false;
+            var htmlChanged = false;
+            container.GeneratedCSharpChanged += (o, a) => { csharpChanged = true; };
+            container.GeneratedHtmlChanged += (o, a) => { htmlChanged = true; };
+
+            // Act
+            container.SetOutput(document, csharpDocument, htmlDocument, version, version, version);
+
+            // Assert
+            Assert.NotNull(container.LatestDocument);
+            Assert.True(csharpChanged);
+            Assert.True(htmlChanged);
         }
     }
 }

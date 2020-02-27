@@ -106,4 +106,15 @@ suite('Completions', () => {
 
         assertHasCompletion(completions, 'strong');
     });
+
+    test('HTML tag completion not affected by C# code in .cshtml', async () => {
+        const lastLine = new vscode.Position(0, 0);
+        await editor.edit(edit => edit.insert(lastLine, '@{ if (1 < 2) {} } <str'));
+        const completions = await vscode.commands.executeCommand<vscode.CompletionList>(
+            'vscode.executeCompletionItemProvider',
+            cshtmlDoc.uri,
+            new vscode.Position(0, 23));
+
+        assertHasCompletion(completions, 'strong');
+    });
 });

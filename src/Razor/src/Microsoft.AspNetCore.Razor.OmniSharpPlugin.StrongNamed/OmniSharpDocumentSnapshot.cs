@@ -64,8 +64,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         public SourceText GetGeneratedCodeSourceText()
         {
-            var generatedCodeContainer = ((DefaultDocumentSnapshot)_documentSnapshot).State.HostDocument.GeneratedCodeContainer;
-            var sourceText = generatedCodeContainer.SourceTextContainer.CurrentText;
+            var generatedDocumentContainer = ((DefaultDocumentSnapshot)_documentSnapshot).State.HostDocument.GeneratedDocumentContainer;
+            var sourceText = generatedDocumentContainer.CSharpSourceTextContainer.CurrentText;
             return sourceText;
         }
     }

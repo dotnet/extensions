@@ -12,13 +12,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentVersionCache _documentVersionCache;
-        private readonly CSharpPublisher _csharpPublisher;
+        private readonly GeneratedDocumentPublisher _generatedDocumentPublisher;
         private ProjectSnapshotManager _projectManager;
 
         public UnsynchronizableContentDocumentProcessedListener(
             ForegroundDispatcher foregroundDispatcher,
             DocumentVersionCache documentVersionCache,
-            CSharpPublisher csharpPublisher)
+            GeneratedDocumentPublisher generatedDocumentPublisher)
         {
             if (foregroundDispatcher == null)
             {
@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentVersionCache));
             }
 
-            if (csharpPublisher is null)
+            if (generatedDocumentPublisher is null)
             {
-                throw new ArgumentNullException(nameof(csharpPublisher));
+                throw new ArgumentNullException(nameof(generatedDocumentPublisher));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentVersionCache = documentVersionCache;
-            _csharpPublisher = csharpPublisher;
+            _generatedDocumentPublisher = generatedDocumentPublisher;
         }
 
         public override void DocumentProcessed(DocumentSnapshot document)
@@ -60,7 +60,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return;
             }
 
-            var latestSynchronizedDocument = defaultDocument.State.HostDocument.GeneratedCodeContainer.LatestDocument;
+            var documentContainer = defaultDocument.State.GeneratedDocumentContainer;
+            var latestSynchronizedDocument = documentContainer.LatestDocument;
             if (latestSynchronizedDocument == null ||
                 latestSynchronizedDocument == document)
             {
@@ -68,14 +69,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return;
             }
 
-            if (IdenticalOutputAfterParse(document, latestSynchronizedDocument, syncVersion))
+            if (UnchangedHostDocument(document, latestSynchronizedDocument, syncVersion))
             {
                 // Documents are identical but we didn't synchronize them because they didn't need to be re-evaluated.
-
-                var result = document.TryGetText(out var latestText);
-                Debug.Assert(result, "We just successfully retrieved the text version, this should always return true.");
-
-                _csharpPublisher.Publish(document.FilePath, latestText, syncVersion);
+                _generatedDocumentPublisher.PublishCSharp(document.FilePath, documentContainer.CSharpSourceTextContainer.CurrentText, syncVersion);
+                _generatedDocumentPublisher.PublishHtml(document.FilePath, documentContainer.HtmlSourceTextContainer.CurrentText, syncVersion);
             }
         }
 
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _projectManager = projectManager;
         }
 
-        private bool IdenticalOutputAfterParse(DocumentSnapshot document, DocumentSnapshot latestSynchronizedDocument, long syncVersion)
+        private bool UnchangedHostDocument(DocumentSnapshot document, DocumentSnapshot latestSynchronizedDocument, long syncVersion)
         {
             return latestSynchronizedDocument.TryGetTextVersion(out var latestSourceVersion) &&
                 document.TryGetTextVersion(out var documentSourceVersion) &&

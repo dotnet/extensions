@@ -8,5 +8,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         public const string ProjectConfigurationFile = "project.razor.json";
 
         public const string RazorRangeFormattingEndpoint = "razor/rangeFormatting";
+
+        public const string RazorUpdateCSharpBufferEndpoint = "razor/updateCSharpBuffer";
+
+        public const string RazorUpdateHtmlBufferEndpoint = "razor/updateHtmlBuffer";
     }
 }

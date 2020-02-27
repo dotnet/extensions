@@ -6,8 +6,10 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal abstract class CSharpPublisher : ProjectSnapshotChangeTrigger
+    internal abstract class GeneratedDocumentPublisher : ProjectSnapshotChangeTrigger
     {
-        public abstract void Publish(string filePath, SourceText sourceText, long hostDocumentVersion);
+        public abstract void PublishCSharp(string filePath, SourceText sourceText, long hostDocumentVersion);
+
+        public abstract void PublishHtml(string filePath, SourceText sourceText, long hostDocumentVersion);
     }
 }

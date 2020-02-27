@@ -37,7 +37,7 @@ suite('Hover Components', () => {
             return;
         }
 
-        assert.equal(hoverResult.length, 1, 'Something else may be providing hover results');
+        assert.ok(hoverResult.length > 0, 'Should have atleast one result.');
 
         const onClickResult = hoverResult[0];
         const expectedRange = new vscode.Range(

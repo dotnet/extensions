@@ -5,7 +5,7 @@
 
 import { ServerTextChange } from './ServerTextChange';
 
-export class UpdateCSharpBufferRequest {
+export class UpdateBufferRequest {
     constructor(
         public readonly hostDocumentVersion: number,
         public readonly hostDocumentFilePath: string,

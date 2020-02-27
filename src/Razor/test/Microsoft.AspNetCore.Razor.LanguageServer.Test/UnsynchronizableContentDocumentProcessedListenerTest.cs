@@ -4,17 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
-using Newtonsoft.Json.Linq;
-using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageServer.Protocol;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -35,9 +30,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void DocumentProcessed_DoesNothingForOldDocuments()
         {
             // Arrange
-            var csharpPublisher = new Mock<CSharpPublisher>(MockBehavior.Strict);
+            var generatedDocumentPublisher = new Mock<GeneratedDocumentPublisher>(MockBehavior.Strict);
             var cache = new TestDocumentVersionCache(new Dictionary<DocumentSnapshot, long>());
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, generatedDocumentPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml");
 
@@ -49,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void DocumentProcessed_DoesNothingIfAlreadySynchronized()
         {
             // Arrange
-            var csharpPublisher = new Mock<CSharpPublisher>(MockBehavior.Strict);
+            var generatedDocumentPublisher = new Mock<GeneratedDocumentPublisher>(MockBehavior.Strict);
             var documentVersion = VersionStamp.Default.GetNewerVersion();
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml", documentVersion);
             var cache = new TestDocumentVersionCache(new Dictionary<DocumentSnapshot, long>()
@@ -57,11 +52,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 [document] = 1337,
             });
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
+            var htmlDocument = RazorHtmlDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault());
 
             // Force the state to already be up-to-date
-            document.State.HostDocument.GeneratedCodeContainer.SetOutput(document, csharpDocument, documentVersion.GetNewerVersion(), VersionStamp.Default);
+            document.State.HostDocument.GeneratedDocumentContainer.SetOutput(document, csharpDocument, htmlDocument, documentVersion.GetNewerVersion(), VersionStamp.Default, VersionStamp.Default);
 
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, generatedDocumentPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
 
             // Act & Assert
@@ -72,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void DocumentProcessed_DoesNothingForOlderDocuments()
         {
             // Arrange
-            var csharpPublisher = new Mock<CSharpPublisher>(MockBehavior.Strict);
+            var generatedDocumentPublisher = new Mock<GeneratedDocumentPublisher>(MockBehavior.Strict);
             var lastVersion = VersionStamp.Default.GetNewerVersion();
             var lastDocument = TestDocumentSnapshot.Create("C:/path/old.cshtml", lastVersion);
             var oldDocument = TestDocumentSnapshot.Create("C:/path/file.cshtml", VersionStamp.Default);
@@ -82,11 +78,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 [lastDocument] = 1338,
             });
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
+            var htmlDocument = RazorHtmlDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault());
 
             // Force the state to already be up-to-date
-            oldDocument.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
+            oldDocument.State.HostDocument.GeneratedDocumentContainer.SetOutput(lastDocument, csharpDocument, htmlDocument, lastVersion, VersionStamp.Default, VersionStamp.Default);
 
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, generatedDocumentPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
 
             // Act & Assert
@@ -97,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void DocumentProcessed_DoesNothingIfSourceVersionsAreDifferent()
         {
             // Arrange
-            var csharpPublisher = new Mock<CSharpPublisher>(MockBehavior.Strict);
+            var generatedDocumentPublisher = new Mock<GeneratedDocumentPublisher>(MockBehavior.Strict);
             var lastVersion = VersionStamp.Default.GetNewerVersion();
             var lastDocument = TestDocumentSnapshot.Create("C:/path/old.cshtml", lastVersion);
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml", VersionStamp.Default);
@@ -107,11 +104,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 [lastDocument] = 1337,
             });
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
+            var htmlDocument = RazorHtmlDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault());
 
             // Force the state to already be up-to-date
-            document.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
+            document.State.HostDocument.GeneratedDocumentContainer.SetOutput(lastDocument, csharpDocument, htmlDocument, lastVersion, VersionStamp.Default, VersionStamp.Default);
 
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, generatedDocumentPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
 
             // Act & Assert
@@ -125,11 +123,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var lastVersion = VersionStamp.Default.GetNewerVersion();
             var lastDocument = TestDocumentSnapshot.Create("C:/path/old.cshtml", lastVersion);
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml", lastVersion);
-            var csharpPublisher = new Mock<CSharpPublisher>();
-            csharpPublisher.Setup(publisher => publisher.Publish(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<long>()))
+            var generatedDocumentPublisher = new Mock<GeneratedDocumentPublisher>();
+            generatedDocumentPublisher.Setup(publisher => publisher.PublishCSharp(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<long>()))
                 .Callback<string, SourceText, long>((filePath, sourceText, hostDocumentVersion) =>
                 {
                     Assert.Equal(document.FilePath, filePath);
+                    Assert.Equal(document.State.GeneratedDocumentContainer.CSharpSourceTextContainer.CurrentText.ToString(), sourceText.ToString());
+                })
+                .Verifiable();
+            generatedDocumentPublisher.Setup(publisher => publisher.PublishHtml(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<long>()))
+                .Callback<string, SourceText, long>((filePath, sourceText, hostDocumentVersion) =>
+                {
+                    Assert.Equal(document.FilePath, filePath);
+                    Assert.Equal(document.State.GeneratedDocumentContainer.HtmlSourceTextContainer.CurrentText.ToString(), sourceText.ToString());
                 })
                 .Verifiable();
             var cache = new TestDocumentVersionCache(new Dictionary<DocumentSnapshot, long>()
@@ -138,18 +144,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 [lastDocument] = 1337,
             });
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
+            var htmlDocument = RazorHtmlDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault());
 
             // Force the state to already be up-to-date
-            document.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
+            document.State.HostDocument.GeneratedDocumentContainer.SetOutput(lastDocument, csharpDocument, htmlDocument, lastVersion, VersionStamp.Default, VersionStamp.Default);
 
-            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, csharpPublisher.Object);
+            var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, generatedDocumentPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
 
             // Act
             listener.DocumentProcessed(document);
 
             // Assert
-            csharpPublisher.VerifyAll();
+            generatedDocumentPublisher.VerifyAll();
         }
 
         private class TestDocumentVersionCache : DocumentVersionCache

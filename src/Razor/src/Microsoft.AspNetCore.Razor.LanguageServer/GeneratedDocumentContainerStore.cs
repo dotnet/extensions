@@ -5,8 +5,8 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal abstract class GeneratedCodeContainerStore : ProjectSnapshotChangeTrigger
+    internal abstract class GeneratedDocumentContainerStore : ProjectSnapshotChangeTrigger
     {
-        public abstract GeneratedCodeContainer Get(string physicalFilePath);
+        public abstract GeneratedDocumentContainer Get(string physicalFilePath);
     }
 }

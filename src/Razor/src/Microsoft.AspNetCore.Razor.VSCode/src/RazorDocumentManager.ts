@@ -14,7 +14,7 @@ import { createDocument } from './RazorDocumentFactory';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { RazorLogger } from './RazorLogger';
-import { UpdateCSharpBufferRequest } from './RPC/UpdateCSharpBufferRequest';
+import { UpdateBufferRequest } from './RPC/UpdateBufferRequest';
 import { getUriPath } from './UriPaths';
 
 export class RazorDocumentManager implements IRazorDocumentManager {
@@ -61,12 +61,6 @@ export class RazorDocumentManager implements IRazorDocumentManager {
             this.addDocument(uri);
         }
 
-        const activeRazorDocument = await this.getActiveDocument();
-        if (activeRazorDocument) {
-            // Initialize the html buffer for the current document
-            this.updateHtmlBuffer(activeRazorDocument);
-        }
-
         for (const textDocument of vscode.workspace.textDocuments) {
             if (textDocument.languageId !== RazorLanguage.id) {
                 continue;
@@ -101,25 +95,23 @@ export class RazorDocumentManager implements IRazorDocumentManager {
 
             this.closeDocument(document.uri);
         });
-        const didChangeRegistration = vscode.workspace.onDidChangeTextDocument(async args => {
-            if (args.document.languageId !== RazorLanguage.id) {
-                return;
-            }
 
-            await this.documentChanged(args.document.uri);
-        });
         // tslint:disable-next-line: no-floating-promises
         this.serverClient.onRequest(
-            'updateCSharpBuffer',
+            'razor/updateCSharpBuffer',
             async updateBufferRequest => this.updateCSharpBuffer(updateBufferRequest));
+
+        // tslint:disable-next-line: no-floating-promises
+        this.serverClient.onRequest(
+            'razor/updateHtmlBuffer',
+            async updateBufferRequest => this.updateHtmlBuffer(updateBufferRequest));
 
         return vscode.Disposable.from(
             watcher,
             didCreateRegistration,
             didDeleteRegistration,
             didOpenRegistration,
-            didCloseRegistration,
-            didChangeRegistration);
+            didCloseRegistration);
     }
 
     private _getDocument(uri: vscode.Uri) {
@@ -138,7 +130,6 @@ export class RazorDocumentManager implements IRazorDocumentManager {
     private openDocument(uri: vscode.Uri) {
         const document = this._getDocument(uri);
 
-        this.updateHtmlBuffer(document);
         this.notifyDocumentChange(document, RazorDocumentChangeKind.opened);
     }
 
@@ -164,15 +155,6 @@ export class RazorDocumentManager implements IRazorDocumentManager {
         this.notifyDocumentChange(document, RazorDocumentChangeKind.closed);
     }
 
-    private async documentChanged(uri: vscode.Uri) {
-        const document = await this._getDocument(uri);
-
-        const activeTextEditor = vscode.window.activeTextEditor;
-        if (activeTextEditor && activeTextEditor.document.uri === uri) {
-            this.updateHtmlBuffer(document);
-        }
-    }
-
     private addDocument(uri: vscode.Uri) {
         const document = createDocument(uri);
         this.razorDocuments[document.path] = document;
@@ -189,7 +171,7 @@ export class RazorDocumentManager implements IRazorDocumentManager {
         this.notifyDocumentChange(document, RazorDocumentChangeKind.removed);
     }
 
-    private async updateCSharpBuffer(updateBufferRequest: UpdateCSharpBufferRequest) {
+    private async updateCSharpBuffer(updateBufferRequest: UpdateBufferRequest) {
         if (this.logger.verboseEnabled) {
             this.logger.logVerbose(
                 `Updating the C# document for Razor file '${updateBufferRequest.hostDocumentFilePath}' ` +
@@ -213,18 +195,27 @@ export class RazorDocumentManager implements IRazorDocumentManager {
         }
     }
 
-    private updateHtmlBuffer(document: IRazorDocument) {
+    private async updateHtmlBuffer(updateBufferRequest: UpdateBufferRequest) {
+        if (this.logger.verboseEnabled) {
+            this.logger.logVerbose(
+                `Updating the HTML document for Razor file '${updateBufferRequest.hostDocumentFilePath}' ` +
+                `(${updateBufferRequest.hostDocumentVersion})`);
+        }
+
+        const hostDocumentUri = vscode.Uri.file(updateBufferRequest.hostDocumentFilePath);
+        const document = this._getDocument(hostDocumentUri);
         const projectedDocument = document.htmlDocument;
 
-        const hostDocument = vscode.workspace.textDocuments.find(
-            doc => getUriPath(doc.uri).localeCompare(document.path, undefined, { sensitivity: 'base' }) === 0);
-
-        if (hostDocument) {
-            const hostDocumentText = hostDocument.getText();
+        if (!projectedDocument.hostDocumentSyncVersion ||
+            projectedDocument.hostDocumentSyncVersion <= updateBufferRequest.hostDocumentVersion) {
+            // We allow re-setting of the updated content from the same doc sync version in the case
+            // of project or file import changes.
             const htmlProjectedDocument = projectedDocument as HtmlProjectedDocument;
-            htmlProjectedDocument.setContent(hostDocumentText, hostDocument.version);
+            htmlProjectedDocument.update(updateBufferRequest.changes, updateBufferRequest.hostDocumentVersion);
 
             this.notifyDocumentChange(document, RazorDocumentChangeKind.htmlChanged);
+        } else {
+            this.logger.logWarning('Failed to update the HTML document buffer. This is unexpected and may result in incorrect HTML interactions.');
         }
     }
 

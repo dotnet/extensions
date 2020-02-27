@@ -125,9 +125,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         var foregroundDispatcher = new VSCodeForegroundDispatcher();
                         services.AddSingleton<ForegroundDispatcher>(foregroundDispatcher);
 
-                        var csharpPublisher = new DefaultCSharpPublisher(foregroundDispatcher, new Lazy<OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer>(() => server));
-                        services.AddSingleton<ProjectSnapshotChangeTrigger>(csharpPublisher);
-                        services.AddSingleton<CSharpPublisher>(csharpPublisher);
+                        var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(foregroundDispatcher, new Lazy<OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer>(() => server));
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>(generatedDocumentPublisher);
+                        services.AddSingleton<GeneratedDocumentPublisher>(generatedDocumentPublisher);
 
                         // Formatting
                         services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();
@@ -138,11 +138,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher);
                         services.AddSingleton<DocumentVersionCache>(documentVersionCache);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(documentVersionCache);
-                        var containerStore = new DefaultGeneratedCodeContainerStore(
+                        var containerStore = new DefaultGeneratedDocumentContainerStore(
                             foregroundDispatcher,
                             documentVersionCache,
-                            csharpPublisher);
-                        services.AddSingleton<GeneratedCodeContainerStore>(containerStore);
+                            generatedDocumentPublisher);
+                        services.AddSingleton<GeneratedDocumentContainerStore>(containerStore);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(containerStore);
                     }));
 

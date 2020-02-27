@@ -10,18 +10,18 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class DefaultGeneratedCodeContainerStore : GeneratedCodeContainerStore
+    internal class DefaultGeneratedDocumentContainerStore : GeneratedDocumentContainerStore
     {
-        private readonly ConcurrentDictionary<string, GeneratedCodeContainer> _store;
+        private readonly ConcurrentDictionary<string, GeneratedDocumentContainer> _store;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentVersionCache _documentVersionCache;
-        private readonly CSharpPublisher _csharpPublisher;
+        private readonly GeneratedDocumentPublisher _generatedDocumentPublisher;
         private ProjectSnapshotManagerBase _projectSnapshotManager;
 
-        public DefaultGeneratedCodeContainerStore(
+        public DefaultGeneratedDocumentContainerStore(
             ForegroundDispatcher foregroundDispatcher,
             DocumentVersionCache documentVersionCache,
-            CSharpPublisher csharpPublisher)
+            GeneratedDocumentPublisher generatedDocumentPublisher)
         {
             if (foregroundDispatcher == null)
             {
@@ -33,18 +33,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentVersionCache));
             }
 
-            if (csharpPublisher is null)
+            if (generatedDocumentPublisher is null)
             {
-                throw new ArgumentNullException(nameof(csharpPublisher));
+                throw new ArgumentNullException(nameof(generatedDocumentPublisher));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentVersionCache = documentVersionCache;
-            _csharpPublisher = csharpPublisher;
-            _store = new ConcurrentDictionary<string, GeneratedCodeContainer>(FilePathComparer.Instance);
+            _generatedDocumentPublisher = generatedDocumentPublisher;
+            _store = new ConcurrentDictionary<string, GeneratedDocumentContainer>(FilePathComparer.Instance);
         }
 
-        public override GeneratedCodeContainer Get(string physicalFilePath)
+        public override GeneratedDocumentContainer Get(string physicalFilePath)
         {
             if (physicalFilePath == null)
             {
@@ -86,14 +86,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
-        private GeneratedCodeContainer Create(string filePath)
+        private GeneratedDocumentContainer Create(string filePath)
         {
-            var codeContainer = new GeneratedCodeContainer();
-            codeContainer.GeneratedCodeChanged += (sender, args) =>
+            var documentContainer = new GeneratedDocumentContainer();
+            documentContainer.GeneratedCSharpChanged += (sender, args) =>
             {
-                var generatedCodeContainer = (GeneratedCodeContainer)sender;
+                var generatedDocumentContainer = (GeneratedDocumentContainer)sender;
 
-                var latestDocument = generatedCodeContainer.LatestDocument;
+                var latestDocument = generatedDocumentContainer.LatestDocument;
 
                 Task.Factory.StartNew(() =>
                 {
@@ -109,11 +109,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         return;
                     }
 
-                    _csharpPublisher.Publish(filePath, args.NewText, hostDocumentVersion);
+                    _generatedDocumentPublisher.PublishCSharp(filePath, args.NewText, hostDocumentVersion);
                 }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
             };
 
-            return codeContainer;
+            documentContainer.GeneratedHtmlChanged += (sender, args) =>
+            {
+                var generatedDocumentContainer = (GeneratedDocumentContainer)sender;
+
+                var latestDocument = generatedDocumentContainer.LatestDocument;
+
+                Task.Factory.StartNew(() =>
+                {
+                    if (!_projectSnapshotManager.IsDocumentOpen(filePath))
+                    {
+                        // Document isn't opened, no need to notify the client
+                        return;
+                    }
+
+                    if (!_documentVersionCache.TryGetDocumentVersion(latestDocument, out var hostDocumentVersion))
+                    {
+                        // Cache entry doesn't exist, document most likely was evicted from the cache/too old.
+                        return;
+                    }
+
+                    _generatedDocumentPublisher.PublishHtml(filePath, args.NewText, hostDocumentVersion);
+                }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+            };
+
+            return documentContainer;
         }
     }
 }

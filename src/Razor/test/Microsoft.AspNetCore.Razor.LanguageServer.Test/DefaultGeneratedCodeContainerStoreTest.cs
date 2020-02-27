@@ -17,13 +17,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public DefaultGeneratedCodeContainerStoreTest()
         {
             var documentVersionCache = Mock.Of<DocumentVersionCache>();
-            var csharpPublisher = Mock.Of<CSharpPublisher>();
-            Store = new DefaultGeneratedCodeContainerStore(Dispatcher, documentVersionCache, csharpPublisher);
+            var csharpPublisher = Mock.Of<GeneratedDocumentPublisher>();
+            Store = new DefaultGeneratedDocumentContainerStore(Dispatcher, documentVersionCache, csharpPublisher);
             ProjectManager = TestProjectSnapshotManager.Create(Dispatcher);
             Store.Initialize(ProjectManager);
         }
 
-        private DefaultGeneratedCodeContainerStore Store { get; }
+        private DefaultGeneratedDocumentContainerStore Store { get; }
 
         private TestProjectSnapshotManager ProjectManager { get; }
 

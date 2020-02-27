@@ -8,23 +8,30 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    internal class GeneratedCodeContainer
+    internal class GeneratedDocumentContainer
     {
-        public event EventHandler<TextChangeEventArgs> GeneratedCodeChanged;
+        public event EventHandler<TextChangeEventArgs> GeneratedCSharpChanged;
+        public event EventHandler<TextChangeEventArgs> GeneratedHtmlChanged;
 
         private SourceText _source;
         private VersionStamp? _inputVersion;
-        private VersionStamp? _outputVersion;
-        private RazorCSharpDocument _output;
+        private VersionStamp? _outputCSharpVersion;
+        private VersionStamp? _outputHtmlVersion;
+        private RazorCSharpDocument _outputCSharp;
+        private RazorHtmlDocument _outputHtml;
         private DocumentSnapshot _latestDocument;
 
         private readonly object _setOutputLock = new object();
-        private readonly TextContainer _textContainer;
+        private readonly TextContainer _csharpTextContainer;
+        private readonly TextContainer _htmlTextContainer;
 
-        public GeneratedCodeContainer()
+        public GeneratedDocumentContainer()
         {
-            _textContainer = new TextContainer(_setOutputLock);
-            _textContainer.TextChanged += TextContainer_TextChanged;
+            _csharpTextContainer = new TextContainer(_setOutputLock);
+            _csharpTextContainer.TextChanged += CSharpTextContainer_TextChanged;
+
+            _htmlTextContainer = new TextContainer(_setOutputLock);
+            _htmlTextContainer.TextChanged += HtmlTextContainer_TextChanged;
         }
 
         public SourceText Source
@@ -49,24 +56,46 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public VersionStamp OutputVersion
+        public VersionStamp OutputCSharpVersion
         {
             get
             {
                 lock (_setOutputLock)
                 {
-                    return _outputVersion.Value;
+                    return _outputCSharpVersion.Value;
                 }
             }
         }
 
-        public RazorCSharpDocument Output
+        public VersionStamp OutputHtmlVersion
         {
             get
             {
                 lock (_setOutputLock)
                 {
-                    return _output;
+                    return _outputHtmlVersion.Value;
+                }
+            }
+        }
+
+        public RazorCSharpDocument OutputCSharp
+        {
+            get
+            {
+                lock (_setOutputLock)
+                {
+                    return _outputCSharp;
+                }
+            }
+        }
+
+        public RazorHtmlDocument OutputHtml
+        {
+            get
+            {
+                lock (_setOutputLock)
+                {
+                    return _outputHtml;
                 }
             }
         }
@@ -82,22 +111,35 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public SourceTextContainer SourceTextContainer
+        public SourceTextContainer CSharpSourceTextContainer
         {
             get
             {
                 lock (_setOutputLock)
                 {
-                    return _textContainer;
+                    return _csharpTextContainer;
+                }
+            }
+        }
+
+        public SourceTextContainer HtmlSourceTextContainer
+        {
+            get
+            {
+                lock (_setOutputLock)
+                {
+                    return _htmlTextContainer;
                 }
             }
         }
 
         public void SetOutput(
             DefaultDocumentSnapshot document, 
-            RazorCSharpDocument output,
+            RazorCSharpDocument outputCSharp,
+            RazorHtmlDocument outputHtml,
             VersionStamp inputVersion,
-            VersionStamp outputVersion)
+            VersionStamp outputCSharpVersion,
+            VersionStamp outputHtmlVersion)
         {
             lock (_setOutputLock)
             {
@@ -117,16 +159,24 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 _source = source;
                 _inputVersion = inputVersion;
-                _outputVersion = outputVersion;
-                _output = output;
+                _outputCSharpVersion = outputCSharpVersion;
+                _outputHtmlVersion = outputHtmlVersion;
+                _outputCSharp = outputCSharp;
+                _outputHtml = outputHtml;
                 _latestDocument = document;
-                _textContainer.SetText(SourceText.From(_output.GeneratedCode));
+                _csharpTextContainer.SetText(SourceText.From(_outputCSharp.GeneratedCode));
+                _htmlTextContainer.SetText(SourceText.From(_outputHtml.GeneratedHtml));
             }
         }
 
-        private void TextContainer_TextChanged(object sender, TextChangeEventArgs args)
+        private void CSharpTextContainer_TextChanged(object sender, TextChangeEventArgs args)
         {
-            GeneratedCodeChanged?.Invoke(this, args);
+            GeneratedCSharpChanged?.Invoke(this, args);
+        }
+
+        private void HtmlTextContainer_TextChanged(object sender, TextChangeEventArgs args)
+        {
+            GeneratedHtmlChanged?.Invoke(this, args);
         }
 
         private class TextContainer : SourceTextContainer
