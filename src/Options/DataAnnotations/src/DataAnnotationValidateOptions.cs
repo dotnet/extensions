@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace Microsoft.Extensions.Options
 {
@@ -19,15 +18,22 @@ namespace Microsoft.Extensions.Options
         /// Constructor.
         /// </summary>
         /// <param name="name">The name of the option.</param>
-        public DataAnnotationValidateOptions(string name)
+        /// <param name="serviceProvider">The service provider that will be passed to the <see cref="ValidationContext"/>.</param>
+        public DataAnnotationValidateOptions(string name, IServiceProvider serviceProvider = null)
         {
             Name = name;
+            ServiceProvider = serviceProvider;
         }
 
         /// <summary>
         /// The options name.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// The service provider passed to the <see cref="ValidationContext"/>.
+        /// </summary>
+        public IServiceProvider ServiceProvider { get; }
 
         /// <summary>
         /// Validates a specific named options instance (or all when <paramref name="name"/> is null).
@@ -42,7 +48,7 @@ namespace Microsoft.Extensions.Options
             {
                 var validationResults = new List<ValidationResult>();
                 if (Validator.TryValidateObject(options,
-                    new ValidationContext(options, serviceProvider: null, items: null),
+                    new ValidationContext(options, serviceProvider: ServiceProvider, items: null),
                     validationResults,
                     validateAllProperties: true))
                 {

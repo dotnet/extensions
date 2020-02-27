@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="OptionsBuilder{TOptions}"/> so that additional calls can be chained.</returns>
         public static OptionsBuilder<TOptions> ValidateDataAnnotations<TOptions>(this OptionsBuilder<TOptions> optionsBuilder) where TOptions : class
         {
-            optionsBuilder.Services.AddSingleton<IValidateOptions<TOptions>>(new DataAnnotationValidateOptions<TOptions>(optionsBuilder.Name));
+            optionsBuilder.Services.AddSingleton<IValidateOptions<TOptions>>((serviceProvider) => new DataAnnotationValidateOptions<TOptions>(optionsBuilder.Name, serviceProvider));
             return optionsBuilder;
         }
     }
