@@ -19,6 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Guid(EditorFactoryGuidString)]
     internal class RazorEditorFactory : EditorFactory
     {
+        private const string DotNetCoreCSharpCapability = "CSharp&CPS";
         private const string EditorFactoryGuidString = "3dfdce9e-1799-4372-8aa6-d8e65182fdfc";
         private const string RazorLSPEditorFeatureFlag = "Razor.LSP.Editor";
         private static readonly Guid LiveShareHostUIContextGuid = Guid.Parse("62de1aa5-70b0-4934-9324-680896466fe1");
@@ -26,6 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly Lazy<IVsEditorAdaptersFactoryService> _adaptersFactory;
         private readonly Lazy<IContentType> _razorLSPContentType;
         private readonly Lazy<IVsFeatureFlags> _featureFlags;
+        private readonly Lazy<ProjectHierarchyInspector> _projectHierarchyInspector;
 
         public RazorEditorFactory(AsyncPackage package) : base(package)
         {
@@ -48,6 +50,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 var featureFlags = (IVsFeatureFlags)AsyncPackage.GetGlobalService(typeof(SVsFeatureFlags));
                 return featureFlags;
+            });
+
+            _projectHierarchyInspector = new Lazy<ProjectHierarchyInspector>(() =>
+            {
+                var componentModel = (IComponentModel)AsyncPackage.GetGlobalService(typeof(SComponentModel));
+                var projectHierarchyInspector = componentModel.GetService<ProjectHierarchyInspector>();
+                return projectHierarchyInspector;
             });
         }
 
@@ -99,7 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             uint createDocFlags,
             string moniker,
             string physicalView,
-            IVsHierarchy pHier,
+            IVsHierarchy hierarchy,
             uint itemid,
             IntPtr existingDocData,
             out IntPtr docView,
@@ -120,12 +129,36 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return VSConstants.VS_E_UNSUPPORTEDFORMAT;
             }
 
-            var editorInstance = base.CreateEditorInstance(createDocFlags, moniker, physicalView, pHier, itemid, existingDocData, out docView, out docData, out editorCaption, out cmdUI, out cancelled);
+            if (!ProjectSupportsRazorLSPEditor(moniker, hierarchy))
+            {
+                docView = default;
+                docData = default;
+                editorCaption = null;
+                cmdUI = default;
+                cancelled = 0;
+
+                // Current project hierarchy doesn't support the LSP Razor editor, allow another editor to handle this document
+                return VSConstants.VS_E_UNSUPPORTEDFORMAT;
+            }
+
+            var editorInstance = base.CreateEditorInstance(createDocFlags, moniker, physicalView, hierarchy, itemid, existingDocData, out docView, out docData, out editorCaption, out cmdUI, out cancelled);
             var textLines = (IVsTextLines)Marshal.GetObjectForIUnknown(docData);
 
             SetTextBufferContentType(textLines);
 
             return editorInstance;
+        }
+
+        private bool ProjectSupportsRazorLSPEditor(string documentMoniker, IVsHierarchy hierarchy)
+        {
+            if (_projectHierarchyInspector.Value.HasCapability(documentMoniker, hierarchy, DotNetCoreCSharpCapability))
+            {
+                // .NET Core project that supports C#
+                return true;
+            }
+
+            // Not a C# .NET Core project. This typically happens for legacy Razor scenarios
+            return false;
         }
 
         private void SetTextBufferContentType(IVsTextLines textLines)
