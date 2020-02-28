@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package exposes public shims from core Razor that are used in the OmniSharp plugin.</Description>
     <EnableApiCheck>false</EnableApiCheck>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

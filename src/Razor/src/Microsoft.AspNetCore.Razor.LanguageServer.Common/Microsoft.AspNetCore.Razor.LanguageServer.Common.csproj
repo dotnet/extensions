@@ -4,8 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains common assets that are used in the Razor language server and other assemblies.</Description>
     <EnableApiCheck>false</EnableApiCheck>
-    <!-- Suppress warnings about depending on non-stable version of Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X -->
-    <NoWarn>$(NoWarn);NU5104</NoWarn>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
