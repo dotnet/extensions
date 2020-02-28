@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServerClient.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -32,6 +34,12 @@ namespace Microsoft.VisualStudio.RazorExtension
 
             _editorFactory = new RazorEditorFactory(this);
             RegisterEditorFactory(_editorFactory);
+
+            var componentModel = (IComponentModel)AsyncPackage.GetGlobalService(typeof(SComponentModel));
+
+            // This type listens to ITextDocumentFactoryService created and disposed events. We want to tie into these as soon as possible to ensure we don't miss
+            // and relevant Razor documents.
+            _ = componentModel.GetService<RazorLSPTextDocumentCreatedListener>();
         }
     }
 }

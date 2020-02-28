@@ -46,16 +46,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _documents = new Dictionary<Uri, DocumentTracker>();
         }
 
-        public override void TrackDocumentView(ITextBuffer buffer, ITextView textView)
+        public override void TrackDocument(ITextBuffer buffer)
         {
             if (buffer is null)
             {
                 throw new ArgumentNullException(nameof(buffer));
-            }
-
-            if (textView is null)
-            {
-                throw new ArgumentNullException(nameof(textView));
             }
 
             Debug.Assert(_joinableTaskContext.IsOnMainThread);
@@ -68,19 +63,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 _documents[uri] = documentTracker;
             }
 
-            documentTracker.TextViews.Add(textView);
+            documentTracker.Refcount++;
         }
 
-        public override void UntrackDocumentView(ITextBuffer buffer, ITextView textView)
+        public override void UntrackDocument(ITextBuffer buffer)
         {
             if (buffer is null)
             {
                 throw new ArgumentNullException(nameof(buffer));
-            }
-
-            if (textView is null)
-            {
-                throw new ArgumentNullException(nameof(textView));
             }
 
             Debug.Assert(_joinableTaskContext.IsOnMainThread);
@@ -92,9 +82,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return;
             }
 
-            documentTracker.TextViews.Remove(textView);
+            documentTracker.Refcount--;
 
-            if (documentTracker.TextViews.Count == 0)
+            if (documentTracker.Refcount == 0)
             {
                 _documents.Remove(uri);
             }
@@ -120,12 +110,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             public DocumentTracker(LSPDocument document)
             {
                 Document = document;
-                TextViews = new HashSet<ITextView>();
             }
 
             public LSPDocument Document { get; }
 
-            public HashSet<ITextView> TextViews { get; }
+            public int Refcount { get; set; }
         }
     }
 }

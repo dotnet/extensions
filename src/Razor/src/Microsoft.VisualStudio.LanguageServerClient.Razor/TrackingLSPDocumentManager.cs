@@ -8,8 +8,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     internal abstract class TrackingLSPDocumentManager : LSPDocumentManager
     {
-        public abstract void TrackDocumentView(ITextBuffer buffer, ITextView textView);
+        public abstract void TrackDocument(ITextBuffer buffer);
 
-        public abstract void UntrackDocumentView(ITextBuffer buffer, ITextView textView);
+        public abstract void UntrackDocument(ITextBuffer buffer);
     }
 }

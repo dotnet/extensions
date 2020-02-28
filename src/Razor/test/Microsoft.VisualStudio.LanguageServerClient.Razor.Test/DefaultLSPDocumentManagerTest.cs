@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using Xunit;
@@ -39,9 +38,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void TryGetDocument_TrackedDocument_ReturnsTrue()
         {
             // Arrange
-            var textView = Mock.Of<ITextView>();
             var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
-            manager.TrackDocumentView(TextBuffer, textView);
+            manager.TrackDocument(TextBuffer);
 
             // Act
             var result = manager.TryGetDocument(Uri, out var lspDocument);
@@ -69,10 +67,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void TryGetDocument_UntrackedDocument_ReturnsFalse()
         {
             // Arrange
-            var textView = Mock.Of<ITextView>();
             var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
-            manager.TrackDocumentView(TextBuffer, textView);
-            manager.UntrackDocumentView(TextBuffer, textView);
+            manager.TrackDocument(TextBuffer);
+            manager.UntrackDocument(TextBuffer);
 
             // Act
             var result = manager.TryGetDocument(Uri, out var lspDocument);
@@ -86,12 +83,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void TryGetDocument_TrackDocumentMultipleViews_ReturnsTrue()
         {
             // Arrange
-            var textView1 = Mock.Of<ITextView>();
-            var textView2 = Mock.Of<ITextView>();
             var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
-            manager.TrackDocumentView(TextBuffer, textView1);
-            manager.TrackDocumentView(TextBuffer, textView2);
-            manager.UntrackDocumentView(TextBuffer, textView1);
+            manager.TrackDocument(TextBuffer);
+            manager.TrackDocument(TextBuffer);
+            manager.UntrackDocument(TextBuffer);
 
             // Act
             var result = manager.TryGetDocument(Uri, out var lspDocument);
