@@ -9,6 +9,7 @@
     <!-- These pieces are required in order to reference OmniSharp.MSBuild -->
     <SignAssembly>false</SignAssembly>
     <PublicSign>false</PublicSign>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

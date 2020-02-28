@@ -7,6 +7,7 @@
     <EnableApiCheck>false</EnableApiCheck>
     <RuntimeIdentifiers>win-x64;win-x86;linux-x64;osx-x64;</RuntimeIdentifiers>
     <AssemblyName>rzls</AssemblyName>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
