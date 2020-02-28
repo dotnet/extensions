@@ -9,12 +9,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
+using Microsoft.AspNetCore.Razor.LanguageServer.Hover;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 using OmniSharp.Extensions.LanguageServer.Server;
@@ -30,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public static async Task MainAsync(string[] args)
         {
-            var logLevel = LogLevel.Information;
+            var trace = Trace.Messages;
             for (var i = 0; i < args.Length; i++)
             {
                 if (args[i].IndexOf("debug", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -44,41 +47,68 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     continue;
                 }
 
-                if (args[i] == "--logLevel" && i + 1 < args.Length)
+                if (args[i] == "--trace" && i + 1 < args.Length)
                 {
-                    var logLevelString = args[++i];
-                    if (!Enum.TryParse(logLevelString, out logLevel))
+                    var traceArg = args[++i];
+                    if (!Enum.TryParse(traceArg, out trace))
                     {
-                        logLevel = LogLevel.Information;
-                        Console.WriteLine($"Invalid log level '{logLevelString}'. Defaulting to {logLevel.ToString()}.");
+                        trace = Trace.Messages;
+                        Console.WriteLine($"Invalid Razor trace '{traceArg}'. Defaulting to {trace.ToString()}.");
                     }
                 }
             }
 
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
 
-            var factory = new LoggerFactory();
             ILanguageServer server = null;
             server = await OmniSharp.Extensions.LanguageServer.Server.LanguageServer.From(options =>
                 options
                     .WithInput(Console.OpenStandardInput())
                     .WithOutput(Console.OpenStandardOutput())
-                    .WithLoggerFactory(factory)
-                    .AddDefaultLoggingProvider()
-                    .WithMinimumLogLevel(logLevel)
+                    .ConfigureLogging(builder => builder
+                        .AddLanguageServer()
+                        .SetMinimumLevel(RazorLSPOptions.GetLogLevelForTrace(trace)))
+                    .OnInitialized(async (languageServer, request, response) =>
+                    {
+                        var fileChangeDetectorManager = languageServer.Services.GetRequiredService<RazorFileChangeDetectorManager>();
+                        await fileChangeDetectorManager.InitializedAsync(languageServer);
+                    })
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionEndpoint>()
+                    .WithHandler<RazorHoverEndpoint>()
                     .WithHandler<RazorLanguageEndpoint>()
-                    .WithHandler<RazorProjectEndpoint>()
+                    .WithHandler<RazorConfigurationEndpoint>()
+                    .WithHandler<RazorFormattingEndpoint>()
                     .WithServices(services =>
                     {
+                        services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RemoteTextLoaderFactory, DefaultRemoteTextLoaderFactory>();
                         services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
                         services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
-                        services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
                         services.AddSingleton<ProjectSnapshotChangeTrigger, BackgroundDocumentGenerator>();
+                        services.AddSingleton<RazorDocumentMappingService, DefaultRazorDocumentMappingService>();
+                        services.AddSingleton<RazorFileChangeDetectorManager>();
+
+                        // Options
+                        services.AddSingleton<RazorConfigurationService, DefaultRazorConfigurationService>();
+                        services.AddSingleton<RazorLSPOptionsMonitor>();
+                        services.AddSingleton<IOptionsMonitor<RazorLSPOptions>, RazorLSPOptionsMonitor>();
+
+                        // File change listeners
+                        services.AddSingleton<IProjectConfigurationFileChangeListener, ProjectConfigurationStateSynchronizer>();
+                        services.AddSingleton<IProjectFileChangeListener, ProjectFileSynchronizer>();
+                        services.AddSingleton<IRazorFileChangeListener, RazorFileSynchronizer>();
+
+                        // File Change detectors
+                        services.AddSingleton<IFileChangeDetector, ProjectConfigurationFileChangeDetector>();
+                        services.AddSingleton<IFileChangeDetector, ProjectFileChangeDetector>();
+                        services.AddSingleton<IFileChangeDetector, RazorFileChangeDetector>();
+
+                        // Document processed listeners
                         services.AddSingleton<DocumentProcessedListener, RazorDiagnosticsPublisher>();
+                        services.AddSingleton<DocumentProcessedListener, UnsynchronizableContentDocumentProcessedListener>();
+
                         services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
                         services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
                         services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();
@@ -94,24 +124,38 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                         var foregroundDispatcher = new VSCodeForegroundDispatcher();
                         services.AddSingleton<ForegroundDispatcher>(foregroundDispatcher);
+
+                        var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(foregroundDispatcher, new Lazy<OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer>(() => server));
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>(generatedDocumentPublisher);
+                        services.AddSingleton<GeneratedDocumentPublisher>(generatedDocumentPublisher);
+
+                        // Formatting
+                        services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();
+
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
+                        services.AddSingleton<RazorHoverInfoService, DefaultRazorHoverInfoService>();
+                        services.AddSingleton<HtmlFactsService, DefaultHtmlFactsService>();
                         var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher);
                         services.AddSingleton<DocumentVersionCache>(documentVersionCache);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(documentVersionCache);
-                        var containerStore = new DefaultGeneratedCodeContainerStore(
+                        var containerStore = new DefaultGeneratedDocumentContainerStore(
                             foregroundDispatcher,
                             documentVersionCache,
-                            new Lazy<ILanguageServer>(() => server));
-                        services.AddSingleton<GeneratedCodeContainerStore>(containerStore);
+                            generatedDocumentPublisher);
+                        services.AddSingleton<GeneratedDocumentContainerStore>(containerStore);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(containerStore);
                     }));
 
             // Workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/106
             var languageServer = (OmniSharp.Extensions.LanguageServer.Server.LanguageServer)server;
-            languageServer.MinimumLogLevel = logLevel;
+
+            // Initialize our options for the first time.
+            var optionsMonitor = languageServer.Services.GetRequiredService<RazorLSPOptionsMonitor>();
+            await optionsMonitor.UpdateAsync();
 
             try
             {
+                var factory = new LoggerFactory();
                 var logger = factory.CreateLogger<Program>();
                 var assemblyInformationAttribute = typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
                 logger.LogInformation("Razor Language Server version " + assemblyInformationAttribute.InformationalVersion);

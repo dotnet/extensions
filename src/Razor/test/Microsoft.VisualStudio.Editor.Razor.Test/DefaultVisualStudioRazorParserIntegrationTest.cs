@@ -223,7 +223,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        [ForegroundFact(Skip = "https://github.com/aspnet/AspNetCore/issues/17234")]
+        [ForegroundFact(Skip = "https://github.com/dotnet/aspnetcore/issues/17234")]
         public async Task ImpExprProvisionallyAcceptsDCIAfterIdentifiers_CompletesSyntaxTreeRequest()
         {
             var original = new StringTextSnapshot("foo @DateTime baz", versionNumber: 0);

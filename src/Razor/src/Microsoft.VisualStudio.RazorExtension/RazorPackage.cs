@@ -3,37 +3,35 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
+using Microsoft.VisualStudio.LanguageServerClient.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.VisualStudio.RazorExtension
 {
+    // We attach to the 52nd priority order because the traditional Web + XML editors have priority 51. We need to be loaded prior to them
+    // since we want to have the option to own the experience for Razor files
+    [ProvideEditorExtension(typeof(RazorEditorFactory), RazorLSPContentTypeDefinition.CSHTMLFileExtension, 52, NameResourceID = 101)]
+    [ProvideEditorExtension(typeof(RazorEditorFactory), RazorLSPContentTypeDefinition.RazorFileExtension, 52, NameResourceID = 101)]
+    [ProvideEditorFactory(typeof(RazorEditorFactory), 101, CommonPhysicalViewAttributes = (int)__VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview)]
+    [ProvideEditorLogicalView(typeof(RazorEditorFactory), VSConstants.LOGVIEWID.TextView_string)]
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [AboutDialogInfo(PackageGuidString, "ASP.NET Core Razor Language Services", "#110", "#112", IconResourceID = "#400")]
     [Guid(PackageGuidString)]
-    public sealed class RazorPackage : Package
+    public sealed class RazorPackage : AsyncPackage
     {
         public const string PackageGuidString = "13b72f58-279e-49e0-a56d-296be02f0805";
 
-        private const string CSharpPackageIdString = "13c3bbb4-f18f-4111-9f54-a0fb010d9194";
+        private RazorEditorFactory _editorFactory;
 
-        protected override void Initialize()
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            // We need to force the CSharp package to load. That's responsible for the initialization
-            // of the remote host client.
-            var shell = GetService(typeof(SVsShell)) as IVsShell;
-            if (shell == null)
-            {
-                return;
-            }
-
-            IVsPackage package = null;
-            var packageGuid = new Guid(CSharpPackageIdString);
-            shell.LoadPackage(ref packageGuid, out package);
+            _editorFactory = new RazorEditorFactory(this);
+            RegisterEditorFactory(_editorFactory);
         }
     }
 }

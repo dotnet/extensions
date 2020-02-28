@@ -23,7 +23,7 @@ variables:
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - name: _InternalRuntimeDownloadArgs
     value: ''
-  
+
 # used for post-build phases, internal builds only
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - group: DotNet-AspNet-SDLValidation-Params
@@ -144,9 +144,9 @@ stages:
     parameters:
       enablePublishBuildArtifacts: true
       enablePublishTestResults: true
-      enablePublishUsingPipelines: $(_PublishUsingPipelines)
+      enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       enableTelemetry: true
-      helixRepo: aspnet/AspNetCore-Tooling
+      helixRepo: dotnet/aspnetcore-tooling
       helixType: build.product/
       # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
       ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -165,6 +165,7 @@ stages:
           matrix:
             debug:
               _BuildConfig: Debug
+              _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
             release:
               _BuildConfig: Release
               ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -191,7 +192,7 @@ stages:
               /p:OfficialBuildId=$(Build.BuildNumber)
               /p:ManifestBuildBranch=$(Build.SourceBranchName)
               /p:ManifestBuildNumber=$(Build.BuildNumber)
-              /p:VisualStudioDropName=Products/AspNet/AspNetCore-Tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
+              /p:VisualStudioDropName=Products/dotnet/aspnetcore-tooling/$(Build.SourceBranchName)/$(Build.BuildNumber)
 
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           - group: DotNet-Blob-Feed
@@ -201,6 +202,9 @@ stages:
           displayName: Install Node 10.x
           inputs:
             versionSpec: 10.x
+        - powershell: npm install -g yarn
+          displayName: Install yarn
+          condition: succeeded()
         - task: NuGetCommand@2
           displayName: 'Clear NuGet caches'
           condition: succeeded()
@@ -229,13 +233,21 @@ stages:
           name: Build
           displayName: Build
           condition: succeeded()
+        # Run VSCode functional tests
+        - powershell: |
+            . ../../../../activate.ps1
+            yarn test -- --ci --configuration $(_BuildConfig) --no-restore
+            deactivate
+          workingDirectory: $(Build.SourcesDirectory)/src/Razor/test/VSCode.FunctionalTest
+          displayName: Run VSCode Tests
+          condition: and(succeeded(), ne(variables['_BuildConfig'], 'Release')) # Temporary: Don't run on Release
         - powershell: ./eng/scripts/FinishDumpCollectionForHangingBuilds.ps1 artifacts/log/$(_BuildConfig)
           displayName: Finish background dump collection
           continueOnError: true
           condition: always()
 
         - task: PublishBuildArtifacts@1
-          displayName: Upload TestResults
+          displayName: Upload Test Results
           condition: always()
           continueOnError: true
           inputs:
@@ -243,6 +255,14 @@ stages:
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
             artifactType: Container
             parallel: true
+        - task: PublishTestResults@2
+          displayName: Publish VSCode Test Results
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: '*.xml'
+            searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+          continueOnError: true
+          condition: always()
         - task: PublishBuildArtifacts@1
           displayName: Publish VSIX Artifacts
           inputs:
@@ -340,7 +360,7 @@ stages:
           displayName: Build
           condition: succeeded()
         - task: PublishBuildArtifacts@1
-          displayName: Upload TestResults
+          displayName: Upload Test Results
           condition: always()
           continueOnError: true
           inputs:

@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
@@ -11,15 +13,24 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     internal class DefaultOmniSharpProjectSnapshotManager : OmniSharpProjectSnapshotManagerBase
     {
-        public DefaultOmniSharpProjectSnapshotManager(ProjectSnapshotManagerBase projectSnapshotManager)
+        private readonly RemoteTextLoaderFactory _remoteTextLoaderFactory;
+
+        public DefaultOmniSharpProjectSnapshotManager(
+            ProjectSnapshotManagerBase projectSnapshotManager,
+            RemoteTextLoaderFactory remoteTextLoaderFactory)
         {
             if (projectSnapshotManager == null)
             {
                 throw new ArgumentNullException(nameof(projectSnapshotManager));
             }
 
-            InternalProjectSnapshotManager = projectSnapshotManager;
+            if (remoteTextLoaderFactory is null)
+            {
+                throw new ArgumentNullException(nameof(remoteTextLoaderFactory));
+            }
 
+            InternalProjectSnapshotManager = projectSnapshotManager;
+            _remoteTextLoaderFactory = remoteTextLoaderFactory;
             InternalProjectSnapshotManager.Changed += ProjectSnapshotManager_Changed;
         }
 
@@ -61,7 +72,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         public override void DocumentAdded(OmniSharpHostProject hostProject, OmniSharpHostDocument hostDocument)
         {
-            InternalProjectSnapshotManager.DocumentAdded(hostProject.InternalHostProject, hostDocument.InternalHostDocument, textLoader: null);
+            var textLoader = _remoteTextLoaderFactory.Create(hostDocument.FilePath);
+            InternalProjectSnapshotManager.DocumentAdded(hostProject.InternalHostProject, hostDocument.InternalHostDocument, textLoader);
+        }
+
+        public override void DocumentChanged(string projectFilePath, string documentFilePath)
+        {
+            var textLoader = _remoteTextLoaderFactory.Create(documentFilePath);
+            InternalProjectSnapshotManager.DocumentChanged(projectFilePath, documentFilePath, textLoader);
         }
 
         public override void DocumentRemoved(OmniSharpHostProject hostProject, OmniSharpHostDocument hostDocument)

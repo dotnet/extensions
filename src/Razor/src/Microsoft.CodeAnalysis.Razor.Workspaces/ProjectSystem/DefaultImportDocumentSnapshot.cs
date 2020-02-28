@@ -39,7 +39,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             throw new NotSupportedException();
         }
 
-        public override Task<VersionStamp> GetGeneratedOutputVersionAsync()
+        public override Task<VersionStamp> GetGeneratedCSharpOutputVersionAsync()
+        {
+            throw new NotSupportedException();
+        }
+
+        public override Task<VersionStamp> GetGeneratedHtmlOutputVersionAsync()
         {
             throw new NotSupportedException();
         }
@@ -89,7 +94,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             throw new NotSupportedException();
         }
 
-        public override bool TryGetGeneratedOutputVersionAsync(out VersionStamp result)
+        public override bool TryGetGeneratedCSharpOutputVersionAsync(out VersionStamp result)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override bool TryGetGeneratedHtmlOutputVersionAsync(out VersionStamp result)
         {
             throw new NotSupportedException();
         }

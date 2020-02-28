@@ -1,12 +1,28 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
     public class FilePathNormalizerTest
     {
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Test only valid on Windows boxes")]
+        public void NormalizeForRead_StripsPrecedingSlash()
+        {
+            // Arrange
+            var filePathNormalizer = new FilePathNormalizer();
+            var path = "/c:/path/to/something";
+
+            // Act
+            path = filePathNormalizer.NormalizeForRead(path);
+
+            // Assert
+            Assert.Equal("c:/path/to/something", path);
+        }
+
         [Fact]
         public void NormalizeDirectory_EndsWithSlash()
         {

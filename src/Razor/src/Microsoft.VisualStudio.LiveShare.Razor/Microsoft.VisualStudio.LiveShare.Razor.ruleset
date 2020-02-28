@@ -89,5 +89,6 @@
     <Rule Id="VSTHRD110" Action="Info" />
     <Rule Id="VSTHRD111" Action="Info" />
     <Rule Id="VSTHRD200" Action="Info" />
+    <Rule Id="VSSDK005" Action="Info" />
   </Rules>
 </RuleSet>
