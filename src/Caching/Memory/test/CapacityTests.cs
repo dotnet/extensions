@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
-    public class CapacityTests : LoggedTestBase
+    public class CapacityTests
     {
         [Fact]
         public void MemoryDistributedCacheOptionsDefaultsTo200MBSizeLimit()
@@ -115,10 +115,7 @@ namespace Microsoft.Extensions.Caching.Memory
         [CollectDump]
         public async Task DoNotAddIfSizeOverflows()
         {
-            var cache = new MemoryCache(new MemoryCacheOptions
-            {
-                SizeLimit = long.MaxValue
-            }, LoggerFactory);
+            var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = long.MaxValue });
 
             var entryOptions = new MemoryCacheEntryOptions { Size = long.MaxValue };
             var sem = new SemaphoreSlim(0, 1);
