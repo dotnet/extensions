@@ -6,11 +6,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Hosting.IntegrationTesting;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Test;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,6 +23,12 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                                                             "Stopping end\n" +
                                                             "Stopped firing\n" +
                                                             "Stopped end";
+        private readonly ITestOutputHelper _output;
+
+        public ShutdownTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX)]
@@ -40,6 +46,12 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
         private async Task ExecuteShutdownTest(string testName, string shutdownMechanic)
         {
+            var xunitTestLoggerFactory = TestLoggerBuilder.Create(builder =>
+            {
+                builder.SetMinimumLevel(LogLevel.Trace);
+                builder.AddXunit(_output);
+            });
+
             // TODO refactor deployers to not depend on source code
             // see https://github.com/dotnet/extensions/issues/1697 and https://github.com/dotnet/aspnetcore/issues/10268
 #pragma warning disable 0618
@@ -60,7 +72,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
             deploymentParameters.EnvironmentVariables["DOTNET_STARTMECHANIC"] = shutdownMechanic;
 
-            using (var deployer = new SelfHostDeployer(deploymentParameters, NullLoggerFactory.Instance))
+            using (var deployer = new SelfHostDeployer(deploymentParameters, xunitTestLoggerFactory))
             {
                 var result = await deployer.DeployAsync();
 
