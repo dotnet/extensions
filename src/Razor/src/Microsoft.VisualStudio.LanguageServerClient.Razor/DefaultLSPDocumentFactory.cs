@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
+    [Shared]
     [Export(typeof(LSPDocumentFactory))]
     internal class DefaultLSPDocumentFactory : LSPDocumentFactory
     {

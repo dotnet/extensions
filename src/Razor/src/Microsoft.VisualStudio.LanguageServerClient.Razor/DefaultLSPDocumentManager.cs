@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
+    [Shared]
     [Export(typeof(LSPDocumentManager))]
     internal class DefaultLSPDocumentManager : TrackingLSPDocumentManager
     {

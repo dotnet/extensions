@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
+    [Shared]
     [Export(typeof(LSPEditorFeatureDetector))]
     internal class DefaultLSPEditorFeatureDetector : LSPEditorFeatureDetector
     {

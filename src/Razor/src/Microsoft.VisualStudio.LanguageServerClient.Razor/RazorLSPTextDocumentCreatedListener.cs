@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Utilities;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
+    [Shared]
     [Export(typeof(RazorLSPTextDocumentCreatedListener))]
     internal class RazorLSPTextDocumentCreatedListener
     {

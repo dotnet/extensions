@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
+    [Shared]
     [Export(typeof(ProjectHierarchyInspector))]
     internal class DefaultProjectHierarchyInspector : ProjectHierarchyInspector
     {
