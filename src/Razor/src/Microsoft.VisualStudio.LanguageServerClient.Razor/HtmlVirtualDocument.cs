@@ -27,5 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         }
 
         public override Uri Uri { get; }
+
+        public override long? HostDocumentSyncVersion => throw new NotImplementedException();
     }
 }

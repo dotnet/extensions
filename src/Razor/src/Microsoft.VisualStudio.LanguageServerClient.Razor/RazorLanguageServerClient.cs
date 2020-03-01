@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,18 +13,32 @@ using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using Nerdbank.Streams;
+using StreamJsonRpc;
+using Trace = Microsoft.AspNetCore.Razor.LanguageServer.Trace;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [ClientName(ClientName)]
     [Export(typeof(ILanguageClient))]
     [ContentType(RazorLSPContentTypeDefinition.Name)]
-    internal class RazorLanguageServerClient : ILanguageClient
+    internal class RazorLanguageServerClient : ILanguageClient, ILanguageClientCustomMessage2
     {
         // ClientName enables us to turn on-off the ILanguageClient functionality for specific TextBuffers of content type RazorLSPContentTypeDefinition.Name.
         // This typically is used in cloud scenarios where we want to utilize an ILanguageClient on the server but not the client; therefore we disable this
         // ILanguageClient infrastructure on the guest to ensure that two language servers don't provide results.
         public const string ClientName = "RazorLSPClientName";
+        private readonly RazorLanguageServerCustomMessageTarget _customMessageTarget;
+
+        [ImportingConstructor]
+        public RazorLanguageServerClient(RazorLanguageServerCustomMessageTarget customTarget)
+        {
+            if (customTarget is null)
+            {
+                throw new ArgumentNullException(nameof(customTarget));
+            }
+
+            _customMessageTarget = customTarget;
+        }
 
         public string Name => "Razor Language Server Client";
 
@@ -32,6 +47,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public object InitializationOptions => null;
 
         public IEnumerable<string> FilesToWatch => null;
+
+        public object MiddleLayer => null;
+
+        public object CustomMessageTarget => _customMessageTarget;
 
         public event AsyncEventHandler<EventArgs> StartAsync;
         public event AsyncEventHandler<EventArgs> StopAsync
@@ -69,6 +88,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             return Task.CompletedTask;
         }
+
+        public Task AttachForCustomMessageAsync(JsonRpc rpc) => Task.CompletedTask;
 
         private class AutoFlushingStream : Stream
         {

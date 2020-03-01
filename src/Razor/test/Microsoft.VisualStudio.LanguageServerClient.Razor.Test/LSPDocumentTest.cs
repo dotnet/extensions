@@ -49,6 +49,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private class TestVirtualDocument : VirtualDocument
         {
             public override Uri Uri => throw new NotImplementedException();
+
+            public override long? HostDocumentSyncVersion => throw new NotImplementedException();
         }
     }
 }

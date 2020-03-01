@@ -19,5 +19,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         /// The address to use to refer to the current <see cref="VirtualDocument"/>.
         /// </summary>
         public abstract Uri Uri { get; }
+
+        /// <summary>
+        /// The host document version this virtual document is associated with.
+        ///
+        /// This can be <c>null</c> if the virtual document has not yet been initialized for the assocaited host document.
+        /// </summary>
+        public abstract long? HostDocumentSyncVersion { get; }
     }
 }
