@@ -91,6 +91,7 @@
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.FileSystemGlobbing.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.FileProviders.Abstractions.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.FileProviders.Physical.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.VisualStudio.LanguageServer.Protocol.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.VisualStudio.LanguageServer.Protocol.Extensions.dll" />
     <VSIXSourceItem Include="$(OutputPath)System.Reactive.dll" />
   </ItemGroup>

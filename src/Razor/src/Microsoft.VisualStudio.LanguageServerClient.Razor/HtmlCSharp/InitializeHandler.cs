@@ -12,7 +12,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ExportLspMethod(Methods.InitializeName)]
     internal class InitializeHandler : IRequestHandler<InitializeParams, InitializeResult>
     {
-        private static readonly InitializeResult s_initializeResult = new InitializeResult
+        private static readonly InitializeResult InitializeResult = new InitializeResult
         {
             Capabilities = new ServerCapabilities
             {
@@ -21,6 +21,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         };
 
         public Task<InitializeResult> HandleRequestAsync(InitializeParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
-            => Task.FromResult(s_initializeResult);
+            => Task.FromResult(InitializeResult);
     }
 }
