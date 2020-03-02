@@ -1,7 +1,12 @@
 ﻿using Microsoft.VisualStudio.Shell;
 
+
 [assembly: ProvideBindingRedirection(
-    AssemblyName="OmniSharp.Extensions.JsonRpc",
+    AssemblyName = "Microsoft.VisualStudio.LanguageServer.Protocol.Extensions",
+    CodeBase = @"$PackageFolder$\Microsoft.VisualStudio.LanguageServer.Protocol.Extensions.dll",
+    OldVersionLowerBound = "16.4.30.5595", OldVersionUpperBound = "16.4.30.5595")]
+[assembly: ProvideBindingRedirection(
+    AssemblyName = "OmniSharp.Extensions.JsonRpc",
     CodeBase = @"$PackageFolder$\OmniSharp.Extensions.JsonRpc.dll",
     OldVersionLowerBound = "0.14.0.0", OldVersionUpperBound = "0.14.0.0")]
 [assembly: ProvideBindingRedirection(
