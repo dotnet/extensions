@@ -40,6 +40,14 @@ export class RazorCompletionItemProvider
             // In the code behind it's represented as __o = DateTime.
             const completionCharacterOffset = projectedPosition.character - hostDocumentPosition.character;
             for (const completionItem of completionItems) {
+                const doc = completionItem.documentation as vscode.MarkdownString;
+                if (doc) {
+                    // Without this, the documentation doesn't get rendered in the editor.
+                    const newDoc = new vscode.MarkdownString(doc.value);
+                    newDoc.isTrusted = doc.isTrusted;
+                    completionItem.documentation = newDoc;
+                }
+
                 if (completionItem.range) {
                     const range = completionItem.range;
                     const insertingRange = (range as any).inserting;
