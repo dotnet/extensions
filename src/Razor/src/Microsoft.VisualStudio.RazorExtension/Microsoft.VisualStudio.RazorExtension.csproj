@@ -74,6 +74,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+    ***************************************************************************************************************************************
+      NOTE: Adding OSS components to this list must be reviewed against our component governance standards. For now this is a curated list.
+    ***************************************************************************************************************************************
+    -->
     <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.JsonRpc.dll" />
     <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageProtocol.dll" />
     <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageServer.dll" />
