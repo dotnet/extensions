@@ -140,8 +140,6 @@ stages:
         - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
           displayName: Run Flaky Tests
           continueOnError: true
-        - script: dotnet msbuild eng/repo.targets /t:EnsureFunctionalTestLogsPreserved
-          displayName: Ensure functional test logs preserved
         - powershell: eng\scripts\KillProcesses.ps1
           displayName: Kill processes
           condition: always()
