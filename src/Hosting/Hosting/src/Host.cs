@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.Hosting
             {
                 var env = hostingContext.HostingEnvironment;
                 
-                var reloadOnChange = hostingContext.Configuration.GetValue("HOSTBUILDER_CONFIG_RELOAD", true);
+                var reloadOnChange = hostingContext.Configuration.GetValue("hostbuilder:configreload", true);
 
                 config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: reloadOnChange)
                       .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: reloadOnChange);

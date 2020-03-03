@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -83,9 +84,9 @@ namespace Microsoft.Extensions.Hosting
         }
 
         [Fact]
-        public void CreateDefaultBuilder_ConfigJsonDoesNotReload()
+        public async Task CreateDefaultBuilder_ConfigJsonDoesNotReload()
         {
-            var reloadFlagConfig = new Dictionary<string, string>() {{ "HOSTBUILDER_CONFIG_RELOAD", "false" }};
+            var reloadFlagConfig = new Dictionary<string, string>() {{ "hostbuilder:configreload", "false" }};
             var appSettingsPath = Path.Combine(Path.GetTempPath(), "appsettings.json");
 
             string SaveRandomConfig()
@@ -110,15 +111,15 @@ namespace Microsoft.Extensions.Hosting
             Assert.Equal(dynamicConfigMessage1, config["Hello"]);
 
             var dynamicConfigMessage2 = SaveRandomConfig();
-            Task.Delay(1000).Wait(); // Give reload time to fire if it's going to.
+            await Task.Delay(1000); // Give reload time to fire if it's going to.
             Assert.NotEqual(dynamicConfigMessage1, dynamicConfigMessage2); // Messages are different.
             Assert.Equal(dynamicConfigMessage1, config["Hello"]); // Config did not reload
         }
 
         [Fact]
-        public void CreateDefaultBuilder_ConfigJsonDoesReload()
+        public async Task CreateDefaultBuilder_ConfigJsonDoesReload()
         {
-            var reloadFlagConfig = new Dictionary<string, string>() { { "HOSTBUILDER_CONFIG_RELOAD", "true" } };
+            var reloadFlagConfig = new Dictionary<string, string>() { { "hostbuilder:configreload", "true" } };
             var appSettingsPath = Path.Combine(Path.GetTempPath(), "appsettings.json");
 
             string SaveRandomConfig()
@@ -143,7 +144,16 @@ namespace Microsoft.Extensions.Hosting
             Assert.Equal(dynamicConfigMessage1, config["Hello"]);
 
             var dynamicConfigMessage2 = SaveRandomConfig();
-            Task.Delay(1000).Wait(); // Give reload time to fire if it's going to.
+
+            var configReloadedCancelTokenSource = new CancellationTokenSource();
+            var configReloadedCancelToken = configReloadedCancelTokenSource.Token;
+
+            config.GetReloadToken().RegisterChangeCallback(o =>
+            {
+                //configReloadedCancelTokenSource.Cancel();
+            }, null);
+            // Wait for up to 10 seconds, if config reloads at any time, cancel the wait.
+            await Task.WhenAny(Task.Delay(10000, configReloadedCancelToken)); // Task.WhenAny ignores the task throwing on cancellation.
             Assert.NotEqual(dynamicConfigMessage1, dynamicConfigMessage2); // Messages are different.
             Assert.Equal(dynamicConfigMessage2, config["Hello"]); // Config DID reload from disk
         }
