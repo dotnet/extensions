@@ -76,7 +76,7 @@
   <ItemGroup>
     <!--
     ***************************************************************************************************************************************
-      NOTE: Adding OSS components to this list must be reviewed against our component governance standards. For now this is a curated list.
+      NOTE: Adding OSS components to this list must be reviewed against our component governance standards. For now this is a curated list. You can read more about the CG process at https://aka.ms/component-governance
     ***************************************************************************************************************************************
     -->
     <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.JsonRpc.dll" />
