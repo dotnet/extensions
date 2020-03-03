@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -18,7 +20,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             TextBuffer = Mock.Of<ITextBuffer>();
             Uri = new Uri("C:/path/to/file.razor");
             UriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(TextBuffer) == Uri);
-            LSPDocument = Mock.Of<LSPDocument>(document => document.Uri == Uri);
+            LSPDocumentSnapshot = Mock.Of<LSPDocumentSnapshot>();
+            LSPDocument = Mock.Of<LSPDocument>(document =>
+                document.Uri == Uri &&
+                document.CurrentSnapshot == LSPDocumentSnapshot &&
+                document.VirtualDocuments == new[] { new TestVirtualDocument() } &&
+                document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<TextChange>>(), It.IsAny<long>()) == Mock.Of<LSPDocumentSnapshot>());
             LSPDocumentFactory = Mock.Of<LSPDocumentFactory>(factory => factory.Create(TextBuffer) == LSPDocument);
         }
 
@@ -32,7 +39,114 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         private LSPDocumentFactory LSPDocumentFactory { get; }
 
-        public LSPDocument LSPDocument { get; }
+        private LSPDocument LSPDocument { get; }
+
+        private LSPDocumentSnapshot LSPDocumentSnapshot { get; }
+
+        [Fact]
+        public void TrackDocument_TriggersDocumentAdded()
+        {
+            // Arrange
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var changedCalled = false;
+            manager.Changed += (sender, args) =>
+            {
+                changedCalled = true;
+                Assert.Null(args.Old);
+                Assert.Same(LSPDocumentSnapshot, args.New);
+                Assert.Equal(LSPDocumentChangeKind.Added, args.Kind);
+            };
+
+            // Act
+            manager.TrackDocument(TextBuffer);
+
+            // Assert
+            Assert.True(changedCalled);
+        }
+
+        [Fact]
+        public void UntrackDocument_TriggersDocumentRemoved()
+        {
+            // Arrange
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            manager.TrackDocument(TextBuffer);
+            var changedCalled = false;
+            manager.Changed += (sender, args) =>
+            {
+                changedCalled = true;
+                Assert.Null(args.New);
+                Assert.Same(LSPDocumentSnapshot, args.Old);
+                Assert.Equal(LSPDocumentChangeKind.Removed, args.Kind);
+            };
+
+            // Act
+            manager.UntrackDocument(TextBuffer);
+
+            // Assert
+            Assert.True(changedCalled);
+        }
+
+        [Fact]
+        public void UpdateVirtualDocument_Noops_UnknownDocument()
+        {
+            // Arrange
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var changedCalled = false;
+            manager.Changed += (sender, args) =>
+            {
+                changedCalled = true;
+            };
+            var changes = new[] { new TextChange(new TextSpan(1, 1), string.Empty) };
+
+            // Act
+            manager.UpdateVirtualDocument<TestVirtualDocument>(Uri, changes, 123);
+
+            // Assert
+            Assert.False(changedCalled);
+        }
+
+        [Fact]
+        public void UpdateVirtualDocument_Noops_NoChangesSameVersion()
+        {
+            // Arrange
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            manager.TrackDocument(TextBuffer);
+            var changedCalled = false;
+            manager.Changed += (sender, args) =>
+            {
+                changedCalled = true;
+            };
+            var changes = Array.Empty<TextChange>();
+
+            // Act
+            manager.UpdateVirtualDocument<TestVirtualDocument>(Uri, changes, 123);
+
+            // Assert
+            Assert.False(changedCalled);
+        }
+
+        [Fact]
+        public void UpdateVirtualDocument_InvokesVirtualDocumentChanged()
+        {
+            // Arrange
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            manager.TrackDocument(TextBuffer);
+            var changedCalled = false;
+            manager.Changed += (sender, args) =>
+            {
+                changedCalled = true;
+                Assert.Same(LSPDocumentSnapshot, args.Old);
+                Assert.NotSame(LSPDocumentSnapshot, args.New);
+                Assert.Equal(LSPDocumentChangeKind.VirtualDocumentChanged, args.Kind);
+            };
+            var changes = new[] { new TextChange(new TextSpan(1, 1), string.Empty) };
+
+            // Act
+            manager.UpdateVirtualDocument<TestVirtualDocument>(Uri, changes, 123);
+
+            // Assert
+            Assert.True(changedCalled);
+        }
 
         [Fact]
         public void TryGetDocument_TrackedDocument_ReturnsTrue()
@@ -46,7 +160,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Assert
             Assert.True(result);
-            Assert.Same(LSPDocument, lspDocument);
+            Assert.Same(LSPDocumentSnapshot, lspDocument);
         }
 
         [Fact]
@@ -79,21 +193,20 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             Assert.Null(lspDocument);
         }
 
-        [Fact]
-        public void TryGetDocument_TrackDocumentMultipleViews_ReturnsTrue()
+        private class TestVirtualDocument : VirtualDocument
         {
-            // Arrange
-            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
-            manager.TrackDocument(TextBuffer);
-            manager.TrackDocument(TextBuffer);
-            manager.UntrackDocument(TextBuffer);
+            public override Uri Uri => throw new NotImplementedException();
 
-            // Act
-            var result = manager.TryGetDocument(Uri, out var lspDocument);
+            public override ITextBuffer TextBuffer => throw new NotImplementedException();
 
-            // Assert
-            Assert.True(result);
-            Assert.Same(LSPDocument, lspDocument);
+            public override VirtualDocumentSnapshot CurrentSnapshot => throw new NotImplementedException();
+
+            public override long? HostDocumentSyncVersion => 123;
+
+            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

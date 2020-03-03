@@ -3,26 +3,21 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
-    public abstract class LSPDocument
+    public abstract class LSPDocumentSnapshot
     {
         public abstract int Version { get; }
 
         public abstract Uri Uri { get; }
 
-        public abstract ITextBuffer TextBuffer { get; }
+        public abstract ITextSnapshot Snapshot { get; }
 
-        public abstract LSPDocumentSnapshot CurrentSnapshot { get; }
+        public abstract IReadOnlyList<VirtualDocumentSnapshot> VirtualDocuments { get; }
 
-        public abstract IReadOnlyList<VirtualDocument> VirtualDocuments { get; }
-
-        public abstract LSPDocumentSnapshot UpdateVirtualDocument<TVirtualDocument>(IReadOnlyList<TextChange> changes, long hostDocumentVersion) where TVirtualDocument : VirtualDocument;
-
-        public bool TryGetVirtualDocument<TVirtualDocument>(out TVirtualDocument virtualDocument) where TVirtualDocument : VirtualDocument
+        public bool TryGetVirtualDocument<TVirtualDocument>(out TVirtualDocument virtualDocument) where TVirtualDocument : VirtualDocumentSnapshot
         {
             for (var i = 0; i < VirtualDocuments.Count; i++)
             {

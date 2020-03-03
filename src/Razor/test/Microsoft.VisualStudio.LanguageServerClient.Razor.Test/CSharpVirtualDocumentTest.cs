@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void Update_AlwaysSetsHostDocumentSyncVersion()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>());
             var document = new CSharpVirtualDocument(Uri, textBuffer);
 
             // Act
@@ -95,8 +95,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var edit = new Mock<ITextEdit>();
             edit.Setup(e => e.Delete(delete.Span.Start, delete.Span.Length)).Verifiable();
             edit.Setup(e => e.Replace(replace.Span.Start, replace.Span.Length, replace.NewText)).Verifiable();
-            edit.Setup(e => e.Apply()).Verifiable();
             var textBuffer = CreateTextBuffer(edit.Object);
+            edit.Setup(e => e.Apply())
+                .Returns(textBuffer.CurrentSnapshot).Verifiable();
             var document = new CSharpVirtualDocument(Uri, textBuffer);
 
             // Act
@@ -106,9 +107,37 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             edit.VerifyAll();
         }
 
+        [Fact]
+        public void Update_RecalculatesSnapshot()
+        {
+            // Arrange
+            var replace = new TextChange(new TextSpan(123, 4), "replaced text");
+            var edit = new Mock<ITextEdit>();
+            edit.Setup(e => e.Replace(replace.Span.Start, replace.Span.Length, replace.NewText));
+            var textBuffer = new Mock<ITextBuffer>();
+            var textBufferSnapshot = Mock.Of<ITextSnapshot>();
+            textBuffer.Setup(buffer => buffer.CreateEdit())
+                .Returns(edit.Object);
+            textBuffer.Setup(buffer => buffer.CurrentSnapshot)
+                .Returns(() => textBufferSnapshot);
+            var editedSnapshot = Mock.Of<ITextSnapshot>();
+            edit.Setup(e => e.Apply())
+                .Callback(() =>
+                {
+                    textBufferSnapshot = editedSnapshot;
+                });
+            var document = new CSharpVirtualDocument(Uri, textBuffer.Object);
+
+            // Act
+            document.Update(new[] { replace }, hostDocumentVersion: 1);
+
+            // Assert
+            Assert.Same(editedSnapshot, document.CurrentSnapshot.Snapshot);
+        }
+
         public ITextBuffer CreateTextBuffer(ITextEdit edit)
         {
-            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CreateEdit() == edit);
+            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CreateEdit() == edit && buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>());
             return textBuffer;
         }
     }

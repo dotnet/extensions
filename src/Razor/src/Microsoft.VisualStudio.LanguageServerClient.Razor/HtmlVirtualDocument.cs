@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     internal class HtmlVirtualDocument : VirtualDocument
     {
-        private readonly ITextBuffer _textBuffer;
+        private HtmlVirtualDocumentSnapshot _currentSnapshot;
 
         public HtmlVirtualDocument(Uri uri, ITextBuffer textBuffer)
         {
@@ -23,11 +25,26 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             Uri = uri;
-            _textBuffer = textBuffer;
+            TextBuffer = textBuffer;
+            UpdateSnapshot();
         }
 
         public override Uri Uri { get; }
 
-        public override long? HostDocumentSyncVersion => throw new NotImplementedException();
+        public override ITextBuffer TextBuffer { get; }
+
+        public override long? HostDocumentSyncVersion => null;
+
+        public override VirtualDocumentSnapshot CurrentSnapshot => _currentSnapshot;
+
+        public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void UpdateSnapshot()
+        {
+            _currentSnapshot = new HtmlVirtualDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, HostDocumentSyncVersion);
+        }
     }
 }

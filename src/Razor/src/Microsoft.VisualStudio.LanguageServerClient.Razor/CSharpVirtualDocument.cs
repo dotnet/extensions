@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
@@ -10,8 +11,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     internal class CSharpVirtualDocument : VirtualDocument
     {
-        private readonly ITextBuffer _textBuffer;
         private long? _hostDocumentSyncVersion;
+        private CSharpVirtualDocumentSnapshot _currentSnapshot;
 
         public CSharpVirtualDocument(Uri uri, ITextBuffer textBuffer)
         {
@@ -26,14 +27,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             Uri = uri;
-            _textBuffer = textBuffer;
+            TextBuffer = textBuffer;
+            UpdateSnapshot();
         }
 
         public override Uri Uri { get; }
 
         public override long? HostDocumentSyncVersion => _hostDocumentSyncVersion;
 
-        public void Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+        public override ITextBuffer TextBuffer { get; }
+
+        public override VirtualDocumentSnapshot CurrentSnapshot => _currentSnapshot;
+
+        public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
         {
             if (changes is null)
             {
@@ -44,10 +50,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (changes.Count == 0)
             {
-                return;
+                return _currentSnapshot;
             }
 
-            var edit = _textBuffer.CreateEdit();
+            var edit = TextBuffer.CreateEdit();
             for (var i = 0; i < changes.Count; i++)
             {
                 var change = changes[i];
@@ -71,6 +77,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             edit.Apply();
+            UpdateSnapshot();
+
+            return _currentSnapshot;
+        }
+
+        private void UpdateSnapshot()
+        {
+            _currentSnapshot = new CSharpVirtualDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, HostDocumentSyncVersion);
         }
     }
 }

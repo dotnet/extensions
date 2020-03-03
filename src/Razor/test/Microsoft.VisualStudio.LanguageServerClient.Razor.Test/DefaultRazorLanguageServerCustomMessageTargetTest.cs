@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
@@ -18,8 +19,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void UpdateCSharpBuffer_CanNotDeserializeRequest_NoopsGracefully()
         {
             // Arrange
-            LSPDocument document;
-            var documentManager = new Mock<LSPDocumentManager>();
+            LSPDocumentSnapshot document;
+            var documentManager = new Mock<TrackingLSPDocumentManager>();
             documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out document))
                 .Throws<XunitException>();
             var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object);
@@ -33,8 +34,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void UpdateCSharpBuffer_CannotLookupDocument_NoopsGracefully()
         {
             // Arrange
-            LSPDocument document;
-            var documentManager = new Mock<LSPDocumentManager>();
+            LSPDocumentSnapshot document;
+            var documentManager = new Mock<TrackingLSPDocumentManager>();
             documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out document))
                 .Returns(false);
             var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object);
@@ -52,11 +53,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void UpdateCSharpBuffer_UpdatesDocument()
         {
             // Arrange
-            var virtualDocument = new CSharpVirtualDocument(new Uri("C:/path/to/file.razor__virtual.cs"), textBuffer: Mock.Of<ITextBuffer>());
-            var documentManager = new Mock<LSPDocumentManager>();
-            LSPDocument lspDocument = new DefaultLSPDocument(new Uri("C:/path/to/file.razor"), new[] { virtualDocument });
-            documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out lspDocument))
-                .Returns(true);
+            var documentManager = new Mock<TrackingLSPDocumentManager>();
+            documentManager.Setup(manager => manager.UpdateVirtualDocument<CSharpVirtualDocument>(It.IsAny<Uri>(), It.IsAny<IReadOnlyList<TextChange>>(), 1337))
+                .Verifiable();
             var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object);
             var request = new UpdateBufferRequest()
             {
@@ -70,7 +69,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             target.UpdateCSharpBuffer(token);
 
             // Assert
-            Assert.Equal(1337, virtualDocument.HostDocumentSyncVersion);
+            documentManager.VerifyAll();
         }
     }
 }

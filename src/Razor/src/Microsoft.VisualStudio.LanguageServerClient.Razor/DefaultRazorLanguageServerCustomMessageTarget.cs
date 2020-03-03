@@ -4,6 +4,7 @@
 using System;
 using System.Composition;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
@@ -15,7 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Export(typeof(RazorLanguageServerCustomMessageTarget))]
     public class DefaultRazorLanguageServerCustomMessageTarget : RazorLanguageServerCustomMessageTarget
     {
-        private readonly LSPDocumentManager _documentManager;
+        private readonly TrackingLSPDocumentManager _documentManager;
         private readonly JoinableTaskFactory _joinableTaskFactory;
 
         [ImportingConstructor]
@@ -33,12 +34,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(joinableTaskContext));
             }
 
-            _documentManager = documentManager;
+            _documentManager = documentManager as TrackingLSPDocumentManager;
+
+            if (_documentManager is null)
+            {
+                throw new ArgumentNullException(nameof(_documentManager));
+            }
+
             _joinableTaskFactory = joinableTaskContext.Factory;
         }
 
         // Testing constructor
-        internal DefaultRazorLanguageServerCustomMessageTarget(LSPDocumentManager documentManager)
+        internal DefaultRazorLanguageServerCustomMessageTarget(TrackingLSPDocumentManager documentManager)
         {
             _documentManager = documentManager;
         }
@@ -64,17 +71,22 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return;
             }
 
-            if (!_documentManager.TryGetDocument(request.HostDocumentFilePath, out var document))
+            var hostDocumentUri = ConvertFilePathToUri(request.HostDocumentFilePath);
+            _documentManager.UpdateVirtualDocument<CSharpVirtualDocument>(
+                hostDocumentUri,
+                request.Changes,
+                request.HostDocumentVersion);
+        }
+
+        private Uri ConvertFilePathToUri(string filePath)
+        {
+            if (filePath.StartsWith("/") && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return;
+                filePath = filePath.Substring(1);
             }
 
-            if (!document.TryGetVirtualDocument<CSharpVirtualDocument>(out var csharpVirtualDocument))
-            {
-                return;
-            }
-
-            csharpVirtualDocument.Update(request.Changes, request.HostDocumentVersion);
+            var uri = new Uri(filePath, UriKind.Absolute);
+            return uri;
         }
     }
 }

@@ -8,14 +8,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     public static class LSPDocumentManagerExtensions
     {
-        /// <summary>
-        /// Retrieves the <see cref="LSPDocument"/> associated with the <paramref name="filePath"/> by converting it to a <see cref="Uri"/>.
-        /// </summary>
-        /// <param name="documentManager">The <see cref="LSPDocumentManager"/> to use.</param>
-        /// <param name="filePath">The file path of the document to look up.</param>
-        /// <param name="lspDocument">The resolved <see cref="LSPDocument"/>.</param>
-        /// <returns><c>true</c> if the <see cref="LSPDocument"/> could be resolved for the given <paramref name="filePath"/>, <c>false</c> otherwise.</returns>
-        public static bool TryGetDocument(this LSPDocumentManager documentManager, string filePath, out LSPDocument lspDocument)
+        public static bool TryGetDocument(this LSPDocumentManager documentManager, string filePath, out LSPDocumentSnapshot lspDocumentSnapshot)
         {
             if (documentManager is null)
             {
@@ -33,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             var uri = new Uri(filePath, UriKind.Absolute);
-            return documentManager.TryGetDocument(uri, out lspDocument);
+            return documentManager.TryGetDocument(uri, out lspDocumentSnapshot);
         }
     }
 }

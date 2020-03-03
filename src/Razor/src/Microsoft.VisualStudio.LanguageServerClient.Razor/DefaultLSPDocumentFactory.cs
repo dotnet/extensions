@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var uri = _fileUriProvider.GetOrCreate(buffer);
             var virtualDocuments = CreateVirtualDocuments(buffer);
-            var lspDocument = new DefaultLSPDocument(uri, virtualDocuments);
+            var lspDocument = new DefaultLSPDocument(uri, buffer, virtualDocuments);
 
             return lspDocument;
         }
