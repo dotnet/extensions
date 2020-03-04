@@ -29,7 +29,8 @@ export function createDocument(uri: vscode.Uri) {
 
 function createProjectedHtmlDocument(hostDocumentUri: vscode.Uri) {
     // Index.cshtml => Index.cshtml__virtual.html
-    const projectedPath = `${hostDocumentUri.path}${virtualHtmlSuffix}`;
+    const path = getUriPath(hostDocumentUri);
+    const projectedPath = `${path}${virtualHtmlSuffix}`;
     let uri = vscode.Uri.file(projectedPath);
     uri = uri.with({ scheme: HtmlProjectedDocumentContentProvider.scheme });
     const projectedDocument = new HtmlProjectedDocument(uri);
@@ -39,7 +40,8 @@ function createProjectedHtmlDocument(hostDocumentUri: vscode.Uri) {
 
 function createProjectedCSharpDocument(hostDocumentUri: vscode.Uri) {
     // Index.cshtml => Index.cshtml__virtual.cs
-    const projectedPath = `${hostDocumentUri.path}${virtualCSharpSuffix}`;
+    const path = getUriPath(hostDocumentUri);
+    const projectedPath = `${path}${virtualCSharpSuffix}`;
     let uri = vscode.Uri.file(projectedPath);
     uri = uri.with({ scheme: CSharpProjectedDocumentContentProvider.scheme });
     const projectedDocument = new CSharpProjectedDocument(uri);

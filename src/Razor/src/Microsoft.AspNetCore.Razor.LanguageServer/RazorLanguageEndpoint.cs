@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             DocumentSnapshot documentSnapshot = null;
             await Task.Factory.StartNew(() =>
             {
-                _documentResolver.TryResolveDocument(request.Uri.AbsolutePath, out documentSnapshot);
+                _documentResolver.TryResolveDocument(request.Uri.GetAbsoluteOrUNCPath(), out documentSnapshot);
                 if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
                 {
                     // This typically happens for closed documents.
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             DocumentSnapshot documentSnapshot = null;
             await Task.Factory.StartNew(() =>
             {
-                _documentResolver.TryResolveDocument(request.RazorDocumentUri.AbsolutePath, out documentSnapshot);
+                _documentResolver.TryResolveDocument(request.RazorDocumentUri.GetAbsoluteOrUNCPath(), out documentSnapshot);
                 if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
                 {
                     documentVersion = UndefinedDocumentVersion;

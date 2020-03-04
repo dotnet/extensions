@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 {
@@ -88,7 +89,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             foreach (var fileUri in fileUris)
             {
-                if (fileUri.AbsolutePath.EndsWith(ViewImportsFileName))
+                if (fileUri.GetAbsoluteOrUNCPath().EndsWith(ViewImportsFileName))
                 {
                     var copyTask = sessionContext.DownloadFileAsync(fileUri, cancellationToken);
                     copyTasks.Add(copyTask);

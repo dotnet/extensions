@@ -24,6 +24,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         }
 
         [Fact]
+        public void NormalizeForRead_IgnoresUNCPaths()
+        {
+            // Arrange
+            var filePathNormalizer = new FilePathNormalizer();
+            var path = "//ComputerName/path/to/something";
+
+            // Act
+            path = filePathNormalizer.NormalizeForRead(path);
+
+            // Assert
+            Assert.Equal("//ComputerName/path/to/something", path);
+        }
+
+        [Fact]
         public void NormalizeDirectory_EndsWithSlash()
         {
             // Arrange

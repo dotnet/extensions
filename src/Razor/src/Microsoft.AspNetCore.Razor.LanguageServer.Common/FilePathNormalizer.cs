@@ -46,7 +46,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
             if (filePath[0] == '/')
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                    !filePath.StartsWith("//", StringComparison.OrdinalIgnoreCase)) // Network UNC paths
                 {
                     // VSLS path, not understood by File.OpenRead so we need to strip the leading separator.
                     filePath = filePath.Substring(1);

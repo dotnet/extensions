@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
 
             var document = await Task.Factory.StartNew(() =>
             {
-                _documentResolver.TryResolveDocument(request.TextDocument.Uri.AbsolutePath, out var documentSnapshot);
+                _documentResolver.TryResolveDocument(request.TextDocument.Uri.GetAbsoluteOrUNCPath(), out var documentSnapshot);
 
                 return documentSnapshot;
             }, cancellationToken, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);

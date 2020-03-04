@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Options;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var uri = new Uri("file://path/test.razor");
-            var documentResolver = CreateDocumentResolver(uri.AbsolutePath, codeDocument);
+            var documentResolver = CreateDocumentResolver(uri.GetAbsoluteOrUNCPath(), codeDocument);
             var formattingService = new TestRazorFormattingService();
             var optionsMonitor = GetOptionsMonitor(enableFormatting: true);
             var endpoint = new RazorFormattingEndpoint(Dispatcher, documentResolver, formattingService, optionsMonitor, LoggerFactory);

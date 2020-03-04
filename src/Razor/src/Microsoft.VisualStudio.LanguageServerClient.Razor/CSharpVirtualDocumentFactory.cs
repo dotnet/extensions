@@ -3,6 +3,7 @@
 
 using System;
 using System.Composition;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
 
@@ -77,7 +78,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var hostDocumentUri = _fileUriProvider.GetOrCreate(hostDocumentBuffer);
 
             // Index.cshtml => Index.cshtml__virtual.cs
-            var virtualCSharpFilePath = hostDocumentUri.AbsolutePath + VirtualCSharpFileNameSuffix;
+            var virtualCSharpFilePath = hostDocumentUri.GetAbsoluteOrUNCPath() + VirtualCSharpFileNameSuffix;
             var virtualCSharpUri = new Uri(virtualCSharpFilePath);
 
             var csharpBuffer = _textBufferFactory.CreateTextBuffer(CSharpLSPContentType);

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 Kind = RazorLanguageKind.CSharp,
                 ProjectedRange = projectedRange,
-                HostDocumentFilePath = _filePathNormalizer.Normalize(uri.AbsolutePath),
+                HostDocumentFilePath = _filePathNormalizer.Normalize(uri.GetAbsoluteOrUNCPath()),
                 Options = options
             };
 
