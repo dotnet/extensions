@@ -19,16 +19,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private Uri Uri { get; }
 
         [Fact]
-        public void Update_AlwaysSetsHostDocumentSyncVersion()
+        public void Update_AlwaysSetsHostDocumentSyncVersion_AndUpdatesSnapshot()
         {
             // Arrange
             var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>());
             var document = new CSharpVirtualDocument(Uri, textBuffer);
+            var originalSnapshot = document.CurrentSnapshot;
 
             // Act
             document.Update(Array.Empty<TextChange>(), hostDocumentVersion: 1337);
 
             // Assert
+            Assert.NotSame(originalSnapshot, document.CurrentSnapshot);
             Assert.Equal(1337, document.HostDocumentSyncVersion);
         }
 

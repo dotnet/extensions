@@ -50,6 +50,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (changes.Count == 0)
             {
+                UpdateSnapshot();
                 return _currentSnapshot;
             }
 
