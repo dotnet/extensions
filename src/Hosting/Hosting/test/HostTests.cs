@@ -150,7 +150,7 @@ namespace Microsoft.Extensions.Hosting
 
             config.GetReloadToken().RegisterChangeCallback(o =>
             {
-                //configReloadedCancelTokenSource.Cancel();
+                configReloadedCancelTokenSource.Cancel();
             }, null);
             // Wait for up to 10 seconds, if config reloads at any time, cancel the wait.
             await Task.WhenAny(Task.Delay(10000, configReloadedCancelToken)); // Task.WhenAny ignores the task throwing on cancellation.
