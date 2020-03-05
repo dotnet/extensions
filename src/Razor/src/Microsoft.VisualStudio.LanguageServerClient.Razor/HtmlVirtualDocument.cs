@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             Uri = uri;
             TextBuffer = textBuffer;
-            UpdateSnapshot();
+            _currentSnapshot = UpdateSnapshot();
         }
 
         public override Uri Uri { get; }
@@ -42,9 +42,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             throw new NotImplementedException();
         }
 
-        private void UpdateSnapshot()
-        {
-            _currentSnapshot = new HtmlVirtualDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, HostDocumentSyncVersion);
-        }
+        private HtmlVirtualDocumentSnapshot UpdateSnapshot() => new HtmlVirtualDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, HostDocumentSyncVersion);
     }
 }

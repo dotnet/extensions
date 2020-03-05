@@ -51,7 +51,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 if (_currentSnapshot != TextBuffer.CurrentSnapshot)
                 {
-                    UpdateSnapshot();
+                    _currentSnapshot = UpdateSnapshot();
                 }
 
                 return _currentSnapshot;
@@ -67,12 +67,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             virtualDocument.Update(changes, hostDocumentVersion);
 
-            UpdateSnapshot();
+            _currentSnapshot = UpdateSnapshot();
 
             return CurrentSnapshot;
         }
 
-        private void UpdateSnapshot()
+        private DefaultLSPDocumentSnapshot UpdateSnapshot()
         {
             var virtualDocumentSnapshots = new VirtualDocumentSnapshot[VirtualDocuments.Count];
             for (var i = 0; i < VirtualDocuments.Count; i++)
@@ -80,7 +80,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 virtualDocumentSnapshots[i] = VirtualDocuments[i].CurrentSnapshot;
             }
 
-            _currentSnapshot = new DefaultLSPDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, virtualDocumentSnapshots, Version);
+            return new DefaultLSPDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, virtualDocumentSnapshots, Version);
         }
 
         private class DefaultLSPDocumentSnapshot : LSPDocumentSnapshot

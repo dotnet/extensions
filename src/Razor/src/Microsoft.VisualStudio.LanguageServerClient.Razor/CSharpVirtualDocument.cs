@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             Uri = uri;
             TextBuffer = textBuffer;
-            UpdateSnapshot();
+            _currentSnapshot = UpdateSnapshot();
         }
 
         public override Uri Uri { get; }
@@ -50,7 +50,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (changes.Count == 0)
             {
-                UpdateSnapshot();
+                _currentSnapshot = UpdateSnapshot();
                 return _currentSnapshot;
             }
 
@@ -78,14 +78,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             edit.Apply();
-            UpdateSnapshot();
+            _currentSnapshot = UpdateSnapshot();
 
             return _currentSnapshot;
         }
 
-        private void UpdateSnapshot()
-        {
-            _currentSnapshot = new CSharpVirtualDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, HostDocumentSyncVersion);
-        }
+        private CSharpVirtualDocumentSnapshot UpdateSnapshot() => new CSharpVirtualDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, HostDocumentSyncVersion);
     }
 }
