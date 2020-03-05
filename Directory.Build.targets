@@ -8,7 +8,7 @@
   <Import Project="eng\Baseline.Designer.props" />
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
-    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
     <!-- Suppress creation of .nupkg for servicing builds. -->
     <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
   </PropertyGroup>
@@ -54,5 +54,4 @@
   <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" '$(HasReferenceAssembly)' == 'true' " />
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\Workarounds.AfterArcade.targets" />
-  <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 </Project>

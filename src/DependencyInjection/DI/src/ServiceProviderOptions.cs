@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public bool ValidateScopes { get; set; }
 
         /// <summary>
-        /// <c>true</c> to perform check verifying that all services can be created during <code>BuildServiceProvider</code> call; otherwise <c>false</c>. Defaults to <c>false</c>.
+        /// <c>true</c> to perform check verifying that all services can be created during <c>BuildServiceProvider</c> call; otherwise <c>false</c>. Defaults to <c>false</c>.
         /// NOTE: this check doesn't verify open generics services.
         /// </summary>
         public bool ValidateOnBuild { get; set; }

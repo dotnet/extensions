@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 namespace Microsoft.Extensions.Logging
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="left">The first <see cref="EventId"/>.</param>
         /// <param name="right">The second <see cref="EventId"/>.</param>
-        /// <returns><code>true</code> if the objects are equal.</returns>
+        /// <returns><see langword="true" /> if the objects are equal.</returns>
         public static bool operator ==(EventId left, EventId right)
         {
             return left.Equals(right);
@@ -33,7 +34,7 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="left">The first <see cref="EventId"/>.</param>
         /// <param name="right">The second <see cref="EventId"/>.</param>
-        /// <returns><code>true</code> if the objects are not equal.</returns>
+        /// <returns><see langword="true" /> if the objects are not equal.</returns>
         public static bool operator !=(EventId left, EventId right)
         {
             return !left.Equals(right);
@@ -70,7 +71,7 @@ namespace Microsoft.Extensions.Logging
         /// Indicates whether the current object is equal to another object of the same type. Two events are equal if they have the same id.
         /// </summary>
         /// <param name="other">An object to compare with this object.</param>
-        /// <returns><code>true</code> if the current object is equal to the other parameter; otherwise, <code>false</code>.</returns>
+        /// <returns><see langword="true" /> if the current object is equal to the other parameter; otherwise, <see langword="false" />.</returns>
         public bool Equals(EventId other)
         {
             return Id == other.Id;

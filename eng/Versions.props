@@ -10,10 +10,9 @@
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <PreReleaseVersionLabel>alpha1</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>2</PreReleaseVersionIteration>
     <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
-    <!-- Blazor WASM packages will not RTM with 3.1 -->
-    <BlazorWASMPreReleaseVersionLabel>preview3</BlazorWASMPreReleaseVersionLabel>
     <!--
       We do not support changing reference assemblies in a patch. This ignores
       the patch version number to ensure assembly version of ref assemblies stays constant
@@ -22,7 +21,7 @@
     <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
     <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
     <!--
-      Until package baselines are updated (see aspnet/AspNetCore#12702), ignore them and PatchConfig.props. This also
+      Until package baselines are updated (see dotnet/aspnetcore#12702), ignore them and PatchConfig.props. This also
       gives us time to build the entire repo and settle the infrastructure. Do _not_ do this when stabilizing versions.
     -->
     <DisableServicingFeatures Condition=" '$(DisableServicingFeatures)' == '' AND '$(StabilizePackageVersion)' != 'true' ">true</DisableServicingFeatures>
@@ -54,29 +53,30 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-alpha.1.19564.1</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-alpha.1.19564.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0-alpha.1.19564.1</NETStandardLibraryRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.2.20155.1</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.2.20155.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.2.20155.1</MicrosoftNETCoreAppInternalPackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0-preview.2.20155.1</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>5.0.0-alpha.1.19563.6</MicrosoftWin32RegistryPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>5.0.0-alpha.1.19563.6</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-alpha.1.19563.6</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>5.0.0-alpha.1.19563.6</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>5.0.0-alpha.1.19563.6</SystemIOPipelinesPackageVersion>
-    <SystemReflectionMetadataPackageVersion>5.0.0-alpha.1.19563.6</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-alpha.1.19563.6</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>5.0.0-alpha.1.19563.6</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-alpha.1.19563.6</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-alpha.1.19563.6</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>5.0.0-alpha.1.19563.6</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>5.0.0-alpha.1.19563.6</SystemTextJsonPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>5.0.0-preview.2.20155.1</MicrosoftWin32RegistryPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>5.0.0-preview.2.20155.1</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.2.20155.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>5.0.0-preview.2.20155.1</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>5.0.0-preview.2.20155.1</SystemIOPipelinesPackageVersion>
+    <SystemReflectionMetadataPackageVersion>5.0.0-preview.2.20155.1</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-preview.2.20155.1</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>5.0.0-preview.2.20155.1</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-preview.2.20155.1</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-preview.2.20155.1</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.2.20155.1</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>5.0.0-preview.2.20155.1</SystemTextJsonPackageVersion>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
-    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-alpha.1.19563.6</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.2.20155.1</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.19563.2</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.20151.1</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetVersion>3.4.0-beta1-19456-03</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetVersion>3.5.0-beta4-20153-05</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
@@ -103,6 +103,8 @@
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
+    <!-- Used for FxCop rules during build -->
+    <MicrosoftCodeAnalysisFxCopAnalyzersVersion>2.9.8</MicrosoftCodeAnalysisFxCopAnalyzersVersion>
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>

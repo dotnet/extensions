@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Security.Cryptography.X509Certificates;
@@ -97,7 +98,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         public IKeyVaultSecretManager Manager { get; set; }
 
         /// <summary>
-        /// Gets or sets the timespan to wait between attempts at polling the Azure KeyVault for changes. <code>null</code> to disable reloading.
+        /// Gets or sets the timespan to wait between attempts at polling the Azure KeyVault for changes. <see langword="null" /> to disable reloading.
         /// </summary>
         public TimeSpan? ReloadInterval { get; set; }
 

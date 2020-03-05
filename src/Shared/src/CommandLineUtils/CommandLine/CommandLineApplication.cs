@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections;
@@ -26,10 +27,13 @@ namespace Microsoft.Extensions.CommandLineUtils
         // options.
         private readonly bool _continueAfterUnexpectedArg;
 
-        public CommandLineApplication(bool throwOnUnexpectedArg = true, bool continueAfterUnexpectedArg = false)
+        private readonly bool _treatUnmatchedOptionsAsArguments;
+
+        public CommandLineApplication(bool throwOnUnexpectedArg = true, bool continueAfterUnexpectedArg = false, bool treatUnmatchedOptionsAsArguments = false)
         {
             _throwOnUnexpectedArg = throwOnUnexpectedArg;
             _continueAfterUnexpectedArg = continueAfterUnexpectedArg;
+            _treatUnmatchedOptionsAsArguments = treatUnmatchedOptionsAsArguments;
             Options = new List<CommandOption>();
             Arguments = new List<CommandArgument>();
             Commands = new List<CommandLineApplication>();
@@ -136,6 +140,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             CommandLineApplication command = this;
             CommandOption option = null;
             IEnumerator<CommandArgument> arguments = null;
+            var argumentsAssigned = false;
 
             for (var index = 0; index < args.Length; index++)
             {
@@ -160,6 +165,25 @@ namespace Microsoft.Extensions.CommandLineUtils
                         processed = true;
                         var longOptionName = longOption[0];
                         option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.LongName, longOptionName, StringComparison.Ordinal));
+
+                        if (option == null && _treatUnmatchedOptionsAsArguments)
+                        {
+                            if (arguments == null)
+                            {
+                                arguments = new CommandArgumentEnumerator(command.Arguments.GetEnumerator());
+                            }
+                            if (arguments.MoveNext())
+                            {
+                                processed = true;
+                                arguments.Current.Values.Add(arg);
+                                argumentsAssigned = true;
+                                continue;
+                            }
+                            //else
+                            //{
+                            //    argumentsAssigned = false;
+                            //}
+                        }
 
                         if (option == null)
                         {
@@ -221,6 +245,25 @@ namespace Microsoft.Extensions.CommandLineUtils
                         processed = true;
                         option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.ShortName, shortOption[0], StringComparison.Ordinal));
 
+                        if (option == null && _treatUnmatchedOptionsAsArguments)
+                        {
+                            if (arguments == null)
+                            {
+                                arguments = new CommandArgumentEnumerator(command.Arguments.GetEnumerator());
+                            }
+                            if (arguments.MoveNext())
+                            {
+                                processed = true;
+                                arguments.Current.Values.Add(arg);
+                                argumentsAssigned = true;
+                                continue;
+                            }
+                            //else
+                            //{
+                            //    argumentsAssigned = false;
+                            //}
+                        }
+
                         // If not a short option, try symbol option
                         if (option == null)
                         {
@@ -278,7 +321,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                     option = null;
                 }
 
-                if (!processed && arguments == null)
+                if (!processed && !argumentsAssigned)
                 {
                     var currentCommand = command;
                     foreach (var subcommand in command.Commands)

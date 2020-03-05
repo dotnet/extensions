@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,10 @@ namespace Microsoft.Extensions.Hosting.Internal
         {
             Services = services ?? throw new ArgumentNullException(nameof(services));
             _applicationLifetime = (applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime))) as ApplicationLifetime;
+            if (_applicationLifetime is null)
+            {
+                throw new ArgumentException("Replacing IHostApplicationLifetime is not supported.", nameof(applicationLifetime));
+            }
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _hostLifetime = hostLifetime ?? throw new ArgumentNullException(nameof(hostLifetime));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -51,7 +56,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             }
 
             // Fire IHostApplicationLifetime.Started
-            _applicationLifetime?.NotifyStarted();
+            _applicationLifetime.NotifyStarted();
 
             _logger.Started();
         }
@@ -65,7 +70,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             {
                 var token = linkedCts.Token;
                 // Trigger IHostApplicationLifetime.ApplicationStopping
-                _applicationLifetime?.StopApplication();
+                _applicationLifetime.StopApplication();
 
                 IList<Exception> exceptions = new List<Exception>();
                 if (_hostedServices != null) // Started?
@@ -88,7 +93,7 @@ namespace Microsoft.Extensions.Hosting.Internal
                 await _hostLifetime.StopAsync(token);
 
                 // Fire IHostApplicationLifetime.Stopped
-                _applicationLifetime?.NotifyStopped();
+                _applicationLifetime.NotifyStopped();
 
                 if (exceptions.Count > 0)
                 {

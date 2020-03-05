@@ -1,7 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
@@ -19,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds a delegate that will be used to configure a named <see cref="HttpClient"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
         /// <param name="configureClient">A delegate that is used to configure an <see cref="HttpClient"/>.</param>
         /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
         public static IHttpClientBuilder ConfigureHttpClient(this IHttpClientBuilder builder, Action<HttpClient> configureClient)
@@ -42,7 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds a delegate that will be used to configure a named <see cref="HttpClient"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
         /// <param name="configureClient">A delegate that is used to configure an <see cref="HttpClient"/>.</param>
         /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
         /// <remarks>
@@ -323,7 +325,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            ReserveClient(builder, typeof(TClient), builder.Name);
+            return AddTypedClientCore<TClient>(builder, validateSingleType: false);
+        }
+
+        internal static IHttpClientBuilder AddTypedClientCore<TClient>(this IHttpClientBuilder builder, bool validateSingleType)
+            where TClient : class
+        {
+            ReserveClient(builder, typeof(TClient), builder.Name, validateSingleType);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -377,7 +385,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            ReserveClient(builder, typeof(TClient), builder.Name);
+            return AddTypedClientCore<TClient, TImplementation>(builder, validateSingleType: false);
+        }
+
+        internal static IHttpClientBuilder AddTypedClientCore<TClient, TImplementation>(this IHttpClientBuilder builder, bool validateSingleType)
+            where TClient : class
+            where TImplementation : class, TClient
+        {
+            ReserveClient(builder, typeof(TClient), builder.Name, validateSingleType);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -425,7 +440,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            ReserveClient(builder, typeof(TClient), builder.Name);
+            return AddTypedClientCore<TClient>(builder, factory, validateSingleType: false);
+        }
+
+        internal static IHttpClientBuilder AddTypedClientCore<TClient>(this IHttpClientBuilder builder, Func<HttpClient, TClient> factory, bool validateSingleType)
+            where TClient : class
+        {
+            ReserveClient(builder, typeof(TClient), builder.Name, validateSingleType);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -472,7 +493,23 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            ReserveClient(builder, typeof(TClient), builder.Name);
+            return AddTypedClientCore<TClient>(builder, factory, validateSingleType: false);
+        }
+
+        internal static IHttpClientBuilder AddTypedClientCore<TClient>(this IHttpClientBuilder builder, Func<HttpClient, IServiceProvider, TClient> factory, bool validateSingleType)
+            where TClient : class
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            ReserveClient(builder, typeof(TClient), builder.Name, validateSingleType);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -480,6 +517,62 @@ namespace Microsoft.Extensions.DependencyInjection
                 var httpClient = httpClientFactory.CreateClient(builder.Name);
 
                 return factory(httpClient, s);
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the <see cref="Func{T, R}"/> which determines whether to redact the HTTP header value before logging.
+        /// </summary>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="shouldRedactHeaderValue">The <see cref="Func{T, R}"/> which determines whether to redact the HTTP header value before logging.</param>
+        /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+        /// <remarks>The provided <paramref name="shouldRedactHeaderValue"/> predicate will be evaluated for each header value when logging. If the predicate returns <c>true</c> then the header value will be replaced with a marker value <c>*</c> in logs; otherwise the header value will be logged.
+        /// </remarks>
+        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, Func<string, bool> shouldRedactHeaderValue)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (shouldRedactHeaderValue == null)
+            {
+                throw new ArgumentNullException(nameof(shouldRedactHeaderValue));
+            }
+
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
+            {
+                options.ShouldRedactHeaderValue = shouldRedactHeaderValue;
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the collection of HTTP headers names for which values should be redacted before logging.
+        /// </summary>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="redactedLoggedHeaderNames">The collection of HTTP headers names for which values should be redacted before logging.</param>
+        /// <returns>The <see cref="IHttpClientBuilder"/>.</returns>
+        public static IHttpClientBuilder RedactLoggedHeaders(this IHttpClientBuilder builder, IEnumerable<string> redactedLoggedHeaderNames)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (redactedLoggedHeaderNames == null)
+            {
+                throw new ArgumentNullException(nameof(redactedLoggedHeaderNames));
+            }
+
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
+            {
+                var sensitiveHeaders = new HashSet<string>(redactedLoggedHeaderNames, StringComparer.OrdinalIgnoreCase);
+
+                options.ShouldRedactHeaderValue = (header) => sensitiveHeaders.Contains(header);
             });
 
             return builder;
@@ -526,23 +619,19 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         // See comments on HttpClientMappingRegistry.
-        private static void ReserveClient(IHttpClientBuilder builder, Type type, string name)
+        private static void ReserveClient(IHttpClientBuilder builder, Type type, string name, bool validateSingleType)
         {
             var registry = (HttpClientMappingRegistry)builder.Services.Single(sd => sd.ServiceType == typeof(HttpClientMappingRegistry)).ImplementationInstance;
             Debug.Assert(registry != null);
 
-            // Check for same type registered twice. This can't work because typed clients have to be unique for DI to function.
-            if (registry.TypedClientRegistrations.TryGetValue(type, out var otherName))
-            {
-                var message =
-                    $"The HttpClient factory already has a registered client with the type '{type.FullName}'. " +
-                    $"Client types must be unique. " +
-                    $"Consider using inheritance to create multiple unique types with the same API surface.";
-                throw new InvalidOperationException(message);
-            }
-
             // Check for same name registered to two types. This won't work because we rely on named options for the configuration.
-            if (registry.NamedClientRegistrations.TryGetValue(name, out var otherType))
+            if (registry.NamedClientRegistrations.TryGetValue(name, out var otherType) &&
+
+                // Allow using the same name with multiple types in some cases (see callers).
+                validateSingleType &&
+
+                // Allow registering the same name twice to the same type.
+                type != otherType)
             {
                 var message =
                     $"The HttpClient factory already has a registered client with the name '{name}', bound to the type '{otherType.FullName}'. " +
@@ -551,8 +640,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new InvalidOperationException(message);
             }
 
-            registry.TypedClientRegistrations[type] = name;
-            registry.NamedClientRegistrations[name] = type;
+            if (validateSingleType)
+            {
+                registry.NamedClientRegistrations[name] = type;
+            }
         }
     }
 }

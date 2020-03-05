@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Net.Http;
@@ -210,7 +211,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: true);
             return builder;
         }
 
@@ -253,7 +254,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: true);
             return builder;
         }
 
@@ -298,7 +299,7 @@ namespace Microsoft.Extensions.DependencyInjection
             AddHttpClient(services);
 
             var builder = new DefaultHttpClientBuilder(services, name);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: false); // Name was explicitly provided.
             return builder;
         }
 
@@ -349,7 +350,7 @@ namespace Microsoft.Extensions.DependencyInjection
             AddHttpClient(services);
 
             var builder = new DefaultHttpClientBuilder(services, name);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: false); // name was explicitly provided
             return builder;
         }
 
@@ -394,7 +395,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: true);
             return builder;
         }
 
@@ -439,7 +440,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: true);
             return builder;
         }
 
@@ -489,7 +490,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: true);
             return builder;
         }
 
@@ -539,7 +540,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: true);
             return builder;
         }
 
@@ -591,7 +592,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: false); // name was explicitly provided
             return builder;
         }
 
@@ -643,7 +644,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient>();
+            builder.AddTypedClientCore<TClient>(validateSingleType: false); // name was explictly provided
             return builder;
         }
 
@@ -700,7 +701,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: false); // name was explicitly provided
             return builder;
         }
 
@@ -757,7 +758,199 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
-            builder.AddTypedClient<TClient, TImplementation>();
+            builder.AddTypedClientCore<TClient, TImplementation>(validateSingleType: false); // name was explicitly provided
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/> and configures
+        /// a binding between the <typeparamref name="TClient" /> type and a named <see cref="HttpClient"/>.
+        /// </summary>
+        /// <typeparam name="TClient">
+        /// The type of the typed client. The type specified will be registered in the service collection as
+        /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
+        /// </typeparam>
+        /// <typeparam name="TImplementation">
+        /// The implementation type of the typed client.
+        /// </typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="factory">A delegate that is used to create an instance of <typeparamref name="TClient"/>.</param>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
+        /// <remarks>
+        /// <para>
+        /// <see cref="HttpClient"/> instances that apply the provided configuration can be retrieved using 
+        /// <see cref="IHttpClientFactory.CreateClient(string)"/> and providing the matching name.
+        /// </para>
+        /// <para>
+        /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
+        /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
+        /// <typeparamref name="TClient"/> as the service type. 
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder AddHttpClient<TClient, TImplementation>(this IServiceCollection services, Func<HttpClient, TImplementation> factory)
+            where TClient : class
+            where TImplementation : class, TClient
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
+            return AddHttpClient<TClient, TImplementation>(services, name, factory);
+        }
+
+        /// <summary>
+        /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/> and configures
+        /// a binding between the <typeparamref name="TClient" /> type and a named <see cref="HttpClient"/>.
+        /// </summary>
+        /// <typeparam name="TClient">
+        /// The type of the typed client. The type specified will be registered in the service collection as
+        /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
+        /// </typeparam>
+        /// <typeparam name="TImplementation">
+        /// The implementation type of the typed client.
+        /// </typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
+        /// <param name="factory">A delegate that is used to create an instance of <typeparamref name="TClient"/>.</param>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
+        /// <remarks>
+        /// <para>
+        /// <see cref="HttpClient"/> instances that apply the provided configuration can be retrieved using 
+        /// <see cref="IHttpClientFactory.CreateClient(string)"/> and providing the matching name.
+        /// </para>
+        /// <para>
+        /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
+        /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
+        /// <typeparamref name="TClient"/> as the service type. 
+        /// </para>
+        /// <typeparamref name="TImplementation">
+        /// </typeparamref>
+        /// </remarks>
+        public static IHttpClientBuilder AddHttpClient<TClient, TImplementation>(this IServiceCollection services, string name, Func<HttpClient, TImplementation> factory)
+            where TClient : class
+            where TImplementation : class, TClient
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            AddHttpClient(services);
+
+            var builder = new DefaultHttpClientBuilder(services, name);
+            builder.AddTypedClient<TClient>(factory);
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/> and configures
+        /// a binding between the <typeparamref name="TClient" /> type and a named <see cref="HttpClient"/>.
+        /// </summary>
+        /// <typeparam name="TClient">
+        /// The type of the typed client. The type specified will be registered in the service collection as
+        /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
+        /// </typeparam>
+        /// <typeparam name="TImplementation">
+        /// The implementation type of the typed client.
+        /// </typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="factory">A delegate that is used to create an instance of <typeparamref name="TClient"/>.</param>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
+        /// <remarks>
+        /// <para>
+        /// <see cref="HttpClient"/> instances that apply the provided configuration can be retrieved using 
+        /// <see cref="IHttpClientFactory.CreateClient(string)"/> and providing the matching name.
+        /// </para>
+        /// <para>
+        /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
+        /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
+        /// <typeparamref name="TClient"/> as the service type. 
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder AddHttpClient<TClient, TImplementation>(this IServiceCollection services, Func<HttpClient, IServiceProvider, TImplementation> factory)
+            where TClient : class
+            where TImplementation : class, TClient
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
+            return AddHttpClient<TClient, TImplementation>(services, name, factory);
+        }
+
+        /// <summary>
+        /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/> and configures
+        /// a binding between the <typeparamref name="TClient" /> type and a named <see cref="HttpClient"/>.
+        /// </summary>
+        /// <typeparam name="TClient">
+        /// The type of the typed client. The type specified will be registered in the service collection as
+        /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
+        /// </typeparam>
+        /// <typeparam name="TImplementation">
+        /// The implementation type of the typed client.
+        /// </typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
+        /// <param name="factory">A delegate that is used to create an instance of <typeparamref name="TClient"/>.</param>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
+        /// <remarks>
+        /// <para>
+        /// <see cref="HttpClient"/> instances that apply the provided configuration can be retrieved using 
+        /// <see cref="IHttpClientFactory.CreateClient(string)"/> and providing the matching name.
+        /// </para>
+        /// <para>
+        /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
+        /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
+        /// <typeparamref name="TClient"/> as the service type. 
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder AddHttpClient<TClient, TImplementation>(this IServiceCollection services, string name, Func<HttpClient, IServiceProvider, TImplementation> factory)
+            where TClient : class
+            where TImplementation : class, TClient
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            AddHttpClient(services);
+
+            var builder = new DefaultHttpClientBuilder(services, name);
+            builder.AddTypedClient<TClient>(factory);
             return builder;
         }
     }

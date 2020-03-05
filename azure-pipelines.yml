@@ -11,7 +11,15 @@ variables:
     value: true
   - name: _DotNetArtifactsCategory
     value: ASPNETEXTENSIONS
-    
+  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+    - group: DotNet-MSRC-Storage
+    - name: _InternalRuntimeDownloadArgs
+      value: /p:DotNetRuntimeSourceFeed=https://dotnetclimsrc.blob.core.windows.net/dotnet
+             /p:DotNetRuntimeSourceFeedKey=$(dotnetclimsrc-read-sas-token-base64)
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: _InternalRuntimeDownloadArgs
+      value: ''
+
   # used for post-build phases, internal builds only
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: DotNet-AspNet-SDLValidation-Params
@@ -23,6 +31,7 @@ trigger:
     include:
     - master
     - release/*
+    - internal/release/3.*
 
 pr:
   autoCancel: false
@@ -41,7 +50,15 @@ stages:
     pool:
       vmImage: vs2017-win2016
     steps:
-    - powershell: . ./activate.ps1; ./restore.cmd -ci; ./eng/scripts/CodeCheck.ps1 -ci
+    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+      - task: PowerShell@2
+        displayName: Setup Private Feeds Credentials
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+          arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+        env:
+          Token: $(dn-bot-dnceng-artifact-feeds-rw)
+    - powershell: . ./activate.ps1; ./restore.cmd -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
       displayName: Run eng/scripts/CodeCheck.ps1
 
   - template: /eng/common/templates/jobs/jobs.yml
@@ -52,16 +69,16 @@ stages:
       enablePublishBuildAssets: true
       enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       enableTelemetry: true
-      helixRepo: aspnet/Extensions
+      helixRepo: dotnet/extensions
       jobs:
       - job: Windows
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCorePublic-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2017.Open
+            queue: BuildPool.Server.Amd64.VS2019.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCoreInternal-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2017
+            queue: BuildPool.Server.Amd64.VS2019
         variables:
         # Only enable publishing in official builds.
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -110,11 +127,21 @@ stages:
           inputs:
             command: custom
             arguments: 'locals all -clear'
-        - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_BuildArgs)
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: PowerShell@2
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+              arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
+        - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_BuildArgs) $(_InternalRuntimeDownloadArgs)
           displayName: Build and Publish
         - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
           displayName: Run Flaky Tests
           continueOnError: true
+        - script: dotnet msbuild eng/repo.targets /t:EnsureFunctionalTestLogsPreserved
+          displayName: Ensure functional test logs preserved
         - powershell: eng\scripts\KillProcesses.ps1
           displayName: Kill processes
           condition: always()
@@ -133,6 +160,15 @@ stages:
           inputs:
             pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
@@ -175,11 +211,20 @@ stages:
           displayName: Install Node 10.x
           inputs:
             versionSpec: 10.x
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
-            -p:BuildNodeJS=true
             $(_OfficialBuildArgs)
+            $(_InternalRuntimeDownloadArgs)
+            /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
           displayName: Build
         - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
           displayName: Run Flaky Tests
@@ -205,11 +250,12 @@ stages:
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
-          displayName: Upload NPM artifacts
-          condition: and(succeeded(), eq(variables['_BuildConfig'], 'Release'))
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
           inputs:
-            pathtoPublish: artifacts/npm/
-            artifactName: NpmArtifacts
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
 
@@ -231,9 +277,18 @@ stages:
         steps:
         - checkout: self
           clean: true
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
+            $(_InternalRuntimeDownloadArgs)
           displayName: Build
         - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
           displayName: Run Flaky Tests
@@ -258,6 +313,15 @@ stages:
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
             artifactType: Container
             parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
+            artifactType: Container
+            parallel: true
   - job: Source_Build
     displayName: 'Test: Linux Source Build'
     container: centos:7
@@ -267,6 +331,14 @@ stages:
       DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
     steps:
+    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+      - task: Bash@3
+        displayName: Setup Private Feeds Credentials
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+          arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+        env:
+          Token: $(dn-bot-dnceng-artifact-feeds-rw)
     - script: |
         source eng/common/native/common-library.sh
         mkdir -p $HOME/bin
