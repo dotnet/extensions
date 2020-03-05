@@ -293,7 +293,7 @@ export async function extensionActivated<T>(identifier: string) {
 }
 
 export async function csharpExtensionReady() {
-    const csharpExtension = await extensionActivated<CSharpExtensionExports>('ms-vscode.csharp');
+    const csharpExtension = await extensionActivated<CSharpExtensionExports>('ms-dotnettools.csharp');
     try {
         await csharpExtension.exports.initializationFinished();
         console.log('C# extension activated');

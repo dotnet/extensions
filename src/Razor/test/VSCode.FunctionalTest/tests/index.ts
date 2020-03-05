@@ -94,7 +94,7 @@ export async function run(): Promise<void> {
             .filter(extension => extension.packageJSON.isBuiltin === false);
 
         for (const extension of extensions) {
-            if (extension.id === 'ms-vscode.csharp') {
+            if (extension.id === 'ms-dotnettools.csharp') {
                 return;
             }
         }

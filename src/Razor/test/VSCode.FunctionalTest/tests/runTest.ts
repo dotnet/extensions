@@ -17,7 +17,7 @@ async function main() {
         const vscodeExecutablePath = await downloadAndUnzipVSCode('insiders');
         const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
 
-        cp.spawnSync(cliPath, ['--install-extension', 'ms-vscode.csharp'], {
+        cp.spawnSync(cliPath, ['--install-extension', 'ms-dotnettools.csharp'], {
             encoding: 'utf-8',
             stdio: 'inherit',
         });
