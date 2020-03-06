@@ -36,7 +36,7 @@ suite('CodeLens', () => {
         assert.equal(codeLenses[0].command, undefined);
     });
 
-    test('Can resolve CodeLens in .razor file', async () => {
+    test('Can resolve CodeLens in .razor file', async function() {
         if (process.env.ci === 'true') {
             // Skipping on the CI as this consistently fails.
             this.skip();
