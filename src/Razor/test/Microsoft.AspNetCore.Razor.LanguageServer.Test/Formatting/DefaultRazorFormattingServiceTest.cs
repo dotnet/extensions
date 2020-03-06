@@ -333,6 +333,7 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
+@using System.Buffers
 |@functions{
      public class Foo
             {
@@ -355,6 +356,7 @@ void Method(){
 }|
 ",
 expected: @"
+@using System.Buffers
 @functions{
     public class Foo
     {
