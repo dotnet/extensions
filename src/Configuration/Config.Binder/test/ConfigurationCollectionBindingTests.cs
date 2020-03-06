@@ -194,6 +194,49 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         }
 
         [Fact]
+        public void GetIntDictionary()
+        {
+            GetIntDictionaryT<int>(1, 2, 3);
+        }
+        [Fact]
+        public void GetUIntDictionary()
+        {
+            GetIntDictionaryT<uint>(1, 2, 3);
+        }
+        [Fact]
+        public void GetShortDictionary()
+        {
+            GetIntDictionaryT<short>(1, 2, 3);
+        }
+        [Fact]
+        public void GetUShortDictionary()
+        {
+            GetIntDictionaryT<ushort>(1, 2, 3);
+        }
+        private void GetIntDictionaryT<T>(T k1, T k2, T k3)
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"StringDictionary:1", "val_1"},
+                {"StringDictionary:2", "val_2"},
+                {"StringDictionary:3", "val_3"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new Dictionary<T, string>();
+            config.GetSection("StringDictionary").Bind(options);
+
+            Assert.Equal(3, options.Count);
+
+            Assert.Equal("val_1", options[k1]);
+            Assert.Equal("val_2", options[k2]);
+            Assert.Equal("val_3", options[k3]);
+        }
+
+        [Fact]
         public void GetStringList()
         {
             var input = new Dictionary<string, string>

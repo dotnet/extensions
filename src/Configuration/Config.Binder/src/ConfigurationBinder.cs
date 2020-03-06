@@ -393,7 +393,11 @@ namespace Microsoft.Extensions.Configuration
             var valueType = typeInfo.GenericTypeArguments[1];
             var keyTypeIsEnum = keyType.GetTypeInfo().IsEnum;
 
-            if (keyType != typeof(string) && !keyTypeIsEnum)
+            if (keyType != typeof(string) && !keyTypeIsEnum
+                && keyType != typeof(int)
+                && keyType != typeof(uint)
+                && keyType != typeof(short)
+                && keyType != typeof(ushort))
             {
                 // We only support string and enum keys
                 return;
@@ -417,6 +421,11 @@ namespace Microsoft.Extensions.Configuration
                     else if (keyTypeIsEnum)
                     {
                         var key = Enum.Parse(keyType, child.Key);
+                        setter.SetValue(dictionary, item, new object[] { key });
+                    }
+                    else
+                    {
+                        var key = Convert.ChangeType(child.Key, keyType);
                         setter.SetValue(dictionary, item, new object[] { key });
                     }
                 }
