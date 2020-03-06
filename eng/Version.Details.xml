@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.2.20155.1">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.2.20155.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>6ae4b22a059858eba7b3d9068f812ada92df8e24</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.2.20155.1">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.2.20155.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>6ae4b22a059858eba7b3d9068f812ada92df8e24</Sha>
     </Dependency>
