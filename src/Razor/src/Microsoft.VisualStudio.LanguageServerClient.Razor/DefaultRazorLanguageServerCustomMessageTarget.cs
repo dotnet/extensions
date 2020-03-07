@@ -78,6 +78,34 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 request.HostDocumentVersion);
         }
 
+        public override async Task UpdateHtmlBufferAsync(JToken token, CancellationToken cancellationToken)
+        {
+            if (token is null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            UpdateHtmlBuffer(token);
+        }
+
+        // Internal for testing
+        internal void UpdateHtmlBuffer(JToken token)
+        {
+            var request = token.ToObject<UpdateBufferRequest>();
+            if (request == null || request.HostDocumentFilePath == null)
+            {
+                return;
+            }
+
+            var hostDocumentUri = ConvertFilePathToUri(request.HostDocumentFilePath);
+            _documentManager.UpdateVirtualDocument<HtmlVirtualDocument>(
+                hostDocumentUri,
+                request.Changes,
+                request.HostDocumentVersion);
+        }
+
         private Uri ConvertFilePathToUri(string filePath)
         {
             if (filePath.StartsWith("/") && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
