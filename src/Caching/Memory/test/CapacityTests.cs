@@ -1,11 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory.Infrastructure;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.Memory
@@ -112,10 +114,7 @@ namespace Microsoft.Extensions.Caching.Memory
         [Fact]
         public async Task DoNotAddIfSizeOverflows()
         {
-            var cache = new MemoryCache(new MemoryCacheOptions
-            {
-                SizeLimit = long.MaxValue
-            });
+            var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = long.MaxValue });
 
             var entryOptions = new MemoryCacheEntryOptions { Size = long.MaxValue };
             var sem = new SemaphoreSlim(0, 1);

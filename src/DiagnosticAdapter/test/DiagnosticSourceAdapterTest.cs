@@ -1,8 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.AspNetCore.Testing.xunit;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.DiagnosticAdapter
@@ -126,6 +130,28 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             // Act & Assert
             Assert.False(adapter.IsEnabled("One", "Target info"));
             Assert.Equal(1, callCount);
+        }
+
+        [Fact]
+        public void IsEnabled_False_PredicateCalledForListenerIsEnabled_WithContext()
+        {
+            // Arrange
+            var callCount = 0;
+            Func<string, object, object, bool> isEnabled = (name, arg1, arg2) =>
+            {
+                Assert.Equal("One", name);
+                Assert.Equal("Target info", arg1);
+                callCount++;
+                return false;
+            };
+
+            var listener = CreateListener();
+            using (listener.SubscribeWithAdapter(new OneTarget(), isEnabled))
+            {
+                // Act & Assert
+                Assert.False(listener.IsEnabled("One", "Target info"));
+                Assert.Equal(1, callCount);
+            }
         }
 
         [Fact]
@@ -552,6 +578,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter
         private static DiagnosticSourceAdapter CreateAdapter(object target, Func<string, object, object, bool> isEnabled)
         {
             return new DiagnosticSourceAdapter(target, isEnabled, new ProxyDiagnosticSourceMethodAdapter());
+        }
+
+        private static DiagnosticListener CreateListener([CallerMemberName] string methodName = "")
+        {
+            return new DiagnosticListener(methodName);
         }
     }
 }

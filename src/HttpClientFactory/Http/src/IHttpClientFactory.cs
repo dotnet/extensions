@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,12 +26,8 @@ namespace System.Net.Http
         /// <remarks>
         /// <para>
         /// Each call to <see cref="CreateClient(string)"/> is guaranteed to return a new <see cref="HttpClient"/>
-        /// instance. Callers may cache the returned <see cref="HttpClient"/> instance indefinitely or surround
-        /// its use in a <langword>using</langword> block to dispose it when desired.
-        /// </para>
-        /// <para>
-        /// The default <see cref="IHttpClientFactory"/> implementation may cache the underlying
-        /// <see cref="HttpMessageHandler"/> instances to improve performance.
+        /// instance. It is generally not necessary to dispose of the <see cref="HttpClient"/> as the
+        /// <see cref="IHttpClientFactory"/> tracks and disposes resources used by the <see cref="HttpClient"/>.
         /// </para>
         /// <para>
         /// Callers are also free to mutate the returned <see cref="HttpClient"/> instance's public properties

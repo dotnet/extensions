@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Text;
@@ -152,7 +153,7 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <returns>A task that gets the string value from the stored cache key.</returns>
         public static async Task<string> GetStringAsync(this IDistributedCache cache, string key, CancellationToken token = default(CancellationToken))
         {
-            var data = await cache.GetAsync(key, token);
+            var data = await cache.GetAsync(key, token).ConfigureAwait(false);
             if (data == null)
             {
                 return null;

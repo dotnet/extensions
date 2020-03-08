@@ -1,12 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Internal;
@@ -16,12 +18,12 @@ namespace Microsoft.Extensions.Caching.SqlServer
 {
     public class SqlServerCacheWithDatabaseTest
     {
-        private const string SkipReason = "This requires SQL Server database to be setup";
+        // These tests are disabled by default. To run them, run the "run-db-tests.ps1" script
 
         private const string ConnectionStringKey = "ConnectionString";
         private const string SchemaNameKey = "SchemaName";
         private const string TableNameKey = "TableName";
-
+        private const string EnabledEnvVarName = "SQLCACHETESTS_ENABLED";
         private readonly string _tableName;
         private readonly string _schemaName;
         private readonly string _connectionString;
@@ -33,7 +35,9 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             var memoryConfigurationData = new Dictionary<string, string>
             {
-                { ConnectionStringKey, "Server=localhost;Database=CacheTestDb;Trusted_Connection=True;" },
+                // When creating a test database, these values must be used in the parameters to 'dotnet sql-cache create'.
+                // If you have to use other parameters for some reason, make sure to update this!
+                { ConnectionStringKey, @"Server=(localdb)\MSSQLLocalDB;Database=CacheTestDb;Trusted_Connection=True;" },
                 { SchemaNameKey, "dbo" },
                 { TableNameKey, "CacheTest" },
             };
@@ -41,7 +45,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder
                 .AddInMemoryCollection(memoryConfigurationData)
-                .AddEnvironmentVariables();
+                .AddEnvironmentVariables(prefix: "SQLCACHETESTS_");
 
             var configuration = configurationBuilder.Build();
             _tableName = configuration[TableNameKey];
@@ -49,7 +53,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             _connectionString = configuration[ConnectionStringKey];
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task ReturnsNullValue_ForNonExistingCacheItem()
         {
             // Arrange
@@ -62,7 +67,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetWithAbsoluteExpirationSetInThePast_Throws()
         {
             // Arrange
@@ -82,7 +88,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal("The absolute expiration value must be in the future.", exception.Message);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetCacheItem_SucceedsFor_KeyEqualToMaximumSize()
         {
             // Arrange
@@ -109,7 +116,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(cacheItemInfo);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetCacheItem_SucceedsFor_NullAbsoluteAndSlidingExpirationTimes()
         {
             // Arrange
@@ -148,7 +156,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(cacheItemInfo);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task UpdatedDefaultSlidingExpiration_SetCacheItem_SucceedsFor_NullAbsoluteAndSlidingExpirationTimes()
         {
             // Arrange
@@ -188,7 +197,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(cacheItemInfo);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetCacheItem_FailsFor_KeyGreaterThanMaximumSize()
         {
             // Arrange
@@ -209,9 +219,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
         }
 
         // Arrange
-        [Theory(Skip = SkipReason)]
+        [ConditionalTheory]
         [InlineData(10, 11)]
         [InlineData(10, 30)]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetWithSlidingExpiration_ReturnsNullValue_ForExpiredCacheItem(
             int slidingExpirationWindow, int accessItemAt)
         {
@@ -234,9 +245,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Theory(Skip = SkipReason)]
+        [ConditionalTheory]
         [InlineData(5, 15)]
         [InlineData(10, 20)]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetWithSlidingExpiration_ExtendsExpirationTime(int accessItemAt, int expected)
         {
             // Arrange
@@ -262,9 +274,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: expectedExpirationTime);
         }
 
-        [Theory(Skip = SkipReason)]
+        [ConditionalTheory]
         [InlineData(8)]
         [InlineData(50)]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetWithSlidingExpirationAndAbsoluteExpiration_ReturnsNullValue_ForExpiredCacheItem(
             int accessItemAt)
         {
@@ -292,7 +305,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetWithAbsoluteExpirationRelativeToNow_ReturnsNullValue_ForExpiredCacheItem()
         {
             // Arrange
@@ -314,7 +328,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetWithAbsoluteExpiration_ReturnsNullValue_ForExpiredCacheItem()
         {
             // Arrange
@@ -337,7 +352,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task DoesNotThrowException_WhenOnlyAbsoluteExpirationSupplied_AbsoluteExpirationRelativeToNow()
         {
             // Arrange
@@ -365,7 +381,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: expectedAbsoluteExpiration);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task DoesNotThrowException_WhenOnlyAbsoluteExpirationSupplied_AbsoluteExpiration()
         {
             // Arrange
@@ -392,7 +409,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: expectedAbsoluteExpiration);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetCacheItem_UpdatesAbsoluteExpirationTime()
         {
             // Arrange
@@ -431,7 +449,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: absoluteExpiration);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task SetCacheItem_WithValueLargerThan_DefaultColumnWidth()
         {
             // Arrange
@@ -458,7 +477,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: absoluteExpiration);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task ExtendsExpirationTime_ForSlidingExpiration()
         {
             // Arrange
@@ -487,7 +507,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(expectedExpiresAtTime, cacheItemInfo.ExpiresAtTime);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task GetItem_SlidingExpirationDoesNot_ExceedAbsoluteExpirationIfSet()
         {
             // Arrange
@@ -543,7 +564,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: absoluteExpiration);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task DoestNotExtendsExpirationTime_ForAbsoluteExpiration()
         {
             // Arrange
@@ -572,7 +594,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(expectedExpiresAtTime, cacheItemInfo.ExpiresAtTime);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task RefreshItem_ExtendsExpirationTime_ForSlidingExpiration()
         {
             // Arrange
@@ -601,7 +624,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(expectedExpiresAtTime, cacheItemInfo.ExpiresAtTime);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task GetCacheItem_IsCaseSensitive()
         {
             // Arrange
@@ -619,7 +643,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task GetCacheItem_DoesNotTrimTrailingSpaces()
         {
             // Arrange
@@ -639,7 +664,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(expectedValue, value);
         }
 
-        [Fact(Skip = SkipReason)]
+        [ConditionalFact]
+        [EnvironmentVariableSkipCondition(EnabledEnvVarName, "1")]
         public async Task DeletesCacheItem_OnExplicitlyCalled()
         {
             // Arrange

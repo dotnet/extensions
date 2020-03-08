@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Analyzer package for async best practices.</Description>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
+    <!--
+      Except for analyzer unit tests, analyzers should not be referenced by other projects in this repo. Analyzers cannot be used as
+      a project reference. The SDK currently only supports using analyzers as a PackageReference. This flag prevents this project from
+      being used as a `<Reference>`, which indicates that a reference is interchangeable between ProjectRef and PackageRef.
+    -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <PackageTags>analyzers;async</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <!-- This project is not included in the shared framework -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="AsyncAnalyzer.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

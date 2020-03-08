@@ -2,40 +2,386 @@
 # See https://docs.microsoft.com/azure/devops/pipelines/yaml-schema for details
 #
 
-# Only run CI builds for these branches
+variables:
+  - name: _TeamName
+    value: AspNetCore
+  - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
+    value: true
+  - name: _PublishUsingPipelines
+    value: true
+  - name: _DotNetArtifactsCategory
+    value: ASPNETEXTENSIONS
+  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+    - group: DotNet-MSRC-Storage
+    - name: _InternalRuntimeDownloadArgs
+      value: /p:DotNetRuntimeSourceFeed=https://dotnetclimsrc.blob.core.windows.net/dotnet
+             /p:DotNetRuntimeSourceFeedKey=$(dotnetclimsrc-read-sas-token-base64)
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: _InternalRuntimeDownloadArgs
+      value: ''
+
+  # used for post-build phases, internal builds only
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - group: DotNet-AspNet-SDLValidation-Params
+
+# CI and PR triggers
 trigger:
+  batch: true
   branches:
     include:
-    - 'master'
-    - 'release/*'
-    - 'internal/release/*'
-# Run PR validation on all branches
+    - master
+    - release/*
+    - internal/release/3.*
+
 pr:
+  autoCancel: false
   branches:
     include:
     - '*'
 
-name: $(Date:yyyyMMdd).$(Rev:rr)
+stages:
+- stage: build
+  displayName: Build
+  jobs:
+  - job: Code_check
+    displayName: Code check
+    workspace:
+      clean: all
+    pool:
+      vmImage: vs2017-win2016
+    steps:
+    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+      - task: PowerShell@2
+        displayName: Setup Private Feeds Credentials
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+          arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+        env:
+          Token: $(dn-bot-dnceng-artifact-feeds-rw)
+    - powershell: . ./activate.ps1; ./restore.cmd -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
+      displayName: Run eng/scripts/CodeCheck.ps1
 
-jobs:
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: Windows
-    configuration: Release
-    codeSign: true
-    buildArgs: |
-      '/p:PublishBlobFeedKey=$(PB_PublishBlobFeedKey)'
-    artifacts:
-      publish: true
-      name: artifacts
-      path: artifacts/
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: true
+      enablePublishBuildAssets: true
+      enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
+      enableTelemetry: true
+      helixRepo: dotnet/extensions
+      jobs:
+      - job: Windows
+        pool:
+          ${{ if eq(variables['System.TeamProject'], 'public') }}:
+            name: NetCorePublic-Pool
+            queue: BuildPool.Server.Amd64.VS2019.Open
+          ${{ if ne(variables['System.TeamProject'], 'public') }}:
+            name: NetCoreInternal-Pool
+            queue: BuildPool.Server.Amd64.VS2019
+        variables:
+        # Only enable publishing in official builds.
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          # DotNet-Blob-Feed provides: dotnetfeed-storage-access-key-1
+          # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+          - group: DotNet-Blob-Feed
+          - group: Publish-Build-Assets
+          - name: _OfficialBuildArgs
+            value: /p:DotNetSignType=$(_SignType)
+                   /p:TeamName=$(_TeamName)
+                   /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                   /p:DotNetPublishBlobFeedUrl=https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json
+                   /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+                   /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                   /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
+                   /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+        # else
+        - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+          - name: _OfficialBuildArgs
+            value: ''
+        strategy:
+          matrix:
+            ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+              Debug:
+                _BuildConfig: Debug
+                _SignType: test
+                _DotNetPublishToBlobFeed: false
+                _BuildArgs:
 
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: macOS
-    configuration: Release
+            Release:
+              _BuildConfig: Release
+              # PRs or external builds are not signed.
+              ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+                _SignType: test
+                _DotNetPublishToBlobFeed: false
+              ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+                _SignType: real
+                _DotNetPublishToBlobFeed: true
+                _BuildArgs: $(_OfficialBuildArgs)
+        steps:
+        - checkout: self
+          clean: true
+        - task: NuGetCommand@2
+          displayName: 'Clear NuGet caches'
+          condition: succeeded()
+          inputs:
+            command: custom
+            arguments: 'locals all -clear'
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: PowerShell@2
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+              arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
+        - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_BuildArgs) $(_InternalRuntimeDownloadArgs)
+          displayName: Build and Publish
+        - script: eng\scripts\ci-flaky-tests.cmd -configuration $(_BuildConfig)
+          displayName: Run Flaky Tests
+          continueOnError: true
+        - powershell: eng\scripts\KillProcesses.ps1
+          displayName: Kill processes
+          condition: always()
+        - task: PublishTestResults@2
+          displayName: Publish Flaky Test Results
+          inputs:
+            testResultsFormat: 'xUnit'
+            testResultsFiles: '*.xml'
+            searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
+          continueOnError: true
+          condition: always()
+        - task: PublishBuildArtifacts@1
+          displayName: Upload TestResults
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+            artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload package artifacts
+          condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+          inputs:
+            pathtoPublish: artifacts/packages/
+            artifactName: artifacts
+            artifactType: Container
+            parallel: true
 
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: Linux
-    configuration: Release
+      - job: Ubuntu_16_04
+        displayName: 'Ubuntu 16.04'
+        pool:
+          vmImage: ubuntu-16.04
+        variables:
+        # Only enable publishing in official builds.
+        - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - name: _OfficialBuildArgs
+            value: -p:OfficialBuildId=$(Build.BuildNumber)
+        # else
+        - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+          - name: _OfficialBuildArgs
+            value: ''
+        strategy:
+          matrix:
+            ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+              Debug:
+                _BuildConfig: Debug
+                _SignType: none
+                _DotNetPublishToBlobFeed : false
+            Release:
+              _BuildConfig: Release
+              _SignType: none
+              _DotNetPublishToBlobFeed : false
+        steps:
+        - checkout: self
+          clean: true
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
+        - script: eng/common/cibuild.sh
+            --configuration $(_BuildConfig)
+            --prepareMachine
+            $(_OfficialBuildArgs)
+            $(_InternalRuntimeDownloadArgs)
+            /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+          displayName: Build
+        - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
+          displayName: Run Flaky Tests
+          continueOnError: true
+        - script: eng/scripts/KillProcesses.sh
+          displayName: Kill processes
+          condition: always()
+        - task: PublishTestResults@2
+          displayName: Publish Flaky Test Results
+          inputs:
+            testResultsFormat: 'xUnit'
+            testResultsFiles: '*.xml'
+            searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
+          continueOnError: true
+          condition: always()
+        - task: PublishBuildArtifacts@1
+          displayName: Upload TestResults
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+            artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
+            artifactType: Container
+            parallel: true
+
+      - job: OSX_10_13
+        displayName: 'OSX'
+        pool:
+          vmImage: macOS-10.14
+        strategy:
+          matrix:
+            ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+              Debug:
+                _BuildConfig: Debug
+                _SignType: none
+                _DotNetPublishToBlobFeed : false
+            Release:
+              _BuildConfig: Release
+              _SignType: none
+              _DotNetPublishToBlobFeed : false
+        steps:
+        - checkout: self
+          clean: true
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
+        - script: eng/common/cibuild.sh
+            --configuration $(_BuildConfig)
+            --prepareMachine
+            $(_InternalRuntimeDownloadArgs)
+          displayName: Build
+        - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
+          displayName: Run Flaky Tests
+          continueOnError: true
+        - script: eng/scripts/KillProcesses.sh
+          displayName: Kill processes
+          condition: always()
+        - task: PublishTestResults@2
+          displayName: Publish Flaky Test Results
+          inputs:
+            testResultsFormat: 'xUnit'
+            testResultsFiles: '*.xml'
+            searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)/Flaky'
+          continueOnError: true
+          condition: always()
+        - task: PublishBuildArtifacts@1
+          displayName: Upload TestResults
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
+            artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
+            artifactType: Container
+            parallel: true
+  - job: Source_Build
+    displayName: 'Test: Linux Source Build'
+    container: centos:7
+    pool:
+      vmImage: 'ubuntu-16.04'
+    variables:
+      DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
+    steps:
+    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+      - task: Bash@3
+        displayName: Setup Private Feeds Credentials
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+          arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+        env:
+          Token: $(dn-bot-dnceng-artifact-feeds-rw)
+    - script: |
+        source eng/common/native/common-library.sh
+        mkdir -p $HOME/bin
+        GetFile https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 $HOME/bin/jq
+        chmod +x $HOME/bin/jq
+        echo "##vso[task.prependpath]$HOME/bin"
+      displayName: Install jq
+    - script: ./eng/scripts/ci-source-build.sh --ci --configuration Release
+      displayName: Run ci-source-build.sh
+    - task: PublishBuildArtifacts@1
+      displayName: Upload logs
+      continueOnError: true
+      inputs:
+        pathtoPublish: artifacts/log/
+        artifactName: Source_Build_Logs
+        artifactType: Container
+        parallel: true
+    - task: PublishBuildArtifacts@1
+      displayName: Upload package artifacts
+      # Only capture source build artifacts in PRs for the sake of inspecting
+      # changes that impact source-build. The artifacts from this build pipeline are never actually used.
+      condition: and(succeeded(), in(variables['Build.Reason'], 'PullRequest'))
+      inputs:
+        pathtoPublish: artifacts/packages/
+        artifactName: Source_Build_Packages
+        artifactType: Container
+        parallel: true
+
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: eng\common\templates\post-build\post-build.yml
+    parameters:
+      # Symbol validation isn't being very reliable lately. This should be enabled back
+      # once this issue is resolved: https://github.com/dotnet/arcade/issues/2871
+      enableSymbolValidation: false
+      # This is to enable SDL runs part of Post-Build Validation Stage
+      SDLValidationParameters:
+        enable: true
+        continueOnError: false
+        params: ' -SourceToolsList @("policheck","credscan")
+        -TsaInstanceURL $(_TsaInstanceURL)
+        -TsaProjectName $(_TsaProjectName)
+        -TsaNotificationEmail $(_TsaNotificationEmail)
+        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+        -TsaBugAreaPath $(_TsaBugAreaPath)
+        -TsaIterationPath $(_TsaIterationPath)
+        -TsaRepositoryName "Extensions"
+        -TsaCodebaseName "Extensions"
+        -TsaPublish $True'

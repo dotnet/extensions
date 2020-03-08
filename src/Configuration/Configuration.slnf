@@ -1,0 +1,35 @@
+{
+  "solution": {
+    "path": "C:\\Code\\dotnet\\extensions\\Extensions.sln",
+    "projects": [
+      "src\\Configuration\\Config.Abstractions\\src\\Microsoft.Extensions.Configuration.Abstractions.csproj",
+      "src\\Configuration\\Config.Binder\\src\\Microsoft.Extensions.Configuration.Binder.csproj",
+      "src\\Configuration\\Config.Binder\\test\\Microsoft.Extensions.Configuration.Binder.Tests.csproj",
+      "src\\Configuration\\Config.CommandLine\\src\\Microsoft.Extensions.Configuration.CommandLine.csproj",
+      "src\\Configuration\\Config.CommandLine\\test\\Microsoft.Extensions.Configuration.CommandLine.Tests.csproj",
+      "src\\Configuration\\Config.EnvironmentVariables\\src\\Microsoft.Extensions.Configuration.EnvironmentVariables.csproj",
+      "src\\Configuration\\Config.EnvironmentVariables\\test\\Microsoft.Extensions.Configuration.EnvironmentVariables.Tests.csproj",
+      "src\\Configuration\\Config.FileExtensions\\src\\Microsoft.Extensions.Configuration.FileExtensions.csproj",
+      "src\\Configuration\\Config.FileExtensions\\test\\Microsoft.Extensions.Configuration.FileExtensions.Tests.csproj",
+      "src\\Configuration\\Config.Ini\\src\\Microsoft.Extensions.Configuration.Ini.csproj",
+      "src\\Configuration\\Config.Ini\\test\\Microsoft.Extensions.Configuration.Ini.Tests.csproj",
+      "src\\Configuration\\Config.Json\\src\\Microsoft.Extensions.Configuration.Json.csproj",
+      "src\\Configuration\\Config.Json\\test\\Microsoft.Extensions.Configuration.Json.Tests.csproj",
+      "src\\Configuration\\Config.NewtonsoftJson\\src\\Microsoft.Extensions.Configuration.NewtonsoftJson.csproj",
+      "src\\Configuration\\Config.NewtonsoftJson\\test\\Microsoft.Extensions.Configuration.NewtonsoftJson.Tests.csproj",
+      "src\\Configuration\\Config.UserSecrets\\src\\Microsoft.Extensions.Configuration.UserSecrets.csproj",
+      "src\\Configuration\\Config.UserSecrets\\test\\Microsoft.Extensions.Configuration.UserSecrets.Tests.csproj",
+      "src\\Configuration\\Config.Xml\\src\\Microsoft.Extensions.Configuration.Xml.csproj",
+      "src\\Configuration\\Config.Xml\\test\\Microsoft.Extensions.Configuration.Xml.Tests.csproj",
+      "src\\Configuration\\Config\\src\\Microsoft.Extensions.Configuration.csproj",
+      "src\\Configuration\\Config\\test\\Microsoft.Extensions.Configuration.Tests.csproj",
+      "src\\Configuration\\test\\Config.FunctionalTests\\Microsoft.Extensions.Configuration.FunctionalTests.csproj",
+      "src\\Configuration\\testassets\\Test.Common\\Microsoft.Extensions.Configuration.Test.Common.csproj",
+      "src\\FileProviders\\Abstractions\\src\\Microsoft.Extensions.FileProviders.Abstractions.csproj",
+      "src\\FileProviders\\Physical\\src\\Microsoft.Extensions.FileProviders.Physical.csproj",
+      "src\\FileSystemGlobbing\\src\\Microsoft.Extensions.FileSystemGlobbing.csproj",
+      "src\\Primitives\\src\\Microsoft.Extensions.Primitives.csproj",
+      "src\\TestingUtils\\Microsoft.AspNetCore.Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+    ]
+  }
+}

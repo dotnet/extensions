@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Threading;
@@ -199,6 +200,44 @@ namespace Microsoft.Extensions.Caching.Memory
             }
 
             Assert.False(cache.TryGetValue(key, out int obj));
+        }
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValue_WhenGenericTypeIsIncompatible()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            int value = 42;
+
+            cache.Set(key, value);
+
+            Assert.False(cache.TryGetValue(key, out string obj));
+        }
+
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValueAndSucceed_WhenValueNull()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            string value = null;
+
+            cache.Set(key, value);
+
+            Assert.True(cache.TryGetValue(key, out string obj));
+        }
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValueAndSucceed_WhenValueNullForValueType()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            string value = null;
+
+            cache.Set(key, value);
+
+            Assert.True(cache.TryGetValue(key, out int obj));
+            Assert.Equal(default, obj);
         }
 
         [Fact]
@@ -541,7 +580,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             var task1 = Task.Run(() =>
             {
@@ -550,7 +589,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             var task2 = Task.Run(() =>
             {
@@ -559,7 +598,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             cts.CancelAfter(TimeSpan.FromSeconds(5));
             var task3 = Task.Delay(TimeSpan.FromSeconds(7));

@@ -1,0 +1,115 @@
+<!--
+
+  This file defines the versions of external dependencies used by this repo.
+  This file might be updated by automation.
+
+-->
+<Project>
+  <PropertyGroup Label="Version settings">
+    <MajorVersion>5</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>0</PatchVersion>
+    <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>3</PreReleaseVersionIteration>
+    <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
+    <!--
+      We do not support changing reference assemblies in a patch. This ignores
+      the patch version number to ensure assembly version of ref assemblies stays constant
+      throughout major.minor.
+    -->
+    <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
+    <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
+    <!--
+      Until package baselines are updated (see dotnet/aspnetcore#12702), ignore them and PatchConfig.props. This also
+      gives us time to build the entire repo and settle the infrastructure. Do _not_ do this when stabilizing versions.
+    -->
+    <DisableServicingFeatures Condition=" '$(DisableServicingFeatures)' == '' AND '$(StabilizePackageVersion)' != 'true' ">true</DisableServicingFeatures>
+    <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
+    <IsServicingBuild Condition=" '$(DisableServicingFeatures)' != 'true' AND '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
+    <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->
+    <PreviousExtensionsReleaseVersion Condition=" '$(PatchVersion)' != '0' ">$(MajorVersion).$(MinorVersion).$([MSBuild]::Subtract($(PatchVersion), 1))</PreviousExtensionsReleaseVersion>
+    <!--
+        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
+    -->
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+  </PropertyGroup>
+  <PropertyGroup Label="Arcade settings">
+    <!-- Disable Arcade's Xliff tools -->
+    <UsingToolXliff>false</UsingToolXliff>
+    <!-- Using .NET framework assemblies from a package. -->
+    <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
+  </PropertyGroup>
+  <!--
+
+    These versions should ONLY be updated by automation.
+
+    DO NOT UPDATE THESE MANUALLY. Use the `darc` command line tool to update this file so it stays in sync with
+    Version.Details.xml.
+
+    See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
+
+  -->
+  <PropertyGroup Label="Automated">
+    <!-- Packages from dotnet/core-setup -->
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.2.20155.3</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.2.20155.3</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.2.20155.3</MicrosoftNETCoreAppInternalPackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0-preview.2.20155.3</NETStandardLibraryRefPackageVersion>
+    <!-- Packages from dotnet/corefx -->
+    <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>5.0.0-preview.2.20155.3</MicrosoftWin32RegistryPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>5.0.0-preview.2.20155.3</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.2.20155.3</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>5.0.0-preview.2.20155.3</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>5.0.0-preview.2.20155.3</SystemIOPipelinesPackageVersion>
+    <SystemReflectionMetadataPackageVersion>5.0.0-preview.2.20155.3</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-preview.2.20155.3</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>5.0.0-preview.2.20155.3</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-preview.2.20155.3</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-preview.2.20155.3</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.2.20155.3</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>5.0.0-preview.2.20155.3</SystemTextJsonPackageVersion>
+    <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.2.20155.3</MicrosoftNETCorePlatformsPackageVersion>
+    <!-- Packages from dotnet/arcade -->
+    <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.20151.1</MicrosoftDotNetGenAPIPackageVersion>
+    <!-- Packages from dotnet/roslyn -->
+    <MicrosoftNetCompilersToolsetVersion>3.5.0-beta4-20153-05</MicrosoftNetCompilersToolsetVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="Dependency version settings">
+    <!--
+      Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
+      All Runtime.$rid packages should have the same version.
+    -->
+    <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimeVersion>
+  </PropertyGroup>
+  <!--
+
+    ^^^^^^^^^^
+    SEE NOTE ABOVE.
+
+    Versions above this comment are updated automatically. Don't change them manually.
+
+    Versions below this comment are not managed by automation and can be changed as needed.
+  -->
+  <PropertyGroup Label="Manual">
+    <!-- Stable MSBuild task dependencies -->
+    <MicrosoftBuildFrameworkPackageVersion>15.8.166</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
+    <!-- Used for building and testing analyzers -->
+    <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
+    <!-- Used for FxCop rules during build -->
+    <MicrosoftCodeAnalysisFxCopAnalyzersVersion>2.9.8</MicrosoftCodeAnalysisFxCopAnalyzersVersion>
+    <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
+    <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
+    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
+  </PropertyGroup>
+</Project>

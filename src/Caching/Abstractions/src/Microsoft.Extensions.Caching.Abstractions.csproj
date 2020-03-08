@@ -5,14 +5,18 @@
 Commonly used types:
 Microsoft.Extensions.Caching.Distributed.IDistributedCache
 Microsoft.Extensions.Caching.Memory.IMemoryCache</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;memorycache;distributedcache</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Primitives" />
+    <Reference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

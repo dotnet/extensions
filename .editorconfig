@@ -10,10 +10,11 @@ indent_style = space
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
+file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.\nSee the LICENSE file in the project root for more information.
 
 [*.cs]
 indent_size = 4
-dotnet_sort_system_directives_first = true:warning
+dotnet_sort_system_directives_first = true
 
 [*.{xml,config,*proj,nuspec,props,resx,targets,yml,tasks}]
 indent_size = 2

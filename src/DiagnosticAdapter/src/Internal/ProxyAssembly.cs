@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 #if NETCOREAPP2_0 || NET461
 using System;
@@ -14,13 +15,16 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
     // The use peverify or another tool to look at the generated code.
     public static class ProxyAssembly
     {
-        private static volatile int Counter = 0;
+        private static readonly object Lock;
+        private static int Counter;
 
         private static AssemblyBuilder AssemblyBuilder;
         private static ModuleBuilder ModuleBuilder;
 
         static ProxyAssembly()
         {
+            Lock = new object();
+
             var assemblyName = new AssemblyName("Microsoft.Extensions.DiagnosticAdapter.ProxyAssembly");
 #if GENERATE_ASSEMBLIES
             var access = AssemblyBuilderAccess.RunAndSave;
@@ -38,8 +42,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             Type baseType,
             Type[] interfaces)
         {
-            name = name + "_" + Counter++;
-            return ModuleBuilder.DefineType(name, attributes, baseType, interfaces);
+            lock (Lock)
+            {
+                name = name + "_" + Counter++;
+                return ModuleBuilder.DefineType(name, attributes, baseType, interfaces);
+            }
         }
 
 #if GENERATE_ASSEMBLIES

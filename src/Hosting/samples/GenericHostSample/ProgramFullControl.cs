@@ -1,8 +1,13 @@
-﻿using System;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace GenericHostSample
 {
@@ -14,6 +19,10 @@ namespace GenericHostSample
                 .UseServiceProviderFactory<MyContainer>(new MyContainerFactory())
                 .ConfigureContainer<MyContainer>((hostContext, container) =>
                 {
+                })
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddConsole();
                 })
                 .ConfigureAppConfiguration((hostContext, config) =>
                 {
