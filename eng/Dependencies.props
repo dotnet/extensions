@@ -1,82 +1,89 @@
+<!--
+This file contains a list of all the external dependencies used in ASP.NET Core. These dependencies
+are expressed as `<LatestPackageReference>`. These are used as inputs reference resolution, and
+may be turned into `<PackageReference>` items in projects.
+`<BaselinePackageReference>` items should not be in this file. Those items appear in Baseline.Designer.props
+and are generated based on the last package release.
+-->
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <!-- These package versions may be overridden or updated by automation. -->
-  <PropertyGroup Label="Package Versions: Auto">
-    <InternalAspNetCoreSdkPackageVersion>2.1.7-build-20190104.4</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>2.1.6</MicrosoftNETCoreAppPackageVersion>
-    <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
-    <SystemDataSqlClientPackageVersion>4.5.2-servicing-27114-05</SystemDataSqlClientPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>4.5.0</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.3-servicing-27114-05</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.5.2-servicing-27114-05</SystemMemoryPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.6.0</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.5.1-servicing-27114-05</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>4.5.0</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.5.0</SystemTextEncodingsWebPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.2-servicing-27114-05</SystemThreadingTasksExtensionsPackageVersion>
-    <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
-  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <LatestPackageReference>
+      <!-- Required. Expected to be an exact package version. Wildcards are not allowed. -->
+      <Version></Version>
+    </LatestPackageReference>
+  </ItemDefinitionGroup>
 
-  <!-- This may import a generated file which may override the variables above. -->
-  <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
-
-  <ItemGroup Label=".NET Core dependencies">
-    <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
+  <ItemGroup Label=".NET team dependencies">
+    <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
+    <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <LatestPackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
+    <LatestPackageReference Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
     <LatestPackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
+    <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="$(SystemRuntimeInteropServicesRuntimeInformationPackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
+    <LatestPackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerPackageVersion)" />
     <LatestPackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
+    <LatestPackageReference Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
     <LatestPackageReference Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="$(MicrosoftCodeAnalysisFxCopAnalyzersVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' " Label="MSBuild">
-    <LatestPackageReference Include="Microsoft.Build" Version="15.6.82" />
-    <LatestPackageReference Include="Microsoft.Build.Framework" Version="15.6.82" />
-    <LatestPackageReference Include="Microsoft.Build.Tasks.Core" Version="15.6.82" />
-    <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="15.6.82" />
+    <LatestPackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup Label="External dependencies">
+  <!-- These versions must not be renamed because they override the implicit package references from Arcade. -->
+  <PropertyGroup Label="External dependency versions">
+    <XUnitVersion>2.4.1</XUnitVersion>
+    <XUnitRunnerVisualStudioVersion>$(XUnitVersion)</XUnitRunnerVisualStudioVersion>
+    <XUnitRunnerConsoleVersion>$(XUnitVersion)</XUnitRunnerConsoleVersion>
+  </PropertyGroup>
+
+  <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="2.1.0" />
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
-    <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.1" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.8.0" />
-    <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
-    <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.3" />
+    <LatestPackageReference Include="Microsoft.TypeScript.MSBuild" Version="2.9.2" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <LatestPackageReference Include="Polly.Extensions.Http" Version="2.0.1" />
-    <LatestPackageReference Include="Polly" Version="6.0.1" />
+    <LatestPackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
+    <LatestPackageReference Include="Polly" Version="7.1.0" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
-    <LatestPackageReference Include="Serilog.Sinks.File" Version="3.2.0" />
-    <LatestPackageReference Include="StackExchange.Redis.StrongName" Version="1.2.4" />
-    <LatestPackageReference Include="xunit.abstractions" Version="2.0.1" />
-    <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
-    <LatestPackageReference Include="xunit.assert" Version="2.3.1" />
-    <LatestPackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
-    <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
-    <LatestPackageReference Include="xunit" Version="2.4.0" />
+    <LatestPackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
+    <LatestPackageReference Include="StackExchange.Redis" Version="2.0.593" />
+    <LatestPackageReference Include="xunit.abstractions" Version="2.0.3" />
+    <LatestPackageReference Include="xunit.assert" Version="$(XUnitVersion)" />
+    <LatestPackageReference Include="xunit.extensibility.core" Version="$(XUnitVersion)" />
+    <LatestPackageReference Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />
+    <LatestPackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19239.1" />
+
+    <!-- External DI container references -->
+    <LatestPackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />
+    <LatestPackageReference Include="DryIoc.Microsoft.DependencyInjection" Version="2.1.0" />
+    <LatestPackageReference Include="Grace.DependencyInjection.Extensions" Version="6.4.0" />
+    <LatestPackageReference Include="Lamar.Microsoft.DependencyInjection" Version="2.0.1" />
+    <LatestPackageReference Include="LightInject.Microsoft.DependencyInjection" Version="2.2.0" />
+    <LatestPackageReference Include="Stashbox.Extensions.Dependencyinjection" Version="2.6.3" />
+    <LatestPackageReference Include="StructureMap.Microsoft.DependencyInjection" Version="1.4.0" />
+    <LatestPackageReference Include="Unity.Microsoft.DependencyInjection" Version="2.1.3" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
-    <Reference Include="Microsoft.AspNetCore.Testing" />
-    <Reference Include="Microsoft.NET.Test.Sdk" />
-    <Reference Include="Moq" />
-    <Reference Include="xunit" />
-    <Reference Include="xunit.analyzers" />
-    <Reference Include="xunit.runner.visualstudio" />
-  </ItemGroup>
 </Project>

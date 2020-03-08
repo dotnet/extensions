@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Threading.Tasks;
@@ -17,16 +18,24 @@ namespace Microsoft.Extensions.Caching.Memory
 
         public static TItem Get<TItem>(this IMemoryCache cache, object key)
         {
-            cache.TryGetValue(key, out TItem value);
-            return value;
+            return (TItem)(cache.Get(key) ?? default(TItem));
         }
 
         public static bool TryGetValue<TItem>(this IMemoryCache cache, object key, out TItem value)
         {
             if (cache.TryGetValue(key, out object result))
             {
-                value = (TItem)result;
-                return true;
+                if (result == null)
+                {
+                    value = default;
+                    return true;
+                }
+
+                if (result is TItem item)
+                {
+                    value = item;
+                    return true;
+                }
             }
 
             value = default;
@@ -108,7 +117,7 @@ namespace Microsoft.Extensions.Caching.Memory
             if (!cache.TryGetValue(key, out object result))
             {
                 var entry = cache.CreateEntry(key);
-                result = await factory(entry);
+                result = await factory(entry).ConfigureAwait(false);
                 entry.SetValue(result);
                 // need to manually call dispose instead of having a using
                 // in case the factory passed in throws, in which case we

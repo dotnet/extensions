@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Net.Http;
@@ -39,7 +40,7 @@ namespace Microsoft.Extensions.Http
     /// <para>
     /// To adapt an existing non-generic <see cref="IAsyncPolicy"/>, use code like the following:
     /// <example>
-    /// Converting a non-generic <code>IAsyncPolicy policy</code> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
+    /// Converting a non-generic <c>IAsyncPolicy policy</c> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
     /// <code>
     /// policy.AsAsyncPolicy&lt;HttpResponseMessage&gt;()
     /// </code>
@@ -66,7 +67,7 @@ namespace Microsoft.Extensions.Http
     /// and ensure that they can be used when the handler rotation feature is active.
     /// </para>
     /// <para>
-    /// The <see cref="PolicyHttpMessageHandler"/> will attach a context to the <see cref="HttpResponseMessage"/> prior
+    /// The <see cref="PolicyHttpMessageHandler"/> will attach a context to the <see cref="HttpRequestMessage"/> prior
     /// to executing a <see cref="Policy"/>, if one does not already exist. The <see cref="Context"/> will be provided
     /// to the policy for use inside the <see cref="Policy"/> and in other message handlers.
     /// </para>
@@ -112,7 +113,7 @@ namespace Microsoft.Extensions.Http
                 throw new ArgumentNullException(nameof(request));
             }
 
-            // Guarantee the existance of a context for every policy execution, but only create a new one if needed. This
+            // Guarantee the existence of a context for every policy execution, but only create a new one if needed. This
             // allows later handlers to flow state if desired.
             var cleanUpContext = false;
             var context = request.GetPolicyExecutionContext();
@@ -127,7 +128,7 @@ namespace Microsoft.Extensions.Http
             try
             {
                 var policy = _policy ?? SelectPolicy(request);
-                response = await policy.ExecuteAsync((c, ct) => SendCoreAsync(request, c, ct), context, cancellationToken);
+                response = await policy.ExecuteAsync((c, ct) => SendCoreAsync(request, c, ct), context, cancellationToken).ConfigureAwait(false);
             }
             finally
             {

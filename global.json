@@ -1,0 +1,17 @@
+{
+  "sdk": {
+    "version": "5.0.100-preview.1.20106.1"
+  },
+  "tools": {
+    "dotnet": "5.0.100-preview.1.20106.1",
+    "runtimes": {
+      "dotnet": [
+        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+      ]
+    }
+  },
+  "msbuild-sdks": {
+    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20151.1",
+    "Microsoft.DotNet.Helix.Sdk": "5.0.0-beta.20151.1"
+  }
+}

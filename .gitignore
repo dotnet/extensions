@@ -9,7 +9,6 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
-.dotnet/
 bower_components/
 node_modules/
 **/wwwroot/lib/
@@ -34,6 +33,9 @@ _ReSharper.*
 node_modules/
 **/[Cc]ompiler/[Rr]esources/**/*.js
 .vscode/
-global.json
+.testPublish/
 BenchmarkDotNet.Artifacts/
 *.binlog
+dist/
+.dotnet/
+.packages/

@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Net.Http;
@@ -32,7 +33,7 @@ namespace HttpClientFactorySample
             var services = serviceCollection.BuildServiceProvider();
 
             Console.WriteLine("Creating a client...");
-            var github = services.GetRequiredService<GithubClient>();
+            var github = services.GetRequiredService<GitHubClient>();
 
             Console.WriteLine("Sending a request...");
             var response = await github.GetJson();
@@ -59,8 +60,8 @@ namespace HttpClientFactorySample
             {
                 c.BaseAddress = new Uri("https://api.github.com/");
 
-                c.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json"); // Github API versioning
-                c.DefaultRequestHeaders.Add("User-Agent", "HttpClientFactory-Sample"); // Github requires a user-agent
+                c.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json"); // GitHub API versioning
+                c.DefaultRequestHeaders.Add("User-Agent", "HttpClientFactory-Sample"); // GitHub requires a user-agent
             })
 
             // Build a totally custom policy using any criteria
@@ -88,12 +89,12 @@ namespace HttpClientFactorySample
             .AddTransientHttpErrorPolicy(p => p.RetryAsync())
 
             .AddHttpMessageHandler(() => new RetryHandler()) // Retry requests to github using our retry handler
-            .AddTypedClient<GithubClient>();
+            .AddTypedClient<GitHubClient>();
         }
 
-        private class GithubClient
+        private class GitHubClient
         {
-            public GithubClient(HttpClient httpClient)
+            public GitHubClient(HttpClient httpClient)
             {
                 HttpClient = httpClient;
             }

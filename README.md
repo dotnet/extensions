@@ -1,7 +1,7 @@
 .NET Extensions
 ===============
 
-[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/aspnet/Extensions/Extensions-ci)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=23)
+[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/extensions/Extensions-ci)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=23)
 
 .NET Extensions is an open-source, cross-platform set of APIs for commonly used programming patterns and utilities, such as dependency injection, logging, and app configuration. Most of the API in this project is meant to work on many .NET platforms, such as .NET Core, .NET Framework, Xamarin, and others. While commonly used in ASP.NET Core applications, these APIs are not coupled to the ASP.NET Core application model. They can be used in console apps, WinForms and WPF, and others.
 
@@ -15,8 +15,8 @@ Microsoft.Extensions APIs can then be added to the project using the [NuGet Pack
 Some of the best ways to contribute are to try things out, file issues, join in design conversations,
 and make pull-requests.
 
-* [Download our latest daily builds](./docs/daily-builds.md)
-* [Build .NET Extensions from source code](./docs/build-from-source.md)
+* [Download our latest daily builds](./docs/DailyBuilds.md)
+* [Build .NET Extensions from source code](./docs/BuildFromSource.md)
 * Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
 ## Reporting security issues and bugs
@@ -28,8 +28,8 @@ Security issues and bugs should be reported privately, via email, to the Microso
 These are some other repos for related projects:
 
 * [.NET Core](https://github.com/dotnet/core) - a cross-platform, open-source .NET platform
-* [ASP.NET Core](https://github.com/aspnet/AspNetCore) - a .NET Core framework for building web apps
-* [Entity Framework Core](https://github.com/aspnet/EntityFrameworkCore) - data access technology
+* [ASP.NET Core](https://github.com/dotnet/aspnetcore) - a .NET Core framework for building web apps
+* [Entity Framework Core](https://github.com/dotnet/efcore) - data access technology
 
 ## Code of conduct
 

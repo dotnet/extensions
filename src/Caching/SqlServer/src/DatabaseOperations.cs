@@ -1,14 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Data;
-using System.Data.SqlClient;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
-using System.Threading;
 
 namespace Microsoft.Extensions.Caching.SqlServer
 {
@@ -52,8 +53,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
         public void DeleteCacheItem(string key)
         {
             using (var connection = new SqlConnection(ConnectionString))
+            using (var command = new SqlCommand(SqlQueries.DeleteCacheItem, connection))
             {
-                var command = new SqlCommand(SqlQueries.DeleteCacheItem, connection);
                 command.Parameters.AddCacheItemId(key);
 
                 connection.Open();
@@ -67,13 +68,13 @@ namespace Microsoft.Extensions.Caching.SqlServer
             token.ThrowIfCancellationRequested();
 
             using (var connection = new SqlConnection(ConnectionString))
+            using (var command = new SqlCommand(SqlQueries.DeleteCacheItem, connection))
             {
-                var command = new SqlCommand(SqlQueries.DeleteCacheItem, connection);
                 command.Parameters.AddCacheItemId(key);
 
-                await connection.OpenAsync(token);
+                await connection.OpenAsync(token).ConfigureAwait(false);
 
-                await command.ExecuteNonQueryAsync(token);
+                await command.ExecuteNonQueryAsync(token).ConfigureAwait(false);
             }
         }
 
@@ -86,7 +87,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             token.ThrowIfCancellationRequested();
 
-            return await GetCacheItemAsync(key, includeValue: true, token: token);
+            return await GetCacheItemAsync(key, includeValue: true, token: token).ConfigureAwait(false);
         }
 
         public void RefreshCacheItem(string key)
@@ -98,7 +99,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             token.ThrowIfCancellationRequested();
 
-            await GetCacheItemAsync(key, includeValue: false, token:token);
+            await GetCacheItemAsync(key, includeValue: false, token:token).ConfigureAwait(false);
         }
 
         public virtual void DeleteExpiredCacheItems()
@@ -106,8 +107,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var utcNow = SystemClock.UtcNow;
 
             using (var connection = new SqlConnection(ConnectionString))
+            using (var command = new SqlCommand(SqlQueries.DeleteExpiredCacheItems, connection))
             {
-                var command = new SqlCommand(SqlQueries.DeleteExpiredCacheItems, connection);
                 command.Parameters.AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
 
                 connection.Open();
@@ -124,8 +125,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
             using (var connection = new SqlConnection(ConnectionString))
+            using (var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
             {
-                var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection);
                 upsertCommand.Parameters
                     .AddCacheItemId(key)
                     .AddCacheItemValue(value)
@@ -164,8 +165,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
             using (var connection = new SqlConnection(ConnectionString))
+            using(var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
             {
-                var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection);
                 upsertCommand.Parameters
                     .AddCacheItemId(key)
                     .AddCacheItemValue(value)
@@ -173,11 +174,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     .AddAbsoluteExpiration(absoluteExpiration)
                     .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
 
-                await connection.OpenAsync(token);
+                await connection.OpenAsync(token).ConfigureAwait(false);
 
                 try
                 {
-                    await upsertCommand.ExecuteNonQueryAsync(token);
+                    await upsertCommand.ExecuteNonQueryAsync(token).ConfigureAwait(false);
                 }
                 catch (SqlException ex)
                 {
@@ -213,43 +214,44 @@ namespace Microsoft.Extensions.Caching.SqlServer
             DateTimeOffset? absoluteExpiration = null;
             DateTimeOffset expirationTime;
             using (var connection = new SqlConnection(ConnectionString))
+            using (var command = new SqlCommand(query, connection))
             {
-                var command = new SqlCommand(query, connection);
                 command.Parameters
                     .AddCacheItemId(key)
                     .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
 
                 connection.Open();
 
-                var reader = command.ExecuteReader(
-                    CommandBehavior.SequentialAccess | CommandBehavior.SingleRow | CommandBehavior.SingleResult);
-
-                if (reader.Read())
+                using (var reader = command.ExecuteReader(
+                    CommandBehavior.SequentialAccess | CommandBehavior.SingleRow | CommandBehavior.SingleResult))
                 {
-                    var id = reader.GetFieldValue<string>(Columns.Indexes.CacheItemIdIndex);
-
-                    expirationTime = reader.GetFieldValue<DateTimeOffset>(Columns.Indexes.ExpiresAtTimeIndex);
-
-                    if (!reader.IsDBNull(Columns.Indexes.SlidingExpirationInSecondsIndex))
+                    if (reader.Read())
                     {
-                        slidingExpiration = TimeSpan.FromSeconds(
-                            reader.GetFieldValue<long>(Columns.Indexes.SlidingExpirationInSecondsIndex));
-                    }
+                        var id = reader.GetFieldValue<string>(Columns.Indexes.CacheItemIdIndex);
 
-                    if (!reader.IsDBNull(Columns.Indexes.AbsoluteExpirationIndex))
-                    {
-                        absoluteExpiration = reader.GetFieldValue<DateTimeOffset>(
-                            Columns.Indexes.AbsoluteExpirationIndex);
-                    }
+                        expirationTime = reader.GetFieldValue<DateTimeOffset>(Columns.Indexes.ExpiresAtTimeIndex);
 
-                    if (includeValue)
-                    {
-                        value = reader.GetFieldValue<byte[]>(Columns.Indexes.CacheItemValueIndex);
+                        if (!reader.IsDBNull(Columns.Indexes.SlidingExpirationInSecondsIndex))
+                        {
+                            slidingExpiration = TimeSpan.FromSeconds(
+                                reader.GetFieldValue<long>(Columns.Indexes.SlidingExpirationInSecondsIndex));
+                        }
+
+                        if (!reader.IsDBNull(Columns.Indexes.AbsoluteExpirationIndex))
+                        {
+                            absoluteExpiration = reader.GetFieldValue<DateTimeOffset>(
+                                Columns.Indexes.AbsoluteExpirationIndex);
+                        }
+
+                        if (includeValue)
+                        {
+                            value = reader.GetFieldValue<byte[]>(Columns.Indexes.CacheItemValueIndex);
+                        }
                     }
-                }
-                else
-                {
-                    return null;
+                    else
+                    {
+                        return null;
+                    }
                 }
             }
 
@@ -277,46 +279,47 @@ namespace Microsoft.Extensions.Caching.SqlServer
             DateTimeOffset? absoluteExpiration = null;
             DateTimeOffset expirationTime;
             using (var connection = new SqlConnection(ConnectionString))
+            using (var command = new SqlCommand(query, connection))
             {
-                var command = new SqlCommand(query, connection);
                 command.Parameters
                     .AddCacheItemId(key)
                     .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
 
-                await connection.OpenAsync(token);
+                await connection.OpenAsync(token).ConfigureAwait(false);
 
-                var reader = await command.ExecuteReaderAsync(
+                using (var reader = await command.ExecuteReaderAsync(
                     CommandBehavior.SequentialAccess | CommandBehavior.SingleRow | CommandBehavior.SingleResult,
-                    token);
-
-                if (await reader.ReadAsync(token))
+                    token).ConfigureAwait(false))
                 {
-                    var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex, token);
-
-                    expirationTime = await reader.GetFieldValueAsync<DateTimeOffset>(
-                        Columns.Indexes.ExpiresAtTimeIndex, token);
-
-                    if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token))
+                    if (await reader.ReadAsync(token).ConfigureAwait(false))
                     {
-                        slidingExpiration = TimeSpan.FromSeconds(
-                            await reader.GetFieldValueAsync<long>(Columns.Indexes.SlidingExpirationInSecondsIndex, token));
-                    }
+                        var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex, token).ConfigureAwait(false);
 
-                    if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token))
-                    {
-                        absoluteExpiration = await reader.GetFieldValueAsync<DateTimeOffset>(
-                            Columns.Indexes.AbsoluteExpirationIndex,
-                            token);
-                    }
+                        expirationTime = await reader.GetFieldValueAsync<DateTimeOffset>(
+                            Columns.Indexes.ExpiresAtTimeIndex, token).ConfigureAwait(false);
 
-                    if (includeValue)
-                    {
-                        value = await reader.GetFieldValueAsync<byte[]>(Columns.Indexes.CacheItemValueIndex, token);
+                        if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token).ConfigureAwait(false))
+                        {
+                            slidingExpiration = TimeSpan.FromSeconds(
+                                await reader.GetFieldValueAsync<long>(Columns.Indexes.SlidingExpirationInSecondsIndex, token).ConfigureAwait(false));
+                        }
+
+                        if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token).ConfigureAwait(false))
+                        {
+                            absoluteExpiration = await reader.GetFieldValueAsync<DateTimeOffset>(
+                                Columns.Indexes.AbsoluteExpirationIndex,
+                                token).ConfigureAwait(false);
+                        }
+
+                        if (includeValue)
+                        {
+                            value = await reader.GetFieldValueAsync<byte[]>(Columns.Indexes.CacheItemValueIndex, token).ConfigureAwait(false);
+                        }
                     }
-                }
-                else
-                {
-                    return null;
+                    else
+                    {
+                        return null;
+                    }
                 }
             }
 

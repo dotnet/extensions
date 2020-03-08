@@ -1,28 +1,37 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Distributed
 {
     public class MemoryDistributedCache : IDistributedCache
     {
-        private static readonly Task CompletedTask = Task.FromResult<object>(null);
-
         private readonly IMemoryCache _memCache;
 
         public MemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> optionsAccessor)
+            : this(optionsAccessor, NullLoggerFactory.Instance) { }
+
+        public MemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> optionsAccessor, ILoggerFactory loggerFactory)
         {
             if (optionsAccessor == null)
             {
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
 
-            _memCache = new MemoryCache(optionsAccessor.Value);
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _memCache = new MemoryCache(optionsAccessor.Value, loggerFactory);
         }
 
         public byte[] Get(string key)
@@ -89,7 +98,7 @@ namespace Microsoft.Extensions.Caching.Distributed
             }
 
             Set(key, value, options);
-            return CompletedTask;
+            return Task.CompletedTask;
         }
 
         public void Refresh(string key)
@@ -110,7 +119,7 @@ namespace Microsoft.Extensions.Caching.Distributed
             }
 
             Refresh(key);
-            return CompletedTask;
+            return Task.CompletedTask;
         }
 
         public void Remove(string key)
@@ -131,7 +140,7 @@ namespace Microsoft.Extensions.Caching.Distributed
             }
 
             Remove(key);
-            return CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

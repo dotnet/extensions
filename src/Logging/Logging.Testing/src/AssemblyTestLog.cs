@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -8,10 +9,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Xunit.Abstractions;
 
@@ -19,18 +22,9 @@ namespace Microsoft.Extensions.Logging.Testing
 {
     public class AssemblyTestLog : IDisposable
     {
-        public static readonly string OutputDirectoryEnvironmentVariableName = "ASPNETCORE_TEST_LOG_DIR";
         private static readonly string MaxPathLengthEnvironmentVariableName = "ASPNETCORE_TEST_LOG_MAXPATH";
         private static readonly string LogFileExtension = ".log";
         private static readonly int MaxPathLength = GetMaxPathLength();
-        private static char[] InvalidFileChars = new char[]
-        {
-            '\"', '<', '>', '|', '\0',
-            (char)1, (char)2, (char)3, (char)4, (char)5, (char)6, (char)7, (char)8, (char)9, (char)10,
-            (char)11, (char)12, (char)13, (char)14, (char)15, (char)16, (char)17, (char)18, (char)19, (char)20,
-            (char)21, (char)22, (char)23, (char)24, (char)25, (char)26, (char)27, (char)28, (char)29, (char)30,
-            (char)31, ':', '*', '?', '\\', '/', ' ', (char)127
-        };
 
         private static readonly object _lock = new object();
         private static readonly Dictionary<Assembly, AssemblyTestLog> _logs = new Dictionary<Assembly, AssemblyTestLog>();
@@ -38,7 +32,7 @@ namespace Microsoft.Extensions.Logging.Testing
         private readonly ILoggerFactory _globalLoggerFactory;
         private readonly ILogger _globalLogger;
         private readonly string _baseDirectory;
-        private readonly string _assemblyName;
+        private readonly Assembly _assembly;
         private readonly IServiceProvider _serviceProvider;
 
         private static int GetMaxPathLength()
@@ -48,12 +42,12 @@ namespace Microsoft.Extensions.Logging.Testing
             return string.IsNullOrEmpty(maxPathString) ? defaultMaxPath : int.Parse(maxPathString);
         }
 
-        private AssemblyTestLog(ILoggerFactory globalLoggerFactory, ILogger globalLogger, string baseDirectory, string assemblyName, IServiceProvider serviceProvider)
+        private AssemblyTestLog(ILoggerFactory globalLoggerFactory, ILogger globalLogger, string baseDirectory, Assembly assembly, IServiceProvider serviceProvider)
         {
             _globalLoggerFactory = globalLoggerFactory;
             _globalLogger = globalLogger;
             _baseDirectory = baseDirectory;
-            _assemblyName = assemblyName;
+            _assembly = assembly;
             _serviceProvider = serviceProvider;
         }
 
@@ -61,11 +55,12 @@ namespace Microsoft.Extensions.Logging.Testing
             StartTestLog(output, className, out loggerFactory, LogLevel.Debug, testName);
 
         public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, [CallerMemberName] string testName = null) =>
-            StartTestLog(output, className, out loggerFactory, minLogLevel, out var _, testName);
+            StartTestLog(output, className, out loggerFactory, minLogLevel, out var _, out var _, testName);
 
-        internal IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, out string resolvedTestName, [CallerMemberName] string testName = null)
+        internal IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, out string resolvedTestName, out string logOutputDirectory, [CallerMemberName] string testName = null)
         {
-            var serviceProvider = CreateLoggerServices(output, className, minLogLevel, out resolvedTestName, testName);
+            var logStart = DateTimeOffset.UtcNow;
+            var serviceProvider = CreateLoggerServices(output, className, minLogLevel, out resolvedTestName, out logOutputDirectory, testName, logStart);
             var factory = serviceProvider.GetRequiredService<ILoggerFactory>();
             loggerFactory = factory;
             var logger = loggerFactory.CreateLogger("TestLifetime");
@@ -75,7 +70,7 @@ namespace Microsoft.Extensions.Logging.Testing
             var scope = logger.BeginScope("Test: {testName}", testName);
 
             _globalLogger.LogInformation("Starting test {testName}", testName);
-            logger.LogInformation("Starting test {testName}", testName);
+            logger.LogInformation("Starting test {testName} at {logStart}", testName, logStart.ToString("s"));
 
             return new Disposable(() =>
             {
@@ -88,36 +83,39 @@ namespace Microsoft.Extensions.Logging.Testing
             });
         }
 
-        public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, [CallerMemberName] string testName = null) =>
-            CreateLoggerFactory(output, className, LogLevel.Trace, testName);
+        public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
+            => CreateLoggerFactory(output, className, LogLevel.Trace, testName, logStart);
 
-        public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, LogLevel minLogLevel, [CallerMemberName] string testName = null)
-        {
-            return CreateLoggerServices(output, className, minLogLevel, out var _, testName).GetRequiredService<ILoggerFactory>();
-        }
+        public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, LogLevel minLogLevel, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
+            => CreateLoggerServices(output, className, minLogLevel, out var _, out var _, testName, logStart).GetRequiredService<ILoggerFactory>();
 
-        public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, [CallerMemberName] string testName = null)
+        public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
+            => CreateLoggerServices(output, className, minLogLevel, out normalizedTestName, out var _, testName, logStart);
+
+        public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, out string logOutputDirectory, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
         {
             normalizedTestName = string.Empty;
+            logOutputDirectory = string.Empty;
+            var assemblyName = _assembly.GetName().Name;
 
             // Try to shorten the class name using the assembly name
-            if (className.StartsWith(_assemblyName + "."))
+            if (className.StartsWith(assemblyName + "."))
             {
-                className = className.Substring(_assemblyName.Length + 1);
+                className = className.Substring(assemblyName.Length + 1);
             }
 
             SerilogLoggerProvider serilogLoggerProvider = null;
             if (!string.IsNullOrEmpty(_baseDirectory))
             {
-                var testOutputDirectory = Path.Combine(GetAssemblyBaseDirectory(_assemblyName, _baseDirectory), className);
-                testName = RemoveIllegalFileChars(testName);
+                logOutputDirectory = Path.Combine(_baseDirectory, className);
+                testName = TestFileOutputContext.RemoveIllegalFileChars(testName);
 
-                if (testOutputDirectory.Length + testName.Length + LogFileExtension.Length >= MaxPathLength)
+                if (logOutputDirectory.Length + testName.Length + LogFileExtension.Length >= MaxPathLength)
                 {
                     _globalLogger.LogWarning($"Test name {testName} is too long. Please shorten test name.");
 
                     // Shorten the test name by removing the middle portion of the testname
-                    var testNameLength = MaxPathLength - testOutputDirectory.Length - LogFileExtension.Length;
+                    var testNameLength = MaxPathLength - logOutputDirectory.Length - LogFileExtension.Length;
 
                     if (testNameLength <= 0)
                     {
@@ -129,7 +127,7 @@ namespace Microsoft.Extensions.Logging.Testing
                     _globalLogger.LogWarning($"To prevent long paths test name was shortened to {testName}.");
                 }
 
-                var testOutputFile = Path.Combine(testOutputDirectory, $"{testName}{LogFileExtension}");
+                var testOutputFile = Path.Combine(logOutputDirectory, $"{testName}{LogFileExtension}");
 
                 if (File.Exists(testOutputFile))
                 {
@@ -137,7 +135,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
                     for (var i = 0; i < 1000; i++)
                     {
-                        testOutputFile = Path.Combine(testOutputDirectory, $"{testName}.{i}{LogFileExtension}");
+                        testOutputFile = Path.Combine(logOutputDirectory, $"{testName}.{i}{LogFileExtension}");
 
                         if (!File.Exists(testOutputFile))
                         {
@@ -149,7 +147,7 @@ namespace Microsoft.Extensions.Logging.Testing
                 }
 
                 normalizedTestName = testName;
-                serilogLoggerProvider = ConfigureFileLogging(testOutputFile);
+                serilogLoggerProvider = ConfigureFileLogging(testOutputFile, logStart);
             }
 
             var serviceCollection = new ServiceCollection();
@@ -159,7 +157,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
                 if (output != null)
                 {
-                    builder.AddXunit(output, minLogLevel);
+                    builder.AddXunit(output, minLogLevel, logStart);
                 }
 
                 if (serilogLoggerProvider != null)
@@ -172,14 +170,19 @@ namespace Microsoft.Extensions.Logging.Testing
             return serviceCollection.BuildServiceProvider();
         }
 
+        // For back compat
         public static AssemblyTestLog Create(string assemblyName, string baseDirectory)
+            => Create(Assembly.Load(new AssemblyName(assemblyName)), baseDirectory);
+
+        public static AssemblyTestLog Create(Assembly assembly, string baseDirectory)
         {
+            var logStart = DateTimeOffset.UtcNow;
             SerilogLoggerProvider serilogLoggerProvider = null;
-            var globalLogDirectory = GetAssemblyBaseDirectory(assemblyName, baseDirectory);
-            if (!string.IsNullOrEmpty(globalLogDirectory))
+            if (!string.IsNullOrEmpty(baseDirectory))
             {
-                var globalLogFileName = Path.Combine(globalLogDirectory, "global.log");
-                serilogLoggerProvider = ConfigureFileLogging(globalLogFileName);
+                baseDirectory = TestFileOutputContext.GetAssemblyBaseDirectory(assembly, baseDirectory);
+                var globalLogFileName = Path.Combine(baseDirectory, "global.log");
+                serilogLoggerProvider = ConfigureFileLogging(globalLogFileName, logStart);
             }
 
             var serviceCollection = new ServiceCollection();
@@ -200,8 +203,11 @@ namespace Microsoft.Extensions.Logging.Testing
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
             var logger = loggerFactory.CreateLogger("GlobalTestLog");
-            logger.LogInformation($"Global Test Logging initialized. Set the '{OutputDirectoryEnvironmentVariableName}' Environment Variable in order to create log files on disk.");
-            return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assemblyName, serviceProvider);
+            logger.LogInformation("Global Test Logging initialized at {logStart}. "
+                + "Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property "
+                + "or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.",
+                logStart.ToString("s"));
+            return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assembly, serviceProvider);
         }
 
         public static AssemblyTestLog ForAssembly(Assembly assembly)
@@ -210,36 +216,33 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 if (!_logs.TryGetValue(assembly, out var log))
                 {
-                    var assemblyName = assembly.GetName().Name;
-                    var baseDirectory = Environment.GetEnvironmentVariable(OutputDirectoryEnvironmentVariableName);
-                    log = Create(assemblyName, baseDirectory);
+                    var baseDirectory = TestFileOutputContext.GetOutputDirectory(assembly);
+
+                    log = Create(assembly, baseDirectory);
                     _logs[assembly] = log;
 
-                    // Try to clear previous logs
-                    var assemblyBaseDirectory = GetAssemblyBaseDirectory(assemblyName, baseDirectory);
-                    if (Directory.Exists(assemblyBaseDirectory))
+                    // Try to clear previous logs, continue if it fails.
+                    var assemblyBaseDirectory = TestFileOutputContext.GetAssemblyBaseDirectory(assembly);
+                    if (!string.IsNullOrEmpty(assemblyBaseDirectory) && !TestFileOutputContext.GetPreserveExistingLogsInOutput(assembly))
                     {
                         try
                         {
                             Directory.Delete(assemblyBaseDirectory, recursive: true);
                         }
-                        catch {}
+                        catch { }
                     }
                 }
                 return log;
             }
         }
 
-        private static string GetAssemblyBaseDirectory(string assemblyName, string baseDirectory)
-        {
-            if (!string.IsNullOrEmpty(baseDirectory))
-            {
-                return Path.Combine(baseDirectory, assemblyName, RuntimeInformation.FrameworkDescription.TrimStart('.'));
-            }
-            return string.Empty;
-        }
+        private static TestFrameworkFileLoggerAttribute GetFileLoggerAttribute(Assembly assembly)
+            => assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()
+                ?? throw new InvalidOperationException($"No {nameof(TestFrameworkFileLoggerAttribute)} found on the assembly {assembly.GetName().Name}. "
+                    + "The attribute is added via msbuild properties of the Microsoft.Extensions.Logging.Testing. "
+                    + "Please ensure the msbuild property is imported or a direct reference to Microsoft.Extensions.Logging.Testing is added.");
 
-        private static SerilogLoggerProvider ConfigureFileLogging(string fileName)
+        private static SerilogLoggerProvider ConfigureFileLogging(string fileName, DateTimeOffset? logStart)
         {
             var dir = Path.GetDirectoryName(fileName);
             if (!Directory.Exists(dir))
@@ -254,37 +257,35 @@ namespace Microsoft.Extensions.Logging.Testing
 
             var serilogger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
+                .Enrich.With(new AssemblyLogTimestampOffsetEnricher(logStart))
                 .MinimumLevel.Verbose()
-                .WriteTo.File(fileName, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{SourceContext}] [{Level}] {Message}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
+                .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
                 .CreateLogger();
             return new SerilogLoggerProvider(serilogger, dispose: true);
-        }
-
-        private static string RemoveIllegalFileChars(string s)
-        {
-            var sb = new StringBuilder();
-
-            foreach (var c in s)
-            {
-                if (InvalidFileChars.Contains(c))
-                {
-                    if (sb.Length > 0 && sb[sb.Length - 1] != '_')
-                    {
-                        sb.Append('_');
-                    }
-                }
-                else
-                {
-                    sb.Append(c);
-                }
-            }
-            return sb.ToString();
         }
 
         public void Dispose()
         {
             (_serviceProvider as IDisposable)?.Dispose();
             _globalLoggerFactory.Dispose();
+        }
+
+        private class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
+        {
+            private DateTimeOffset? _logStart;
+
+            public AssemblyLogTimestampOffsetEnricher(DateTimeOffset? logStart)
+            {
+                _logStart = logStart;
+            }
+
+            public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+                => logEvent.AddPropertyIfAbsent(
+                    propertyFactory.CreateProperty(
+                        "TimestampOffset",
+                        _logStart.HasValue
+                            ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3")}s"
+                            : DateTimeOffset.UtcNow.ToString("s")));
         }
 
         private class Disposable : IDisposable

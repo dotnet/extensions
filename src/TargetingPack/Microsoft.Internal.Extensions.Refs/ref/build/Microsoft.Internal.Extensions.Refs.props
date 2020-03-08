@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <MicrosoftInternalExtensionsRefsPath>$(MSBuildThisFileDirectory)..\ref\netcoreapp5.0\</MicrosoftInternalExtensionsRefsPath>
+  </PropertyGroup>
+</Project>
