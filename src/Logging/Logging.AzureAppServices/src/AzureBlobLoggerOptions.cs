@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Logging.AzureAppServices.Internal;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices
 {
@@ -11,11 +10,6 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
     /// </summary>
     public class AzureBlobLoggerOptions: BatchingLoggerOptions
     {
-        public AzureBlobLoggerOptions()
-        {
-            BatchSize = 32;
-        }
-
         private string _blobName = "applicationLog.txt";
 
         /// <summary>

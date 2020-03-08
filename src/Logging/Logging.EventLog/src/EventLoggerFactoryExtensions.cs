@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.Logging
         /// Adds an event logger named 'EventLog' to the factory.
         /// </summary>
         /// <param name="builder">The extension method argument.</param>
+        /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
         public static ILoggingBuilder AddEventLog(this ILoggingBuilder builder)
         {
             if (builder == null)
@@ -34,6 +35,7 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="builder">The extension method argument.</param>
         /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
+        /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
         public static ILoggingBuilder AddEventLog(this ILoggingBuilder builder, EventLogSettings settings)
         {
             if (builder == null)
@@ -52,58 +54,22 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
-        /// Adds an event logger that is enabled for <see cref="LogLevel"/>.Information or higher.
+        /// Adds an event logger. Use <paramref name="configure"/> to enable logging for specific <see cref="LogLevel"/>s.
         /// </summary>
-        /// <param name="factory">The extension method argument.</param>
-        public static ILoggerFactory AddEventLog(this ILoggerFactory factory)
+        /// <param name="builder">The extension method argument.</param>
+        /// <param name="configure">A delegate to configure the <see cref="EventLogSettings"/>.</param>
+        /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
+        public static ILoggingBuilder AddEventLog(this ILoggingBuilder builder, Action<EventLogSettings> configure)
         {
-            if (factory == null)
+            if (configure == null)
             {
-                throw new ArgumentNullException(nameof(factory));
+                throw new ArgumentNullException(nameof(configure));
             }
 
-            return AddEventLog(factory, LogLevel.Information);
-        }
+            builder.AddEventLog();
+            builder.Services.Configure(configure);
 
-        /// <summary>
-        /// Adds an event logger that is enabled for <see cref="LogLevel"/>s of minLevel or higher.
-        /// </summary>
-        /// <param name="factory">The extension method argument.</param>
-        /// <param name="minLevel">The minimum <see cref="LogLevel"/> to be logged</param>
-        public static ILoggerFactory AddEventLog(this ILoggerFactory factory, LogLevel minLevel)
-        {
-            if (factory == null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            return AddEventLog(factory, new EventLogSettings()
-            {
-                Filter = (_, logLevel) => logLevel >= minLevel
-            });
-        }
-
-        /// <summary>
-        /// Adds an event logger. Use <paramref name="settings"/> to enable logging for specific <see cref="LogLevel"/>s.
-        /// </summary>
-        /// <param name="factory">The extension method argument.</param>
-        /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
-        public static ILoggerFactory AddEventLog(
-            this ILoggerFactory factory,
-            EventLogSettings settings)
-        {
-            if (factory == null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            factory.AddProvider(new EventLogLoggerProvider(settings));
-            return factory;
+            return builder;
         }
     }
 }

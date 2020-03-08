@@ -14,13 +14,16 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
     // The use peverify or another tool to look at the generated code.
     public static class ProxyAssembly
     {
-        private static volatile int Counter = 0;
+        private static readonly object Lock;
+        private static int Counter;
 
         private static AssemblyBuilder AssemblyBuilder;
         private static ModuleBuilder ModuleBuilder;
 
         static ProxyAssembly()
         {
+            Lock = new object();
+
             var assemblyName = new AssemblyName("Microsoft.Extensions.DiagnosticAdapter.ProxyAssembly");
 #if GENERATE_ASSEMBLIES
             var access = AssemblyBuilderAccess.RunAndSave;
@@ -38,8 +41,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             Type baseType,
             Type[] interfaces)
         {
-            name = name + "_" + Counter++;
-            return ModuleBuilder.DefineType(name, attributes, baseType, interfaces);
+            lock (Lock)
+            {
+                name = name + "_" + Counter++;
+                return ModuleBuilder.DefineType(name, attributes, baseType, interfaces);
+            }
         }
 
 #if GENERATE_ASSEMBLIES
