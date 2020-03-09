@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var codeBlockDirectives = syntaxTree.Root
                 .DescendantNodes(node => node is RazorDocumentSyntax || node is MarkupBlockSyntax || node is CSharpCodeBlockSyntax)
                 .OfType<RazorDirectiveSyntax>()
-                .Where(directive => directive.DirectiveDescriptor.Kind == DirectiveKind.CodeBlock)
+                .Where(directive => directive.DirectiveDescriptor?.Kind == DirectiveKind.CodeBlock)
                 .ToArray();
 
             return codeBlockDirectives;

@@ -13,5 +13,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         [JsonRpcMethod(LanguageServerConstants.RazorUpdateCSharpBufferEndpoint)]
         public abstract Task UpdateCSharpBufferAsync(JToken token, CancellationToken cancellationToken);
+
+        [JsonRpcMethod(LanguageServerConstants.RazorUpdateHtmlBufferEndpoint)]
+        public abstract Task UpdateHtmlBufferAsync(JToken token, CancellationToken cancellationToken);
     }
 }
