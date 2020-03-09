@@ -260,7 +260,7 @@ stages:
       - job: OSX_10_13
         displayName: 'OSX'
         pool:
-          vmImage: macOS-10.13
+          vmImage: macOS-10.14
         strategy:
           matrix:
             ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
@@ -358,7 +358,7 @@ stages:
       displayName: Upload package artifacts
       # Only capture source build artifacts in PRs for the sake of inspecting
       # changes that impact source-build. The artifacts from this build pipeline are never actually used.
-      condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+      condition: and(succeeded(), in(variables['Build.Reason'], 'PullRequest'))
       inputs:
         pathtoPublish: artifacts/packages/
         artifactName: Source_Build_Packages
