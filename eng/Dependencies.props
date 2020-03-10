@@ -18,6 +18,7 @@ and are generated based on the last package release.
   </ItemDefinitionGroup>
 
   <ItemGroup Label=".NET team dependencies">
+    <LatestPackageReference Include="Microsoft.NETCore.Targets" Version="$(MicrosoftNETCoreTargetsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />

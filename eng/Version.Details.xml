@@ -74,6 +74,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>13e7f19e3d5f18b5408dbd90841cc283595bc89d</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NETCore.Targets" Version="5.0.0-preview.3.20159.13">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>2f6e072c97738a56eeeb25f1fdb5dcc955649db0</Sha>
+    </Dependency>
     <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview.3.20159.13">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>13e7f19e3d5f18b5408dbd90841cc283595bc89d</Sha>
