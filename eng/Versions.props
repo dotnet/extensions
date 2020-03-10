@@ -56,7 +56,6 @@
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.3.20159.13</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.3.20159.13</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.3.20159.13</MicrosoftNETCoreAppInternalPackageVersion>
-    <MicrosoftNETCoreTargetsPackageVersion>5.0.0-preview.3.20159.13</MicrosoftNETCoreTargetsPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview.3.20159.13</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
