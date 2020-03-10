@@ -39,6 +39,10 @@
 
   <!-- Misc other content -->
   <ItemGroup>
+    <Content Include="NOTICE.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="razorLanguageService.servicehub.service.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
