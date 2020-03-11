@@ -43,7 +43,7 @@
 
   <Target Name="Restore">
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" --python="C:\python3.7.0\python.exe" />
   </Target>
 
   <Target Name="PrepareForBuild">
