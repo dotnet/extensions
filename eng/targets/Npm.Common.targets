@@ -11,6 +11,7 @@
     <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
     <InstallArgs Condition="'$(RestoreLockedMode)' == 'true'">$(InstallArgs) --frozen-lockfile</InstallArgs>
     <InstallArgs>$(InstallArgs) --ignore-engines</InstallArgs>
+    <InstallArgs Condition=" '$(OS)' == 'Windows_NT' ">$(InstallArgs) --python=C:\python3.7.0\python.exe</InstallArgs>
     <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
     <BuildDependsOn>
       PrepareForBuild;
@@ -43,7 +44,7 @@
 
   <Target Name="Restore">
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" --python="C:\python3.7.0\python.exe" />
+    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
   </Target>
 
   <Target Name="PrepareForBuild">
