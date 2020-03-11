@@ -58,6 +58,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e1fa5d7648d46f067e265211fc2c695d409fe788</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="5.0.0-preview.3-runtime.20169.13" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>c0ddd1c5d1636de873398c8d9544e02289f95fec</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="5.0.0-preview.4.20201.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e1fa5d7648d46f067e265211fc2c695d409fe788</Sha>

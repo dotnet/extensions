@@ -45,6 +45,5 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Options.ConfigurationExtensions" ProjectPath="$(RepoRoot)src\Options\ConfigurationExtensions\src\Microsoft.Extensions.Options.ConfigurationExtensions.csproj" RefProjectPath="$(RepoRoot)src\Options\ConfigurationExtensions\ref\Microsoft.Extensions.Options.ConfigurationExtensions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Options.DataAnnotations" ProjectPath="$(RepoRoot)src\Options\DataAnnotations\src\Microsoft.Extensions.Options.DataAnnotations.csproj" RefProjectPath="$(RepoRoot)src\Options\DataAnnotations\ref\Microsoft.Extensions.Options.DataAnnotations.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Options" ProjectPath="$(RepoRoot)src\Options\Options\src\Microsoft.Extensions.Options.csproj" RefProjectPath="$(RepoRoot)src\Options\Options\ref\Microsoft.Extensions.Options.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.Extensions.Primitives" ProjectPath="$(RepoRoot)src\Primitives\src\Microsoft.Extensions.Primitives.csproj" RefProjectPath="$(RepoRoot)src\Primitives\ref\Microsoft.Extensions.Primitives.csproj" />
   </ItemGroup>
 </Project>
