@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.Editor.Razor;
 using Moq;
 using Xunit;
 
@@ -29,7 +30,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             HostProject2 = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.AnotherProject.RootNamespace);
 
             DynamicFileInfoProvider = new DefaultRazorDynamicFileInfoProvider(new DefaultDocumentServiceProviderFactory());
+
+            DivergenceChecker = Mock.Of<DocumentDivergenceChecker>(checker => checker.PossibleDivergence(It.IsAny<DocumentSnapshot>(), It.IsAny<DocumentSnapshot>()) == true);
         }
+
+        private DocumentDivergenceChecker DivergenceChecker { get; }
 
         private HostDocument[] Documents { get; }
 
@@ -58,7 +63,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
@@ -89,7 +94,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
@@ -118,7 +123,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -157,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -228,7 +233,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 projectManager.DocumentAdded(HostProject1, documents[i], null);
             }
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -284,7 +289,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             projectManager.DocumentAdded(HostProject1, TestProjectData.SomeProjectComponentFile1, null);
             projectManager.DocumentAdded(HostProject1, TestProjectData.SomeProjectImportFile, null);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
