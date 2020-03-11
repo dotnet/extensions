@@ -43,6 +43,8 @@
 
   <Target Name="Restore">
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
+    <!-- Workaround until Python is on the path on build agents -->
+    <Exec Condition=" '$(OS)' == 'Windows_NT' and Exists('C:\python3.7.0\python.exe') " Command="npm config set python C:\python3.7.0\python.exe" />
     <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
   </Target>
 
