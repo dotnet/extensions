@@ -23,6 +23,7 @@ namespace Microsoft.CodeAnalysis.Razor
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private ProjectSnapshotManagerBase _projectManager;
         private TagHelperResolver _tagHelperResolver;
+        private bool _disposed;
 
         [ImportingConstructor]
         public DefaultProjectWorkspaceStateGenerator(ForegroundDispatcher foregroundDispatcher)
@@ -64,13 +65,22 @@ namespace Microsoft.CodeAnalysis.Razor
 
             _foregroundDispatcher.AssertForegroundThread();
 
+            if (_disposed)
+            {
+                return;
+            }
+
             if (_updates.TryGetValue(projectSnapshot.FilePath, out var updateItem) &&
-                !updateItem.Task.IsCompleted)
+                !updateItem.Task.IsCompleted &&
+                !updateItem.Cts.IsCancellationRequested)
             {
                 updateItem.Cts.Cancel();
             }
 
-            updateItem?.Cts.Dispose();
+            if (updateItem?.Cts.IsCancellationRequested == false)
+            {
+                updateItem?.Cts.Dispose();
+            }
 
             var cts = new CancellationTokenSource();
             var updateTask = Task.Factory.StartNew(
@@ -87,9 +97,12 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             _foregroundDispatcher.AssertForegroundThread();
 
+            _disposed = true;
+
             foreach (var update in _updates)
             {
-                if (!update.Value.Task.IsCompleted)
+                if (!update.Value.Task.IsCompleted &&
+                    !update.Value.Cts.IsCancellationRequested)
                 {
                     update.Value.Cts.Cancel();
                 }
