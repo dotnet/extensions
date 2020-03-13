@@ -7,6 +7,7 @@
     "defaults": {
         "razor": "0.0.1"
     },
+    "enableProposedApi": true,
     "publisher": "ms-dotnettools",
     "engines": {
         "vscode": "^1.31.0"
@@ -45,6 +46,42 @@
     ],
     "main": "./dist/extension",
     "contributes": {
+        "semanticTokenTypes": [
+          {
+            "id": "razorTagHelperElement",
+            "description": "A Razor TagHelper Element"
+          },
+          {
+            "id": "razorTagHelperAttribute",
+            "description": "A Razor TagHelper Attribute"
+          }
+        ],
+        "semanticTokenStyleDefaults": [
+          {
+            "selector": "razorTagHelperElement",
+            "scope": [ "razor.taghelpers.element" ],
+            "light": {
+              "foreground": "#800080",
+              "fontStyle": "bold"
+            },
+            "dark": {
+              "foreground": "#009696",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "selector": "razorTagHelperAttribute",
+            "scope": [ "razor.taghelpers.attribute"],
+            "light": {
+              "foreground": "#800080",
+              "fontStyle": "bold"
+            },
+            "dark": {
+              "foreground": "#009696",
+              "fontStyle": "bold"
+            }
+          }
+        ],
         "languages": [
             {
                 "id": "aspnetcorerazor",

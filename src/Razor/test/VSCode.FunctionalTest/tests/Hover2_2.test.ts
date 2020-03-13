@@ -112,56 +112,62 @@ suite('Hover 2.2', () => {
         }
 
         assert.equal(hoverResult.length, 2, 'Something else may be providing hover results');
+        const envResult = hoverResult.find((hover, index, obj) => {
+            return (hover.contents[0] as vscode.MarkdownString).value.includes('InputTagHelper');
+        });
 
-        let envResult = hoverResult[0];
-        let expectedRange = new vscode.Range(
-            new vscode.Position(0, 1),
-            new vscode.Position(0, 6));
-        assert.deepEqual(envResult.range, expectedRange, 'TagHelper range should be <input>');
-        let mStr = envResult.contents[0] as vscode.MarkdownString;
-        assert.ok(mStr.value.includes('InputTagHelper'), `InputTagHelper not included in '${mStr.value}'`);
+        if (!envResult) {
+            assert.fail('Should have found a TagHelper');
+        } else {
+            let expectedRange = new vscode.Range(
+                new vscode.Position(0, 1),
+                new vscode.Position(0, 6));
+            assert.deepEqual(envResult.range, expectedRange, 'TagHelper range should be <input>');
+            let mStr = envResult.contents[0] as vscode.MarkdownString;
+            assert.ok(mStr.value.includes('InputTagHelper'), `InputTagHelper not included in '${mStr.value}'`);
 
-        hoverResult = await vscode.commands.executeCommand<vscode.Hover[]>(
-            'vscode.executeHoverProvider',
-            cshtmlDoc.uri,
-            new vscode.Position(0, 8));
+            hoverResult = await vscode.commands.executeCommand<vscode.Hover[]>(
+                'vscode.executeHoverProvider',
+                cshtmlDoc.uri,
+                new vscode.Position(0, 8));
 
-        assert.ok(hoverResult, 'Should have a hover result for asp-for');
-        if (!hoverResult) {
-            // This can never happen
-            return;
+            assert.ok(hoverResult, 'Should have a hover result for asp-for');
+            if (!hoverResult) {
+                // This can never happen
+                return;
+            }
+
+            assert.equal(hoverResult.length, 1, 'Something else may be providing hover results');
+
+            const aspForResult = hoverResult[0];
+            expectedRange = new vscode.Range(
+                new vscode.Position(0, 7),
+                new vscode.Position(0, 14));
+            assert.deepEqual(aspForResult.range, expectedRange, 'asp-for should be selected');
+            mStr = aspForResult.contents[0] as vscode.MarkdownString;
+            assert.ok(mStr.value.includes('InputTagHelper.**For**'), `InputTagHelper.For not included in '${mStr.value}'`);
+
+            hoverResult = await vscode.commands.executeCommand<vscode.Hover[]>(
+                'vscode.executeHoverProvider',
+                cshtmlDoc.uri,
+                new vscode.Position(0, 19));
+
+            assert.ok(hoverResult, 'Should have a hover result for class');
+            if (!hoverResult) {
+                // This can never happen
+                return;
+            }
+
+            assert.equal(hoverResult.length, 1, 'Something else may be providing hover results');
+
+            const result = hoverResult[0];
+            expectedRange = new vscode.Range(
+                new vscode.Position(0, 19),
+                new vscode.Position(0, 24));
+            assert.deepEqual(result.range, expectedRange, 'class should be selected');
+            mStr = result.contents[0] as vscode.MarkdownString;
+            assert.ok(mStr.value.includes('class'), `class not included in ${mStr.value}`);
         }
-
-        assert.equal(hoverResult.length, 1, 'Something else may be providing hover results');
-
-        envResult = hoverResult[0];
-        expectedRange = new vscode.Range(
-            new vscode.Position(0, 7),
-            new vscode.Position(0, 14));
-        assert.deepEqual(envResult.range, expectedRange, 'asp-for should be selected');
-        mStr = envResult.contents[0] as vscode.MarkdownString;
-        assert.ok(mStr.value.includes('InputTagHelper.**For**'), `InputTagHelper.For not included in '${mStr.value}'`);
-
-        hoverResult = await vscode.commands.executeCommand<vscode.Hover[]>(
-            'vscode.executeHoverProvider',
-            cshtmlDoc.uri,
-            new vscode.Position(0, 19));
-
-        assert.ok(hoverResult, 'Should have a hover result for class');
-        if (!hoverResult) {
-            // This can never happen
-            return;
-        }
-
-        assert.equal(hoverResult.length, 1, 'Something else may be providing hover results');
-
-        const result = hoverResult[0];
-        expectedRange = new vscode.Range(
-            new vscode.Position(0, 19),
-            new vscode.Position(0, 24));
-        assert.deepEqual(result.range, expectedRange, 'class should be selected');
-        mStr = result.contents[0] as vscode.MarkdownString;
-        assert.ok(mStr.value.includes('class'), `class not included in ${mStr.value}`);
     });
 
     // MvcWithComponents doesn't find TagHelpers because of test setup foibles.

@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             // Assert
             Assert.NotNull(hover);
             Assert.Contains("**Test**", hover.Contents.MarkupContent.Value);
-            var expectedRange = new RangeModel(new Position(1, 4), new Position(1, 22));
+            var expectedRange = new RangeModel(new Position(1, 5), new Position(1, 10));
             Assert.Equal(expectedRange, hover.Range);
         }
 

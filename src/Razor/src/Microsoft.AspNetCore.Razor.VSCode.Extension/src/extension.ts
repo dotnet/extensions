@@ -18,6 +18,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Because this extension is only used for local development and tests in CI,
     // we know the Razor Language Server is at a specific path within this repo
     const config = process.env.config ? process.env.config : 'Debug';
+
     const languageServerDir = path.join(
         __dirname, '..', '..', '..', '..', '..', 'artifacts', 'bin', 'rzls', config, 'netcoreapp5.0');
 
@@ -48,9 +49,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
     if (workspaceConfigured) {
         await razorExtensionPackage.activate(
+            vscode,
             context,
             languageServerDir,
-            hostEventStream);
+            hostEventStream,
+            /* enabledProposedApis */true);
     } else {
         console.log('Razor workspace was not configured, extension activation skipped.');
         console.log('To configure your workspace run the following command (ctrl+shift+p) in the experimental instance "Razor: Configure workspace for Razor extension development"');

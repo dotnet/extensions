@@ -4,6 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import * as vscodeapi from 'vscode';
 import { ExtensionContext } from 'vscode';
 import { CompositeCodeActionTranslator } from './CodeActions/CompositeRazorCodeActionTranslator';
 import { RazorCodeActionProvider } from './CodeActions/RazorCodeActionProvider';
@@ -14,6 +15,7 @@ import { reportTelemetryForDocuments } from './DocumentTelemetryListener';
 import { HostEventStream } from './HostEventStream';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { IEventEmitterFactory } from './IEventEmitterFactory';
+import { ProposedApisFeature } from './ProposedApisFeature';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorCodeLensProvider } from './RazorCodeLensProvider';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
@@ -36,15 +38,19 @@ import { RazorRenameProvider } from './RazorRenameProvider';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
 import { TelemetryReporter } from './TelemetryReporter';
 
-export async function activate(context: ExtensionContext, languageServerDir: string, eventStream: HostEventStream) {
+// We specifically need to take a reference to a particular instance of the vscode namespace,
+// otherwise providers attempt to operate on the null extension.
+export async function activate(vscodeType: typeof vscodeapi, context: ExtensionContext, languageServerDir: string, eventStream: HostEventStream, enableProposedApis = false) {
     const telemetryReporter = new TelemetryReporter(eventStream);
     const eventEmitterFactory: IEventEmitterFactory = {
         create: <T>() => new vscode.EventEmitter<T>(),
     };
-    const languageServerTrace = resolveRazorLanguageServerTrace(vscode);
-    const logger = new RazorLogger(vscode, eventEmitterFactory, languageServerTrace);
+
+    const languageServerTrace = resolveRazorLanguageServerTrace(vscodeType);
+    const logger = new RazorLogger(vscodeType, eventEmitterFactory, languageServerTrace);
+
     try {
-        const languageServerOptions = resolveRazorLanguageServerOptions(vscode, languageServerDir, languageServerTrace, logger);
+        const languageServerOptions = resolveRazorLanguageServerOptions(vscodeType, languageServerDir, languageServerTrace, logger);
         const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
         const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
 
@@ -61,11 +67,11 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const csharpFeature = new RazorCSharpFeature(documentManager, eventEmitterFactory, logger);
         const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient, eventEmitterFactory, logger);
         const localRegistrations: vscode.Disposable[] = [];
-        const reportIssueCommand = new ReportIssueCommand(vscode, documentManager, logger);
+        const reportIssueCommand = new ReportIssueCommand(vscodeType, documentManager, logger);
         const razorFormattingFeature = new RazorFormattingFeature(languageServerClient, documentManager, logger);
 
-        const onStartRegistration = languageServerClient.onStart(() => {
-            vscode.commands.executeCommand<void>('omnisharp.registerLanguageMiddleware', razorLanguageMiddleware);
+        const onStartRegistration = languageServerClient.onStart(async () => {
+            vscodeType.commands.executeCommand<void>('omnisharp.registerLanguageMiddleware', razorLanguageMiddleware);
             const documentSynchronizer = new RazorDocumentSynchronizer(documentManager, logger);
             const provisionalCompletionOrchestrator = new ProvisionalCompletionOrchestrator(
                 documentManager,
@@ -123,33 +129,33 @@ export async function activate(context: ExtensionContext, languageServerDir: str
             localRegistrations.push(
                 languageConfiguration.register(),
                 provisionalCompletionOrchestrator.register(),
-                vscode.languages.registerCodeActionsProvider(
+                vscodeType.languages.registerCodeActionsProvider(
                     RazorLanguage.id,
                     codeActionProvider),
-                vscode.languages.registerCompletionItemProvider(
+                vscodeType.languages.registerCompletionItemProvider(
                     RazorLanguage.id,
                     completionItemProvider,
                     '.', '<', '@'),
-                vscode.languages.registerSignatureHelpProvider(
+                vscodeType.languages.registerSignatureHelpProvider(
                     RazorLanguage.id,
                     signatureHelpProvider,
                     '(', ','),
-                vscode.languages.registerDefinitionProvider(
+                vscodeType.languages.registerDefinitionProvider(
                     RazorLanguage.id,
                     definitionProvider),
-                vscode.languages.registerImplementationProvider(
+                vscodeType.languages.registerImplementationProvider(
                     RazorLanguage.id,
                     implementationProvider),
-                vscode.languages.registerHoverProvider(
+                vscodeType.languages.registerHoverProvider(
                     RazorLanguage.documentSelector,
                     hoverProvider),
-                vscode.languages.registerReferenceProvider(
+                vscodeType.languages.registerReferenceProvider(
                     RazorLanguage.id,
                     referenceProvider),
-                vscode.languages.registerCodeLensProvider(
+                vscodeType.languages.registerCodeLensProvider(
                     RazorLanguage.id,
                     codeLensProvider),
-                vscode.languages.registerRenameProvider(
+                vscodeType.languages.registerRenameProvider(
                     RazorLanguage.id,
                     renameProvider),
                 documentManager.register(),
@@ -157,6 +163,15 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                 htmlFeature.register(),
                 documentSynchronizer.register(),
                 reportIssueCommand.register());
+            if (enableProposedApis) {
+                const proposedApisFeature = new ProposedApisFeature(
+                    documentSynchronizer,
+                    documentManager,
+                    languageServiceClient,
+                    logger);
+
+                await proposedApisFeature.register(vscodeType, localRegistrations);
+            }
 
             razorFormattingFeature.register();
         });
@@ -170,7 +185,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
             await documentManager.initialize();
         });
 
-        await startLanguageServer(languageServerClient, logger, context);
+        await startLanguageServer(vscodeType, languageServerClient, logger, context);
 
         context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration, logger);
     } catch (error) {
@@ -180,23 +195,24 @@ export async function activate(context: ExtensionContext, languageServerDir: str
 }
 
 async function startLanguageServer(
+    vscodeType: typeof vscodeapi,
     languageServerClient: RazorLanguageServerClient,
     logger: RazorLogger,
     context: vscode.ExtensionContext) {
 
-    const razorFiles = await vscode.workspace.findFiles(RazorLanguage.globbingPattern);
+    const razorFiles = await vscodeType.workspace.findFiles(RazorLanguage.globbingPattern);
     if (razorFiles.length === 0) {
         // No Razor files in workspace, language server should stay off until one is added or opened.
         logger.logAlways('No Razor files detected in workspace, delaying language server start.');
 
-        const watcher = vscode.workspace.createFileSystemWatcher(RazorLanguage.globbingPattern);
+        const watcher = vscodeType.workspace.createFileSystemWatcher(RazorLanguage.globbingPattern);
         const delayedLanguageServerStart = async () => {
             razorFileCreatedRegistration.dispose();
             razorFileOpenedRegistration.dispose();
             await languageServerClient.start();
         };
         const razorFileCreatedRegistration = watcher.onDidCreate(() => delayedLanguageServerStart());
-        const razorFileOpenedRegistration = vscode.workspace.onDidOpenTextDocument(async (event) => {
+        const razorFileOpenedRegistration = vscodeType.workspace.onDidOpenTextDocument(async (event) => {
             if (event.languageId === RazorLanguage.id) {
                 await delayedLanguageServerStart();
             }

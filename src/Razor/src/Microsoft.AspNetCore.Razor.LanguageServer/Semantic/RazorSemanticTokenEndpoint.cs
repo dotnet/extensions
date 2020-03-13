@@ -4,31 +4,25 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-using HoverModel = OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 {
-    internal class RazorHoverEndpoint : IHoverHandler
+    internal class RazorSemanticTokenEndpoint : ISemanticTokenHandler
     {
-        private HoverCapability _capability;
+        private SemanticTokenCapability _capability;
         private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
-        private readonly RazorHoverInfoService _hoverInfoService;
+        private readonly RazorSemanticTokenInfoService _semanticTokenInfoService;
 
-        public RazorHoverEndpoint(
+        public RazorSemanticTokenEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
-            RazorHoverInfoService hoverInfoService,
+            RazorSemanticTokenInfoService semanticTokenInfoService,
             ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher is null)
@@ -41,9 +35,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                 throw new ArgumentNullException(nameof(documentResolver));
             }
 
-            if (hoverInfoService is null)
+            if (semanticTokenInfoService is null)
             {
-                throw new ArgumentNullException(nameof(hoverInfoService));
+                throw new ArgumentNullException(nameof(semanticTokenInfoService));
             }
 
             if (loggerFactory is null)
@@ -53,19 +47,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
-            _hoverInfoService = hoverInfoService;
-            _logger = loggerFactory.CreateLogger<RazorHoverEndpoint>();
+            _semanticTokenInfoService = semanticTokenInfoService;
+            _logger = loggerFactory.CreateLogger<RazorSemanticTokenEndpoint>();
         }
 
-        public TextDocumentRegistrationOptions GetRegistrationOptions()
-        {
-            return new TextDocumentRegistrationOptions()
-            {
-                DocumentSelector = RazorDefaults.Selector
-            };
-        }
 
-        public async Task<HoverModel> Handle(HoverParams request, CancellationToken cancellationToken)
+        public async Task<SemanticTokens> Handle(SemanticTokenParams request, CancellationToken cancellationToken)
         {
             if (request is null)
             {
@@ -74,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
 
             var document = await Task.Factory.StartNew(() =>
             {
-                _documentResolver.TryResolveDocument(request.TextDocument.Uri.GetAbsoluteOrUNCPath(), out var documentSnapshot);
+                _documentResolver.TryResolveDocument(request.RazorDocumentUri.AbsolutePath, out var documentSnapshot);
 
                 return documentSnapshot;
             }, cancellationToken, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
@@ -90,19 +77,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                 return null;
             }
 
-            var sourceText = await document.GetTextAsync();
-            var linePosition = new LinePosition((int)request.Position.Line, (int)request.Position.Character);
-            var hostDocumentIndex = sourceText.Lines.GetPosition(linePosition);
-            var location = new SourceLocation(hostDocumentIndex, (int)request.Position.Line, (int)request.Position.Character);
+            var tokens = _semanticTokenInfoService.GetSemanticTokens(codeDocument);
 
-            var hoverItem = _hoverInfoService.GetHoverInfo(codeDocument, location);
-
-            _logger.LogTrace($"Found hover info items.");
-
-            return hoverItem;
+            return tokens;
         }
 
-        public void SetCapability(HoverCapability capability)
+        public void SetCapability(SemanticTokenCapability capability)
         {
             _capability = capability;
         }

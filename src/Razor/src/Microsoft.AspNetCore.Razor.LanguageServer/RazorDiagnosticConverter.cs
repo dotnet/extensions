@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 if (index >= sourceText.Length)
                 {
-                    // Span start index is past the end of the document. Roslyn and VSCode don't support 
+                    // Span start index is past the end of the document. Roslyn and VSCode don't support
                     // virtual positions that don't exist on the document; normalize to the last character.
                     index = sourceText.Length - 1;
                 }
