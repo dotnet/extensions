@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.Editor.Razor;
 using MonoDevelop.Ide.TypeSystem;
 
@@ -31,28 +32,28 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public event Action<DocumentInfo> Updated;
 
         // Called by us to update entries
-        public override void UpdateFileInfo(ProjectSnapshot projectSnapshot, DocumentSnapshot document)
+        public override void UpdateFileInfo(string projectFilePath, DynamicDocumentContainer documentContainer)
         {
-            if (projectSnapshot == null)
+            if (projectFilePath == null)
             {
-                throw new ArgumentNullException(nameof(projectSnapshot));
+                throw new ArgumentNullException(nameof(projectFilePath));
             }
 
-            if (document == null)
+            if (documentContainer == null)
             {
-                throw new ArgumentNullException(nameof(document));
+                throw new ArgumentNullException(nameof(documentContainer));
             }
 
             // There's a possible race condition here where we're processing an update
             // and the project is getting unloaded. So if we don't find an entry we can
             // just ignore it.
-            var key = new Key(projectSnapshot.FilePath, document.FilePath);
+            var key = new Key(projectFilePath, documentContainer.FilePath);
             if (_entries.TryGetValue(key, out var entry))
             {
                 lock (entry.Lock)
                 {
-                    entry.Current = entry.Current
-                        .WithTextLoader(new GeneratedDocumentTextLoader(document, entry.Current.FilePath));
+                    var textLoader = documentContainer.GetTextLoader(entry.Current.FilePath);
+                    entry.Current = entry.Current.WithTextLoader(textLoader);
                 }
 
                 Updated?.Invoke(entry.Current);
@@ -60,22 +61,22 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         // Called by us when a document opens in the editor
-        public override void SuppressDocument(ProjectSnapshot project, DocumentSnapshot document)
+        public override void SuppressDocument(string projectFilePath, string documentFilePath)
         {
-            if (project == null)
+            if (projectFilePath == null)
             {
-                throw new ArgumentNullException(nameof(project));
+                throw new ArgumentNullException(nameof(projectFilePath));
             }
 
-            if (document == null)
+            if (documentFilePath == null)
             {
-                throw new ArgumentNullException(nameof(document));
+                throw new ArgumentNullException(nameof(documentFilePath));
             }
 
             // There's a possible race condition here where we're processing an update
             // and the project is getting unloaded. So if we don't find an entry we can
             // just ignore it.
-            var key = new Key(project.FilePath, document.FilePath);
+            var key = new Key(projectFilePath, documentFilePath);
             if (_entries.TryGetValue(key, out var entry))
             {
                 var updated = false;

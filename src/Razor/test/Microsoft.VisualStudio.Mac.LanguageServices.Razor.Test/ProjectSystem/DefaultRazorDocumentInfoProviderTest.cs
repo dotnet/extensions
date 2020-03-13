@@ -51,9 +51,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory);
             provider.Updated += (_) => throw new XunitException("This should not have been called.");
+            var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Act & Assert
-            provider.UpdateFileInfo(ProjectSnapshot, DocumentSnapshot);
+            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
         }
 
         [Fact]
@@ -69,9 +70,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Populate the providers understanding of our project/document
             provider.GetDynamicDocumentInfo(ProjectId.CreateNewId(), ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
+            var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Act
-            provider.UpdateFileInfo(ProjectSnapshot, DocumentSnapshot);
+            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
 
             // Assert
             Assert.NotNull(documentInfo);
@@ -84,9 +86,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory);
             provider.Updated += (_) => throw new XunitException("This should not have been called.");
+            var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Act & Assert
-            provider.SuppressDocument(ProjectSnapshot, DocumentSnapshot);
+            provider.SuppressDocument(ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
         }
 
         [Fact]
@@ -98,9 +101,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Populate the providers understanding of our project/document
             provider.GetDynamicDocumentInfo(ProjectId.CreateNewId(), ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
+            var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Act & Assert
-            provider.SuppressDocument(ProjectSnapshot, DocumentSnapshot);
+            provider.SuppressDocument(ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
         }
 
         [Fact]
@@ -116,12 +120,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Populate the providers understanding of our project/document
             provider.GetDynamicDocumentInfo(ProjectId.CreateNewId(), ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
+            var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Update the document with content
-            provider.UpdateFileInfo(ProjectSnapshot, DocumentSnapshot);
+            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
 
             // Act
-            provider.SuppressDocument(ProjectSnapshot, DocumentSnapshot);
+            provider.SuppressDocument(ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
 
             // Assert
             Assert.NotNull(documentInfo);
@@ -136,9 +141,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Populate the providers understanding of our project/document
             provider.GetDynamicDocumentInfo(ProjectId.CreateNewId(), ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
+            var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Update the document with content
-            provider.UpdateFileInfo(ProjectSnapshot, DocumentSnapshot);
+            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
 
             // Now explode if any further updates happen
             provider.Updated += (_) => throw new XunitException("This should not have been called.");
@@ -147,7 +153,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             provider.RemoveDynamicDocumentInfo(ProjectId.CreateNewId(), ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
 
             // Assert this should not update
-            provider.UpdateFileInfo(ProjectSnapshot, DocumentSnapshot);
+            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
         }
     }
 }

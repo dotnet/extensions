@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.Internal;
 using Microsoft.VisualStudio.Editor.Razor;
 
@@ -40,56 +41,56 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public event EventHandler<string> Updated;
 
         // Called by us to update entries
-        public override void UpdateFileInfo(ProjectSnapshot projectSnapshot, DocumentSnapshot document)
+        public override void UpdateFileInfo(string projectFilePath, DynamicDocumentContainer documentContainer)
         {
-            if (projectSnapshot == null)
+            if (projectFilePath == null)
             {
-                throw new ArgumentNullException(nameof(projectSnapshot));
+                throw new ArgumentNullException(nameof(projectFilePath));
             }
 
-            if (document == null)
+            if (documentContainer == null)
             {
-                throw new ArgumentNullException(nameof(document));
+                throw new ArgumentNullException(nameof(documentContainer));
             }
 
             // There's a possible race condition here where we're processing an update
             // and the project is getting unloaded. So if we don't find an entry we can
             // just ignore it.
-            var key = new Key(projectSnapshot.FilePath, document.FilePath);
+            var key = new Key(projectFilePath, documentContainer.FilePath);
             if (_entries.TryGetValue(key, out var entry))
             {
                 lock (entry.Lock)
                 {
-                    entry.Current = CreateInfo(key, document);
+                    entry.Current = CreateInfo(key, documentContainer);
                 }
 
-                Updated?.Invoke(this, document.FilePath);
+                Updated?.Invoke(this, documentContainer.FilePath);
             }
         }
 
         // Called by us when a document opens in the editor
-        public override void SuppressDocument(ProjectSnapshot project, DocumentSnapshot document)
+        public override void SuppressDocument(string projectFilePath, string documentFilePath)
         {
-            if (project == null)
+            if (projectFilePath == null)
             {
-                throw new ArgumentNullException(nameof(project));
+                throw new ArgumentNullException(nameof(projectFilePath));
             }
 
-            if (document == null)
+            if (documentFilePath == null)
             {
-                throw new ArgumentNullException(nameof(document));
+                throw new ArgumentNullException(nameof(documentFilePath));
             }
 
             // There's a possible race condition here where we're processing an update
             // and the project is getting unloaded. So if we don't find an entry we can
             // just ignore it.
-            var key = new Key(project.FilePath, document.FilePath);
+            var key = new Key(projectFilePath, documentFilePath);
             if (_entries.TryGetValue(key, out var entry))
             {
                 var updated = false;
                 lock (entry.Lock)
                 {
-                    if (entry.Current.TextLoader is GeneratedDocumentTextLoader)
+                    if (!(entry.Current.TextLoader is EmptyTextLoader))
                     {
                         updated = true;
                         entry.Current = CreateEmptyInfo(key);
@@ -98,7 +99,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 if (updated)
                 {
-                    Updated?.Invoke(this, document.FilePath);
+                    Updated?.Invoke(this, documentFilePath);
                 }
             }
         }
@@ -144,10 +145,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return new DynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.CreateEmpty());
         }
 
-        private DynamicFileInfo CreateInfo(Key key, DocumentSnapshot document)
+        private DynamicFileInfo CreateInfo(Key key, DynamicDocumentContainer document)
         {
             var filename = Path.ChangeExtension(key.FilePath, ".g.cs");
-            var textLoader = new GeneratedDocumentTextLoader(document, filename);
+            var textLoader = document.GetTextLoader(filename);
             return new DynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.Create(document));
         }
 

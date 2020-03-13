@@ -149,7 +149,8 @@ namespace Microsoft.CodeAnalysis.Razor
         protected virtual async Task ProcessDocument(ProjectSnapshot project, DocumentSnapshot document)
         {
             await document.GetGeneratedOutputAsync().ConfigureAwait(false);
-            _infoProvider.UpdateFileInfo(project, document);
+            var container = new DefaultDynamicDocumentContainer(document);
+            _infoProvider.UpdateFileInfo(project.FilePath, container);
         }
 
         public void Enqueue(ProjectSnapshot project, DocumentSnapshot document)
@@ -170,7 +171,7 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 if (_projectManager.IsDocumentOpen(document.FilePath))
                 {
-                    _infoProvider.SuppressDocument(project, document);
+                    _infoProvider.SuppressDocument(project.FilePath, document.FilePath);
                     return;
                 }
 
