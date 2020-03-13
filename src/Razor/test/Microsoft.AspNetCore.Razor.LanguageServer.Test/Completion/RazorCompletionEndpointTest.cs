@@ -95,6 +95,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         [Fact]
+        public void TryConvert_MarkupTransition_ReturnsTrue()
+        {
+            // Arrange
+            var completionItem = MarkupTransitionCompletionItemProvider.MarkupTransitionCompletionItem;
+            var description = completionItem.GetMarkupTransitionCompletionDescription().Description;
+
+            // Act
+            var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(completionItem.DisplayText, converted.Label);
+            Assert.Equal(completionItem.InsertText, converted.InsertText);
+            Assert.Equal(completionItem.DisplayText, converted.FilterText);
+            Assert.Equal(completionItem.DisplayText, converted.SortText);
+            Assert.Equal(description, converted.Detail);
+            Assert.NotNull(converted.Documentation);
+            Assert.Equal(converted.CommitCharacters, completionItem.CommitCharacters);
+        }
+
+        [Fact]
         public void TryConvert_DirectiveAttribute_ReturnsTrue()
         {
             // Arrange

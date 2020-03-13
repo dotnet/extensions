@@ -9,6 +9,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
     {
         private readonly static string AttributeCompletionDescriptionKey = "Razor.AttributeDescription";
         private readonly static string DirectiveCompletionDescriptionKey = "Razor.DirectiveDescription";
+        private readonly static string MarkupTransitionDescriptionKey = "Razor.MarkupTransitionDescription";
 
         public static void SetAttributeCompletionDescription(this RazorCompletionItem completionItem, AttributeCompletionDescription attributeCompletionDescription)
         {
@@ -50,6 +51,27 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
             var attributeCompletionDescription = completionItem.Items[DirectiveCompletionDescriptionKey] as DirectiveCompletionDescription;
             return attributeCompletionDescription;
+        }
+
+        public static void SetMarkupTransitionCompletionDescription(this RazorCompletionItem completionItem, MarkupTransitionCompletionDescription markupTransitionCompletionDescription)
+        {
+            if (completionItem is null)
+            {
+                throw new ArgumentNullException(nameof(completionItem));
+            }
+
+            completionItem.Items[MarkupTransitionDescriptionKey] = markupTransitionCompletionDescription;
+        }
+
+        public static MarkupTransitionCompletionDescription GetMarkupTransitionCompletionDescription(this RazorCompletionItem completionItem)
+        {
+            if (completionItem is null)
+            {
+                throw new ArgumentNullException(nameof(completionItem));
+            }
+
+            var markupTransitionCompletionDescription = completionItem.Items[MarkupTransitionDescriptionKey] as MarkupTransitionCompletionDescription;
+            return markupTransitionCompletionDescription;
         }
     }
 }

@@ -102,10 +102,16 @@ export class HtmlTagCompletionProvider {
             return;
         }
 
-        const languageResponse = await this.serviceClient.languageQuery(lastChange.range.start, document.uri);
-        if (languageResponse.kind !== LanguageKind.Html) {
-            // This prevents auto-completion of things like C# generics.
-            return;
+        if (this.atMarkupTransition(documentContent, changeOffset)) {
+            // We're at a <text> tag, no need to check if we're operating in a non-HTML area
+            // (we want to auto-complete <text>).
+        } else {
+            // Check language kind
+            const languageResponse = await this.serviceClient.languageQuery(lastChange.range.start, document.uri);
+            if (languageResponse.kind !== LanguageKind.Html) {
+                // This prevents auto-completion of things like C# generics
+                return;
+            }
         }
 
         const version = document.version;
@@ -153,5 +159,9 @@ export class HtmlTagCompletionProvider {
                 activeEditor.insertSnippet(new vscode.SnippetString(tagCompletion), position);
             }
         }, 75);
+    }
+
+    private atMarkupTransition(documentContent: string, changeOffset: number): boolean {
+        return documentContent.substring(changeOffset - '<text'.length, changeOffset) === '<text';
     }
 }

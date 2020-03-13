@@ -296,6 +296,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                         completionItem = parameterCompletionItem;
                         return true;
                     }
+                case RazorCompletionItemKind.MarkupTransition:
+                    {
+                        var descriptionInfo = razorCompletionItem.GetMarkupTransitionCompletionDescription();
+                        var markupTransitionCompletionItem = new CompletionItem()
+                        {
+                            Label = razorCompletionItem.DisplayText,
+                            InsertText = razorCompletionItem.InsertText,
+                            FilterText = razorCompletionItem.DisplayText,
+                            SortText = razorCompletionItem.DisplayText,
+                            Detail = descriptionInfo.Description,
+                            Documentation = descriptionInfo.Description,
+                            Kind = CompletionItemKind.TypeParameter,
+                            CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters)
+                        };
+
+                        completionItem = markupTransitionCompletionItem;
+                        return true;
+                    }
             }
 
             completionItem = null;
