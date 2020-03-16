@@ -8,6 +8,9 @@ using Microsoft.CodeAnalysis.Razor.Workspaces;
 namespace Microsoft.CodeAnalysis.Razor
 {
     // This types purpose is to serve as a non-Razor specific document delivery mechanism for Roslyn.
+    // Given a DocumentSnapshot this class allows the retrieval of a TextLoader for the generated C#
+    // and services to help map spans and excerpts to and from the top-level Razor document to behind
+    // the scenes C#.
     internal sealed class DefaultDynamicDocumentContainer : DynamicDocumentContainer
     {
         private readonly DocumentSnapshot _documentSnapshot;
