@@ -104,21 +104,21 @@ namespace Microsoft.Extensions.Logging
                 throw new ObjectDisposedException(nameof(LoggerFactory));
             }
 
-            lock (_sync)
+            if (_loggers.TryGetValue(categoryName, out var logger))
             {
-                if (!_loggers.TryGetValue(categoryName, out var logger))
-                {
-                    logger = new Logger
-                    {
-                        Loggers = CreateLoggers(categoryName),
-                    };
-
-                    (logger.MessageLoggers, logger.ScopeLoggers) = ApplyFilters(logger.Loggers);
-
-                    _loggers[categoryName] = logger;
-                }
-
                 return logger;
+            }
+            else
+            {
+                lock (_loggers)
+                {
+                    if (!_loggers.TryGetValue(categoryName, out logger))
+                    {
+                        logger = _provider.CreateLogger(categoryName);
+                        _loggers[categoryName] = logger;
+                    }
+                    return logger;
+                }
             }
         }
 
