@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
@@ -18,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         // Internal for testing
         internal const string CSharpLSPContentTypeName = "C#_LSP";
-        internal const string VirtualCSharpFileNameSuffix = "__virtual.cs";
+        internal const string VirtualCSharpFileNameSuffix = ".g.cs";
         internal const string ContainedLanguageMarker = "ContainedLanguageMarker";
 
         private readonly IContentTypeRegistryService _contentTypeRegistry;

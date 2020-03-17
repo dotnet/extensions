@@ -8,15 +8,31 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     public sealed class LSPDocumentChangeEventArgs : EventArgs
     {
         public LSPDocumentChangeEventArgs(LSPDocumentSnapshot old, LSPDocumentSnapshot @new, LSPDocumentChangeKind kind)
+            : this(old, @new, virtualOld: null, virtualNew: null, kind)
+        {
+        }
+
+        public LSPDocumentChangeEventArgs(
+            LSPDocumentSnapshot old,
+            LSPDocumentSnapshot @new,
+            VirtualDocumentSnapshot virtualOld,
+            VirtualDocumentSnapshot virtualNew,
+            LSPDocumentChangeKind kind)
         {
             Old = old;
             New = @new;
+            VirtualOld = virtualOld;
+            VirtualNew = virtualNew;
             Kind = kind;
         }
 
         public LSPDocumentSnapshot Old { get; }
 
         public LSPDocumentSnapshot New { get; }
+
+        public VirtualDocumentSnapshot VirtualOld { get; }
+
+        public VirtualDocumentSnapshot VirtualNew { get; }
 
         public LSPDocumentChangeKind Kind { get; }
     }

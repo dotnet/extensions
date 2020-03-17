@@ -26,7 +26,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public DefaultLSPDocumentManager(
             JoinableTaskContext joinableTaskContext,
             FileUriProvider fileUriProvider,
-            LSPDocumentFactory documentFactory)
+            LSPDocumentFactory documentFactory,
+            [ImportMany] IEnumerable<LSPDocumentManagerChangeTrigger> changeTriggers)
         {
             if (joinableTaskContext is null)
             {
@@ -47,6 +48,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _fileUriProvider = fileUriProvider;
             _documentFactory = documentFactory;
             _documents = new Dictionary<Uri, LSPDocument>();
+
+            foreach (var trigger in changeTriggers)
+            {
+                trigger.Initialize(this);
+            }
         }
 
         public override void TrackDocument(ITextBuffer buffer)
@@ -115,8 +121,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return;
             }
 
+            var virtualDocumetnAcquired = lspDocument.TryGetVirtualDocument<TVirtualDocument>(out var virtualDocument);
             if (changes.Count == 0 &&
-                lspDocument.TryGetVirtualDocument<TVirtualDocument>(out var virtualDocument) &&
+                virtualDocumetnAcquired &&
                 virtualDocument.HostDocumentSyncVersion == hostDocumentVersion)
             {
                 // The current virtual document already knows about this update. Ignore it so we don't prematurely invoke a change event.
@@ -124,6 +131,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             var old = lspDocument.CurrentSnapshot;
+            var oldVirtual = virtualDocument.CurrentSnapshot;
             var @new = lspDocument.UpdateVirtualDocument<TVirtualDocument>(changes, hostDocumentVersion);
 
             if (old == @new)
@@ -131,7 +139,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return;
             }
 
-            var args = new LSPDocumentChangeEventArgs(old, @new, LSPDocumentChangeKind.VirtualDocumentChanged);
+            if (!lspDocument.TryGetVirtualDocument<TVirtualDocument>(out var newVirtualDocument))
+            {
+                throw new InvalidOperationException("This should never ever happen.");
+            }
+
+            var newVirtual = newVirtualDocument.CurrentSnapshot;
+            var args = new LSPDocumentChangeEventArgs(
+                old,
+                @new,
+                oldVirtual,
+                newVirtual,
+                LSPDocumentChangeKind.VirtualDocumentChanged);
             Changed?.Invoke(this, args);
         }
 

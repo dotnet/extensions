@@ -31,6 +31,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public event Action<DocumentInfo> Updated;
 
+        public override void UpdateLSPFileInfo(Uri documentUri, DynamicDocumentContainer documentContainer) => throw new NotImplementedException();
+
         // Called by us to update entries
         public override void UpdateFileInfo(string projectFilePath, DynamicDocumentContainer documentContainer)
         {

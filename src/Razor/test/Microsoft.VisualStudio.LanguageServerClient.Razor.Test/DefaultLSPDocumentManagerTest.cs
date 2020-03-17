@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
@@ -15,6 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         public DefaultLSPDocumentManagerTest()
         {
+            ChangeTriggers = Enumerable.Empty<LSPDocumentManagerChangeTrigger>();
             var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
             JoinableTaskContext = joinableTaskContext.Context;
             TextBuffer = Mock.Of<ITextBuffer>();
@@ -29,7 +31,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             LSPDocumentFactory = Mock.Of<LSPDocumentFactory>(factory => factory.Create(TextBuffer) == LSPDocument);
         }
 
-        public JoinableTaskContext JoinableTaskContext { get; }
+        private IEnumerable<LSPDocumentManagerChangeTrigger> ChangeTriggers { get; }
+
+        private JoinableTaskContext JoinableTaskContext { get; }
 
         private ITextBuffer TextBuffer { get; }
 
@@ -47,7 +51,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void TrackDocument_TriggersDocumentAdded()
         {
             // Arrange
-            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
             var changedCalled = false;
             manager.Changed += (sender, args) =>
             {
@@ -68,7 +72,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void UntrackDocument_TriggersDocumentRemoved()
         {
             // Arrange
-            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
             manager.TrackDocument(TextBuffer);
             var changedCalled = false;
             manager.Changed += (sender, args) =>
@@ -90,7 +94,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void UpdateVirtualDocument_Noops_UnknownDocument()
         {
             // Arrange
-            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
             var changedCalled = false;
             manager.Changed += (sender, args) =>
             {
@@ -109,7 +113,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void UpdateVirtualDocument_Noops_NoChangesSameVersion()
         {
             // Arrange
-            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
             manager.TrackDocument(TextBuffer);
             var changedCalled = false;
             manager.Changed += (sender, args) =>
@@ -129,7 +133,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void UpdateVirtualDocument_InvokesVirtualDocumentChanged()
         {
             // Arrange
-            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
             manager.TrackDocument(TextBuffer);
             var changedCalled = false;
             manager.Changed += (sender, args) =>
@@ -152,7 +156,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void TryGetDocument_TrackedDocument_ReturnsTrue()
         {
             // Arrange
-            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
             manager.TrackDocument(TextBuffer);
 
             // Act
@@ -167,7 +171,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void TryGetDocument_UnknownDocument_ReturnsFalse()
         {
             // Arrange
-            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
 
             // Act
             var result = manager.TryGetDocument(Uri, out var lspDocument);
@@ -181,7 +185,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void TryGetDocument_UntrackedDocument_ReturnsFalse()
         {
             // Arrange
-            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory);
+            var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
             manager.TrackDocument(TextBuffer);
             manager.UntrackDocument(TextBuffer);
 
@@ -199,7 +203,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             public override ITextBuffer TextBuffer => throw new NotImplementedException();
 
-            public override VirtualDocumentSnapshot CurrentSnapshot => throw new NotImplementedException();
+            public override VirtualDocumentSnapshot CurrentSnapshot { get; } = new TestVirtualDocumentSnapshot(new Uri("C:/path/to/something.razor.g.cs"), 123);
 
             public override long? HostDocumentSyncVersion => 123;
 

@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.Internal;
-using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -31,14 +30,55 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 throw new ArgumentNullException(nameof(factory));
             }
-            
+
             _factory = factory;
 
             _entries = new ConcurrentDictionary<Key, Entry>();
-            _createEmptyEntry = (key) => new Entry(CreateEmptyInfo(key));
+            _createEmptyEntry = (key) => new Entry(CreateEmptyInfo(key), supportsSuppression: true);
         }
 
         public event EventHandler<string> Updated;
+
+        // Called by us to update LSP document entries
+        public override void UpdateLSPFileInfo(Uri documentUri, DynamicDocumentContainer documentContainer)
+        {
+            if (documentUri is null)
+            {
+                throw new ArgumentNullException(nameof(documentUri));
+            }
+
+            if (documentContainer is null)
+            {
+                throw new ArgumentNullException(nameof(documentContainer));
+            }
+
+            var filePath = documentUri.GetAbsoluteOrUNCPath().Replace('/', '\\');
+            KeyValuePair<Key, Entry>? associatedKvp = null;
+            foreach (var entry in _entries)
+            {
+                if (FilePathComparer.Instance.Equals(filePath, entry.Key.FilePath))
+                {
+                    associatedKvp = entry;
+                    break;
+                }
+            }
+
+            if (associatedKvp == null)
+            {
+                return;
+            }
+
+            var associatedKey = associatedKvp.Value.Key;
+            var associatedEntry = associatedKvp.Value.Value;
+
+            lock (associatedEntry.Lock)
+            {
+                associatedEntry.SupportsSuppression = false;
+                associatedEntry.Current = CreateInfo(associatedKey, documentContainer);
+            }
+
+            Updated?.Invoke(this, filePath);
+        }
 
         // Called by us to update entries
         public override void UpdateFileInfo(string projectFilePath, DynamicDocumentContainer documentContainer)
@@ -87,6 +127,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var key = new Key(projectFilePath, documentFilePath);
             if (_entries.TryGetValue(key, out var entry))
             {
+                if (!entry.SupportsSuppression)
+                {
+                    return;
+                }
+
                 var updated = false;
                 lock (entry.Lock)
                 {
@@ -140,14 +185,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private DynamicFileInfo CreateEmptyInfo(Key key)
         {
-            var filename = Path.ChangeExtension(key.FilePath, ".g.cs");
+            var filename = key.FilePath + ".g.cs";
             var textLoader = new EmptyTextLoader(filename);
             return new DynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.CreateEmpty());
         }
 
         private DynamicFileInfo CreateInfo(Key key, DynamicDocumentContainer document)
         {
-            var filename = Path.ChangeExtension(key.FilePath, ".g.cs");
+            var filename = key.FilePath + ".g.cs";
             var textLoader = document.GetTextLoader(filename);
             return new DynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.Create(document));
         }
@@ -159,7 +204,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Can't ever be null for thread-safety reasons
             private DynamicFileInfo _current;
 
-            public Entry(DynamicFileInfo current)
+            public Entry(DynamicFileInfo current, bool supportsSuppression)
             {
                 if (current == null)
                 {
@@ -167,6 +212,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
 
                 Current = current;
+                SupportsSuppression = supportsSuppression;
                 Lock = new object();
             }
 
@@ -185,6 +231,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             public object Lock { get; }
+
+            public bool SupportsSuppression { get; set; }
 
             public override string ToString()
             {

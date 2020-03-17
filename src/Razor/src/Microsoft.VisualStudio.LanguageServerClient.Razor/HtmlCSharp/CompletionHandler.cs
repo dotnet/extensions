@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using System.Threading;
@@ -16,8 +17,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ExportLspMethod(Methods.TextDocumentCompletionName)]
     internal class CompletionHandler : IRequestHandler<CompletionParams, SumType<CompletionItem[], CompletionList>?>
     {
-        private static readonly string[] CSharpTriggerCharacters = new[] { ".", "@" };
-        private static readonly string[] HtmlTriggerCharacters = new[] { "<", "&", "\\", "/", "'", "\"", "=", ":" };
+        private static readonly IReadOnlyList<string> CSharpTriggerCharacters = new[] { ".", "@" };
+        private static readonly IReadOnlyList<string> HtmlTriggerCharacters = new[] { "<", "&", "\\", "/", "'", "\"", "=", ":" };
+        private static readonly IReadOnlyList<string> AllTriggerCharacters = CSharpTriggerCharacters.Concat(HtmlTriggerCharacters).ToArray();
 
         private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly LSPRequestInvoker _requestInvoker;
@@ -75,10 +77,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            if (request.Context.TriggerKind == CompletionTriggerKind.TriggerCharacter &&
-                !IsApplicableTriggerCharacter(request.Context.TriggerCharacter, projectionResult.LanguageKind))
+            if (!TriggerAppliesToProjection(request.Context, projectionResult.LanguageKind))
             {
-                // We were triggered but the trigger character doesn't make sense for the current cursor position. Bail.
                 return null;
             }
 
@@ -100,6 +100,37 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 cancellationToken);
 
             return result;
+        }
+
+        private bool TriggerAppliesToProjection(CompletionContext context, RazorLanguageKind languageKind)
+        {
+            if (languageKind == RazorLanguageKind.Razor)
+            {
+                // We don't handle any type of triggers in Razor pieces of the document
+                return false;
+            }
+
+            if (context.TriggerKind != CompletionTriggerKind.TriggerCharacter)
+            {
+                // Not a trigger character completion, allow it.
+                return true;
+            }
+
+            if (!AllTriggerCharacters.Contains(context.TriggerCharacter))
+            {
+                // This is an auto-invoked completion from the VS LSP platform. Completions are automatically invoked upon typing identifiers
+                // and are represented as CompletionTriggerKind.TriggerCharacter and have a trigger character that we have not registered for.
+                return true;
+            }
+
+            if (IsApplicableTriggerCharacter(context.TriggerCharacter, languageKind))
+            {
+                // Trigger character is associated with the langauge at the current cursor position
+                return true;
+            }
+
+            // We were triggered but the trigger character doesn't make sense for the current cursor position. Bail.
+            return false;
         }
 
         private bool IsApplicableTriggerCharacter(string triggerCharacter, RazorLanguageKind languageKind)
