@@ -16,13 +16,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var csharpContentType = Mock.Of<IContentType>();
             ContentTypeRegistry = Mock.Of<IContentTypeRegistryService>(
                 registry => registry.GetContentType(CSharpVirtualDocumentFactory.CSharpLSPContentTypeName) == csharpContentType);
-            TextBufferFactory = Mock.Of<ITextBufferFactoryService>(factory => factory.CreateTextBuffer(csharpContentType) == Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>()));
+            var textBufferFactory = new Mock<ITextBufferFactoryService>();
+            textBufferFactory
+                .Setup(factory => factory.CreateTextBuffer())
+                .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>() && buffer.Properties == new PropertyCollection()));
+            TextBufferFactory = textBufferFactory.Object;
 
             var razorLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(RazorLSPContentTypeDefinition.Name) == true);
             RazorLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == razorLSPContentType);
 
             var nonRazorLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(It.IsAny<string>()) == false);
             NonRazorLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == nonRazorLSPContentType);
+
+            TextDocumentFactoryService = Mock.Of<ITextDocumentFactoryService>();
         }
 
         private ITextBuffer NonRazorLSPBuffer { get; }
@@ -33,13 +39,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         private ITextBufferFactoryService TextBufferFactory { get; }
 
+        private ITextDocumentFactoryService TextDocumentFactoryService { get; }
+
         [Fact]
         public void TryCreateFor_NonRazorLSPBuffer_ReturnsFalse()
         {
             // Arrange
             var uri = new Uri("C:/path/to/file.razor");
             var uriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(It.IsAny<ITextBuffer>()) == uri);
-            var factory = new CSharpVirtualDocumentFactory(ContentTypeRegistry, TextBufferFactory, uriProvider);
+            var factory = new CSharpVirtualDocumentFactory(ContentTypeRegistry, TextBufferFactory, TextDocumentFactoryService, uriProvider);
 
             // Act
             var result = factory.TryCreateFor(NonRazorLSPBuffer, out var virtualDocument);
@@ -55,7 +63,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Arrange
             var uri = new Uri("C:/path/to/file.razor");
             var uriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(RazorLSPBuffer) == uri);
-            var factory = new CSharpVirtualDocumentFactory(ContentTypeRegistry, TextBufferFactory, uriProvider);
+            var factory = new CSharpVirtualDocumentFactory(ContentTypeRegistry, TextBufferFactory, TextDocumentFactoryService, uriProvider);
 
             // Act
             var result = factory.TryCreateFor(RazorLSPBuffer, out var virtualDocument);

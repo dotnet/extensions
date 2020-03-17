@@ -97,6 +97,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 return documentSnapshot;
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
 
+            if (document is null || cancellationToken.IsCancellationRequested)
+            {
+                return new CompletionList(isIncomplete: false);
+            }
+
             var codeDocument = await document.GetGeneratedOutputAsync();
             if (codeDocument.IsUnsupported())
             {

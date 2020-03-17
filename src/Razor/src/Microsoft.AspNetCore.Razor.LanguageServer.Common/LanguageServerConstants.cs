@@ -16,5 +16,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         public const string RazorUpdateCSharpBufferEndpoint = "razor/updateCSharpBuffer";
 
         public const string RazorUpdateHtmlBufferEndpoint = "razor/updateHtmlBuffer";
+
+        public const string RazorLanguageQueryEndpoint = "razor/languageQuery";
     }
 }

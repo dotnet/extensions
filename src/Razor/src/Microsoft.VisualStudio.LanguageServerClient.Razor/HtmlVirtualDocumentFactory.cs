@@ -3,6 +3,7 @@
 
 using System;
 using System.Composition;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
 
@@ -15,9 +16,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         // Internal for testing
         internal const string HtmlLSPContentTypeName = "htmlyLSP";
         internal const string VirtualHtmlFileNameSuffix = "__virtual.html";
+        internal const string ContainedLanguageMarker = "ContainedLanguageMarker";
 
         private readonly IContentTypeRegistryService _contentTypeRegistry;
         private readonly ITextBufferFactoryService _textBufferFactory;
+        private readonly ITextDocumentFactoryService _textDocumentFactory;
         private readonly FileUriProvider _fileUriProvider;
         private IContentType _htmlLSPContentType;
 
@@ -25,6 +28,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public HtmlVirtualDocumentFactory(
             IContentTypeRegistryService contentTypeRegistry,
             ITextBufferFactoryService textBufferFactory,
+            ITextDocumentFactoryService textDocumentFactory,
             FileUriProvider filePathProvider)
         {
             if (contentTypeRegistry is null)
@@ -37,6 +41,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(textBufferFactory));
             }
 
+            if (textDocumentFactory is null)
+            {
+                throw new ArgumentNullException(nameof(textDocumentFactory));
+            }
+
             if (filePathProvider is null)
             {
                 throw new ArgumentNullException(nameof(filePathProvider));
@@ -44,6 +53,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             _contentTypeRegistry = contentTypeRegistry;
             _textBufferFactory = textBufferFactory;
+            _textDocumentFactory = textDocumentFactory;
             _fileUriProvider = filePathProvider;
         }
 
@@ -77,10 +87,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var hostDocumentUri = _fileUriProvider.GetOrCreate(hostDocumentBuffer);
 
             // Index.cshtml => Index.cshtml__virtual.html
-            var virtualHtmlFilePath = hostDocumentUri + VirtualHtmlFileNameSuffix;
+            var virtualHtmlFilePath = hostDocumentUri.GetAbsoluteOrUNCPath() + VirtualHtmlFileNameSuffix;
             var virtualHtmlUri = new Uri(virtualHtmlFilePath);
 
-            var htmlBuffer = _textBufferFactory.CreateTextBuffer(HtmlLSPContentType);
+            var htmlBuffer = _textBufferFactory.CreateTextBuffer();
+            htmlBuffer.Properties.AddProperty(ContainedLanguageMarker, true);
+
+            // Create a text document to trigger the Html language server initialization.
+            _textDocumentFactory.CreateTextDocument(htmlBuffer, virtualHtmlFilePath);
+
+            htmlBuffer.ChangeContentType(HtmlLSPContentType, editTag: null);
+
             virtualDocument = new HtmlVirtualDocument(virtualHtmlUri, htmlBuffer);
             return true;
         }
