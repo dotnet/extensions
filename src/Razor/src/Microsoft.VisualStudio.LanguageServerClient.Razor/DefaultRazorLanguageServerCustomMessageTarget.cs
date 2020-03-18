@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Composition;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -18,6 +19,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private readonly TrackingLSPDocumentManager _documentManager;
         private readonly JoinableTaskFactory _joinableTaskFactory;
+        private readonly SingleThreadedFIFOSemaphoreSlim _updateCSharpSemaphoreSlim;
+        private readonly SingleThreadedFIFOSemaphoreSlim _updateHtmlSemaphoreSlim;
 
         [ImportingConstructor]
         public DefaultRazorLanguageServerCustomMessageTarget(
@@ -42,6 +45,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             _joinableTaskFactory = joinableTaskContext.Factory;
+            _updateCSharpSemaphoreSlim = new SingleThreadedFIFOSemaphoreSlim();
+            _updateHtmlSemaphoreSlim = new SingleThreadedFIFOSemaphoreSlim();
         }
 
         // Testing constructor
@@ -57,9 +62,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(token));
             }
 
-            await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            await _updateCSharpSemaphoreSlim.WaitAsync();
 
-            UpdateCSharpBuffer(token);
+            try
+            {
+                await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+                UpdateCSharpBuffer(token);
+            }
+            finally
+            {
+                _updateCSharpSemaphoreSlim.Release();
+            }
         }
 
         // Internal for testing
@@ -85,9 +99,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(token));
             }
 
-            await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            await _updateHtmlSemaphoreSlim.WaitAsync();
+            try
+            {
+                await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-            UpdateHtmlBuffer(token);
+                UpdateHtmlBuffer(token);
+            }
+            finally
+            {
+                _updateHtmlSemaphoreSlim.Release();
+            }
         }
 
         // Internal for testing
@@ -115,6 +137,45 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var uri = new Uri(filePath, UriKind.Absolute);
             return uri;
+        }
+
+        private class SingleThreadedFIFOSemaphoreSlim : IDisposable
+        {
+            private readonly SemaphoreSlim _inner;
+            private readonly ConcurrentQueue<TaskCompletionSource<bool>> _queue;
+
+            public SingleThreadedFIFOSemaphoreSlim()
+            {
+                _inner = new SemaphoreSlim(1, 1);
+                _queue = new ConcurrentQueue<TaskCompletionSource<bool>>();
+            }
+
+            public Task WaitAsync()
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                _queue.Enqueue(tcs);
+
+                _inner.WaitAsync().ContinueWith(_ =>
+                {
+                    // When the thread becomes available, unblock the next task on a FIFO basis.
+                    if (_queue.TryDequeue(out var oldest))
+                    {
+                        oldest.SetResult(true);
+                    }
+                });
+
+                return tcs.Task;
+            }
+
+            public void Release()
+            {
+                _inner.Release();
+            }
+
+            public void Dispose()
+            {
+                _inner.Dispose();
+            }
         }
     }
 }
