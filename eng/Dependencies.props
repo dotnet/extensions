@@ -63,6 +63,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.3" />
     <LatestPackageReference Include="Microsoft.TypeScript.MSBuild" Version="2.9.2" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
+    <LatestPackageReference Include="NETStandard.Library" Version="2.0.3" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <LatestPackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
     <LatestPackageReference Include="Polly" Version="7.1.0" />
