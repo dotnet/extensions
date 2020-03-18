@@ -54,6 +54,9 @@
   <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
     <ProjectReference Include="$(MSBuildThisFileDirectory)src\TestingUtils\Microsoft.AspNetCore.Testing\src\Microsoft.AspNetCore.Testing.csproj" />
     <Reference Include="Moq" />
+    <!-- Bring in the latest NETStandard.Library to avoid too many package references from 
+         Moq & xunit's dependencies -->
+    <Reference Include="NETStandard.Library" />
   </ItemGroup>
 
   <ItemDefinitionGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
