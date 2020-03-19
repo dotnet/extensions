@@ -101,6 +101,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 lock (entry.Lock)
                 {
+                    entry.SupportsSuppression = true;
                     entry.Current = CreateInfo(key, documentContainer);
                 }
 
@@ -127,9 +128,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var key = new Key(projectFilePath, documentFilePath);
             if (_entries.TryGetValue(key, out var entry))
             {
-                if (!entry.SupportsSuppression)
+                lock (entry.Lock)
                 {
-                    return;
+                    if (!entry.SupportsSuppression)
+                    {
+                        return;
+                    }
                 }
 
                 var updated = false;
