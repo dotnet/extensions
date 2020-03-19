@@ -121,9 +121,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return;
             }
 
-            var virtualDocumetnAcquired = lspDocument.TryGetVirtualDocument<TVirtualDocument>(out var virtualDocument);
+            var virtualDocumentAcquired = lspDocument.TryGetVirtualDocument<TVirtualDocument>(out var virtualDocument);
             if (changes.Count == 0 &&
-                virtualDocumetnAcquired &&
+                virtualDocumentAcquired &&
                 virtualDocument.HostDocumentSyncVersion == hostDocumentVersion)
             {
                 // The current virtual document already knows about this update. Ignore it so we don't prematurely invoke a change event.
