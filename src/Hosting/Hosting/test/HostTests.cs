@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.Hosting
         [Fact]
         public async Task CreateDefaultBuilder_ConfigJsonDoesNotReload()
         {
-            var reloadFlagConfig = new Dictionary<string, string>() {{ "hostbuilder:configreload", "false" }};
+            var reloadFlagConfig = new Dictionary<string, string>() {{ "hostbuilder:reloadConfigOnChange", "false" }};
             var appSettingsPath = Path.Combine(Path.GetTempPath(), "appsettings.json");
 
             string SaveRandomConfig()
@@ -119,7 +119,7 @@ namespace Microsoft.Extensions.Hosting
         [Fact]
         public async Task CreateDefaultBuilder_ConfigJsonDoesReload()
         {
-            var reloadFlagConfig = new Dictionary<string, string>() { { "hostbuilder:configreload", "true" } };
+            var reloadFlagConfig = new Dictionary<string, string>() { { "hostbuilder:reloadConfigOnChange", "true" } };
             var appSettingsPath = Path.Combine(Path.GetTempPath(), "appsettings.json");
 
             string SaveRandomConfig()
