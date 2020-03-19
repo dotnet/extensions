@@ -9,6 +9,7 @@ import { ExtensionContext } from 'vscode';
 import { CompositeCodeActionTranslator } from './CodeActions/CompositeRazorCodeActionTranslator';
 import { RazorCodeActionProvider } from './CodeActions/RazorCodeActionProvider';
 import { RazorFullyQualifiedCodeActionTranslator } from './CodeActions/RazorFullyQualifiedCodeActionTranslator';
+import { listenToConfigurationChanges } from './ConfigurationChangeListener';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { ReportIssueCommand } from './Diagnostics/ReportIssueCommand';
 import { reportTelemetryForDocuments } from './DocumentTelemetryListener';
@@ -29,7 +30,6 @@ import { RazorImplementationProvider } from './RazorImplementationProvider';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageConfiguration } from './RazorLanguageConfiguration';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
-import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsResolver';
 import { resolveRazorLanguageServerTrace } from './RazorLanguageServerTraceResolver';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorLogger } from './RazorLogger';
@@ -50,8 +50,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
     const logger = new RazorLogger(vscodeType, eventEmitterFactory, languageServerTrace);
 
     try {
-        const languageServerOptions = resolveRazorLanguageServerOptions(vscodeType, languageServerDir, languageServerTrace, logger);
-        const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
+        const languageServerClient = new RazorLanguageServerClient(vscodeType, languageServerDir, telemetryReporter, logger);
         const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
 
         const codeActionTranslators = [
@@ -162,7 +161,8 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 csharpFeature.register(),
                 htmlFeature.register(),
                 documentSynchronizer.register(),
-                reportIssueCommand.register());
+                reportIssueCommand.register(),
+                listenToConfigurationChanges(languageServerClient));
             if (enableProposedApis) {
                 const proposedApisFeature = new ProposedApisFeature(
                     documentSynchronizer,

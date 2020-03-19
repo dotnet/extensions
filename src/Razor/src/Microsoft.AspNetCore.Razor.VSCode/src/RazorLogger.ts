@@ -11,26 +11,36 @@ import * as vscode from './vscodeAdapter';
 
 export class RazorLogger implements vscode.Disposable {
     public static readonly logName = 'Razor Log';
-    public readonly verboseEnabled: boolean;
-    public readonly messageEnabled: boolean;
+    public verboseEnabled!: boolean;
+    public messageEnabled!: boolean;
     public readonly outputChannel: vscode.OutputChannel;
 
     private readonly onLogEmitter: vscode.EventEmitter<string>;
+    private readonly onTraceLevelChangeEmitter: vscode.EventEmitter<Trace>;
 
     constructor(
         private readonly vscodeApi: vscode.api,
         eventEmitterFactory: IEventEmitterFactory,
-        public readonly trace: Trace) {
-        this.verboseEnabled = this.trace >= Trace.Verbose;
-        this.messageEnabled = this.trace >= Trace.Messages;
+        public trace: Trace) {
+        this.processTraceLevel();
         this.onLogEmitter = eventEmitterFactory.create<string>();
+        this.onTraceLevelChangeEmitter = eventEmitterFactory.create<Trace>();
 
         this.outputChannel = this.vscodeApi.window.createOutputChannel(RazorLogger.logName);
 
         this.logRazorInformation();
     }
 
+    public setTraceLevel(trace: Trace) {
+        this.trace = trace;
+        this.processTraceLevel();
+        this.logMessage(`Updated trace level to: ${Trace[this.trace]}`);
+        this.onTraceLevelChangeEmitter.fire(this.trace);
+    }
+
     public get onLog() { return this.onLogEmitter.event; }
+
+    public get onTraceLevelChange() { return this.onTraceLevelChangeEmitter.event; }
 
     public logAlways(message: string) {
         this.logWithMarker(message);
@@ -98,6 +108,11 @@ ${error.stack}`;
             '-----------------------------------------------------------------------' +
             '------------------------------------------------------');
         this.log('');
+    }
+
+    private processTraceLevel() {
+        this.verboseEnabled = this.trace >= Trace.Verbose;
+        this.messageEnabled = this.trace >= Trace.Messages;
     }
 }
 
