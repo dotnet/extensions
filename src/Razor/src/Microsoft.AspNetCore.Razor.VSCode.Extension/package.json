@@ -54,6 +54,14 @@
           {
             "id": "razorTagHelperAttribute",
             "description": "A Razor TagHelper Attribute"
+          },
+          {
+            "id": "razorTagHelperTransition",
+            "description": "A Razor TagHelper transition"
+          },
+          {
+            "id": "razorTagHelperColon",
+            "description": "A colon between directive attribute parameters"
           }
         ],
         "semanticTokenStyleDefaults": [
@@ -79,6 +87,46 @@
             "dark": {
               "foreground": "#009696",
               "fontStyle": "bold"
+            }
+          },
+          {
+            "selector": "razorTagHelperColon",
+            "scope": [ "razor.taghelper.colon"],
+            "light": {
+              "foreground": "#C586C0"
+            },
+            "dark": {
+              "foreground": "#C586C0"
+            }
+          },
+          {
+            "selector": "razorTransition",
+            "scope": [ "razor.transition"],
+            "light": {
+              "foreground": "#C586C0"
+            },
+            "dark": {
+              "foreground": "#C586C0"
+            }
+          },
+          {
+            "selector": "razorDirectiveAttribute",
+            "scope": [ "razor.directive.attribute"],
+            "light": {
+              "foreground": "#C586C0"
+            },
+            "dark": {
+              "foreground": "#C586C0"
+            }
+          },
+          {
+            "selector": "razorDirectiveAttributeParameter",
+            "scope": [ "razor.directive.parameter"],
+            "light": {
+              "foreground": "#C586C0"
+            },
+            "dark": {
+              "foreground": "#C586C0"
             }
           }
         ],

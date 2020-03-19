@@ -15,6 +15,5 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         IJsonRpcHandler,
         ICapability<SemanticTokenCapability>
     {
-
     }
 }

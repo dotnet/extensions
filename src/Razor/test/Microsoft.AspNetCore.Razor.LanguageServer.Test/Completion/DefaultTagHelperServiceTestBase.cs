@@ -51,6 +51,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             directiveAttribute1.TagMatchingRule(rule =>
             {
                 rule.TagName = "*";
+                rule.RequireAttributeDescriptor(b =>
+                {
+                    b.Name = "@test";
+                    b.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch;
+                });
+            });
+            directiveAttribute1.TagMatchingRule(rule =>
+            {
+                rule.TagName = "*";
+                rule.RequireAttributeDescriptor(b =>
+                {
+                    b.Name = "@test";
+                    b.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.FullMatch;
+                });
             });
             directiveAttribute1.BindAttribute(attribute =>
             {
@@ -74,6 +88,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             directiveAttribute2.TagMatchingRule(rule =>
             {
                 rule.TagName = "*";
+                rule.RequireAttributeDescriptor(b =>
+                {
+                    b.Name = "@minimized";
+                    b.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch;
+                });
+            });
+            directiveAttribute2.TagMatchingRule(rule =>
+            {
+                rule.TagName = "*";
+                rule.RequireAttributeDescriptor(b =>
+                {
+                    b.Name = "@minimized";
+                    b.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.FullMatch;
+                });
             });
             directiveAttribute2.BindAttribute(attribute =>
             {
@@ -93,11 +121,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             directiveAttribute2.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
             directiveAttribute2.SetTypeName("TestDirectiveAttribute");
 
-            DefaultTagHelpers = new[] { builder1.Build(), builder2.Build(), directiveAttribute1.Build() };
-            var tagHelperFactsService = new DefaultTagHelperFactsService();
-            RazorTagHelperCompletionService = new DefaultRazorTagHelperCompletionService(tagHelperFactsService);
+            DefaultTagHelpers = new[] { builder1.Build(), builder2.Build(), directiveAttribute1.Build(), directiveAttribute2.Build() };
+
             HtmlFactsService = new DefaultHtmlFactsService();
             TagHelperFactsService = new DefaultTagHelperFactsService();
+            RazorTagHelperCompletionService = new DefaultRazorTagHelperCompletionService(TagHelperFactsService);
         }
 
         protected TagHelperDescriptor[] DefaultTagHelpers { get; }
@@ -111,6 +139,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         internal static RazorCodeDocument CreateCodeDocument(string text, params TagHelperDescriptor[] tagHelpers)
         {
             return CreateCodeDocument(text, "test.cshtml", tagHelpers);
+        }
+
+        internal static RazorCodeDocument CreateRazorDocument(string text, params TagHelperDescriptor[] tagHelpers)
+        {
+            return CreateCodeDocument(text, "test.razor", tagHelpers);
         }
 
         internal static RazorCodeDocument CreateCodeDocument(string text, string filePath, params TagHelperDescriptor[] tagHelpers)

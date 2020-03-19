@@ -10,14 +10,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
     {
         public const string RazorTagHelperElement = "razorTagHelperElement";
         public const string RazorTagHelperAttribute = "razorTagHelperAttribute";
-        private static readonly IReadOnlyCollection<string> _tokenTypes = new string[] {
+        public const string RazorTransition = "razorTransition";
+        public const string RazorDirectiveAttribute = "razorDirectiveAttribute";
+        public const string RazorDirectiveColon = "razorDirectiveColon";
+
+        private static readonly string[] _tokenTypes = new string[] {
             RazorTagHelperElement,
             RazorTagHelperAttribute,
+            RazorTransition,
+            RazorDirectiveColon,
+            RazorDirectiveAttribute,
         };
 
         private static readonly IReadOnlyCollection<string> _tokenModifiers = new string[] { };
 
-        public static IReadOnlyDictionary<string, int> TokenTypesLegend
+        public static IReadOnlyDictionary<string, uint> TokenTypesLegend
         {
             get
             {
@@ -25,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             }
         }
 
-        public static IReadOnlyDictionary<string, int> TokenModifiersLegend
+        public static IReadOnlyDictionary<string, uint> TokenModifiersLegend
         {
             get
             {
@@ -42,12 +49,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             };
         }
 
-        private static IReadOnlyDictionary<string, int> GetMap(IReadOnlyCollection<string> tokens)
+        private static IReadOnlyDictionary<string, uint> GetMap(IReadOnlyCollection<string> tokens)
         {
-            var result = new Dictionary<string, int>();
+            var result = new Dictionary<string, uint>();
             for (var i = 0; i < tokens.Count(); i++)
             {
-                result.Add(tokens.ElementAt(i), i);
+                result.Add(tokens.ElementAt(i), (uint)i);
             }
 
             return result;

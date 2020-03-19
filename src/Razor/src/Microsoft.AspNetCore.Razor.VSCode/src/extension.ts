@@ -163,6 +163,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 documentSynchronizer.register(),
                 reportIssueCommand.register(),
                 listenToConfigurationChanges(languageServerClient));
+
             if (enableProposedApis) {
                 const proposedApisFeature = new ProposedApisFeature(
                     documentSynchronizer,
