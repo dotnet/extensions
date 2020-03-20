@@ -90,13 +90,12 @@ export async function run(): Promise<void> {
     }
 
     function ensureRequiredExtension() {
-        const extensions: Array<vscode.Extension<any>> = vscode.extensions.all
-            .filter(extension => extension.packageJSON.isBuiltin === false);
+        const csharpExtension = vscode.extensions.getExtension('ms-dotnettools.csharp');
+        const razorExtension = vscode.extensions.getExtension('ms-dotnettools.razor-vscode');
 
-        for (const extension of extensions) {
-            if (extension.id === 'ms-dotnettools.csharp') {
-                return;
-            }
+        if (csharpExtension && razorExtension) {
+            // Razor + C# installed
+            return;
         }
 
         throw Error('CSharp extension not installed.');
