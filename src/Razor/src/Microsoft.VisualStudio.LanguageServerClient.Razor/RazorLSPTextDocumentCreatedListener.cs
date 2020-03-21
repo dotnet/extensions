@@ -50,7 +50,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (_lspDocumentManager is null)
             {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
                 throw new ArgumentException("The LSP document manager should be of type " + typeof(TrackingLSPDocumentManager).FullName, nameof(_lspDocumentManager));
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
 
             _textDocumentFactory = textDocumentFactory;
@@ -123,7 +125,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return true;
         }
 
-        private bool IsRazorFilePath(string filePath)
+        private static bool IsRazorFilePath(string filePath)
         {
             if (filePath == null)
             {

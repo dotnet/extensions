@@ -13,7 +13,7 @@ using StreamJsonRpc;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    internal class RazorHtmlCSharpLanguageServer
+    internal class RazorHtmlCSharpLanguageServer : IDisposable
     {
         private readonly JsonRpc _jsonRpc;
         private readonly ImmutableDictionary<string, Lazy<IRequestHandler, IRequestHandlerMetadata>> _requestHandlers;
@@ -65,15 +65,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return ExecuteRequestAsync<InitializeParams, InitializeResult>(Methods.InitializeName, initializeParams, _clientCapabilities, cancellationToken);
         }
 
-        [JsonRpcMethod(Methods.TextDocumentCompletionName)]
-        public Task<SumType<CompletionItem[], CompletionList>?> ProvideCompletionsAsync(JToken input, CancellationToken cancellationToken)
+        [JsonRpcMethod(Methods.TextDocumentCompletionName, UseSingleObjectParameterDeserialization =  true)]
+        public Task<SumType<CompletionItem[], CompletionList>?> ProvideCompletionsAsync(CompletionParams completionParams, CancellationToken cancellationToken)
         {
-            if (input is null)
+            if (completionParams is null)
             {
-                throw new ArgumentNullException(nameof(input));
+                throw new ArgumentNullException(nameof(completionParams));
             }
 
-            var completionParams = input.ToObject<CompletionParams>();
             return ExecuteRequestAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(Methods.TextDocumentCompletionName, completionParams, _clientCapabilities, cancellationToken);
         }
 
@@ -125,6 +124,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             return requestHandlerDictionary.ToImmutable();
+        }
+
+        public void Dispose()
+        {
+            _jsonRpc.Dispose();
         }
     }
 }

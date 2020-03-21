@@ -16,13 +16,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ClientName(ClientName)]
     [Export(typeof(ILanguageClient))]
     [ContentType(RazorLSPContentTypeDefinition.Name)]
-    internal class RazorHtmlCSharpLanguageServerClient : ILanguageClient
+    internal class RazorHtmlCSharpLanguageServerClient : ILanguageClient, IDisposable
     {
         // ClientName enables us to turn on-off the ILanguageClient functionality for specific TextBuffers of content type RazorLSPContentTypeDefinition.Name.
         // This typically is used in cloud scenarios where we want to utilize an ILanguageClient on the server but not the client; therefore we disable this
         // ILanguageClient infrastructure on the guest to ensure that two language servers don't provide results.
         public const string ClientName = "RazorLSPClientName";
         private readonly IEnumerable<Lazy<IRequestHandler, IRequestHandlerMetadata>> _requestHandlers;
+        private RazorHtmlCSharpLanguageServer _langaugeServer;
 
         [ImportingConstructor]
         public RazorHtmlCSharpLanguageServerClient([ImportMany] IEnumerable<Lazy<IRequestHandler, IRequestHandlerMetadata>> requestHandlers)
@@ -44,6 +45,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public IEnumerable<string> FilesToWatch => null;
 
         public event AsyncEventHandler<EventArgs> StartAsync;
+
         public event AsyncEventHandler<EventArgs> StopAsync
         {
             add { }
@@ -54,15 +56,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             var (clientStream, serverStream) = FullDuplexStream.CreatePair();
 
-            _ = new RazorHtmlCSharpLanguageServer(serverStream, serverStream, _requestHandlers);
+            _langaugeServer = new RazorHtmlCSharpLanguageServer(serverStream, serverStream, _requestHandlers);
 
             var connection = new Connection(clientStream, clientStream);
             return Task.FromResult(connection);
         }
 
-        public async Task OnLoadedAsync()
+        public Task OnLoadedAsync()
         {
-            await StartAsync.InvokeAsync(this, EventArgs.Empty);
+            return StartAsync.InvokeAsync(this, EventArgs.Empty);
         }
 
         public Task OnServerInitializeFailedAsync(Exception e)
@@ -73,6 +75,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public Task OnServerInitializedAsync()
         {
             return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            _langaugeServer?.Dispose();
         }
     }
 }

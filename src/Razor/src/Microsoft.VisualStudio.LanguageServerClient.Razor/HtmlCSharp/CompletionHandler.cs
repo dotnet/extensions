@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Switch to a background thread.
             await TaskScheduler.Default;
 
-            var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken);
+            var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
             if (projectionResult == null)
             {
                 return null;
@@ -97,7 +97,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Methods.TextDocumentCompletionName,
                 serverKind,
                 completionParams,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
             if (result.HasValue)
             {
@@ -175,7 +175,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return false;
         }
 
-        private bool IsApplicableTriggerCharacter(string triggerCharacter, RazorLanguageKind languageKind)
+        private static bool IsApplicableTriggerCharacter(string triggerCharacter, RazorLanguageKind languageKind)
         {
             if (languageKind == RazorLanguageKind.CSharp)
             {

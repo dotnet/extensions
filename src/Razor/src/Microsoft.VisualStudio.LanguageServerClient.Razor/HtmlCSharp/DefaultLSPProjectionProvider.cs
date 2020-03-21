@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 LanguageServerConstants.RazorLanguageQueryEndpoint,
                 LanguageServerKind.Razor,
                 languageQueryParams,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
             VirtualDocumentSnapshot virtualDocument;
             if (languageResponse.Kind == RazorLanguageKind.CSharp &&
@@ -81,7 +81,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
             else
             {
-                var synchronized = await _documentSynchronizer.TrySynchronizeVirtualDocumentAsync(documentSnapshot, virtualDocument, cancellationToken);
+                var synchronized = await _documentSynchronizer.TrySynchronizeVirtualDocumentAsync(documentSnapshot, virtualDocument, cancellationToken).ConfigureAwait(false);
                 if (!synchronized)
                 {
                     // Could not synchronize

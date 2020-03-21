@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var languageServer = new RazorHtmlCSharpLanguageServer(new[] { new Lazy<IRequestHandler, IRequestHandlerMetadata>(() => handler.Object, metadata) });
 
             // Act
-            var result = await languageServer.ExecuteRequestAsync<string, int>("test", "hello world", clientCapabilities: null, CancellationToken.None);
+            var result = await languageServer.ExecuteRequestAsync<string, int>("test", "hello world", clientCapabilities: null, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.Equal(123, result);
@@ -60,7 +60,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var serializedInitParams = JToken.FromObject(originalInitParams);
 
             // Act
-            var result = await languageServer.InitializeAsync(serializedInitParams, CancellationToken.None);
+            var result = await languageServer.InitializeAsync(serializedInitParams, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.Same(initializeResult, result);

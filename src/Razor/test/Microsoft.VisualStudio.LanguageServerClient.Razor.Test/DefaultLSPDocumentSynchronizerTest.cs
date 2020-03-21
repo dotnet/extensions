@@ -37,7 +37,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var document = new TestLSPDocumentSnapshot(LSPDocumentUri, 123, virtualDocument);
 
             // Act
-            var result = await synchronizer.TrySynchronizeVirtualDocumentAsync(document, virtualDocument, CancellationToken.None);
+            var result = await synchronizer.TrySynchronizeVirtualDocumentAsync(document, virtualDocument, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(result);
@@ -62,7 +62,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Act
             synchronizer.DocumentManager_Changed(DocumentManager, args);
-            var result = await synchronizeTask;
+            var result = await synchronizeTask.ConfigureAwait(false);
 
             // Assert
             Assert.True(result);
@@ -87,8 +87,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Act
             synchronizer.DocumentManager_Changed(DocumentManager, args);
-            var result1 = await synchronizeTask1;
-            var result2 = await synchronizeTask2;
+            var result1 = await synchronizeTask1.ConfigureAwait(false);
+            var result2 = await synchronizeTask2.ConfigureAwait(false);
 
             // Assert
             Assert.True(result1);
@@ -123,8 +123,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Act
             synchronizer.DocumentManager_Changed(DocumentManager, args);
-            var result1 = await synchronizeTask1;
-            var result2 = await synchronizeTask2;
+            var result1 = await synchronizeTask1.ConfigureAwait(false);
+            var result2 = await synchronizeTask2.ConfigureAwait(false);
 
             // Assert
             Assert.False(result1);
@@ -144,7 +144,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var synchronizeTask = synchronizer.TrySynchronizeVirtualDocumentAsync(originalDocument, originalVirtualDocument, CancellationToken.None);
 
             // Act
-            var result = await synchronizeTask;
+            var result = await synchronizeTask.ConfigureAwait(false);
 
             // Assert
             Assert.False(result);

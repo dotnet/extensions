@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Composition;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [Export(typeof(RazorLanguageServerCustomMessageTarget))]
-    public class DefaultRazorLanguageServerCustomMessageTarget : RazorLanguageServerCustomMessageTarget
+    public class DefaultRazorLanguageServerCustomMessageTarget : RazorLanguageServerCustomMessageTarget, IDisposable
     {
         private readonly TrackingLSPDocumentManager _documentManager;
         private readonly JoinableTaskFactory _joinableTaskFactory;
@@ -41,7 +40,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (_documentManager is null)
             {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
                 throw new ArgumentNullException(nameof(_documentManager));
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
 
             _joinableTaskFactory = joinableTaskContext.Factory;
@@ -62,7 +63,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(token));
             }
 
-            await _updateCSharpSemaphoreSlim.WaitAsync();
+            await _updateCSharpSemaphoreSlim.WaitAsync().ConfigureAwait(false);
 
             try
             {
@@ -99,7 +100,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(token));
             }
 
-            await _updateHtmlSemaphoreSlim.WaitAsync();
+            await _updateHtmlSemaphoreSlim.WaitAsync().ConfigureAwait(false);
             try
             {
                 await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
@@ -128,15 +129,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 request.HostDocumentVersion);
         }
 
-        private Uri ConvertFilePathToUri(string filePath)
+        private static Uri ConvertFilePathToUri(string filePath)
         {
-            if (filePath.StartsWith("/") && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (filePath.StartsWith("/", StringComparison.Ordinal) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 filePath = filePath.Substring(1);
             }
 
             var uri = new Uri(filePath, UriKind.Absolute);
             return uri;
+        }
+
+        public void Dispose()
+        {
+            _updateCSharpSemaphoreSlim?.Dispose();
+            _updateHtmlSemaphoreSlim?.Dispose();
         }
 
         private class SingleThreadedFIFOSemaphoreSlim : IDisposable
@@ -162,7 +169,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     {
                         oldest.SetResult(true);
                     }
-                });
+                }, TaskScheduler.Default);
 
                 return tcs.Task;
             }

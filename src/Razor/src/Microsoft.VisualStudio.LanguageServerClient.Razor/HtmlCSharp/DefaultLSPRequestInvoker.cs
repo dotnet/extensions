@@ -73,7 +73,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     cancellationToken
                 });
 
-            var (_, resultToken) = await task;
+            var (_, resultToken) = await task.ConfigureAwait(false);
 
             var result = resultToken != null ? resultToken.ToObject<TOut>() : default;
             return result;

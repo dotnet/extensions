@@ -27,7 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.RequestServerAsync<object, object>(expectedMethod, LanguageServerKind.Razor, new object(), CancellationToken.None);
+            await requestInvoker.RequestServerAsync<object, object>(expectedMethod, LanguageServerKind.Razor, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -48,7 +48,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.RequestServerAsync<object, object>(expectedMethod, LanguageServerKind.Html, new object(), CancellationToken.None);
+            await requestInvoker.RequestServerAsync<object, object>(expectedMethod, LanguageServerKind.Html, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -69,7 +69,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.RequestServerAsync<object, object>(expectedMethod, LanguageServerKind.CSharp, new object(), CancellationToken.None);
+            await requestInvoker.RequestServerAsync<object, object>(expectedMethod, LanguageServerKind.CSharp, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -87,21 +87,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             public Task LoadAsync(ILanguageClientMetadata metadata, ILanguageClient client)
             {
                 throw new NotImplementedException();
-            }
-
-            public Task<(ILanguageClient, JToken)> RequestAsync(
-                string[] contentTypes,
-                Func<JToken, bool> capabilitiesFilter,
-                string method,
-                JToken parameters,
-                CancellationToken cancellationToken)
-            {
-                // We except it to be called with only one content type.
-                var contentType = Assert.Single(contentTypes);
-
-                _callback?.Invoke(contentType, method);
-
-                return Task.FromResult<(ILanguageClient, JToken)>((null, null));
             }
         }
     }

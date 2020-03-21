@@ -138,7 +138,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private protected virtual bool EnvironmentFeatureEnabled()
         {
             var lspRazorEnabledString = Environment.GetEnvironmentVariable(RazorLSPEditorFeatureFlag);
-            bool.TryParse(lspRazorEnabledString, out var enabled);
+            _ = bool.TryParse(lspRazorEnabledString, out var enabled);
 
             return enabled;
         }

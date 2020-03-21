@@ -37,7 +37,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new DefaultLSPProjectionProvider(requestInvoker.Object, documentSynchronizer.Object, Mock.Of<RazorLogger>());
 
             // Act
-            var result = await projectionProvider.GetProjectionAsync(documentSnapshot.Object, new Position(), CancellationToken.None);
+            var result = await projectionProvider.GetProjectionAsync(documentSnapshot.Object, new Position(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.Null(result);
@@ -77,7 +77,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new DefaultLSPProjectionProvider(requestInvoker.Object, documentSynchronizer.Object, Mock.Of<RazorLogger>());
 
             // Act
-            var result = await projectionProvider.GetProjectionAsync(documentSnapshot, new Position(), CancellationToken.None);
+            var result = await projectionProvider.GetProjectionAsync(documentSnapshot, new Position(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(result);
@@ -120,7 +120,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new DefaultLSPProjectionProvider(requestInvoker.Object, documentSynchronizer.Object, Mock.Of<RazorLogger>());
 
             // Act
-            var result = await projectionProvider.GetProjectionAsync(documentSnapshot, new Position(), CancellationToken.None);
+            var result = await projectionProvider.GetProjectionAsync(documentSnapshot, new Position(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(result);
@@ -163,7 +163,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new DefaultLSPProjectionProvider(requestInvoker.Object, documentSynchronizer.Object, Mock.Of<RazorLogger>());
 
             // Act
-            var result = await projectionProvider.GetProjectionAsync(documentSnapshot, new Position(), CancellationToken.None);
+            var result = await projectionProvider.GetProjectionAsync(documentSnapshot, new Position(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(result);
@@ -206,7 +206,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new DefaultLSPProjectionProvider(requestInvoker.Object, documentSynchronizer.Object, Mock.Of<RazorLogger>());
 
             // Act
-            var result = await projectionProvider.GetProjectionAsync(documentSnapshot, new Position(), CancellationToken.None);
+            var result = await projectionProvider.GetProjectionAsync(documentSnapshot, new Position(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.Null(result);

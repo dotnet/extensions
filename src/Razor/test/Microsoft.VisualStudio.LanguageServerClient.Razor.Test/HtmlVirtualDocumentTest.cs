@@ -137,7 +137,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             Assert.Same(editedSnapshot, document.CurrentSnapshot.Snapshot);
         }
 
-        public ITextBuffer CreateTextBuffer(ITextEdit edit)
+        public static ITextBuffer CreateTextBuffer(ITextEdit edit)
         {
             var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CreateEdit() == edit && buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>());
             return textBuffer;

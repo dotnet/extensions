@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Assert
             Assert.True(result);
             Assert.NotNull(virtualDocument);
-            Assert.EndsWith(CSharpVirtualDocumentFactory.VirtualCSharpFileNameSuffix, virtualDocument.Uri.OriginalString);
+            Assert.EndsWith(CSharpVirtualDocumentFactory.VirtualCSharpFileNameSuffix, virtualDocument.Uri.OriginalString, StringComparison.Ordinal);
         }
     }
 }
