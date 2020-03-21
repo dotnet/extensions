@@ -81,8 +81,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
             else
             {
-                Debug.Assert(languageResponse.HostDocumentVersion == documentSnapshot.Version);
-
                 var synchronized = await _documentSynchronizer.TrySynchronizeVirtualDocumentAsync(documentSnapshot, virtualDocument, cancellationToken);
                 if (!synchronized)
                 {
