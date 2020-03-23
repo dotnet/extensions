@@ -41,7 +41,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             if (_documentManager is null)
             {
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
-                throw new ArgumentNullException(nameof(_documentManager));
+                throw new ArgumentException("The LSP document manager should be of type " + typeof(TrackingLSPDocumentManager).FullName, nameof(_documentManager));
 #pragma warning restore CA2208 // Instantiate argument exceptions correctly
             }
 
