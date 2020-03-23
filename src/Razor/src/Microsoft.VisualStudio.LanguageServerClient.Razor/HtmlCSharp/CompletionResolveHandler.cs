@@ -57,7 +57,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Methods.TextDocumentCompletionResolveName,
                 resolveData.LanguageServerKind,
                 request,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }

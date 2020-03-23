@@ -44,7 +44,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var handler = new CompletionResolveHandler(requestInvoker.Object);
 
             // Act
-            var result = await handler.HandleRequestAsync(request, new ClientCapabilities(), CancellationToken.None);
+            var result = await handler.HandleRequestAsync(request, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -67,7 +67,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var handler = new CompletionResolveHandler(requestInvoker.Object);
 
             // Act
-            var result = await handler.HandleRequestAsync(request, new ClientCapabilities(), CancellationToken.None);
+            var result = await handler.HandleRequestAsync(request, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert (Does not throw with MockBehavior.Strict)
             Assert.Equal("div", result.InsertText);
