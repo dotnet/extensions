@@ -77,6 +77,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return ExecuteRequestAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(Methods.TextDocumentCompletionName, completionParams, _clientCapabilities, cancellationToken);
         }
 
+        [JsonRpcMethod(Methods.TextDocumentCompletionResolveName)]
+        public Task<CompletionItem> ResolveCompletionAsync(JToken input, CancellationToken cancellationToken)
+        {
+            if (input is null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            var request = input.ToObject<CompletionItem>();
+            return ExecuteRequestAsync<CompletionItem, CompletionItem>(Methods.TextDocumentCompletionResolveName, request, _clientCapabilities, cancellationToken);
+        }
+
         // Internal for testing
         internal Task<ResponseType> ExecuteRequestAsync<RequestType, ResponseType>(
             string methodName,

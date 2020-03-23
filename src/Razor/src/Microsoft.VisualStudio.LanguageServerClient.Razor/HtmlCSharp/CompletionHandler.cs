@@ -99,7 +99,49 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 completionParams,
                 cancellationToken);
 
+            if (result.HasValue)
+            {
+                // Set some context on the CompletionItem so the CompletionResolveHandler can handle it accordingly.
+                result = SetResolveData(result.Value, serverKind);
+            }
+
             return result;
+        }
+
+        // Internal for testing
+        internal SumType<CompletionItem[], CompletionList>? SetResolveData(SumType<CompletionItem[], CompletionList> completionResult, LanguageServerKind kind)
+        {
+            var result = completionResult.Match<SumType<CompletionItem[], CompletionList>?>(
+                items =>
+                {
+                    var newItems = items.Select(item => SetData(item)).ToArray();
+                    return newItems;
+                },
+                list =>
+                {
+                    var newItems = list.Items.Select(item => SetData(item)).ToArray();
+                    return new CompletionList()
+                    {
+                        Items = newItems,
+                        IsIncomplete = list.IsIncomplete,
+                    };
+                },
+                () => null);
+
+            return result;
+
+            CompletionItem SetData(CompletionItem item)
+            {
+                var data = new CompletionResolveData()
+                {
+                    LanguageServerKind = kind,
+                    OriginalData = item.Data
+                };
+
+                item.Data = data;
+
+                return item;
+            }
         }
 
         private bool TriggerAppliesToProjection(CompletionContext context, RazorLanguageKind languageKind)

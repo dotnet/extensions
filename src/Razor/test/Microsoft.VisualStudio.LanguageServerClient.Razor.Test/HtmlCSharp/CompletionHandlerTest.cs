@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
-using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -21,17 +20,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
             JoinableTaskContext = joinableTaskContext.Context;
             Uri = new Uri("C:/path/to/file.razor");
-            LSPDocumentSynchronizer = Mock.Of<LSPDocumentSynchronizer>(s => s.TrySynchronizeVirtualDocumentAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<VirtualDocumentSnapshot>(), It.IsAny<CancellationToken>()) == Task.FromResult(true));
-            LanguageClientBroker = Mock.Of<ILanguageClientBroker>();
         }
 
         private JoinableTaskContext JoinableTaskContext { get; }
 
         private Uri Uri { get; }
-
-        private LSPDocumentSynchronizer LSPDocumentSynchronizer { get; }
-
-        private ILanguageClientBroker LanguageClientBroker { get; }
 
         [Fact]
         public async Task HandleRequestAsync_DocumentNotFound_ReturnsNull()
@@ -83,7 +76,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var called = false;
-            var expectedResult = new[] { new CompletionItem() { InsertText = "Sample" } };
+            var expectedItem = new CompletionItem() { InsertText = "Sample"};
             var completionRequest = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -103,7 +96,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(LanguageServerKind.Html, serverKind);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(expectedResult));
+                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -119,7 +112,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Assert
             Assert.True(called);
-            Assert.Equal(expectedResult, result);
+            var item = Assert.Single((CompletionItem[])result.Value);
+            Assert.Equal(expectedItem.InsertText, item.InsertText);
         }
 
         [Fact]
@@ -127,7 +121,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var called = false;
-            var expectedResult = new[] { new CompletionItem() { InsertText = "DateTime" } };
+            var expectedItem = new CompletionItem() { InsertText = "DateTime"};
             var completionRequest = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -147,7 +141,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(LanguageServerKind.CSharp, serverKind);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(expectedResult));
+                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -163,7 +157,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Assert
             Assert.True(called);
-            Assert.Equal(expectedResult, result);
+            var item = Assert.Single((CompletionItem[])result.Value);
+            Assert.Equal(expectedItem.InsertText, item.InsertText);
         }
 
         [Fact]
@@ -235,7 +230,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var called = false;
-            var expectedResult = new[] { new CompletionItem() { InsertText = "DateTime" } };
+            var expectedItem = new CompletionItem() { InsertText = "DateTime" };
             var completionRequest = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -255,7 +250,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(LanguageServerKind.CSharp, serverKind);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(expectedResult));
+                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -271,7 +266,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Assert
             Assert.True(called);
-            Assert.Equal(expectedResult, result);
+            var item = Assert.Single((CompletionItem[])result.Value);
+            Assert.Equal(expectedItem.InsertText, item.InsertText);
         }
 
         [Fact]
@@ -279,7 +275,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var called = false;
-            var expectedResult = new[] { new CompletionItem() { InsertText = "Sample" } };
+            var expectedItem = new CompletionItem() { InsertText = "Sample" };
             var completionRequest = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -299,7 +295,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(LanguageServerKind.Html, serverKind);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(expectedResult));
+                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -315,7 +311,33 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Assert
             Assert.True(called);
-            Assert.Equal(expectedResult, result);
+            var item = Assert.Single((CompletionItem[])result.Value);
+            Assert.Equal(expectedItem.InsertText, item.InsertText);
+        }
+
+        [Fact]
+        public void SetResolveData_RewritesData()
+        {
+            // Arrange
+            var originalData = new object();
+            var items = new[]
+            {
+                new CompletionItem() { InsertText = "Hello", Data = originalData }
+            };
+            var documentManager = new TestDocumentManager();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>();
+            var projectionProvider = Mock.Of<LSPProjectionProvider>();
+            var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker, documentManager, projectionProvider);
+
+            // Act
+            var result = completionHandler.SetResolveData(items, LanguageServerKind.CSharp);
+
+            // Assert
+            Assert.True(result.HasValue);
+            var item = Assert.Single((CompletionItem[])result.Value);
+            var newData = Assert.IsType<CompletionResolveData>(item.Data);
+            Assert.Equal(LanguageServerKind.CSharp, newData.LanguageServerKind);
+            Assert.Same(originalData, newData.OriginalData);
         }
 
         private class TestDocumentManager : LSPDocumentManager
