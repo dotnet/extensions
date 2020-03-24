@@ -594,7 +594,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="System.Memory" Version="[4.5.2, )" />
-    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.7.0, )" />
+    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.7.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.WebEncoders-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' ">
