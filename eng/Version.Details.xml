@@ -74,10 +74,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c39af4fc45c05e862815c34239b33de3b0259705</Sha>
     </Dependency>
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview.3.20160.8">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>73268c790b7ff31c98a292efbc583e25562074d7</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0" Pinned="true">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>4ac4c0367003fe3973a3648eb0715ddb0e3bbcea</Sha>
