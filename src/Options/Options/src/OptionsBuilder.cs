@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +13,7 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
     public class OptionsBuilder<TOptions> where TOptions : class
     {
-        private const string DefaultValidationFailureMessage = "A validation error has occured.";
+        private const string DefaultValidationFailureMessage = "A validation error has occurred.";
 
         /// <summary>
         /// The default name of the <typeparamref name="TOptions"/> instance.

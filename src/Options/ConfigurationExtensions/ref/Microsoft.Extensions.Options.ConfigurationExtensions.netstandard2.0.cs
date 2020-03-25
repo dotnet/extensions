@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Extensions.Options
     {
         public ConfigurationChangeTokenSource(Microsoft.Extensions.Configuration.IConfiguration config) { }
         public ConfigurationChangeTokenSource(string name, Microsoft.Extensions.Configuration.IConfiguration config) { }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.Extensions.Primitives.IChangeToken GetChangeToken() { throw null; }
     }
     public partial class ConfigureFromConfigurationOptions<TOptions> : Microsoft.Extensions.Options.ConfigureOptions<TOptions> where TOptions : class

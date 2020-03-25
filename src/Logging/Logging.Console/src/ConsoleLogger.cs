@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Diagnostics;
@@ -137,11 +138,17 @@ namespace Microsoft.Extensions.Logging.Console
                 logBuilder.AppendLine(exception.ToString());
             }
 
+            string timestamp = null;
             var timestampFormat = Options.TimestampFormat;
+            if (timestampFormat != null)
+            {
+                var dateTime = GetCurrentDateTime();
+                timestamp = dateTime.ToString(timestampFormat);
+            }
 
             return new LogMessageEntry(
                 message: logBuilder.ToString(),
-                timeStamp: timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
+                timeStamp: timestamp,
                 levelString: logLevelString,
                 levelBackground: logLevelColors.Background,
                 levelForeground: logLevelColors.Foreground,
@@ -166,7 +173,8 @@ namespace Microsoft.Extensions.Logging.Console
             var timestampFormat = Options.TimestampFormat;
             if (timestampFormat != null)
             {
-                logBuilder.Append(DateTime.Now.ToString(timestampFormat));
+                var dateTime = GetCurrentDateTime();
+                logBuilder.Append(dateTime.ToString(timestampFormat));
             }
 
             // category and event id
@@ -208,6 +216,11 @@ namespace Microsoft.Extensions.Logging.Console
                 sb.Append(message);
                 sb.Replace(Environment.NewLine, " ", len, message.Length);
             }
+        }
+
+        private DateTime GetCurrentDateTime()
+        {
+            return Options.UseUtcTimestamp ? DateTime.UtcNow : DateTime.Now;
         }
 
         public bool IsEnabled(LogLevel logLevel)

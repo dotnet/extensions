@@ -54,5 +54,4 @@
   <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" '$(HasReferenceAssembly)' == 'true' " />
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\Workarounds.AfterArcade.targets" />
-  <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 </Project>

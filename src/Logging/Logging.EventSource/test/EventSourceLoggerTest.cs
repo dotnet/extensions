@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -424,6 +425,95 @@ namespace Microsoft.Extensions.Logging.Test
                 logger.LogDebug(new EventId(1), "Logger1 Event1 Debug {intParam}", 1);
 
                 VerifyEvents(testListener);
+            }
+        }
+
+        [Fact]
+        public void Logs_AsExpected_FormattedMessage_WithNullString()
+        {
+            using (var testListener = new TestEventListener())
+            {
+                var factory = CreateLoggerFactory();
+
+                var listenerSettings = new TestEventListener.ListenerSettings();
+                listenerSettings.Keywords = LoggingEventSource.Keywords.FormattedMessage;
+                listenerSettings.FilterSpec = null;
+                listenerSettings.Level = EventLevel.Verbose;
+                testListener.EnableEvents(listenerSettings);
+
+                LogStuff(factory);
+
+                var containsNullEventName = false;
+
+                foreach (var eventJson in testListener.Events)
+                {
+                    if (eventJson.Contains(@"""__EVENT_NAME"":""FormattedMessage""") && eventJson.Contains(@"""EventName"":"""","))
+                    {
+                        containsNullEventName = true;
+                    }
+                }
+
+                Assert.True(containsNullEventName, "EventName is supposed to be null but it isn't.");
+            }
+        }
+
+        [Fact]
+        public void Logs_AsExpected_MessageJson_WithNullString()
+        {
+            using (var testListener = new TestEventListener())
+            {
+                var listenerSettings = new TestEventListener.ListenerSettings();
+                listenerSettings.Keywords = LoggingEventSource.Keywords.JsonMessage;
+                listenerSettings.FilterSpec = null;
+                listenerSettings.Level = EventLevel.Verbose;
+                testListener.EnableEvents(listenerSettings);
+
+                // Write some MessageJson events with null string.
+                for (var i = 0; i < 100; i++)
+                {
+                    LoggingEventSource.Instance.MessageJson(LogLevel.Trace, 1, "MyLogger", 5, null, null, "testJson");
+                }
+
+                bool containsNullEventName = false;
+                foreach (var eventJson in testListener.Events)
+                {
+                    if (eventJson.Contains(@"""__EVENT_NAME"":""MessageJson""") && eventJson.Contains(@"""EventName"":"""","))
+                    {
+                        containsNullEventName = true;
+                    }
+                }
+
+                Assert.True(containsNullEventName, "EventName and ExceptionJson is supposed to be null but it isn't.");
+            }
+        }
+
+        [Fact]
+        public void Logs_AsExpected_ActivityJson_WithNullString()
+        {
+            using (var testListener = new TestEventListener())
+            {
+                var listenerSettings = new TestEventListener.ListenerSettings();
+                listenerSettings.Keywords = LoggingEventSource.Keywords.JsonMessage;
+                listenerSettings.FilterSpec = null;
+                listenerSettings.Level = EventLevel.Verbose;
+                testListener.EnableEvents(listenerSettings);
+
+                // Write some MessageJson events with null string.
+                for (var i = 0; i < 100; i++)
+                {
+                    LoggingEventSource.Instance.ActivityJsonStart(6, 1, null, "someJson");
+                }
+
+                bool containsNullLoggerName = false;
+                foreach (var eventJson in testListener.Events)
+                {
+                    if (eventJson.Contains(@"""__EVENT_NAME"":""ActivityJsonStart""") && eventJson.Contains(@"""LoggerName"":"""","))
+                    {
+                        containsNullLoggerName = true;
+                    }
+                }
+
+                Assert.True(containsNullLoggerName, "LoggerName is supposed to be null but it isn't.");
             }
         }
 

@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 namespace Microsoft.Extensions.FileProviders
 {
@@ -7,7 +8,7 @@ namespace Microsoft.Extensions.FileProviders
     {
         public PhysicalFileProvider(string root) { }
         public PhysicalFileProvider(string root, Microsoft.Extensions.FileProviders.Physical.ExclusionFilters filters) { }
-        public string Root { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Root { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool UseActivePolling { get { throw null; } set { } }
         public bool UsePollingFileWatcher { get { throw null; } set { } }
         public void Dispose() { }
@@ -74,14 +75,14 @@ namespace Microsoft.Extensions.FileProviders.Physical
     public partial class PollingFileChangeToken : Microsoft.Extensions.Primitives.IChangeToken
     {
         public PollingFileChangeToken(System.IO.FileInfo fileInfo) { }
-        public bool ActiveChangeCallbacks { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool ActiveChangeCallbacks { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool HasChanged { get { throw null; } }
         public System.IDisposable RegisterChangeCallback(System.Action<object> callback, object state) { throw null; }
     }
     public partial class PollingWildCardChangeToken : Microsoft.Extensions.Primitives.IChangeToken
     {
         public PollingWildCardChangeToken(string root, string pattern) { }
-        public bool ActiveChangeCallbacks { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool ActiveChangeCallbacks { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool HasChanged { get { throw null; } }
         protected virtual System.DateTime GetLastWriteUtc(string path) { throw null; }
         System.IDisposable Microsoft.Extensions.Primitives.IChangeToken.RegisterChangeCallback(System.Action<object> callback, object state) { throw null; }

@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -281,7 +282,7 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 2, "A validation error has occured.");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 2, "A validation error has occurred.");
         }
 
         [Fact]
@@ -301,7 +302,7 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 3, "A validation error has occured.", "Virtual", "Integer");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 3, "A validation error has occurred.", "Virtual", "Integer");
         }
 
         public class BadValidator : IValidateOptions<FakeOptions>
@@ -393,7 +394,7 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal(name, e.OptionsName);
             if (errorsToMatch.Length == 0)
             {
-                errorsToMatch = new string[] { "A validation error has occured." };
+                errorsToMatch = new string[] { "A validation error has occurred." };
             }
             Assert.Equal(count, e.Failures.Count());
             // Check for the error in any of the failures
@@ -564,7 +565,7 @@ namespace Microsoft.Extensions.Options.Tests
             var startupValidator = sp.GetRequiredService<IStartupValidator>();
 
             var error = Assert.Throws<OptionsValidationException>(() => startupValidator.Validate());
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 3, "A validation error has occured.", "Virtual", "Integer");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 3, "A validation error has occurred.", "Virtual", "Integer");
         }
 
         [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]

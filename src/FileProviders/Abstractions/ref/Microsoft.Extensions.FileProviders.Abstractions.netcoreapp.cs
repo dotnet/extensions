@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 namespace Microsoft.Extensions.FileProviders
 {
@@ -27,7 +28,7 @@ namespace Microsoft.Extensions.FileProviders
     {
         public NotFoundDirectoryContents() { }
         public bool Exists { get { throw null; } }
-        public static Microsoft.Extensions.FileProviders.NotFoundDirectoryContents Singleton { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public static Microsoft.Extensions.FileProviders.NotFoundDirectoryContents Singleton { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IEnumerator<Microsoft.Extensions.FileProviders.IFileInfo> GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
     }
@@ -38,7 +39,7 @@ namespace Microsoft.Extensions.FileProviders
         public bool IsDirectory { get { throw null; } }
         public System.DateTimeOffset LastModified { get { throw null; } }
         public long Length { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string PhysicalPath { get { throw null; } }
         public System.IO.Stream CreateReadStream() { throw null; }
     }
@@ -47,7 +48,7 @@ namespace Microsoft.Extensions.FileProviders
         internal NullChangeToken() { }
         public bool ActiveChangeCallbacks { get { throw null; } }
         public bool HasChanged { get { throw null; } }
-        public static Microsoft.Extensions.FileProviders.NullChangeToken Singleton { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public static Microsoft.Extensions.FileProviders.NullChangeToken Singleton { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.IDisposable RegisterChangeCallback(System.Action<object> callback, object state) { throw null; }
     }
     public partial class NullFileProvider : Microsoft.Extensions.FileProviders.IFileProvider

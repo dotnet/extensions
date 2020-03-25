@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -126,6 +127,34 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var provider = CreateServiceProvider(serviceCollection);
             var service = provider.GetService<ClassWithServiceAndOptionalArgsCtorWithStructs>();
             Assert.NotNull(service);
+        }
+
+        [Fact]
+        public void ResolvesServiceMixedServiceAndOptionalStructConstructorArgumentsReliably()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+            serviceCollection.AddTransient<ClassWithServiceAndOptionalArgsCtorWithStructs>();
+
+            var provider = CreateServiceProvider(serviceCollection);
+
+            // Repeatedly resolve and re-check to ensure dynamically generated code properly initializes the values types.
+            for (int i = 0; i < 100; i++)
+            {
+                var service = provider.GetService<ClassWithServiceAndOptionalArgsCtorWithStructs>();
+
+                Assert.NotNull(service);
+                Assert.Equal(new DateTime(), service.DateTime);
+                Assert.Equal(default(DateTime), service.DateTimeDefault);
+                Assert.Equal(new TimeSpan(), service.TimeSpan);
+                Assert.Equal(default(TimeSpan), service.TimeSpanDefault);
+                Assert.Equal(new DateTimeOffset(), service.DateTimeOffset);
+                Assert.Equal(default(DateTimeOffset), service.DateTimeOffsetDefault);
+                Assert.Equal(new Guid(), service.Guid);
+                Assert.Equal(default(Guid), service.GuidDefault);
+                Assert.Equal(new ClassWithServiceAndOptionalArgsCtorWithStructs.CustomStruct(), service.CustomStructValue);
+                Assert.Equal(default(ClassWithServiceAndOptionalArgsCtorWithStructs.CustomStruct), service.CustomStructDefault);
+            }
         }
 
         [Fact]
@@ -344,6 +373,48 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.Equal(
                 "'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderContainerTests+AsyncDisposable' type only implements IAsyncDisposable. Use DisposeAsync to dispose the container.",
                 exception.Message);
+        }
+
+        [Fact]
+        public void SingletonServiceCreatedFromFactoryIsDisposedWhenContainerIsDisposed()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(_ => new FakeDisposable());
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+
+            // Act
+            var service = serviceProvider.GetService<FakeDisposable>();
+            ((IDisposable)serviceProvider).Dispose();
+
+            // Assert
+            Assert.True(service.IsDisposed);
+        }
+
+        [Fact]
+        public void SingletonServiceCreatedFromInstanceIsNotDisposedWhenContainerIsDisposed()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(new FakeDisposable());
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+
+            // Act
+            var service = serviceProvider.GetService<FakeDisposable>();
+            ((IDisposable)serviceProvider).Dispose();
+
+            // Assert
+            Assert.False(service.IsDisposed);
+        }
+
+        private class FakeDisposable : IDisposable
+        {
+            public bool IsDisposed { get; private set; }
+
+            public void Dispose()
+            {
+                IsDisposed = true;
+            }
         }
 
         private class FakeMultipleServiceWithIEnumerableDependency: IFakeMultipleService

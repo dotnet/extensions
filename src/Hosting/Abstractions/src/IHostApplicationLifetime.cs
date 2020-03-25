@@ -1,12 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System.Threading;
 
 namespace Microsoft.Extensions.Hosting
 {
     /// <summary>
-    /// Allows consumers to be notified of application lifetime events.
+    /// Allows consumers to be notified of application lifetime events. This interface is not intended to be user-replaceable.
     /// </summary>
     public interface IHostApplicationLifetime
     {
@@ -16,14 +17,14 @@ namespace Microsoft.Extensions.Hosting
         CancellationToken ApplicationStarted { get; }
 
         /// <summary>
-        /// Triggered when the application host is performing a graceful shutdown.
-        /// Shutdown will block until this event completes.
+        /// Triggered when the application host is starting a graceful shutdown.
+        /// Shutdown will block until all callbacks registered on this token have completed.
         /// </summary>
         CancellationToken ApplicationStopping { get; }
 
         /// <summary>
-        /// Triggered when the application host is performing a graceful shutdown.
-        /// Shutdown will block until this event completes.
+        /// Triggered when the application host has completed a graceful shutdown.
+        /// The application will not exit until all callbacks registered on this token have completed.
         /// </summary>
         CancellationToken ApplicationStopped { get; }
 

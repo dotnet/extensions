@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 namespace Microsoft.Extensions.Caching.Distributed
 {
@@ -119,17 +120,17 @@ namespace Microsoft.Extensions.Caching.Memory
         public MemoryCacheEntryOptions() { }
         public System.DateTimeOffset? AbsoluteExpiration { get { throw null; } set { } }
         public System.TimeSpan? AbsoluteExpirationRelativeToNow { get { throw null; } set { } }
-        public System.Collections.Generic.IList<Microsoft.Extensions.Primitives.IChangeToken> ExpirationTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.Extensions.Caching.Memory.PostEvictionCallbackRegistration> PostEvictionCallbacks { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.Extensions.Caching.Memory.CacheItemPriority Priority { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<Microsoft.Extensions.Primitives.IChangeToken> ExpirationTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.Extensions.Caching.Memory.PostEvictionCallbackRegistration> PostEvictionCallbacks { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.Extensions.Caching.Memory.CacheItemPriority Priority { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public long? Size { get { throw null; } set { } }
         public System.TimeSpan? SlidingExpiration { get { throw null; } set { } }
     }
     public partial class PostEvictionCallbackRegistration
     {
         public PostEvictionCallbackRegistration() { }
-        public Microsoft.Extensions.Caching.Memory.PostEvictionDelegate EvictionCallback { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public object State { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.Extensions.Caching.Memory.PostEvictionDelegate EvictionCallback { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object State { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public delegate void PostEvictionDelegate(object key, object value, Microsoft.Extensions.Caching.Memory.EvictionReason reason, object state);
 }

@@ -1,5 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 
@@ -13,6 +14,7 @@ namespace Microsoft.Extensions.Hosting.IntegrationTesting
         public const string NetCoreApp22 = "netcoreapp2.2";
         public const string NetCoreApp30 = "netcoreapp3.0";
         public const string NetCoreApp31 = "netcoreapp3.1";
+        public const string NetCoreApp50 = "netcoreapp5.0";
 
         public static bool Matches(string tfm1, string tfm2)
         {

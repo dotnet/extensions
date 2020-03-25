@@ -1,5 +1,6 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 
@@ -13,12 +14,12 @@ namespace Microsoft.Extensions.Logging.Console
         private ConsoleLoggerFormat _format = ConsoleLoggerFormat.Default;
 
         /// <summary>
-        /// Includes scopes when <code>true</code>.
+        /// Includes scopes when <see langword="true" />.
         /// </summary>
         public bool IncludeScopes { get; set; }
 
         /// <summary>
-        /// Disables colors when <code>true</code>.
+        /// Disables colors when <see langword="true" />.
         /// </summary>
         public bool DisableColors { get; set; }
 
@@ -47,5 +48,10 @@ namespace Microsoft.Extensions.Logging.Console
         /// Gets or sets format string used to format timestamp in logging messages. Defaults to <c>null</c>.
         /// </summary>
         public string TimestampFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets indication whether or not UTC timezone should be used to for timestamps in logging messages. Defaults to <c>false</c>.
+        /// </summary>
+        public bool UseUtcTimestamp { get; set; }
     }
 }

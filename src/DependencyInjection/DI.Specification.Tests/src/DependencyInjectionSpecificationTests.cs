@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections;
@@ -120,6 +121,38 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 Assert.NotSame(service1, scopedService2);
                 Assert.NotSame(scopedService1, scopedService2);
             }
+        }
+
+        [Fact]
+        public void SingletonServiceCanBeResolvedFromScope()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddSingleton<ClassWithServiceProvider>();
+            var provider = CreateServiceProvider(collection);
+
+            // Act
+            IServiceProvider scopedSp1 = null;
+            IServiceProvider scopedSp2 = null;
+            ClassWithServiceProvider instance1 = null;
+            ClassWithServiceProvider instance2 = null;
+
+            using (var scope1 = provider.CreateScope())
+            {
+                scopedSp1 = scope1.ServiceProvider;
+                instance1 = scope1.ServiceProvider.GetRequiredService<ClassWithServiceProvider>();
+            }
+
+            using (var scope2 = provider.CreateScope())
+            {
+                scopedSp2 = scope2.ServiceProvider;
+                instance2 = scope2.ServiceProvider.GetRequiredService<ClassWithServiceProvider>();
+            }
+
+            // Assert
+            Assert.Same(instance1.ServiceProvider, instance2.ServiceProvider);
+            Assert.NotSame(instance1.ServiceProvider, scopedSp1);
+            Assert.NotSame(instance2.ServiceProvider, scopedSp2);
         }
 
         [Fact]

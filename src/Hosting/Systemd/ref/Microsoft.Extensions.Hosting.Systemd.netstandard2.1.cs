@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 namespace Microsoft.Extensions.Hosting
 {
@@ -19,6 +20,7 @@ namespace Microsoft.Extensions.Hosting.Systemd
     public partial struct ServiceState
     {
         private object _dummy;
+        private int _dummyPrimitive;
         public static readonly Microsoft.Extensions.Hosting.Systemd.ServiceState Ready;
         public static readonly Microsoft.Extensions.Hosting.Systemd.ServiceState Stopping;
         public ServiceState(string state) { throw null; }
