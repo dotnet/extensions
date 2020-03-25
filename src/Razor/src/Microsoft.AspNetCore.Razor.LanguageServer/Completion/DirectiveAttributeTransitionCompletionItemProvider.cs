@@ -53,20 +53,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 return Completions;
             }
 
-            if (!TryGetAttributeInfo(attribute, out var name, out var nameLocation, out _, out _))
+            if (!TryGetAttributeInfo(owner, out var prefixLocation, out var name, out var nameLocation, out _, out _))
             {
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (name.StartsWith("@"))
+            if (nameLocation.IntersectsWith(location.AbsoluteIndex) && name.StartsWith("@"))
             {
-                // The transition is already provided
+                // The transition is already provided for the name
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (!nameLocation.IntersectsWith(location.AbsoluteIndex))
+            if (!IntersectsWithAttributeNameOrPrefix(location, prefixLocation, nameLocation))
             {
-                // Not operating in the name section
+                // Not operating in the name area
                 return Array.Empty<RazorCompletionItem>();
             }
 

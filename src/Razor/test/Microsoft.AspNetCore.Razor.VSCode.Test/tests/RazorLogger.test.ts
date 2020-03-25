@@ -31,6 +31,7 @@ describe('RazorLogger', () => {
         const log = getAndAssertLog(sink);
         const logContent = log.join('LF');
         assert.ok(logContent.indexOf('currently set to \'Off\'') > 0);
+        logger.dispose();
     });
 
     it('logAlways logs when trace is Off', () => {

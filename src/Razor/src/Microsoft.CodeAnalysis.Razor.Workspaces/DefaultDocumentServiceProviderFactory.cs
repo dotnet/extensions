@@ -5,20 +5,21 @@ using System;
 using System.Composition;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
     [Export(typeof(DocumentServiceProviderFactory))]
     internal class DefaultDocumentServiceProviderFactory : DocumentServiceProviderFactory
     {
-        public override IDocumentServiceProvider Create(DocumentSnapshot document)
+        public override IDocumentServiceProvider Create(DynamicDocumentContainer documentContainer)
         {
-            if (document == null)
+            if (documentContainer == null)
             {
-                throw new ArgumentNullException(nameof(document));
+                throw new ArgumentNullException(nameof(documentContainer));
             }
 
-            return new RazorDocumentServiceProvider(document);
+            return new RazorDocumentServiceProvider(documentContainer);
         }
 
         public override IDocumentServiceProvider CreateEmpty()

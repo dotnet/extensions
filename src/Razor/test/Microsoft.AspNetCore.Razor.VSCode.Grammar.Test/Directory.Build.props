@@ -1,0 +1,11 @@
+<Project>
+<PropertyGroup>
+  <!--
+    The Oniguruma package for regex testing has its own Arcade & SDK independent build mechanisms that automatically look for hierarchical Directory.Build.props files.
+    Therefore, we have this file here in order to suppress the usage of the global SDK and arcade build system to enable yarn install to pass.
+
+    For context the Oniguruma contains C++ code that's dynamically compiled on install.
+  -->
+  <_SuppressSdkImports>true</_SuppressSdkImports>
+</PropertyGroup>
+</Project>

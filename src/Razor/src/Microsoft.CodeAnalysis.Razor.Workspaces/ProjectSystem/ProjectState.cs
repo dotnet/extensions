@@ -333,7 +333,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(hostProject));
             }
 
-            if (HostProject.Configuration.Equals(hostProject.Configuration))
+            if (HostProject.Configuration.Equals(hostProject.Configuration) &&
+                HostProject.RootNamespace == hostProject.RootNamespace)
             {
                 return this;
             }
@@ -355,8 +356,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public ProjectState WithProjectWorkspaceState(ProjectWorkspaceState projectWorkspaceState)
         {
-            var difference = ProjectDifference.ProjectWorkspaceStateChanged;
+            if (ProjectWorkspaceState == projectWorkspaceState)
+            {
+                return this;
+            }
 
+            if (ProjectWorkspaceState != null && ProjectWorkspaceState.Equals(projectWorkspaceState))
+            {
+                return this;
+            }
+
+            var difference = ProjectDifference.ProjectWorkspaceStateChanged;
             var documents = Documents.ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value.WithProjectWorkspaceStateChange(), FilePathComparer.Instance);
             var state = new ProjectState(this, difference, HostProject, projectWorkspaceState, documents, ImportsToRelatedDocuments);
             return state;
@@ -430,6 +440,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             foreach (var importItem in importItems)
             {
                 var itemTargetPath = importItem.FilePath.Replace('/', '\\').TrimStart('\\');
+
+                if (FilePathComparer.Instance.Equals(itemTargetPath, hostDocument.TargetPath))
+                {
+                    // We've normalized the original importItem.FilePath into the HostDocument.TargetPath. For instance, if the HostDocument.TargetPath
+                    // was '/_Imports.razor' it'd be normalized down into '_Imports.razor'. The purpose of this method is to get the associated document
+                    // paths for a given import file (_Imports.razor / _ViewImports.cshtml); therefore, an import importing itself doesn't make sense.
+                    continue;
+                }
+
                 targetPaths.Add(itemTargetPath);
             }
 

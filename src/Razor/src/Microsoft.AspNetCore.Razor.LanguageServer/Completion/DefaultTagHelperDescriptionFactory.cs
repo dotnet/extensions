@@ -164,11 +164,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             // if there's a <para> in the summary element when it's shown in the completion description window
             // it'll be serialized as html (wont show).
 
-            var crefMatches = ExtractCrefRegex.Value.Matches(summaryContent).Reverse();
+            var crefMatches = ExtractCrefRegex.Value.Matches(summaryContent);
             var summaryBuilder = new StringBuilder(summaryContent);
 
-            foreach (var cref in crefMatches)
+            for (var i = crefMatches.Count - 1; i >= 0; i--)
             {
+                var cref = crefMatches[i];
                 if (cref.Success)
                 {
                     var value = cref.Groups[2].Value;

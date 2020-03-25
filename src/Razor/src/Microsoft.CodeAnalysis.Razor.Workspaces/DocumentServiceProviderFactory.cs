@@ -3,6 +3,7 @@
 
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -10,6 +11,6 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         public abstract IDocumentServiceProvider CreateEmpty();
 
-        public abstract IDocumentServiceProvider Create(DocumentSnapshot document);
+        public abstract IDocumentServiceProvider Create(DynamicDocumentContainer documentContainer);
     }
 }

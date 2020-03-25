@@ -3,8 +3,6 @@
 
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -92,6 +90,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.NotNull(converted.Command);
             Assert.True(converted.TryGetRazorCompletionKind(out var convertedKind));
             Assert.Equal(RazorCompletionItemKind.Directive, convertedKind);
+        }
+
+        [Fact]
+        public void TryConvert_MarkupTransition_ReturnsTrue()
+        {
+            // Arrange
+            var completionItem = MarkupTransitionCompletionItemProvider.MarkupTransitionCompletionItem;
+            var description = completionItem.GetMarkupTransitionCompletionDescription().Description;
+
+            // Act
+            var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(completionItem.DisplayText, converted.Label);
+            Assert.Equal(completionItem.InsertText, converted.InsertText);
+            Assert.Equal(completionItem.DisplayText, converted.FilterText);
+            Assert.Equal(completionItem.DisplayText, converted.SortText);
+            Assert.Equal(description, converted.Detail);
+            Assert.NotNull(converted.Documentation);
+            Assert.Equal(converted.CommitCharacters, completionItem.CommitCharacters);
         }
 
         [Fact]

@@ -16,6 +16,7 @@ export class ReportIssuePanel {
     private panel: vscode.WebviewPanel | undefined;
     private dataCollector: ReportIssueDataCollector | undefined;
     private issueContent: string | undefined;
+    private traceLevelChange: vscode.Disposable | undefined;
 
     constructor(
         private readonly dataCollectorFactory: ReportIssueDataCollectorFactory,
@@ -32,7 +33,7 @@ export class ReportIssuePanel {
                 'Report Razor Issue',
                 vscode.ViewColumn.Two, {
                     enableScripts: true,
-                    // Dissallow any remote sources
+                    // Disallow any remote sources
                     localResourceRoots: [],
                 });
             this.attachToCurrentPanel();
@@ -76,7 +77,7 @@ export class ReportIssuePanel {
                     }
                     this.issueContent = undefined;
                     this.dataCollector = this.dataCollectorFactory.create();
-                    vscode.window.showInformationMessage('Razor issue data colletion started. Reproduce the issue then press "Stop"');
+                    vscode.window.showInformationMessage('Razor issue data collection started. Reproduce the issue then press "Stop"');
                     return;
                 case 'stopIssue':
                     if (!this.dataCollector) {
@@ -84,11 +85,19 @@ export class ReportIssuePanel {
                         return;
                     }
                     this.dataCollector.stop();
-                    vscode.window.showInformationMessage('Razor issue data colletion stopped. Copying issue content...');
+                    vscode.window.showInformationMessage('Razor issue data collection stopped. Copying issue content...');
                     return;
             }
         });
-        this.panel.onDidDispose(() => this.panel = undefined);
+
+        this.traceLevelChange = this.logger.onTraceLevelChange(async () => this.update());
+
+        this.panel.onDidDispose(() => {
+            if (this.traceLevelChange) {
+                this.traceLevelChange.dispose();
+            }
+            this.panel = undefined;
+        });
     }
 
     private async update() {

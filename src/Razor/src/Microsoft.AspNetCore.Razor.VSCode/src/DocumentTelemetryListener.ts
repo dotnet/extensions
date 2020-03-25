@@ -15,16 +15,6 @@ export function reportTelemetryForDocuments(
             case RazorDocumentChangeKind.added:
                 telemetryReporter.reportWorkspaceContainsRazor();
                 break;
-            case RazorDocumentChangeKind.opened:
-                telemetryReporter.reportDocumentOpened(event.document.path);
-                break;
-            case RazorDocumentChangeKind.closed:
-                telemetryReporter.reportDocumentClosed(event.document.path);
-                break;
-            case RazorDocumentChangeKind.htmlChanged:
-                // Right now whenever the document changes the Html changes.
-                telemetryReporter.reportDocumentEdited(event.document.path);
-                break;
         }
     });
 }

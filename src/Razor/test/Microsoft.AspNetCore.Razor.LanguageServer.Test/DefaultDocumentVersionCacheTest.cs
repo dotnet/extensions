@@ -108,6 +108,38 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
+        public void ProjectSnapshotManager_Changed_OpenDocumentRemoved_EvictsDocument()
+        {
+            // Arrange
+            var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
+            var projectSnapshotManager = TestProjectSnapshotManager.Create(Dispatcher);
+            projectSnapshotManager.AllowNotifyListeners = true;
+            documentVersionCache.Initialize(projectSnapshotManager);
+            var document = TestDocumentSnapshot.Create("C:/file.cshtml");
+            document.TryGetText(out var text);
+            document.TryGetTextVersion(out var textVersion);
+            var textAndVersion = TextAndVersion.Create(text, textVersion);
+            documentVersionCache.TrackDocumentVersion(document, 1337);
+            projectSnapshotManager.ProjectAdded(document.ProjectInternal.HostProject);
+            projectSnapshotManager.DocumentAdded(document.ProjectInternal.HostProject, document.State.HostDocument, TextLoader.From(textAndVersion));
+            projectSnapshotManager.DocumentOpened(document.ProjectInternal.FilePath, document.FilePath, textAndVersion.Text);
+
+            // Act - 1
+            var result = documentVersionCache.TryGetDocumentVersion(document, out var version);
+
+            // Assert - 1
+            Assert.True(result);
+            Assert.True(projectSnapshotManager.IsDocumentOpen(document.FilePath));
+
+            // Act - 2
+            projectSnapshotManager.DocumentRemoved(document.ProjectInternal.HostProject, document.State.HostDocument);
+            result = documentVersionCache.TryGetDocumentVersion(document, out version);
+
+            // Assert - 2
+            Assert.False(result);
+        }
+
+        [Fact]
         public void ProjectSnapshotManager_Changed_DocumentClosed_EvictsDocument()
         {
             // Arrange

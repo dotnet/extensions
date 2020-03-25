@@ -44,7 +44,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             return Task.CompletedTask;
         }
 
-        protected override void OnClosed()
+        protected internal override void OnClosed()
         {
             if (_editorDocumentManager == null)
             {
