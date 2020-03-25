@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.3.20174.1">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.3.20174.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>e84c136f27dae6a9f8c0a8364239780cc2f2207f</Sha>
+      <Sha>a65f037c82964b4c8c3ae6a7f7683ffb328aa60e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.3.20174.1">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.3.20174.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>e84c136f27dae6a9f8c0a8364239780cc2f2207f</Sha>
+      <Sha>a65f037c82964b4c8c3ae6a7f7683ffb328aa60e</Sha>
     </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="5.0.0-preview.3.20174.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
