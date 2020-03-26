@@ -211,7 +211,29 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void ProjectSnapshotManager_DocumentChanged_OpenDocument_PublishesEmptyTextChanges()
+        public void ProjectSnapshotManager_DocumentChanged_OpenDocument_PublishesEmptyTextChanges_CSharp()
+        {
+            // Arrange
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            generatedDocumentPublisher.Initialize(ProjectManager);
+            var sourceTextContent = "// The content";
+            var initialSourceText = SourceText.From(sourceTextContent);
+            generatedDocumentPublisher.PublishCSharp(HostDocument.FilePath, initialSourceText, 123);
+
+            // Act
+            ProjectManager.DocumentOpened(HostProject.FilePath, HostDocument.FilePath, initialSourceText);
+            generatedDocumentPublisher.PublishCSharp(HostDocument.FilePath, initialSourceText, 124);
+
+            // Assert
+            Assert.Equal(2, Server.UpdateRequests.Count);
+            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
+            Assert.Empty(updateRequest.Changes);
+            Assert.Equal(124, updateRequest.HostDocumentVersion);
+        }
+
+        [Fact]
+        public void ProjectSnapshotManager_DocumentChanged_OpenDocument_VersionEquivalent_Noops_CSharp()
         {
             // Arrange
             var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
@@ -225,10 +247,50 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishCSharp(HostDocument.FilePath, initialSourceText, 123);
 
             // Assert
+            var updateRequest = Assert.Single(Server.UpdateRequests);
+            Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
+            Assert.Equal(123, updateRequest.HostDocumentVersion);
+        }
+
+        [Fact]
+        public void ProjectSnapshotManager_DocumentChanged_OpenDocument_PublishesEmptyTextChanges_Html()
+        {
+            // Arrange
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            generatedDocumentPublisher.Initialize(ProjectManager);
+            var sourceTextContent = "<!-- The content -->";
+            var initialSourceText = SourceText.From(sourceTextContent);
+            generatedDocumentPublisher.PublishHtml(HostDocument.FilePath, initialSourceText, 123);
+
+            // Act
+            ProjectManager.DocumentOpened(HostProject.FilePath, HostDocument.FilePath, initialSourceText);
+            generatedDocumentPublisher.PublishHtml(HostDocument.FilePath, initialSourceText, 124);
+
+            // Assert
             Assert.Equal(2, Server.UpdateRequests.Count);
             var updateRequest = Server.UpdateRequests.Last();
             Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
             Assert.Empty(updateRequest.Changes);
+            Assert.Equal(124, updateRequest.HostDocumentVersion);
+        }
+
+        [Fact]
+        public void ProjectSnapshotManager_DocumentChanged_OpenDocument_VersionEquivalent_Noops_Html()
+        {
+            // Arrange
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            generatedDocumentPublisher.Initialize(ProjectManager);
+            var sourceTextContent = "<!-- The content -->";
+            var initialSourceText = SourceText.From(sourceTextContent);
+            generatedDocumentPublisher.PublishHtml(HostDocument.FilePath, initialSourceText, 123);
+
+            // Act
+            ProjectManager.DocumentOpened(HostProject.FilePath, HostDocument.FilePath, initialSourceText);
+            generatedDocumentPublisher.PublishHtml(HostDocument.FilePath, initialSourceText, 123);
+
+            // Assert
+            var updateRequest = Assert.Single(Server.UpdateRequests);
+            Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
             Assert.Equal(123, updateRequest.HostDocumentVersion);
         }
 

@@ -14,9 +14,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultGeneratedDocumentPublisher : GeneratedDocumentPublisher
     {
-        private static readonly SourceText EmptySourceText = SourceText.From(string.Empty);
-        private readonly Dictionary<string, SourceText> _publishedCSharpSourceText;
-        private readonly Dictionary<string, SourceText> _publishedHtmlSourceText;
+        private readonly Dictionary<string, PublishData> _publishedCSharpData;
+        private readonly Dictionary<string, PublishData> _publishedHtmlData;
         private readonly Lazy<ILanguageServer> _server;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private ProjectSnapshotManagerBase _projectSnapshotManager;
@@ -37,8 +36,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher = foregroundDispatcher;
             _server = server;
-            _publishedCSharpSourceText = new Dictionary<string, SourceText>(FilePathComparer.Instance);
-            _publishedHtmlSourceText = new Dictionary<string, SourceText>(FilePathComparer.Instance);
+            _publishedCSharpData = new Dictionary<string, PublishData>(FilePathComparer.Instance);
+            _publishedHtmlData = new Dictionary<string, PublishData>(FilePathComparer.Instance);
         }
 
         public override void Initialize(ProjectSnapshotManagerBase projectManager)
@@ -61,18 +60,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher.AssertForegroundThread();
 
-            if (!_publishedCSharpSourceText.TryGetValue(filePath, out var previouslyPublishedText))
+            if (!_publishedCSharpData.TryGetValue(filePath, out var previouslyPublishedData))
             {
-                previouslyPublishedText = EmptySourceText;
+                previouslyPublishedData = PublishData.Default;
             }
 
             IReadOnlyList<TextChange> textChanges = Array.Empty<TextChange>();
-            if (!sourceText.ContentEquals(previouslyPublishedText))
+            if (!sourceText.ContentEquals(previouslyPublishedData.SourceText))
             {
-                textChanges = sourceText.GetTextChanges(previouslyPublishedText);
+                textChanges = sourceText.GetTextChanges(previouslyPublishedData.SourceText);
+            }
+            else if (hostDocumentVersion == previouslyPublishedData.HostDocumentVersion)
+            {
+                // Source texts match along with host documetn versions. We've already published something that looks like this. No-op.
+                return;
             }
 
-            _publishedCSharpSourceText[filePath] = sourceText;
+            _publishedCSharpData[filePath] = new PublishData(sourceText, hostDocumentVersion);
 
             var request = new UpdateBufferRequest()
             {
@@ -98,18 +102,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher.AssertForegroundThread();
 
-            if (!_publishedHtmlSourceText.TryGetValue(filePath, out var previouslyPublishedText))
+            if (!_publishedHtmlData.TryGetValue(filePath, out var previouslyPublishedData))
             {
-                previouslyPublishedText = EmptySourceText;
+                previouslyPublishedData = PublishData.Default;
             }
 
             IReadOnlyList<TextChange> textChanges = Array.Empty<TextChange>();
-            if (!sourceText.ContentEquals(previouslyPublishedText))
+            if (!sourceText.ContentEquals(previouslyPublishedData.SourceText))
             {
-                textChanges = sourceText.GetTextChanges(previouslyPublishedText);
+                textChanges = sourceText.GetTextChanges(previouslyPublishedData.SourceText);
+            }
+            else if (hostDocumentVersion == previouslyPublishedData.HostDocumentVersion)
+            {
+                // Source texts match along with host document versions. We've already published something that looks like this. No-op.
+                return;
             }
 
-            _publishedHtmlSourceText[filePath] = sourceText;
+            _publishedHtmlData[filePath] = new PublishData(sourceText, hostDocumentVersion);
 
             var request = new UpdateBufferRequest()
             {
@@ -131,32 +140,47 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     if (!_projectSnapshotManager.IsDocumentOpen(args.DocumentFilePath))
                     {
                         // Document closed, evict published source text.
-                        if (_publishedCSharpSourceText.ContainsKey(args.DocumentFilePath))
+                        if (_publishedCSharpData.ContainsKey(args.DocumentFilePath))
                         {
-                            var removed = _publishedCSharpSourceText.Remove(args.DocumentFilePath);
-                            Debug.Assert(removed, "Published source text should be protected by the foreground thread and should never fail to remove.");
+                            var removed = _publishedCSharpData.Remove(args.DocumentFilePath);
+                            Debug.Assert(removed, "Published data should be protected by the foreground thread and should never fail to remove.");
                         }
-                        if (_publishedHtmlSourceText.ContainsKey(args.DocumentFilePath))
+                        if (_publishedHtmlData.ContainsKey(args.DocumentFilePath))
                         {
-                            var removed = _publishedHtmlSourceText.Remove(args.DocumentFilePath);
-                            Debug.Assert(removed, "Published source text should be protected by the foreground thread and should never fail to remove.");
+                            var removed = _publishedHtmlData.Remove(args.DocumentFilePath);
+                            Debug.Assert(removed, "Published data should be protected by the foreground thread and should never fail to remove.");
                         }
                     }
                     break;
                 case ProjectChangeKind.DocumentRemoved:
                     // Document removed, evict published source text.
-                    if (_publishedCSharpSourceText.ContainsKey(args.DocumentFilePath))
+                    if (_publishedCSharpData.ContainsKey(args.DocumentFilePath))
                     {
-                        var removed = _publishedCSharpSourceText.Remove(args.DocumentFilePath);
-                        Debug.Assert(removed, "Published source text should be protected by the foreground thread and should never fail to remove.");
+                        var removed = _publishedCSharpData.Remove(args.DocumentFilePath);
+                        Debug.Assert(removed, "Published data should be protected by the foreground thread and should never fail to remove.");
                     }
-                    if (_publishedHtmlSourceText.ContainsKey(args.DocumentFilePath))
+                    if (_publishedHtmlData.ContainsKey(args.DocumentFilePath))
                     {
-                        var removed = _publishedHtmlSourceText.Remove(args.DocumentFilePath);
-                        Debug.Assert(removed, "Published source text should be protected by the foreground thread and should never fail to remove.");
+                        var removed = _publishedHtmlData.Remove(args.DocumentFilePath);
+                        Debug.Assert(removed, "Published data should be protected by the foreground thread and should never fail to remove.");
                     }
                     break;
             }
+        }
+
+        private sealed class PublishData
+        {
+            public static readonly PublishData Default = new PublishData(SourceText.From(string.Empty), -1);
+
+            public PublishData(SourceText sourceText, long hostDocumentVersion)
+            {
+                SourceText = sourceText;
+                HostDocumentVersion = hostDocumentVersion;
+            }
+
+            public SourceText SourceText { get; }
+
+            public long HostDocumentVersion { get; }
         }
     }
 }
