@@ -6,25 +6,39 @@ using System.Collections.Generic;
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Implementation of IOptionsFactory.
+    /// Implementation of <see cref="IOptionsFactory{TOptions}"/>.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
     public class OptionsFactory<TOptions> : IOptionsFactory<TOptions> where TOptions : class, new()
     {
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
         private readonly IEnumerable<IPostConfigureOptions<TOptions>> _postConfigures;
+        private readonly IEnumerable<IValidateOptions<TOptions>> _validations;
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
         /// </summary>
         /// <param name="setups">The configuration actions to run.</param>
         /// <param name="postConfigures">The initialization actions to run.</param>
-        public OptionsFactory(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IPostConfigureOptions<TOptions>> postConfigures)
+        public OptionsFactory(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IPostConfigureOptions<TOptions>> postConfigures) : this(setups, postConfigures, validations: null)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance with the specified options configurations.
+        /// </summary>
+        /// <param name="setups">The configuration actions to run.</param>
+        /// <param name="postConfigures">The initialization actions to run.</param>
+        /// <param name="validations">The validations to run.</param>
+        public OptionsFactory(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IPostConfigureOptions<TOptions>> postConfigures, IEnumerable<IValidateOptions<TOptions>> validations)
         {
             _setups = setups;
             _postConfigures = postConfigures;
+            _validations = validations;
         }
 
+        /// <summary>
+        /// Returns a configured <typeparamref name="TOptions"/> instance with the given <paramref name="name"/>.
+        /// </summary>
         public TOptions Create(string name)
         {
             var options = new TOptions();
@@ -43,6 +57,24 @@ namespace Microsoft.Extensions.Options
             {
                 post.PostConfigure(name, options);
             }
+
+            if (_validations != null)
+            {
+                var failures = new List<string>();
+                foreach (var validate in _validations)
+                {
+                    var result = validate.Validate(name, options);
+                    if (result.Failed)
+                    {
+                        failures.AddRange(result.Failures);
+                    }
+                }
+                if (failures.Count > 0)
+                {
+                    throw new OptionsValidationException(name, typeof(TOptions), failures);
+                }
+            }
+
             return options;
         }
     }
