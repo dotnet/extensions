@@ -45,7 +45,7 @@ jobs:
     ${{ if ne(parameters.poolName, '') }}:
       name: ${{ parameters.poolName }}
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'macOS')) }}:
-      vmImage: macOS-10.13
+      vmImage: macOS-10.14
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Linux')) }}:
       vmImage: ubuntu-16.04
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Windows')) }}:
@@ -65,9 +65,9 @@ jobs:
       _SignType:
     ${{ if and(eq(parameters.codeSign, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
       TeamName: AspNetCore
-      ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+      ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
         _SignType: test
-      ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
         _SignType: real
   steps:
   - checkout: self
