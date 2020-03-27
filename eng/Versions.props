@@ -55,8 +55,8 @@
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.4-servicing.20176.3</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.4-servicing.20176.3</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.4-servicing.20176.4</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.4-servicing.20176.4</MicrosoftNETCoreAppInternalPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.1.0</MicrosoftBclAsyncInterfacesPackageVersion>
@@ -73,7 +73,7 @@
     <SystemTextEncodingsWebPackageVersion>4.7.0</SystemTextEncodingsWebPackageVersion>
     <SystemTextJsonPackageVersion>4.7.1</SystemTextJsonPackageVersion>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
-    <MicrosoftNETCorePlatformsPackageVersion>3.1.1-servicing.20176.2</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>3.1.1-servicing.20176.6</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.20113.5</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
