@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -10,19 +9,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class RazorLSPOptions : IEquatable<RazorLSPOptions>
     {
-        public RazorLSPOptions(Trace trace, bool enableFormatting)
+        public RazorLSPOptions(Trace trace, bool enableFormatting, bool autoClosingTags)
         {
             Trace = trace;
             EnableFormatting = enableFormatting;
+            AutoClosingTags = autoClosingTags;
         }
 
-        public static RazorLSPOptions Default => new RazorLSPOptions(trace: default, enableFormatting: true);
+        public static RazorLSPOptions Default =>
+            new RazorLSPOptions(trace: default, enableFormatting: true, autoClosingTags: true);
 
         public Trace Trace { get; }
 
         public LogLevel MinLogLevel => GetLogLevelForTrace(Trace);
 
         public bool EnableFormatting { get; }
+
+        public bool AutoClosingTags { get; }
 
         public static LogLevel GetLogLevelForTrace(Trace trace)
         {
@@ -40,7 +43,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return
                 other != null &&
                 Trace == other.Trace &&
-                EnableFormatting == other.EnableFormatting;
+                EnableFormatting == other.EnableFormatting &&
+                AutoClosingTags == other.AutoClosingTags;
         }
 
         public override bool Equals(object obj)
@@ -53,6 +57,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var hash = new HashCodeCombiner();
             hash.Add(Trace);
             hash.Add(EnableFormatting);
+            hash.Add(AutoClosingTags);
             return hash;
         }
     }

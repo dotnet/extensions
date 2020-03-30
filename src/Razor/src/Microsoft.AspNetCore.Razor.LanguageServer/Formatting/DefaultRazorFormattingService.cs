@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
@@ -23,12 +25,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private readonly ILanguageServer _server;
         private readonly CSharpFormatter _csharpFormatter;
         private readonly HtmlFormatter _htmlFormatter;
+        private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
         private readonly ILogger _logger;
+
+        private static readonly TextEdit[] EmptyArray = Array.Empty<TextEdit>();
 
         public DefaultRazorFormattingService(
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
             ILanguageServer server,
+            IOptionsMonitor<RazorLSPOptions> optionsMonitor,
             ILoggerFactory loggerFactory)
         {
             if (documentMappingService is null)
@@ -46,6 +52,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(server));
             }
 
+            if (optionsMonitor is null)
+            {
+                throw new ArgumentNullException(nameof(optionsMonitor));
+            }
+
             if (loggerFactory is null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
@@ -54,7 +65,91 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             _server = server;
             _csharpFormatter = new CSharpFormatter(documentMappingService, server, filePathNormalizer);
             _htmlFormatter = new HtmlFormatter(server, filePathNormalizer);
+            _optionsMonitor = optionsMonitor;
             _logger = loggerFactory.CreateLogger<DefaultRazorFormattingService>();
+        }
+
+        public override Task<TextEdit[]> FormatOnTypeAsync(Uri uri, RazorCodeDocument codeDocument, Position position, string character, FormattingOptions options)
+        {
+            if (uri is null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            if (codeDocument is null)
+            {
+                throw new ArgumentNullException(nameof(codeDocument));
+            }
+
+            if (position is null)
+            {
+                throw new ArgumentNullException(nameof(position));
+            }
+
+            if (string.IsNullOrEmpty(character))
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
+
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (!_optionsMonitor.CurrentValue.AutoClosingTags || character != ">")
+            {
+                // We currently only support auto-closing tags our onType formatter.
+                return Task.FromResult(EmptyArray);
+            }
+
+            bool addCursorPlaceholder;
+            if (options.TryGetValue(LanguageServerConstants.ExpectsCursorPlaceholderKey, out var value) && value.IsBool)
+            {
+                addCursorPlaceholder = value.Bool;
+            }
+            else
+            {
+                // Temporary:
+                // no-op if cursor placeholder isn't supported. This means the request isn't coming from VS.
+                // Can remove this once VSCode starts using this endpoint for auto closing <text> tags.
+                return Task.FromResult(EmptyArray);
+            }
+
+            var formattingContext = CreateFormattingContext(uri, codeDocument, new Range(position, position), options);
+            if (IsAtTextTag(formattingContext, position))
+            {
+                // This is a text tag.
+                var cursorPlaceholder = addCursorPlaceholder ? LanguageServerConstants.CursorPlaceholderString : string.Empty;
+                var edit = new TextEdit()
+                {
+                    NewText = $"{cursorPlaceholder}</{SyntaxConstants.TextTagName}>",
+                    Range = new Range(position, position)
+                };
+                return Task.FromResult(new[] { edit });
+            }
+
+            return Task.FromResult(EmptyArray);
+        }
+
+        private static bool IsAtTextTag(FormattingContext context, Position position)
+        {
+            var syntaxTree = context.CodeDocument.GetSyntaxTree();
+
+            var absoluteIndex = position.GetAbsoluteIndex(context.SourceText) - 1;
+            var change = new SourceChange(absoluteIndex, 0, string.Empty);
+            var owner = syntaxTree.Root.LocateOwner(change);
+            if (owner?.Parent != null &&
+                owner.Parent is MarkupStartTagSyntax startTag &&
+                startTag.IsMarkupTransition &&
+                startTag.Parent is MarkupElementSyntax element &&
+                element.EndTag == null) // Make sure the end </text> tag doesn't already exist
+            {
+                Debug.Assert(string.Equals(startTag.Name.Content, SyntaxConstants.TextTagName, StringComparison.Ordinal), "MarkupTransition that is not a <text> tag.");
+
+                return true;
+            }
+
+            return false;
         }
 
         public override async Task<TextEdit[]> FormatAsync(Uri uri, RazorCodeDocument codeDocument, Range range, FormattingOptions options)

@@ -22,6 +22,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     ResolveProvider = true,
                     TriggerCharacters = new[] { ".", "@", "<", "&", "\\", "/", "'", "\"", "=", ":" }
                 },
+                DocumentOnTypeFormattingProvider = new DocumentOnTypeFormattingOptions()
+                {
+                    FirstTriggerCharacter = ">",
+                    MoreTriggerCharacter = new[] { "=" }
+                },
             }
         };
 

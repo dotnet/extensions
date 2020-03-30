@@ -76,16 +76,26 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return ExecuteRequestAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(Methods.TextDocumentCompletionName, completionParams, _clientCapabilities, cancellationToken);
         }
 
-        [JsonRpcMethod(Methods.TextDocumentCompletionResolveName)]
-        public Task<CompletionItem> ResolveCompletionAsync(JToken input, CancellationToken cancellationToken)
+        [JsonRpcMethod(Methods.TextDocumentCompletionResolveName, UseSingleObjectParameterDeserialization = true)]
+        public Task<CompletionItem> ResolveCompletionAsync(CompletionItem request, CancellationToken cancellationToken)
         {
-            if (input is null)
+            if (request is null)
             {
-                throw new ArgumentNullException(nameof(input));
+                throw new ArgumentNullException(nameof(request));
             }
 
-            var request = input.ToObject<CompletionItem>();
             return ExecuteRequestAsync<CompletionItem, CompletionItem>(Methods.TextDocumentCompletionResolveName, request, _clientCapabilities, cancellationToken);
+        }
+
+        [JsonRpcMethod(Methods.TextDocumentOnTypeFormattingName, UseSingleObjectParameterDeserialization = true)]
+        public Task<TextEdit[]> FormatOnTypeAsync(DocumentOnTypeFormattingParams request, CancellationToken cancellationToken)
+        {
+            if (request is null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return ExecuteRequestAsync<DocumentOnTypeFormattingParams, TextEdit[]>(Methods.TextDocumentOnTypeFormattingName, request, _clientCapabilities, cancellationToken);
         }
 
         // Internal for testing

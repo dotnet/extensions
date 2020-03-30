@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task GetLatestOptionsAsync_ReturnsExpectedOptions()
         {
             // Arrange
-            var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false);
-            var jsonString = @"
+            var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false, autoClosingTags: false);
+            var razorJsonString = @"
 {
   ""trace"": ""Messages"",
   ""format"": {
@@ -26,7 +26,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
   }
 }
 ".Trim();
-            var result = new object[] { jsonString };
+            var htmlJsonString = @"
+{
+  ""autoClosingTags"": ""false""
+}
+".Trim();
+            var result = new object[] { razorJsonString, htmlJsonString };
             var languageServer = GetLanguageServer(result);
             var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
 

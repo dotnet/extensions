@@ -7,6 +7,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
     {
         public const string ProjectConfigurationFile = "project.razor.json";
 
+        public const string ExpectsCursorPlaceholderKey = "expectsCursorPlaceholder";
+
+        public const string CursorPlaceholderString = "__placeholder__";
+
         public const string RazorSemanticTokensEndpoint = "razor/semanticTokens";
 
         public const string RazorSemanticTokenLegendEndpoint = "razor/semanticTokensLegend";
@@ -18,5 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         public const string RazorUpdateHtmlBufferEndpoint = "razor/updateHtmlBuffer";
 
         public const string RazorLanguageQueryEndpoint = "razor/languageQuery";
+
+        public const string RazorMapToDocumentRangeEndpoint = "razor/mapToDocumentRange";
     }
 }

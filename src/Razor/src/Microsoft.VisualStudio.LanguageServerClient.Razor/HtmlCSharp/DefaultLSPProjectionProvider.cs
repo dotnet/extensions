@@ -3,7 +3,6 @@
 
 using System;
 using System.Composition;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
@@ -17,7 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [Export(typeof(LSPProjectionProvider))]
     internal class DefaultLSPProjectionProvider : LSPProjectionProvider
     {
-        private readonly int UndefinedDocumentVersion = -1;
+        private const int UndefinedDocumentVersion = -1;
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentSynchronizer _documentSynchronizer;
         private readonly RazorLogger _logger;

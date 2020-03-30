@@ -12,5 +12,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     internal abstract class RazorFormattingService
     {
         public abstract Task<TextEdit[]> FormatAsync(Uri uri, RazorCodeDocument codeDocument, Range range, FormattingOptions options);
+
+        public abstract Task<TextEdit[]> FormatOnTypeAsync(Uri uri, RazorCodeDocument codeDocument, Position position, string character, FormattingOptions options);
     }
 }

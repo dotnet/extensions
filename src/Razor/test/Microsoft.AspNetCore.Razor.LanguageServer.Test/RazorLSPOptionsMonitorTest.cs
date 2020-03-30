@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task UpdateAsync_Invokes_OnChangeRegistration()
         {
             // Arrange
-            var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false);
+            var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false, autoClosingTags: true);
             var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync() == Task.FromResult(expectedOptions));
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task UpdateAsync_DoesNotInvoke_OnChangeRegistration_AfterDispose()
         {
             // Arrange
-            var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false);
+            var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false, autoClosingTags: true);
             var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync() == Task.FromResult(expectedOptions));
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;

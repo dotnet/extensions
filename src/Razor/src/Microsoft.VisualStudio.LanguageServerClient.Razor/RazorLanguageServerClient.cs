@@ -27,16 +27,23 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         // ILanguageClient infrastructure on the guest to ensure that two language servers don't provide results.
         public const string ClientName = "RazorLSPClientName";
         private readonly RazorLanguageServerCustomMessageTarget _customMessageTarget;
+        private readonly ILanguageClientMiddleLayer _middleLayer;
 
         [ImportingConstructor]
-        public RazorLanguageServerClient(RazorLanguageServerCustomMessageTarget customTarget)
+        public RazorLanguageServerClient(RazorLanguageServerCustomMessageTarget customTarget, RazorLanguageClientMiddleLayer middleLayer)
         {
             if (customTarget is null)
             {
                 throw new ArgumentNullException(nameof(customTarget));
             }
 
+            if (middleLayer is null)
+            {
+                throw new ArgumentNullException(nameof(middleLayer));
+            }
+
             _customMessageTarget = customTarget;
+            _middleLayer = middleLayer;
         }
 
         public string Name => "Razor Language Server Client";
@@ -47,7 +54,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public IEnumerable<string> FilesToWatch => null;
 
-        public object MiddleLayer => null;
+        public object MiddleLayer => _middleLayer;
 
         public object CustomMessageTarget => _customMessageTarget;
 

@@ -18,9 +18,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    public class RazorFormattingEndpointTest : LanguageServerTestBase
+    public class RazorOnTypeFormattingEndpointTest : LanguageServerTestBase
     {
-        public RazorFormattingEndpointTest()
+        public RazorOnTypeFormattingEndpointTest()
         {
             EmptyDocumentResolver = Mock.Of<DocumentResolver>();
         }
@@ -28,18 +28,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private DocumentResolver EmptyDocumentResolver { get; }
 
         [Fact]
-        public async Task Handle_FormattingEnabled_InvokesFormattingService()
+        public async Task Handle_AutoCloseTagsEnabled_InvokesFormattingService()
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var uri = new Uri("file://path/test.razor");
             var documentResolver = CreateDocumentResolver(uri.GetAbsoluteOrUNCPath(), codeDocument);
             var formattingService = new TestRazorFormattingService();
-            var optionsMonitor = GetOptionsMonitor(enableFormatting: true);
-            var endpoint = new RazorFormattingEndpoint(Dispatcher, documentResolver, formattingService, optionsMonitor, LoggerFactory);
-            var @params = new DocumentRangeFormattingParams()
+            var optionsMonitor = GetOptionsMonitor(autoClosingTags: true);
+            var endpoint = new RazorOnTypeFormattingEndpoint(Dispatcher, documentResolver, formattingService, optionsMonitor);
+            var @params = new DocumentOnTypeFormattingParams()
             {
-                TextDocument = new TextDocumentIdentifier(uri)
+                TextDocument = new TextDocumentIdentifier(uri),
+                Character = ">"
             };
 
             // Act
@@ -55,12 +56,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             // Arrange
             var formattingService = new TestRazorFormattingService();
-            var optionsMonitor = GetOptionsMonitor(enableFormatting: true);
-            var endpoint = new RazorFormattingEndpoint(Dispatcher, EmptyDocumentResolver, formattingService, optionsMonitor, LoggerFactory);
+            var optionsMonitor = GetOptionsMonitor(autoClosingTags: true);
+            var endpoint = new RazorOnTypeFormattingEndpoint(Dispatcher, EmptyDocumentResolver, formattingService, optionsMonitor);
             var uri = new Uri("file://path/test.razor");
-            var @params = new DocumentRangeFormattingParams()
+            var @params = new DocumentOnTypeFormattingParams()
             {
-                TextDocument = new TextDocumentIdentifier(uri)
+                TextDocument = new TextDocumentIdentifier(uri),
+                Character = ">"
             };
 
             // Act
@@ -79,11 +81,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var uri = new Uri("file://path/test.razor");
             var documentResolver = CreateDocumentResolver(uri.AbsolutePath, codeDocument);
             var formattingService = new TestRazorFormattingService();
-            var optionsMonitor = GetOptionsMonitor(enableFormatting: true);
-            var endpoint = new RazorFormattingEndpoint(Dispatcher, documentResolver, formattingService, optionsMonitor, LoggerFactory);
-            var @params = new DocumentRangeFormattingParams()
+            var optionsMonitor = GetOptionsMonitor(autoClosingTags: true);
+            var endpoint = new RazorOnTypeFormattingEndpoint(Dispatcher, documentResolver, formattingService, optionsMonitor);
+            var @params = new DocumentOnTypeFormattingParams()
             {
-                TextDocument = new TextDocumentIdentifier(uri)
+                TextDocument = new TextDocumentIdentifier(uri),
+                Character = ">"
             };
 
             // Act
@@ -98,9 +101,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             // Arrange
             var formattingService = new TestRazorFormattingService();
-            var optionsMonitor = GetOptionsMonitor(enableFormatting: false);
-            var endpoint = new RazorFormattingEndpoint(Dispatcher, EmptyDocumentResolver, formattingService, optionsMonitor, LoggerFactory);
-            var @params = new DocumentRangeFormattingParams();
+            var optionsMonitor = GetOptionsMonitor(autoClosingTags: false);
+            var endpoint = new RazorOnTypeFormattingEndpoint(Dispatcher, EmptyDocumentResolver, formattingService, optionsMonitor);
+            var @params = new DocumentOnTypeFormattingParams();
 
             // Act
             var result = await endpoint.Handle(@params, CancellationToken.None);
@@ -109,10 +112,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             Assert.Null(result);
         }
 
-        private static IOptionsMonitor<RazorLSPOptions> GetOptionsMonitor(bool enableFormatting)
+        private static IOptionsMonitor<RazorLSPOptions> GetOptionsMonitor(bool autoClosingTags)
         {
             var monitor = new Mock<IOptionsMonitor<RazorLSPOptions>>();
-            monitor.SetupGet(m => m.CurrentValue).Returns(new RazorLSPOptions(default, enableFormatting, true));
+            monitor.SetupGet(m => m.CurrentValue).Returns(new RazorLSPOptions(default, true, autoClosingTags));
             return monitor.Object;
         }
 
@@ -136,13 +139,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             public override Task<TextEdit[]> FormatAsync(Uri uri, RazorCodeDocument codeDocument, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range, FormattingOptions options)
             {
-                Called = true;
-                return Task.FromResult(Array.Empty<TextEdit>());
+                throw new NotImplementedException();
             }
 
             public override Task<TextEdit[]> FormatOnTypeAsync(Uri uri, RazorCodeDocument codeDocument, Position position, string character, FormattingOptions options)
             {
-                throw new NotImplementedException();
+                Called = true;
+                return Task.FromResult(Array.Empty<TextEdit>());
             }
         }
     }

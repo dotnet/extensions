@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Options;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -49,6 +50,37 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             Assert.Equal(expected, actual);
         }
 
+        protected async Task RunFormatOnTypeTestAsync(string input, string expected, string character, bool expectCursorPlaceholder = true, int tabSize = 4, bool insertSpaces = true, string fileKind = default)
+        {
+            // Arrange
+            var location = input.IndexOf('|') + character.Length;
+            input = input.Replace("|", character);
+
+            var source = SourceText.From(input);
+            source.GetLineAndOffset(location, out var line, out var column);
+            var position = new Position(line, column);
+
+            var path = "file:///path/to/document.razor";
+            var uri = new Uri(path);
+            var codeDocument = CreateCodeDocument(source, uri.AbsolutePath, fileKind: fileKind);
+            var options = new FormattingOptions()
+            {
+                TabSize = tabSize,
+                InsertSpaces = insertSpaces,
+            };
+            options[LanguageServerConstants.ExpectsCursorPlaceholderKey] = expectCursorPlaceholder;
+
+            var formattingService = CreateFormattingService(codeDocument);
+
+            // Act
+            var edits = await formattingService.FormatOnTypeAsync(uri, codeDocument, position, character, options);
+
+            // Assert
+            var edited = ApplyEdits(source, edits);
+            var actual = edited.ToString();
+            Assert.Equal(expected, actual);
+        }
+
         private SourceText ApplyEdits(SourceText source, TextEdit[] edits)
         {
             var changes = edits.Select(e => e.AsTextChange(source));
@@ -74,7 +106,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             client.AddCodeDocument(codeDocument);
             var languageServer = Mock.Of<ILanguageServer>(ls => ls.Client == client);
 
-            return new DefaultRazorFormattingService(mappingService, filePathNormalizer, languageServer, LoggerFactory);
+            var optionsMonitor = new Mock<IOptionsMonitor<RazorLSPOptions>>();
+            optionsMonitor.SetupGet(o => o.CurrentValue).Returns(RazorLSPOptions.Default);
+
+            return new DefaultRazorFormattingService(mappingService, filePathNormalizer, languageServer, optionsMonitor.Object, LoggerFactory);
         }
     }
 }

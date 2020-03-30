@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorLanguageEndpoint>()
                     .WithHandler<RazorConfigurationEndpoint>()
                     .WithHandler<RazorFormattingEndpoint>()
+                    .WithHandler<RazorOnTypeFormattingEndpoint>()
                     .WithHandler<RazorSemanticTokenEndpoint>()
                     .WithHandler<RazorSemanticTokenLegendEndpoint>()
                     .WithServices(services =>

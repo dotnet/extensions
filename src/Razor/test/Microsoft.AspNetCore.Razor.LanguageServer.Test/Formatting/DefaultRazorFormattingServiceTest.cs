@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
@@ -494,6 +495,53 @@ expected: @"
 }
 ",
 tabSize: 12);
+        }
+
+        [Fact]
+        public async Task OnTypeCloseAngle_ClosesTextTag()
+        {
+            await RunFormatOnTypeTestAsync(
+input: @"
+@{
+    <text|
+}
+",
+expected: $@"
+@{{
+    <text>{LanguageServerConstants.CursorPlaceholderString}</text>
+}}
+",
+character: ">");
+        }
+
+        [Fact]
+        public async Task OnTypeCloseAngle_ClosesTextTag_DoesNotReturnPlaceholder()
+        {
+            await RunFormatOnTypeTestAsync(
+input: @"
+@{
+    <text|
+}
+",
+expected: @"
+@{
+    <text></text>
+}
+",
+character: ">", expectCursorPlaceholder: false);
+        }
+
+        [Fact]
+        public async Task OnTypeCloseAngle_OutsideRazorBlock_DoesNotCloseTextTag()
+        {
+            await RunFormatOnTypeTestAsync(
+input: @"
+    <text|
+",
+expected: $@"
+    <text>
+",
+character: ">");
         }
     }
 }

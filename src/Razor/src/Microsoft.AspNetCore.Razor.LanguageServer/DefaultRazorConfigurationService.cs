@@ -45,20 +45,30 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         {
                             Section = "razor"
                         },
+                        new ConfigurationItem()
+                        {
+                            Section = "html"
+                        },
                     }
                 };
 
                 var result = await _server.Client.SendRequest<ConfigurationParams, object[]>("workspace/configuration", request);
-                if (result == null || result.Length < 1 || result[0] == null)
+                if (result == null || result.Length < 2 || result[0] == null)
                 {
                     _logger.LogWarning("Client failed to provide the expected configuration.");
                     return null;
                 }
 
-                var jsonString = result[0].ToString();
                 var builder = new ConfigurationBuilder();
-                using var stream = new MemoryStream(Encoding.UTF8.GetBytes(jsonString));
-                builder.AddJsonStream(stream);
+
+                var razorJsonString = result[0].ToString();
+                using var razorStream = new MemoryStream(Encoding.UTF8.GetBytes(razorJsonString));
+                builder.AddJsonStream(razorStream);
+
+                var htmlJsonString = result[1].ToString();
+                using var htmlStream = new MemoryStream(Encoding.UTF8.GetBytes(htmlJsonString));
+                builder.AddJsonStream(htmlStream);
+
                 var config = builder.Build();
 
                 var instance = BuildOptions(config);
@@ -83,7 +93,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 enableFormatting = parsedEnableFormatting;
             }
 
-            return new RazorLSPOptions(trace, enableFormatting);
+            var autoClosingTags = instance.AutoClosingTags;
+            if (bool.TryParse(config["autoClosingTags"], out var parsedAutoClosingTags))
+            {
+                autoClosingTags = parsedAutoClosingTags;
+            }
+
+            return new RazorLSPOptions(trace, enableFormatting, autoClosingTags);
         }
     }
 }
