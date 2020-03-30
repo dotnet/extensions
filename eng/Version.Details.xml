@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.3.20179.1">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-preview.3.20180.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>1d4a35ec9ecb9bcd8fb26150fb6da3deb4aab795</Sha>
+      <Sha>b83a7aa0e94b53f2ab0ff98fed98edf05fa9b34a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.3.20179.1">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.3.20180.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>1d4a35ec9ecb9bcd8fb26150fb6da3deb4aab795</Sha>
+      <Sha>b83a7aa0e94b53f2ab0ff98fed98edf05fa9b34a</Sha>
     </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="5.0.0-preview.3.20179.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -52,9 +52,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>7dbc907fa03eacf4c57f827cb4235d77b7ed4fcd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-3.20170.19" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-3.20177.6" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>9250a5196fc3dbd251768a9c6e3e9b9489ac4993</Sha>
+      <Sha>c9f2423cb5a2ab1ee8de0ef10e536d7672b1a2ea</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
