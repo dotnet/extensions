@@ -118,7 +118,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             Debug.Assert(cursorPosition != null);
 
-            // Now that we have obtained the cursor position, let's nuke the placeholder.
+            // Now that we have obtained the cursor position, let's remove the placeholder.
             var newEdit = new TextEdit();
             newEdit.Range = new Range()
             {
