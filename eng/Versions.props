@@ -59,7 +59,7 @@
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0-preview.4.20201.1</MicrosoftWin32RegistryPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.3-runtime.20169.13</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.3-runtime.20181.3</MicrosoftExtensionsPrimitivesPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>5.0.0-preview.4.20201.1</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.4.20201.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>5.0.0-preview.4.20201.1</SystemDiagnosticsEventLogPackageVersion>

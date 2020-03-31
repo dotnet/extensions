@@ -40,6 +40,38 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging.TraceSource" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="$(MicrosoftCodeAnalysisFxCopAnalyzersVersion)" />
