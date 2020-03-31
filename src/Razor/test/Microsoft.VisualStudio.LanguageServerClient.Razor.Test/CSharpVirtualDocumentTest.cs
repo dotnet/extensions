@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Moq;
@@ -137,10 +138,61 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             Assert.Same(editedSnapshot, document.CurrentSnapshot.Snapshot);
         }
 
-        public static ITextBuffer CreateTextBuffer(ITextEdit edit)
+        [Fact]
+        public void Update_Provisional_AppliesAndRevertsProvisionalChanges()
         {
-            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CreateEdit() == edit && buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>());
+            // Arrange
+            var insert = new TextChange(new TextSpan(123, 0), ".");
+            var edit = new Mock<ITextEdit>();
+            edit.Setup(e => e.Insert(insert.Span.Start, insert.NewText)).Verifiable();
+            edit.Setup(e => e.Apply()).Verifiable();
+
+            var revertEdit = new Mock<ITextEdit>();
+            revertEdit.Setup(e => e.Replace(new Span(123, 1), string.Empty)).Verifiable();
+            revertEdit.Setup(e => e.Apply()).Verifiable();
+
+            var textBuffer = CreateTextBuffer(edit.Object, revertEdit.Object, new[] { insert });
+            var document = new CSharpVirtualDocument(Uri, textBuffer);
+
+            // Make a provisional edit followed by another edit.
+
+            // Act 1
+            document.Update(new[] { insert }, hostDocumentVersion: 1, provisional: true);
+
+            // Assert 1
+            edit.VerifyAll();
+
+            // Act 2
+            document.Update(new[] { new TextChange(new TextSpan(125, 0), "Some other edit") }, hostDocumentVersion: 2, provisional: false);
+
+            // Assert 2
+            revertEdit.VerifyAll();
+        }
+
+        public static ITextBuffer CreateTextBuffer(ITextEdit edit, ITextEdit revertEdit = null, TextChange[] provisionalChanges = null)
+        {
+            var changes = new TestTextChangeCollection();
+            if (provisionalChanges != null)
+            {
+                foreach (var provisionalChange in provisionalChanges)
+                {
+                    var change = new Mock<ITextChange>();
+                    change.SetupGet(c => c.NewSpan).Returns(new Span(provisionalChange.Span.Start, provisionalChange.NewText.Length));
+                    change.SetupGet(c => c.OldText).Returns(string.Empty);
+                    changes.Add(change.Object);
+                }
+            }
+
+            var textBuffer = Mock.Of<ITextBuffer>(
+                buffer => buffer.CreateEdit() == edit &&
+                buffer.CreateEdit(EditOptions.None, It.IsAny<int?>(), It.IsAny<IInviolableEditTag>()) == revertEdit &&
+                buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>(s => s.Version.Changes == changes));
             return textBuffer;
+        }
+
+        protected class TestTextChangeCollection : List<ITextChange>, INormalizedTextChangeCollection
+        {
+            public bool IncludesLineChanges => true;
         }
     }
 }

@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using Xunit;
@@ -340,11 +342,215 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.Same(originalData, newData.OriginalData);
         }
 
-        private class TestDocumentManager : LSPDocumentManager
+        [Fact]
+        public async Task GetProvisionalCompletionParamsAsync_CSharpProjection_ReturnsNull()
+        {
+            // Arrange
+            var completionRequest = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Context = new CompletionContext()
+                {
+                    TriggerKind = CompletionTriggerKind.TriggerCharacter,
+                    TriggerCharacter = "."
+                },
+                Position = new Position(0, 1)
+            };
+
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+
+            var requestInvoker = new Mock<LSPRequestInvoker>();
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.CSharp,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+
+            var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
+
+            // Act
+            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetProvisionalCompletionParamsAsync_TriggerCharacterNotDot_ReturnsNull()
+        {
+            // Arrange
+            var completionRequest = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Context = new CompletionContext()
+                {
+                    TriggerKind = CompletionTriggerKind.TriggerCharacter,
+                    TriggerCharacter = "D"
+                },
+                Position = new Position(0, 1)
+            };
+
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+
+            var requestInvoker = new Mock<LSPRequestInvoker>();
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.CSharp,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+
+            var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
+
+            // Act
+            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetProvisionalCompletionParamsAsync_PreviousCharacterHtml_ReturnsNull()
+        {
+            // Arrange
+            var completionRequest = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Context = new CompletionContext()
+                {
+                    TriggerKind = CompletionTriggerKind.TriggerCharacter,
+                    TriggerCharacter = "."
+                },
+                Position = new Position(0, 1)
+            };
+
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+
+            var requestInvoker = new Mock<LSPRequestInvoker>();
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.Html,
+                Position = new Position(1, 7)
+            };
+            var previousCharacterProjection = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.Html,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(previousCharacterProjection));
+
+            var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
+
+            // Act
+            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetProvisionalCompletionParamsAsync_ProjectionAtStartOfLine_ReturnsNull()
+        {
+            // Arrange
+            var completionRequest = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Context = new CompletionContext()
+                {
+                    TriggerKind = CompletionTriggerKind.TriggerCharacter,
+                    TriggerCharacter = "."
+                },
+                Position = new Position(0, 1)
+            };
+
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+
+            var requestInvoker = new Mock<LSPRequestInvoker>();
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.Html,
+                Position = new Position(1, 0)
+            };
+            var previousCharacterProjection = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.CSharp,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(previousCharacterProjection));
+
+            var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
+
+            // Act
+            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetProvisionalCompletionParamsAsync_AtCorrectProvisionalCompletionPoint_ReturnsCorrectParams()
+        {
+            // Arrange
+            var completionRequest = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Context = new CompletionContext()
+                {
+                    TriggerKind = CompletionTriggerKind.TriggerCharacter,
+                    TriggerCharacter = "."
+                },
+                Position = new Position(0, 1)
+            };
+
+            var virtualDocumentUri = new Uri("C:/path/to/file.razor__virtual.cs");
+
+            var documentManager = new TestDocumentManager();
+
+            var requestInvoker = new Mock<LSPRequestInvoker>();
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.Html,
+                Position = new Position(1, 7)
+            };
+            var previousCharacterProjection = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.CSharp,
+                Position = new Position(100, 10),
+                PositionIndex = 1000,
+                Uri = virtualDocumentUri
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(previousCharacterProjection));
+
+            var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
+
+            // Act
+            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(documentManager.UpdateVirtualDocumentCalled);
+            Assert.NotNull(result);
+            Assert.Same(completionRequest.Context, result.Context);
+            Assert.Equal(virtualDocumentUri, result.TextDocument.Uri);
+            Assert.Equal(previousCharacterProjection.Position.Line, result.Position.Line);
+            Assert.Equal(previousCharacterProjection.Position.Character + 1, result.Position.Character);
+        }
+
+        private class TestDocumentManager : TrackingLSPDocumentManager
         {
             private readonly Dictionary<Uri, LSPDocumentSnapshot> _documents = new Dictionary<Uri, LSPDocumentSnapshot>();
 
             public override event EventHandler<LSPDocumentChangeEventArgs> Changed;
+
+            public bool UpdateVirtualDocumentCalled { get; private set; }
 
             public override bool TryGetDocument(Uri uri, out LSPDocumentSnapshot lspDocumentSnapshot)
             {
@@ -356,6 +562,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 _documents.Add(uri, documentSnapshot);
 
                 Changed?.Invoke(this, null);
+            }
+
+            public override void TrackDocument(ITextBuffer buffer)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void UntrackDocument(ITextBuffer buffer)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void UpdateVirtualDocument<TVirtualDocument>(Uri hostDocumentUri, IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional = false)
+            {
+                UpdateVirtualDocumentCalled = true;
             }
         }
     }

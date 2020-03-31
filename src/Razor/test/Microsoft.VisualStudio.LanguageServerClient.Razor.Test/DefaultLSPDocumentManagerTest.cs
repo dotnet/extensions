@@ -27,7 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 document.Uri == Uri &&
                 document.CurrentSnapshot == LSPDocumentSnapshot &&
                 document.VirtualDocuments == new[] { new TestVirtualDocument() } &&
-                document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<TextChange>>(), It.IsAny<long>()) == Mock.Of<LSPDocumentSnapshot>());
+                document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<TextChange>>(), It.IsAny<long>(), It.IsAny<bool>()) == Mock.Of<LSPDocumentSnapshot>());
             LSPDocumentFactory = Mock.Of<LSPDocumentFactory>(factory => factory.Create(TextBuffer) == LSPDocument);
         }
 
@@ -146,7 +146,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var changes = new[] { new TextChange(new TextSpan(1, 1), string.Empty) };
 
             // Act
-            manager.UpdateVirtualDocument<TestVirtualDocument>(Uri, changes, 123);
+            manager.UpdateVirtualDocument<TestVirtualDocument>(Uri, changes, 123, provisional: true);
 
             // Assert
             Assert.True(changedCalled);
@@ -207,7 +207,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             public override long? HostDocumentSyncVersion => 123;
 
-            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional)
             {
                 throw new NotImplementedException();
             }

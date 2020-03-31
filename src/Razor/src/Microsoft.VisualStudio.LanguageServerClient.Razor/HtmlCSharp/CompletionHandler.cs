@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Threading;
 
@@ -77,11 +78,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            if (!TriggerAppliesToProjection(request.Context, projectionResult.LanguageKind))
-            {
-                return null;
-            }
-
             var completionParams = new CompletionParams()
             {
                 Context = request.Context,
@@ -93,6 +89,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
+
+            var provisionalCompletionParams = await GetProvisionalCompletionParamsAsync(request, documentSnapshot, projectionResult, cancellationToken).ConfigureAwait(false);
+            if (provisionalCompletionParams != null)
+            {
+                // This means the user has just typed a dot after some identifier such as (cursor is pipe): "DateTime.| "
+                // In this case Razor interprets after the dot as Html and before it as C#.
+                // We use this criteria to provide a better completion experience for what we call provisional changes.
+                completionParams = provisionalCompletionParams;
+                serverKind = LanguageServerKind.CSharp;
+            }
+            else if (!TriggerAppliesToProjection(request.Context, projectionResult.LanguageKind))
+            {
+                return null;
+            }
+
             var result = await _requestInvoker.RequestServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
                 Methods.TextDocumentCompletionName,
                 serverKind,
@@ -106,6 +117,54 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             return result;
+        }
+
+        internal async Task<CompletionParams> GetProvisionalCompletionParamsAsync(CompletionParams request, LSPDocumentSnapshot documentSnapshot, ProjectionResult projection, CancellationToken cancellationToken)
+        {
+            if (projection.LanguageKind != RazorLanguageKind.Html ||
+                request.Context.TriggerKind != CompletionTriggerKind.TriggerCharacter ||
+                request.Context.TriggerCharacter != ".")
+            {
+                return null;
+            }
+
+            if (projection.Position.Character == 0)
+            {
+                // We're at the start of line. Can't have provisional completions here.
+                return null;
+            }
+
+            var previousCharacterPosition = new Position(projection.Position.Line, projection.Position.Character - 1);
+            var previousCharacterProjection = await _projectionProvider.GetProjectionAsync(documentSnapshot, previousCharacterPosition, cancellationToken).ConfigureAwait(false);
+            if (previousCharacterProjection == null || previousCharacterProjection.LanguageKind != RazorLanguageKind.CSharp)
+            {
+                return null;
+            }
+
+            if (!(_documentManager is TrackingLSPDocumentManager trackingDocumentManager))
+            {
+                return null;
+            }
+
+            // Edit the CSharp projected document to contain a '.'. This allows C# completion to provide valid
+            // completion items for moments when a user has typed a '.' that's typically interpreted as Html.
+            var changes = new[]
+            {
+                new TextChange(TextSpan.FromBounds(previousCharacterProjection.PositionIndex, previousCharacterProjection.PositionIndex), "."),
+            };
+
+            await _joinableTaskFactory.SwitchToMainThreadAsync();
+
+            trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, changes, previousCharacterProjection.HostDocumentVersion, provisional: true);
+
+            var provisionalCompletionParams = new CompletionParams()
+            {
+                Context = request.Context,
+                Position = new Position(previousCharacterProjection.Position.Line, previousCharacterProjection.Position.Character + 1),
+                TextDocument = new TextDocumentIdentifier() { Uri = previousCharacterProjection.Uri }
+            };
+
+            return provisionalCompletionParams;
         }
 
         // Internal for testing
