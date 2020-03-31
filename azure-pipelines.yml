@@ -163,22 +163,29 @@ stages:
             queue: BuildPool.Server.Amd64.VS2019
         strategy:
           matrix:
-            debug:
-              _BuildConfig: Debug
-              _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
-            release:
-              _BuildConfig: Release
-              ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-                _DotNetPublishToBlobFeed: true
-                _PublishArgs: /p:PublishToSymbolServer=true
-                  /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                  /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-                  /p:PublishToAzure=true
-                  /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
-                  /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
-                  /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-                  /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-                  /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+            ${{ if eq(variables['System.TeamProject'], 'public') }}:
+              debug:
+                _BuildConfig: Debug
+                _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+              release:
+                _BuildConfig: Release
+                _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+            ${{ if ne(variables['System.TeamProject'], 'public') }}:
+              release:
+                _BuildConfig: Release
+                ${{ if in(variables['Build.Reason'], 'PullRequest')) }}:
+                  _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                ${{ if notin(variables['Build.Reason'], 'PullRequest')) }}:
+                  _DotNetPublishToBlobFeed: true
+                  _PublishArgs: /p:PublishToSymbolServer=true
+                    /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+                    /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+                    /p:PublishToAzure=true
+                    /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                    /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
+                    /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                    /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+                    /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
         variables:
         - _DotNetPublishToBlobFeed : false
         - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json
