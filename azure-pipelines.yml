@@ -173,9 +173,9 @@ stages:
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
               release:
                 _BuildConfig: Release
-                ${{ if in(variables['Build.Reason'], 'PullRequest')) }}:
+                ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
                   _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
-                ${{ if notin(variables['Build.Reason'], 'PullRequest')) }}:
+                ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
                   _DotNetPublishToBlobFeed: true
                   _PublishArgs: /p:PublishToSymbolServer=true
                     /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
