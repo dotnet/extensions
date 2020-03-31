@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
+namespace Microsoft.CodeAnalysis.Razor.Workspaces.Serialization
 {
     internal sealed class DocumentSnapshotHandle
     {

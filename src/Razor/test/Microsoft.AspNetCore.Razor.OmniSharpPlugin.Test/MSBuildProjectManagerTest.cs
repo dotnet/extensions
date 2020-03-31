@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using Moq;
 using OmniSharp.MSBuild.Logging;
 using OmniSharp.MSBuild.Notification;

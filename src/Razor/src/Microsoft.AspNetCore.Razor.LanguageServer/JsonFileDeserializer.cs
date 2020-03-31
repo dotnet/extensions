@@ -16,19 +16,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             public override TValue Deserialize<TValue>(string filePath) where TValue : class
             {
-                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
-                using (var reader = new StreamReader(stream))
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var reader = new StreamReader(stream);
+                try
                 {
-                    try
-                    {
-                        var deserializedValue = (TValue)Serializer.Instance.JsonSerializer.Deserialize(reader, typeof(TValue));
-                        return deserializedValue;
-                    }
-                    catch
-                    {
-                        // Swallow deserialization exceptions. There's many reasons they can happen, all out of our control.
-                        return null;
-                    }
+                    var deserializedValue = (TValue)Serializer.Instance.JsonSerializer.Deserialize(reader, typeof(TValue));
+                    return deserializedValue;
+                }
+                catch
+                {
+                    // Swallow deserialization exceptions. There's many reasons they can happen, all out of our control.
+                    return null;
                 }
             }
         }

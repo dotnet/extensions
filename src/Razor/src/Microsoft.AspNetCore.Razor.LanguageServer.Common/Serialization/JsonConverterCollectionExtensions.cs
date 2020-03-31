@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis.Razor.Workspaces.Serialization;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization

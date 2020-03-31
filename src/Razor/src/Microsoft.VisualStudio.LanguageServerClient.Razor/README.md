@@ -1,3 +1,8 @@
+# Having a "proper" VS build
+1. From an Administrator Powershell prompt run \\vspreinstall\PREINSTALL\Preinstall.cmd
+1. Install the VS Enterprise->Branch Channel of Visual Studio from the latest successful build of http://ddweb/dashboard/vsbuild/.
+1. Workloads: ASP.NET and web dev., VS extension dev., .NET Core cross-platform dev., .NET desktop Dev.
+
 # Using the Razor LSP Editor
 
 To use the Razor LSP editor set an environment variable under the name `Razor.LSP.Editor` to `true` and then open Razor.sln. Running the `Microsoft.VisualStudio.RazorExtension` project will then result in `.razor` and `.cshtml` files being opened with our LSP editor.
