@@ -59,7 +59,7 @@
     <SystemTextEncodingsWebPackageVersion>5.0.0-preview.4.20201.1</SystemTextEncodingsWebPackageVersion>
     <SystemReflectionMetadataPackageVersion>5.0.0-preview.4.20201.1</SystemReflectionMetadataPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>3.6.0-3.20177.6</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.6.0-3.20201.6</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--

@@ -52,9 +52,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>09bb9d929120b402348c9a0e9c8c951e824059aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-3.20177.6" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-3.20201.6">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>c9f2423cb5a2ab1ee8de0ef10e536d7672b1a2ea</Sha>
+      <Sha>8167e4880190407325d6cf7282f6bb62267abc56</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
