@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var textDocumentPath = _filePathNormalizer.Normalize(filePath);
             if (!_documentResolver.TryResolveDocument(textDocumentPath, out _))
             {
-                // Document hasn't been added. This usually occurs when VSCode trumps all other initialization 
+                // Document hasn't been added. This usually occurs when VSCode trumps all other initialization
                 // processes and pre-initializes already open documents.
                 AddDocument(filePath);
             }
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 return;
             }
 
-            UpdateProjectDocuments(documents, project);
+            UpdateProjectDocuments(documents, project.FilePath);
 
             if (!projectWorkspaceState.Equals(ProjectWorkspaceState.Default))
             {
@@ -315,12 +315,37 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor.Instance.ProjectConfigurationChanged(hostProject);
         }
 
-        private void UpdateProjectDocuments(IReadOnlyList<DocumentSnapshotHandle> documents, DefaultProjectSnapshot project)
+        private void UpdateProjectDocuments(IReadOnlyList<DocumentSnapshotHandle> documents, string projectFilePath)
         {
+            var project = (DefaultProjectSnapshot)_projectSnapshotManagerAccessor.Instance.GetLoadedProject(projectFilePath);
             var currentHostProject = project.HostProject;
             var projectDirectory = _filePathNormalizer.GetDirectory(project.FilePath);
             var documentMap = documents.ToDictionary(document => EnsureFullPath(document.FilePath, projectDirectory), FilePathComparer.Instance);
 
+            // "Remove" any unnecessary documents by putting them into the misc project
+            foreach (var documentFilePath in project.DocumentFilePaths)
+            {
+                if (documentMap.ContainsKey(documentFilePath))
+                {
+                    // This document still exists in the updated project
+                    continue;
+                }
+
+                var documentSnapshot = (DefaultDocumentSnapshot)project.GetDocument(documentFilePath);
+                var currentHostDocument = documentSnapshot.State.HostDocument;
+
+                var textLoader = new DocumentSnapshotTextLoader(documentSnapshot);
+                var newHostDocument = _hostDocumentFactory.Create(documentSnapshot.FilePath, documentSnapshot.TargetPath);
+                var miscellaneousProject = (DefaultProjectSnapshot)_projectResolver.GetMiscellaneousProject();
+
+                _logger.LogInformation($"Moving old '{documentFilePath}' from the '{project.FilePath}' project to '{miscellaneousProject.FilePath}' project.");
+                _projectSnapshotManagerAccessor.Instance.DocumentRemoved(project.HostProject, currentHostDocument);
+                _projectSnapshotManagerAccessor.Instance.DocumentAdded(miscellaneousProject.HostProject, newHostDocument, textLoader);
+            }
+
+            project = (DefaultProjectSnapshot)_projectSnapshotManagerAccessor.Instance.GetLoadedProject(projectFilePath);
+
+            // Update existing documents
             foreach (var documentFilePath in project.DocumentFilePaths)
             {
                 if (!documentMap.TryGetValue(documentFilePath, out var documentHandle))
@@ -346,6 +371,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 _projectSnapshotManagerAccessor.Instance.DocumentRemoved(currentHostProject, currentHostDocument);
 
                 var remoteTextLoader = _remoteTextLoaderFactory.Create(newFilePath);
+                _projectSnapshotManagerAccessor.Instance.DocumentAdded(currentHostProject, newHostDocument, remoteTextLoader);
+            }
+
+            project = (DefaultProjectSnapshot)_projectSnapshotManagerAccessor.Instance.GetLoadedProject(project.FilePath);
+
+            // Add any new documents
+            foreach (var documentKvp in documentMap)
+            {
+                var documentFilePath = documentKvp.Key;
+                if (project.DocumentFilePaths.Contains(documentFilePath, FilePathComparer.Instance))
+                {
+                    // Already know about this document
+                    continue;
+                }
+
+                var documentHandle = documentKvp.Value;
+                var remoteTextLoader = _remoteTextLoaderFactory.Create(documentFilePath);
+                var newHostDocument = _hostDocumentFactory.Create(documentFilePath, documentHandle.TargetPath, documentHandle.FileKind);
+
+                _logger.LogInformation($"Adding new document '{documentFilePath}' to project '{projectFilePath}'.");
+
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(currentHostProject, newHostDocument, remoteTextLoader);
             }
         }

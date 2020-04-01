@@ -64,24 +64,58 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void UpdateProject_DoesNotRemoveOrAddDocuments()
+        public void UpdateProject_AddsNewDocuments()
         {
             // Arrange
             var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
-            var hostProject = new HostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            var hostProject = new HostProject("C:/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             projectManager.ProjectAdded(hostProject);
-            var hostDocument = new HostDocument("/path/to/file.cshtml", "file.cshtml", FileKinds.Legacy);
+            var hostDocument = new HostDocument("C:/path/to/file.cshtml", "file.cshtml", FileKinds.Legacy);
             projectManager.DocumentAdded(hostProject, hostDocument, Mock.Of<TextLoader>());
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectManager);
-            var unknownDocument = new DocumentSnapshotHandle("/path/to/other/file.cshtml", "file.cshtml", FileKinds.Legacy);
+            var oldDocument = new DocumentSnapshotHandle(hostDocument.FilePath, hostDocument.TargetPath, hostDocument.FileKind);
+            var newDocument = new DocumentSnapshotHandle("C:/path/to/file2.cshtml", "file2.cshtml", FileKinds.Legacy);
 
             // Act
-            projectService.UpdateProject(hostProject.FilePath, hostProject.Configuration, hostProject.RootNamespace, ProjectWorkspaceState.Default, new[] { unknownDocument });
+            projectService.UpdateProject(hostProject.FilePath, hostProject.Configuration, hostProject.RootNamespace, ProjectWorkspaceState.Default, new[] { oldDocument, newDocument });
 
             // Assert
             var project = projectManager.GetLoadedProject(hostProject.FilePath);
-            var documentFilePath = Assert.Single(project.DocumentFilePaths);
-            Assert.Equal(hostDocument.FilePath, documentFilePath);
+            var projectFilePaths = project.DocumentFilePaths.OrderBy(path => path);
+            Assert.Equal(projectFilePaths, new[] { oldDocument.FilePath, newDocument.FilePath });
+        }
+
+        [Fact]
+        public void UpdateProject_MovesExistingDocumentToMisc()
+        {
+            // Arrange
+            var projectManager = TestProjectSnapshotManager.Create(Dispatcher);
+            ProjectSnapshot miscProject = TestProjectSnapshot.Create("C:/__MISC_PROJECT__");
+            var miscHostProject = new HostProject(miscProject.FilePath, RazorConfiguration.Default, "TestRootNamespace");
+            projectManager.ProjectAdded(miscHostProject);
+            var hostProject = new HostProject("C:/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            projectManager.ProjectAdded(hostProject);
+            var project = projectManager.GetLoadedProject(hostProject.FilePath);
+            var hostDocument = new HostDocument("C:/path/to/file.cshtml", "file.cshtml", FileKinds.Legacy);
+            projectManager.DocumentAdded(hostProject, hostDocument, Mock.Of<TextLoader>());
+            var projectResolver = new TestProjectResolver(
+                new Dictionary<string, ProjectSnapshot>
+                {
+                    [hostDocument.FilePath] = project
+                },
+                miscProject);
+            var projectService = CreateProjectService(projectResolver, projectManager);
+            var newDocument = new DocumentSnapshotHandle("C:/path/to/file2.cshtml", "file2.cshtml", FileKinds.Legacy);
+
+            // Act
+            projectService.UpdateProject(hostProject.FilePath, hostProject.Configuration, hostProject.RootNamespace, ProjectWorkspaceState.Default, new[] { newDocument });
+
+            // Assert
+            project = projectManager.GetLoadedProject(hostProject.FilePath);
+            Assert.Equal(project.DocumentFilePaths, new[] { newDocument.FilePath });
+
+            miscProject = projectManager.GetLoadedProject(miscProject.FilePath);
+            Assert.Equal(miscProject.DocumentFilePaths, new[] { hostDocument.FilePath });
         }
 
         [Fact]
