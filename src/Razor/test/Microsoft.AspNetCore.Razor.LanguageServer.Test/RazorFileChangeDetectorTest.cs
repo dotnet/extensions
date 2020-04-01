@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var listener2 = new Mock<IRazorFileChangeListener>(MockBehavior.Strict);
             listener2.Setup(l => l.RazorFileChanged(It.IsAny<string>(), It.IsAny<RazorFileChangeKind>()))
                 .Callback<string, RazorFileChangeKind>((filePath, kind) => args2.Add((filePath, kind)));
-            var existingRazorFiles = new[] { "/c:/path/to/index.razor", "/c:/other/path/_Host.cshtml" };
+            var existingRazorFiles = new[] { "c:/path/to/index.razor", "c:/other/path/_Host.cshtml" };
             var cts = new CancellationTokenSource();
             var detector = new TestRazorFileChangeDetector(
                 cts,

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.Razor;
@@ -32,33 +33,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             var decodedPath = WebUtility.UrlDecode(filePath);
             var normalized = decodedPath.Replace('\\', '/');
 
-            if (normalized[0] != '/')
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                normalized[0] == '/' &&
+                !normalized.StartsWith("//", StringComparison.OrdinalIgnoreCase))
             {
-                normalized = '/' + normalized;
+                normalized = normalized.Substring(1);
+            }
+            else
+            {
+                // Already a valid path like C:/path or //path
             }
 
             return normalized;
-        }
-
-        public string NormalizeForRead(string filePath)
-        {
-            filePath = Normalize(filePath);
-
-            if (filePath[0] == '/')
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                    !filePath.StartsWith("//", StringComparison.OrdinalIgnoreCase)) // Network UNC paths
-                {
-                    // VSLS path, not understood by File.OpenRead so we need to strip the leading separator.
-                    filePath = filePath.Substring(1);
-                }
-                else
-                {
-                    // Unix system, path starts with / which is allowed by File.OpenRead on non-windows.
-                }
-            }
-
-            return filePath;
         }
 
         public string GetDirectory(string filePath)

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void GetItem_RootlessFilePath()
         {
             // Arrange
-            var fileSystem = new RemoteRazorProjectFileSystem("/C:/path/to", FilePathNormalizer);
+            var fileSystem = new RemoteRazorProjectFileSystem("C:/path/to", FilePathNormalizer);
             var documentFilePath = "file.cshtml";
 
             // Act
@@ -27,15 +27,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Assert
             Assert.Equal(documentFilePath, item.FilePath);
-            Assert.Equal("/C:/path/to/file.cshtml", item.PhysicalPath);
+            Assert.Equal("C:/path/to/file.cshtml", item.PhysicalPath);
         }
 
         [Fact]
         public void GetItem_RootedFilePath_BelongsToProject()
         {
             // Arrange
-            var fileSystem = new RemoteRazorProjectFileSystem("/C:/path/to", FilePathNormalizer);
-            var documentFilePath = "/C:/path/to/file.cshtml";
+            var fileSystem = new RemoteRazorProjectFileSystem("C:/path/to", FilePathNormalizer);
+            var documentFilePath = "C:/path/to/file.cshtml";
 
             // Act
             var item = fileSystem.GetItem(documentFilePath, fileKind: null);
@@ -49,8 +49,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void GetItem_RootedFilePath_DoesNotBelongToProject()
         {
             // Arrange
-            var fileSystem = new RemoteRazorProjectFileSystem("/C:/path/to", FilePathNormalizer);
-            var documentFilePath = "/C:/otherpath/to/file.cshtml";
+            var fileSystem = new RemoteRazorProjectFileSystem("C:/path/to", FilePathNormalizer);
+            var documentFilePath = "C:/otherpath/to/file.cshtml";
 
             // Act
             var item = fileSystem.GetItem(documentFilePath, fileKind: null);

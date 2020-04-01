@@ -354,8 +354,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var normalizedFilePath = _filePathNormalizer.Normalize(filePath);
             if (!normalizedFilePath.StartsWith(projectDirectory))
             {
-                // Remove '/' from document path
-                normalizedFilePath = normalizedFilePath.Substring(1);
                 normalizedFilePath = _filePathNormalizer.Normalize(projectDirectory + normalizedFilePath);
             }
 

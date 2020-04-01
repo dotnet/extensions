@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var listener2 = new Mock<IProjectFileChangeListener>(MockBehavior.Strict);
             listener2.Setup(l => l.ProjectFileChanged(It.IsAny<string>(), It.IsAny<RazorFileChangeKind>()))
                 .Callback<string, RazorFileChangeKind>((filePath, kind) => args2.Add((filePath, kind)));
-            var existingProjectFiles = new[] { "/c:/path/to/project.csproj", "/c:/other/path/project.csproj" };
+            var existingProjectFiles = new[] { "c:/path/to/project.csproj", "c:/other/path/project.csproj" };
             var cts = new CancellationTokenSource();
             var detector = new TestProjectFileChangeDetector(
                 cts,
