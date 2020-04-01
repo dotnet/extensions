@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Threading;
 using Task = System.Threading.Tasks.Task;
@@ -24,9 +25,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly SVsServiceProvider _serviceProvider;
+        private readonly ITextBufferUndoManagerProvider _undoManagerProvider;
 
         [ImportingConstructor]
-        public DefaultLSPEditorService(JoinableTaskContext joinableTaskContext, SVsServiceProvider serviceProvider)
+        public DefaultLSPEditorService(JoinableTaskContext joinableTaskContext, SVsServiceProvider serviceProvider, ITextBufferUndoManagerProvider undoManagerProvider)
         {
             if (joinableTaskContext is null)
             {
@@ -38,8 +40,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
+            if (undoManagerProvider is null)
+            {
+                throw new ArgumentNullException(nameof(undoManagerProvider));
+            }
+
             _joinableTaskFactory = joinableTaskContext.Factory;
             _serviceProvider = serviceProvider;
+            _undoManagerProvider = undoManagerProvider;
         }
 
         public async override Task ApplyTextEditsAsync(
@@ -64,20 +72,31 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             await _joinableTaskFactory.SwitchToMainThreadAsync();
 
-            ApplyTextEdits(textEdits, snapshot, snapshot.TextBuffer);
+            var undoManager = _undoManagerProvider.GetTextBufferUndoManager(snapshot.TextBuffer);
+            var undoHistory = undoManager.TextBufferUndoHistory;
+            using var transaction = undoHistory.CreateTransaction("Apply Razor LSP text edits");
 
-            var cursorPosition = ExtractCursorPlaceholder(snapshot.TextBuffer.CurrentSnapshot, textEdits);
-            if (cursorPosition != null)
+            try
             {
-                var fullPath = GetLocalFilePath(uri);
+                ApplyTextEdits(textEdits, snapshot, snapshot.TextBuffer);
 
-                VsShellUtilities.OpenDocument(_serviceProvider, fullPath, VSConstants.LOGVIEWID.TextView_guid, out _, out _, out var windowFrame);
-
-                if (windowFrame != null)
+                var cursorPosition = ExtractCursorPlaceholder(snapshot.TextBuffer.CurrentSnapshot, textEdits);
+                if (cursorPosition != null)
                 {
-                    var textView = GetActiveVsTextView(windowFrame);
-                    MoveCaretToPosition(textView, cursorPosition);
+                    var fullPath = GetLocalFilePath(uri);
+
+                    VsShellUtilities.OpenDocument(_serviceProvider, fullPath, VSConstants.LOGVIEWID.TextView_guid, out _, out _, out var windowFrame);
+
+                    if (windowFrame != null)
+                    {
+                        var textView = GetActiveVsTextView(windowFrame);
+                        MoveCaretToPosition(textView, cursorPosition);
+                    }
                 }
+            }
+            finally
+            {
+                transaction.Complete();
             }
         }
 
