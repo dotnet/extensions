@@ -5,7 +5,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e1fa5d7648d46f067e265211fc2c695d409fe788</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.5.0.0-preview.4-runtime.20201.1">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.4-runtime.20201.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e1fa5d7648d46f067e265211fc2c695d409fe788</Sha>
     </Dependency>
