@@ -17,6 +17,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public abstract void UpdateVirtualDocument<TVirtualDocument>(
             Uri hostDocumentUri,
             IReadOnlyList<TextChange> changes,
-            long hostDocumentVersion) where TVirtualDocument : VirtualDocument;
+            long hostDocumentVersion,
+            bool provisional = false) where TVirtualDocument : VirtualDocument;
     }
 }

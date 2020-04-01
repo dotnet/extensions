@@ -101,7 +101,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public override void UpdateVirtualDocument<TVirtualDocument>(
             Uri hostDocumentUri,
             IReadOnlyList<TextChange> changes,
-            long hostDocumentVersion)
+            long hostDocumentVersion,
+            bool provisional = false)
         {
             if (hostDocumentUri is null)
             {
@@ -132,7 +133,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var old = lspDocument.CurrentSnapshot;
             var oldVirtual = virtualDocument.CurrentSnapshot;
-            var @new = lspDocument.UpdateVirtualDocument<TVirtualDocument>(changes, hostDocumentVersion);
+            var @new = lspDocument.UpdateVirtualDocument<TVirtualDocument>(changes, hostDocumentVersion, provisional);
 
             if (old == @new)
             {

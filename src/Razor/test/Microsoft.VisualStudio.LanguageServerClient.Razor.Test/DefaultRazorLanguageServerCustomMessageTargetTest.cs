@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.VisualStudio.Text;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -54,7 +53,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var documentManager = new Mock<TrackingLSPDocumentManager>();
-            documentManager.Setup(manager => manager.UpdateVirtualDocument<CSharpVirtualDocument>(It.IsAny<Uri>(), It.IsAny<IReadOnlyList<TextChange>>(), 1337))
+            documentManager.Setup(manager => manager.UpdateVirtualDocument<CSharpVirtualDocument>(It.IsAny<Uri>(), It.IsAny<IReadOnlyList<TextChange>>(), 1337, false /* UpdateCSharpBuffer request should never be provisional */))
                 .Verifiable();
             var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object);
             var request = new UpdateBufferRequest()

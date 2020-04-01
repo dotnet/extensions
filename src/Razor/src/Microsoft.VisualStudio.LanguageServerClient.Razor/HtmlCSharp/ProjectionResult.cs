@@ -13,6 +13,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public Position Position { get; set; }
 
+        public int PositionIndex { get; set; }
+
         public RazorLanguageKind LanguageKind { get; set; }
+
+        public long HostDocumentVersion { get; set; }
     }
 }

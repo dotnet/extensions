@@ -38,7 +38,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public override VirtualDocumentSnapshot CurrentSnapshot => _currentSnapshot;
 
-        public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+        public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional = false)
         {
             if (changes is null)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return _currentSnapshot;
             }
 
-            var edit = TextBuffer.CreateEdit();
+            using var edit = TextBuffer.CreateEdit();
             for (var i = 0; i < changes.Count; i++)
             {
                 var change = changes[i];

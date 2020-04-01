@@ -58,14 +58,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
         }
 
-        public override LSPDocumentSnapshot UpdateVirtualDocument<TVirtualDocument>(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+        public override LSPDocumentSnapshot UpdateVirtualDocument<TVirtualDocument>(IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional = false)
         {
             if (!TryGetVirtualDocument<TVirtualDocument>(out var virtualDocument))
             {
                 throw new InvalidOperationException($"Cannot update virtual document of type {typeof(TVirtualDocument)} because LSP document {Uri} does not contain a virtual document of that type.");
             }
 
-            virtualDocument.Update(changes, hostDocumentVersion);
+            virtualDocument.Update(changes, hostDocumentVersion, provisional);
 
             _currentSnapshot = UpdateSnapshot();
 

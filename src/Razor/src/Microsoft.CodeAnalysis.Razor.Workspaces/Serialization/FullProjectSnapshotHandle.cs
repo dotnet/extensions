@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
+namespace Microsoft.CodeAnalysis.Razor.Workspaces.Serialization
 {
     // FullProjectSnapshotHandle exists in order to allow ProjectSnapshots to be serialized and then deserialized.
     // It has named "Full" because there's a similar concept in core Razor of a ProjectSnapshotHandle. In Razor's

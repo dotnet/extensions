@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private static readonly Guid LiveShareHostUIContextGuid = Guid.Parse("62de1aa5-70b0-4934-9324-680896466fe1");
         private static readonly Guid LiveShareGuestUIContextGuid = Guid.Parse("fd93f3eb-60da-49cd-af15-acda729e357e");
         private readonly ProjectHierarchyInspector _projectHierarchyInspector;
-        private readonly IVsUIShellOpenDocument _vsUIShellOpenDocument;
+        private readonly Lazy<IVsUIShellOpenDocument> _vsUIShellOpenDocument;
         private readonly IVsFeatureFlags _featureFlags;
 
         [ImportingConstructor]
@@ -31,8 +31,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             _projectHierarchyInspector = projectHierarchyInspector;
             _featureFlags = (IVsFeatureFlags)AsyncPackage.GetGlobalService(typeof(SVsFeatureFlags));
-            _vsUIShellOpenDocument = (IVsUIShellOpenDocument)ServiceProvider.GlobalProvider.GetService(typeof(SVsUIShellOpenDocument));
-            Assumes.Present(_vsUIShellOpenDocument);
+            _vsUIShellOpenDocument = new Lazy<IVsUIShellOpenDocument>(() =>
+            {
+                var shellOpenDocument = (IVsUIShellOpenDocument)ServiceProvider.GlobalProvider.GetService(typeof(SVsUIShellOpenDocument));
+                Assumes.Present(shellOpenDocument);
+
+                return shellOpenDocument;
+            });
         }
 
         // Test constructor
@@ -116,7 +121,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             if (hierarchy == null)
             {
-                var hr = _vsUIShellOpenDocument.IsDocumentInAProject(documentMoniker, out var uiHierarchy, out _, out _, out _);
+                var hr = _vsUIShellOpenDocument.Value.IsDocumentInAProject(documentMoniker, out var uiHierarchy, out _, out _, out _);
                 hierarchy = uiHierarchy;
                 if (!ErrorHandler.Succeeded(hr) || hierarchy == null)
                 {

@@ -1,10 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -29,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var listener2 = new Mock<IProjectConfigurationFileChangeListener>(MockBehavior.Strict);
             listener2.Setup(l => l.ProjectConfigurationFileChanged(It.IsAny<ProjectConfigurationFileChangeEventArgs>()))
                 .Callback<ProjectConfigurationFileChangeEventArgs>(args => eventArgs2.Add(args));
-            var existingConfigurationFiles = new[] { "/c:/path/to/project.razor.json", "/c:/other/path/project.razor.json" };
+            var existingConfigurationFiles = new[] { "c:/path/to/project.razor.json", "c:/other/path/project.razor.json" };
             var cts = new CancellationTokenSource();
             var detector = new TestProjectConfigurationFileChangeDetector(
                 cts,

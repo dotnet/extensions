@@ -18,6 +18,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public abstract long? HostDocumentSyncVersion { get; }
 
-        public abstract VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion);
+        public abstract VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional = false);
     }
 }

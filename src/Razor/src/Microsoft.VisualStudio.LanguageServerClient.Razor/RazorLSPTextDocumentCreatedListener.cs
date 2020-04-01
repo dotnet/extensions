@@ -82,8 +82,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
                 InitializeRazorLSPTextBuffer(textBuffer);
             }
-
-            _lspDocumentManager.TrackDocument(textBuffer);
         }
 
         // Internal for testing
@@ -148,16 +146,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 // We purposefully do not set ClientName's in remote client scenarios because we don't want to boot 2 langauge servers (one for both host and client).
                 // The ClientName controls whether or not an ILanguageClient instantiates.
+
+                // We still change the content type for remote scenarios in order to enable our TextMate grammar to light up the Razor editor properly.
+                textBuffer.ChangeContentType(_razorLSPContentType, editTag: null);
             }
             else
             {
                 // ClientName controls if the LSP infrastructure in VS will boot when it detects our Razor LSP contennt type. If the property exists then it will; otherwise
                 // the text buffer will be ignored by the LSP 
                 textBuffer.Properties.AddProperty(LanguageClientConstants.ClientNamePropertyKey, RazorLanguageServerClient.ClientName);
-            }
 
-            // This is the default case, basically the buffer is not of the proper content type yet. We need to change it.
-            textBuffer.ChangeContentType(_razorLSPContentType, editTag: null);
+                textBuffer.ChangeContentType(_razorLSPContentType, editTag: null);
+
+                // Must track the document after changing the content type so any LSPDocuments created understand they're being created for a Razor LSP document.
+                _lspDocumentManager.TrackDocument(textBuffer);
+            }
         }
     }
 }

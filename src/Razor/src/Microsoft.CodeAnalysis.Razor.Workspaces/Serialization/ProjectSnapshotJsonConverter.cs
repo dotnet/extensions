@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization
+namespace Microsoft.CodeAnalysis.Razor.Workspaces.Serialization
 {
     internal class ProjectSnapshotJsonConverter : JsonConverter
     {

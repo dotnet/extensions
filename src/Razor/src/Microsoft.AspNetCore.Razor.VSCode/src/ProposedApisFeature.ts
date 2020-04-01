@@ -19,11 +19,14 @@ export class ProposedApisFeature {
         private logger: RazorLogger,
     ) {
     }
+
     public async register(vscodeType: typeof vscodeapi, localRegistrations: vscode.Disposable[]) {
-        const legend = await this.languageServiceClient.getSemanticTokenLegend();
-        const semanticTokenProvider = new RazorDocumentSemanticTokensProvider(this.documentSynchronizer, this.documentManager, this.languageServiceClient, this.logger);
-        if (legend) {
-            localRegistrations.push(vscodeType.languages.registerDocumentSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
+        if (vscodeType.env.appName.endsWith('Insiders')) {
+            const legend = await this.languageServiceClient.getSemanticTokenLegend();
+            const semanticTokenProvider = new RazorDocumentSemanticTokensProvider(this.documentSynchronizer, this.documentManager, this.languageServiceClient, this.logger);
+            if (legend) {
+                localRegistrations.push(vscodeType.languages.registerDocumentSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
+            }
         }
     }
 }
