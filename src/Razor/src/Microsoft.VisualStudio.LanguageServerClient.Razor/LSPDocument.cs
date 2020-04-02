@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public abstract IReadOnlyList<VirtualDocument> VirtualDocuments { get; }
 
-        public abstract LSPDocumentSnapshot UpdateVirtualDocument<TVirtualDocument>(IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional = false) where TVirtualDocument : VirtualDocument;
+        public abstract LSPDocumentSnapshot UpdateVirtualDocument<TVirtualDocument>(IReadOnlyList<TextChange> changes, long hostDocumentVersion) where TVirtualDocument : VirtualDocument;
 
         public bool TryGetVirtualDocument<TVirtualDocument>(out TVirtualDocument virtualDocument) where TVirtualDocument : VirtualDocument
         {

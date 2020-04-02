@@ -58,7 +58,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             public override VirtualDocumentSnapshot CurrentSnapshot => throw new NotImplementedException();
 
-            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional)
+            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
             {
                 throw new NotImplementedException();
             }

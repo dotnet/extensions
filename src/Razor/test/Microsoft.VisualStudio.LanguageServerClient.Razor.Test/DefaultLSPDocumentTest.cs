@@ -31,12 +31,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var originalSnapshot = document.CurrentSnapshot;
 
             // Act
-            document.UpdateVirtualDocument<TestVirtualDocument>(changes, hostDocumentVersion: 1337, provisional: true);
+            document.UpdateVirtualDocument<TestVirtualDocument>(changes, hostDocumentVersion: 1337);
 
             // Assert
             Assert.Equal(1337, virtualDocument.HostDocumentSyncVersion);
             Assert.Same(changes, virtualDocument.Changes);
-            Assert.True(virtualDocument.Provisional);
             Assert.NotEqual(originalSnapshot, document.CurrentSnapshot);
         }
 
@@ -46,8 +45,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             public IReadOnlyList<TextChange> Changes { get; private set; }
 
-            public bool Provisional { get; private set; }
-
             public override Uri Uri => throw new NotImplementedException();
 
             public override ITextBuffer TextBuffer => throw new NotImplementedException();
@@ -56,11 +53,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             public override long? HostDocumentSyncVersion => _hostDocumentVersion;
 
-            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional)
+            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
             {
                 _hostDocumentVersion = hostDocumentVersion;
                 Changes = changes;
-                Provisional = provisional;
 
                 return null;
             }

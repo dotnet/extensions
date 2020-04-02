@@ -343,7 +343,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
-        public async Task GetProvisionalCompletionParamsAsync_CSharpProjection_ReturnsNull()
+        public async Task TryGetProvisionalCompletionsAsync_CSharpProjection_ReturnsFalse()
         {
             // Arrange
             var completionRequest = new CompletionParams()
@@ -371,14 +371,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
 
             // Act
-            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+            var (succeeded, result) = await completionHandler.TryGetProvisionalCompletionsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
+            Assert.False(succeeded);
             Assert.Null(result);
         }
 
         [Fact]
-        public async Task GetProvisionalCompletionParamsAsync_TriggerCharacterNotDot_ReturnsNull()
+        public async Task TryGetProvisionalCompletionsAsync_TriggerCharacterNotDot_ReturnsFalse()
         {
             // Arrange
             var completionRequest = new CompletionParams()
@@ -406,14 +407,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
 
             // Act
-            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+            var (succeeded, result) = await completionHandler.TryGetProvisionalCompletionsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
+            Assert.False(succeeded);
             Assert.Null(result);
         }
 
         [Fact]
-        public async Task GetProvisionalCompletionParamsAsync_PreviousCharacterHtml_ReturnsNull()
+        public async Task TryGetProvisionalCompletionsAsync_PreviousCharacterHtml_ReturnsFalse()
         {
             // Arrange
             var completionRequest = new CompletionParams()
@@ -447,14 +449,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
 
             // Act
-            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+            var (succeeded, result) = await completionHandler.TryGetProvisionalCompletionsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
+            Assert.False(succeeded);
             Assert.Null(result);
         }
 
         [Fact]
-        public async Task GetProvisionalCompletionParamsAsync_ProjectionAtStartOfLine_ReturnsNull()
+        public async Task TryGetProvisionalCompletionsAsync_ProjectionAtStartOfLine_ReturnsFalse()
         {
             // Arrange
             var completionRequest = new CompletionParams()
@@ -488,14 +491,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
 
             // Act
-            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+            var (succeeded, result) = await completionHandler.TryGetProvisionalCompletionsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
+            Assert.False(succeeded);
             Assert.Null(result);
         }
 
         [Fact]
-        public async Task GetProvisionalCompletionParamsAsync_AtCorrectProvisionalCompletionPoint_ReturnsCorrectParams()
+        public async Task TryGetProvisionalCompletionsAsync_AtCorrectProvisionalCompletionPoint_ReturnsExpectedResult()
         {
             // Arrange
             var completionRequest = new CompletionParams()
@@ -513,7 +517,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentManager = new TestDocumentManager();
 
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var languageServerCalled = false;
+            var expectedItem = new CompletionItem() { InsertText = "DateTime" };
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
+            requestInvoker
+                .Setup(r => r.RequestServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), LanguageServerKind.CSharp, It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, LanguageServerKind, CompletionParams, CancellationToken>((method, serverKind, completionParams, ct) =>
+                {
+                    Assert.Equal(Methods.TextDocumentCompletionName, method);
+                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    languageServerCalled = true;
+                })
+                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -533,15 +548,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
 
             // Act
-            var result = await completionHandler.GetProvisionalCompletionParamsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
+            var (succeeded, result) = await completionHandler.TryGetProvisionalCompletionsAsync(completionRequest, Mock.Of<LSPDocumentSnapshot>(), projectionResult, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            Assert.True(documentManager.UpdateVirtualDocumentCalled);
+            Assert.True(succeeded);
+            Assert.True(languageServerCalled);
+            Assert.Equal(2, documentManager.UpdateVirtualDocumentCallCount);
             Assert.NotNull(result);
-            Assert.Same(completionRequest.Context, result.Context);
-            Assert.Equal(virtualDocumentUri, result.TextDocument.Uri);
-            Assert.Equal(previousCharacterProjection.Position.Line, result.Position.Line);
-            Assert.Equal(previousCharacterProjection.Position.Character + 1, result.Position.Character);
+            var item = Assert.Single((CompletionItem[])result.Value);
+            Assert.Equal(expectedItem.InsertText, item.InsertText);
         }
 
         private class TestDocumentManager : TrackingLSPDocumentManager
@@ -550,7 +565,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             public override event EventHandler<LSPDocumentChangeEventArgs> Changed;
 
-            public bool UpdateVirtualDocumentCalled { get; private set; }
+            public int UpdateVirtualDocumentCallCount { get; private set; }
 
             public override bool TryGetDocument(Uri uri, out LSPDocumentSnapshot lspDocumentSnapshot)
             {
@@ -574,9 +589,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new NotImplementedException();
             }
 
-            public override void UpdateVirtualDocument<TVirtualDocument>(Uri hostDocumentUri, IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional = false)
+            public override void UpdateVirtualDocument<TVirtualDocument>(Uri hostDocumentUri, IReadOnlyList<TextChange> changes, long hostDocumentVersion)
             {
-                UpdateVirtualDocumentCalled = true;
+                UpdateVirtualDocumentCallCount++;
             }
         }
     }

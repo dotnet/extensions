@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
@@ -12,10 +11,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     internal class CSharpVirtualDocument : VirtualDocument
     {
         private long? _hostDocumentSyncVersion;
-        private CSharpVirtualDocumentSnapshot _previousSnapshot;
         private CSharpVirtualDocumentSnapshot _currentSnapshot;
-
-        private bool _hasProvisionalChanges = false;
 
         public CSharpVirtualDocument(Uri uri, ITextBuffer textBuffer)
         {
@@ -31,7 +27,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             Uri = uri;
             TextBuffer = textBuffer;
-            _previousSnapshot = null;
             _currentSnapshot = UpdateSnapshot();
         }
 
@@ -43,7 +38,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public override VirtualDocumentSnapshot CurrentSnapshot => _currentSnapshot;
 
-        public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion, bool provisional = false)
+        public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
         {
             if (changes is null)
             {
@@ -52,16 +47,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             _hostDocumentSyncVersion = hostDocumentVersion;
 
-            TryRevertProvisionalChanges();
-            _hasProvisionalChanges = provisional;
-
             if (changes.Count == 0)
             {
                 _currentSnapshot = UpdateSnapshot();
                 return _currentSnapshot;
             }
 
-            using var edit = TextBuffer.CreateEdit();
+            using var edit = TextBuffer.CreateEdit(EditOptions.None, reiteratedVersionNumber: null, InviolableEditTag.Instance);
             for (var i = 0; i < changes.Count; i++)
             {
                 var change = changes[i];
@@ -90,42 +82,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return _currentSnapshot;
         }
 
-        private bool TryRevertProvisionalChanges()
-        {
-            if (!_hasProvisionalChanges)
-            {
-                return false;
-            }
-
-            Debug.Assert(_previousSnapshot != null);
-
-            using var revertEdit = TextBuffer.CreateEdit(EditOptions.None, _previousSnapshot.Snapshot.Version.VersionNumber, InviolableEditTag.Instance);
-            var previousChanges = _previousSnapshot.Snapshot.Version.Changes;
-            for (var i = 0; i < previousChanges.Count; i++)
-            {
-                var change = previousChanges[i];
-                revertEdit.Replace(change.NewSpan, change.OldText);
-            }
-
-            revertEdit.Apply();
-
-            _hasProvisionalChanges = false;
-
-            return true;
-        }
-
-        private CSharpVirtualDocumentSnapshot UpdateSnapshot()
-        {
-            _previousSnapshot = _currentSnapshot;
-            return new CSharpVirtualDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, HostDocumentSyncVersion);
-        }
-
-        // This indicates that no other entity should respond to the edit event associated with this tag.
-        private class InviolableEditTag : IInviolableEditTag
-        {
-            private InviolableEditTag() { }
-
-            public readonly static IInviolableEditTag Instance = new InviolableEditTag();
-        }
+        private CSharpVirtualDocumentSnapshot UpdateSnapshot() => new CSharpVirtualDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, HostDocumentSyncVersion);
     }
 }
