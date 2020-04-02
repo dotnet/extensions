@@ -16,11 +16,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly RazorProjectService _projectService;
+        private readonly FilePathNormalizer _filePathNormalizer;
         private readonly Dictionary<string, string> _configurationToProjectMap;
 
         public ProjectConfigurationStateSynchronizer(
             ForegroundDispatcher foregroundDispatcher,
-            RazorProjectService projectService)
+            RazorProjectService projectService,
+            FilePathNormalizer filePathNormalizer)
         {
             if (foregroundDispatcher is null)
             {
@@ -32,8 +34,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(projectService));
             }
 
+            if (filePathNormalizer is null)
+            {
+                throw new ArgumentNullException(nameof(filePathNormalizer));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _projectService = projectService;
+            _filePathNormalizer = filePathNormalizer;
             _configurationToProjectMap = new Dictionary<string, string>(FilePathComparer.Instance);
         }
 
@@ -52,7 +60,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     {
                         if (!args.TryDeserialize(out var handle))
                         {
-                            if (!_configurationToProjectMap.TryGetValue(args.ConfigurationFilePath, out var projectFilePath))
+                            var configurationFilePath = _filePathNormalizer.NormalizeForRead(args.ConfigurationFilePath);
+                            if (!_configurationToProjectMap.TryGetValue(configurationFilePath, out var projectFilePath))
                             {
                                 // Could not resolve an associated project file, noop.
                                 return;
@@ -76,18 +85,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                             return;
                         }
 
-                        var projectFilePath = handle.FilePath;
-                        _configurationToProjectMap[args.ConfigurationFilePath] = projectFilePath;
+                        var projectFilePath = _filePathNormalizer.NormalizeForRead(handle.FilePath);
+                        var configurationFilePath = _filePathNormalizer.NormalizeForRead(args.ConfigurationFilePath);
+                        _configurationToProjectMap[configurationFilePath] = projectFilePath;
                         _projectService.AddProject(projectFilePath);
                         UpdateProject(handle);
                         break;
                     }
                 case RazorFileChangeKind.Removed:
                     {
-                        var containsKey = _configurationToProjectMap.TryGetValue(args.ConfigurationFilePath, out var projectFilePath);
+                        var configurationFilePath = _filePathNormalizer.NormalizeForRead(args.ConfigurationFilePath);
+                        var containsKey = _configurationToProjectMap.TryGetValue(configurationFilePath, out var projectFilePath);
                         Debug.Assert(containsKey);
 
-                        _configurationToProjectMap.Remove(args.ConfigurationFilePath);
+                        _configurationToProjectMap.Remove(configurationFilePath);
 
                         ResetProject(projectFilePath);
                         break;
