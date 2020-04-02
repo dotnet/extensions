@@ -30,11 +30,12 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         private const string DataKey = "data";
         private const long NotPresent = -1;
 
-        private volatile ConnectionMultiplexer _connection;
+        private volatile IConnectionMultiplexer _connection;
         private IDatabase _cache;
         private bool _disposed;
 
-        private readonly RedisCacheOptions _options;
+        private readonly Func<Task<IConnectionMultiplexer>> _asyncConnectionFactory;
+        private readonly Func<IConnectionMultiplexer> _connectionFactory;
         private readonly string _instance;
 
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
@@ -46,10 +47,37 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
 
-            _options = optionsAccessor.Value;
+            RedisCacheOptions options = optionsAccessor.Value;
+ 
+             // This allows partitioning a single backend cache for use with multiple apps/services.
+            _instance = options.InstanceName ?? string.Empty;
 
-            // This allows partitioning a single backend cache for use with multiple apps/services.
-            _instance = _options.InstanceName ?? string.Empty;
+            if (options.ConnectionFactory != null)
+            {
+                _asyncConnectionFactory = options.ConnectionFactory;
+                _connectionFactory = () => _asyncConnectionFactory().Result;
+            }
+            else
+            {
+                _asyncConnectionFactory = async () =>
+                {
+                    if (options.ConfigurationOptions != null)
+                    {
+                        return await ConnectionMultiplexer.ConnectAsync(options.ConfigurationOptions).ConfigureAwait(false);
+                    }
+
+                    return await ConnectionMultiplexer.ConnectAsync(options.Configuration).ConfigureAwait(false);
+                };
+                _connectionFactory = () =>
+                {
+                    if (options.ConfigurationOptions != null)
+                    {
+                        return ConnectionMultiplexer.Connect(options.ConfigurationOptions);
+                    }
+
+                    return ConnectionMultiplexer.Connect(options.Configuration);
+                };
+            }
         }
 
         public byte[] Get(string key)

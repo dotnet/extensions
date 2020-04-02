@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
@@ -27,6 +29,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         /// The Redis instance name.
         /// </summary>
         public string InstanceName { get; set; }
+
+        /// <summary>
+        /// The redis connection factory.
+        /// </summary>
+        public Func<Task<IConnectionMultiplexer>> ConnectionFactory;
 
         RedisCacheOptions IOptions<RedisCacheOptions>.Value
         {
