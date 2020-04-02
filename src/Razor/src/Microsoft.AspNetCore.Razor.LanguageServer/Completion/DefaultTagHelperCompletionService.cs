@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Server;
 using RazorTagHelperCompletionService = Microsoft.VisualStudio.Editor.Razor.TagHelperCompletionService;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
@@ -18,14 +19,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
     {
         private static readonly Container<string> AttributeCommitCharacters = new Container<string>(" ");
         private static readonly Container<string> ElementCommitCharacters = new Container<string>(" ", ">");
-        private readonly RazorTagHelperCompletionService _razorTagHelperCompletionService;
         private readonly HtmlFactsService _htmlFactsService;
+        private readonly RazorTagHelperCompletionService _razorTagHelperCompletionService;
         private readonly TagHelperFactsService _tagHelperFactsService;
 
         public DefaultTagHelperCompletionService(
             RazorTagHelperCompletionService razorCompletionService,
             HtmlFactsService htmlFactsService,
-            TagHelperFactsService tagHelperFactsService)
+            TagHelperFactsService tagHelperFactsService,
+            ILanguageServer languageServer)
         {
             if (razorCompletionService is null)
             {
@@ -42,10 +44,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 throw new ArgumentNullException(nameof(tagHelperFactsService));
             }
 
+            if (languageServer is null)
+            {
+                throw new ArgumentNullException(nameof(languageServer));
+            }
+
             _razorTagHelperCompletionService = razorCompletionService;
             _htmlFactsService = htmlFactsService;
             _tagHelperFactsService = tagHelperFactsService;
+            LanguageServer = languageServer;
         }
+
+        public ILanguageServer LanguageServer { get; }
 
         public override IReadOnlyList<CompletionItem> GetCompletionsAt(SourceSpan location, RazorCodeDocument codeDocument)
         {
@@ -211,6 +221,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             bool indexerCompletion,
             out string snippetText)
         {
+            var snippetSupported = LanguageServer.ClientSettings?.Capabilities?.TextDocument?.Completion.Value?.CompletionItem?.SnippetSupport ?? false;
+            if (!snippetSupported)
+            {
+                snippetText = null;
+                return false;
+            }
+
             const string BoolTypeName = "System.Boolean";
 
             // Boolean returning bound attribute, auto-complete to just the attribute name.
