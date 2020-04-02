@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.Razor;
@@ -37,6 +36,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                 normalized[0] == '/' &&
                 !normalized.StartsWith("//", StringComparison.OrdinalIgnoreCase))
             {
+                // We've been provided a path that probably looks something like /C:/path/to
                 normalized = normalized.Substring(1);
             }
             else

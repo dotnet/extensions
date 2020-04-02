@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -354,7 +355,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var normalizedFilePath = _filePathNormalizer.Normalize(filePath);
             if (!normalizedFilePath.StartsWith(projectDirectory))
             {
-                normalizedFilePath = _filePathNormalizer.Normalize(projectDirectory + normalizedFilePath);
+                var absolutePath = Path.Combine(projectDirectory, normalizedFilePath);
+                normalizedFilePath = _filePathNormalizer.Normalize(absolutePath);
             }
 
             return normalizedFilePath;

@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     {
                         if (!args.TryDeserialize(out var handle))
                         {
-                            var configurationFilePath = _filePathNormalizer.NormalizeForRead(args.ConfigurationFilePath);
+                            var configurationFilePath = _filePathNormalizer.Normalize(args.ConfigurationFilePath);
                             if (!_configurationToProjectMap.TryGetValue(configurationFilePath, out var projectFilePath))
                             {
                                 // Could not resolve an associated project file, noop.
@@ -85,8 +85,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                             return;
                         }
 
-                        var projectFilePath = _filePathNormalizer.NormalizeForRead(handle.FilePath);
-                        var configurationFilePath = _filePathNormalizer.NormalizeForRead(args.ConfigurationFilePath);
+                        var projectFilePath = _filePathNormalizer.Normalize(handle.FilePath);
+                        var configurationFilePath = _filePathNormalizer.Normalize(args.ConfigurationFilePath);
                         _configurationToProjectMap[configurationFilePath] = projectFilePath;
                         _projectService.AddProject(projectFilePath);
                         UpdateProject(handle);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     }
                 case RazorFileChangeKind.Removed:
                     {
-                        var configurationFilePath = _filePathNormalizer.NormalizeForRead(args.ConfigurationFilePath);
+                        var configurationFilePath = _filePathNormalizer.Normalize(args.ConfigurationFilePath);
                         var containsKey = _configurationToProjectMap.TryGetValue(configurationFilePath, out var projectFilePath);
                         Debug.Assert(containsKey);
 
