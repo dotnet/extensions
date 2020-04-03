@@ -26,4 +26,4 @@ Close and re-open the file and it shouldn't re-occur if you re-save the solution
     1. If not It means our editor factory is not being found
         1. Delete the ComponentModelCache folder in the experimental instance location, re-run and see if that fixes things
         1. Delete the entire %localappdata%\Microsoft\VisualStudio\16.0_55c115ffRoslynDev folder (after closing the experiemental instance). Your RoslynDev version at the end of that path will be different and retry all of the above.
-            1. Occasionally the Experiemental instance gets corrupted due to updating VS, bad deploys etc. and it becomes necessary to nuke the entire thing. It's not a great solution and ideally it's best to avoid it (takes a few mins for VS to rebuild it).
+            1. Occasionally the Experiemental instance gets corrupted due to updating VS, bad deploys etc. and it becomes necessary to remove the entire thing. It's not a great solution and ideally it's best to avoid it (takes a few mins for VS to rebuild it).
