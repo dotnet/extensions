@@ -48,16 +48,16 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.4-runtime.20201.19</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.4-runtime.20201.19</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.4-runtime.20201.19</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.4.20201.19</MicrosoftNETCoreAppInternalPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.4.20201.19</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.4.20201.19</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.4.20201.19</MicrosoftNETCorePlatformsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.4.20201.19</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.4.20201.19</SystemTextEncodingsWebPackageVersion>
-    <SystemReflectionMetadataPackageVersion>5.0.0-preview.4.20201.19</SystemReflectionMetadataPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.4.20202.18</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.4.20202.18</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.4.20202.18</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.4.20202.18</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.4.20202.18</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.4.20202.18</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.4.20202.18</MicrosoftNETCorePlatformsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.4.20202.18</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.4.20202.18</SystemTextEncodingsWebPackageVersion>
+    <SystemReflectionMetadataPackageVersion>5.0.0-preview.4.20202.18</SystemReflectionMetadataPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>3.6.0-3.20201.6</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
