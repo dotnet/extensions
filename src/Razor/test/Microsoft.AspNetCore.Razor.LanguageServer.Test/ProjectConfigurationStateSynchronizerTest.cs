@@ -19,6 +19,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private FilePathNormalizer FilePathNormalizer { get; } = new FilePathNormalizer();
 
         [Fact]
+        public void ProjectConfigurationFileChanged_Removed_UnknownDocumentNoops()
+        {
+            // Arrange
+            var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
+            var synchronizer = new ProjectConfigurationStateSynchronizer(Dispatcher, projectService.Object, FilePathNormalizer);
+            var jsonFileDeserializer = Mock.Of<JsonFileDeserializer>();
+            var args = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Removed, jsonFileDeserializer);
+
+            // Act
+            synchronizer.ProjectConfigurationFileChanged(args);
+
+            // Assert
+            projectService.VerifyAll();
+        }
+
+        [Fact]
         public void ProjectConfigurationFileChanged_Removed_NonNormalizedPaths()
         {
             // Arrange

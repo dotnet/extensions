@@ -95,8 +95,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 case RazorFileChangeKind.Removed:
                     {
                         var configurationFilePath = _filePathNormalizer.Normalize(args.ConfigurationFilePath);
-                        var containsKey = _configurationToProjectMap.TryGetValue(configurationFilePath, out var projectFilePath);
-                        Debug.Assert(containsKey);
+                        if (!_configurationToProjectMap.TryGetValue(configurationFilePath, out var projectFilePath))
+                        {
+                            // Failed to deserialize the initial handle on add so we can't remove the configuration file because it doesn't exist in the list.
+                            return;
+                        }
 
                         _configurationToProjectMap.Remove(configurationFilePath);
 
