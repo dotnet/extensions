@@ -3,15 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Workspaces.Serialization;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 
@@ -354,9 +355,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var normalizedFilePath = _filePathNormalizer.Normalize(filePath);
             if (!normalizedFilePath.StartsWith(projectDirectory))
             {
-                // Remove '/' from document path
-                normalizedFilePath = normalizedFilePath.Substring(1);
-                normalizedFilePath = _filePathNormalizer.Normalize(projectDirectory + normalizedFilePath);
+                var absolutePath = Path.Combine(projectDirectory, normalizedFilePath);
+                normalizedFilePath = _filePathNormalizer.Normalize(absolutePath);
             }
 
             return normalizedFilePath;

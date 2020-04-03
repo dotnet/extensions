@@ -116,7 +116,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
             var edits = await _requestInvoker.RequestServerAsync<DocumentOnTypeFormattingParams, TextEdit[]>(
-                Methods.TextDocumentCompletionName,
+                Methods.TextDocumentOnTypeFormattingName,
                 serverKind,
                 formattingParams,
                 cancellationToken).ConfigureAwait(false);

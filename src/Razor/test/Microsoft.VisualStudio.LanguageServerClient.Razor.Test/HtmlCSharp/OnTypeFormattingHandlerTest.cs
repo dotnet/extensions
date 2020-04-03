@@ -213,9 +213,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var invokedServer = false;
             var mappedTextEdits = false;
             var appliedTextEdits = false;
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.RequestServerAsync<DocumentOnTypeFormattingParams, TextEdit[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<DocumentOnTypeFormattingParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.RequestServerAsync<DocumentOnTypeFormattingParams, TextEdit[]>(Methods.TextDocumentOnTypeFormattingName, It.IsAny<LanguageServerKind>(), It.IsAny<DocumentOnTypeFormattingParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, LanguageServerKind, DocumentOnTypeFormattingParams, CancellationToken>((method, serverKind, formattingParams, ct) =>
                 {
                     Assert.True(formattingParams.Options.OtherOptions.ContainsKey(LanguageServerConstants.ExpectsCursorPlaceholderKey));

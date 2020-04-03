@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Dive through existing project files and fabricate "added" events so listeners can accurately listen to state changes for them.
 
-            workspaceDirectory = _filePathNormalizer.NormalizeForRead(workspaceDirectory);
+            workspaceDirectory = _filePathNormalizer.Normalize(workspaceDirectory);
             var existingProjectFiles = GetExistingProjectFiles(workspaceDirectory);
 
             await Task.Factory.StartNew(() =>

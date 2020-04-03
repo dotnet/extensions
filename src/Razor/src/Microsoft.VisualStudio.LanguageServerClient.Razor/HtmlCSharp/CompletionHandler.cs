@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Threading;
 
@@ -77,27 +78,40 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            if (!TriggerAppliesToProjection(request.Context, projectionResult.LanguageKind))
+            
+
+            var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
+
+            var (succeeded, result) = await TryGetProvisionalCompletionsAsync(request, documentSnapshot, projectionResult, cancellationToken).ConfigureAwait(false);
+            if (succeeded)
+            {
+                // This means the user has just typed a dot after some identifier such as (cursor is pipe): "DateTime.| "
+                // In this case Razor interprets after the dot as Html and before it as C#.
+                // We use this criteria to provide a better completion experience for what we call provisional changes.
+            }
+            else if (!TriggerAppliesToProjection(request.Context, projectionResult.LanguageKind))
             {
                 return null;
             }
-
-            var completionParams = new CompletionParams()
+            else
             {
-                Context = request.Context,
-                Position = projectionResult.Position,
-                TextDocument = new TextDocumentIdentifier()
+                // This is a valid non-provisional completion request.
+                var completionParams = new CompletionParams()
                 {
-                    Uri = projectionResult.Uri
-                }
-            };
+                    Context = request.Context,
+                    Position = projectionResult.Position,
+                    TextDocument = new TextDocumentIdentifier()
+                    {
+                        Uri = projectionResult.Uri
+                    }
+                };
 
-            var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
-            var result = await _requestInvoker.RequestServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
-                Methods.TextDocumentCompletionName,
-                serverKind,
-                completionParams,
-                cancellationToken).ConfigureAwait(false);
+                result = await _requestInvoker.RequestServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
+                    Methods.TextDocumentCompletionName,
+                    serverKind,
+                    completionParams,
+                    cancellationToken).ConfigureAwait(false);
+            }
 
             if (result.HasValue)
             {
@@ -106,6 +120,67 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             return result;
+        }
+
+        internal async Task<(bool, SumType<CompletionItem[], CompletionList>?)> TryGetProvisionalCompletionsAsync(CompletionParams request, LSPDocumentSnapshot documentSnapshot, ProjectionResult projection, CancellationToken cancellationToken)
+        {
+            SumType<CompletionItem[], CompletionList>? result = null;
+            if (projection.LanguageKind != RazorLanguageKind.Html ||
+                request.Context.TriggerKind != CompletionTriggerKind.TriggerCharacter ||
+                request.Context.TriggerCharacter != ".")
+            {
+                return (false, result);
+            }
+
+            if (projection.Position.Character == 0)
+            {
+                // We're at the start of line. Can't have provisional completions here.
+                return (false, result);
+            }
+
+            var previousCharacterPosition = new Position(projection.Position.Line, projection.Position.Character - 1);
+            var previousCharacterProjection = await _projectionProvider.GetProjectionAsync(documentSnapshot, previousCharacterPosition, cancellationToken).ConfigureAwait(false);
+            if (previousCharacterProjection == null || previousCharacterProjection.LanguageKind != RazorLanguageKind.CSharp)
+            {
+                return (false, result);
+            }
+
+            if (!(_documentManager is TrackingLSPDocumentManager trackingDocumentManager))
+            {
+                return (false, result);
+            }
+
+            // Edit the CSharp projected document to contain a '.'. This allows C# completion to provide valid
+            // completion items for moments when a user has typed a '.' that's typically interpreted as Html.
+            var addProvisionalDot = new TextChange(
+                TextSpan.FromBounds(previousCharacterProjection.PositionIndex, previousCharacterProjection.PositionIndex),
+                ".");
+
+            await _joinableTaskFactory.SwitchToMainThreadAsync();
+
+            trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, new[] { addProvisionalDot }, previousCharacterProjection.HostDocumentVersion);
+
+            var provisionalCompletionParams = new CompletionParams()
+            {
+                Context = request.Context,
+                Position = new Position(previousCharacterProjection.Position.Line, previousCharacterProjection.Position.Character + 1),
+                TextDocument = new TextDocumentIdentifier() { Uri = previousCharacterProjection.Uri }
+            };
+
+            result = await _requestInvoker.RequestServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
+                Methods.TextDocumentCompletionName,
+                LanguageServerKind.CSharp,
+                provisionalCompletionParams,
+                cancellationToken).ConfigureAwait(true);
+
+            // We have now obtained the necessary completion items. We no longer need the provisional change. Revert.
+            var removeProvisionalDot = new TextChange(
+                TextSpan.FromBounds(previousCharacterProjection.PositionIndex, previousCharacterProjection.PositionIndex + 1),
+                string.Empty);
+
+            trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, new[] { removeProvisionalDot }, previousCharacterProjection.HostDocumentVersion);
+
+            return (true, result);
         }
 
         // Internal for testing

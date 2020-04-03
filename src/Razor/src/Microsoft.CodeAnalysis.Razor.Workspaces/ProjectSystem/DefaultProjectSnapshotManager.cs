@@ -506,11 +506,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             _foregroundDispatcher.AssertForegroundThread();
 
-            var handler = Changed;
-            if (handler != null)
-            {
-                handler(this, e);
-            }
+            Changed?.Invoke(this, e);
         }
 
         private class Entry
@@ -525,7 +521,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             public ProjectSnapshot GetSnapshot()
             {
-                return SnapshotUnsafe ?? (SnapshotUnsafe = new DefaultProjectSnapshot(State));
+                return SnapshotUnsafe ??= new DefaultProjectSnapshot(State);
             }
         }
     }

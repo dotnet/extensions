@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
+using Microsoft.CodeAnalysis.Razor.Workspaces.Serialization;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private readonly JsonFileDeserializer _jsonFileDeserializer;
         private FullProjectSnapshotHandle _projectSnapshotHandle;
-        private object _projectSnapshotHandleLock;
+        private readonly object _projectSnapshotHandleLock;
         private bool _deserialized;
 
         public ProjectConfigurationFileChangeEventArgs(

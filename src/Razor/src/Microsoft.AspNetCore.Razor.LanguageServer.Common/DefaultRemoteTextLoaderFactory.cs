@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            var normalizedPath = _filePathNormalizer.NormalizeForRead(filePath);
+            var normalizedPath = _filePathNormalizer.Normalize(filePath);
             return new RemoteTextLoader(normalizedPath);
         }
 

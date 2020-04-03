@@ -10,11 +10,8 @@
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
 {
-    
-    
     internal partial class RazorGenerateWithTargetPath
     {
-        
         /// <summary>Backing field for deserialized rule.<see cref='Microsoft.Build.Framework.XamlTypes.Rule'/>.</summary>
         private static Microsoft.Build.Framework.XamlTypes.Rule deserializedFallbackRule;
         
@@ -231,8 +228,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
     }
     
     internal partial class RazorProjectProperties
-    {
-        
+    {  
         private static System.Func<System.Threading.Tasks.Task<System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog>>, object, RazorGenerateWithTargetPath> CreateRazorGenerateWithTargetPathPropertiesDelegate = new System.Func<System.Threading.Tasks.Task<System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog>>, object, RazorGenerateWithTargetPath>(CreateRazorGenerateWithTargetPathProperties);
         
         private static RazorGenerateWithTargetPath CreateRazorGenerateWithTargetPathProperties(System.Threading.Tasks.Task<System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog>> namedCatalogs, object state)

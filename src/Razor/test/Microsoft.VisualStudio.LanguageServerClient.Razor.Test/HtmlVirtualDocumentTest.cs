@@ -118,7 +118,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             edit.Setup(e => e.Replace(replace.Span.Start, replace.Span.Length, replace.NewText));
             var textBuffer = new Mock<ITextBuffer>();
             var textBufferSnapshot = Mock.Of<ITextSnapshot>();
-            textBuffer.Setup(buffer => buffer.CreateEdit())
+            textBuffer.Setup(buffer => buffer.CreateEdit(EditOptions.None, null, It.IsAny<IInviolableEditTag>()))
                 .Returns(edit.Object);
             textBuffer.Setup(buffer => buffer.CurrentSnapshot)
                 .Returns(() => textBufferSnapshot);
@@ -139,7 +139,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public static ITextBuffer CreateTextBuffer(ITextEdit edit)
         {
-            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CreateEdit() == edit && buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>());
+            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CreateEdit(EditOptions.None, null, It.IsAny<IInviolableEditTag>()) == edit && buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>());
             return textBuffer;
         }
     }

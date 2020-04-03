@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return _currentSnapshot;
             }
 
-            var edit = TextBuffer.CreateEdit();
+            using var edit = TextBuffer.CreateEdit(EditOptions.None, reiteratedVersionNumber: null, InviolableEditTag.Instance);
             for (var i = 0; i < changes.Count; i++)
             {
                 var change = changes[i];

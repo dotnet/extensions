@@ -92,7 +92,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 Uri = virtualDocument.Uri,
                 Position = new Position((int)languageResponse.Position.Line, (int)languageResponse.Position.Character),
+                PositionIndex = languageResponse.PositionIndex,
                 LanguageKind = languageResponse.Kind,
+                HostDocumentVersion = languageResponse.HostDocumentVersion
             };
 
             return result;

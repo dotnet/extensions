@@ -32,33 +32,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             var decodedPath = WebUtility.UrlDecode(filePath);
             var normalized = decodedPath.Replace('\\', '/');
 
-            if (normalized[0] != '/')
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                normalized[0] == '/' &&
+                !normalized.StartsWith("//", StringComparison.OrdinalIgnoreCase))
             {
-                normalized = '/' + normalized;
+                // We've been provided a path that probably looks something like /C:/path/to
+                normalized = normalized.Substring(1);
+            }
+            else
+            {
+                // Already a valid path like C:/path or //path
             }
 
             return normalized;
-        }
-
-        public string NormalizeForRead(string filePath)
-        {
-            filePath = Normalize(filePath);
-
-            if (filePath[0] == '/')
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                    !filePath.StartsWith("//", StringComparison.OrdinalIgnoreCase)) // Network UNC paths
-                {
-                    // VSLS path, not understood by File.OpenRead so we need to strip the leading separator.
-                    filePath = filePath.Substring(1);
-                }
-                else
-                {
-                    // Unix system, path starts with / which is allowed by File.OpenRead on non-windows.
-                }
-            }
-
-            return filePath;
         }
 
         public string GetDirectory(string filePath)

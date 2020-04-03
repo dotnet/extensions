@@ -2,12 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
+using Microsoft.CodeAnalysis.Razor.Workspaces.Serialization;
 using Moq;
 using Xunit;
 using Xunit.Sdk;
@@ -22,8 +18,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var jsonFileDeserializer = new Mock<JsonFileDeserializer>();
             jsonFileDeserializer.Setup(deserializer => deserializer.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()))
-                .Returns(new FullProjectSnapshotHandle("/c:/path/to/project.csproj", configuration: null, rootNamespace: null, projectWorkspaceState: null, documents: Array.Empty<DocumentSnapshotHandle>()));
-            var args = new ProjectConfigurationFileChangeEventArgs("/c:/some/path", RazorFileChangeKind.Removed, jsonFileDeserializer.Object);
+                .Returns(new FullProjectSnapshotHandle("c:/path/to/project.csproj", configuration: null, rootNamespace: null, projectWorkspaceState: null, documents: Array.Empty<DocumentSnapshotHandle>()));
+            var args = new ProjectConfigurationFileChangeEventArgs("c:/some/path", RazorFileChangeKind.Removed, jsonFileDeserializer.Object);
 
             // Act
             var result = args.TryDeserialize(out var handle);
@@ -38,10 +34,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var jsonFileDeserializer = new Mock<JsonFileDeserializer>();
-            var projectSnapshotHandle = new FullProjectSnapshotHandle("/c:/path/to/project.csproj", configuration: null, rootNamespace: null, projectWorkspaceState: null, documents: Array.Empty<DocumentSnapshotHandle>());
+            var projectSnapshotHandle = new FullProjectSnapshotHandle("c:/path/to/project.csproj", configuration: null, rootNamespace: null, projectWorkspaceState: null, documents: Array.Empty<DocumentSnapshotHandle>());
             jsonFileDeserializer.Setup(deserializer => deserializer.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()))
                 .Returns(projectSnapshotHandle);
-            var args = new ProjectConfigurationFileChangeEventArgs("/c:/some/path", RazorFileChangeKind.Added, jsonFileDeserializer.Object);
+            var args = new ProjectConfigurationFileChangeEventArgs("c:/some/path", RazorFileChangeKind.Added, jsonFileDeserializer.Object);
 
             // Act
             var result1 = args.TryDeserialize(out var handle1);
@@ -63,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             jsonFileDeserializer.Setup(deserializer => deserializer.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()))
                 .Callback(() => callCount++)
                 .Returns<FullProjectSnapshotHandle>(null);
-            var args = new ProjectConfigurationFileChangeEventArgs("/c:/some/path", RazorFileChangeKind.Changed, jsonFileDeserializer.Object);
+            var args = new ProjectConfigurationFileChangeEventArgs("c:/some/path", RazorFileChangeKind.Changed, jsonFileDeserializer.Object);
 
             // Act
             var result1 = args.TryDeserialize(out var handle1);

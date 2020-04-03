@@ -25,14 +25,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public RazorDiagnosticsPublisherTest()
         {
             var testProjectManager = TestProjectSnapshotManager.Create(Dispatcher);
-            var hostProject = new HostProject("/C:/project/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            var hostProject = new HostProject("C:/project/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
             testProjectManager.ProjectAdded(hostProject);
             var sourceText = SourceText.From(string.Empty);
             var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
-            var openedHostDocument = new HostDocument("/C:/project/open_document.cshtml", "/C:/project/open_document.cshtml");
+            var openedHostDocument = new HostDocument("C:/project/open_document.cshtml", "C:/project/open_document.cshtml");
             testProjectManager.DocumentAdded(hostProject, openedHostDocument, TextLoader.From(textAndVersion));
             testProjectManager.DocumentOpened(hostProject.FilePath, openedHostDocument.FilePath, sourceText);
-            var closedHostDocument = new HostDocument("/C:/project/closed_document.cshtml", "/C:/project/closed_document.cshtml");
+            var closedHostDocument = new HostDocument("C:/project/closed_document.cshtml", "C:/project/closed_document.cshtml");
             testProjectManager.DocumentAdded(hostProject, closedHostDocument, TextLoader.From(textAndVersion));
 
             OpenedDocument = testProjectManager.Projects[0].GetDocument(openedHostDocument.FilePath);

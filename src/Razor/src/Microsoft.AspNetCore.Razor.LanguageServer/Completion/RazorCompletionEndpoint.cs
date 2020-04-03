@@ -212,7 +212,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 }
             }
 
-
             if (markdown != null)
             {
                 var documentation = new StringOrMarkupContent(
@@ -228,7 +227,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         // Internal for testing
-        internal static bool TryConvert(RazorCompletionItem razorCompletionItem, out CompletionItem completionItem)
+        internal bool TryConvert(RazorCompletionItem razorCompletionItem, out CompletionItem completionItem)
         {
             switch (razorCompletionItem.Kind)
             {
@@ -325,12 +324,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return false;
         }
 
-        private static bool TryResolveDirectiveAttributeInsertionSnippet(
+        private bool TryResolveDirectiveAttributeInsertionSnippet(
             string insertText,
             bool indexerCompletion,
             AttributeCompletionDescription attributeCompletionDescription,
             out string snippetText)
         {
+            if (_capability?.CompletionItem?.SnippetSupport == null || !_capability.CompletionItem.SnippetSupport)
+            {
+                snippetText = null;
+                return false;
+            }
+
             const string BoolTypeName = "System.Boolean";
             var attributeInfos = attributeCompletionDescription.DescriptionInfos;
 

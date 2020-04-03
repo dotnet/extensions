@@ -97,14 +97,22 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         }
 
         [Fact]
-        public void TextDocumentFactory_TextDocumentCreated_TracksDocument()
+        public void TextDocumentFactory_TextDocumentCreated_Host_TracksDocument()
         {
             // Arrange
+            var textBuffer = new Mock<ITextBuffer>();
+            textBuffer.Setup(buffer => buffer.ContentType)
+                .Returns(Mock.Of<IContentType>());
+            textBuffer.Setup(buffer => buffer.ChangeContentType(RazorContentType, null))
+                .Verifiable();
+            var textBufferProperties = new PropertyCollection();
+            textBuffer.Setup(buffer => buffer.Properties)
+                .Returns(textBufferProperties);
             var lspDocumentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
             lspDocumentManager.Setup(manager => manager.TrackDocument(It.IsAny<ITextBuffer>()))
                 .Verifiable();
             var listener = CreateListener(lspDocumentManager.Object);
-            var textDocument = CreateTextDocument(filePath: "file.razor");
+            var textDocument = CreateTextDocument(filePath: "file.razor", textBuffer.Object);
             var args = new TextDocumentEventArgs(textDocument);
 
             // Act
@@ -112,6 +120,22 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Assert
             lspDocumentManager.VerifyAll();
+        }
+
+        [Fact]
+        public void TextDocumentFactory_TextDocumentCreated_RemoteClient_DoesNotTrackDocument()
+        {
+            // Arrange
+            var lspDocumentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
+            lspDocumentManager.Setup(manager => manager.TrackDocument(It.IsAny<ITextBuffer>()))
+                .Throws<XunitException>();
+            var featureDetector = Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsRemoteClient() == true);
+            var listener = CreateListener(lspDocumentManager.Object);
+            var textDocument = CreateTextDocument(filePath: "file.razor");
+            var args = new TextDocumentEventArgs(textDocument);
+
+            // Act & Assert
+            listener.TextDocumentFactory_TextDocumentCreated(sender: null, args);
         }
 
         [Fact]
