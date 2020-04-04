@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     internal class OnTypeFormattingHandler : IRequestHandler<DocumentOnTypeFormattingParams, TextEdit[]>
     {
         private static readonly TextEdit[] EmptyEdits = Array.Empty<TextEdit>();
-        private static readonly IReadOnlyList<string> AllowedTriggerCharacters = new[] { ">", "=" };
+        private static readonly IReadOnlyList<string> AllowedTriggerCharacters = new[] { ">", "=", "-" };
 
         private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly LSPDocumentManager _documentManager;
