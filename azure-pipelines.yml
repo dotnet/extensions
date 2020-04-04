@@ -43,23 +43,25 @@ stages:
 - stage: build
   displayName: Build
   jobs:
-  - job: Code_check
-    displayName: Code check
-    workspace:
-      clean: all
-    pool:
-      vmImage: vs2017-win2016
-    steps:
-    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-      - task: PowerShell@2
-        displayName: Setup Private Feeds Credentials
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
-          arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
-        env:
-          Token: $(dn-bot-dnceng-artifact-feeds-rw)
-    - powershell: . ./activate.ps1; ./restore.cmd -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
-      displayName: Run eng/scripts/CodeCheck.ps1
+  # Code check
+  - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+    - job: Code_check
+      displayName: Code check
+      workspace:
+        clean: all
+      pool:
+        vmImage: vs2017-win2016
+      steps:
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: PowerShell@2
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+            arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - powershell: . ./activate.ps1; ./restore.cmd -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
+        displayName: Run eng/scripts/CodeCheck.ps1
 
   - template: /eng/common/templates/jobs/jobs.yml
     parameters:
@@ -247,7 +249,7 @@ stages:
             artifactType: Container
             parallel: true
 
-      - job: OSX_10_13
+      - job: OSX_10_14
         displayName: 'OSX'
         pool:
           vmImage: macOS-10.14
