@@ -46,43 +46,44 @@ stages:
 - stage: build
   displayName: Build
   jobs:
-  # This job checks for code quality
   - template: /eng/common/templates/jobs/jobs.yml
     parameters:
       enablePublishBuildArtifacts: false
       enablePublishTestResults: false
       enablePublishUsingPipelines: false
       jobs:
-      - job: Code_check
-        displayName: Code check
-        pool:
-          ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            name: NetCorePublic-Pool
-            queue: BuildPool.Server.Amd64.VS2019.Open
-          ${{ if ne(variables['System.TeamProject'], 'public') }}:
-            name: NetCoreInternal-Pool
-            queue: BuildPool.Server.Amd64.VS2019
-        steps:
-        - task: NodeTool@0
-          displayName: Install Node 10.x
-          inputs:
-            versionSpec: 10.x
-        - task: NuGetCommand@2
-          displayName: 'Clear NuGet caches'
-          condition: succeeded()
-          inputs:
-            command: custom
-            arguments: 'locals all -clear'
-        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          - task: PowerShell@2
-            displayName: Setup Private Feeds Credentials
+      # Code check
+      - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+        - job: Code_check
+          displayName: Code check
+          pool:
+            ${{ if eq(variables['System.TeamProject'], 'public') }}:
+              name: NetCorePublic-Pool
+              queue: BuildPool.Server.Amd64.VS2019.Open
+            ${{ if ne(variables['System.TeamProject'], 'public') }}:
+              name: NetCoreInternal-Pool
+              queue: BuildPool.Server.Amd64.VS2019
+          steps:
+          - task: NodeTool@0
+            displayName: Install Node 10.x
             inputs:
-              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
-              arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
-            env:
-              Token: $(dn-bot-dnceng-artifact-feeds-rw)
-        - powershell: ./restore.cmd -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
-          displayName: Run eng/scripts/CodeCheck.ps1
+              versionSpec: 10.x
+          - task: NuGetCommand@2
+            displayName: 'Clear NuGet caches'
+            condition: succeeded()
+            inputs:
+              command: custom
+              arguments: 'locals all -clear'
+          - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+            - task: PowerShell@2
+              displayName: Setup Private Feeds Credentials
+              inputs:
+                filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+                arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+              env:
+                Token: $(dn-bot-dnceng-artifact-feeds-rw)
+          - powershell: ./restore.cmd -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
+            displayName: Run eng/scripts/CodeCheck.ps1
 
       - job: Source_Build
         jobName: Source_Build
