@@ -191,7 +191,7 @@ export interface WorkspaceConfiguration {
      * The *effective* value (returned by [`get`](#WorkspaceConfiguration.get))
      * is computed like this: `defaultValue` overwritten by `globalValue`,
      * `globalValue` overwritten by `workspaceValue`. `workspaceValue` overwritten by `workspaceFolderValue`.
-     * Refer to [Settings Inheritence](https://code.visualstudio.com/docs/getstarted/settings)
+     * Refer to [Settings Inheritance](https://code.visualstudio.com/docs/getstarted/settings)
      * for more information.
      *
      * *Note:* The configuration name must denote a leaf in the configuration tree
@@ -216,7 +216,7 @@ export interface WorkspaceConfiguration {
      * has no observable effect in that workspace, but in others. Setting a workspace value
      * in the presence of a more specific folder value has no observable effect for the resources
      * under respective [folder](#workspace.workspaceFolders), but in others. Refer to
-     * [Settings Inheritence](https://code.visualstudio.com/docs/getstarted/settings) for more information.
+     * [Settings Inheritance](https://code.visualstudio.com/docs/getstarted/settings) for more information.
      *
      * *Note 2:* To remove a configuration value use `undefined`, like so: `config.update('somekey', undefined)`
      *
@@ -491,7 +491,7 @@ export interface Uri {
      * [Uri.parse](#Uri.parse).
      *
      * @param skipEncoding Do not percentage-encode the result, defaults to `false`. Note that
-     *	the `#` and `?` characters occuring in the path will always be encoded.
+     *	the `#` and `?` characters occurring in the path will always be encoded.
      * @returns A string representation of this Uri.
      */
     toString(skipEncoding?: boolean): string;
@@ -636,7 +636,7 @@ export interface TextDocument {
 
     /**
      * Get a word-range at the given position. By default words are defined by
-     * common separators, like space, -, _, etc. In addition, per languge custom
+     * common separators, like space, -, _, etc. In addition, per language custom
      * [word definitions](#LanguageConfiguration.wordPattern) can be defined. It
      * is also possible to provide a custom regular expression.
      *
@@ -911,7 +911,7 @@ export interface TextLine {
 
     /**
      * The offset of the first character which is not a whitespace character as defined
-     * by `/\s/`. **Note** that if a line is all whitespaces the length of the line is returned.
+     * by `/\s/`. **Note** that if a line is all whitespace the length of the line is returned.
      */
     readonly firstNonWhitespaceCharacterIndex: number;
 
@@ -972,7 +972,7 @@ export interface ConfigurationChangeEvent {
 
 export interface WebviewPanelSerializer {
     /**
-     * Restore a webview panel from its seriailzed `state`.
+     * Restore a webview panel from its serialized `state`.
      *
      * Called when a serialized webview first becomes visible.
      *
@@ -980,7 +980,7 @@ export interface WebviewPanelSerializer {
      * serializer must restore the webview's `.html` and hook up all webview events.
      * @param state Persisted state from the webview content.
      *
-     * @return Thanble indicating that the webview has been fully restored.
+     * @return Thenable indicating that the webview has been fully restored.
      */
     deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any): Thenable<void>;
 }
@@ -1164,7 +1164,7 @@ export interface WebviewOptions {
 
 /**
  * Thenable is a common denominator between ES6 promises, Q, jquery.Deferred, WinJS.Promise,
- * and others. This API makes no assumption about what promise libary is being used which
+ * and others. This API makes no assumption about what promise library is being used which
  * enables reusing existing code without migrating to a specific promise implementation. Still,
  * we recommend the use of native promises which are available in this editor.
  */

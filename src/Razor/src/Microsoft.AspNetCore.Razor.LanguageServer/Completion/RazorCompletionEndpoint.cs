@@ -92,10 +92,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             var document = await Task.Factory.StartNew(() =>
             {
-                _documentResolver.TryResolveDocument(request.TextDocument.Uri.AbsolutePath, out var documentSnapshot);
+                _documentResolver.TryResolveDocument(request.TextDocument.Uri.GetAbsoluteOrUNCPath(), out var documentSnapshot);
 
                 return documentSnapshot;
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+
+            if (document is null || cancellationToken.IsCancellationRequested)
+            {
+                return new CompletionList(isIncomplete: false);
+            }
 
             var codeDocument = await document.GetGeneratedOutputAsync();
             if (codeDocument.IsUnsupported())
@@ -207,7 +212,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 }
             }
 
-
             if (markdown != null)
             {
                 var documentation = new StringOrMarkupContent(
@@ -223,7 +227,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         // Internal for testing
-        internal static bool TryConvert(RazorCompletionItem razorCompletionItem, out CompletionItem completionItem)
+        internal bool TryConvert(RazorCompletionItem razorCompletionItem, out CompletionItem completionItem)
         {
             switch (razorCompletionItem.Kind)
             {
@@ -296,18 +300,42 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                         completionItem = parameterCompletionItem;
                         return true;
                     }
+                case RazorCompletionItemKind.MarkupTransition:
+                    {
+                        var descriptionInfo = razorCompletionItem.GetMarkupTransitionCompletionDescription();
+                        var markupTransitionCompletionItem = new CompletionItem()
+                        {
+                            Label = razorCompletionItem.DisplayText,
+                            InsertText = razorCompletionItem.InsertText,
+                            FilterText = razorCompletionItem.DisplayText,
+                            SortText = razorCompletionItem.DisplayText,
+                            Detail = descriptionInfo.Description,
+                            Documentation = descriptionInfo.Description,
+                            Kind = CompletionItemKind.TypeParameter,
+                            CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters)
+                        };
+
+                        completionItem = markupTransitionCompletionItem;
+                        return true;
+                    }
             }
 
             completionItem = null;
             return false;
         }
 
-        private static bool TryResolveDirectiveAttributeInsertionSnippet(
+        private bool TryResolveDirectiveAttributeInsertionSnippet(
             string insertText,
             bool indexerCompletion,
             AttributeCompletionDescription attributeCompletionDescription,
             out string snippetText)
         {
+            if (_capability?.CompletionItem?.SnippetSupport == null || !_capability.CompletionItem.SnippetSupport)
+            {
+                snippetText = null;
+                return false;
+            }
+
             const string BoolTypeName = "System.Boolean";
             var attributeInfos = attributeCompletionDescription.DescriptionInfos;
 

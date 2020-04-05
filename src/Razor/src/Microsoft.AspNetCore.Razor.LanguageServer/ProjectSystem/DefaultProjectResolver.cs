@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 }
 
                 var projectDirectory = _filePathNormalizer.GetDirectory(projects[i].FilePath);
-                if (normalizedDocumentPath.StartsWith(projectDirectory))
+                if (normalizedDocumentPath.StartsWith(projectDirectory, FilePathComparison.Instance))
                 {
                     projectSnapshot = projects[i];
                     return true;

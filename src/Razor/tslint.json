@@ -1,10 +1,13 @@
 {
     "extends": "tslint:recommended",
     "rules": {
+        "array-type": false,
+        "space-within-parens": true,
         "arrow-parens": false,
         "file-header": [true, "------"],
         "interface-name": false,
         "no-console": false,
+        "no-floating-promises": true,
         "no-return-await": true,
         "no-inferrable-types": true,
         "object-literal-sort-keys": false,
@@ -15,6 +18,7 @@
             "options": {
                 "limit": 200
             }
-        }
+        },
+        "one-line": [true, "check-open-brace", "check-catch", "check-finally", "check-else", "check-whitespace"]
     }
 }

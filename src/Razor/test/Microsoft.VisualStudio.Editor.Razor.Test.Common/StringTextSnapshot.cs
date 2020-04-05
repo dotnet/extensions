@@ -62,9 +62,9 @@ namespace Microsoft.VisualStudio.Text
 
         public IContentType ContentType => throw new NotImplementedException();
 
-        public int LineCount => throw new NotImplementedException();
+        public int LineCount => _lines.Count;
 
-        public IEnumerable<ITextSnapshotLine> Lines => throw new NotImplementedException();
+        public IEnumerable<ITextSnapshotLine> Lines => _lines;
 
         public ITextImage TextImage => new StringTextImage(Content);
 

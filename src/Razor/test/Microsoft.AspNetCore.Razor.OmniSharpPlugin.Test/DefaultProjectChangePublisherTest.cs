@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.Build.Locator;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;
@@ -30,10 +29,12 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     Assert.Same(projectSnapshot, snapshot);
                     Assert.Equal(expectedPublishFilePath, publishFilePath);
                     serializationSuccessful = true;
-                });
-            publisher.EnqueueDelay = 10;
+                })
+            {
+                EnqueueDelay = 10
+            };
             publisher.SetPublishFilePath(projectSnapshot.FilePath, expectedPublishFilePath);
-            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, projectSnapshot, changeKind);
+            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, projectSnapshot, documentFilePath: null, changeKind);
 
             // Act
             publisher.ProjectManager_Changed(null, args);
@@ -54,11 +55,13 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var publisher = new TestProjectChangePublisher(
                 LoggerFactory,
                 onSerializeToFile: (snapshot, publishFilePath) => attemptedToSerialize = true,
-                onDeleteFile: (path) => { });
-            publisher.EnqueueDelay = 10;
+                onDeleteFile: (path) => { })
+            {
+                EnqueueDelay = 10
+            };
             publisher.SetPublishFilePath(projectSnapshot.FilePath, expectedPublishFilePath);
             publisher.EnqueuePublish(projectSnapshot);
-            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, newer: null, OmniSharpProjectChangeKind.ProjectRemoved);
+            var args = OmniSharpProjectChangeEventArgs.CreateTestInstance(projectSnapshot, newer: null, documentFilePath: null, OmniSharpProjectChangeKind.ProjectRemoved);
 
             // Act
             publisher.ProjectManager_Changed(null, args);
@@ -84,8 +87,10 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     Assert.Same(secondSnapshot, snapshot);
                     Assert.Equal(expectedPublishFilePath, publishFilePath);
                     serializationSuccessful = true;
-                });
-            publisher.EnqueueDelay = 10;
+                })
+            {
+                EnqueueDelay = 10
+            };
             publisher.SetPublishFilePath(firstSnapshot.FilePath, expectedPublishFilePath);
 
             // Act

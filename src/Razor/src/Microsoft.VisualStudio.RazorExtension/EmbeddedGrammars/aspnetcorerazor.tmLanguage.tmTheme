@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>name</key>
+    <string>Razor TextMate Theme</string>
+    <key>settings</key>
+    <array>
+
+      <!-- Begin General -->
+
+      <dict>
+        <key>scope</key>
+        <string>string - meta.attribute, punctuation.definition.string - meta.attribute, punctuation.definition.template-expression, constant.character.escape, constant.regexp, markup.heading, string.quoted.double.cs</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>string</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>comment</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>Comment</string>
+        </dict>
+      </dict>
+
+      <!-- End General -->
+
+      <!-- Begin Razor specific colorization -->
+
+      <dict>
+        <key>scope</key>
+        <string>keyword.control.cshtml, keyword.control.razor.directive, keyword.control.razor.comment.star</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>HTML Server-Side Script</string>
+        </dict>
+      </dict>
+
+      <!-- End Razor specific colorization -->
+
+      <!-- Begin HTML specific colorization -->
+
+      <!-- [<]a[>] href[=]"Hello"> -->
+      <dict>
+        <key>scope</key>
+        <string>punctuation.definition.tag, punctuation.separator.key-value.html</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>HTML Operator</string>
+        </dict>
+      </dict>
+
+      <!-- <[a]> href="Hello"> -->
+      <dict>
+        <key>scope</key>
+        <string>entity.name.tag</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>HTML Element Name</string>
+        </dict>
+      </dict>
+
+      <!-- <a> [href]="Hello"> -->
+      <dict>
+        <key>scope</key>
+        <string>entity.other.attribute-name</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>HTML Attribute Name</string>
+        </dict>
+      </dict>
+
+      <!-- <a> href=["Hello"]> -->
+      <dict>
+        <key>scope</key>
+        <string>meta.attribute, meta.attribute string.quoted</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>HTML Attribute Value</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>comment.block.html</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>HTML Comment</string>
+        </dict>
+      </dict>
+
+      <!-- End HTML specific colorization -->
+
+      <!-- Begin C# specific colorization -->
+
+      <dict>
+        <key>scope</key>
+        <string>variable</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>Identifier</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>constant.language, variable.language, storage.modifier.cs, keyword.type.cs, keyword.other.using.cs, keyword.other.await.cs, keyword.other.var.cs</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>Keyword</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>storage.type.cs, entity.name.type.class.cs</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>class name</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>entity.name.function.cs</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>method name</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>variable.other.object.cs, entity.name.variable.local.cs</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>local name</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>keyword.control.conditional, keyword.control.loop.in.cs, keyword.control.loop.foreach.cs</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>keyword - control</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>entity.name.label</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>parameter name</string>
+        </dict>
+      </dict>
+
+      <!-- End C# specific colorization -->
+
+      <!-- Begin CSS specific colorization -->
+
+      <dict>
+        <key>scope</key>
+        <string>entity.name.tag.css</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>CSS Selector</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>support.type.property-name.css</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>CSS Property Name</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>support.constant.color.w3c-standard-color-name.css</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>CSS Property Value</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>comment.block.css</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>CSS Comment</string>
+        </dict>
+      </dict>
+
+      <!-- End CSS specific colorization -->
+
+      <!-- Begin JavaScript specific colorization -->
+
+      <dict>
+        <key>scope</key>
+        <string>source.js storage.type, source.js keyword.operator.new</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>keyword</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>source.js string</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>string</string>
+        </dict>
+      </dict>
+
+      <!-- End JavaScript specific colorization -->
+
+    </array>
+    <key>uuid</key>
+    <string>D5935FC5-F04D-4021-83FD-66BCA3F452D2</string>
+  </dict>
+</plist>

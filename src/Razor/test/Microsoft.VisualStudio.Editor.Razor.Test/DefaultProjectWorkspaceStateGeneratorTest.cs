@@ -50,6 +50,23 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         private ProjectWorkspaceState ProjectWorkspaceStateWithTagHelpers { get; }
 
         [ForegroundFact]
+        public void Dispose_MakesUpdateNoop()
+        {
+            // Arrange  
+            using (var stateGenerator = new DefaultProjectWorkspaceStateGenerator(Dispatcher))
+            {
+                stateGenerator.BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false);
+
+                // Act
+                stateGenerator.Dispose();
+                stateGenerator.Update(WorkspaceProject, ProjectSnapshot);
+
+                // Assert
+                Assert.Empty(stateGenerator._updates);
+            }
+        }
+
+        [ForegroundFact]
         public void Update_StartsUpdateTask()
         {
             // Arrange  

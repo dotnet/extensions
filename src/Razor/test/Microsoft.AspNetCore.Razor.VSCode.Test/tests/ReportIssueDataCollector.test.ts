@@ -28,6 +28,7 @@ describe('ReportIssueDataCollector', () => {
         // Assert
         const lastLog = razorOutputChannel[razorOutputChannel.length - 1];
         assert.ok(lastLog.indexOf('Starting') > 0);
+        dataCollector.stop();
     });
 
     it('stop always logs the stopping of data collection', async () => {

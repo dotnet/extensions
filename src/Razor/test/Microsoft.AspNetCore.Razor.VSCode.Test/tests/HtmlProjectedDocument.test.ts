@@ -5,6 +5,7 @@
 
 import * as assert from 'assert';
 import { HtmlProjectedDocument } from 'microsoft.aspnetcore.razor.vscode/dist/Html/HtmlProjectedDocument';
+import { ServerTextChange } from 'microsoft.aspnetcore.razor.vscode/dist/RPC/ServerTextChange';
 import { createTestVSCodeApi } from './Mocks/TestVSCodeApi';
 
 describe('HtmlProjectedDocument', () => {
@@ -14,7 +15,15 @@ describe('HtmlProjectedDocument', () => {
         const api = createTestVSCodeApi();
         const htmlDocumentUri = api.Uri.parse('C:/path/to/file.cshtml.__virtual.html');
         const htmlDocument = new HtmlProjectedDocument(htmlDocumentUri);
-        htmlDocument.setContent('Hello World', 1337);
+        const edit: ServerTextChange = {
+            newText: 'Hello World',
+            span: {
+                start: 0,
+                end: 0,
+                length: 11,
+            },
+        };
+        htmlDocument.update([edit], 1337);
 
         // Act
         htmlDocument.reset();

@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Moq;
 using Xunit;
@@ -73,6 +74,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var unrelatedProject = Mock.Of<ProjectSnapshot>(p => p.FilePath == "C:/other/path/to/project.csproj");
             var ownerProject = Mock.Of<ProjectSnapshot>(p => p.FilePath == "C:/path/to/project.csproj");
             var projectResolver = CreateProjectResolver(() => new[] { unrelatedProject, ownerProject });
+
+            // Act
+            var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(ownerProject, project);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Linux/Mac have case sensitive file comparers.")]
+        public void TryResolvePotentialProject_OwnerProjectDifferentCasing_ReturnsTrue()
+        {
+            // Arrange
+            var documentFilePath = "c:/path/to/document.cshtml";
+            var ownerProject = Mock.Of<ProjectSnapshot>(p => p.FilePath == "C:/Path/To/project.csproj");
+            var projectResolver = CreateProjectResolver(() => new[] { ownerProject });
 
             // Act
             var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
