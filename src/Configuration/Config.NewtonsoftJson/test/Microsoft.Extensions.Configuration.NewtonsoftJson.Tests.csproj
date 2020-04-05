@@ -5,12 +5,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Config\test\Microsoft.Extensions.Configuration.Tests.csproj" />
-    <ProjectReference Include="..\..\testassets\Test.Common\Microsoft.Extensions.Configuration.Test.Common.csproj" />
+    <Compile Include="..\..\Config\test\ConfigurationProviderTestBase.cs">
+      <Link>test\ConfigurationProviderTestBase.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Config\testassets\Test.Common\ConfigurationProviderExtensions.cs">
+      <Link>testassets\Common\ConfigurationProviderExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Config\testassets\Test.Common\TestStreamHelpers.cs">
+      <Link>testassets\Common\TestStreamHelpers.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" />
     <Reference Include="Microsoft.Extensions.Configuration.NewtonsoftJson" />
     <Reference Include="Microsoft.Extensions.Configuration" />

@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Linq;
@@ -110,10 +111,10 @@ namespace Microsoft.Extensions.Internal
             var argumentArray = Expression.Parameter(typeof(object[]), "argumentArray");
             var factoryExpressionBody = BuildFactoryExpression(constructor, parameterMap, provider, argumentArray);
 
-            var factoryLamda = Expression.Lambda<Func<IServiceProvider, object[], object>>(
+            var factoryLambda = Expression.Lambda<Func<IServiceProvider, object[], object>>(
                 factoryExpressionBody, provider, argumentArray);
 
-            var result = factoryLamda.Compile();
+            var result = factoryLambda.Compile();
             return result.Invoke;
         }
 

@@ -1,12 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 namespace Microsoft.Extensions.DiagnosticAdapter
 {
     public partial class DiagnosticNameAttribute : System.Attribute
     {
         public DiagnosticNameAttribute(string name) { }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class DiagnosticSourceAdapter : System.IObserver<System.Collections.Generic.KeyValuePair<string, object>>
     {
@@ -107,11 +108,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
     public partial class ProxyTypeCacheResult
     {
         public ProxyTypeCacheResult() { }
-        public System.Reflection.ConstructorInfo Constructor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Reflection.ConstructorInfo Constructor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool IsError { get { throw null; } }
-        public System.Tuple<System.Type, System.Type> Key { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Type Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Tuple<System.Type, System.Type> Key { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Type Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyTypeCacheResult FromError(System.Tuple<System.Type, System.Type> key, string error) { throw null; }
         public static Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyTypeCacheResult FromType(System.Tuple<System.Type, System.Type> key, System.Type type, System.Reflection.ConstructorInfo constructor) { throw null; }
     }

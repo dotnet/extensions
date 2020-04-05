@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections;
@@ -64,16 +65,16 @@ namespace Microsoft.Extensions.Logging
             // Example: {{prefix{{{Argument}}}suffix}}.
             var braceIndex = endIndex;
             var scanIndex = startIndex;
-            var braceOccurenceCount = 0;
+            var braceOccurrenceCount = 0;
 
             while (scanIndex < endIndex)
             {
-                if (braceOccurenceCount > 0 && format[scanIndex] != brace)
+                if (braceOccurrenceCount > 0 && format[scanIndex] != brace)
                 {
-                    if (braceOccurenceCount % 2 == 0)
+                    if (braceOccurrenceCount % 2 == 0)
                     {
-                        // Even number of '{' or '}' found. Proceed search with next occurence of '{' or '}'.
-                        braceOccurenceCount = 0;
+                        // Even number of '{' or '}' found. Proceed search with next occurrence of '{' or '}'.
+                        braceOccurrenceCount = 0;
                         braceIndex = endIndex;
                     }
                     else
@@ -86,19 +87,19 @@ namespace Microsoft.Extensions.Logging
                 {
                     if (brace == '}')
                     {
-                        if (braceOccurenceCount == 0)
+                        if (braceOccurrenceCount == 0)
                         {
-                            // For '}' pick the first occurence.
+                            // For '}' pick the first occurrence.
                             braceIndex = scanIndex;
                         }
                     }
                     else
                     {
-                        // For '{' pick the last occurence.
+                        // For '{' pick the last occurrence.
                         braceIndex = scanIndex;
                     }
 
-                    braceOccurenceCount++;
+                    braceOccurrenceCount++;
                 }
 
                 scanIndex++;
