@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -15,9 +16,10 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    internal class RazorFormattingEndpoint : IDocumentRangeFormattingHandler
+    internal class RazorFormattingEndpoint : IDocumentFormattingHandler, IDocumentRangeFormattingHandler
     {
-        private DocumentRangeFormattingCapability _capability;
+        private DocumentFormattingCapability _formattingCapability;
+        private DocumentRangeFormattingCapability _rangeFormattingCapability;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RazorFormattingService _razorFormattingService;
@@ -71,6 +73,39 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             };
         }
 
+        public async Task<TextEditContainer> Handle(DocumentFormattingParams request, CancellationToken cancellationToken)
+        {
+            if (!_optionsMonitor.CurrentValue.EnableFormatting)
+            {
+                return null;
+            }
+
+            var document = await Task.Factory.StartNew(() =>
+            {
+                _documentResolver.TryResolveDocument(request.TextDocument.Uri.GetAbsoluteOrUNCPath(), out var documentSnapshot);
+
+                return documentSnapshot;
+            }, cancellationToken, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+
+            if (document is null || cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+
+            var codeDocument = await document.GetGeneratedOutputAsync();
+            if (codeDocument.IsUnsupported())
+            {
+                return null;
+            }
+
+            var span = TextSpan.FromBounds(0, codeDocument.Source.Length);
+            var range = span.AsRange(codeDocument.GetSourceText());
+            var edits = await _razorFormattingService.FormatAsync(request.TextDocument.Uri, codeDocument, range, request.Options);
+
+            var editContainer = new TextEditContainer(edits);
+            return editContainer;
+        }
+
         public async Task<TextEditContainer> Handle(DocumentRangeFormattingParams request, CancellationToken cancellationToken)
         {
             if (!_optionsMonitor.CurrentValue.EnableFormatting)
@@ -102,9 +137,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return editContainer;
         }
 
+        public void SetCapability(DocumentFormattingCapability capability)
+        {
+            _formattingCapability = capability;
+        }
+
         public void SetCapability(DocumentRangeFormattingCapability capability)
         {
-            _capability = capability;
+            _rangeFormattingCapability = capability;
         }
     }
 }

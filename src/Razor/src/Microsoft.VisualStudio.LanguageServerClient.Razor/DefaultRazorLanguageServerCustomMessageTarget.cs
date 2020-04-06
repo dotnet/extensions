@@ -4,27 +4,30 @@
 using System;
 using System.Collections.Concurrent;
 using System.Composition;
-using System.Runtime.InteropServices;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer;
+using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [Export(typeof(RazorLanguageServerCustomMessageTarget))]
-    public class DefaultRazorLanguageServerCustomMessageTarget : RazorLanguageServerCustomMessageTarget, IDisposable
+    internal class DefaultRazorLanguageServerCustomMessageTarget : RazorLanguageServerCustomMessageTarget, IDisposable
     {
         private readonly TrackingLSPDocumentManager _documentManager;
         private readonly JoinableTaskFactory _joinableTaskFactory;
+        private readonly LSPRequestInvoker _requestInvoker;
         private readonly SingleThreadedFIFOSemaphoreSlim _updateCSharpSemaphoreSlim;
         private readonly SingleThreadedFIFOSemaphoreSlim _updateHtmlSemaphoreSlim;
 
         [ImportingConstructor]
         public DefaultRazorLanguageServerCustomMessageTarget(
             LSPDocumentManager documentManager,
-            JoinableTaskContext joinableTaskContext)
+            JoinableTaskContext joinableTaskContext,
+            LSPRequestInvoker requestInvoker)
         {
             if (documentManager is null)
             {
@@ -34,6 +37,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             if (joinableTaskContext is null)
             {
                 throw new ArgumentNullException(nameof(joinableTaskContext));
+            }
+
+            if (requestInvoker is null)
+            {
+                throw new ArgumentNullException(nameof(requestInvoker));
             }
 
             _documentManager = documentManager as TrackingLSPDocumentManager;
@@ -46,6 +54,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             _joinableTaskFactory = joinableTaskContext.Factory;
+            _requestInvoker = requestInvoker;
             _updateCSharpSemaphoreSlim = new SingleThreadedFIFOSemaphoreSlim();
             _updateHtmlSemaphoreSlim = new SingleThreadedFIFOSemaphoreSlim();
         }
@@ -86,7 +95,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return;
             }
 
-            var hostDocumentUri = ConvertFilePathToUri(request.HostDocumentFilePath);
+            var hostDocumentUri = new Uri(request.HostDocumentFilePath);
             _documentManager.UpdateVirtualDocument<CSharpVirtualDocument>(
                 hostDocumentUri,
                 request.Changes,
@@ -122,22 +131,64 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return;
             }
 
-            var hostDocumentUri = ConvertFilePathToUri(request.HostDocumentFilePath);
+            var hostDocumentUri = new Uri(request.HostDocumentFilePath);
             _documentManager.UpdateVirtualDocument<HtmlVirtualDocument>(
                 hostDocumentUri,
                 request.Changes,
                 request.HostDocumentVersion);
         }
 
-        private static Uri ConvertFilePathToUri(string filePath)
+        public override async Task<RazorDocumentRangeFormattingResponse> RazorRangeFormattingAsync(RazorDocumentRangeFormattingParams request, CancellationToken cancellationToken)
         {
-            if (filePath.StartsWith("/", StringComparison.Ordinal) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            var response = new RazorDocumentRangeFormattingResponse() { Edits = Array.Empty<TextEdit>() };
+
+            if (request.Kind == RazorLanguageKind.Razor)
             {
-                filePath = filePath.Substring(1);
+                return response;
             }
 
-            var uri = new Uri(filePath, UriKind.Absolute);
-            return uri;
+            await _joinableTaskFactory.SwitchToMainThreadAsync();
+            
+            var hostDocumentUri = new Uri(request.HostDocumentFilePath);
+            if (!_documentManager.TryGetDocument(hostDocumentUri, out var documentSnapshot))
+            {
+                return response;
+            }
+
+            var serverKind = default(LanguageServerKind);
+            var projectedUri = default(Uri);
+            if (request.Kind == RazorLanguageKind.CSharp &&
+                documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDocument))
+            {
+                serverKind = LanguageServerKind.CSharp;
+                projectedUri = csharpDocument.Uri;
+            }
+            else if (request.Kind == RazorLanguageKind.Html &&
+                documentSnapshot.TryGetVirtualDocument<HtmlVirtualDocumentSnapshot>(out var htmlDocument))
+            {
+                serverKind = LanguageServerKind.Html;
+                projectedUri = htmlDocument.Uri;
+            }
+            else
+            {
+                Debug.Fail("Unexpected RazorLanguageKind. This can't really happen in a real scenario.");
+                return response;
+            }
+
+            var formattingParams = new DocumentRangeFormattingParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = projectedUri },
+                Range = request.ProjectedRange,
+                Options = request.Options
+            };
+
+            response.Edits = await _requestInvoker.RequestServerAsync<DocumentRangeFormattingParams, TextEdit[]>(
+                Methods.TextDocumentRangeFormattingName,
+                serverKind,
+                formattingParams,
+                cancellationToken).ConfigureAwait(false);
+
+            return response;
         }
 
         public void Dispose()

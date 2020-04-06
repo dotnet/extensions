@@ -4,13 +4,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Moq;
 using Xunit;
-using OmniSharpPosition = OmniSharp.Extensions.LanguageServer.Protocol.Models.Position;
-using OmniSharpRange = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
@@ -25,7 +22,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var response = new RazorMapToDocumentRangeResponse()
             {
-                Range = new OmniSharpRange(new OmniSharpPosition(1, 1), new OmniSharpPosition(3, 3)),
+                Range = new Range()
+                {
+                    Start = new Position(1, 1),
+                    End = new Position(3, 3),
+                },
                 HostDocumentVersion = 1
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);

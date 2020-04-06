@@ -234,7 +234,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider
                 .Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.Html, Uri, It.IsAny<Range>(), It.IsAny<CancellationToken>()))
                 .Callback(() => { mappedTextEdits = true; })
-                .Returns(Task.FromResult(new MappingResult()));
+                .Returns(Task.FromResult(new RazorMapToDocumentRangeResponse()));
 
             var editorService = new Mock<LSPEditorService>(MockBehavior.Strict);
             editorService.Setup(e => e.ApplyTextEditsAsync(Uri, It.IsAny<ITextSnapshot>(), It.IsAny<IEnumerable<TextEdit>>())).Callback(() => { appliedTextEdits = true; })

@@ -4,12 +4,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Text;
 using Moq;
 using Xunit;
-using OmniSharpPosition = OmniSharp.Extensions.LanguageServer.Protocol.Models.Position;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
@@ -62,7 +60,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 Kind = RazorLanguageKind.Html,
                 HostDocumentVersion = 1,
-                Position = new OmniSharpPosition(expectedPosition.Line, expectedPosition.Character)
+                Position = new Position(expectedPosition.Line, expectedPosition.Character)
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
@@ -105,7 +103,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 Kind = RazorLanguageKind.CSharp,
                 HostDocumentVersion = 1,
-                Position = new OmniSharpPosition(expectedPosition.Line, expectedPosition.Character)
+                Position = new Position(expectedPosition.Line, expectedPosition.Character)
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
@@ -148,7 +146,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 Kind = RazorLanguageKind.Html,
                 HostDocumentVersion = -1, // Undefined version
-                Position = new OmniSharpPosition(expectedPosition.Line, expectedPosition.Character)
+                Position = new Position(expectedPosition.Line, expectedPosition.Character)
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
@@ -191,7 +189,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 Kind = RazorLanguageKind.CSharp,
                 HostDocumentVersion = 1,
-                Position = new OmniSharpPosition(expectedPosition.Line, expectedPosition.Character)
+                Position = new Position(expectedPosition.Line, expectedPosition.Character)
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker

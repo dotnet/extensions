@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    internal class MappingResult
+    internal class RazorMapToDocumentRangeResponse
     {
         public Range Range { get; set; }
 

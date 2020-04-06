@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    internal abstract class LSPDocumentMappingProvider
+    internal class RazorMapToDocumentRangeParams
     {
-        public abstract Task<RazorMapToDocumentRangeResponse> MapToDocumentRangeAsync(RazorLanguageKind languageKind, Uri razorDocumentUri, Range projectedRange, CancellationToken cancellationToken);
+        public RazorLanguageKind Kind { get; set; }
+
+        public Uri RazorDocumentUri { get; set; }
+
+        public Range ProjectedRange { get; set; }
     }
 }

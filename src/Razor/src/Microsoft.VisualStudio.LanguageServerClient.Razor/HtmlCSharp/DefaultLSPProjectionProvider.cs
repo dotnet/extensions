@@ -5,10 +5,8 @@ using System;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using OmniSharpPosition = OmniSharp.Extensions.LanguageServer.Protocol.Models.Position;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
@@ -46,7 +44,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var languageQueryParams = new RazorLanguageQueryParams()
             {
-                Position = new OmniSharpPosition(position.Line, position.Character),
+                Position = new Position(position.Line, position.Character),
                 Uri = documentSnapshot.Uri
             };
 
@@ -91,7 +89,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var result = new ProjectionResult()
             {
                 Uri = virtualDocument.Uri,
-                Position = new Position((int)languageResponse.Position.Line, (int)languageResponse.Position.Character),
+                Position = languageResponse.Position,
                 PositionIndex = languageResponse.PositionIndex,
                 LanguageKind = languageResponse.Kind,
                 HostDocumentVersion = languageResponse.HostDocumentVersion
