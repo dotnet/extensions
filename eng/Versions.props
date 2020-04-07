@@ -12,13 +12,7 @@
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>4</PreReleaseVersionIteration>
-    <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
-    <!--
-      We do not support changing reference assemblies in a patch. This ignores
-      the patch version number to ensure assembly version of ref assemblies stays constant
-      throughout major.minor.
-    -->
-    <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
+    <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
     <!--
       Until package baselines are updated (see dotnet/aspnetcore#12702), ignore them and PatchConfig.props. This also

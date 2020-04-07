@@ -14,9 +14,6 @@
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('samples'))">true</IsSampleProject>
 
-    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
-    <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
-    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
 
     <ExcludeFromSourceBuild Condition="'$(IsUnitTestProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsSampleProject)' == 'true'">true</ExcludeFromSourceBuild>
   </PropertyGroup>
@@ -73,5 +70,4 @@
 
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\ProjectReferences.props" />
-  <Import Project="eng\targets\Csharp.Refs.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
 </Project>
