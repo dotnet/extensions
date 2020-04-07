@@ -1,8 +1,5 @@
 <Project>
   <ItemGroup>
     <ProjectToBuild Include="$(RepoRoot)src\**\*.csproj" Condition="'$(BuildCSharp)' != 'false'"/>
-    <ProjectToBuild Include="$(RepoRoot)src\**\*.npmproj" Condition="'$(BuildNodeJS)' == 'true'">
-      <RestoreInParallel>false</RestoreInParallel>
-    </ProjectToBuild>
   </ItemGroup>
 </Project>

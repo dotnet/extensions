@@ -45,23 +45,4 @@
           Command="echo '$(ProjectListContent.Replace('\t','\\t'))' > $(ProjectListFile)" />
   </Target>
 
-  <Target Name="GenerateReferenceSources">
-      <MSBuild
-          Projects="@(ProjectToBuild)"
-          Targets="GenerateReferenceSource"
-          SkipNonexistentTargets="true"
-          SkipNonexistentProjects="true" />
-  </Target>
-
-  <Target Name="EnsureFunctionalTestLogsPreserved">
-    <PropertyGroup>
-      <FunctionalLogDir>$(ArtifactsDir)log\Microsoft.Extensions.Logging.Testing.Tests\$(DefaultNetCoreTargetFramework)\AssemblyTestLogTests\</FunctionalLogDir>
-      <FlakyTestLog>$(FunctionalLogDir)FunctionalLogs_LogsPreservedFromFlakyRun.log</FlakyTestLog>
-      <NonFlakyTestLog>$(FunctionalLogDir)FunctionalLogs_LogsPreservedFromNonFlakyRun.log</NonFlakyTestLog>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(FlakyTestLog)')" Text="Flaky test functional logs not found." />
-    <Error Condition="!Exists('$(FlakyTestLog)')" Text="Non flaky test functional logs not found." />
-
-    <Message Text="All functional test logs preserved" Importance="High" />
-  </Target>
 </Project>
