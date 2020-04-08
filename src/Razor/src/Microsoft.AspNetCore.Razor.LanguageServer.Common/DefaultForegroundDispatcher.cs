@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
-    internal class VSCodeForegroundDispatcher : ForegroundDispatcher
+    internal class DefaultForegroundDispatcher : ForegroundDispatcher
     {
         public override bool IsForegroundThread => Thread.CurrentThread.ManagedThreadId == ForegroundTaskScheduler.Instance.ForegroundThreadId;
 

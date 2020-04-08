@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -181,6 +182,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             public override void TrackDocumentVersion(DocumentSnapshot documentSnapshot, long version) => throw new NotImplementedException();
 
             public override void Initialize(ProjectSnapshotManagerBase projectManager)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void RazorFileChanged(string filePath, RazorFileChangeKind kind)
             {
                 throw new NotImplementedException();
             }

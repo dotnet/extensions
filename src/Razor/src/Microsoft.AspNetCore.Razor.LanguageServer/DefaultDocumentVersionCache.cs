@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
@@ -15,16 +16,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         // Internal for testing
         internal readonly Dictionary<string, List<DocumentEntry>> _documentLookup;
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private readonly FilePathNormalizer _filePathNormalizer;
         private ProjectSnapshotManagerBase _projectSnapshotManager;
 
-        public DefaultDocumentVersionCache(ForegroundDispatcher foregroundDispatcher)
+        public DefaultDocumentVersionCache(ForegroundDispatcher foregroundDispatcher, FilePathNormalizer filePathNormalizer)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
+            if (filePathNormalizer is null)
+            {
+                throw new ArgumentNullException(nameof(filePathNormalizer));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
+            _filePathNormalizer = filePathNormalizer;
             _documentLookup = new Dictionary<string, List<DocumentEntry>>(FilePathComparer.Instance);
         }
 
@@ -104,6 +112,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _projectSnapshotManager.Changed += ProjectSnapshotManager_Changed;
         }
 
+        public override void RazorFileChanged(string filePath, RazorFileChangeKind kind)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            switch (kind)
+            {
+                case RazorFileChangeKind.Removed:
+                    if (_documentLookup.ContainsKey(filePath))
+                    {
+                        // Document deleted, evict entry.
+                        _documentLookup.Remove(filePath);
+                    }
+                    break;
+            }
+        }
+
         private void ProjectSnapshotManager_Changed(object sender, ProjectChangeEventArgs args)
         {
             _foregroundDispatcher.AssertForegroundThread();
@@ -115,13 +139,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         !_projectSnapshotManager.IsDocumentOpen(args.DocumentFilePath))
                     {
                         // Document closed, evict entry.
-                        _documentLookup.Remove(args.DocumentFilePath);
-                    }
-                    break;
-                case ProjectChangeKind.DocumentRemoved:
-                    if (_documentLookup.ContainsKey(args.DocumentFilePath))
-                    {
-                        // Document removed, evict entry.
                         _documentLookup.Remove(args.DocumentFilePath);
                     }
                     break;

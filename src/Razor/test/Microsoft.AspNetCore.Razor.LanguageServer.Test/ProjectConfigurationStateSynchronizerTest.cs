@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class ProjectConfigurationStateSynchronizerTest : LanguageServerTestBase
     {
-        private FilePathNormalizer FilePathNormalizer { get; } = new FilePathNormalizer();
-
         [Fact]
         public void ProjectConfigurationFileChanged_Removed_UnknownDocumentNoops()
         {
