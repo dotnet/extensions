@@ -22,7 +22,7 @@
 
     <ItemGroup>
       <MPackFile Include="$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).dll" />
-      <MPackFile Include="$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).pdb" />
+      <MPackFile Include="$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).pdb" Condition="Exists('$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).pdb')" />
     </ItemGroup>
 
     <RemoveDir Directories="$(IntermediateOutputPath)MPack\" />

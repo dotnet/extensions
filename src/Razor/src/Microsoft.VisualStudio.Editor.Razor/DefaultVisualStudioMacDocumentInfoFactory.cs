@@ -38,7 +38,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return DocumentInfo.Create(
                 id: docId,
                 name: Path.GetFileName(filename),
-                folders: null,
+                folders: Array.Empty<string>(),
                 sourceCodeKind: SourceCodeKind.Regular,
                 filePath: filename,
                 loader: textLoader,
