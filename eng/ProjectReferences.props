@@ -4,7 +4,6 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Caching.SqlServer" ProjectPath="$(RepoRoot)src\Caching\SqlServer\src\Microsoft.Extensions.Caching.SqlServer.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Caching.StackExchangeRedis" ProjectPath="$(RepoRoot)src\Caching\StackExchangeRedis\src\Microsoft.Extensions.Caching.StackExchangeRedis.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Configuration.NewtonsoftJson" ProjectPath="$(RepoRoot)src\Configuration\Config.NewtonsoftJson\src\Microsoft.Extensions.Configuration.NewtonsoftJson.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.Extensions.DiagnosticAdapter" ProjectPath="$(RepoRoot)src\DiagnosticAdapter\src\Microsoft.Extensions.DiagnosticAdapter.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Hosting.Systemd" ProjectPath="$(RepoRoot)src\Hosting\Systemd\src\Microsoft.Extensions.Hosting.Systemd.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Hosting.WindowsServices" ProjectPath="$(RepoRoot)src\Hosting\WindowsServices\src\Microsoft.Extensions.Hosting.WindowsServices.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http.Polly" ProjectPath="$(RepoRoot)src\HttpClientFactory\Polly\src\Microsoft.Extensions.Http.Polly.csproj"  />
