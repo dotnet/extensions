@@ -48,16 +48,16 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.4.20205.13</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.4.20205.13</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.4.20205.13</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.4.20205.13</MicrosoftNETCoreAppInternalPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.4.20205.13</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.4.20205.13</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.4.20205.13</MicrosoftNETCorePlatformsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.4.20205.13</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.4.20205.13</SystemTextEncodingsWebPackageVersion>
-    <SystemReflectionMetadataPackageVersion>5.0.0-preview.4.20205.13</SystemReflectionMetadataPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.4.20209.1</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.4.20209.1</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.4.20209.1</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.4.20209.1</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.4.20209.1</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.4.20209.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.4.20209.1</MicrosoftNETCorePlatformsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.4.20209.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.4.20209.1</SystemTextEncodingsWebPackageVersion>
+    <SystemReflectionMetadataPackageVersion>5.0.0-preview.4.20209.1</SystemReflectionMetadataPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>3.6.0-3.20205.2</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
