@@ -71,16 +71,16 @@ stages:
       enablePublishBuildAssets: true
       enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       enableTelemetry: true
-      helixRepo: aspnet/Extensions
+      helixRepo: dotnet/extensions
       jobs:
       - job: Windows
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCorePublic-Pool
-            queue: BuildPool.Server.Amd64.VS2017.Open
+            queue: BuildPool.Server.Amd64.VS2019.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCoreInternal-Pool
-            queue: BuildPool.Server.Amd64.VS2017
+            queue: BuildPool.Server.Amd64.VS2019
         variables:
         # Only enable publishing in official builds.
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -163,6 +163,15 @@ stages:
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
           displayName: Upload package artifacts
           condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
           inputs:
@@ -213,9 +222,9 @@ stages:
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
-            -p:BuildNodeJS=true
             $(_OfficialBuildArgs)
             $(_InternalRuntimeDownloadArgs)
+            /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
           displayName: Build
         - script: eng/scripts/ci-flaky-tests.sh --configuration $(_BuildConfig)
           displayName: Run Flaky Tests
@@ -241,11 +250,12 @@ stages:
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
-          displayName: Upload NPM artifacts
-          condition: and(succeeded(), eq(variables['_BuildConfig'], 'Release'))
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
           inputs:
-            pathtoPublish: artifacts/npm/
-            artifactName: NpmArtifacts
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
 
@@ -301,6 +311,15 @@ stages:
           inputs:
             pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
   - job: Source_Build
