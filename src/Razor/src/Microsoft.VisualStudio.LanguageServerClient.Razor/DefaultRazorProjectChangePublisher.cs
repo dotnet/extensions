@@ -24,6 +24,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     internal class DefaultRazorProjectChangePublisher : RazorProjectChangePublisher
     {
         internal readonly Dictionary<string, Task> _deferredPublishTasks;
+        private const string TempFileExt = ".temp";
         private readonly JoinableTaskContext _joinableTaskContext;
         private readonly RazorLogger _logger;
         private readonly LSPEditorFeatureDetector _lspEditorFeatureDetector;
@@ -73,8 +74,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         }
 
         // Internal settable for testing
-        // 250ms between publishes to prevent bursts of changes yet still be responsive to changes.
-        internal int EnqueueDelay { get; set; } = 250;
+        // 3000ms between publishes to prevent bursts of changes yet still be responsive to changes.
+        internal int EnqueueDelay { get; set; } = 3000;
 
         public override void Initialize(ProjectSnapshotManagerBase projectManager)
         {
@@ -209,9 +210,31 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         protected virtual void SerializeToFile(ProjectSnapshot projectSnapshot, string publishFilePath)
         {
-            var fileInfo = new FileInfo(publishFilePath);
-            using var writer = fileInfo.CreateText();
-            _serializer.Serialize(writer, projectSnapshot);
+            // We need to avoid having an incomplete file at any point, but our
+            // project.razor.json is large enough that it will be written as multiple operations.
+            var tempFilePath = string.Concat(publishFilePath, TempFileExt);
+            var tempFileInfo = new FileInfo(tempFilePath);
+
+            if (tempFileInfo.Exists)
+            {
+                Debug.Fail($"'{tempFileInfo.FullName}' should not exist but it does. This could be caused by failures during serialization or early process termination.");
+                tempFileInfo.Delete();
+            }
+
+            // This needs to be in explicit brackets because the operation needs to be completed
+            // by the time we move the tempfile into its place
+            using (var writer = tempFileInfo.CreateText())
+            {
+                _serializer.Serialize(writer, projectSnapshot);
+
+                var fileInfo = new FileInfo(publishFilePath);
+                if (fileInfo.Exists)
+                {
+                    fileInfo.Delete();
+                }
+            }
+
+            tempFileInfo.MoveTo(publishFilePath);
         }
 
         private async Task PublishAfterDelayAsync(string projectFilePath)

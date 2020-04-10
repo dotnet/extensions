@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly RazorProjectService _projectService;
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly Dictionary<string, string> _configurationToProjectMap;
+        internal readonly Dictionary<string, DelayedProjectInfo> _projectInfoMap;
 
         public ProjectConfigurationStateSynchronizer(
             ForegroundDispatcher foregroundDispatcher,
@@ -43,7 +44,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _projectService = projectService;
             _filePathNormalizer = filePathNormalizer;
             _configurationToProjectMap = new Dictionary<string, string>(FilePathComparer.Instance);
+            _projectInfoMap = new Dictionary<string, DelayedProjectInfo>(FilePathComparer.Instance);
         }
+
+        internal int EnqueueDelay { get; set; } = 250;
 
         public void ProjectConfigurationFileChanged(ProjectConfigurationFileChangeEventArgs args)
         {
@@ -69,11 +73,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                             // We found the last associated project file for the configuration file. Reset the project since we can't
                             // accurately determine its configurations.
-                            ResetProject(projectFilePath);
+                            EnqueueUpdateProject(projectFilePath, snapshotHandle: null);
                             return;
                         }
 
-                        UpdateProject(handle);
+
+                        EnqueueUpdateProject(handle.FilePath, handle);
                         break;
                     }
                 case RazorFileChangeKind.Added:
@@ -89,7 +94,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         var configurationFilePath = _filePathNormalizer.Normalize(args.ConfigurationFilePath);
                         _configurationToProjectMap[configurationFilePath] = projectFilePath;
                         _projectService.AddProject(projectFilePath);
-                        UpdateProject(handle);
+
+                        EnqueueUpdateProject(projectFilePath, handle);
                         break;
                     }
                 case RazorFileChangeKind.Removed:
@@ -103,16 +109,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                         _configurationToProjectMap.Remove(configurationFilePath);
 
-                        ResetProject(projectFilePath);
+                        EnqueueUpdateProject(projectFilePath, snapshotHandle: null);
                         break;
                     }
             }
 
-            void UpdateProject(FullProjectSnapshotHandle handle)
+            void UpdateProject(string projectFilePath, FullProjectSnapshotHandle handle)
             {
+                if (projectFilePath is null)
+                {
+                    throw new ArgumentNullException(nameof(projectFilePath));
+                }
+
                 if (handle is null)
                 {
-                    throw new ArgumentNullException(nameof(handle));
+                    ResetProject(projectFilePath);
+                    return;
                 }
 
                 var projectWorkspaceState = handle.ProjectWorkspaceState ?? ProjectWorkspaceState.Default;
@@ -125,6 +137,30 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     documents);
             }
 
+            async Task UpdateAfterDelayAsync(string projectFilePath)
+            {
+                await Task.Delay(EnqueueDelay).ConfigureAwait(true);
+
+                var delayedProjectInfo = _projectInfoMap[projectFilePath];
+                UpdateProject(projectFilePath, delayedProjectInfo.FullProjectSnapshotHandle);
+            }
+
+            void EnqueueUpdateProject(string projectFilePath, FullProjectSnapshotHandle snapshotHandle)
+            {
+                if (!_projectInfoMap.ContainsKey(projectFilePath))
+                {
+                    _projectInfoMap[projectFilePath] = new DelayedProjectInfo();
+                }
+
+                var delayedProjectInfo = _projectInfoMap[projectFilePath];
+                delayedProjectInfo.FullProjectSnapshotHandle = snapshotHandle;
+
+                if (delayedProjectInfo.ProjectUpdateTask is null || delayedProjectInfo.ProjectUpdateTask.IsCompleted)
+                {
+                    delayedProjectInfo.ProjectUpdateTask = UpdateAfterDelayAsync(projectFilePath);
+                }
+            }
+
             void ResetProject(string projectFilePath)
             {
                 _projectService.UpdateProject(
@@ -134,6 +170,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     ProjectWorkspaceState.Default,
                     Array.Empty<DocumentSnapshotHandle>());
             }
+        }
+
+        internal class DelayedProjectInfo
+        {
+            public Task ProjectUpdateTask { get; set; }
+
+            public FullProjectSnapshotHandle FullProjectSnapshotHandle { get; set; }
         }
     }
 }
