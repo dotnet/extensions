@@ -78,7 +78,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
             else
             {
-                var synchronized = await _documentSynchronizer.TrySynchronizeVirtualDocumentAsync(documentSnapshot, virtualDocument, cancellationToken).ConfigureAwait(false);
+                var synchronized = await _documentSynchronizer.TrySynchronizeVirtualDocumentAsync(documentSnapshot.Version, virtualDocument, cancellationToken).ConfigureAwait(false);
                 if (!synchronized)
                 {
                     // Could not synchronize

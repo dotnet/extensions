@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
-    internal abstract class LSPDocumentSynchronizer
+    internal abstract class LSPDocumentSynchronizer : LSPDocumentManagerChangeTrigger
     {
-        public abstract Task<bool> TrySynchronizeVirtualDocumentAsync(LSPDocumentSnapshot document, VirtualDocumentSnapshot virtualDocument, CancellationToken cancellationToken);
+        public abstract Task<bool> TrySynchronizeVirtualDocumentAsync(int requiredHostDocumentVersion, VirtualDocumentSnapshot virtualDocument, CancellationToken cancellationToken);
     }
 }

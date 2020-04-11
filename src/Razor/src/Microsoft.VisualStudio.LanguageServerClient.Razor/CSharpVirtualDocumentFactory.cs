@@ -96,6 +96,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var virtualCSharpUri = new Uri(virtualCSharpFilePath);
 
             var csharpBuffer = _textBufferFactory.CreateTextBuffer();
+            _fileUriProvider.AddOrUpdate(csharpBuffer, virtualCSharpUri);
             csharpBuffer.Properties.AddProperty(ContainedLanguageMarker, true);
             csharpBuffer.Properties.AddProperty(LanguageClientConstants.ClientNamePropertyKey, "RazorCSharp");
 

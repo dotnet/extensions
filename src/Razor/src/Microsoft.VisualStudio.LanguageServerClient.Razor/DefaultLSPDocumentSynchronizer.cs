@@ -2,88 +2,129 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Composition;
-using System.Linq;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Threading;
+using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [Shared]
+    [Export(typeof(LSPDocumentManagerChangeTrigger))]
     [Export(typeof(LSPDocumentSynchronizer))]
     internal class DefaultLSPDocumentSynchronizer : LSPDocumentSynchronizer
     {
         // Internal for testing
         internal TimeSpan _synchronizationTimeout = TimeSpan.FromSeconds(2);
-        private readonly JoinableTaskFactory _joinableTaskFactory;
-        private readonly ConcurrentDictionary<Uri, DocumentSynchronizingContext> _synchronizingContexts;
+        private readonly Dictionary<Uri, DocumentContext> _virtualDocumentContexts;
+        private readonly object DocumentContextLock = new object();
+        private readonly FileUriProvider _fileUriProvider;
 
         [ImportingConstructor]
-        public DefaultLSPDocumentSynchronizer(LSPDocumentManager documentManager, JoinableTaskContext joinableTaskContext)
+        public DefaultLSPDocumentSynchronizer(FileUriProvider fileUriProvider)
+        {
+            if (fileUriProvider is null)
+            {
+                throw new ArgumentNullException(nameof(fileUriProvider));
+            }
+
+            _fileUriProvider = fileUriProvider;
+            _virtualDocumentContexts = new Dictionary<Uri, DocumentContext>();
+        }
+
+        public override void Initialize(LSPDocumentManager documentManager)
         {
             if (documentManager is null)
             {
                 throw new ArgumentNullException(nameof(documentManager));
             }
 
-            if (joinableTaskContext is null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskContext));
-            }
-
-            _joinableTaskFactory = joinableTaskContext.Factory;
-
             documentManager.Changed += DocumentManager_Changed;
-            _synchronizingContexts = new ConcurrentDictionary<Uri, DocumentSynchronizingContext>();
         }
 
-        public async override Task<bool> TrySynchronizeVirtualDocumentAsync(LSPDocumentSnapshot document, VirtualDocumentSnapshot virtualDocument, CancellationToken cancellationToken)
+        public override Task<bool> TrySynchronizeVirtualDocumentAsync(int requiredHostDocumentVersion, VirtualDocumentSnapshot virtualDocument, CancellationToken cancellationToken)
         {
-            if (document is null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-
             if (virtualDocument is null)
             {
                 throw new ArgumentNullException(nameof(virtualDocument));
             }
 
-            if (!document.VirtualDocuments.Contains(virtualDocument))
+            lock (DocumentContextLock)
             {
-                throw new InvalidOperationException("Virtual document snapshot must belong to the provided LSP document snapshot.");
-            }
-
-            if (document.Version == virtualDocument.HostDocumentSyncVersion)
-            {
-                // Already synchronized
-                return true;
-            }
-
-            var synchronizingContext = _synchronizingContexts.AddOrUpdate(
-                virtualDocument.Uri,
-                (uri) => new DocumentSynchronizingContext(virtualDocument, document.Version, _synchronizationTimeout, cancellationToken),
-                (uri, existingContext) =>
+                if (!_virtualDocumentContexts.TryGetValue(virtualDocument.Uri, out var documentContext))
                 {
-                    if (virtualDocument == existingContext.VirtualDocument &&
-                        document.Version == existingContext.ExpectedHostDocumentVersion)
-                    {
-                        // Already contain a synchronizing context that represents this request and it's in-process of being calculated.
-                        return existingContext;
-                    }
+                    throw new InvalidOperationException("Document context should never be null here.");
+                }
 
-                    // Cancel old request
-                    existingContext.SetSynchronized(false);
-                    return new DocumentSynchronizingContext(virtualDocument, document.Version, _synchronizationTimeout, cancellationToken);
-                });
+                if (requiredHostDocumentVersion == documentContext.SeenHostDocumentVersion)
+                {
+                    // Already synchronized
+                    return Task.FromResult(true);
+                }
 
-            var result = await _joinableTaskFactory.RunAsync(() => synchronizingContext.OnSynchronizedAsync);
+                if (requiredHostDocumentVersion != documentContext.SynchronizingContext?.RequiredHostDocumentVersion)
+                {
+                    // Currently tracked synchronizing context is not sufficient, need to update a new one.
+                    documentContext.UpdateSynchronizingContext(requiredHostDocumentVersion, cancellationToken);
+                }
+                else
+                {
+                    // Already have a synchronizing context for this type of request, memoize the results.
+                }
 
-            _synchronizingContexts.TryRemove(virtualDocument.Uri, out _);
+                var synchronizingContext = documentContext.SynchronizingContext;
+                return synchronizingContext.OnSynchronizedAsync;
+            }
+        }
 
-            return result;
+        private void VirtualDocumentBuffer_PostChanged(object sender, EventArgs e)
+        {
+            var textBuffer = (ITextBuffer)sender;
+            if (!_fileUriProvider.TryGet(textBuffer, out var virtualDocumentUri))
+            {
+                return;
+            }
+
+            lock (DocumentContextLock)
+            {
+                if (!_virtualDocumentContexts.TryGetValue(virtualDocumentUri, out var documentContext))
+                {
+                    return;
+                }
+
+                if (!textBuffer.TryGetHostDocumentSyncVersion(out var hostDocumentVersion))
+                {
+                    return;
+                }
+
+                documentContext.UpdateSeenDocumentVersion(hostDocumentVersion);
+
+                var synchronizingContext = documentContext.SynchronizingContext;
+                if (synchronizingContext == null)
+                {
+                    // No active synchronizing context for this document.
+                    return;
+                }
+
+                if (documentContext.SeenHostDocumentVersion == synchronizingContext.RequiredHostDocumentVersion)
+                {
+                    // The buffers host document version indicates that it's now "synchronized". If we were to re-request the VirtualDocumentSnapshot
+                    // from the LSPDocumentManager we would see a synchronized LSPDocument. Instead of re-requesting we're making the assumption that
+                    // whenever a VirtualDocumentSnapshot is updated it also updates its ITextBuffer sync version.
+                    synchronizingContext.SetSynchronized(true);
+                }
+                else if (documentContext.SeenHostDocumentVersion > synchronizingContext.RequiredHostDocumentVersion)
+                {
+                    // The LSP document version has surpassed what the projected document was expecting for a version. No longer able to synchronize.
+                    synchronizingContext.SetSynchronized(false);
+                }
+                else
+                {
+                    // Seen host document version is less than the required version, need to wait longer.
+                }
+            }
         }
 
         // Internal for testing
@@ -94,45 +135,77 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(args));
             }
 
-            if (args.Kind != LSPDocumentChangeKind.VirtualDocumentChanged)
+            lock (DocumentContextLock)
             {
-                return;
-            }
+                if (args.Kind == LSPDocumentChangeKind.Added)
+                {
+                    var lspDocument = args.New;
+                    for (var i = 0; i < lspDocument.VirtualDocuments.Count; i++)
+                    {
+                        var virtualDocument = lspDocument.VirtualDocuments[i];
 
-            var lspDocument = args.New;
-            for (var i = 0; i < lspDocument.VirtualDocuments.Count; i++)
-            {
-                if (!_synchronizingContexts.TryGetValue(lspDocument.VirtualDocuments[i].Uri, out var synchronizingContext))
-                {
-                    continue;
-                }
+                        Debug.Assert(!_virtualDocumentContexts.ContainsKey(virtualDocument.Uri));
 
-                if (lspDocument.Version == synchronizingContext.ExpectedHostDocumentVersion)
-                {
-                    synchronizingContext.SetSynchronized(true);
+                        var virtualDocumentTextBuffer = virtualDocument.Snapshot.TextBuffer;
+                        virtualDocumentTextBuffer.PostChanged += VirtualDocumentBuffer_PostChanged;
+                        _virtualDocumentContexts[virtualDocument.Uri] = new DocumentContext(_synchronizationTimeout);
+                    }
                 }
-                else if (lspDocument.Version > synchronizingContext.ExpectedHostDocumentVersion)
+                else if (args.Kind == LSPDocumentChangeKind.Removed)
                 {
-                    // The LSP document version has surpassed what the projected document was expecting for a version. No longer able to synchronize.
-                    synchronizingContext.SetSynchronized(false);
+                    var lspDocument = args.Old;
+                    for (var i = 0; i < lspDocument.VirtualDocuments.Count; i++)
+                    {
+                        var virtualDocument = lspDocument.VirtualDocuments[i];
+
+                        Debug.Assert(_virtualDocumentContexts.ContainsKey(virtualDocument.Uri));
+
+                        var virtualDocumentTextBuffer = virtualDocument.Snapshot.TextBuffer;
+                        virtualDocumentTextBuffer.PostChanged -= VirtualDocumentBuffer_PostChanged;
+                        _virtualDocumentContexts.Remove(virtualDocument.Uri);
+                    }
                 }
             }
         }
 
-        private class DocumentSynchronizingContext
+        private class DocumentContext
+        {
+            private readonly TimeSpan _synchronizingTimeout;
+
+            public DocumentContext(TimeSpan synchronizingTimeout)
+            {
+                _synchronizingTimeout = synchronizingTimeout;
+            }
+
+            public long SeenHostDocumentVersion { get; private set; }
+
+            public DocumentSynchronizingContext SynchronizingContext { get; private set; }
+
+            public void UpdateSeenDocumentVersion(long seenDocumentVersion)
+            {
+                SeenHostDocumentVersion = seenDocumentVersion;
+            }
+
+            public void UpdateSynchronizingContext(int requiredHostDocumentVersion, CancellationToken cancellationToken)
+            {
+                // Cancel our existing synchronizing context.
+                SynchronizingContext?.SetSynchronized(result: false);
+                SynchronizingContext = new DocumentSynchronizingContext(requiredHostDocumentVersion, _synchronizingTimeout, cancellationToken);
+            }
+        }
+
+        public class DocumentSynchronizingContext
         {
             private readonly TaskCompletionSource<bool> _onSynchronizedSource;
             private readonly CancellationTokenSource _cts;
             private bool _synchronizedSet;
 
             public DocumentSynchronizingContext(
-                VirtualDocumentSnapshot virtualDocument,
-                int expectedHostDocumentVersion,
+                int requiredHostDocumentVersion,
                 TimeSpan timeout,
                 CancellationToken requestCancellationToken)
             {
-                VirtualDocument = virtualDocument;
-                ExpectedHostDocumentVersion = expectedHostDocumentVersion;
+                RequiredHostDocumentVersion = requiredHostDocumentVersion;
                 _onSynchronizedSource = new TaskCompletionSource<bool>();
                 _cts = CancellationTokenSource.CreateLinkedTokenSource(requestCancellationToken);
 
@@ -142,9 +215,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 _cts.CancelAfter(timeout);
             }
 
-            public VirtualDocumentSnapshot VirtualDocument { get; }
-
-            public int ExpectedHostDocumentVersion { get; }
+            public int RequiredHostDocumentVersion { get; }
 
             public Task<bool> OnSynchronizedAsync => _onSynchronizedSource.Task;
 

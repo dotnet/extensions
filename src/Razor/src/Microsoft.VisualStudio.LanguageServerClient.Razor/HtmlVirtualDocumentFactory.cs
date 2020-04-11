@@ -91,6 +91,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var virtualHtmlUri = new Uri(virtualHtmlFilePath);
 
             var htmlBuffer = _textBufferFactory.CreateTextBuffer();
+            _fileUriProvider.AddOrUpdate(htmlBuffer, virtualHtmlUri);
             htmlBuffer.Properties.AddProperty(ContainedLanguageMarker, true);
 
             // Create a text document to trigger the Html language server initialization.

@@ -56,13 +56,13 @@ namespace Microsoft.VisualStudio.Test
                 changedEvent.Invoke(this, args);
             }
 
-            PostChanged?.Invoke(null, null);
+            PostChanged?.Invoke(this, null);
 
-            ReadOnlyRegionsChanged?.Invoke(null, null);
-            ChangedLowPriority?.Invoke(null, null);
-            ChangedHighPriority?.Invoke(null, null);
-            Changing?.Invoke(null, null);
-            ContentTypeChanged?.Invoke(null, null);
+            ReadOnlyRegionsChanged?.Invoke(this, null);
+            ChangedLowPriority?.Invoke(this, null);
+            ChangedHighPriority?.Invoke(this, null);
+            Changing?.Invoke(this, null);
+            ContentTypeChanged?.Invoke(this, null);
         }
 
         public IReadOnlyList<EventHandler<TextContentChangedEventArgs>> AttachedChangedEvents => _attachedChangedEvents;

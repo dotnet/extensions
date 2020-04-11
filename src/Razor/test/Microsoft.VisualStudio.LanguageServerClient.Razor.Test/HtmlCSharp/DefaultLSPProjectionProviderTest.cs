@@ -69,7 +69,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
             documentSynchronizer
-                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(documentSnapshot, virtualDocumentSnapshot, It.IsAny<CancellationToken>()))
+                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(documentSnapshot.Version, virtualDocumentSnapshot, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(true));
 
             var projectionProvider = new DefaultLSPProjectionProvider(requestInvoker.Object, documentSynchronizer.Object, Mock.Of<RazorLogger>());
@@ -112,7 +112,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
             documentSynchronizer
-                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(documentSnapshot, virtualDocumentSnapshot, It.IsAny<CancellationToken>()))
+                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(documentSnapshot.Version, virtualDocumentSnapshot, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(true));
 
             var projectionProvider = new DefaultLSPProjectionProvider(requestInvoker.Object, documentSynchronizer.Object, Mock.Of<RazorLogger>());
@@ -155,7 +155,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
             documentSynchronizer
-                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(documentSnapshot, virtualDocumentSnapshot, It.IsAny<CancellationToken>()))
+                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(documentSnapshot.Version, virtualDocumentSnapshot, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(true));
 
             var projectionProvider = new DefaultLSPProjectionProvider(requestInvoker.Object, documentSynchronizer.Object, Mock.Of<RazorLogger>());
@@ -198,7 +198,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
             documentSynchronizer
-                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(documentSnapshot, virtualDocumentSnapshot, It.IsAny<CancellationToken>()))
+                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(documentSnapshot.Version, virtualDocumentSnapshot, It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(false));
 
             var projectionProvider = new DefaultLSPProjectionProvider(requestInvoker.Object, documentSynchronizer.Object, Mock.Of<RazorLogger>());

@@ -25,6 +25,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _textDocumentFactory = textDocumentFactory;
         }
 
+        public override void AddOrUpdate(ITextBuffer textBuffer, Uri uri)
+        {
+            if (textBuffer is null)
+            {
+                throw new ArgumentNullException(nameof(textBuffer));
+            }
+
+            if (uri is null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            textBuffer.Properties[TextBufferUri] = uri;
+        }
+
         public override Uri GetOrCreate(ITextBuffer textBuffer)
         {
             if (textBuffer is null)
@@ -32,7 +47,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
-            if (textBuffer.Properties.TryGetProperty<Uri>(TextBufferUri, out var uri))
+            if (TryGet(textBuffer, out var uri))
             {
                 return uri;
             }
@@ -49,8 +64,23 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             uri = new Uri(filePath, UriKind.Absolute);
-            textBuffer.Properties.AddProperty(TextBufferUri, uri);
+            AddOrUpdate(textBuffer, uri);
             return uri;
+        }
+
+        public override bool TryGet(ITextBuffer textBuffer, out Uri uri)
+        {
+            if (textBuffer is null)
+            {
+                throw new ArgumentNullException(nameof(textBuffer));
+            }
+
+            if (textBuffer.Properties.TryGetProperty(TextBufferUri, out uri))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -10,10 +10,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private long? _hostDocumentSyncVersion;
 
-        public TestVirtualDocumentSnapshot(Uri uri, int hostDocumentVersion)
+        public TestVirtualDocumentSnapshot(Uri uri, long hostDocumentVersion) : this(uri, hostDocumentVersion, snapshot: null)
+        {
+        }
+
+        public TestVirtualDocumentSnapshot(Uri uri, long hostDocumentVersion, ITextSnapshot snapshot)
         {
             Uri = uri;
             _hostDocumentSyncVersion = hostDocumentVersion;
+            Snapshot = snapshot;
         }
 
         public override Uri Uri { get; }

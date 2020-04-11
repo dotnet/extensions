@@ -20,5 +20,20 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         /// <param name="textBuffer">A text buffer</param>
         /// <returns>A <see cref="Uri"/> that can be used to locate the provided <paramref name="textBuffer"/>.</returns>
         public abstract Uri GetOrCreate(ITextBuffer textBuffer);
+
+        /// <summary>
+        /// Attempts to retrieve the Razor addressable <see cref="Uri"/> for the provided <paramref name="textBuffer"/>.
+        /// </summary>
+        /// <param name="textBuffer">A text buffer</param>
+        /// <param name="uri">A <see cref="Uri"/> that can be used to locate the provided <paramref name="textBuffer"/>.</param>
+        /// <returns><c>true</c> if a Razor based <see cref="Uri"/> existed on the buffer, other wise <c>false</c>.</returns>
+        public abstract bool TryGet(ITextBuffer textBuffer, out Uri uri);
+
+        /// <summary>
+        /// Adds or updates the provided <paramref name="uri"/> for the given <paramref name="textBuffer"/> under a Razor property name.
+        /// </summary>
+        /// <param name="textBuffer">A text buffer</param>
+        /// <param name="uri">A <see cref="Uri"/> that can be used to locate the provided <paramref name="textBuffer"/>.</param>
+        public abstract void AddOrUpdate(ITextBuffer textBuffer, Uri uri);
     }
 }

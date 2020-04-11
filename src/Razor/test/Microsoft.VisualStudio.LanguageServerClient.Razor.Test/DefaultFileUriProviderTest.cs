@@ -1,8 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Utilities;
 using Moq;
 using Xunit;
 
@@ -12,10 +13,71 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         public DefaultFileUriProviderTest()
         {
-            TextBuffer = Mock.Of<ITextBuffer>(buffer => buffer.Properties == new PropertyCollection());
+            TextBuffer = new TestTextBuffer(StringTextSnapshot.Empty);
         }
 
         private ITextBuffer TextBuffer { get; }
+
+        [Fact]
+        public void AddOrUpdate_Adds()
+        {
+            // Arrange
+            var expectedUri = new Uri("C:/path/to/file.razor");
+            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+
+            // Act
+            uriProvider.AddOrUpdate(TextBuffer, expectedUri);
+
+            // Assert
+            Assert.True(uriProvider.TryGet(TextBuffer, out var uri));
+            Assert.Same(expectedUri, uri);
+        }
+
+        [Fact]
+        public void AddOrUpdate_Updates()
+        {
+            // Arrange
+            var expectedUri = new Uri("C:/path/to/file.razor");
+            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+            uriProvider.AddOrUpdate(TextBuffer, new Uri("C:/original/uri.razor"));
+
+            // Act
+            uriProvider.AddOrUpdate(TextBuffer, expectedUri);
+
+            // Assert
+            Assert.True(uriProvider.TryGet(TextBuffer, out var uri));
+            Assert.Same(expectedUri, uri);
+        }
+
+        [Fact]
+        public void TryGet_Exists_ReturnsTrue()
+        {
+            // Arrange
+            var expectedUri = new Uri("C:/path/to/file.razor");
+            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+            uriProvider.AddOrUpdate(TextBuffer, expectedUri);
+
+            // Act
+            var result = uriProvider.TryGet(TextBuffer, out var uri);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(expectedUri, uri);
+        }
+
+        [Fact]
+        public void TryGet_DoesNotExist_ReturnsFalse()
+        {
+            // Arrange
+            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+
+            // Act
+            var result = uriProvider.TryGet(TextBuffer, out var uri);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(uri);
+        }
 
         [Fact]
         public void GetOrCreate_NoTextDocument_Creates()
