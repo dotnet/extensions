@@ -163,7 +163,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         private static void NotifyBufferVersionUpdated(ITextBuffer textBuffer, long hostDocumentSyncVersion)
         {
-            textBuffer.MarkHostDocumentSyncVersion(hostDocumentSyncVersion);
+            textBuffer.SetHostDocumentSyncVersion(hostDocumentSyncVersion);
             var edit = textBuffer.CreateEdit();
 
             // Content doesn't matter, we're just trying to create an edit that notifies listeners of a changed event.

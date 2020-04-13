@@ -46,7 +46,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             _hostDocumentSyncVersion = hostDocumentVersion;
-            TextBuffer.MarkHostDocumentSyncVersion(_hostDocumentSyncVersion.Value);
+            TextBuffer.SetHostDocumentSyncVersion(_hostDocumentSyncVersion.Value);
 
             if (changes.Count == 0)
             {

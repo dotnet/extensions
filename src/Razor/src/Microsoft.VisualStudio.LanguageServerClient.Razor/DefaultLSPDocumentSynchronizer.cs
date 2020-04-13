@@ -194,7 +194,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
         }
 
-        public class DocumentSynchronizingContext
+        private class DocumentSynchronizingContext
         {
             private readonly TaskCompletionSource<bool> _onSynchronizedSource;
             private readonly CancellationTokenSource _cts;

@@ -10,7 +10,7 @@ namespace Microsoft.VisualStudio.Text
     {
         private static string HostDocumentVersionMarked = "__Razor_HostDocumentVersionMarker__";
 
-        public static void MarkHostDocumentSyncVersion(this ITextBuffer textBuffer, long hostDocumentVersion)
+        public static void SetHostDocumentSyncVersion(this ITextBuffer textBuffer, long hostDocumentVersion)
         {
             if (textBuffer is null)
             {
