@@ -60,7 +60,7 @@
     </Dependency>
     <Dependency Name="System.Text.Json" Version="4.7.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
-      <Sha>d14f55bd2920bb96138518159d573c09351d6ace</Sha>
+      <Sha>d6f354dba35b7a7da472450b22a45fb091f98ab9</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
@@ -68,15 +68,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.1.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
-      <Sha>3c16cbb071d42984dce5b16a183eedff71a47d23</Sha>
+      <Sha>be38cb2b9305c5875ae16e945445be256620bba2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.4-servicing.20208.2">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.4-servicing.20212.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
-      <Sha>3c16cbb071d42984dce5b16a183eedff71a47d23</Sha>
+      <Sha>be38cb2b9305c5875ae16e945445be256620bba2</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="3.1.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
-      <Sha>d14f55bd2920bb96138518159d573c09351d6ace</Sha>
+      <Sha>d6f354dba35b7a7da472450b22a45fb091f98ab9</Sha>
     </Dependency>
     <!-- Keep this dependency at the bottom of ProductDependencies, else it will be picked as the parent for CoherentParentDependencies -->
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0" Pinned="true">
