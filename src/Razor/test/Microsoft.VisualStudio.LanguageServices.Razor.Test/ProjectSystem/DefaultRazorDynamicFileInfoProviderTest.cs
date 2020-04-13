@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Moq;
 using Xunit;
@@ -15,10 +13,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.ProjectSystem
     {
         public DefaultRazorDynamicFileInfoProviderTest()
         {
-            DocumentServiceFactory = Mock.Of<DocumentServiceProviderFactory>();
+            DocumentServiceFactory = Mock.Of<RazorDocumentServiceProviderFactory>();
         }
 
-        private DocumentServiceProviderFactory DocumentServiceFactory { get; }
+        private RazorDocumentServiceProviderFactory DocumentServiceFactory { get; }
 
         [Fact]
         public void UpdateLSPFileInfo_UnknownFile_Noops()

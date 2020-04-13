@@ -17,19 +17,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [Export(typeof(VisualStudioMacDocumentInfoFactory))]
     internal class DefaultVisualStudioMacDocumentInfoFactory : VisualStudioMacDocumentInfoFactory
     {
-        private readonly DocumentServiceProviderFactory _factory;
-
-        [ImportingConstructor]
-        public DefaultVisualStudioMacDocumentInfoFactory(DocumentServiceProviderFactory factory)
-        {
-            if (factory is null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            _factory = factory;
-        }
-
         public override DocumentInfo CreateEmpty(string razorFilePath, ProjectId projectId)
         {
             var filename = Path.ChangeExtension(razorFilePath, ".g.cs");
@@ -42,8 +29,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 sourceCodeKind: SourceCodeKind.Regular,
                 filePath: filename,
                 loader: textLoader,
-                isGenerated: true,
-                documentServiceProvider: _factory.CreateEmpty());
+                isGenerated: true);
         }
     }
 }

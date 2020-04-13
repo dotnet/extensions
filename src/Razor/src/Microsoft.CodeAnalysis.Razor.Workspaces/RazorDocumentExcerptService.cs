@@ -9,18 +9,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Classification;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    internal class RazorDocumentExcerptService : IDocumentExcerptService
+    internal class RazorDocumentExcerptService : IRazorDocumentExcerptService
     {
         private readonly DocumentSnapshot _document;
-        private readonly ISpanMappingService _mapper;
+        private readonly IRazorSpanMappingService _mapper;
 
-        public RazorDocumentExcerptService(DocumentSnapshot document, ISpanMappingService mapper)
+        public RazorDocumentExcerptService(DocumentSnapshot document, IRazorSpanMappingService mapper)
         {
             if (mapper == null)
             {
@@ -31,10 +32,10 @@ namespace Microsoft.CodeAnalysis.Razor
             _mapper = mapper;
         }
 
-        public async Task<ExcerptResult?> TryExcerptAsync(
+        public async Task<RazorExcerptResult?> TryExcerptAsync(
             Document document,
             TextSpan span,
-            ExcerptMode mode,
+            RazorExcerptMode mode,
             CancellationToken cancellationToken)
         {
             var result = await TryGetExcerptInternalAsync(document, span, (ExcerptModeInternal)mode, cancellationToken).ConfigureAwait(false);
@@ -53,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             var mapped = await _mapper.MapSpansAsync(document, new[] { span }, cancellationToken).ConfigureAwait(false);
-            if (mapped.Length == 0 || mapped[0].Equals(default(MappedSpanResult)))
+            if (mapped.Length == 0 || mapped[0].Equals(default(RazorMappedSpanResult)))
             {
                 return null;
             }
@@ -227,8 +228,8 @@ namespace Microsoft.CodeAnalysis.Razor
         // We have IVT access to the Roslyn APIs for product code, but not for testing.
         public enum ExcerptModeInternal
         {
-            SingleLine = ExcerptMode.SingleLine,
-            Tooltip = ExcerptMode.Tooltip,
+            SingleLine = RazorExcerptMode.SingleLine,
+            Tooltip = RazorExcerptMode.Tooltip,
         }
 
         // We have IVT access to the Roslyn APIs for product code, but not for testing.
@@ -258,9 +259,9 @@ namespace Microsoft.CodeAnalysis.Razor
                 Span = span;
             }
 
-            public ExcerptResult ToExcerptResult()
+            public RazorExcerptResult ToExcerptResult()
             {
-                return new ExcerptResult(Content, MappedSpan, ClassifiedSpans, Document, Span);
+                return new RazorExcerptResult(Content, MappedSpan, ClassifiedSpans, Document, Span);
             }
         }
     }

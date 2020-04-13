@@ -4,35 +4,35 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
+using System.Composition;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Host;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
+namespace Microsoft.CodeAnalysis.Razor.Workspaces
 {
-    [System.Composition.Shared]
-    [ExportMetadata("Extensions", new string[] { "cshtml", "razor", })]
+    [Shared]
+    [Export(typeof(IRazorDynamicFileInfoProvider))]
     [Export(typeof(RazorDynamicFileInfoProvider))]
-    [Export(typeof(IDynamicFileInfoProvider))]
-    internal class DefaultRazorDynamicFileInfoProvider : RazorDynamicFileInfoProvider, IDynamicFileInfoProvider
+    internal class DefaultRazorDynamicFileInfoProvider : RazorDynamicFileInfoProvider, IRazorDynamicFileInfoProvider
     {
         private readonly ConcurrentDictionary<Key, Entry> _entries;
         private readonly Func<Key, Entry> _createEmptyEntry;
-        private readonly DocumentServiceProviderFactory _factory;
+        private readonly RazorDocumentServiceProviderFactory _factory;
 
         [ImportingConstructor]
-        public DefaultRazorDynamicFileInfoProvider(DocumentServiceProviderFactory factory)
+        public DefaultRazorDynamicFileInfoProvider(RazorDocumentServiceProviderFactory factory)
         {
-            if (factory == null)
+            if (factory is null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
             _factory = factory;
-
             _entries = new ConcurrentDictionary<Key, Entry>();
             _createEmptyEntry = (key) => new Entry(CreateEmptyInfo(key), supportsSuppression: true);
         }
@@ -153,7 +153,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public Task<DynamicFileInfo> GetDynamicFileInfoAsync(ProjectId projectId, string projectFilePath, string filePath, CancellationToken cancellationToken)
+        public Task<RazorDynamicFileInfo> GetDynamicFileInfoAsync(ProjectId projectId, string projectFilePath, string filePath, CancellationToken cancellationToken)
         {
             if (projectFilePath == null)
             {
@@ -183,22 +183,22 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             var key = new Key(projectFilePath, filePath);
-            _entries.TryRemove(key, out var entry);
+            _entries.TryRemove(key, out _);
             return Task.CompletedTask;
         }
 
-        private DynamicFileInfo CreateEmptyInfo(Key key)
+        private RazorDynamicFileInfo CreateEmptyInfo(Key key)
         {
             var filename = key.FilePath + ".g.cs";
             var textLoader = new EmptyTextLoader(filename);
-            return new DynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.CreateEmpty());
+            return new RazorDynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.CreateEmpty());
         }
 
-        private DynamicFileInfo CreateInfo(Key key, DynamicDocumentContainer document)
+        private RazorDynamicFileInfo CreateInfo(Key key, DynamicDocumentContainer document)
         {
             var filename = key.FilePath + ".g.cs";
             var textLoader = document.GetTextLoader(filename);
-            return new DynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.Create(document));
+            return new RazorDynamicFileInfo(filename, SourceCodeKind.Regular, textLoader, _factory.Create(document));
         }
 
         // Using a separate handle to the 'current' file info so that can allow Roslyn to send
@@ -206,9 +206,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public class Entry
         {
             // Can't ever be null for thread-safety reasons
-            private DynamicFileInfo _current;
+            private RazorDynamicFileInfo _current;
 
-            public Entry(DynamicFileInfo current, bool supportsSuppression)
+            public Entry(RazorDynamicFileInfo current, bool supportsSuppression)
             {
                 if (current == null)
                 {
@@ -220,7 +220,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 Lock = new object();
             }
 
-            public DynamicFileInfo Current
+            public RazorDynamicFileInfo Current
             {
                 get => _current;
                 set
@@ -272,10 +272,29 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             public override int GetHashCode()
             {
-                var hash = new HashCodeCombiner();
+                var hash = HashCodeCombiner.Start();
                 hash.Add(ProjectFilePath, FilePathComparer.Instance);
                 hash.Add(FilePath, FilePathComparer.Instance);
                 return hash;
+            }
+        }
+
+        private class EmptyTextLoader : TextLoader
+        {
+            private readonly string _filePath;
+            private readonly VersionStamp _version;
+
+            public EmptyTextLoader(string filePath)
+            {
+                _filePath = filePath;
+                _version = VersionStamp.Default; // Version will never change so this can be reused.
+            }
+
+            public override Task<TextAndVersion> LoadTextAndVersionAsync(Workspace workspace, DocumentId documentId, CancellationToken cancellationToken)
+            {
+                // Providing an encoding here is important for debuggability. Without this edit-and-continue
+                // won't work for projects with Razor files.
+                return Task.FromResult(TextAndVersion.Create(SourceText.From("", Encoding.UTF8), _version, _filePath));
             }
         }
     }

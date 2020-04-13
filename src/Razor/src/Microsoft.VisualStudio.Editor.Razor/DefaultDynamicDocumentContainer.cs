@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 
@@ -31,18 +32,18 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public override TextLoader GetTextLoader(string filePath) => new GeneratedDocumentTextLoader(_documentSnapshot, filePath);
 
-        public override object GetExcerptService()
+        public override IRazorDocumentExcerptService GetExcerptService()
         {
             if (_excerptService == null)
             {
-                var mappingService = (RazorSpanMappingService)GetMappingService();
+                var mappingService = GetMappingService();
                 _excerptService = new RazorDocumentExcerptService(_documentSnapshot, mappingService);
             }
 
             return _excerptService;
         }
 
-        public override object GetMappingService()
+        public override IRazorSpanMappingService GetMappingService()
         {
             if (_mappingService == null)
             {
