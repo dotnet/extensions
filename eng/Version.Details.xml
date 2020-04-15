@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.1.4-servicing.20214.4">
+    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.1.4-servicing.20214.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-extensions</Uri>
-      <Sha>b047d4f08211e0602a8b37e90951bb18d43a655c</Sha>
+      <Sha>c3a7912949bb43a5d5dea5e779c18f3f834c6bdc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.1.4-servicing.20214.4">
+    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.1.4-servicing.20214.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-extensions</Uri>
-      <Sha>b047d4f08211e0602a8b37e90951bb18d43a655c</Sha>
+      <Sha>c3a7912949bb43a5d5dea5e779c18f3f834c6bdc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.NonCapturingTimer.Sources" Version="3.1.4-servicing.20214.4">
+    <Dependency Name="Microsoft.Extensions.NonCapturingTimer.Sources" Version="3.1.4-servicing.20214.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-extensions</Uri>
-      <Sha>b047d4f08211e0602a8b37e90951bb18d43a655c</Sha>
+      <Sha>c3a7912949bb43a5d5dea5e779c18f3f834c6bdc</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging" Version="3.1.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-extensions</Uri>
-      <Sha>b047d4f08211e0602a8b37e90951bb18d43a655c</Sha>
+      <Sha>c3a7912949bb43a5d5dea5e779c18f3f834c6bdc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.4-servicing.20214.4">
+    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.4-servicing.20214.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-extensions</Uri>
-      <Sha>b047d4f08211e0602a8b37e90951bb18d43a655c</Sha>
+      <Sha>c3a7912949bb43a5d5dea5e779c18f3f834c6bdc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.4-servicing.20214.4">
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.4-servicing.20214.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-extensions</Uri>
-      <Sha>b047d4f08211e0602a8b37e90951bb18d43a655c</Sha>
+      <Sha>c3a7912949bb43a5d5dea5e779c18f3f834c6bdc</Sha>
     </Dependency>
     <Dependency Name="System.Text.Json" Version="4.7.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
-      <Sha>d6f354dba35b7a7da472450b22a45fb091f98ab9</Sha>
+      <Sha>b7971bcc971bd066696afb5f609493b6990fedaf</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.7.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.7.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
+      <Sha>b7971bcc971bd066696afb5f609493b6990fedaf</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.Metadata" Version="1.8.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
+    <Dependency Name="System.Reflection.Metadata" Version="1.8.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
+      <Sha>b7971bcc971bd066696afb5f609493b6990fedaf</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="4.7.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
+    <Dependency Name="System.Text.Encodings.Web" Version="4.7.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
+      <Sha>b7971bcc971bd066696afb5f609493b6990fedaf</Sha>
     </Dependency>
     <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" Pinned="true">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -47,16 +47,16 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.1.4" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
-      <Sha>c4952fc9e9f4d149a16693d1753e9f9669f80468</Sha>
+      <Sha>56c3b03fa4621a35fd64fca5ffac3716c6c7d472</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.4-servicing.20213.2" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.4-servicing.20214.2" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
-      <Sha>c4952fc9e9f4d149a16693d1753e9f9669f80468</Sha>
+      <Sha>56c3b03fa4621a35fd64fca5ffac3716c6c7d472</Sha>
     </Dependency>
     <!-- Listed as a dependency to workaround https://github.com/dotnet/cli/issues/10528 -->
     <Dependency Name="Microsoft.NETCore.Platforms" Version="3.1.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
-      <Sha>d6f354dba35b7a7da472450b22a45fb091f98ab9</Sha>
+      <Sha>b7971bcc971bd066696afb5f609493b6990fedaf</Sha>
     </Dependency>
     <!--
       Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
@@ -64,7 +64,7 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.1.4" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
-      <Sha>c4952fc9e9f4d149a16693d1753e9f9669f80468</Sha>
+      <Sha>56c3b03fa4621a35fd64fca5ffac3716c6c7d472</Sha>
     </Dependency>
     <!-- Keep this dependency at the bottom of ProductDependencies, else it will be picked as the parent for CoherentParentDependencies -->
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0" Pinned="true">
