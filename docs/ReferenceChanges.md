@@ -6,13 +6,6 @@ Package: Microsoft.Extensions.Configuration.Json
   TFM: .NETStandard2.0
     Removed:
       System.Threading.Tasks.Extensions
-Package: Microsoft.Extensions.DependencyInjection
-  TFM: .NETFramework4.6.1
-    Added:
-      System.Threading.Tasks.Extensions
-  TFM: .NETStandard2.0
-    Added:
-      System.Threading.Tasks.Extensions
 Package: Microsoft.Extensions.Hosting.Abstractions
   TFM: .NETCoreApp5.0
     Removed:
@@ -20,8 +13,6 @@ Package: Microsoft.Extensions.Hosting.Abstractions
   TFM: .NETStandard2.0
     Removed:
       Microsoft.Extensions.Logging.Abstractions
-    Added:
-      System.Threading.Tasks.Extensions
 Package: Microsoft.Extensions.Logging
   TFM: .NETCoreApp5.0
     Removed:
