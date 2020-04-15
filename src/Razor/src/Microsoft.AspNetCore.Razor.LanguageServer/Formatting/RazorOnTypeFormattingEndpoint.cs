@@ -61,17 +61,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 DocumentSelector = RazorDefaults.Selector,
                 FirstTriggerCharacter = ">",
+                MoreTriggerCharacter = new[] { "*" }
             };
         }
 
         public async Task<TextEditContainer> Handle(DocumentOnTypeFormattingParams request, CancellationToken cancellationToken)
         {
-            if (!_optionsMonitor.CurrentValue.AutoClosingTags)
-            {
-                // onTypeFormatting is only used for autoClosingTags support for now.
-                return null;
-            }
-
             var document = await Task.Factory.StartNew(() =>
             {
                 _documentResolver.TryResolveDocument(request.TextDocument.Uri.GetAbsoluteOrUNCPath(), out var documentSnapshot);

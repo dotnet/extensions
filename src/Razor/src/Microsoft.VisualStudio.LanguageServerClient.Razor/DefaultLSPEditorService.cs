@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -26,9 +28,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly SVsServiceProvider _serviceProvider;
         private readonly ITextBufferUndoManagerProvider _undoManagerProvider;
+        private readonly IAsyncCompletionBroker _completionBroker;
+        private readonly IVsEditorAdaptersFactoryService _adaptersFactoryService;
 
         [ImportingConstructor]
-        public DefaultLSPEditorService(JoinableTaskContext joinableTaskContext, SVsServiceProvider serviceProvider, ITextBufferUndoManagerProvider undoManagerProvider)
+        public DefaultLSPEditorService(
+            JoinableTaskContext joinableTaskContext,
+            SVsServiceProvider serviceProvider,
+            ITextBufferUndoManagerProvider undoManagerProvider,
+            IAsyncCompletionBroker completionBroker,
+            IVsEditorAdaptersFactoryService adaptersFactoryService)
         {
             if (joinableTaskContext is null)
             {
@@ -45,9 +54,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(undoManagerProvider));
             }
 
+            if (completionBroker is null)
+            {
+                throw new ArgumentNullException(nameof(completionBroker));
+            }
+
+            if (adaptersFactoryService is null)
+            {
+                throw new ArgumentNullException(nameof(adaptersFactoryService));
+            }
+
             _joinableTaskFactory = joinableTaskContext.Factory;
             _serviceProvider = serviceProvider;
             _undoManagerProvider = undoManagerProvider;
+            _completionBroker = completionBroker;
+            _adaptersFactoryService = adaptersFactoryService;
         }
 
         public async override Task ApplyTextEditsAsync(
@@ -89,8 +110,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
                     if (windowFrame != null)
                     {
-                        var textView = GetActiveVsTextView(windowFrame);
-                        MoveCaretToPosition(textView, cursorPosition);
+                        var vsTextView = GetActiveVsTextView(windowFrame);
+
+                        // Since we are moving the cursor we should dismiss any existing completion sessions as that is no longer valid.
+                        var textView = _adaptersFactoryService.GetWpfTextView(vsTextView);
+                        var session = _completionBroker.GetSession(textView);
+                        if (session != null && !session.IsDismissed)
+                        {
+                            session.Dismiss();
+                        }
+
+                        MoveCaretToPosition(vsTextView, cursorPosition);
                     }
                 }
             }

@@ -96,10 +96,70 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (!_optionsMonitor.CurrentValue.AutoClosingTags || character != ">")
+            var edits = EmptyArray;
+            switch (character)
+            {
+                case ">":
+                    edits = HandleCloseTextTag(uri, codeDocument, position, options);
+                    return Task.FromResult(edits);
+                case "*":
+                    edits = HandleRazorComment(uri, codeDocument, position, options);
+                    return Task.FromResult(edits);
+            }
+
+            return Task.FromResult(edits);
+        }
+
+        private TextEdit[] HandleRazorComment(Uri uri, RazorCodeDocument codeDocument, Position position, FormattingOptions options)
+        {
+            bool addCursorPlaceholder;
+            if (options.TryGetValue(LanguageServerConstants.ExpectsCursorPlaceholderKey, out var value) && value.IsBool)
+            {
+                addCursorPlaceholder = value.Bool;
+            }
+            else
+            {
+                // Temporary:
+                // no-op if cursor placeholder isn't supported. This means the request isn't coming from VS.
+                return EmptyArray;
+            }
+
+            var formattingContext = CreateFormattingContext(uri, codeDocument, new Range(position, position), options);
+            if (IsAtRazorCommentStart(formattingContext, position))
+            {
+                // We've just typed a Razor comment start.
+                var cursorPlaceholder = addCursorPlaceholder ? LanguageServerConstants.CursorPlaceholderString : string.Empty;
+                var edit = new TextEdit()
+                {
+                    NewText = $" {cursorPlaceholder} *@",
+                    Range = new Range(position, position)
+                };
+                return new[] { edit };
+            }
+
+            return EmptyArray;
+        }
+
+        private static bool IsAtRazorCommentStart(FormattingContext context, Position position)
+        {
+            var syntaxTree = context.CodeDocument.GetSyntaxTree();
+
+            var absoluteIndex = position.GetAbsoluteIndex(context.SourceText);
+            var change = new SourceChange(absoluteIndex, 0, string.Empty);
+            var owner = syntaxTree.Root.LocateOwner(change);
+
+            return owner != null &&
+                owner.Kind == SyntaxKind.RazorCommentStar &&
+                owner.Parent is RazorCommentBlockSyntax comment &&
+                owner.Position == comment.StartCommentStar.Position;
+        }
+
+        private TextEdit[] HandleCloseTextTag(Uri uri, RazorCodeDocument codeDocument, Position position, FormattingOptions options)
+        {
+            if (!_optionsMonitor.CurrentValue.AutoClosingTags)
             {
                 // We currently only support auto-closing tags our onType formatter.
-                return Task.FromResult(EmptyArray);
+                return EmptyArray;
             }
 
             bool addCursorPlaceholder;
@@ -112,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 // Temporary:
                 // no-op if cursor placeholder isn't supported. This means the request isn't coming from VS.
                 // Can remove this once VSCode starts using this endpoint for auto closing <text> tags.
-                return Task.FromResult(EmptyArray);
+                return EmptyArray;
             }
 
             var formattingContext = CreateFormattingContext(uri, codeDocument, new Range(position, position), options);
@@ -125,10 +185,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     NewText = $"{cursorPlaceholder}</{SyntaxConstants.TextTagName}>",
                     Range = new Range(position, position)
                 };
-                return Task.FromResult(new[] { edit });
+                return new[] { edit };
             }
 
-            return Task.FromResult(EmptyArray);
+            return EmptyArray;
         }
 
         private static bool IsAtTextTag(FormattingContext context, Position position)

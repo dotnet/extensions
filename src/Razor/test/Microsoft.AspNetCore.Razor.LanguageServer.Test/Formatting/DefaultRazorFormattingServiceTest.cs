@@ -543,5 +543,57 @@ expected: $@"
 ",
 character: ">");
         }
+
+        [Fact]
+        public async Task OnTypeStar_ClosesRazorComment()
+        {
+            await RunFormatOnTypeTestAsync(
+input: @"
+@|
+",
+expected: $@"
+@* {LanguageServerConstants.CursorPlaceholderString} *@
+",
+character: "*");
+        }
+
+        [Fact]
+        public async Task OnTypeStar_InsideRazorComment_Noops()
+        {
+            await RunFormatOnTypeTestAsync(
+input: @"
+@* @| *@
+",
+expected: $@"
+@* @* *@
+",
+character: "*");
+        }
+
+        [Fact]
+        public async Task OnTypeStar_EndRazorComment_Noops()
+        {
+            await RunFormatOnTypeTestAsync(
+input: @"
+@* Hello |@
+",
+expected: $@"
+@* Hello *@
+",
+character: "*");
+        }
+
+        [Fact]
+        public async Task OnTypeStar_BeforeText_ClosesRazorComment()
+        {
+            await RunFormatOnTypeTestAsync(
+input: @"
+@| Hello
+",
+expected: $@"
+@* {LanguageServerConstants.CursorPlaceholderString} *@ Hello
+",
+character: "*");
+        }
     }
 }
