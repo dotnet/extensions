@@ -174,18 +174,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                 .AsReadOnly();
             var attrDescriptionInfo = new AttributeDescriptionInfo(descriptionInfos);
 
-            if (!_tagHelperDescriptionFactory.TryCreateDescription(attrDescriptionInfo, out var markdown))
+            if (!_tagHelperDescriptionFactory.TryCreateDescription(attrDescriptionInfo, out var markupContent))
             {
                 return null;
             }
 
             var hover = new HoverModel
             {
-                Contents = new MarkedStringsOrMarkupContent(new MarkupContent
-                {
-                    Kind = MarkupKind.Markdown,
-                    Value = markdown
-                }),
+                Contents = new MarkedStringsOrMarkupContent(markupContent),
                 Range = range
             };
 
@@ -199,18 +195,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                 .AsReadOnly();
             var elementDescriptionInfo = new ElementDescriptionInfo(descriptionInfos);
 
-            if (!_tagHelperDescriptionFactory.TryCreateDescription(elementDescriptionInfo, out var markdown))
+            if (!_tagHelperDescriptionFactory.TryCreateDescription(elementDescriptionInfo, out var markupContent))
             {
                 return null;
             }
 
             var hover = new HoverModel
             {
-                Contents = new MarkedStringsOrMarkupContent(new MarkupContent
-                {
-                    Kind = MarkupKind.Markdown,
-                    Value = markdown,
-                }),
+                Contents = new MarkedStringsOrMarkupContent(markupContent),
                 Range = range
             };
 

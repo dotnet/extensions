@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.Razor.Completion;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Server;
 using RazorAttributeDescriptionInfo = Microsoft.CodeAnalysis.Razor.Completion.AttributeDescriptionInfo;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
@@ -34,12 +36,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             [typeof(decimal).FullName] = "decimal",
         };
 
-        public override bool TryCreateDescription(ElementDescriptionInfo elementDescriptionInfo, out string markdown)
+        public DefaultTagHelperDescriptionFactory(ILanguageServer languageServer)
+        {
+            if (languageServer is null)
+            {
+                throw new NotImplementedException(nameof(languageServer));
+            }
+
+            LanguageServer = languageServer;
+        }
+
+        public ILanguageServer LanguageServer { get; }
+
+        public override bool TryCreateDescription(ElementDescriptionInfo elementDescriptionInfo, out MarkupContent tagHelperDescription)
         {
             var associatedTagHelperInfos = elementDescriptionInfo.AssociatedTagHelperDescriptions;
             if (associatedTagHelperInfos.Count == 0)
             {
-                markdown = null;
+                tagHelperDescription = null;
                 return false;
             }
 
@@ -61,11 +75,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     descriptionBuilder.AppendLine("---");
                 }
 
-                descriptionBuilder.Append("**");
+                StartOrEndBold(descriptionBuilder);
                 var tagHelperType = descriptionInfo.TagHelperTypeName;
                 var reducedTypeName = ReduceTypeName(tagHelperType);
                 descriptionBuilder.Append(reducedTypeName);
-                descriptionBuilder.AppendLine("**");
+                StartOrEndBold(descriptionBuilder);
+                descriptionBuilder.AppendLine();
                 descriptionBuilder.AppendLine();
 
                 var documentation = descriptionInfo.Documentation;
@@ -78,16 +93,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 descriptionBuilder.AppendLine(finalSummaryContent);
             }
 
-            markdown = descriptionBuilder.ToString();
+            tagHelperDescription = new MarkupContent
+            {
+                Kind = GetMarkupKind()
+            };
+
+            tagHelperDescription.Value = descriptionBuilder.ToString();
             return true;
         }
 
-        public override bool TryCreateDescription(AttributeCompletionDescription descriptionInfos, out string markdown)
+        public override bool TryCreateDescription(AttributeCompletionDescription descriptionInfos, out MarkupContent tagHelperDescription)
         {
             var associatedAttributeInfos = descriptionInfos.DescriptionInfos;
             if (associatedAttributeInfos.Count == 0)
             {
-                markdown = null;
+                tagHelperDescription = null;
                 return false;
             }
 
@@ -109,17 +129,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     descriptionBuilder.AppendLine("---");
                 }
 
-                descriptionBuilder.Append("**");
+                StartOrEndBold(descriptionBuilder);
                 var returnTypeName = GetSimpleName(descriptionInfo.ReturnTypeName);
                 var reducedReturnTypeName = ReduceTypeName(returnTypeName);
                 descriptionBuilder.Append(reducedReturnTypeName);
-                descriptionBuilder.Append("** ");
+                StartOrEndBold(descriptionBuilder);
+                descriptionBuilder.Append(" ");
                 var tagHelperTypeName = descriptionInfo.TypeName;
                 var reducedTagHelperTypeName = ReduceTypeName(tagHelperTypeName);
                 descriptionBuilder.Append(reducedTagHelperTypeName);
-                descriptionBuilder.Append(".**");
+                descriptionBuilder.Append(".");
+                StartOrEndBold(descriptionBuilder);
                 descriptionBuilder.Append(descriptionInfo.PropertyName);
-                descriptionBuilder.AppendLine("**");
+                StartOrEndBold(descriptionBuilder);
+                descriptionBuilder.AppendLine();
                 descriptionBuilder.AppendLine();
 
                 var documentation = descriptionInfo.Documentation;
@@ -132,11 +155,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 descriptionBuilder.AppendLine(finalSummaryContent);
             }
 
-            markdown = descriptionBuilder.ToString();
+            tagHelperDescription = new MarkupContent
+            {
+                Kind = GetMarkupKind()
+            };
+
+            tagHelperDescription.Value = descriptionBuilder.ToString();
             return true;
         }
 
-        public override bool TryCreateDescription(AttributeDescriptionInfo attributeDescriptionInfo, out string markdown)
+        public override bool TryCreateDescription(AttributeDescriptionInfo attributeDescriptionInfo, out MarkupContent tagHelperDescription)
         {
             var convertedDescriptionInfos = new List<RazorAttributeDescriptionInfo>();
             foreach (var descriptionInfo in attributeDescriptionInfo.AssociatedAttributeDescriptions)
@@ -153,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             var convertedDescriptionInfo = new AttributeCompletionDescription(convertedDescriptionInfos);
 
-            return TryCreateDescription(convertedDescriptionInfo, out markdown);
+            return TryCreateDescription(convertedDescriptionInfo, out tagHelperDescription);
         }
 
         // Internal for testing
@@ -393,6 +421,33 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             // Could not reduce name
             return content;
+        }
+
+        private void StartOrEndBold(StringBuilder stringBuilder)
+        {
+            if (GetMarkupKind() == MarkupKind.Markdown)
+            {
+                stringBuilder.Append("**");
+            }
+        }
+
+        private MarkupKind GetMarkupKind()
+        {
+            var completionSupportedKinds = LanguageServer.ClientSettings?.Capabilities?.TextDocument?.Completion.Value?.CompletionItem?.DocumentationFormat;
+            var hoverSupportedKinds = LanguageServer.ClientSettings?.Capabilities?.TextDocument?.Hover.Value?.ContentFormat;
+
+            // For now we're assuming that if you support Markdown for either completions or hovers you support it for both.
+            // If this assumption is ever untrue we'll have to start informing this class about if a request is for Hover or Completions.
+            var supportedKinds = completionSupportedKinds ?? hoverSupportedKinds;
+
+            if (supportedKinds.Contains(MarkupKind.Markdown))
+            {
+                return MarkupKind.Markdown;
+            }
+            else
+            {
+                return MarkupKind.PlainText;
+            }
         }
     }
 }

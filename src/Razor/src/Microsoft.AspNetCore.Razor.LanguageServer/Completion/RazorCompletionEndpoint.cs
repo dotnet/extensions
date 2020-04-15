@@ -185,7 +185,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         public Task<CompletionItem> Handle(CompletionItem completionItem, CancellationToken cancellationToken)
         {
-            string markdown = null;
+            MarkupContent tagHelperDescription = null;
+
             if (completionItem.TryGetRazorCompletionKind(out var completionItemKind))
             {
                 switch (completionItemKind)
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     case RazorCompletionItemKind.DirectiveAttribute:
                     case RazorCompletionItemKind.DirectiveAttributeParameter:
                         var descriptionInfo = completionItem.GetAttributeDescriptionInfo();
-                        _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
+                        _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out tagHelperDescription);
                         break;
                 }
             }
@@ -202,24 +203,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 if (completionItem.IsTagHelperElementCompletion())
                 {
                     var descriptionInfo = completionItem.GetElementDescriptionInfo();
-                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
+                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out tagHelperDescription);
                 }
 
                 if (completionItem.IsTagHelperAttributeCompletion())
                 {
                     var descriptionInfo = completionItem.GetTagHelperAttributeDescriptionInfo();
-                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
+                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out tagHelperDescription);
                 }
             }
 
-            if (markdown != null)
+            if (tagHelperDescription != null)
             {
-                var documentation = new StringOrMarkupContent(
-                    new MarkupContent()
-                    {
-                        Kind = MarkupKind.Markdown,
-                        Value = markdown,
-                    });
+                var documentation = new StringOrMarkupContent(tagHelperDescription);
                 completionItem.Documentation = documentation;
             }
 

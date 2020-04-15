@@ -252,7 +252,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
-            var markdown = "Some Markdown";
+            var markdown = new MarkupContent
+            {
+                Kind = MarkupKind.Markdown,
+                Value = "Some Markdown"
+            };
             descriptionFactory.Setup(factory => factory.TryCreateDescription(It.IsAny<AttributeCompletionDescription>(), out markdown))
                 .Returns(true);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
@@ -272,7 +276,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
-            var markdown = "Some Markdown";
+            var markdown = new MarkupContent
+            {
+                Kind = MarkupKind.Markdown,
+                Value = "Some Markdown"
+            };
             descriptionFactory.Setup(factory => factory.TryCreateDescription(It.IsAny<AttributeCompletionDescription>(), out markdown))
                 .Returns(true);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
@@ -292,7 +300,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
-            var markdown = "Some Markdown";
+            var markdown = new MarkupContent
+            {
+                Kind = MarkupKind.Markdown,
+                Value = "Some Markdown"
+            };
             descriptionFactory.Setup(factory => factory.TryCreateDescription(It.IsAny<ElementDescriptionInfo>(), out markdown))
                 .Returns(true);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
@@ -311,7 +323,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
-            var markdown = "Some Markdown";
+            var markdown = new MarkupContent{
+                Kind = MarkupKind.Markdown,
+                Value = "Some Markdown"
+            };
             descriptionFactory.Setup(factory => factory.TryCreateDescription(It.IsAny<AttributeDescriptionInfo>(), out markdown))
                 .Returns(true);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
@@ -330,7 +345,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
-            var markdown = "Some Markdown";
+            var markdown = new MarkupContent
+            {
+                Kind = MarkupKind.Markdown,
+                Value = "Some Markdown"
+            };
             descriptionFactory.Setup(factory => factory.TryCreateDescription(It.IsAny<ElementDescriptionInfo>(), out markdown))
                 .Returns(true);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
