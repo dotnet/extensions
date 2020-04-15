@@ -157,7 +157,7 @@
 
       <dict>
         <key>scope</key>
-        <string>keyword.control.conditional, keyword.control.loop.in.cs, keyword.control.loop.foreach.cs</string>
+        <string>keyword.control.conditional, keyword.control.loop, keyword.control.flow</string>
         <key>settings</key>
         <dict>
           <key>vsclassificationtype</key>
