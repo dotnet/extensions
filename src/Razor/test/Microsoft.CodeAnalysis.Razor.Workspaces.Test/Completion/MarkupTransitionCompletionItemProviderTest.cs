@@ -23,11 +23,25 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         private MarkupTransitionCompletionItemProvider Provider { get; }
 
         [Fact]
-        public void GetCompletionItems_ReturnsEmptyCompletionItemInSimpleMarkupContext()
+        public void GetCompletionItems_ReturnsEmptyCompletionItemInUnopenedMarkupContext()
         {
             // Arrange
             var syntaxTree = CreateSyntaxTree("<div>");
             var location = new SourceSpan(5, 0);
+
+            // Act
+            var completionItems = Provider.GetCompletionItems(syntaxTree, null, location);
+
+            // Assert
+            Assert.Empty(completionItems);
+        }
+
+        [Fact]
+        public void GetCompletionItems_ReturnsEmptyCompletionItemInSimpleMarkupContext()
+        {
+            // Arrange
+            var syntaxTree = CreateSyntaxTree("<div><");
+            var location = new SourceSpan(6, 0);
 
             // Act
             var completionItems = Provider.GetCompletionItems(syntaxTree, null, location);
@@ -148,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         }
 
         [Fact]
-        public void GetCompletionItems_ReturnsEmptyCompletionItemInNestedCSharpBlock()
+        public void GetCompletionItems_ReturnsMarkupTransitionCompletionItemInNestedCSharpBlock()
         {
             // Arrange
             var syntaxTree = CreateSyntaxTree(@"<div>
@@ -183,6 +197,41 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
             // Assert
             Assert.Empty(completionItems);
+        }
+
+        [Fact]
+        public void GetCompletionItems_ReturnsMarkupTransitionCompletionItemWithUnrelatedClosingAngleBracket()
+        {
+            // Arrange
+            var syntaxTree = CreateSyntaxTree(@"@functions {
+    public void SomeOtherMethod()
+    {
+        <
+    }
+
+    private bool _collapseNavMenu => true;
+}", FunctionsDirective.Directive);
+            var location = new SourceSpan(59 + Environment.NewLine.Length * 3, 0);
+
+            // Act
+            var completionItems = Provider.GetCompletionItems(syntaxTree, null, location);
+
+            // Assert
+            Assert.Collection(completionItems, AssertRazorCompletionItem);
+        }
+
+        [Fact]
+        public void GetCompletionItems_ReturnsMarkupTransitionCompletionItemWithUnrelatedClosingTag()
+        {
+            // Arrange
+            var syntaxTree = CreateSyntaxTree("@{<></>");
+            var location = new SourceSpan(3, 0);
+
+            // Act
+            var completionItems = Provider.GetCompletionItems(syntaxTree, null, location);
+
+            // Assert
+            Assert.Collection(completionItems, AssertRazorCompletionItem);
         }
 
         [Fact]
