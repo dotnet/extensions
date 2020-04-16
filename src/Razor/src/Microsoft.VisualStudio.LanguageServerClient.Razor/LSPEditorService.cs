@@ -12,5 +12,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     internal abstract class LSPEditorService
     {
         public abstract Task ApplyTextEditsAsync(Uri uri, ITextSnapshot snapshot, IEnumerable<TextEdit> textEdits);
+
+        public abstract void MoveCaretToPosition(string fullPath, int absoluteIndex);
     }
 }

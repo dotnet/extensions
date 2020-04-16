@@ -3,6 +3,8 @@
 
 using System;
 using System.Composition;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.Shell;
@@ -19,9 +21,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private static readonly Guid HtmlLanguageServiceGuid = new Guid("9BBFD173-9770-47DC-B191-651B7FF493CD");
 
+        private const string FilePathPropertyKey = "RazorTextBufferFilePath";
+
         private readonly TrackingLSPDocumentManager _lspDocumentManager;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
         private readonly LSPEditorFeatureDetector _lspEditorFeatureDetector;
+        private readonly LSPEditorService _editorService;
         private readonly SVsServiceProvider _serviceProvider;
         private readonly IEditorOptionsFactoryService _editorOptionsFactory;
         private readonly IContentType _razorLSPContentType;
@@ -32,6 +37,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             IContentTypeRegistryService contentTypeRegistry,
             LSPDocumentManager lspDocumentManager,
             LSPEditorFeatureDetector lspEditorFeatureDetector,
+            LSPEditorService editorService,
             SVsServiceProvider serviceProvider,
             IEditorOptionsFactoryService editorOptionsFactory)
         {
@@ -55,6 +61,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(lspEditorFeatureDetector));
             }
 
+            if (editorService is null)
+            {
+                throw new ArgumentNullException(nameof(editorService));
+            }
+
             if (serviceProvider is null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
@@ -76,6 +87,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             _textDocumentFactory = textDocumentFactory;
             _lspEditorFeatureDetector = lspEditorFeatureDetector;
+            _editorService = editorService;
             _serviceProvider = serviceProvider;
             _editorOptionsFactory = editorOptionsFactory;
 
@@ -102,7 +114,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 // This Razor text buffer has yet to be initialized.
 
-                InitializeRazorLSPTextBuffer(textBuffer);
+                InitializeRazorLSPTextBuffer(args.TextDocument.FilePath, textBuffer);
             }
         }
 
@@ -119,6 +131,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 // If we don't know about this document we'll no-op
                 _lspDocumentManager.UntrackDocument(args.TextDocument.TextBuffer);
+
+                if (_lspEditorFeatureDetector.IsRemoteClient() &&
+                    args.TextDocument.TextBuffer.Properties.ContainsProperty(FilePathPropertyKey))
+                {
+                    // We no longer want to watch for guest buffer changes.
+                    args.TextDocument.TextBuffer.Properties.RemoveProperty(FilePathPropertyKey);
+                    args.TextDocument.TextBuffer.ChangedHighPriority -= RazorGuestBuffer_Changed;
+                }
             }
         }
 
@@ -162,7 +182,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return true;
         }
 
-        private void InitializeRazorLSPTextBuffer(ITextBuffer textBuffer)
+        private void InitializeRazorLSPTextBuffer(string filePath, ITextBuffer textBuffer)
         {
             if (_lspEditorFeatureDetector.IsRemoteClient())
             {
@@ -171,6 +191,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
                 // We still change the content type for remote scenarios in order to enable our TextMate grammar to light up the Razor editor properly.
                 textBuffer.ChangeContentType(_razorLSPContentType, editTag: null);
+
+                // Temporary: The guest needs to react to the host manually applying edits and moving the cursor.
+                // This can be removed once the client starts supporting snippets.
+                textBuffer.Properties.AddProperty(FilePathPropertyKey, filePath);
+                textBuffer.ChangedHighPriority += RazorGuestBuffer_Changed;
             }
             else
             {
@@ -206,6 +231,25 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 razorOptions.SetOptionValue(DefaultOptions.ConvertTabsToSpacesOptionId, insertSpaces);
                 razorOptions.SetOptionValue(DefaultOptions.TabSizeOptionId, (int)tabSize);
             }
+        }
+
+        private void RazorGuestBuffer_Changed(object sender, TextContentChangedEventArgs args)
+        {
+            var replacePlaceholderChange = args.Changes.FirstOrDefault(
+                c => c.OldText == LanguageServerConstants.CursorPlaceholderString && c.NewText == string.Empty);
+
+            if (replacePlaceholderChange == null)
+            {
+                return;
+            }
+
+            if (!(sender is ITextBuffer buffer) ||
+                !buffer.Properties.TryGetProperty<string>(FilePathPropertyKey, out var filePath))
+            {
+                return;
+            }
+
+            _editorService.MoveCaretToPosition(filePath, replacePlaceholderChange.NewPosition);
         }
     }
 }

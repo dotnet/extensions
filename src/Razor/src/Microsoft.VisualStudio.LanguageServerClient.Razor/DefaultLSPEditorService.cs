@@ -104,6 +104,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 var cursorPosition = ExtractCursorPlaceholder(snapshot.TextBuffer.CurrentSnapshot, textEdits);
                 if (cursorPosition != null)
                 {
+                    // If we get here it means we are in the host client. Move the cursor.
+
                     var fullPath = GetLocalFilePath(uri);
 
                     VsShellUtilities.OpenDocument(_serviceProvider, fullPath, VSConstants.LOGVIEWID.TextView_guid, out _, out _, out var windowFrame);
@@ -221,6 +223,39 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             vsTextEdit.Apply();
+        }
+
+        public override void MoveCaretToPosition(string fullPath, int absoluteIndex)
+        {
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                throw new ArgumentNullException(nameof(fullPath));
+            }
+
+            VsShellUtilities.OpenDocument(_serviceProvider, fullPath, VSConstants.LOGVIEWID.TextView_guid, out _, out _, out var windowFrame);
+
+            if (windowFrame != null)
+            {
+                var vsTextView = GetActiveVsTextView(windowFrame);
+
+                // Since we are moving the cursor we should dismiss any existing completion sessions as that is no longer valid.
+                var textView = _adaptersFactoryService.GetWpfTextView(vsTextView);
+                var session = _completionBroker.GetSession(textView);
+                if (session != null && !session.IsDismissed)
+                {
+                    session.Dismiss();
+                }
+
+                ErrorHandler.ThrowOnFailure(vsTextView.GetLineAndColumn(absoluteIndex, out var line, out var column));
+
+                var position = new Position()
+                {
+                    Line = line,
+                    Character = column
+                };
+
+                MoveCaretToPosition(vsTextView, position);
+            }
         }
 
         private static void MoveCaretToPosition(IVsTextView textView, Position position, bool sendFocus = true)
