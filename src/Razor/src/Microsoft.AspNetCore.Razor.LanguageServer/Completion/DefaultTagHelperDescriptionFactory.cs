@@ -75,13 +75,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     descriptionBuilder.AppendLine("---");
                 }
 
-                StartOrEndBold(descriptionBuilder);
                 var tagHelperType = descriptionInfo.TagHelperTypeName;
                 var reducedTypeName = ReduceTypeName(tagHelperType);
+                StartOrEndBold(descriptionBuilder);
                 descriptionBuilder.Append(reducedTypeName);
                 StartOrEndBold(descriptionBuilder);
-                descriptionBuilder.AppendLine();
-                descriptionBuilder.AppendLine();
 
                 var documentation = descriptionInfo.Documentation;
                 if (!TryExtractSummary(documentation, out var summaryContent))
@@ -89,8 +87,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     continue;
                 }
 
+                descriptionBuilder.AppendLine();
+                descriptionBuilder.AppendLine();
                 var finalSummaryContent = CleanSummaryContent(summaryContent);
-                descriptionBuilder.AppendLine(finalSummaryContent);
+                descriptionBuilder.Append(finalSummaryContent);
             }
 
             tagHelperDescription = new MarkupContent
@@ -142,8 +142,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 StartOrEndBold(descriptionBuilder);
                 descriptionBuilder.Append(descriptionInfo.PropertyName);
                 StartOrEndBold(descriptionBuilder);
-                descriptionBuilder.AppendLine();
-                descriptionBuilder.AppendLine();
 
                 var documentation = descriptionInfo.Documentation;
                 if (!TryExtractSummary(documentation, out var summaryContent))
@@ -151,8 +149,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     continue;
                 }
 
+                descriptionBuilder.AppendLine();
+                descriptionBuilder.AppendLine();
                 var finalSummaryContent = CleanSummaryContent(summaryContent);
-                descriptionBuilder.AppendLine(finalSummaryContent);
+                descriptionBuilder.Append(finalSummaryContent);
             }
 
             tagHelperDescription = new MarkupContent
