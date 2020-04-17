@@ -76,6 +76,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return ExecuteRequestAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(Methods.TextDocumentCompletionName, completionParams, _clientCapabilities, cancellationToken);
         }
 
+        [JsonRpcMethod(Methods.TextDocumentHoverName, UseSingleObjectParameterDeserialization = true)]
+        public Task<Hover> ProvideHoverAsync(TextDocumentPositionParams positionParams, CancellationToken cancellationToken)
+        {
+            if (positionParams is null)
+            {
+                throw new ArgumentNullException(nameof(positionParams));
+            }
+
+            return ExecuteRequestAsync<TextDocumentPositionParams, Hover>(Methods.TextDocumentHoverName, positionParams, _clientCapabilities, cancellationToken);
+        }
+
         [JsonRpcMethod(Methods.TextDocumentCompletionResolveName, UseSingleObjectParameterDeserialization = true)]
         public Task<CompletionItem> ResolveCompletionAsync(CompletionItem request, CancellationToken cancellationToken)
         {

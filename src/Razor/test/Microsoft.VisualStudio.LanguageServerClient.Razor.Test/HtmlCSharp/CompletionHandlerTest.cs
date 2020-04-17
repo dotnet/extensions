@@ -558,41 +558,5 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var item = Assert.Single((CompletionItem[])result.Value);
             Assert.Equal(expectedItem.InsertText, item.InsertText);
         }
-
-        private class TestDocumentManager : TrackingLSPDocumentManager
-        {
-            private readonly Dictionary<Uri, LSPDocumentSnapshot> _documents = new Dictionary<Uri, LSPDocumentSnapshot>();
-
-            public override event EventHandler<LSPDocumentChangeEventArgs> Changed;
-
-            public int UpdateVirtualDocumentCallCount { get; private set; }
-
-            public override bool TryGetDocument(Uri uri, out LSPDocumentSnapshot lspDocumentSnapshot)
-            {
-                return _documents.TryGetValue(uri, out lspDocumentSnapshot);
-            }
-
-            public void AddDocument(Uri uri, LSPDocumentSnapshot documentSnapshot)
-            {
-                _documents.Add(uri, documentSnapshot);
-
-                Changed?.Invoke(this, null);
-            }
-
-            public override void TrackDocument(ITextBuffer buffer)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void UntrackDocument(ITextBuffer buffer)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void UpdateVirtualDocument<TVirtualDocument>(Uri hostDocumentUri, IReadOnlyList<TextChange> changes, long hostDocumentVersion)
-            {
-                UpdateVirtualDocumentCallCount++;
-            }
-        }
     }
 }
