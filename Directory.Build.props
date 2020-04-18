@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dotnet/extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
@@ -14,9 +14,6 @@
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('samples'))">true</IsSampleProject>
 
-    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
-    <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
-    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
 
     <ExcludeFromSourceBuild Condition="'$(IsUnitTestProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsSampleProject)' == 'true'">true</ExcludeFromSourceBuild>
   </PropertyGroup>
@@ -30,7 +27,7 @@
     <!-- Always pass portable to override arcade sdk which uses embedded for local builds -->
     <DebugType>portable</DebugType>
     <Serviceable Condition="'$(Configuration)' == 'Release'">true</Serviceable>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <LangVersion>8.0</LangVersion>
@@ -49,14 +46,14 @@
 
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
-
-    <NpmPackageDir>$(ArtifactsDir)npm\$(Configuration)\</NpmPackageDir>
-    <ShippingNpmPackageOutputPath>$(NpmPackageDir)Shipping\</ShippingNpmPackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
-    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)src\TestingUtils\Microsoft.AspNetCore.Testing\src\Microsoft.AspNetCore.Testing.csproj" />
     <Reference Include="Moq" />
+    <!-- Bring in the latest NETStandard.Library to avoid too many package references from
+         Moq & xunit's dependencies -->
+    <Reference Include="NETStandard.Library" />
   </ItemGroup>
 
   <ItemDefinitionGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
@@ -73,6 +70,4 @@
 
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\ProjectReferences.props" />
-  <Import Project="eng\targets\Csharp.Refs.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
-  <Import Project="eng\targets\Npm.Common.props" Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 </Project>

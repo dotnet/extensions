@@ -17,16 +17,6 @@
       />
   </ItemGroup>
 
-  <ItemGroup>
-    <KnownFrameworkReference Update="NETStandard.Library">
-      <!-- Workaround for netstandard2.1 projects until we can get a preview 8 SDK containing https://github.com/dotnet/sdk/pull/3463 fix. -->
-      <RuntimeFrameworkName>NETStandard.Library</RuntimeFrameworkName>
-
-      <!-- Only update the targeting pack version for preview builds. -->
-      <TargetingPackVersion Condition="'%(TargetFramework)' == 'netstandard2.1' and '$(IsServicingBuild)' != 'true'">$(NETStandardLibraryRefPackageVersion)</TargetingPackVersion>
-    </KnownFrameworkReference>
-  </ItemGroup>
-
   <!-- Workaround for implicit references added by Arcade based on project name. Non-test projects should not reference these projects. -->
   <ItemGroup Condition="'$(IsUnitTestProject)' == 'false'">
     <PackageReference Remove="Microsoft.NET.Test.Sdk" />

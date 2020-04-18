@@ -82,11 +82,6 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1
     }
 
-    Write-Host "Re-generating references assemblies"
-    Invoke-Block {
-        & $PSScriptRoot\GenerateReferenceAssemblies.ps1
-    }
-
     Write-Host "Re-generating package baselines"
     $dotnet = 'dotnet'
     if ($ci) {
@@ -97,11 +92,20 @@ try {
     }
 
     Write-Host "git diff"
-    & git diff --ignore-space-at-eol --exit-code
-    if ($LastExitCode -ne 0) {
-        $status = git status -s | Out-String
-        $status = $status -replace "`n","`n    "
-        LogError "Generated code is not up to date. You might need to regenerate the reference assemblies or project list (see docs/ReferenceAssemblies.md and docs/ReferenceResolution.md)"
+
+    # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
+    $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-change --name-only 2>nul'
+
+    # Temporary: Disable check for NuGet.config
+    $changedFilesExclusion = "NuGet.config"
+
+    if ($changedFiles) {
+        foreach ($file in $changedFiles) {
+            if ($file -eq $changedFilesExclusion) {continue}
+            $filePath = Resolve-Path "${repoRoot}/${file}"
+            LogError "Generated code is not up to date in $file. You might need to regenerate the project list (see docs/ReferenceResolution.md)" -filepath $filePath
+            & git --no-pager diff --ignore-space-change $filePath
+        }
     }
 }
 finally {
