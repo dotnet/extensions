@@ -98,5 +98,30 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var text = textBuffer.CurrentSnapshot.GetText();
             Assert.Equal("Replaced", text);
         }
+
+        [Fact]
+        public void Update_NoChanges_InvokesPostChangedEventTwice_NoEffectiveChanges()
+        {
+            // Arrange
+            var textBuffer = new TestTextBuffer(new StringTextSnapshot("Hello World"));
+            var called = 0;
+            textBuffer.PostChanged += (s, a) =>
+            {
+                textBuffer.TryGetHostDocumentSyncVersion(out var version);
+                Assert.Equal(1, version);
+
+                called += 1;
+            };
+
+            var document = new CSharpVirtualDocument(Uri, textBuffer);
+
+            // Act
+            document.Update(Array.Empty<TextChange>(), hostDocumentVersion: 1);
+
+            // Assert
+            Assert.Equal(2, called);
+            var text = textBuffer.CurrentSnapshot.GetText();
+            Assert.Equal("Hello World", text);
+        }
     }
 }

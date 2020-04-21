@@ -50,6 +50,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (changes.Count == 0)
             {
+                // Even though nothing changed here, we want the synchronizer to be aware of the host document version change.
+                // So, let's make an empty edit to invoke the text buffer Changed events.
+                TextBuffer.MakeEmptyEdit();
+
                 _currentSnapshot = UpdateSnapshot();
                 return _currentSnapshot;
             }

@@ -42,5 +42,17 @@ namespace Microsoft.VisualStudio.Text
             var matchesContentType = textBuffer.ContentType.IsOfType(RazorLSPContentTypeDefinition.Name);
             return matchesContentType;
         }
+
+        public static void MakeEmptyEdit(this ITextBuffer textBuffer)
+        {
+            var bufferLength = textBuffer.CurrentSnapshot.Length;
+            using var edit = textBuffer.CreateEdit(EditOptions.None, reiteratedVersionNumber: null, InviolableEditTag.Instance);
+            edit.Insert(bufferLength, " ");
+            edit.Apply();
+
+            using var revertEdit = textBuffer.CreateEdit(EditOptions.None, reiteratedVersionNumber: null, InviolableEditTag.Instance);
+            revertEdit.Delete(bufferLength, 1);
+            revertEdit.Apply();
+        }
     }
 }
