@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     internal class CompletionHandler : IRequestHandler<CompletionParams, SumType<CompletionItem[], CompletionList>?>
     {
         private static readonly IReadOnlyList<string> CSharpTriggerCharacters = new[] { ".", "@" };
-        private static readonly IReadOnlyList<string> HtmlTriggerCharacters = new[] { "<", "&", "\\", "/", "'", "\"", "=", ":" };
+        private static readonly IReadOnlyList<string> HtmlTriggerCharacters = new[] { "<", "&", "\\", "/", "'", "\"", "=", ":", " " };
         private static readonly IReadOnlyList<string> AllTriggerCharacters = CSharpTriggerCharacters.Concat(HtmlTriggerCharacters).ToArray();
 
         private readonly JoinableTaskFactory _joinableTaskFactory;
@@ -216,7 +216,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
         }
 
-        private bool TriggerAppliesToProjection(CompletionContext context, RazorLanguageKind languageKind)
+        // Internal for testing
+        internal bool TriggerAppliesToProjection(CompletionContext context, RazorLanguageKind languageKind)
         {
             if (languageKind == RazorLanguageKind.Razor)
             {

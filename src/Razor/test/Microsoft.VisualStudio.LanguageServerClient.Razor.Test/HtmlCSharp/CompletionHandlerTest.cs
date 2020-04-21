@@ -2,13 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using Xunit;
@@ -557,6 +553,77 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.NotNull(result);
             var item = Assert.Single((CompletionItem[])result.Value);
             Assert.Equal(expectedItem.InsertText, item.InsertText);
+        }
+
+        [Fact]
+        public void TriggerAppliedToProjection_Razor_ReturnsFalse()
+        {
+            // Arrange
+            var completionHandler = new CompletionHandler(JoinableTaskContext, Mock.Of<LSPRequestInvoker>(), Mock.Of<LSPDocumentManager>(), Mock.Of<LSPProjectionProvider>());
+            var context = new CompletionContext();
+
+            // Act
+            var result = completionHandler.TriggerAppliesToProjection(context, RazorLanguageKind.Razor);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData(" ", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData("<", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData("&", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData("\\", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData("/", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData("'", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData("=", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData(":", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData("\"", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData(".", CompletionTriggerKind.TriggerCharacter, false)]
+        [InlineData(".", CompletionTriggerKind.Invoked, true)]
+        [InlineData("@", CompletionTriggerKind.TriggerCharacter, false)]
+        [InlineData("@", CompletionTriggerKind.Invoked, true)]
+        [InlineData("a", CompletionTriggerKind.TriggerCharacter, true)] // Auto-invoked from VS platform
+        [InlineData("a", CompletionTriggerKind.Invoked, true)]
+        public void TriggerAppliedToProjection_Html_ReturnsExpectedResult(string character, CompletionTriggerKind kind, bool expected)
+        {
+            // Arrange
+            var completionHandler = new CompletionHandler(JoinableTaskContext, Mock.Of<LSPRequestInvoker>(), Mock.Of<LSPDocumentManager>(), Mock.Of<LSPProjectionProvider>());
+            var context = new CompletionContext()
+            {
+                TriggerCharacter = character,
+                TriggerKind = kind
+            };
+
+            // Act
+            var result = completionHandler.TriggerAppliesToProjection(context, RazorLanguageKind.Html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData(".", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData("@", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData(" ", CompletionTriggerKind.TriggerCharacter, false)]
+        [InlineData("<", CompletionTriggerKind.TriggerCharacter, false)]
+        [InlineData("a", CompletionTriggerKind.TriggerCharacter, true)] // Auto-invoked from VS platform
+        [InlineData("a", CompletionTriggerKind.Invoked, true)]
+        public void TriggerAppliedToProjection_CSharp_ReturnsExpectedResult(string character, CompletionTriggerKind kind, bool expected)
+        {
+            // Arrange
+            var completionHandler = new CompletionHandler(JoinableTaskContext, Mock.Of<LSPRequestInvoker>(), Mock.Of<LSPDocumentManager>(), Mock.Of<LSPProjectionProvider>());
+            var context = new CompletionContext()
+            {
+                TriggerCharacter = character,
+                TriggerKind = kind
+            };
+
+            // Act
+            var result = completionHandler.TriggerAppliesToProjection(context, RazorLanguageKind.CSharp);
+
+            // Assert
+            Assert.Equal(expected, result);
         }
     }
 }
