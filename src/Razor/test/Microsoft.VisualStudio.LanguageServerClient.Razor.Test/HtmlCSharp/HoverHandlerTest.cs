@@ -168,6 +168,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
             );
 
+            var lspResponse = new Hover()
+            {
+                Range = new Range()
+                {
+                    Start = new Position(10, 0),
+                    End = new Position(10, 1)
+                },
+                Contents = expectedContents
+            };
+
             var expectedItem = new Hover()
             {
                 Range = new Range()
@@ -196,18 +206,25 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(LanguageServerKind.Html, serverKind);
                     called = true;
                 })
-                .Returns(Task.FromResult(expectedItem));
+                .Returns(Task.FromResult(lspResponse));
 
             var projectionResult = new ProjectionResult()
             {
-                LanguageKind = RazorLanguageKind.Razor,
+                LanguageKind = RazorLanguageKind.Html,
             };
             var projectionProvider = new Mock<LSPProjectionProvider>();
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var remappingResult = new RazorMapToDocumentRangeResponse();
+            var remappingResult = new RazorMapToDocumentRangeResponse()
+            {
+                Range = new Range()
+                {
+                    Start = new Position(0, 0),
+                    End = new Position(0, 1)
+                }
+            };
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
-            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, It.IsAny<Uri>(), It.IsAny<Range>(), It.IsAny<CancellationToken>())).
+            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.Html, It.IsAny<Uri>(), It.IsAny<Range>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
             var hoverHandler = new HoverHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
@@ -216,9 +233,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var result = await hoverHandler.HandleRequestAsync(hoverRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            // (NOT yet supported)
-            Assert.False(called);
-            Assert.Null(result);
+            Assert.True(called);
+            Assert.Equal(expectedItem.Contents, result.Contents);
+            Assert.Equal(expectedItem.Range, result.Range);
         }
 
         [Fact]
