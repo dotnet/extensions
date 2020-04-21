@@ -53,7 +53,7 @@ jobs:
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
         # This override makes the specified vmImage irrelevant.
         name: NetCoreInternal-Pool
-        queue: BuildPool.Windows.10.Amd64.VS2017
+        queue: BuildPool.Server.Amd64.VS2017
   variables:
     AgentOsName: ${{ parameters.agentOs }}
     ASPNETCORE_TEST_LOG_MAXPATH: "200" # Keep test log file name length low enough for artifact zipping

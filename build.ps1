@@ -200,9 +200,6 @@ if ($PackageVersionPropsUrl) {
     $ProdConArgs += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
 }
 
-#Add support for tls 1.2
-[Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
-
 # Execute
 
 $korebuildPath = Get-KoreBuild
