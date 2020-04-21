@@ -1,0 +1,17 @@
+<Project>
+    <PropertyGroup>
+        <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
+        <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
+
+        <PublishDependsOnTargets>$(PublishDependsOnTargets);_AddNpmPackagesToManifest</PublishDependsOnTargets>
+    </PropertyGroup>
+    <Target Name="_AddNpmPackagesToManifest">
+        <ItemGroup>
+            <ItemsToPushToBlobFeed Include="$(ArtifactsDir)\packages\**\*.tgz">
+                <IsShipping>true</IsShipping>
+                <PublishFlatContainer>true</PublishFlatContainer>
+                <RelativeBlobPath>npm/%(Filename)%(Extension)</RelativeBlobPath>
+            </ItemsToPushToBlobFeed>
+        </ItemGroup>
+    </Target>
+</Project>
