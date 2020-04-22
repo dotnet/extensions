@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,6 +20,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly IEnumerable<IRazorFileChangeListener> _listeners;
         private readonly List<FileSystemWatcher> _watchers;
+        private readonly Dictionary<string, DelayedFileChangeNotification> _pendingNotifications;
+        private readonly object _pendingNotificationsLock = new object();
 
         public RazorFileChangeDetector(
             ForegroundDispatcher foregroundDispatcher,
@@ -44,7 +47,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _filePathNormalizer = filePathNormalizer;
             _listeners = listeners;
             _watchers = new List<FileSystemWatcher>(RazorFileExtensions.Count);
+            _pendingNotifications = new Dictionary<string, DelayedFileChangeNotification>(FilePathComparer.Instance);
         }
+
+        // Internal for testing
+        internal int EnqueueDelay { get; set; } = 250;
+
+        // Used in tests to ensure we can control when notification work completes.
+        internal ManualResetEventSlim NotifyCompletedNotifications { get; set; }
+
+        // Used in tests to ensure we can control when delayed notification work starts.
+        internal ManualResetEventSlim BlockNotificationWorkStart { get; set; }
+
+        // Used in tests to ensure we can understand when notification work noops.
+        internal ManualResetEventSlim NotifyNotificationNoop { get; set; }
 
         public async Task StartAsync(string workspaceDirectory, CancellationToken cancellationToken)
         {
@@ -130,11 +146,74 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return existingRazorFiles.ToArray();
         }
 
-        private void FileSystemWatcher_RazorFileEvent_Background(string physicalFilePath, RazorFileChangeKind kind)
+        // Internal for testing
+        internal void FileSystemWatcher_RazorFileEvent_Background(string physicalFilePath, RazorFileChangeKind kind)
         {
-            Task.Factory.StartNew(
-                () => FileSystemWatcher_RazorFileEvent(physicalFilePath, kind),
-                CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+            lock (_pendingNotificationsLock)
+            {
+                if (!_pendingNotifications.TryGetValue(physicalFilePath, out var currentNotification))
+                {
+                    currentNotification = new DelayedFileChangeNotification();
+                    _pendingNotifications[physicalFilePath] = currentNotification;
+                }
+
+                if (currentNotification.ChangeKind != null)
+                {
+                    // We've already has a file change event for this file. Chances are we need to normalize the result.
+
+                    Debug.Assert(currentNotification.ChangeKind == RazorFileChangeKind.Added || currentNotification.ChangeKind == RazorFileChangeKind.Removed);
+
+                    if (currentNotification.ChangeKind != kind)
+                    {
+                        // Previous was added and current is removed OR previous was removed and current is added. Either way there's no
+                        // actual change to notify, null it out.
+                        currentNotification.ChangeKind = null;
+                    }
+                    else
+                    {
+                        Debug.Fail($"Unexpected {kind} event because our prior tracked state was the same.");
+                    }
+                }
+                else
+                {
+                    currentNotification.ChangeKind = kind;
+                }
+
+                if (currentNotification.NotifyTask == null)
+                {
+                    // The notify task is only ever null when it's the first time we're being notified about a change to the corresponding file.
+                    currentNotification.NotifyTask = NotifyAfterDelayAsync(physicalFilePath);
+                }
+            }
+        }
+
+        private async Task NotifyAfterDelayAsync(string physicalFilePath)
+        {
+            await Task.Delay(EnqueueDelay).ConfigureAwait(false);
+
+            OnStartingDelayedNotificationWork();
+
+            lock (_pendingNotificationsLock)
+            {
+                var result = _pendingNotifications.TryGetValue(physicalFilePath, out var notification);
+                Debug.Assert(result, "We should always have an associated notification after delaying an update.");
+
+                _pendingNotifications.Remove(physicalFilePath);
+
+                if (notification.ChangeKind == null)
+                {
+                    // The file to be notified has been brought back to its original state.
+                    // Aka Add -> Remove is equivalent to the file never having been added.
+
+                    OnNoopingNotificationWork();
+
+                    return;
+                }
+
+                _ = Task.Factory.StartNew(
+                    () => FileSystemWatcher_RazorFileEvent(physicalFilePath, notification.ChangeKind.Value),
+                    CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+            }
         }
 
         private void FileSystemWatcher_RazorFileEvent(string physicalFilePath, RazorFileChangeKind kind)
@@ -143,6 +222,40 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 listener.RazorFileChanged(physicalFilePath, kind);
             }
+
+            OnCompletedNotifications();
+        }
+
+        private void OnCompletedNotifications()
+        {
+            if (NotifyCompletedNotifications != null)
+            {
+                NotifyCompletedNotifications.Set();
+            }
+        }
+
+        private void OnStartingDelayedNotificationWork()
+        {
+            if (BlockNotificationWorkStart != null)
+            {
+                BlockNotificationWorkStart.Wait();
+                BlockNotificationWorkStart.Reset();
+            }
+        }
+
+        private void OnNoopingNotificationWork()
+        {
+            if (NotifyNotificationNoop != null)
+            {
+                NotifyNotificationNoop.Set();
+            }
+        }
+
+        private class DelayedFileChangeNotification
+        {
+            public Task NotifyTask { get; set; }
+
+            public RazorFileChangeKind? ChangeKind { get; set; }
         }
     }
 }

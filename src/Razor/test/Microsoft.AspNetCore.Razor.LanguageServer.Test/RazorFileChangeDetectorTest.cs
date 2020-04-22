@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,6 +61,79 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.Equal(RazorFileChangeKind.Added, args.Kind);
                     Assert.Equal(existingRazorFiles[1], args.FilePath);
                 });
+        }
+
+        [Fact]
+        public void FileSystemWatcher_RazorFileEvent_Background_NotifiesChange()
+        {
+            // Arrange
+            var filePath = "C:/path/to/file.razor";
+            var changeKind = RazorFileChangeKind.Added;
+            var listener = new Mock<IRazorFileChangeListener>(MockBehavior.Strict);
+            listener.Setup(l => l.RazorFileChanged(filePath, changeKind)).Verifiable();
+            var fileChangeDetector = new RazorFileChangeDetector(Dispatcher, FilePathNormalizer, new[] { listener.Object })
+            {
+                EnqueueDelay = 1,
+                NotifyCompletedNotifications = new ManualResetEventSlim(initialState: false)
+            };
+
+            // Act
+            fileChangeDetector.FileSystemWatcher_RazorFileEvent_Background(filePath, changeKind);
+
+            // Assert
+            Assert.True(fileChangeDetector.NotifyCompletedNotifications.Wait(TimeSpan.FromSeconds(2)));
+            listener.VerifyAll();
+        }
+
+        [Fact]
+        public void FileSystemWatcher_RazorFileEvent_Background_AddRemoveDoesNotNotify()
+        {
+            // Arrange
+            var filePath = "C:/path/to/file.razor";
+            var listenerCalled = false;
+            var listener = new Mock<IRazorFileChangeListener>(MockBehavior.Strict);
+            listener.Setup(l => l.RazorFileChanged(filePath, It.IsAny<RazorFileChangeKind>())).Callback(() => listenerCalled = true);
+            var fileChangeDetector = new RazorFileChangeDetector(Dispatcher, FilePathNormalizer, new[] { listener.Object })
+            {
+                EnqueueDelay = 1,
+                NotifyNotificationNoop = new ManualResetEventSlim(initialState: false),
+                BlockNotificationWorkStart = new ManualResetEventSlim(initialState: false)
+            };
+
+            // Act
+            fileChangeDetector.FileSystemWatcher_RazorFileEvent_Background(filePath, RazorFileChangeKind.Added);
+            fileChangeDetector.FileSystemWatcher_RazorFileEvent_Background(filePath, RazorFileChangeKind.Removed);
+
+            // Assert
+            fileChangeDetector.BlockNotificationWorkStart.Set();
+            Assert.True(fileChangeDetector.NotifyNotificationNoop.Wait(TimeSpan.FromSeconds(2)));
+            Assert.False(listenerCalled);
+        }
+
+        [Fact]
+        public void FileSystemWatcher_RazorFileEvent_Background_NotificationNoopToAdd_NotifiesAddedOnce()
+        {
+            // Arrange
+            var filePath = "C:/path/to/file.razor";
+            var listener = new Mock<IRazorFileChangeListener>(MockBehavior.Strict);
+            var callCount = 0;
+            listener.Setup(l => l.RazorFileChanged(filePath, RazorFileChangeKind.Added)).Callback(() => callCount++);
+            var fileChangeDetector = new RazorFileChangeDetector(Dispatcher, FilePathNormalizer, new[] { listener.Object })
+            {
+                EnqueueDelay = 1,
+                BlockNotificationWorkStart = new ManualResetEventSlim(initialState: false),
+                NotifyCompletedNotifications = new ManualResetEventSlim(initialState: false),
+            };
+
+            // Act
+            fileChangeDetector.FileSystemWatcher_RazorFileEvent_Background(filePath, RazorFileChangeKind.Added);
+            fileChangeDetector.FileSystemWatcher_RazorFileEvent_Background(filePath, RazorFileChangeKind.Removed);
+            fileChangeDetector.FileSystemWatcher_RazorFileEvent_Background(filePath, RazorFileChangeKind.Added);
+
+            // Assert
+            fileChangeDetector.BlockNotificationWorkStart.Set();
+            Assert.True(fileChangeDetector.NotifyCompletedNotifications.Wait(TimeSpan.FromSeconds(2)));
+            Assert.Equal(1, callCount);
         }
 
         private class TestRazorFileChangeDetector : RazorFileChangeDetector
