@@ -86,7 +86,7 @@ export class HtmlPreviewPanel {
         let virtualDocumentFilePath = '';
 
         if (document) {
-            // The document is guarunteed to be a Razor document
+            // The document is guaranteed to be a Razor document
             this.htmlContent = document.htmlDocument.getContent();
             hostDocumentFilePath = getUriPath(document.uri);
             virtualDocumentFilePath = getUriPath(document.htmlDocument.uri);

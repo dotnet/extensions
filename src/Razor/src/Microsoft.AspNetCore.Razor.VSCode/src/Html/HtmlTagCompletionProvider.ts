@@ -9,6 +9,7 @@ import {
     LanguageService as HtmlLanguageService,
 } from 'vscode-html-languageservice';
 import { TextDocument as ServiceTextDocument } from 'vscode-languageserver-types';
+import { IRazorDocumentManager } from '../IRazorDocumentManager';
 import { RazorLanguage } from '../RazorLanguage';
 import { RazorLanguageServiceClient } from '../RazorLanguageServiceClient';
 import { LanguageKind } from '../RPC/LanguageKind';
@@ -18,7 +19,8 @@ export class HtmlTagCompletionProvider {
     private enabled = false;
     private htmlLanguageService: HtmlLanguageService | undefined;
 
-    constructor(private readonly serviceClient: RazorLanguageServiceClient) {
+    constructor(private readonly documentManager: IRazorDocumentManager,
+                private readonly serviceClient: RazorLanguageServiceClient) {
     }
 
     public register() {
@@ -95,7 +97,7 @@ export class HtmlTagCompletionProvider {
         }
 
         const changeOffset = document.offsetAt(lastChange.range.start);
-        const documentContent = document.getText();
+        let documentContent = document.getText();
         const potentialSelfClosingCharacter = documentContent.charAt(changeOffset - 1);
         if (potentialSelfClosingCharacter === '/' || potentialSelfClosingCharacter === '>') {
             // Tag was already closed or is incomplete no need to auto-complete.
@@ -120,7 +122,7 @@ export class HtmlTagCompletionProvider {
         // instantly swapping to another) to flow through the system. Basically, if content that would trigger
         // an auto-close occurs we allow a small amount of time for other edits to invalidate the current
         // auto-close task.
-        this.timeout = setTimeout(() => {
+        this.timeout = setTimeout(async () => {
             if (!this.enabled) {
                 return;
             }
@@ -138,6 +140,12 @@ export class HtmlTagCompletionProvider {
             const position = new vscode.Position(rangeStart.line, rangeStart.character + lastChange.text.length);
             if (!this.htmlLanguageService) {
                 return;
+            }
+
+            const razorDoc = await this.documentManager.getActiveDocument();
+            if (razorDoc) {
+                // The document is guaranteed to be a Razor document
+                documentContent = razorDoc.htmlDocument.getContent();
             }
 
             const serviceTextDocument = ServiceTextDocument.create(

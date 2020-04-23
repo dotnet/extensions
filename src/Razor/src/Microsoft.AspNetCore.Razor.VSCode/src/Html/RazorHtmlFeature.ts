@@ -23,7 +23,7 @@ export class RazorHtmlFeature {
         eventEmitterFactory: IEventEmitterFactory,
         logger: RazorLogger) {
         this.projectionProvider = new HtmlProjectedDocumentContentProvider(documentManager, eventEmitterFactory, logger);
-        this.htmlTagCompletionProvider = new HtmlTagCompletionProvider(serviceClient);
+        this.htmlTagCompletionProvider = new HtmlTagCompletionProvider(documentManager, serviceClient);
         this.htmlPreviewPanel = new HtmlPreviewPanel(documentManager);
     }
 
