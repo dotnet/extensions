@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             listener.Setup(l => l.RazorFileChanged(filePath, changeKind)).Verifiable();
             var fileChangeDetector = new RazorFileChangeDetector(Dispatcher, FilePathNormalizer, new[] { listener.Object })
             {
-                EnqueueDelay = 1,
+                EnqueueDelay = 50,
                 NotifyCompletedNotifications = new ManualResetEventSlim(initialState: false)
             };
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             listener.Setup(l => l.RazorFileChanged(filePath, It.IsAny<RazorFileChangeKind>())).Callback(() => listenerCalled = true);
             var fileChangeDetector = new RazorFileChangeDetector(Dispatcher, FilePathNormalizer, new[] { listener.Object })
             {
-                EnqueueDelay = 1,
+                EnqueueDelay = 50,
                 NotifyNotificationNoop = new ManualResetEventSlim(initialState: false),
                 BlockNotificationWorkStart = new ManualResetEventSlim(initialState: false)
             };
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             listener.Setup(l => l.RazorFileChanged(filePath, RazorFileChangeKind.Added)).Callback(() => callCount++);
             var fileChangeDetector = new RazorFileChangeDetector(Dispatcher, FilePathNormalizer, new[] { listener.Object })
             {
-                EnqueueDelay = 1,
+                EnqueueDelay = 50,
                 BlockNotificationWorkStart = new ManualResetEventSlim(initialState: false),
                 NotifyCompletedNotifications = new ManualResetEventSlim(initialState: false),
             };
