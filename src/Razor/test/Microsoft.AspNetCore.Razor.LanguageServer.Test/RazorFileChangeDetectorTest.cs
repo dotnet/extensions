@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void FileSystemWatcher_RazorFileEvent_Background_NotifiesChange()
+        public async Task FileSystemWatcher_RazorFileEvent_Background_NotifiesChange()
         {
             // Arrange
             var filePath = "C:/path/to/file.razor";
@@ -74,14 +74,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var fileChangeDetector = new RazorFileChangeDetector(Dispatcher, FilePathNormalizer, new[] { listener.Object })
             {
                 EnqueueDelay = 50,
-                NotifyCompletedNotifications = new ManualResetEventSlim(initialState: false)
+                BlockNotificationWorkStart = new ManualResetEventSlim(initialState: false),
             };
 
             // Act
             fileChangeDetector.FileSystemWatcher_RazorFileEvent_Background(filePath, changeKind);
 
             // Assert
-            Assert.True(fileChangeDetector.NotifyCompletedNotifications.Wait(TimeSpan.FromSeconds(2)));
+
+            // We acquire the notification prior to unblockign notification work because once we allow that work to proceed the notification will be removed.
+            var notification = Assert.Single(fileChangeDetector._pendingNotifications);
+
+            fileChangeDetector.BlockNotificationWorkStart.Set();
+
+            await notification.Value.NotifyTask;
+
             listener.VerifyAll();
         }
 
@@ -111,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void FileSystemWatcher_RazorFileEvent_Background_NotificationNoopToAdd_NotifiesAddedOnce()
+        public async Task FileSystemWatcher_RazorFileEvent_Background_NotificationNoopToAdd_NotifiesAddedOnce()
         {
             // Arrange
             var filePath = "C:/path/to/file.razor";
@@ -122,7 +129,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 EnqueueDelay = 50,
                 BlockNotificationWorkStart = new ManualResetEventSlim(initialState: false),
-                NotifyCompletedNotifications = new ManualResetEventSlim(initialState: false),
             };
 
             // Act
@@ -131,8 +137,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             fileChangeDetector.FileSystemWatcher_RazorFileEvent_Background(filePath, RazorFileChangeKind.Added);
 
             // Assert
+
+            // We acquire the notification prior to unblockign notification work because once we allow that work to proceed the notification will be removed.
+            var notification = Assert.Single(fileChangeDetector._pendingNotifications);
+
             fileChangeDetector.BlockNotificationWorkStart.Set();
-            Assert.True(fileChangeDetector.NotifyCompletedNotifications.Wait(TimeSpan.FromSeconds(2)));
+
+            await notification.Value.NotifyTask;
+
             Assert.Equal(1, callCount);
         }
 

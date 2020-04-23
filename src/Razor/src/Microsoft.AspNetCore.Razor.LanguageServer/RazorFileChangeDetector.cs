@@ -16,11 +16,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     internal class RazorFileChangeDetector : IFileChangeDetector
     {
         private static readonly IReadOnlyList<string> RazorFileExtensions = new[] { ".razor", ".cshtml" };
+
+        // Internal for testing
+        internal readonly Dictionary<string, DelayedFileChangeNotification> _pendingNotifications;
+
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly IEnumerable<IRazorFileChangeListener> _listeners;
         private readonly List<FileSystemWatcher> _watchers;
-        private readonly Dictionary<string, DelayedFileChangeNotification> _pendingNotifications;
         private readonly object _pendingNotificationsLock = new object();
 
         public RazorFileChangeDetector(
@@ -52,9 +55,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         // Internal for testing
         internal int EnqueueDelay { get; set; } = 250;
-
-        // Used in tests to ensure we can control when notification work completes.
-        internal ManualResetEventSlim NotifyCompletedNotifications { get; set; }
 
         // Used in tests to ensure we can control when delayed notification work starts.
         internal ManualResetEventSlim BlockNotificationWorkStart { get; set; }
@@ -227,16 +227,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 listener.RazorFileChanged(physicalFilePath, kind);
             }
-
-            OnCompletedNotifications();
-        }
-
-        private void OnCompletedNotifications()
-        {
-            if (NotifyCompletedNotifications != null)
-            {
-                NotifyCompletedNotifications.Set();
-            }
         }
 
         private void OnStartingDelayedNotificationWork()
@@ -256,7 +246,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
-        private class DelayedFileChangeNotification
+        // Internal for testing
+        internal class DelayedFileChangeNotification
         {
             public Task NotifyTask { get; set; }
 
