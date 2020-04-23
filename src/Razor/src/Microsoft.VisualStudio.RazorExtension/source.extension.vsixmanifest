@@ -7,6 +7,9 @@
     <Icon>WebConfiguration.png</Icon>
     <PreviewIcon>WebConfiguration.png</PreviewIcon>
     <PackageId>Microsoft.VisualStudio.RazorExtension</PackageId>
+
+    <!-- This is needed to mark this extension as cloud compliant. -->
+    <AllowClientRole>true</AllowClientRole>
   </Metadata>
   <Installation AllUsers="true" Experimental="true">
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0,)" />
