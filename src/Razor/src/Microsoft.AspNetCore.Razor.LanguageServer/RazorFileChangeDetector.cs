@@ -193,6 +193,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             OnStartingDelayedNotificationWork();
 
+            await Task.Factory.StartNew(
+                () => NotifyAfterDelay_Foreground(physicalFilePath),
+                CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+        }
+
+        private void NotifyAfterDelay_Foreground(string physicalFilePath)
+        {
             lock (_pendingNotificationsLock)
             {
                 var result = _pendingNotifications.TryGetValue(physicalFilePath, out var notification);
@@ -210,9 +217,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     return;
                 }
 
-                _ = Task.Factory.StartNew(
-                    () => FileSystemWatcher_RazorFileEvent(physicalFilePath, notification.ChangeKind.Value),
-                    CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+                FileSystemWatcher_RazorFileEvent(physicalFilePath, notification.ChangeKind.Value);
             }
         }
 
