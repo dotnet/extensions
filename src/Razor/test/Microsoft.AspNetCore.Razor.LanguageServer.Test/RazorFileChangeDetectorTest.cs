@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Assert
 
-            // We acquire the notification prior to unblockign notification work because once we allow that work to proceed the notification will be removed.
+            // We acquire the notification prior to unblocking notification work because once we allow that work to proceed the notification will be removed.
             var notification = Assert.Single(fileChangeDetector._pendingNotifications);
 
             fileChangeDetector.BlockNotificationWorkStart.Set();
