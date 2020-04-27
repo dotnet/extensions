@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
+using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
@@ -75,7 +77,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var (_, resultToken) = await task.ConfigureAwait(false);
 
-            var result = resultToken != null ? resultToken.ToObject<TOut>() : default;
+            // We need these converters so we don't lose information as part of the deserialization.
+            var serializer = new JsonSerializer();
+            serializer.Converters.Add(new VSExtensionConverter<ClientCapabilities, VSClientCapabilities>());
+            serializer.Converters.Add(new VSExtensionConverter<CompletionItem, VSCompletionItem>());
+            serializer.Converters.Add(new VSExtensionConverter<SignatureInformation, VSSignatureInformation>());
+            serializer.Converters.Add(new VSExtensionConverter<Hover, VSHover>());
+            serializer.Converters.Add(new VSExtensionConverter<ServerCapabilities, VSServerCapabilities>());
+            serializer.Converters.Add(new VSExtensionConverter<SymbolInformation, VSSymbolInformation>());
+            serializer.Converters.Add(new VSExtensionConverter<CompletionList, VSCompletionList>());
+
+            var result = resultToken != null ? resultToken.ToObject<TOut>(serializer) : default;
             return result;
         }
     }
