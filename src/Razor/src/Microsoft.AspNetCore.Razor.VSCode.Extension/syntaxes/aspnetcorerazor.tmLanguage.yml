@@ -27,6 +27,26 @@ injections:
         end: '(\})'
         endCaptures:
           1: { name: 'punctuation.curlybrace.close.cs' }
+  'L:meta.attribute string.quoted.double.html, L:meta.attribute string.quoted.single.html':
+    patterns:
+      - name: 'meta.attribute.razor.explicit'
+        begin: '@\('
+        beginCaptures:
+          0: { name: 'keyword.control.cshtml' }
+        patterns:
+          - include: 'source.cs#expression'
+        end: '\)'
+        endCaptures:
+          0: { name: 'keyword.control.cshtml' }
+      - name: 'meta.attribute.razor.implicit'
+        begin: '@'
+        beginCaptures:
+          0: { name: 'keyword.control.cshtml' }
+        patterns:
+          - include: '#await-prefix'
+          - include: '#implicit-expression-body'
+        end: '(?=[\s<>\{\}\)\]''"])'
+
 
 repository:
   razor-control-structures:
@@ -189,13 +209,13 @@ repository:
     patterns:
       - include: '#await-prefix'
       - include: '#implicit-expression-body'
-    end: '(?=[\s<>\{\}\)\]])'
+    end: '(?=[\s<>\{\}\)\]''"])'
 
   implicit-expression-body:
     patterns:
       - include: '#implicit-expression-invocation-start'
       - include: '#implicit-expression-accessor-start'
-    end: '(?=[\s<>\{\}\)\]])'
+    end: '(?=[\s<>\{\}\)\]''"])'
 
   # CSharp colors method invocations differently than accessors
   # This captures situations where you do @SomeMethod()
@@ -205,7 +225,7 @@ repository:
       1: { name: 'entity.name.function.cs' }
     patterns:
       - include: '#implicit-expression-continuation'
-    end: '(?=[\s<>\{\}\)\]])'
+    end: '(?=[\s<>\{\}\)\]''"])'
 
   # CSharp colors property accessors differently than methods
   # This captures situations where you do @SomeProperty
@@ -215,7 +235,7 @@ repository:
       1: { name: 'variable.other.object.cs' }
     patterns:
       - include: '#implicit-expression-continuation'
-    end: '(?=[\s<>\{\}\)\]])'
+    end: '(?=[\s<>\{\}\)\]''"])'
 
   implicit-expression-continuation:
     patterns:
@@ -224,7 +244,7 @@ repository:
       - include: '#implicit-expression-invocation'
       - include: '#implicit-expression-accessor'
       - include: '#implicit-expression-extension'
-    end: '(?=[\s<>\{\}\)\]])'
+    end: '(?=[\s<>\{\}\)\]''"])'
 
   implicit-expression-accessor:
     match: '(?<=\.)[_[:alpha:]][_[:alnum:]]*'
@@ -822,4 +842,3 @@ repository:
     end: '(\))'
     endCaptures:
       1: { name: 'punctuation.parenthesis.close.cs' }
-

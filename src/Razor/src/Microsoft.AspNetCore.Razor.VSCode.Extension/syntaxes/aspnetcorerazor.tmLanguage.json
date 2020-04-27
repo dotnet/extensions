@@ -59,6 +59,48 @@
           }
         }
       ]
+    },
+    "L:meta.attribute string.quoted.double.html, L:meta.attribute string.quoted.single.html": {
+      "patterns": [
+        {
+          "name": "meta.attribute.razor.explicit",
+          "begin": "@\\(",
+          "beginCaptures": {
+            "0": {
+              "name": "keyword.control.cshtml"
+            }
+          },
+          "patterns": [
+            {
+              "include": "source.cs#expression"
+            }
+          ],
+          "end": "\\)",
+          "endCaptures": {
+            "0": {
+              "name": "keyword.control.cshtml"
+            }
+          }
+        },
+        {
+          "name": "meta.attribute.razor.implicit",
+          "begin": "@",
+          "beginCaptures": {
+            "0": {
+              "name": "keyword.control.cshtml"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#await-prefix"
+            },
+            {
+              "include": "#implicit-expression-body"
+            }
+          ],
+          "end": "(?=[\\s<>\\{\\}\\)\\]'\"])"
+        }
+      ]
     }
   },
   "repository": {
@@ -375,7 +417,7 @@
           "include": "#implicit-expression-body"
         }
       ],
-      "end": "(?=[\\s<>\\{\\}\\)\\]])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]'\"])"
     },
     "implicit-expression-body": {
       "patterns": [
@@ -386,7 +428,7 @@
           "include": "#implicit-expression-accessor-start"
         }
       ],
-      "end": "(?=[\\s<>\\{\\}\\)\\]])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]'\"])"
     },
     "implicit-expression-invocation-start": {
       "begin": "([_[:alpha:]][_[:alnum:]]*)(?=\\()",
@@ -400,7 +442,7 @@
           "include": "#implicit-expression-continuation"
         }
       ],
-      "end": "(?=[\\s<>\\{\\}\\)\\]])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]'\"])"
     },
     "implicit-expression-accessor-start": {
       "begin": "([_[:alpha:]][_[:alnum:]]*)",
@@ -414,7 +456,7 @@
           "include": "#implicit-expression-continuation"
         }
       ],
-      "end": "(?=[\\s<>\\{\\}\\)\\]])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]'\"])"
     },
     "implicit-expression-continuation": {
       "patterns": [
@@ -434,7 +476,7 @@
           "include": "#implicit-expression-extension"
         }
       ],
-      "end": "(?=[\\s<>\\{\\}\\)\\]])"
+      "end": "(?=[\\s<>\\{\\}\\)\\]'\"])"
     },
     "implicit-expression-accessor": {
       "match": "(?<=\\.)[_[:alpha:]][_[:alnum:]]*",
