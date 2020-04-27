@@ -217,7 +217,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (tempFileInfo.Exists)
             {
-                Debug.Fail($"'{tempFileInfo.FullName}' should not exist but it does. This could be caused by failures during serialization or early process termination.");
+                // This could be caused by failures during serialization or early process termination.
                 tempFileInfo.Delete();
             }
 
