@@ -19,6 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     {
         private readonly ILanguageClientBroker _languageClientBroker;
         private readonly MethodInfo _requestAsyncMethod;
+        private readonly JsonSerializer _serializer;
 
         [ImportingConstructor]
         public DefaultLSPRequestInvoker(ILanguageClientBroker languageClientBroker)
@@ -44,6 +45,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     typeof(JToken),
                     typeof(CancellationToken)
                 });
+
+            // We need these converters so we don't lose information as part of the deserialization.
+            _serializer = new JsonSerializer();
+            _serializer.Converters.Add(new VSExtensionConverter<ClientCapabilities, VSClientCapabilities>());
+            _serializer.Converters.Add(new VSExtensionConverter<CompletionItem, VSCompletionItem>());
+            _serializer.Converters.Add(new VSExtensionConverter<SignatureInformation, VSSignatureInformation>());
+            _serializer.Converters.Add(new VSExtensionConverter<Hover, VSHover>());
+            _serializer.Converters.Add(new VSExtensionConverter<ServerCapabilities, VSServerCapabilities>());
+            _serializer.Converters.Add(new VSExtensionConverter<SymbolInformation, VSSymbolInformation>());
+            _serializer.Converters.Add(new VSExtensionConverter<CompletionList, VSCompletionList>());
         }
 
         public async override Task<TOut> RequestServerAsync<TIn, TOut>(string method, LanguageServerKind serverKind, TIn parameters, CancellationToken cancellationToken)
@@ -77,17 +88,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var (_, resultToken) = await task.ConfigureAwait(false);
 
-            // We need these converters so we don't lose information as part of the deserialization.
-            var serializer = new JsonSerializer();
-            serializer.Converters.Add(new VSExtensionConverter<ClientCapabilities, VSClientCapabilities>());
-            serializer.Converters.Add(new VSExtensionConverter<CompletionItem, VSCompletionItem>());
-            serializer.Converters.Add(new VSExtensionConverter<SignatureInformation, VSSignatureInformation>());
-            serializer.Converters.Add(new VSExtensionConverter<Hover, VSHover>());
-            serializer.Converters.Add(new VSExtensionConverter<ServerCapabilities, VSServerCapabilities>());
-            serializer.Converters.Add(new VSExtensionConverter<SymbolInformation, VSSymbolInformation>());
-            serializer.Converters.Add(new VSExtensionConverter<CompletionList, VSCompletionList>());
-
-            var result = resultToken != null ? resultToken.ToObject<TOut>(serializer) : default;
+            var result = resultToken != null ? resultToken.ToObject<TOut>(_serializer) : default;
             return result;
         }
     }
