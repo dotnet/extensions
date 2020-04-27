@@ -48,9 +48,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bc9d69203054e5a9ce991b0967800cbecd41822f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20201.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20221.14">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>bce0a98620c1c5a110b2bba9912f3d5929069c6b</Sha>
+      <Sha>e13ae00db986456a5012f2d9d479d893b3f5aff6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.7.0-1.20220.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
