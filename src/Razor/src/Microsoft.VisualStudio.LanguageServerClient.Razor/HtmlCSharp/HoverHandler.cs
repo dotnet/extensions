@@ -89,20 +89,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
             };
 
-            Hover result;
-            try
-            {
-                result = await _requestInvoker.RequestServerAsync<TextDocumentPositionParams, Hover>(
-                    Methods.TextDocumentHoverName,
-                    serverKind,
-                    textDocumentPositionParams,
-                    cancellationToken).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ensure we fail silently (Temporary till roslyn update is live)
-                return null;
-            }
+            var result = await _requestInvoker.RequestServerAsync<TextDocumentPositionParams, Hover>(
+                Methods.TextDocumentHoverName,
+                serverKind,
+                textDocumentPositionParams,
+                cancellationToken).ConfigureAwait(false);
 
             if (result?.Range == null || result?.Contents == null)
             {
