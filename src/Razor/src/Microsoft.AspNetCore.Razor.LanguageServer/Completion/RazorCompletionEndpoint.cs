@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             {
                 case RazorCompletionItemKind.Directive:
                     {
-                        // There's not a lot of calculation needed for Directives, go ahead and store the documentation/detail
+                        // There's not a lot of calculation needed for Directives, go ahead and store the documentation
                         // on the completion item.
                         var descriptionInfo = razorCompletionItem.GetDirectiveCompletionDescription();
                         var directiveCompletionItem = new CompletionItem()
@@ -238,7 +238,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             InsertText = razorCompletionItem.InsertText,
                             FilterText = razorCompletionItem.DisplayText,
                             SortText = razorCompletionItem.DisplayText,
-                            Detail = descriptionInfo.Description,
                             Documentation = descriptionInfo.Description,
                             Kind = CompletionItemKind.Struct,
                         };
@@ -305,7 +304,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             InsertText = razorCompletionItem.InsertText,
                             FilterText = razorCompletionItem.DisplayText,
                             SortText = razorCompletionItem.DisplayText,
-                            Detail = descriptionInfo.Description,
                             Documentation = descriptionInfo.Description,
                             Kind = CompletionItemKind.TypeParameter,
                             CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters)

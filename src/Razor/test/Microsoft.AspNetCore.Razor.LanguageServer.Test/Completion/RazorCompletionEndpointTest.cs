@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Equal(completionItem.InsertText, converted.InsertText);
             Assert.Equal(completionItem.DisplayText, converted.FilterText);
             Assert.Equal(completionItem.DisplayText, converted.SortText);
-            Assert.Equal(description, converted.Detail);
-            Assert.NotNull(converted.Documentation);
+            Assert.Null(converted.Detail);
+            Assert.Equal(description, converted.Documentation.String);
             Assert.True(converted.TryGetRazorCompletionKind(out var convertedKind));
             Assert.Equal(RazorCompletionItemKind.Directive, convertedKind);
         }
@@ -98,8 +98,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Equal(completionItem.InsertText, converted.InsertText);
             Assert.Equal(completionItem.DisplayText, converted.FilterText);
             Assert.Equal(completionItem.DisplayText, converted.SortText);
-            Assert.Equal(description, converted.Detail);
-            Assert.NotNull(converted.Documentation);
+            Assert.Null(converted.Detail);
+            Assert.Equal(description, converted.Documentation.String);
             Assert.NotNull(converted.Command);
             Assert.True(converted.TryGetRazorCompletionKind(out var convertedKind));
             Assert.Equal(RazorCompletionItemKind.Directive, convertedKind);
@@ -123,8 +123,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Equal(completionItem.InsertText, converted.InsertText);
             Assert.Equal(completionItem.DisplayText, converted.FilterText);
             Assert.Equal(completionItem.DisplayText, converted.SortText);
-            Assert.Equal(description, converted.Detail);
-            Assert.NotNull(converted.Documentation);
+            Assert.Null(converted.Detail);
+            Assert.Equal(description, converted.Documentation.String);
             Assert.Equal(converted.CommitCharacters, completionItem.CommitCharacters);
         }
 
