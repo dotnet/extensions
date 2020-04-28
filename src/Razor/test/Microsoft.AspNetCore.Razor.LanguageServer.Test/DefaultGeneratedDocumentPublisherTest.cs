@@ -318,29 +318,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(123, updateRequest.HostDocumentVersion);
         }
 
-        [Fact]
-        public void ProjectSnapshotManager_DocumentRemoved_RepublishesTextChanges()
-        {
-            // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
-            generatedDocumentPublisher.Initialize(ProjectManager);
-            var sourceTextContent = "// The content";
-            var initialSourceText = SourceText.From(sourceTextContent);
-            generatedDocumentPublisher.PublishCSharp(HostDocument.FilePath, initialSourceText, 123);
-
-            // Act
-            ProjectManager.DocumentRemoved(HostProject, HostDocument);
-            generatedDocumentPublisher.PublishCSharp(HostDocument.FilePath, initialSourceText, 123);
-
-            // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
-            Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
-            var textChange = Assert.Single(updateRequest.Changes);
-            Assert.Equal(sourceTextContent, textChange.NewText);
-            Assert.Equal(123, updateRequest.HostDocumentVersion);
-        }
-
         private class TestServer : ILanguageServer
         {
             public TestServer()

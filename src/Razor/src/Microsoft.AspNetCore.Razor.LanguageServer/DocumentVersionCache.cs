@@ -6,12 +6,10 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal abstract class DocumentVersionCache : ProjectSnapshotChangeTrigger, IRazorFileChangeListener
+    internal abstract class DocumentVersionCache : ProjectSnapshotChangeTrigger
     {
         public abstract bool TryGetDocumentVersion(DocumentSnapshot documentSnapshot, out long version);
 
         public abstract void TrackDocumentVersion(DocumentSnapshot documentSnapshot, long version);
-
-        public abstract void RazorFileChanged(string filePath, RazorFileChangeKind kind);
     }
 }

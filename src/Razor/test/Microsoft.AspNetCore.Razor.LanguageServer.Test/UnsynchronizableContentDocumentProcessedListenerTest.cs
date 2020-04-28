@@ -185,11 +185,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 throw new NotImplementedException();
             }
-
-            public override void RazorFileChanged(string filePath, RazorFileChangeKind kind)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

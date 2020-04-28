@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(generatedDocumentPublisher);
                         services.AddSingleton<GeneratedDocumentPublisher>(generatedDocumentPublisher);
 
-                        var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher, filePathNormalizer);
+                        var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher);
                         services.AddSingleton<DocumentVersionCache>(documentVersionCache);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(documentVersionCache);
                         var containerStore = new DefaultGeneratedDocumentContainerStore(
@@ -109,7 +109,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<IProjectConfigurationFileChangeListener, ProjectConfigurationStateSynchronizer>();
                         services.AddSingleton<IProjectFileChangeListener, ProjectFileSynchronizer>();
                         services.AddSingleton<IRazorFileChangeListener, RazorFileSynchronizer>();
-                        services.AddSingleton<IRazorFileChangeListener>(documentVersionCache);
 
                         // File Change detectors
                         services.AddSingleton<IFileChangeDetector, ProjectConfigurationFileChangeDetector>();

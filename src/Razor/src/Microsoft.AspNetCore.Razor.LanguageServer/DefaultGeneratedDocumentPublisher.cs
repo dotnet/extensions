@@ -152,19 +152,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         }
                     }
                     break;
-                case ProjectChangeKind.DocumentRemoved:
-                    // Document removed, evict published source text.
-                    if (_publishedCSharpData.ContainsKey(args.DocumentFilePath))
-                    {
-                        var removed = _publishedCSharpData.Remove(args.DocumentFilePath);
-                        Debug.Assert(removed, "Published data should be protected by the foreground thread and should never fail to remove.");
-                    }
-                    if (_publishedHtmlData.ContainsKey(args.DocumentFilePath))
-                    {
-                        var removed = _publishedHtmlData.Remove(args.DocumentFilePath);
-                        Debug.Assert(removed, "Published data should be protected by the foreground thread and should never fail to remove.");
-                    }
-                    break;
             }
         }
 
