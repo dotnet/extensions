@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         // Internal for testing
-        internal int EnqueueDelay { get; set; } = 250;
+        internal int EnqueueDelay { get; set; } = 1000;
 
         // Used in tests to ensure we can control when delayed notification work starts.
         internal ManualResetEventSlim BlockNotificationWorkStart { get; set; }
