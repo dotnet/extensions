@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ExportLspMethod(Methods.TextDocumentCompletionName)]
     internal class CompletionHandler : IRequestHandler<CompletionParams, SumType<CompletionItem[], CompletionList>?>
     {
-        private static readonly IReadOnlyList<string> CSharpTriggerCharacters = new[] { ".", "@" };
+        private static readonly IReadOnlyList<string> CSharpTriggerCharacters = new[] { ".", "@", "(" };
         private static readonly IReadOnlyList<string> HtmlTriggerCharacters = new[] { "<", "&", "\\", "/", "'", "\"", "=", ":", " " };
         private static readonly IReadOnlyList<string> AllTriggerCharacters = CSharpTriggerCharacters.Concat(HtmlTriggerCharacters).ToArray();
 
@@ -192,6 +192,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 list =>
                 {
                     var newItems = list.Items.Select(item => SetData(item)).ToArray();
+                    if (list is VSCompletionList vsList)
+                    {
+                        return new VSCompletionList()
+                        {
+                            Items = newItems,
+                            IsIncomplete = vsList.IsIncomplete,
+                            SuggesstionMode = vsList.SuggesstionMode,
+                            ContinueCharacters = vsList.ContinueCharacters
+                        };
+                    }
+
                     return new CompletionList()
                     {
                         Items = newItems,
@@ -236,6 +247,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 // This is an auto-invoked completion from the VS LSP platform. Completions are automatically invoked upon typing identifiers
                 // and are represented as CompletionTriggerKind.TriggerCharacter and have a trigger character that we have not registered for.
                 return true;
+            }
+
+            if (context.TriggerCharacter == "(")
+            {
+                // This is a special case.
+                // We added `(` as a trigger character to workaround problems with Razor explicit expressions.
+                // Example - https://github.com/dotnet/aspnetcore/issues/21154
+                // But we don't really want to show a completion box every time a `(` is typed.
+                return false;
             }
 
             if (IsApplicableTriggerCharacter(context.TriggerCharacter, languageKind))
