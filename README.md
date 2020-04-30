@@ -11,7 +11,7 @@
 
 As part of the [ongoing repository consolidation effort in .NET 5](https://github.com/dotnet/announcements/issues/119), we have moved most of the content from dotnet/extensions into other repositories. Most of these packages were developed by and are currently maintained by the ASP.NET team. However, moving forward we want to enable more scenarios with these packages, outside of ASP.NET. You can find more details on this in the [official announcement](https://github.com/aspnet/Announcements/issues/411) of the changes coming to extensions.
 
-The full list of packages that are moving can be found below and in the [official announcement](https://github.com/aspnet/Announcements/issues/411). In general, tests and samples will be moving to the relevant repo based on where the main package moved. Issue tracking for the relevant packages will also move to that repository.
+The full list of packages that have moved can be found below and in the [official announcement](https://github.com/aspnet/Announcements/issues/411). In general, tests and samples have moved to the relevant repo based on where the main package moved. Issue tracking for the relevant packages has also moved to that repository.
 
 ## Package List
 
