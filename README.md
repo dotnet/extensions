@@ -17,7 +17,7 @@ The full list of packages that are moving can be found below and in the [officia
 
 The following list identifies all the packages we currently ship from [dotnet/extensions](https://github.com/dotnet/extensions) and which repo they are moving to.
 
-* Moving to [dotnet/runtime](https://github.com/dotnet/runtime)
+* Moved to [dotnet/runtime](https://github.com/dotnet/runtime)
     * **Caching**
         * [`Microsoft.Extensions.Caching.Abstractions`](https://nuget.org/packages/Microsoft.Extensions.Caching.Abstractions)
         * [`Microsoft.Extensions.Caching.Memory`](https://nuget.org/packages/Microsoft.Extensions.Caching.Memory)
