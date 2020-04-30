@@ -15,7 +15,7 @@ The full list of packages that are moving can be found below and in the [officia
 
 ## Package List
 
-The following list identifies all the packages we currently ship from [dotnet/extensions](https://github.com/dotnet/extensions) and which repo they are moving to.
+The following list identifies all the packages we currently ship from [dotnet/extensions](https://github.com/dotnet/extensions) and which repo they have moved to.
 
 * Moved to [dotnet/runtime](https://github.com/dotnet/runtime)
     * **Caching**
