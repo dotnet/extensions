@@ -175,6 +175,16 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_IncludeRazorLanguageConfiguration" DependsOnTargets="PrepareForBuild" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Content Include="..\Microsoft.AspNetCore.Razor.VSCode.Extension\language-configuration.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <IncludeInVSIX>true</IncludeInVSIX>
+        <VSIXSubPath>\</VSIXSubPath>
+      </Content>
+    </ItemGroup>
+  </Target>
+
   <Target Name="_GenerateVSIXBindingRedirects" DependsOnTargets="PrepareForBuild;GetAssemblyVersion" BeforeTargets="CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(_GeneratedVSIXBindingRedirectFile)">
     <ItemGroup>
       <BindingRedirectAssemblies Include="@(ProjectReference)" AssemblyName="%(Filename)" />
