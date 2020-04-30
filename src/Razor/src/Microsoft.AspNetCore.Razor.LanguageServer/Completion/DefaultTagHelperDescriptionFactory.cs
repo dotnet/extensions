@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.CodeAnalysis.Razor.Completion;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Server;
@@ -191,7 +192,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             // have additional doc comment types in the summary but none that require cleaning. For instance
             // if there's a <para> in the summary element when it's shown in the completion description window
             // it'll be serialized as html (wont show).
-
+            summaryContent = summaryContent.Trim();
             var crefMatches = ExtractCrefRegex.Value.Matches(summaryContent);
             var summaryBuilder = new StringBuilder(summaryContent);
 

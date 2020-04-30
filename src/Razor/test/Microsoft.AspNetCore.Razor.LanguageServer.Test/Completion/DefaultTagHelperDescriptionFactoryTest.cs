@@ -401,17 +401,16 @@ Suffixed invalid content";
             Hello
 
     World
+
 ";
 
             // Act
             var cleanedSummary = DefaultTagHelperDescriptionFactory.CleanSummaryContent(summary);
 
             // Assert
-            Assert.Equal(@"
-Hello
+            Assert.Equal(@"Hello
 
-World
-", cleanedSummary);
+World", cleanedSummary);
         }
 
         [Fact]
@@ -532,8 +531,8 @@ Uses `List<System.String>`s", markdown.Value);
             var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
             var associatedTagHelperInfos = new[]
             {
-                new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
-                new TagHelperDescriptionInfo("Microsoft.AspNetCore.OtherTagHelper", "<summary>Also uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+                new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>\nUses <see cref=\"T:System.Collections.List{System.String}\" />s\n</summary>"),
+                new TagHelperDescriptionInfo("Microsoft.AspNetCore.OtherTagHelper", "<summary>\nAlso uses <see cref=\"T:System.Collections.List{System.String}\" />s\n\r\n\r\r</summary>"),
             };
             var elementDescription = new ElementDescriptionInfo(associatedTagHelperInfos);
 
@@ -594,7 +593,7 @@ Uses `List<System.String>`s", markdown.Value);
                     displayName: "System.Boolean? Microsoft.AspNetCore.SomeTagHelpers.AnotherTypeName.AnotherProperty",
                     propertyName: "AnotherProperty",
                     returnTypeName: "System.Boolean?",
-                    documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+                    documentation: "<summary>\nUses <see cref=\"T:System.Collections.List{System.String}\" />s\n</summary>"),
             };
             var attributeDescription = new AttributeDescriptionInfo(associatedAttributeDescriptions);
 
