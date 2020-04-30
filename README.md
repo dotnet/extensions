@@ -62,7 +62,7 @@ The following list identifies all the packages we currently ship from [dotnet/ex
         * [`Microsoft.Extensions.Options.DataAnnotations`](https://nuget.org/packages/Microsoft.Extensions.Options.DataAnnotations)
     * **Primitives**
         * [`Microsoft.Extensions.Primitives`](https://nuget.org/packages/Microsoft.Extensions.Primitives)
-* Moving to [dotnet/aspnetcore](https://github.com/dotnet/aspnetcore)
+* Moved to [dotnet/aspnetcore](https://github.com/dotnet/aspnetcore)
     * **Configuration**
         * [`Microsoft.Extensions.Configuration.KeyPerFile`](https://nuget.org/packages/Microsoft.Extensions.Configuration.KeyPerFile)
     * **File Providers**
