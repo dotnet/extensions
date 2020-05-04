@@ -182,7 +182,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 Options = request.Options
             };
 
-            response.Edits = await _requestInvoker.RequestServerAsync<DocumentRangeFormattingParams, TextEdit[]>(
+            response.Edits = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentRangeFormattingParams, TextEdit[]>(
                 Methods.TextDocumentRangeFormattingName,
                 serverKind,
                 formattingParams,

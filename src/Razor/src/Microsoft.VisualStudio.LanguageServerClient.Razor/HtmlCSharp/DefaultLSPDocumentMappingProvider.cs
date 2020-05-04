@@ -50,7 +50,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
             };
 
-            var documentMappingResponse = await _requestInvoker.RequestServerAsync<RazorMapToDocumentRangeParams, RazorMapToDocumentRangeResponse>(
+            var documentMappingResponse = await _requestInvoker.CustomRequestServerAsync<RazorMapToDocumentRangeParams, RazorMapToDocumentRangeResponse>(
                 LanguageServerConstants.RazorMapToDocumentRangeEndpoint,
                 LanguageServerKind.Razor,
                 mapToDocumentRangeParams,

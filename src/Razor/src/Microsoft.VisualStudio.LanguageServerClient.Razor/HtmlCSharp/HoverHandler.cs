@@ -89,7 +89,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
             };
 
-            var result = await _requestInvoker.RequestServerAsync<TextDocumentPositionParams, Hover>(
+            var result = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Hover>(
                 Methods.TextDocumentHoverName,
                 serverKind,
                 textDocumentPositionParams,

@@ -103,7 +103,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     }
                 };
 
-                result = await _requestInvoker.RequestServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
+                result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
                     Methods.TextDocumentCompletionName,
                     serverKind,
                     completionParams,
@@ -164,7 +164,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 TextDocument = new TextDocumentIdentifier() { Uri = previousCharacterProjection.Uri }
             };
 
-            result = await _requestInvoker.RequestServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
+            result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
                 Methods.TextDocumentCompletionName,
                 LanguageServerKind.CSharp,
                 provisionalCompletionParams,

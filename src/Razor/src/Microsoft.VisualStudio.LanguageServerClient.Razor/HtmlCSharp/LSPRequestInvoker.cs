@@ -8,7 +8,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
     internal abstract class LSPRequestInvoker
     {
-        public abstract Task<TOut> RequestServerAsync<TIn, TOut>(
+        public abstract Task<TOut> ReinvokeRequestOnServerAsync<TIn, TOut>(
+            string method,
+            LanguageServerKind serverKind,
+            TIn parameters,
+            CancellationToken cancellationToken);
+
+        public abstract Task<TOut> CustomRequestServerAsync<TIn, TOut>(
             string method,
             LanguageServerKind serverKind,
             TIn parameters,

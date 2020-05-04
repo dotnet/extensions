@@ -27,7 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.RequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.CustomRequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(response));
 
             var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
@@ -64,7 +64,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.RequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.CustomRequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(response));
 
             var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
@@ -107,7 +107,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.RequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.CustomRequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(response));
 
             var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
@@ -150,7 +150,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.RequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.CustomRequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(response));
 
             var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
@@ -193,7 +193,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.RequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.CustomRequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(It.IsAny<string>(), LanguageServerKind.Razor, It.IsAny<RazorLanguageQueryParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(response));
 
             var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);

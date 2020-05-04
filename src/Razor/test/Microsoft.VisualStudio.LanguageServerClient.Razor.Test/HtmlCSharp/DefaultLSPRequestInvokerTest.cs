@@ -13,7 +13,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     public class DefaultLSPRequestInvokerTest
     {
         [Fact]
-        public async Task RequestServerAsync_InvokesRazorLanguageClient()
+        public async Task ReinvokeRequestOnServerAsync_InvokesRazorLanguageClient()
         {
             // Arrange
             var called = false;
@@ -27,14 +27,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.RequestServerAsync<object, object>(expectedMethod, LanguageServerKind.Razor, new object(), CancellationToken.None).ConfigureAwait(false);
+            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, LanguageServerKind.Razor, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
         }
 
         [Fact]
-        public async Task RequestServerAsync_InvokesHtmlLanguageClient()
+        public async Task ReinvokeRequestOnServerAsync_InvokesHtmlLanguageClient()
         {
             // Arrange
             var called = false;
@@ -48,14 +48,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.RequestServerAsync<object, object>(expectedMethod, LanguageServerKind.Html, new object(), CancellationToken.None).ConfigureAwait(false);
+            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, LanguageServerKind.Html, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
         }
 
         [Fact]
-        public async Task RequestServerAsync_InvokesCSharpLanguageClient()
+        public async Task ReinvokeRequestOnServerAsync_InvokesCSharpLanguageClient()
         {
             // Arrange
             var called = false;
@@ -69,7 +69,70 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.RequestServerAsync<object, object>(expectedMethod, LanguageServerKind.CSharp, new object(), CancellationToken.None).ConfigureAwait(false);
+            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, LanguageServerKind.CSharp, new object(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(called);
+        }
+
+        [Fact]
+        public async Task CustomRequestServerAsync_InvokesRazorLanguageClient()
+        {
+            // Arrange
+            var called = false;
+            var expectedMethod = "razor/test";
+            var broker = new TestLanguageClientBroker((contentType, method) =>
+            {
+                called = true;
+                Assert.Equal(RazorLSPContentTypeDefinition.Name, contentType);
+                Assert.Equal(expectedMethod, method);
+            });
+            var requestInvoker = new DefaultLSPRequestInvoker(broker);
+
+            // Act
+            await requestInvoker.CustomRequestServerAsync<object, object>(expectedMethod, LanguageServerKind.Razor, new object(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(called);
+        }
+
+        [Fact]
+        public async Task CustomRequestServerAsync_InvokesHtmlLanguageClient()
+        {
+            // Arrange
+            var called = false;
+            var expectedMethod = "textDocument/test";
+            var broker = new TestLanguageClientBroker((contentType, method) =>
+            {
+                called = true;
+                Assert.Equal(HtmlVirtualDocumentFactory.HtmlLSPContentTypeName, contentType);
+                Assert.Equal(expectedMethod, method);
+            });
+            var requestInvoker = new DefaultLSPRequestInvoker(broker);
+
+            // Act
+            await requestInvoker.CustomRequestServerAsync<object, object>(expectedMethod, LanguageServerKind.Html, new object(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(called);
+        }
+
+        [Fact]
+        public async Task CustomRequestServerAsync_InvokesCSharpLanguageClient()
+        {
+            // Arrange
+            var called = false;
+            var expectedMethod = "textDocument/test";
+            var broker = new TestLanguageClientBroker((contentType, method) =>
+            {
+                called = true;
+                Assert.Equal(CSharpVirtualDocumentFactory.CSharpLSPContentTypeName, contentType);
+                Assert.Equal(expectedMethod, method);
+            });
+            var requestInvoker = new DefaultLSPRequestInvoker(broker);
+
+            // Act
+            await requestInvoker.CustomRequestServerAsync<object, object>(expectedMethod, LanguageServerKind.CSharp, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -90,6 +153,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
 #pragma warning disable CA1801 // Parameter is never used
+            public Task<(ILanguageClient, JToken)> SynchronizedRequestAsync(
+                string[] contentTypes,
+                Func<JToken, bool> capabilitiesFilter,
+                string method,
+                JToken parameters,
+                CancellationToken cancellationToken)
+            {
+                // We except it to be called with only one content type.
+                var contentType = Assert.Single(contentTypes);
+
+                _callback?.Invoke(contentType, method);
+
+                return Task.FromResult<(ILanguageClient, JToken)>((null, null));
+            }
+
             public Task<(ILanguageClient, JToken)> RequestAsync(
                 string[] contentTypes,
                 Func<JToken, bool> capabilitiesFilter,

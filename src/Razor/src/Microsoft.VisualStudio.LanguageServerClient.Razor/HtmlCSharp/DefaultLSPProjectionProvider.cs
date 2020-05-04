@@ -48,7 +48,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Uri = documentSnapshot.Uri
             };
 
-            var languageResponse = await _requestInvoker.RequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(
+            var languageResponse = await _requestInvoker.CustomRequestServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(
                 LanguageServerConstants.RazorLanguageQueryEndpoint,
                 LanguageServerKind.Razor,
                 languageQueryParams,

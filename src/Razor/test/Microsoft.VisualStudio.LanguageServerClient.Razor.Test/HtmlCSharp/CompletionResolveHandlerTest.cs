@@ -31,7 +31,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.RequestServerAsync<CompletionItem, CompletionItem>(It.IsAny<string>(), LanguageServerKind.CSharp, It.IsAny<CompletionItem>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionItem, CompletionItem>(It.IsAny<string>(), LanguageServerKind.CSharp, It.IsAny<CompletionItem>(), It.IsAny<CancellationToken>()))
                 .Callback<string, LanguageServerKind, CompletionItem, CancellationToken>((method, serverKind, completionItem, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionResolveName, method);

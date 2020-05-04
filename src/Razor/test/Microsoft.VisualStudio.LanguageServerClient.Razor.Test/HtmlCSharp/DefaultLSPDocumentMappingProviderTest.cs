@@ -31,7 +31,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.RequestServerAsync<RazorMapToDocumentRangeParams, RazorMapToDocumentRangeResponse>(LanguageServerConstants.RazorMapToDocumentRangeEndpoint, LanguageServerKind.Razor, It.IsAny<RazorMapToDocumentRangeParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.CustomRequestServerAsync<RazorMapToDocumentRangeParams, RazorMapToDocumentRangeResponse>(LanguageServerConstants.RazorMapToDocumentRangeEndpoint, LanguageServerKind.Razor, It.IsAny<RazorMapToDocumentRangeParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(response));
 
             var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker.Object);

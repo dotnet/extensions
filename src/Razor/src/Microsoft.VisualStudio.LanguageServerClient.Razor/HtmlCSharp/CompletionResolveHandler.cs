@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return request;
             }
 
-            var result = await _requestInvoker.RequestServerAsync<CompletionItem, CompletionItem>(
+            var result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionItem, CompletionItem>(
                 Methods.TextDocumentCompletionResolveName,
                 resolveData.LanguageServerKind,
                 request,
