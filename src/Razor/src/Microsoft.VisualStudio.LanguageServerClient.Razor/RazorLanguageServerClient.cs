@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Need an auto-flushing stream for the server because O# doesn't currently flush after writing responses. Without this
             // performing the Initialize handshake with the LanguageServer hangs.
-            var autoFlushingStream = new AutoFlushingStream(serverStream);
+            var autoFlushingStream = new AutoFlushingNerdbankStream(serverStream);
             var server = await RazorLanguageServer.CreateAsync(autoFlushingStream, autoFlushingStream, Trace.Verbose).ConfigureAwait(false);
 
             // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize.
@@ -96,43 +96,5 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         }
 
         public Task AttachForCustomMessageAsync(JsonRpc rpc) => Task.CompletedTask;
-
-        private class AutoFlushingStream : Stream
-        {
-            private readonly Stream _inner;
-
-            public AutoFlushingStream(Stream inner)
-            {
-                _inner = inner;
-            }
-
-            public override bool CanRead => _inner.CanRead;
-
-            public override bool CanSeek => _inner.CanSeek;
-
-            public override bool CanWrite => _inner.CanWrite;
-
-            public override long Length => _inner.Length;
-
-            public override long Position { get => _inner.Position; set => _inner.Position = value; }
-
-            // We intentionally call FlushAsync then don't await the task because calling Flush syncronously causes
-            // exceptions that can crash the extension.
-            public override void Flush() => _inner.FlushAsync();
-
-            public override int Read(byte[] buffer, int offset, int count) => _inner.Read(buffer, offset, count);
-
-            public override long Seek(long offset, SeekOrigin origin) => _inner.Seek(offset, origin);
-
-            public override void SetLength(long value) => _inner.SetLength(value);
-
-            public override void Write(byte[] buffer, int offset, int count)
-            {
-                _inner.Write(buffer, offset, count);
-                // We intentionally call FlushAsync then don't await the task because calling Flush syncronously causes
-                // exceptions that can crash the extension.
-                _inner.FlushAsync();
-            }
-        }
     }
 }
