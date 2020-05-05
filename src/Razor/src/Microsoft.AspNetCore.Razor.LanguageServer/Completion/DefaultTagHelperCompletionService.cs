@@ -17,7 +17,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal class DefaultTagHelperCompletionService : TagHelperCompletionService
     {
-        private static readonly Container<string> AttributeCommitCharacters = new Container<string>(" ");
+        private static readonly Container<string> NoCommitCharacters = new Container<string>();
+        private static readonly Container<string> AttributeCommitCharacters = new Container<string>("=", " ");
+        private static readonly Container<string> MinimizedAttributeCommitCharacters = new Container<string>("=");
         private static readonly Container<string> ElementCommitCharacters = new Container<string>(" ", ">");
         private readonly HtmlFactsService _htmlFactsService;
         private readonly RazorTagHelperCompletionService _razorTagHelperCompletionService;
@@ -150,6 +152,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     insertText = filterText;
                 }
 
+                var attributeCommitCharacters = ResolveAttributeCommitCharacters(completion.Value, indexerCompletion);
+
                 var razorCompletionItem = new CompletionItem()
                 {
                     Label = completion.Key,
@@ -158,8 +162,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     FilterText = filterText,
                     SortText = filterText,
                     Kind = CompletionItemKind.TypeParameter,
-                    CommitCharacters = AttributeCommitCharacters,
+                    CommitCharacters = attributeCommitCharacters,
                 };
+
                 var attributeDescriptions = completion.Value.Select(boundAttribute => new TagHelperAttributeDescriptionInfo(
                     boundAttribute.DisplayName,
                     boundAttribute.GetPropertyName(),
@@ -205,6 +210,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     Kind = CompletionItemKind.TypeParameter,
                     CommitCharacters = ElementCommitCharacters,
                 };
+
                 var tagHelperDescriptions = completion.Value.Select(tagHelper => new TagHelperDescriptionInfo(tagHelper.GetTypeName(), tagHelper.Documentation));
                 var elementDescription = new ElementDescriptionInfo(tagHelperDescriptions.ToList());
                 razorCompletionItem.SetDescriptionInfo(elementDescription);
@@ -250,6 +256,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             snippetText = string.Concat(text, "=\"$1\"");
             return true;
+        }
+
+        private Container<string> ResolveAttributeCommitCharacters(IEnumerable<BoundAttributeDescriptor> boundAttributes, bool indexerCompletion)
+        {
+            if (indexerCompletion)
+            {
+                return NoCommitCharacters;
+            }
+            else if (boundAttributes.Any(b => b.TypeName.StartsWith("System.Boolean")))
+            {
+                // Have to use string type because IsBooleanProperty isn't set
+                return AttributeCommitCharacters;
+            }
+
+            return MinimizedAttributeCommitCharacters;
         }
     }
 }

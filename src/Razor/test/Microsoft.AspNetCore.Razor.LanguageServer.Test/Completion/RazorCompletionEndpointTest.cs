@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public void TryConvert_DirectiveAttribute_ReturnsTrue()
         {
             // Arrange
-            var completionItem = new RazorCompletionItem("@testDisplay", "testInsert", RazorCompletionItemKind.DirectiveAttribute);
+            var completionItem = new RazorCompletionItem("@testDisplay", "testInsert", RazorCompletionItemKind.DirectiveAttribute, new [] { "=", ":" });
             completionItem.SetAttributeCompletionDescription(new AttributeCompletionDescription(Array.Empty<CodeAnalysis.Razor.Completion.AttributeDescriptionInfo>()));
             var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
@@ -215,6 +215,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Equal(completionItem.InsertText, converted.InsertText);
             Assert.Equal(completionItem.InsertText, converted.FilterText);
             Assert.Equal(completionItem.InsertText, converted.SortText);
+            Assert.Equal(completionItem.CommitCharacters, converted.CommitCharacters);
             Assert.Null(converted.Detail);
             Assert.Null(converted.Documentation);
             Assert.Null(converted.Command);

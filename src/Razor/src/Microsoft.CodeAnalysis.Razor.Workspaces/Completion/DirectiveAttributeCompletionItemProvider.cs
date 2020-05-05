@@ -95,7 +95,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             }
 
             // Attributes are case sensitive when matching
-            var attributeCompletions = new Dictionary<string, HashSet<AttributeDescriptionInfo>>(StringComparer.Ordinal);
+            var attributeCompletions = new Dictionary<string, (HashSet<AttributeDescriptionInfo>, HashSet<string>)>(StringComparer.Ordinal);
             for (var i = 0; i < descriptorsForTag.Count; i++)
             {
                 var descriptor = descriptorsForTag[i];
@@ -150,11 +150,14 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     insertText = insertText.Substring(1);
                 }
 
+                (var attributeDescriptionInfos, var commitCharacters) = completion.Value;
+
                 var razorCompletionItem = new RazorCompletionItem(
                     completion.Key,
                     insertText,
-                    RazorCompletionItemKind.DirectiveAttribute);
-                var completionDescription = new AttributeCompletionDescription(completion.Value.ToArray());
+                    RazorCompletionItemKind.DirectiveAttribute,
+                    commitCharacters);
+                var completionDescription = new AttributeCompletionDescription(attributeDescriptionInfos.ToArray());
                 razorCompletionItem.SetAttributeCompletionDescription(completionDescription);
 
                 completionItems.Add(razorCompletionItem);
@@ -178,11 +181,13 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
             void AddCompletion(string attributeName, BoundAttributeDescriptor boundAttributeDescriptor, TagHelperDescriptor tagHelperDescriptor)
             {
-                if (!attributeCompletions.TryGetValue(attributeName, out var attributeDescriptionInfos))
+                if (!attributeCompletions.TryGetValue(attributeName, out var attributeDetails))
                 {
-                    attributeDescriptionInfos = new HashSet<AttributeDescriptionInfo>();
-                    attributeCompletions[attributeName] = attributeDescriptionInfos;
+                    attributeDetails = (new HashSet<AttributeDescriptionInfo>(), new HashSet<string>());
+                    attributeCompletions[attributeName] = attributeDetails;
                 }
+
+                (var attributeDescriptionInfos, var commitCharacters) = attributeDetails;
 
                 var descriptionInfo = new AttributeDescriptionInfo(
                     boundAttributeDescriptor.TypeName,
@@ -190,6 +195,24 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     boundAttributeDescriptor.GetPropertyName(),
                     boundAttributeDescriptor.Documentation);
                 attributeDescriptionInfos.Add(descriptionInfo);
+
+                if (attributeName.EndsWith("..."))
+                {
+                    // Indexer attribute, we don't want to commit with standard chars
+                    return;
+                }
+
+                commitCharacters.Add("=");
+
+                if (tagHelperDescriptor.BoundAttributes.Any(b => b.IsBooleanProperty))
+                {
+                    commitCharacters.Add(" ");
+                }
+
+                if (tagHelperDescriptor.BoundAttributes.Any(b => b.BoundAttributeParameters.Count > 0))
+                {
+                    commitCharacters.Add(":");
+                }
             }
         }
     }

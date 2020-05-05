@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
@@ -174,11 +175,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 {
                     Assert.Equal("bool-val", completion.InsertText);
                     Assert.Equal(InsertTextFormat.PlainText, completion.InsertTextFormat);
+                    Assert.Equal(new[] { "=", " " }, completion.CommitCharacters);
                 },
                 completion =>
                 {
                     Assert.Equal("int-val=\"$1\"", completion.InsertText);
                     Assert.Equal(InsertTextFormat.Snippet, completion.InsertTextFormat);
+                    Assert.Equal(new[] { "=" }, completion.CommitCharacters);
                 });
         }
 
@@ -200,11 +203,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 {
                     Assert.Equal("bool-val", completion.InsertText);
                     Assert.Equal(InsertTextFormat.PlainText, completion.InsertTextFormat);
+                    Assert.Equal(new[] { "=", " " }, completion.CommitCharacters);
                 },
                 completion =>
                 {
                     Assert.Equal("int-val=\"$1\"", completion.InsertText);
                     Assert.Equal(InsertTextFormat.Snippet, completion.InsertTextFormat);
+                    Assert.Equal(new[] { "=" }, completion.CommitCharacters);
                 });
         }
 
@@ -290,11 +295,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 {
                     Assert.Equal("int-val", completion.InsertText);
                     Assert.Equal(InsertTextFormat.PlainText, completion.InsertTextFormat);
+                    Assert.Equal(new[] { "=" }, completion.CommitCharacters);
                 },
                 completion =>
                 {
                     Assert.Equal("int-val-", completion.InsertText);
                     Assert.Equal(InsertTextFormat.PlainText, completion.InsertTextFormat);
+                    Assert.Equal(Array.Empty<String>(), completion.CommitCharacters);
                 });
 
             languageServer.Verify();
@@ -328,11 +335,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 {
                     Assert.Equal("int-val=\"$1\"", completion.InsertText);
                     Assert.Equal(InsertTextFormat.Snippet, completion.InsertTextFormat);
+                    Assert.Equal(new[] { "=" }, completion.CommitCharacters);
                 },
                 completion =>
                 {
                     Assert.Equal("int-val-$1=\"$2\"", completion.InsertText);
                     Assert.Equal(InsertTextFormat.Snippet, completion.InsertTextFormat);
+                    Assert.Equal(Array.Empty<string>(), completion.CommitCharacters);
                 });
         }
 
@@ -348,10 +357,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completions = service.GetCompletionsAt(sourceSpan, codeDocument);
 
             // Assert
-            Assert.Collection(
-                completions,
-                completion => Assert.Equal("bool-val", completion.FilterText),
-                completion => Assert.Equal("int-val", completion.FilterText));
+            AssertBoolIntCompletions(completions);
         }
 
         [Fact]
@@ -366,10 +372,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completions = service.GetCompletionsAt(sourceSpan, codeDocument);
 
             // Assert
-            Assert.Collection(
-                completions,
-                completion => Assert.Equal("bool-val", completion.FilterText),
-                completion => Assert.Equal("int-val", completion.FilterText));
+            AssertBoolIntCompletions(completions);
         }
 
         [Fact]
@@ -384,10 +387,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completions = service.GetCompletionsAt(sourceSpan, codeDocument);
 
             // Assert
-            Assert.Collection(
-                completions,
-                completion => Assert.Equal("bool-val", completion.FilterText),
-                completion => Assert.Equal("int-val", completion.FilterText));
+            AssertBoolIntCompletions(completions);
         }
 
         [Fact]
@@ -402,10 +402,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completions = service.GetCompletionsAt(sourceSpan, codeDocument);
 
             // Assert
-            Assert.Collection(
-                completions,
-                completion => Assert.Equal("bool-val", completion.FilterText),
-                completion => Assert.Equal("int-val", completion.FilterText));
+            AssertBoolIntCompletions(completions);
         }
 
         [Fact]
@@ -421,10 +418,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completions = service.GetCompletionsAt(sourceSpan, codeDocument);
 
             // Assert
-            Assert.Collection(
-                completions,
-                completion => Assert.Equal("bool-val", completion.FilterText),
-                completion => Assert.Equal("int-val", completion.FilterText));
+            AssertBoolIntCompletions(completions);
         }
 
         [Fact]
@@ -439,10 +433,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completions = service.GetCompletionsAt(sourceSpan, codeDocument);
 
             // Assert
-            Assert.Collection(
-                completions,
-                completion => Assert.Equal("bool-val", completion.FilterText),
-                completion => Assert.Equal("int-val", completion.FilterText));
+            AssertBoolIntCompletions(completions);
         }
 
         [Fact]
@@ -473,10 +464,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completions = service.GetCompletionsAt(sourceSpan, codeDocument);
 
             // Assert
-            Assert.Collection(
-                completions,
-                completion => Assert.Equal("bool-val", completion.FilterText),
-                completion => Assert.Equal("int-val", completion.FilterText));
+            AssertBoolIntCompletions(completions);
+        }
+
+        private static void AssertBoolIntCompletions(IReadOnlyList<CompletionItem> completions)
+        {
+            Assert.Collection(completions,
+                completion =>
+                {
+                    Assert.Equal("bool-val", completion.FilterText);
+                    Assert.Equal(new[] { "=", " " }, completion.CommitCharacters);
+                },
+                completion =>
+                {
+                    Assert.Equal("int-val", completion.FilterText);
+                    Assert.Equal(new[] { "=" }, completion.CommitCharacters);
+                }
+            );
         }
     }
 }

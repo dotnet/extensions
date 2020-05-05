@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal class RazorCompletionEndpoint : ICompletionHandler, ICompletionResolveHandler
     {
-        private static readonly Container<string> DirectiveAttributeCommitCharacters = new Container<string>(" ");
         private CompletionCapability _capability;
         private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
@@ -264,6 +263,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             FilterText = razorCompletionItem.InsertText,
                             SortText = razorCompletionItem.InsertText,
                             Kind = CompletionItemKind.TypeParameter,
+                            CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters),
                         };
 
                         var indexerCompletion = razorCompletionItem.DisplayText.EndsWith("...");
