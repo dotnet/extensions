@@ -124,6 +124,86 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         }
 
         [Fact]
+        public void GetCompletionItems_AttributeAreaEndOfSelfClosingTag_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<input @bind:fo  />");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(16, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
+        public void GetCompletionItems_AttributeAreaEndOfOpeningTag_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<input @bind:fo   ></input>");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(16, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
+        public void GetCompletionItems_ExistingAttribute_LeadingEdge_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<input src=\"xyz\" />");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(7, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
+        public void GetCompletionItems_ExistingAttribute_TrailingEdge_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<input src=\"xyz\" />");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(16, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
+        public void GetCompletionItems_ExistingAttribute_Partial_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<svg xml: ></svg>");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(9, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
         public void GetAttributeCompletions_NoDescriptorsForTag_ReturnsEmptyCollection()
         {
             // Arrange
