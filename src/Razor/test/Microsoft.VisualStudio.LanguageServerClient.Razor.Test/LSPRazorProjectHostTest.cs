@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
+using Microsoft.VisualStudio.Threading;
 using Moq;
 using Xunit;
 
@@ -12,6 +13,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     public class LSPRazorProjectHostTest
     {
+        public LSPRazorProjectHostTest()
+        {
+            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
+            JoinableTaskContext = joinableTaskContext.Context;
+        }
+
+        private JoinableTaskContext JoinableTaskContext { get; }
+
         [Fact]
         public async Task LoadAsync_NoopsWhenLSPEditorFeatureNotAvailable()
         {
@@ -22,7 +31,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 () => throw new NotImplementedException(), new Dictionary<string, object>());
             var languageClients = new[] { client };
 
-            var host = new LSPRazorProjectHost(featureDetector, broker, languageClients);
+            var host = new LSPRazorProjectHost(JoinableTaskContext, featureDetector, broker, languageClients);
 
             // Act & Assert (does not throw)
             await host.LoadAsync().ConfigureAwait(false);
@@ -57,7 +66,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 });
             var broker = new Lazy<ILanguageClientBroker>(() => brokerMock.Object);
 
-            var host = new LSPRazorProjectHost(featureDetector, broker, languageClients);
+            var host = new LSPRazorProjectHost(JoinableTaskContext, featureDetector, broker, languageClients);
 
             // Act
             await host.LoadAsync().ConfigureAwait(false);

@@ -16,16 +16,23 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Export(ExportContractNames.Scopes.UnconfiguredProject, typeof(IProjectDynamicLoadComponent))]
     internal class LSPRazorProjectHost : IProjectDynamicLoadComponent
     {
+        private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly LSPEditorFeatureDetector _featureDetector;
         private readonly List<Lazy<ILanguageClient, ILanguageClientMetadata>> _applicableLanguageClients;
         private readonly Lazy<ILanguageClientBroker> _languageClientBroker;
 
         [ImportingConstructor]
         public LSPRazorProjectHost(
+            JoinableTaskContext joinableTaskContext,
             LSPEditorFeatureDetector featureDetector,
             Lazy<ILanguageClientBroker> languageClientBroker,
             [ImportMany] IEnumerable<Lazy<ILanguageClient, IDictionary<string, object>>> languageClients)
         {
+            if (joinableTaskContext is null)
+            {
+                throw new ArgumentNullException(nameof(joinableTaskContext));
+            }
+
             if (featureDetector is null)
             {
                 throw new ArgumentNullException(nameof(featureDetector));
@@ -41,24 +48,25 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(languageClients));
             }
 
+            _joinableTaskFactory = joinableTaskContext.Factory;
             _featureDetector = featureDetector;
             _languageClientBroker = languageClientBroker;
             _applicableLanguageClients = GetApplicableClients(languageClients);
         }
 
-        public Task LoadAsync()
+        public async Task LoadAsync()
         {
             if (!_featureDetector.IsLSPEditorFeatureEnabled())
             {
-                return Task.CompletedTask;
+                return;
             }
+
+            await _joinableTaskFactory.SwitchToMainThreadAsync();
 
             foreach (var client in _applicableLanguageClients)
             {
                 _languageClientBroker.Value.LoadAsync(client.Metadata, client.Value).Forget();
             }
-
-            return Task.CompletedTask;
         }
 
         public Task UnloadAsync()
