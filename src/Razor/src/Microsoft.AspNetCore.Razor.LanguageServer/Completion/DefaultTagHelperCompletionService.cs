@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     out attributes) &&
                 (selectedAttributeName == null ||
                 selectedAttributeNameLocation.Value.IntersectsWith(location.AbsoluteIndex) ||
-                prefixLocation.Value.IntersectsWith(location.AbsoluteIndex)))
+                (prefixLocation?.IntersectsWith(location.AbsoluteIndex) ?? false)))
             {
                 var stringifiedAttributes = _tagHelperFactsService.StringifyAttributes(attributes);
                 var attributeCompletions = GetAttributeCompletions(parent, containingTagNameToken.Content, selectedAttributeName, stringifiedAttributes, codeDocument);

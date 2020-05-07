@@ -51,6 +51,23 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         }
 
         [Fact]
+        public void IntersectsWithAttributeNameOrPrefix_NullPrefix_ReturnsFalse()
+        {
+            // Arrange
+
+            // <svg xml:base="abc"xm| ></svg>
+            var location = new SourceSpan(21, 0);
+            TextSpan? prefixLocation = null;
+            var attributeNameLocation = new TextSpan(4, 5);
+
+            // Act
+            var result = DirectiveAttributeCompletionItemProviderBase.IntersectsWithAttributeNameOrPrefix(location, prefixLocation, attributeNameLocation);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
         public void IntersectsWithAttributeNameOrPrefix_AtNameLeadingEdge_ReturnsTrue()
         {
             // Arrange
