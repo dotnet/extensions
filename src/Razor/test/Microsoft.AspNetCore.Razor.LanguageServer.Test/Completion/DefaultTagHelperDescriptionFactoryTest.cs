@@ -307,6 +307,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         [Fact]
+        public void TryExtractSummary_Null_ReturnsFalse()
+        {
+            // Arrange & Act
+            var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation: null, out var summary);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(summary);
+        }
+
+        [Fact]
         public void TryExtractSummary_ExtractsSummary_ReturnsTrue()
         {
             // Arrange
@@ -343,12 +354,17 @@ Suffixed invalid content";
             var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(summary);
+            Assert.True(result);
+            Assert.Equal(@"Prefixed invalid content
+
+
+</summary>
+
+Suffixed invalid content", summary);
         }
 
         [Fact]
-        public void TryExtractSummary_NoEndSummary_ReturnsFalse()
+        public void TryExtractSummary_NoEndSummary_ReturnsTrue()
         {
             // Arrange
             var documentation = @"
@@ -363,8 +379,46 @@ Suffixed invalid content";
             var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
 
             // Assert
+            Assert.True(result);
+            Assert.Equal(@"Prefixed invalid content
+
+
+<summary>
+
+Suffixed invalid content", summary);
+        }
+
+        [Fact]
+        public void TryExtractSummary_XMLButNoSummary_ReturnsFalse()
+        {
+            // Arrange
+            var documentation = @"
+<param type=""stuff"">param1</param>
+<return>Result</return>
+";
+
+            // Act
+            var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
+
+            // Assert
             Assert.False(result);
             Assert.Null(summary);
+        }
+
+        [Fact]
+        public void TryExtractSummary_NoXml_ReturnsTrue()
+        {
+            // Arrange
+            var documentation = @"
+There is no xml, but I got you this < and the >.
+";
+
+            // Act
+            var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("There is no xml, but I got you this < and the >.", summary);
         }
 
         [Fact]
