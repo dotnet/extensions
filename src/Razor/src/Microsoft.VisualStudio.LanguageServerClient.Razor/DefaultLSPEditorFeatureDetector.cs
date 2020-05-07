@@ -77,7 +77,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return false;
         }
 
-        private bool IsLSPEditorFeatureEnabled()
+        public override bool IsLSPEditorFeatureEnabled()
         {
             if (EnvironmentFeatureEnabled())
             {

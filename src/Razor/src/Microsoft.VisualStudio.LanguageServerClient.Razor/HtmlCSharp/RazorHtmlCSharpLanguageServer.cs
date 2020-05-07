@@ -65,6 +65,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return ExecuteRequestAsync<InitializeParams, InitializeResult>(Methods.InitializeName, initializeParams, _clientCapabilities, cancellationToken);
         }
 
+        [JsonRpcMethod(Methods.ShutdownName)]
+        public void ShutdownAsync(CancellationToken cancellationToken)
+        {
+            Dispose();
+        }
+
         [JsonRpcMethod(Methods.TextDocumentCompletionName, UseSingleObjectParameterDeserialization =  true)]
         public Task<SumType<CompletionItem[], CompletionList>?> ProvideCompletionsAsync(CompletionParams completionParams, CancellationToken cancellationToken)
         {

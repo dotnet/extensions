@@ -17,8 +17,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Export(typeof(VirtualDocumentFactory))]
     internal class CSharpVirtualDocumentFactory : VirtualDocumentFactory
     {
+        public const string CSharpLSPContentTypeName = "C#_LSP";
+
         // Internal for testing
-        internal const string CSharpLSPContentTypeName = "C#_LSP";
         internal const string VirtualCSharpFileNameSuffix = ".g.cs";
         internal const string ContainedLanguageMarker = "ContainedLanguageMarker";
 

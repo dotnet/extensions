@@ -10,5 +10,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public abstract bool IsLSPEditorAvailable(string documentMoniker, IVsHierarchy hierarchy);
 
         public abstract bool IsRemoteClient();
+
+        public abstract bool IsLSPEditorFeatureEnabled();
     }
 }

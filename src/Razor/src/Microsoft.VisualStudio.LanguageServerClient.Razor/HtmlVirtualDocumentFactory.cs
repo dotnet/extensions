@@ -13,8 +13,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Export(typeof(VirtualDocumentFactory))]
     internal class HtmlVirtualDocumentFactory : VirtualDocumentFactory
     {
+        public const string HtmlLSPContentTypeName = "htmlyLSP";
+
         // Internal for testing
-        internal const string HtmlLSPContentTypeName = "htmlyLSP";
         internal const string VirtualHtmlFileNameSuffix = "__virtual.html";
         internal const string ContainedLanguageMarker = "ContainedLanguageMarker";
 

@@ -57,10 +57,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // to the UI thread to push our updates.
             //
             // Just subscribe and handle the notification later.
-            // Don't try to evaluate any properties here since the project is still loading and we require access
-            // to the UI thread to push our updates.
-            //
-            // Just subscribe and handle the notification later.
             var receiver = new ActionBlock<IProjectVersionedValue<IProjectSubscriptionUpdate>>(OnProjectChanged);
             _subscription = CommonServices.ActiveConfiguredProjectSubscription.JointRuleSource.SourceBlock.LinkTo(
                 receiver,
