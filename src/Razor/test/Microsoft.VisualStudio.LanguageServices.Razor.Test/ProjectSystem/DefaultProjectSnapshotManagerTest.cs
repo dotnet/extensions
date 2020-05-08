@@ -66,6 +66,24 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [ForegroundFact]
+        public void Initialize_DoneInCorrectOrderBasedOnInitializePriorityPriority()
+        {
+            // Arrange
+            var initializedOrder = new List<string>();
+            var highPriorityTrigger = new InitializeInspectionTrigger(() => initializedOrder.Add("highPriority"), 100);
+            var defaultPriorityTrigger = new InitializeInspectionTrigger(() => initializedOrder.Add("lowPriority"), 0);
+
+            // Building this list in the wrong order so we can verify priority matters
+            var triggers = new[] { defaultPriorityTrigger, highPriorityTrigger };
+
+            // Act
+            var projectManager = new TestProjectSnapshotManager(Dispatcher, triggers, Workspace);
+
+            // Assert
+            Assert.Equal(new[] { "lowPriority", "highPriority" }, initializedOrder);
+        }
+
+        [ForegroundFact]
         public void DocumentAdded_AddsDocument()
         {
             // Arrange
@@ -327,7 +345,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             snapshot = ProjectManager.GetSnapshot(HostProject);
             Assert.Same(projectEngine, snapshot.GetProjectEngine());
         }
-       [ForegroundFact]
+        [ForegroundFact]
         public async Task DocumentOpened_UpdatesDocument()
         {
             // Arrange
@@ -602,6 +620,24 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             protected override void NotifyListeners(ProjectChangeEventArgs e)
             {
                 ListenersNotifiedOf = e.Kind;
+            }
+        }
+
+        private class InitializeInspectionTrigger : ProjectSnapshotChangeTrigger
+        {
+            private readonly Action _initializeNotification;
+
+            public InitializeInspectionTrigger(Action initializeNotification, int initializePriority)
+            {
+                _initializeNotification = initializeNotification;
+                InitializePriority = initializePriority;
+            }
+
+            public override int InitializePriority { get; }
+
+            public override void Initialize(ProjectSnapshotManagerBase projectManager)
+            {
+                _initializeNotification();
             }
         }
     }

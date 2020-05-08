@@ -58,7 +58,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             _foregroundDispatcher = foregroundDispatcher;
             _errorReporter = errorReporter;
-            _triggers = triggers.ToArray();
+            _triggers = triggers.OrderByDescending(trigger => trigger.InitializePriority).ToArray();
             Workspace = workspace;
 
             _projects = new Dictionary<string, Entry>(FilePathComparer.Instance);
