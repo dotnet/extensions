@@ -4,6 +4,13 @@ ASP.NET Core Tooling
 ASP.NET Core is an open-source and cross-platform framework for building modern cloud based internet connected applications, such as web apps, IoT apps and mobile backends.
 This repo contains tools for working on ASP.NET Core apps using the [.NET Core Command Line](https://github.com/dotnet/cli) and [Visual Studio](https://visualstudio.com).
 
+## Status   [![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/aspnetcore-tooling/aspnetcore-tooling-ci?branchName=master)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=264&branchName=master)
+
+|Build|Windows|Linux|MacOS|
+|-----|-------|-----|-----|
+|Debug|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/aspnetcore-tooling/aspnetcore-tooling-ci?branchName=master&jobName=Windows&configuration=Windows%20debug)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=264&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/aspnetcore-tooling/aspnetcore-tooling-ci?branchName=master&jobName=Linux&configuration=Linux%20debug)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=264&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/aspnetcore-tooling/aspnetcore-tooling-ci?branchName=master&jobName=macOS&configuration=macOS%20debug)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=264&branchName=master)|
+|Release|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/aspnetcore-tooling/aspnetcore-tooling-ci?branchName=master&jobName=Windows&configuration=Windows%20release)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=264&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/aspnetcore-tooling/aspnetcore-tooling-ci?branchName=master&jobName=Linux&configuration=Linux%20release)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=264&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/aspnetcore-tooling/aspnetcore-tooling-ci?branchName=master&jobName=macOS&configuration=macOS%20release)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=264&branchName=master)|
+
 ## Get Started
 
 Follow the [Getting Started](https://docs.microsoft.com/aspnet/core/getting-started) instructions in the [ASP.NET Core docs](https://docs.microsoft.com/aspnet/index).
