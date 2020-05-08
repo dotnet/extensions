@@ -56,12 +56,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public async Task LoadAsync()
         {
+            await _joinableTaskFactory.SwitchToMainThreadAsync();
+
             if (!_featureDetector.IsLSPEditorFeatureEnabled())
             {
                 return;
             }
-
-            await _joinableTaskFactory.SwitchToMainThreadAsync();
 
             foreach (var client in _applicableLanguageClients)
             {
