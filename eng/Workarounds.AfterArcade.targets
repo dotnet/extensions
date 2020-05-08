@@ -11,7 +11,7 @@
     <!-- Reference base shared framework at incoming dependency flow version, not bundled sdk version. -->
     <FrameworkReference
       Update="Microsoft.NETCore.App"
-      Condition="'$(TargetFramework)' == 'netcoreapp5.0'"
+      Condition="'$(TargetFramework)' == 'net5.0'"
       RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
       TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
       />
