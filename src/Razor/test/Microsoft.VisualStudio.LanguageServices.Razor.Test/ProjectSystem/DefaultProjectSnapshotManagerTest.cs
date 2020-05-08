@@ -80,7 +80,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var projectManager = new TestProjectSnapshotManager(Dispatcher, triggers, Workspace);
 
             // Assert
-            Assert.Equal(new[] { "lowPriority", "highPriority" }, initializedOrder);
+            Assert.Equal(new[] { "highPriority", "lowPriority" }, initializedOrder);
         }
 
         [ForegroundFact]
