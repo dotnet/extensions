@@ -32,7 +32,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <LangVersion>8.0</LangVersion>
 
-    <DefaultNetCoreTargetFramework>netcoreapp$(MajorVersion).$(MinorVersion)</DefaultNetCoreTargetFramework>
+    <DefaultNetCoreTargetFramework>net$(MajorVersion).$(MinorVersion)</DefaultNetCoreTargetFramework>
 
     <Product>Microsoft .NET Extensions</Product>
     <SignAssembly>true</SignAssembly>
