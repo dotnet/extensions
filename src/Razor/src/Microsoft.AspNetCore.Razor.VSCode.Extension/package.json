@@ -18,6 +18,7 @@
     "activationEvents": [
         "onWebviewPanel:razorReportIssue",
         "onDebugInitialConfigurations",
+        "onDebug",
         "onDebugResolve:coreclr",
         "onDebugResolve:clr",
         "onLanguage:csharp",
@@ -46,6 +47,47 @@
     ],
     "main": "./dist/extension",
     "contributes": {
+        "breakpoints": [
+          {
+            "language": "aspnetcorerazor"
+          },
+          {
+            "language": "csharp"
+          }
+        ],
+        "debuggers": [
+          {
+            "type": "blazor",
+            "label": "Blazor WebAssembly Debug",
+            "initialConfigurations": [
+              {
+                "type": "blazor",
+                "name": "Launch and Debug Blazor Application",
+                "request": "launch"
+              }
+            ],
+            "configurationAttributes": {
+              "launch": {
+                "properties": {
+                  "env": {
+                    "type": "object",
+                    "description": "Environment variables passed to dotnet"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "The URL of the application",
+                    "default": "https://localhost:5001"
+                  },
+                  "browser": {
+                    "type": "string",
+                    "description": "The debugging browser to launch (Edge or Chrome)",
+                    "default": "chrome"
+                  }
+                }
+              }
+            }
+          }
+        ],
         "semanticTokenTypes": [
           {
             "id": "razorTagHelperElement",

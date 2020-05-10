@@ -3,9 +3,12 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { exec } from 'child_process';
+import * as psList from 'ps-list';
 import * as vscode from 'vscode';
 import * as vscodeapi from 'vscode';
 import { ExtensionContext } from 'vscode';
+import { BlazorDebugConfigurationProvider } from './BlazorDebugConfigurationProvider';
 import { CompositeCodeActionTranslator } from './CodeActions/CompositeRazorCodeActionTranslator';
 import { RazorCodeActionProvider } from './CodeActions/RazorCodeActionProvider';
 import { RazorFullyQualifiedCodeActionTranslator } from './CodeActions/RazorFullyQualifiedCodeActionTranslator';
@@ -180,6 +183,33 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
         const onStopRegistration = languageServerClient.onStop(() => {
             localRegistrations.forEach(r => r.dispose());
             localRegistrations.length = 0;
+        });
+
+        const provider = new BlazorDebugConfigurationProvider(logger, vscodeType);
+        context.subscriptions.push(vscodeType.debug.registerDebugConfigurationProvider('blazor', provider));
+
+        /**
+         * On non-Windows platforms, we need to terminate the Blazor
+         * dev server and its child processes.
+         */
+        vscodeType.debug.onDidTerminateDebugSession(event => {
+            logger.logVerbose('Terminating debugging session...');
+            if (process.platform !== 'win32') {
+                psList().then(processes => {
+                    const devserver = processes.find(
+                        (process: psList.ProcessDescriptor) => !!(process && process.cmd && process.cmd.includes('blazor-devserver')),
+                    );
+                    if (devserver) {
+                        const command = `kill ${devserver.pid}`;
+                        exec(command, (error, stdout, stderr) => {
+                            if (error) {
+                                logger.logError('Error during debug process clean-up: ', error);
+                            }
+                            return logger.logMessage('Debug process clean-up complete.');
+                        });
+                    }
+                }).catch(error => logger.logError('Error retrieving processes to clean-up: ', error));
+            }
         });
 
         languageServerClient.onStarted(async () => {

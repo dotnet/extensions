@@ -15,6 +15,7 @@
     "typescript": "3.3.4000"
   },
   "dependencies": {
+    "ps-list": "^7.0.0",
     "vscode-html-languageservice": "2.1.7",
     "vscode-languageclient": "5.2.1"
   },
