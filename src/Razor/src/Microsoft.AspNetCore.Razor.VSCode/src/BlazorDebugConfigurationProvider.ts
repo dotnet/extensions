@@ -8,15 +8,10 @@ import * as vscode from 'vscode';
 import { RazorLogger } from './RazorLogger';
 
 export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
-    private logger: RazorLogger;
-    private vscodeType: typeof vscode;
 
-    constructor(logger: RazorLogger, vscodeType: typeof vscode) {
-        this.logger = logger;
-        this.vscodeType = vscodeType;
-    }
+    constructor(private readonly logger: RazorLogger, private readonly vscodeType: typeof vscode) {}
 
-    public resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration): vscode.ProviderResult<vscode.DebugConfiguration> {
+    public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration): Promise<vscode.DebugConfiguration | undefined> {
         const app = {
             name: '.NET Core Launch (Blazor Standalone)',
             type: 'coreclr',
@@ -31,33 +26,32 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
         };
         const browser = {
             name: '.NET Core Debug Blazor Web Assembly in Browser',
-            type: configuration.browser === 'edge' ? 'edge' : 'pwa-chrome',
+            type: configuration.browser === 'edge' ? 'pwa-msedge' : 'pwa-chrome',
             request: 'launch',
-            timeout: 30000,
-            url: configuration.url || 'https://localhost:5001',
-            webRoot: '${workspaceFolder}',
+            timeout: configuration.timeout,
+            url: configuration.url,
+            webRoot: configuration.webRoot,
             inspectUri: '{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}',
+            trace: configuration.trace || false,
         };
 
-        this.vscodeType.debug.startDebugging(folder, app).then(
-            appStartFulfilled => {
-                if (appStartFulfilled) {
-                    this.vscodeType.debug.startDebugging(folder, browser).then(
-                        debugStartFulfilled => {
-                            if (debugStartFulfilled) {
-                                this.logger.logVerbose('Launching JavaScript debugger...');
-                            }
-                        },
-                        error => {
-                            this.logger.logError('Error when launching Chrome debugger: ', error);
-                        },
-                    );
-                }
-            },
-            error => {
-                this.logger.logError('Error when launching application: ', error);
-            },
-        );
+        try {
+            await this.vscodeType.debug.startDebugging(folder, app);
+            try {
+                await this.vscodeType.debug.startDebugging(folder, browser);
+                this.logger.logVerbose('[DEBUGGER] Launching JavaScript debugger...');
+            } catch (error) {
+                this.logger.logError(
+                  '[DEBUGGER] Error when launching browser debugger: ',
+                  error,
+                );
+            }
+        } catch (error) {
+            this.logger.logError(
+              '[DEBUGGER] Error when launching application: ',
+              error,
+            );
+        }
 
         return undefined;
     }

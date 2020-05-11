@@ -57,12 +57,12 @@
         ],
         "debuggers": [
           {
-            "type": "blazor",
+            "type": "blazorwasm",
             "label": "Blazor WebAssembly Debug",
             "initialConfigurations": [
               {
-                "type": "blazor",
-                "name": "Launch and Debug Blazor Application",
+                "type": "blazorwasm",
+                "name": "Launch and Debug Blazor WebAssembly Application",
                 "request": "launch"
               }
             ],
@@ -81,7 +81,24 @@
                   "browser": {
                     "type": "string",
                     "description": "The debugging browser to launch (Edge or Chrome)",
-                    "default": "chrome"
+                    "default": "chrome",
+                    "enum": ["chrome", "edge"]
+                  },
+                  "trace": {
+                    "type": ["boolean", "string"],
+                    "default": "true",
+                    "enum": ["verbose", true],
+                    "description": "If true, verbose logs sent to log file. If 'verbose', send logs to console."
+                  },
+                  "webRoot": {
+                    "type": "string",
+                    "default": "${workspaceFolder}",
+                    "description": "Specifies the absolute path to the webserver root."
+                  },
+                  "timeout": {
+                    "type": "number",
+                    "default": 30000,
+                    "description": "Retry for this number of milliseconds to connect to browser."
                   }
                 }
               }

@@ -192,23 +192,36 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
          * On non-Windows platforms, we need to terminate the Blazor
          * dev server and its child processes.
          */
-        vscodeType.debug.onDidTerminateDebugSession(event => {
+        vscodeType.debug.onDidTerminateDebugSession(async (event) => {
             logger.logVerbose('Terminating debugging session...');
             if (process.platform !== 'win32') {
-                psList().then(processes => {
+                try {
+                    const processes = await psList();
                     const devserver = processes.find(
-                        (process: psList.ProcessDescriptor) => !!(process && process.cmd && process.cmd.includes('blazor-devserver')),
+                        (process: psList.ProcessDescriptor) =>
+                            !!(
+                                process &&
+                                process.cmd &&
+                                process.cmd.includes('blazor-devserver')
+                            ),
                     );
                     if (devserver) {
                         const command = `kill ${devserver.pid}`;
-                        exec(command, (error, stdout, stderr) => {
+                        exec(command, (error) => {
                             if (error) {
-                                logger.logError('Error during debug process clean-up: ', error);
+                                logger.logError(
+                                    '[DEBUGGER] Error during debug process clean-up: ',
+                                    error,
+                                );
                             }
-                            return logger.logMessage('Debug process clean-up complete.');
+                            return logger.logVerbose(
+                                '[DEBUGGER] Debug process clean-up complete.',
+                            );
                         });
                     }
-                }).catch(error => logger.logError('Error retrieving processes to clean-up: ', error));
+                } catch (error) {
+                    logger.logError('Error retrieving processes to clean-up: ', error);
+                }
             }
         });
 
