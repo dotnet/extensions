@@ -3,12 +3,11 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { exec } from 'child_process';
-import * as psList from 'ps-list';
 import * as vscode from 'vscode';
 import * as vscodeapi from 'vscode';
 import { ExtensionContext } from 'vscode';
-import { BlazorDebugConfigurationProvider } from './BlazorDebugConfigurationProvider';
+import { BlazorDebugConfigurationProvider } from './BlazorDebug/BlazorDebugConfigurationProvider';
+import { onDidTerminateDebugSession } from './BlazorDebug/Events';
 import { CompositeCodeActionTranslator } from './CodeActions/CompositeRazorCodeActionTranslator';
 import { RazorCodeActionProvider } from './CodeActions/RazorCodeActionProvider';
 import { RazorFullyQualifiedCodeActionTranslator } from './CodeActions/RazorFullyQualifiedCodeActionTranslator';
@@ -192,38 +191,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
          * On non-Windows platforms, we need to terminate the Blazor
          * dev server and its child processes.
          */
-        vscodeType.debug.onDidTerminateDebugSession(async (event) => {
-            logger.logVerbose('Terminating debugging session...');
-            if (process.platform !== 'win32') {
-                try {
-                    const processes = await psList();
-                    const devserver = processes.find(
-                        (process: psList.ProcessDescriptor) =>
-                            !!(
-                                process &&
-                                process.cmd &&
-                                process.cmd.includes('blazor-devserver')
-                            ),
-                    );
-                    if (devserver) {
-                        const command = `kill ${devserver.pid}`;
-                        exec(command, (error) => {
-                            if (error) {
-                                logger.logError(
-                                    '[DEBUGGER] Error during debug process clean-up: ',
-                                    error,
-                                );
-                            }
-                            return logger.logVerbose(
-                                '[DEBUGGER] Debug process clean-up complete.',
-                            );
-                        });
-                    }
-                } catch (error) {
-                    logger.logError('Error retrieving processes to clean-up: ', error);
-                }
-            }
-        });
+        vscodeType.debug.onDidTerminateDebugSession(async event => onDidTerminateDebugSession(event, logger));
 
         languageServerClient.onStarted(async () => {
             await documentManager.initialize();

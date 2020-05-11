@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 
-import { RazorLogger } from './RazorLogger';
+import { RazorLogger } from '../RazorLogger';
 
 export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
 
@@ -18,7 +18,7 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             request: 'launch',
             program: 'dotnet',
             args: ['run'],
-            cwd: '${workspaceFolder}',
+            cwd: configuration.cwd,
             env: {
                 ASPNETCORE_ENVIRONMENT: 'Development',
                 ...configuration.env,
@@ -34,23 +34,31 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             inspectUri: '{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}',
             trace: configuration.trace || false,
         };
+        let showErrorInfo = false;
 
         try {
             await this.vscodeType.debug.startDebugging(folder, app);
             try {
                 await this.vscodeType.debug.startDebugging(folder, browser);
-                this.logger.logVerbose('[DEBUGGER] Launching JavaScript debugger...');
+                this.logger.logVerbose('[DEBUGGER] Launching browser debugger...');
             } catch (error) {
                 this.logger.logError(
                   '[DEBUGGER] Error when launching browser debugger: ',
                   error,
                 );
+                showErrorInfo = true;
             }
         } catch (error) {
             this.logger.logError(
               '[DEBUGGER] Error when launching application: ',
               error,
             );
+            showErrorInfo = true;
+        }
+
+        if (showErrorInfo) {
+            const message = `There was an unexpected error while launching your debugging session. Check the console for helpful logs and visit https://aka.ms/blazorwasmcodedebug for more info.`;
+            this.vscodeType.window.showErrorMessage(message);
         }
 
         return undefined;

@@ -69,6 +69,11 @@
             "configurationAttributes": {
               "launch": {
                 "properties": {
+                  "cwd": {
+                    "type": "string",
+                    "description": "The directory of the Blazor WASM app, defaults to the workspace folder.",
+                    "default": "${workspaceFolder}"
+                  },
                   "env": {
                     "type": "object",
                     "description": "Environment variables passed to dotnet"
