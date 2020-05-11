@@ -212,25 +212,25 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20224.11">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20256.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ff09a8a065a615c2fde8df82106bcd1f0fcb32aa</Sha>
+      <Sha>8547938aefa24475a04877285553f0b2663ae249</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.20224.11">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.20256.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ff09a8a065a615c2fde8df82106bcd1f0fcb32aa</Sha>
+      <Sha>8547938aefa24475a04877285553f0b2663ae249</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20224.11">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20256.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ff09a8a065a615c2fde8df82106bcd1f0fcb32aa</Sha>
+      <Sha>8547938aefa24475a04877285553f0b2663ae249</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.0-preview.5.20259.5" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e18250bd8f23f85f670599177118d6b957f9a3dd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.7.0-1.20226.3">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.7.0-2.20259.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>165c98a27a6004ac23fd511fa950a379d8b3f034</Sha>
+      <Sha>d0ef8687ce735c8aa32035396f521705a8ff7392</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
