@@ -78,7 +78,7 @@ stages:
                 arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
               env:
                 Token: $(dn-bot-dnceng-artifact-feeds-rw)
-          - powershell: ./restore.cmd -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
+          - powershell: ./restore.cmd -msbuildEngine dotnet -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
             displayName: Run eng/scripts/CodeCheck.ps1
 
       - job: Source_Build
@@ -230,6 +230,7 @@ stages:
               Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: eng\common\cibuild.cmd
             -configuration $(_BuildConfig)
+            -msbuildEngine dotnet
             -prepareMachine
             $(_BuildArgs)
             $(_PublishArgs)
