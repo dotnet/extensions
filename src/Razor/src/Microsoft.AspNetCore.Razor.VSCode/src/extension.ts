@@ -7,7 +7,6 @@ import * as vscode from 'vscode';
 import * as vscodeapi from 'vscode';
 import { ExtensionContext } from 'vscode';
 import { BlazorDebugConfigurationProvider } from './BlazorDebug/BlazorDebugConfigurationProvider';
-import { onDidTerminateDebugSession } from './BlazorDebug/Events';
 import { CompositeCodeActionTranslator } from './CodeActions/CompositeRazorCodeActionTranslator';
 import { RazorCodeActionProvider } from './CodeActions/RazorCodeActionProvider';
 import { RazorFullyQualifiedCodeActionTranslator } from './CodeActions/RazorFullyQualifiedCodeActionTranslator';
@@ -186,12 +185,6 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
 
         const provider = new BlazorDebugConfigurationProvider(logger, vscodeType);
         context.subscriptions.push(vscodeType.debug.registerDebugConfigurationProvider('blazorwasm', provider));
-
-        /**
-         * On non-Windows platforms, we need to terminate the Blazor
-         * dev server and its child processes.
-         */
-        vscodeType.debug.onDidTerminateDebugSession(async event => onDidTerminateDebugSession(event, logger));
 
         languageServerClient.onStarted(async () => {
             await documentManager.initialize();

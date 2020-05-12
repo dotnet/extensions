@@ -7,6 +7,7 @@ import { spawn } from 'child_process';
 import * as vscode from 'vscode';
 
 import { RazorLogger } from '../RazorLogger';
+import { onDidTerminateDebugSession } from './Events';
 
 export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
 
@@ -29,6 +30,13 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             output.append(error.toString());
             this.logger.logError('[DEBUGGER] Error when launch app: ', error);
         });
+        app.on('exit', () => output.append('Blazor app terminated.'));
+
+        /**
+         * On non-Windows platforms, we need to terminate the Blazor
+         * dev server and its child processes.
+         */
+        this.vscodeType.debug.onDidTerminateDebugSession(event => onDidTerminateDebugSession(event, this.logger, app));
 
         output.show();
 
@@ -41,11 +49,21 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             webRoot: configuration.webRoot || '${workspaceFolder}',
             inspectUri: '{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}',
             trace: configuration.trace || false,
+            noDebug: configuration.noDebug || false,
         };
 
         let showErrorInfo = false;
 
         try {
+            /**
+             * The browser debugger will immediately launch after the
+             * application process is started. It waits a `timeout`
+             * interval before crashing after being unable to find the launched
+             * process.
+             *
+             * We do this to provide immediate visual feedback to the user
+             * that their debugger session has started.
+             */
             await this.vscodeType.debug.startDebugging(folder, browser);
             this.logger.logVerbose('[DEBUGGER] Launching browser debugger...');
         } catch (error) {
@@ -61,6 +79,13 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             this.vscodeType.window.showErrorMessage(message);
         }
 
+        /**
+         * If `resolveDebugConfiguration` returns undefined, then the debugger
+         * launch is canceled. Here, we opt to manually launch the browser
+         * configruation using `startDebugging` above instead of returning
+         * the configuration to avoid a bug where VS Code is unable to resolve
+         * the debug adapter for the browser debugger.
+         */
         return undefined;
     }
 }
