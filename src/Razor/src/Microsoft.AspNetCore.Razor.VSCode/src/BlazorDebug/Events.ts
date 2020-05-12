@@ -3,7 +3,6 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { exec } from 'child_process';
 import * as psList from 'ps-list';
 import { DebugSession } from 'vscode';
 
@@ -18,22 +17,21 @@ export async function onDidTerminateDebugSession(
     try {
       const processes = await psList();
       const devserver = processes.find(
-        (process: psList.ProcessDescriptor) =>
-          !!(process && process.cmd && process.cmd.includes('blazor-devserver')),
+        (proc: psList.ProcessDescriptor) =>
+          !!(proc && proc.cmd && proc.cmd.includes('blazor-devserver')),
       );
       if (devserver) {
-        const command = `kill ${devserver.pid}`;
-        exec(command, (error) => {
-          if (error) {
-            logger.logError(
-              '[DEBUGGER] Error during debug process clean-up: ',
-              error,
-            );
-          }
-          return logger.logVerbose(
-            '[DEBUGGER] Debug process clean-up complete.',
-          );
-        });
+        try {
+          process.kill(devserver.pid);
+          processes.map((proc) => {
+            if (process.ppid === devserver.pid) {
+              process.kill(proc.pid);
+            }
+          });
+          logger.logVerbose('[DEBUGGER] Debug process clean-up complete.');
+        } catch (error) {
+          logger.logError('Error terminating debug processes: ', error);
+        }
       }
     } catch (error) {
       logger.logError('Error retrieving processes to clean-up: ', error);

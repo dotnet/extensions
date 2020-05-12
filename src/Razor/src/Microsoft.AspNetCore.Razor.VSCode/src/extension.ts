@@ -185,7 +185,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
         });
 
         const provider = new BlazorDebugConfigurationProvider(logger, vscodeType);
-        context.subscriptions.push(vscodeType.debug.registerDebugConfigurationProvider('blazor', provider));
+        context.subscriptions.push(vscodeType.debug.registerDebugConfigurationProvider('blazorwasm', provider));
 
         /**
          * On non-Windows platforms, we need to terminate the Blazor
