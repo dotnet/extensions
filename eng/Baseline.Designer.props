@@ -528,7 +528,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventSource' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.4, )" />
     <BaselinePackageReference Include="System.Text.Json" Version="[4.7.2, )" />
-    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.2, )" />
+    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.TraceSource-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.TraceSource' ">
