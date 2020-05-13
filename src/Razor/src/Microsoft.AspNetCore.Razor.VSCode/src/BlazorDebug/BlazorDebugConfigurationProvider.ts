@@ -15,14 +15,19 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
 
     public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration): Promise<vscode.DebugConfiguration | undefined> {
         const output = this.vscodeType.window.createOutputChannel('Blazor WebAssembly App');
-        const app = spawn('dotnet', ['run'], {
+
+        const command = process.platform === 'win32' ? 'cmd.exe' : 'sh';
+        const args = process.platform === 'win32' ? ['/c', 'chcp 65001 >NUL & dotnet run'] : ['dotnet', 'run'];
+        const spawnOptions = {
             cwd: configuration.cwd || folder && folder.uri && folder.uri.fsPath,
             env: {
                 ...process.env,
                 ASPNETCORE_ENVIRONMENT: 'Development',
                 ...configuration.env,
             },
-        });
+        };
+
+        const app = spawn(command, args, spawnOptions);
 
         app.stdout.on('data', (data) => output.append(data.toString()));
         app.stderr.on('data', (data) => output.append(data.toString()));
