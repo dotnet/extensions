@@ -144,7 +144,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.4, )" />
     <BaselinePackageReference Include="System.Text.Json" Version="[4.7.2, )" />
-    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.2, )" />
+    <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.KeyPerFile-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' ">
@@ -197,14 +197,14 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.4, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.4, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.4, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netstandard2.1' ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.4, )" />
@@ -228,13 +228,13 @@
     <BaselinePackageVersion>3.1.4</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.7.0, )" />
+    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.7.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.7.0, )" />
+    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.7.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.7.0, )" />
+    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.7.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' ">
@@ -334,7 +334,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="[3.1.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.4, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting' AND '$(TargetFramework)' == 'netstandard2.1' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="[3.1.4, )" />
@@ -365,7 +365,7 @@
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.4, )" />
-    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Hosting.Systemd-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Systemd' ">
@@ -594,7 +594,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="System.Memory" Version="[4.5.2, )" />
-    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.7.0, )" />
+    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.7.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.WebEncoders-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' ">
@@ -607,7 +607,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.4, )" />
-    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.7.0, )" />
+    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.7.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.JSInterop-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop' ">
