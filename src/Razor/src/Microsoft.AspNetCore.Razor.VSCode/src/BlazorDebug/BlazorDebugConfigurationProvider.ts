@@ -41,7 +41,10 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
          * On non-Windows platforms, we need to terminate the Blazor
          * dev server and its child processes.
          */
-        this.vscodeType.debug.onDidTerminateDebugSession(event => onDidTerminateDebugSession(event, this.logger, app));
+        const terminate = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
+            await onDidTerminateDebugSession(event, this.logger, app);
+            terminate.dispose();
+        });
 
         output.show();
 
