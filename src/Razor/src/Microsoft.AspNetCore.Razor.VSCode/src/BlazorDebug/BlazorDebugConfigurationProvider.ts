@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { spawn } from 'child_process';
+// import { spawn } from 'child_process';
 import * as vscode from 'vscode';
 
 import { RazorLogger } from '../RazorLogger';
@@ -14,10 +14,8 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
     constructor(private readonly logger: RazorLogger, private readonly vscodeType: typeof vscode) { }
 
     public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration): Promise<vscode.DebugConfiguration | undefined> {
-        const output = this.vscodeType.window.createOutputChannel('Blazor WebAssembly App');
-
-        const command = process.platform === 'win32' ? 'cmd.exe' : 'dotnet';
-        const args = process.platform === 'win32' ? ['/c', 'chcp 65001 >NUL & dotnet run'] : ['run'];
+        const shellPath = process.platform === 'win32' ? 'cmd.exe' : 'dotnet';
+        const shellArgs = process.platform === 'win32' ? ['/c', 'chcp 65001 >NUL & dotnet run'] : ['run'];
         const spawnOptions = {
             cwd: configuration.cwd || folder && folder.uri && folder.uri.fsPath,
             env: {
@@ -27,22 +25,19 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             },
         };
 
-        const app = spawn(command, args, spawnOptions);
-
-        app.stdout.on('data', (data) => output.append(data.toString()));
-        app.stderr.on('data', (data) => output.append(data.toString()));
-        app.on('error', (error) => {
-            output.append(error.toString());
-            this.logger.logError('[DEBUGGER] Error when launch app: ', error);
+        const output = this.vscodeType.window.createTerminal({
+          name: 'Blazor WebAssembly App',
+          shellPath,
+          shellArgs,
+          ...spawnOptions,
         });
-        app.on('exit', () => output.append('Blazor app terminated.'));
 
         /**
          * On non-Windows platforms, we need to terminate the Blazor
          * dev server and its child processes.
          */
         const terminate = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
-            await onDidTerminateDebugSession(event, this.logger, app);
+            await onDidTerminateDebugSession(event, this.logger, await output.processId);
             terminate.dispose();
         });
 
