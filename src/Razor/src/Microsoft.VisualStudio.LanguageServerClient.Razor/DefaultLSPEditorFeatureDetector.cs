@@ -20,6 +20,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly ProjectHierarchyInspector _projectHierarchyInspector;
         private readonly Lazy<IVsUIShellOpenDocument> _vsUIShellOpenDocument;
         private readonly IVsFeatureFlags _featureFlags;
+        private bool? _environmentFeatureEnabled;
+        private bool? _isVSServer;
 
         [ImportingConstructor]
         public DefaultLSPEditorFeatureDetector(ProjectHierarchyInspector projectHierarchyInspector)
@@ -142,10 +144,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         // Private protected virtual for testing
         private protected virtual bool EnvironmentFeatureEnabled()
         {
-            var lspRazorEnabledString = Environment.GetEnvironmentVariable(RazorLSPEditorFeatureFlag);
-            _ = bool.TryParse(lspRazorEnabledString, out var enabled);
+            if (!_environmentFeatureEnabled.HasValue)
+            {
+                var lspRazorEnabledString = Environment.GetEnvironmentVariable(RazorLSPEditorFeatureFlag);
+                _ = bool.TryParse(lspRazorEnabledString, out var enabled);
+                _environmentFeatureEnabled = enabled;
+            }
 
-            return enabled;
+            return _environmentFeatureEnabled.Value;
         }
 
         // Private protected virtual for testing
@@ -162,21 +168,23 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         // Private protected virtual for testing
         private protected virtual bool IsVSServer()
         {
-            var shell = AsyncPackage.GetGlobalService(typeof(SVsShell)) as IVsShell;
-            var result = shell.GetProperty((int)__VSSPROPID11.VSSPROPID_ShellMode, out var mode);
-
-            if (!ErrorHandler.Succeeded(result))
+            if (!_isVSServer.HasValue)
             {
-                return false;
+                var shell = AsyncPackage.GetGlobalService(typeof(SVsShell)) as IVsShell;
+                var result = shell.GetProperty((int)__VSSPROPID11.VSSPROPID_ShellMode, out var mode);
+
+                if (ErrorHandler.Succeeded(result))
+                {
+                    // VSSPROPID_ShellMode is set to VSSM_Server when /server is used in devenv command
+                    _isVSServer = ((int)mode == (int)__VSShellMode.VSSM_Server);
+                }
+                else
+                {
+                    _isVSServer = false;
+                }
             }
 
-            // VSSPROPID_ShellMode is set to VSSM_Server when /server is used in devenv command
-            if ((int)mode != (int)__VSShellMode.VSSM_Server)
-            {
-                return false;
-            }
-
-            return true;
+            return _isVSServer.Value;
         }
 
         // Private protected virtual for testing
