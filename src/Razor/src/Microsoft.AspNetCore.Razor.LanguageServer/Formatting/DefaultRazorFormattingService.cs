@@ -273,6 +273,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     continue;
                 }
 
+                var directiveRange = directive.GetRange(source);
+                if (!directiveRange.OverlapsWith(context.Range))
+                {
+                    // This block isn't in the selected range.
+                    continue;
+                }
+
                 // Get the inner code block node that contains the actual code.
                 var innerCodeBlockNode = directiveBody.CSharpCode.DescendantNodes().FirstOrDefault(n => n is CSharpCodeBlockSyntax);
                 if (innerCodeBlockNode == null)
@@ -295,10 +302,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var innerCodeBlockRange = innerCodeBlockNode.GetRange(source);
 
                 // Compute the range inside the code block that overlaps with the provided input range.
-                var rangeToFormat = innerCodeBlockRange.Overlap(context.Range);
-                if (rangeToFormat != null)
+                var csharprangeToFormat = innerCodeBlockRange.Overlap(context.Range);
+                if (csharprangeToFormat != null)
                 {
-                    var codeEdits = await _csharpFormatter.FormatAsync(context.CodeDocument, rangeToFormat, context.Uri, context.Options);
+                    var codeEdits = await _csharpFormatter.FormatAsync(context.CodeDocument, csharprangeToFormat, context.Uri, context.Options);
                     changedText = ApplyCSharpEdits(context, innerCodeBlockRange, codeEdits, minCSharpIndentLevel: 2);
                 }
 

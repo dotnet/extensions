@@ -157,6 +157,28 @@ void Method() { @if (true) {} }
         }
 
         [Fact]
+        public async Task DoesNotFormat_CodeBlockDirective_NotInSelectedRange()
+        {
+            await RunFormattingTestAsync(
+input: @"
+|<div>Foo</div>|
+@functions {
+ public class Foo{}
+        public interface Bar {
+}
+}
+",
+expected: @"
+<div>Foo</div>
+@functions {
+ public class Foo{}
+        public interface Bar {
+}
+}
+");
+        }
+
+        [Fact]
         public async Task OnlyFormatsWithinRange()
         {
             await RunFormattingTestAsync(
