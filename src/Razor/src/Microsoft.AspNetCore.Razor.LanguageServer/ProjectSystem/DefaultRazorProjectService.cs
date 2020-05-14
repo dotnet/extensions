@@ -160,8 +160,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             if (_documentResolver.TryResolveDocument(textDocumentPath, out var documentSnapshot))
             {
                 // Start generating the C# for the document so it can immediately be ready for incoming requests.
-                // Temporarily disabled. Tracking re-enablement here: https://github.com/dotnet/aspnetcore/issues/21126
-                //documentSnapshot.GetGeneratedOutputAsync();
+                documentSnapshot.GetGeneratedOutputAsync();
             }
         }
 
