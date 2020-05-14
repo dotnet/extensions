@@ -57,10 +57,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     typeof(CancellationToken)
                 });
 
-            // The LSP platform is adding a SynchronizedRequestAsync method; however, until that change is in we need to conditionally fallback to the old RequestAsync.
-            // Removal tracked by: https://github.com/dotnet/aspnetcore/issues/21468
-            _synchronizedRequestAsyncMethod ??= _requestAsyncMethod;
-
             // We need these converters so we don't lose information as part of the deserialization.
             _serializer = new JsonSerializer();
             _serializer.Converters.Add(new VSExtensionConverter<ClientCapabilities, VSClientCapabilities>());
