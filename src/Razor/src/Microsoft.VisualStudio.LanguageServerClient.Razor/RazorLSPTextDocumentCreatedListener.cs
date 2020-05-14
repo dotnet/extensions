@@ -192,6 +192,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 // We still change the content type for remote scenarios in order to enable our TextMate grammar to light up the Razor editor properly.
                 textBuffer.ChangeContentType(_razorLSPContentType, editTag: null);
 
+                // Initialize the buffer with editor options.
+                // Temporary: Ideally in remote scenarios, we should be using host's settings.
+                // But we need this until that support is built.
+                InitializeOptions(textBuffer);
+
                 // Temporary: The guest needs to react to the host manually applying edits and moving the cursor.
                 // This can be removed once the client starts supporting snippets.
                 textBuffer.Properties.AddProperty(FilePathPropertyKey, filePath);
