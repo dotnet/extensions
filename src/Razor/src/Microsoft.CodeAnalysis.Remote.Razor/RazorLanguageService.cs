@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.CodeAnalysis.Remote.Razor
 {
@@ -19,10 +18,10 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
         {
         }
 
-        public async Task<TagHelperResolutionResult> GetTagHelpersAsync(JObject solutionInfo, ProjectSnapshotHandle projectHandle, string factoryTypeName, CancellationToken cancellationToken = default)
+        public async Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshotHandle projectHandle, string factoryTypeName, CancellationToken cancellationToken = default)
         {
             var projectSnapshot = await GetProjectSnapshotAsync(projectHandle, cancellationToken).ConfigureAwait(false);
-            var solution = await GetSolutionAsync(solutionInfo, cancellationToken);
+            var solution = await GetSolutionAsync(cancellationToken);
             var workspaceProject = solution
                 .Projects
                 .FirstOrDefault(project => FilePathComparer.Instance.Equals(project.FilePath, projectSnapshot.FilePath));
