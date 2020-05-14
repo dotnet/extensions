@@ -245,8 +245,8 @@ stages:
             $(_BuildArgs)
             $(_PublishArgs)
             $(_InternalRuntimeDownloadArgs)
-          name: Build
-          displayName: Build
+          name: Build Vsix
+          displayName: Build Vsix
           condition: succeeded()
         # Run VSCode functional tests
         # - powershell: |
