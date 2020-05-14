@@ -238,6 +238,16 @@ stages:
           name: Build
           displayName: Build
           condition: succeeded()
+        - script: eng\common\cibuild.cmd
+            -configuration $(_BuildConfig)
+            -prepareMachine
+            /p:BuildVsix=true
+            $(_BuildArgs)
+            $(_PublishArgs)
+            $(_InternalRuntimeDownloadArgs)
+          name: Build
+          displayName: Build
+          condition: succeeded()
         # Run VSCode functional tests
         # - powershell: |
         #     . ../../../../activate.ps1
