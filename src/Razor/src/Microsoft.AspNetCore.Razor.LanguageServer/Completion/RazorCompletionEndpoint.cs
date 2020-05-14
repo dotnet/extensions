@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -21,6 +22,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal class RazorCompletionEndpoint : ICompletionHandler, ICompletionResolveHandler
     {
+        private const int XMLAttributeId = 3564;
+        private const string ImageCatalogGuidString = "{ae27a6b0-e345-4288-96df-5eaf394ee369}";
+        private static Guid ImageCatalogGuid = new Guid(ImageCatalogGuidString);
+
         private CompletionCapability _capability;
         private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
@@ -144,7 +149,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 completionItems.AddRange(tagHelperCompletionItems);
             }
 
-            var completionList = new CompletionList(completionItems, isIncomplete: false);
+            // Temporary: We want to set custom icons in VS. Ideally this should be done on the client.
+            // This is a workaround until we have support for it in the middle layer.
+            var completionItemsWithIcon = completionItems.Select(c => SetIcon(c));
+
+            var completionList = new CompletionList(completionItemsWithIcon, isIncomplete: false);
 
             return completionList;
         }
@@ -351,6 +360,83 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             }
 
             return true;
+        }
+
+        private CompletionItem SetIcon(CompletionItem item)
+        {
+            PascalCasedSerializableImageElement? icon = null;
+            if (item.IsTagHelperElementCompletion() || item.IsTagHelperAttributeCompletion())
+            {
+                icon = new PascalCasedSerializableImageElement(new PascalCasedSerializableImageId(ImageCatalogGuid, XMLAttributeId), automationName: null);
+            }
+            else if (item.TryGetRazorCompletionKind(out var kind) &&
+                (kind == RazorCompletionItemKind.DirectiveAttribute ||
+                kind == RazorCompletionItemKind.DirectiveAttributeParameter ||
+                kind == RazorCompletionItemKind.MarkupTransition))
+            {
+                icon = new PascalCasedSerializableImageElement(new PascalCasedSerializableImageId(ImageCatalogGuid, XMLAttributeId), automationName: null);
+            }
+
+            if (!icon.HasValue)
+            {
+                return item;
+            }
+
+            return new VSLspCompletionItem()
+            {
+                Label = item.Label,
+                Kind = item.Kind,
+                Detail = item.Detail,
+                Documentation = item.Documentation,
+                Preselect = item.Preselect,
+                SortText = item.SortText,
+                FilterText = item.FilterText,
+                InsertText = item.InsertText,
+                InsertTextFormat = item.InsertTextFormat,
+                TextEdit = item.TextEdit,
+                AdditionalTextEdits = item.AdditionalTextEdits,
+                CommitCharacters = item.CommitCharacters,
+                Command = item.Command,
+                Data = item.Data,
+                Icon = icon
+            };
+        }
+
+        private class VSLspCompletionItem : CompletionItem
+        {
+            public PascalCasedSerializableImageElement? Icon { get; set; }
+        }
+
+        [DataContract]
+        private struct PascalCasedSerializableImageElement
+        {
+            public PascalCasedSerializableImageElement(PascalCasedSerializableImageId imageId, string automationName)
+            {
+                ImageId = imageId;
+                AutomationName = automationName;
+            }
+
+            [DataMember(Name = "ImageId")]
+            public PascalCasedSerializableImageId ImageId { get; set; }
+
+            [DataMember(Name = "AutomationName")]
+            public string AutomationName { get; set; }
+        }
+
+        [DataContract]
+        private struct PascalCasedSerializableImageId
+        {
+            public PascalCasedSerializableImageId(Guid guid, int id)
+            {
+                Guid = guid;
+                Id = id;
+            }
+
+            [DataMember(Name = "Guid")]
+            public Guid Guid { get; set; }
+
+            [DataMember(Name = "Id")]
+            public int Id { get; set; }
         }
     }
 }
