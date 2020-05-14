@@ -6,6 +6,7 @@
 import * as vscode from 'vscode';
 import * as vscodeapi from 'vscode';
 import { ExtensionContext } from 'vscode';
+import { BlazorDebugConfigurationProvider } from './BlazorDebug/BlazorDebugConfigurationProvider';
 import { CompositeCodeActionTranslator } from './CodeActions/CompositeRazorCodeActionTranslator';
 import { RazorCodeActionProvider } from './CodeActions/RazorCodeActionProvider';
 import { RazorFullyQualifiedCodeActionTranslator } from './CodeActions/RazorFullyQualifiedCodeActionTranslator';
@@ -181,6 +182,9 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
             localRegistrations.forEach(r => r.dispose());
             localRegistrations.length = 0;
         });
+
+        const provider = new BlazorDebugConfigurationProvider(logger, vscodeType);
+        context.subscriptions.push(vscodeType.debug.registerDebugConfigurationProvider('blazorwasm', provider));
 
         languageServerClient.onStarted(async () => {
             await documentManager.initialize();

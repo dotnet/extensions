@@ -2606,6 +2606,11 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.3"
 
+ps-list@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/ps-list/-/ps-list-7.0.0.tgz#fd740a839786605d257117b899031db9b34b8b4b"
+  integrity sha512-ZDhdxqb+kE895BAvqIdGnWwfvB43h7KHMIcJC0hw7xLbbiJoprS+bqZxuGZ0jWdDxZEvB3jpnfgJyOn3lmsH+Q==
+
 psl@^1.1.24, psl@^1.1.28:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/psl/-/psl-1.7.0.tgz#f1c4c47a8ef97167dea5d6bbf4816d736e884a3c"
