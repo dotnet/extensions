@@ -13,6 +13,9 @@ export async function onDidTerminateDebugSession(
   logger: RazorLogger,
   targetPid: number | undefined,
 ) {
+  if (event.type !== 'pwa-chrome' && event.type !== 'pwa-msedge') {
+    return;
+  }
   if (!targetPid) {
     return;
   }
