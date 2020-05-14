@@ -17,10 +17,6 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
         const shellArgs = process.platform === 'win32' ? ['/c', 'chcp 65001 >NUL & dotnet run'] : ['run'];
         const spawnOptions = {
             cwd: configuration.cwd || (folder && folder.uri && folder.uri.fsPath),
-            env: {
-                ...process.env,
-                ASPNETCORE_ENVIRONMENT: 'Development',
-            },
         };
 
         const output = this.vscodeType.window.createTerminal({
