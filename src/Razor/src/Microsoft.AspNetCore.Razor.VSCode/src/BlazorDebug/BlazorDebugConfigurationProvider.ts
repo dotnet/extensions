@@ -3,11 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-// import { spawn } from 'child_process';
 import * as vscode from 'vscode';
 
 import { RazorLogger } from '../RazorLogger';
-import { onDidTerminateDebugSession } from './Events';
+import { onDidTerminateDebugSession } from './TerminateDebugHandler';
 
 export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
 
@@ -17,11 +16,10 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
         const shellPath = process.platform === 'win32' ? 'cmd.exe' : 'dotnet';
         const shellArgs = process.platform === 'win32' ? ['/c', 'chcp 65001 >NUL & dotnet run'] : ['run'];
         const spawnOptions = {
-            cwd: configuration.cwd || folder && folder.uri && folder.uri.fsPath,
+            cwd: configuration.cwd || (folder && folder.uri && folder.uri.fsPath),
             env: {
                 ...process.env,
                 ASPNETCORE_ENVIRONMENT: 'Development',
-                ...configuration.env,
             },
         };
 
@@ -41,7 +39,7 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             terminate.dispose();
         });
 
-        output.show();
+        output.show(/*preserveFocus*/true);
 
         const browser = {
             name: '.NET Core Debug Blazor Web Assembly in Browser',
@@ -54,8 +52,6 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             trace: configuration.trace || false,
             noDebug: configuration.noDebug || false,
         };
-
-        let showErrorInfo = false;
 
         try {
             /**
@@ -74,12 +70,13 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
                 '[DEBUGGER] Error when launching browser debugger: ',
                 error,
             );
-            showErrorInfo = true;
-        }
-
-        if (showErrorInfo) {
-            const message = `There was an unexpected error while launching your debugging session. Check the console for helpful logs and visit https://aka.ms/blazorwasmcodedebug for more info.`;
-            this.vscodeType.window.showErrorMessage(message);
+            const message = `There was an unexpected error while launching your debugging session. Check the console for helpful logs and visit the debugging docs for more info.`;
+            this.vscodeType.window.showErrorMessage(message, `View Debug Docs`, `Ignore`).then(async result => {
+                if (result === 'View Debug Docs') {
+                    const debugDocsUri = 'https://aka.ms/blazorwasmcodedebug';
+                    await this.vscodeType.commands.executeCommand(`vcode.open`, debugDocsUri);
+                }
+            });
         }
 
         /**

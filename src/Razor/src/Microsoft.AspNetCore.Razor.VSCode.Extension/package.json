@@ -71,12 +71,8 @@
                 "properties": {
                   "cwd": {
                     "type": "string",
-                    "description": "The directory of the Blazor WASM app, defaults to the workspace folder.",
+                    "description": "The directory of the Blazor WebAssembly app, defaults to the workspace folder.",
                     "default": "${workspaceFolder}"
-                  },
-                  "env": {
-                    "type": "object",
-                    "description": "Environment variables passed to dotnet"
                   },
                   "url": {
                     "type": "string",
@@ -93,7 +89,7 @@
                     "type": ["boolean", "string"],
                     "default": "true",
                     "enum": ["verbose", true],
-                    "description": "If true, verbose logs sent to log file. If 'verbose', send logs to console."
+                    "description": "If true, verbose logs from JS debugger are sent to log file. If 'verbose', send logs to console."
                   },
                   "webRoot": {
                     "type": "string",
