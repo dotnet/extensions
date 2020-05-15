@@ -242,6 +242,7 @@ stages:
             -configuration $(_BuildConfig)
             -prepareMachine
             /p:BuildVsix=true
+            /p:BuildProjectReferences=false
             $(_BuildArgs)
             $(_PublishArgs)
             $(_InternalRuntimeDownloadArgs)
