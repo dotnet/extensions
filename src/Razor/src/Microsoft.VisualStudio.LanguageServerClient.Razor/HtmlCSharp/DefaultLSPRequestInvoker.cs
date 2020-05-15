@@ -80,6 +80,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         private async Task<TOut> RequestServerCoreAsync<TIn, TOut>(MethodInfo lspPlatformMethod, string method, LanguageServerKind serverKind, TIn parameters, CancellationToken cancellationToken)
         {
+            if (lspPlatformMethod is null)
+            {
+                throw new ArgumentNullException(nameof(lspPlatformMethod));
+            }
+
             if (string.IsNullOrEmpty(method))
             {
                 throw new ArgumentException("message", nameof(method));

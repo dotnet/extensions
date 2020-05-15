@@ -5,9 +5,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.VisualStudio.Editor.Razor;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -15,10 +15,18 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     internal class OOPTagHelperResolver : TagHelperResolver
     {
+        private static readonly JsonSerializer _serializer;
+
         private readonly DefaultTagHelperResolver _defaultResolver;
         private readonly ProjectSnapshotProjectEngineFactory _factory;
         private readonly ErrorReporter _errorReporter;
         private readonly Workspace _workspace;
+
+        static OOPTagHelperResolver()
+        {
+            _serializer = new JsonSerializer();
+            _serializer.Converters.RegisterRazorConverters();
+        }
 
         public OOPTagHelperResolver(ProjectSnapshotProjectEngineFactory factory, ErrorReporter errorReporter, Workspace workspace)
         {
@@ -104,24 +112,28 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // This will change in the future to an easier to consume API but for VS RTM this is what we have.
             try
             {
-                var client = await RazorLanguageServiceClientFactory.CreateAsync(_workspace, CancellationToken.None).ConfigureAwait(false);
-                if (client != null)
-                {
-                    using (var session = await client.CreateSessionAsync(workspaceProject.Solution).ConfigureAwait(false))
-                    {
-                        if (session != null)
-                        {
-                            var args = new object[]
-                            {
-                                Serialize(projectSnapshot),
-                                factory == null ? null : factory.GetType().AssemblyQualifiedName,
-                            };
+                var remoteClient = await RazorRemoteHostClient.CreateAsync(_workspace, CancellationToken.None);
 
-                            var json = await session.InvokeAsync<JObject>("GetTagHelpersAsync", args, CancellationToken.None).ConfigureAwait(false);
-                            return Deserialize(json);
-                        }
-                    }
+                var args = new object[]
+                {
+                    JObject.FromObject(projectSnapshot, _serializer),
+                    factory == null ? null : factory.GetType().AssemblyQualifiedName,
+                };
+
+                var resolutionJObject = await remoteClient.TryRunRemoteAsync<JObject>(
+                    "GetTagHelpersAsync",
+                    workspaceProject.Solution,
+                    args,
+                    CancellationToken.None).ConfigureAwait(false);
+
+                if (!resolutionJObject.HasValue)
+                {
+                    return null;
                 }
+
+                var resolutionResult = resolutionJObject.Value.ToObject<TagHelperResolutionResult>(_serializer);
+
+                return resolutionResult;
             }
             catch (Exception ex)
             {
@@ -137,25 +149,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         protected virtual Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(Project project, ProjectSnapshot projectSnapshot)
         {
             return _defaultResolver.GetTagHelpersAsync(project, projectSnapshot);
-        }
-
-        private static JObject Serialize(ProjectSnapshot snapshot)
-        {
-            var serializer = new JsonSerializer();
-            serializer.Converters.RegisterRazorConverters();
-
-            return JObject.FromObject(snapshot, serializer);
-        }
-
-        private static TagHelperResolutionResult Deserialize(JObject jsonObject)
-        {
-            var serializer = new JsonSerializer();
-            serializer.Converters.RegisterRazorConverters();
-
-            using (var reader = jsonObject.CreateReader())
-            {
-                return serializer.Deserialize<TagHelperResolutionResult>(reader);
-            }
         }
     }
 }
