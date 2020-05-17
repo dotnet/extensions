@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
@@ -22,19 +21,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     internal class DefaultRazorFormattingService : RazorFormattingService
     {
+        private readonly IReadOnlyDictionary<string, IReadOnlyList<RazorFormatOnTypeProvider>> _formatOnTypeProviders;
         private readonly ILanguageServer _server;
         private readonly CSharpFormatter _csharpFormatter;
         private readonly HtmlFormatter _htmlFormatter;
-        private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
         private readonly ILogger _logger;
 
         private static readonly TextEdit[] EmptyArray = Array.Empty<TextEdit>();
 
         public DefaultRazorFormattingService(
+            IEnumerable<RazorFormatOnTypeProvider> formatOnTypeProviders,
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
             ILanguageServer server,
-            IOptionsMonitor<RazorLSPOptions> optionsMonitor,
             ILoggerFactory loggerFactory)
         {
             if (documentMappingService is null)
@@ -52,22 +51,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(server));
             }
 
-            if (optionsMonitor is null)
-            {
-                throw new ArgumentNullException(nameof(optionsMonitor));
-            }
-
             if (loggerFactory is null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            _formatOnTypeProviders = BuildFormatOnTypeProviderMappings(formatOnTypeProviders);
             _server = server;
             _csharpFormatter = new CSharpFormatter(documentMappingService, server, filePathNormalizer);
             _htmlFormatter = new HtmlFormatter(server, filePathNormalizer);
-            _optionsMonitor = optionsMonitor;
             _logger = loggerFactory.CreateLogger<DefaultRazorFormattingService>();
         }
+
+        public override IReadOnlyList<string> OnTypeTriggerHandlers => _formatOnTypeProviders.Keys.ToList();
 
         public override Task<TextEdit[]> FormatOnTypeAsync(Uri uri, RazorCodeDocument codeDocument, Position position, string character, FormattingOptions options)
         {
@@ -96,120 +92,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var edits = EmptyArray;
-            switch (character)
+            if (!_formatOnTypeProviders.TryGetValue(character, out var providers))
             {
-                case ">":
-                    edits = HandleCloseTextTag(uri, codeDocument, position, options);
-                    return Task.FromResult(edits);
-                case "*":
-                    edits = HandleRazorComment(uri, codeDocument, position, options);
-                    return Task.FromResult(edits);
-            }
-
-            return Task.FromResult(edits);
-        }
-
-        private TextEdit[] HandleRazorComment(Uri uri, RazorCodeDocument codeDocument, Position position, FormattingOptions options)
-        {
-            bool addCursorPlaceholder;
-            if (options.TryGetValue(LanguageServerConstants.ExpectsCursorPlaceholderKey, out var value) && value.IsBool)
-            {
-                addCursorPlaceholder = value.Bool;
-            }
-            else
-            {
-                // Temporary:
-                // no-op if cursor placeholder isn't supported. This means the request isn't coming from VS.
-                return EmptyArray;
+                // There's currently a bug in the LSP platform where other language clients OnTypeFormatting trigger characters influence every language clients trigger characters.
+                // To combat this we need to pre-emptively return so we don't try having our providers handle characters that they can't.
+                return Task.FromResult(EmptyArray);
             }
 
             var formattingContext = CreateFormattingContext(uri, codeDocument, new Range(position, position), options);
-            if (IsAtRazorCommentStart(formattingContext, position))
+            for (var i = 0; i < providers.Count; i++)
             {
-                // We've just typed a Razor comment start.
-                var cursorPlaceholder = addCursorPlaceholder ? LanguageServerConstants.CursorPlaceholderString : string.Empty;
-                var edit = new TextEdit()
+                if (providers[i].TryFormatOnType(position, formattingContext, out var textEdits))
                 {
-                    NewText = $" {cursorPlaceholder} *@",
-                    Range = new Range(position, position)
-                };
-                return new[] { edit };
+                    // We don't currently aggregate text edits from multiple providers because we're making the assumption that one set of text edits at a given position will probably
+                    // clash with any other ones that are generated from another provider.
+                    return Task.FromResult(textEdits);
+                }
             }
 
-            return EmptyArray;
-        }
-
-        private static bool IsAtRazorCommentStart(FormattingContext context, Position position)
-        {
-            var syntaxTree = context.CodeDocument.GetSyntaxTree();
-
-            var absoluteIndex = position.GetAbsoluteIndex(context.SourceText);
-            var change = new SourceChange(absoluteIndex, 0, string.Empty);
-            var owner = syntaxTree.Root.LocateOwner(change);
-
-            return owner != null &&
-                owner.Kind == SyntaxKind.RazorCommentStar &&
-                owner.Parent is RazorCommentBlockSyntax comment &&
-                owner.Position == comment.StartCommentStar.Position;
-        }
-
-        private TextEdit[] HandleCloseTextTag(Uri uri, RazorCodeDocument codeDocument, Position position, FormattingOptions options)
-        {
-            if (!_optionsMonitor.CurrentValue.AutoClosingTags)
-            {
-                // We currently only support auto-closing tags our onType formatter.
-                return EmptyArray;
-            }
-
-            bool addCursorPlaceholder;
-            if (options.TryGetValue(LanguageServerConstants.ExpectsCursorPlaceholderKey, out var value) && value.IsBool)
-            {
-                addCursorPlaceholder = value.Bool;
-            }
-            else
-            {
-                // Temporary:
-                // no-op if cursor placeholder isn't supported. This means the request isn't coming from VS.
-                // Can remove this once VSCode starts using this endpoint for auto closing <text> tags.
-                return EmptyArray;
-            }
-
-            var formattingContext = CreateFormattingContext(uri, codeDocument, new Range(position, position), options);
-            if (IsAtTextTag(formattingContext, position))
-            {
-                // This is a text tag.
-                var cursorPlaceholder = addCursorPlaceholder ? LanguageServerConstants.CursorPlaceholderString : string.Empty;
-                var edit = new TextEdit()
-                {
-                    NewText = $"{cursorPlaceholder}</{SyntaxConstants.TextTagName}>",
-                    Range = new Range(position, position)
-                };
-                return new[] { edit };
-            }
-
-            return EmptyArray;
-        }
-
-        private static bool IsAtTextTag(FormattingContext context, Position position)
-        {
-            var syntaxTree = context.CodeDocument.GetSyntaxTree();
-
-            var absoluteIndex = position.GetAbsoluteIndex(context.SourceText) - 1;
-            var change = new SourceChange(absoluteIndex, 0, string.Empty);
-            var owner = syntaxTree.Root.LocateOwner(change);
-            if (owner?.Parent != null &&
-                owner.Parent is MarkupStartTagSyntax startTag &&
-                startTag.IsMarkupTransition &&
-                startTag.Parent is MarkupElementSyntax element &&
-                element.EndTag == null) // Make sure the end </text> tag doesn't already exist
-            {
-                Debug.Assert(string.Equals(startTag.Name.Content, SyntaxConstants.TextTagName, StringComparison.Ordinal), "MarkupTransition that is not a <text> tag.");
-
-                return true;
-            }
-
-            return false;
+            // No provider could handle the text edit.
+            return Task.FromResult(EmptyArray);
         }
 
         public override async Task<TextEdit[]> FormatAsync(Uri uri, RazorCodeDocument codeDocument, Range range, FormattingOptions options)
@@ -607,7 +509,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return indentation;
         }
 
-        private static FormattingContext CreateFormattingContext(Uri uri, RazorCodeDocument codedocument, Range range, FormattingOptions options)
+        // Internal for testing
+        internal static FormattingContext CreateFormattingContext(Uri uri, RazorCodeDocument codedocument, Range range, FormattingOptions options)
         {
             var result = new FormattingContext()
             {
@@ -695,6 +598,33 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             return false;
+        }
+
+        private static IReadOnlyDictionary<string, IReadOnlyList<RazorFormatOnTypeProvider>> BuildFormatOnTypeProviderMappings(IEnumerable<RazorFormatOnTypeProvider> formatOnTypeProviders)
+        {
+            if (formatOnTypeProviders is null)
+            {
+                throw new ArgumentNullException(nameof(formatOnTypeProviders));
+            }
+
+            var mappings = new Dictionary<string, IReadOnlyList<RazorFormatOnTypeProvider>>(StringComparer.Ordinal);
+            foreach (var provider in formatOnTypeProviders)
+            {
+                List<RazorFormatOnTypeProvider> mappedProviders;
+                if (mappings.TryGetValue(provider.TriggerCharacter, out var readOnlyMappedProviders))
+                {
+                    mappedProviders = (List<RazorFormatOnTypeProvider>)readOnlyMappedProviders;
+                }
+                else
+                {
+                    mappedProviders = new List<RazorFormatOnTypeProvider>();
+                    mappings[provider.TriggerCharacter] = mappedProviders;
+                }
+
+                mappedProviders.Add(provider);
+            }
+
+            return mappings;
         }
     }
 }

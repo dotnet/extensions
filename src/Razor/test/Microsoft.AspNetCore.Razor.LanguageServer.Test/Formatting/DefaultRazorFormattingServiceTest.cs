@@ -1,14 +1,23 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.Test.Common;
+using Microsoft.CodeAnalysis.Text;
+using Moq;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Xunit;
+using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    public class DefaultRazorFormattingServiceTest : FormattingTestBase
+    public class DefaultRazorFormattingServiceTest : LanguageServerTestBase
     {
         [Fact]
         public async Task FormatsCodeBlockDirective()
@@ -520,102 +529,188 @@ tabSize: 12);
         }
 
         [Fact]
-        public async Task OnTypeCloseAngle_ClosesTextTag()
+        public async Task FormatOnTypeAsync_SingleProvider_Success()
         {
+            var provider = new TestOnTypeProvider(triggerCharacter: ">", insertText: "Test", returnValue: true);
             await RunFormatOnTypeTestAsync(
-input: @"
-@{
-    <text|
-}
-",
-expected: $@"
-@{{
-    <text>{LanguageServerConstants.CursorPlaceholderString}</text>
-}}
-",
+                new[] { provider },
+input: "Hello World|",
+expected: "TestHello World>",
 character: ">");
         }
 
         [Fact]
-        public async Task OnTypeCloseAngle_ClosesTextTag_DoesNotReturnPlaceholder()
+        public async Task FormatOnTypeAsync_MultipleProvider_SameTrigger_UsesSuccessfull()
         {
+            var unsuccessfulProvider = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected", returnValue: false);
+            var successfulProvider = new TestOnTypeProvider(triggerCharacter: ">", insertText: "expected", returnValue: true);
             await RunFormatOnTypeTestAsync(
-input: @"
-@{
-    <text|
-}
-",
-expected: @"
-@{
-    <text></text>
-}
-",
-character: ">", expectCursorPlaceholder: false);
-        }
-
-        [Fact]
-        public async Task OnTypeCloseAngle_OutsideRazorBlock_DoesNotCloseTextTag()
-        {
-            await RunFormatOnTypeTestAsync(
-input: @"
-    <text|
-",
-expected: $@"
-    <text>
-",
+                new[] { unsuccessfulProvider, successfulProvider },
+input: "Hello World|",
+expected: "expectedHello World>",
 character: ">");
         }
 
         [Fact]
-        public async Task OnTypeStar_ClosesRazorComment()
+        public async Task FormatOnTypeAsync_MultipleProvider_SameTrigger_UsesFirstSuccessfull()
         {
+            var provider1 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "expected", returnValue: true);
+            var provider2 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected", returnValue: true);
             await RunFormatOnTypeTestAsync(
-input: @"
-@|
-",
-expected: $@"
-@* {LanguageServerConstants.CursorPlaceholderString} *@
-",
-character: "*");
+                new[] { provider1, provider2 },
+input: "Hello World|",
+expected: "expectedHello World>",
+character: ">");
         }
 
         [Fact]
-        public async Task OnTypeStar_InsideRazorComment_Noops()
+        public async Task FormatOnTypeAsync_NoSuccessfull()
         {
+            var provider1 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected1", returnValue: false);
+            var provider2 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected2", returnValue: false);
             await RunFormatOnTypeTestAsync(
-input: @"
-@* @| *@
-",
-expected: $@"
-@* @* *@
-",
-character: "*");
+                new[] { provider1, provider2 },
+input: "Hello World|",
+expected: "Hello World>",
+character: ">");
         }
 
         [Fact]
-        public async Task OnTypeStar_EndRazorComment_Noops()
+        public async Task FormatOnTypeAsync_IgnoresUnmatchedTriggerCharacter()
         {
+            var provider1 = new TestOnTypeProvider(triggerCharacter: "!", insertText: "unexpected", returnValue: true);
+            var provider2 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "expected", returnValue: true);
             await RunFormatOnTypeTestAsync(
-input: @"
-@* Hello |@
-",
-expected: $@"
-@* Hello *@
-",
-character: "*");
+                new[] { provider1, provider2 },
+input: "Hello World|",
+expected: "expectedHello World>",
+character: ">");
         }
 
-        [Fact]
-        public async Task OnTypeStar_BeforeText_ClosesRazorComment()
+        private async Task RunFormattingTestAsync(string input, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = default)
         {
-            await RunFormatOnTypeTestAsync(
-input: @"
-@| Hello
-",
-expected: $@"
-@* {LanguageServerConstants.CursorPlaceholderString} *@ Hello
-",
-character: "*");
+            // Arrange
+            var start = input.IndexOf('|');
+            var end = input.LastIndexOf('|');
+            input = input.Replace("|", string.Empty);
+
+            var source = SourceText.From(input);
+            var span = TextSpan.FromBounds(start, end - 1);
+            var range = span.AsRange(source);
+
+            var path = "file:///path/to/document.razor";
+            var uri = new Uri(path);
+            var codeDocument = CreateCodeDocument(source, uri.AbsolutePath, fileKind: fileKind);
+            var options = new FormattingOptions()
+            {
+                TabSize = tabSize,
+                InsertSpaces = insertSpaces,
+            };
+
+            var formattingService = CreateFormattingService(codeDocument);
+
+            // Act
+            var edits = await formattingService.FormatAsync(uri, codeDocument, range, options);
+
+            // Assert
+            var edited = ApplyEdits(source, edits);
+            var actual = edited.ToString();
+            Assert.Equal(expected, actual);
+        }
+
+        private async Task RunFormatOnTypeTestAsync(RazorFormatOnTypeProvider[] providers, string input, string expected, string character, bool expectCursorPlaceholder = true, int tabSize = 4, bool insertSpaces = true, string fileKind = default)
+        {
+            // Arrange
+            var location = input.IndexOf('|') + character.Length;
+            input = input.Replace("|", character);
+
+            var source = SourceText.From(input);
+            source.GetLineAndOffset(location, out var line, out var column);
+            var position = new Position(line, column);
+
+            var path = "file:///path/to/document.razor";
+            var uri = new Uri(path);
+            var codeDocument = CreateCodeDocument(source, uri.AbsolutePath, fileKind: fileKind);
+            var options = new FormattingOptions()
+            {
+                TabSize = tabSize,
+                InsertSpaces = insertSpaces,
+            };
+            options[LanguageServerConstants.ExpectsCursorPlaceholderKey] = expectCursorPlaceholder;
+
+            var formattingService = CreateFormattingService(codeDocument, providers);
+
+            // Act
+            var edits = await formattingService.FormatOnTypeAsync(uri, codeDocument, position, character, options);
+
+            // Assert
+            var edited = ApplyEdits(source, edits);
+            var actual = edited.ToString();
+            Assert.Equal(expected, actual);
+        }
+
+        private RazorFormattingService CreateFormattingService(RazorCodeDocument codeDocument, RazorFormatOnTypeProvider[] onTypeProviders = null)
+        {
+            var mappingService = new DefaultRazorDocumentMappingService();
+            var filePathNormalizer = new FilePathNormalizer();
+
+            var client = new FormattingLanguageServerClient();
+            client.AddCodeDocument(codeDocument);
+            var languageServer = Mock.Of<ILanguageServer>(ls => ls.Client == client);
+
+            onTypeProviders ??= Array.Empty<RazorFormatOnTypeProvider>();
+
+            return new DefaultRazorFormattingService(onTypeProviders, mappingService, filePathNormalizer, languageServer, LoggerFactory);
+        }
+
+        private SourceText ApplyEdits(SourceText source, TextEdit[] edits)
+        {
+            var changes = edits.Select(e => e.AsTextChange(source));
+            return source.WithChanges(changes);
+        }
+
+        private static RazorCodeDocument CreateCodeDocument(SourceText text, string path, IReadOnlyList<TagHelperDescriptor> tagHelpers = null, string fileKind = default)
+        {
+            fileKind ??= FileKinds.Component;
+            tagHelpers ??= Array.Empty<TagHelperDescriptor>();
+            var sourceDocument = text.GetRazorSourceDocument(path, path);
+            var projectEngine = RazorProjectEngine.Create(builder => { });
+            var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), tagHelpers);
+            return codeDocument;
+        }
+
+        private class TestOnTypeProvider : RazorFormatOnTypeProvider
+        {
+            private readonly string _insertText;
+            private readonly bool _returnValue;
+
+            public TestOnTypeProvider(string triggerCharacter, string insertText, bool returnValue)
+            {
+                TriggerCharacter = triggerCharacter;
+                _insertText = insertText;
+                _returnValue = returnValue;
+            }
+
+            public override string TriggerCharacter { get; }
+
+            public override bool TryFormatOnType(Position position, FormattingContext context, out TextEdit[] edits)
+            {
+                if (!_returnValue)
+                {
+                    edits = null;
+                    return false;
+                }
+
+                edits = new[]
+                {
+                    new TextEdit()
+                    {
+                        NewText = _insertText,
+                        Range = new Range(new Position(0, 0), new Position(0, 0))
+                    }
+                };
+                return _returnValue;
+            }
         }
     }
 }

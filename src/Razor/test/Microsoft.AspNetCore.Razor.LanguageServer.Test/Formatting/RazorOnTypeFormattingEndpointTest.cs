@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -142,6 +143,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private class TestRazorFormattingService : RazorFormattingService
         {
             public bool Called { get; private set; }
+
+            public override IReadOnlyList<string> OnTypeTriggerHandlers => Array.Empty<string>();
 
             public override Task<TextEdit[]> FormatAsync(Uri uri, RazorCodeDocument codeDocument, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range, FormattingOptions options)
             {

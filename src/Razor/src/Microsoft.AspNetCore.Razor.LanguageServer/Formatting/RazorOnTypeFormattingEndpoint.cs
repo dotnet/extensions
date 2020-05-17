@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -57,12 +58,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public DocumentOnTypeFormattingRegistrationOptions GetRegistrationOptions()
         {
-            return new DocumentOnTypeFormattingRegistrationOptions()
+            var registrationOptions = new DocumentOnTypeFormattingRegistrationOptions()
             {
                 DocumentSelector = RazorDefaults.Selector,
-                FirstTriggerCharacter = ">",
-                MoreTriggerCharacter = new[] { "*" }
             };
+
+            if (_razorFormattingService.OnTypeTriggerHandlers.Count == 0)
+            {
+                return registrationOptions;
+            }
+
+            var firstTriggerCharacter = _razorFormattingService.OnTypeTriggerHandlers[0];
+            registrationOptions.FirstTriggerCharacter = firstTriggerCharacter;
+
+            var moreTriggerCharacters = _razorFormattingService.OnTypeTriggerHandlers.Skip(1).ToArray();
+            registrationOptions.MoreTriggerCharacter = moreTriggerCharacters;
+
+            return registrationOptions;
         }
 
         public async Task<TextEditContainer> Handle(DocumentOnTypeFormattingParams request, CancellationToken cancellationToken)
