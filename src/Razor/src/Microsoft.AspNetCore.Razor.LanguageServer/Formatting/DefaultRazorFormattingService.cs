@@ -21,7 +21,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     internal class DefaultRazorFormattingService : RazorFormattingService
     {
-        private readonly IReadOnlyDictionary<string, IReadOnlyList<RazorFormatOnTypeProvider>> _formatOnTypeProviders;
+        private readonly IReadOnlyList<RazorFormatOnTypeProvider> _formatOnTypeProviders;
+        private readonly IReadOnlyList<string> _formatOnTypeTriggerCharacters;
         private readonly ILanguageServer _server;
         private readonly CSharpFormatter _csharpFormatter;
         private readonly HtmlFormatter _htmlFormatter;
@@ -56,14 +57,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _formatOnTypeProviders = BuildFormatOnTypeProviderMappings(formatOnTypeProviders);
+            _formatOnTypeProviders = formatOnTypeProviders.ToList();
+            _formatOnTypeTriggerCharacters = _formatOnTypeProviders.Select(provider => provider.TriggerCharacter).ToList();
             _server = server;
             _csharpFormatter = new CSharpFormatter(documentMappingService, server, filePathNormalizer);
             _htmlFormatter = new HtmlFormatter(server, filePathNormalizer);
             _logger = loggerFactory.CreateLogger<DefaultRazorFormattingService>();
         }
 
-        public override IReadOnlyList<string> OnTypeTriggerHandlers => _formatOnTypeProviders.Keys.ToList();
+        public override IReadOnlyList<string> OnTypeTriggerHandlers => _formatOnTypeTriggerCharacters;
 
         public override Task<TextEdit[]> FormatOnTypeAsync(Uri uri, RazorCodeDocument codeDocument, Position position, string character, FormattingOptions options)
         {
@@ -92,7 +94,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (!_formatOnTypeProviders.TryGetValue(character, out var providers))
+            var applicableProviders = new List<RazorFormatOnTypeProvider>();
+            for (var i = 0; i < _formatOnTypeProviders.Count; i++)
+            {
+                var formatOnTypeProvider = _formatOnTypeProviders[i];
+                if (formatOnTypeProvider.TriggerCharacter == character)
+                {
+                    applicableProviders.Add(formatOnTypeProvider);
+                }
+            }
+
+            if (applicableProviders.Count == 0)
             {
                 // There's currently a bug in the LSP platform where other language clients OnTypeFormatting trigger characters influence every language clients trigger characters.
                 // To combat this we need to pre-emptively return so we don't try having our providers handle characters that they can't.
@@ -100,9 +112,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             var formattingContext = CreateFormattingContext(uri, codeDocument, new Range(position, position), options);
-            for (var i = 0; i < providers.Count; i++)
+            for (var i = 0; i < applicableProviders.Count; i++)
             {
-                if (providers[i].TryFormatOnType(position, formattingContext, out var textEdits))
+                if (applicableProviders[i].TryFormatOnType(position, formattingContext, out var textEdits))
                 {
                     // We don't currently aggregate text edits from multiple providers because we're making the assumption that one set of text edits at a given position will probably
                     // clash with any other ones that are generated from another provider.
@@ -598,33 +610,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             return false;
-        }
-
-        private static IReadOnlyDictionary<string, IReadOnlyList<RazorFormatOnTypeProvider>> BuildFormatOnTypeProviderMappings(IEnumerable<RazorFormatOnTypeProvider> formatOnTypeProviders)
-        {
-            if (formatOnTypeProviders is null)
-            {
-                throw new ArgumentNullException(nameof(formatOnTypeProviders));
-            }
-
-            var mappings = new Dictionary<string, IReadOnlyList<RazorFormatOnTypeProvider>>(StringComparer.Ordinal);
-            foreach (var provider in formatOnTypeProviders)
-            {
-                List<RazorFormatOnTypeProvider> mappedProviders;
-                if (mappings.TryGetValue(provider.TriggerCharacter, out var readOnlyMappedProviders))
-                {
-                    mappedProviders = (List<RazorFormatOnTypeProvider>)readOnlyMappedProviders;
-                }
-                else
-                {
-                    mappedProviders = new List<RazorFormatOnTypeProvider>();
-                    mappings[provider.TriggerCharacter] = mappedProviders;
-                }
-
-                mappedProviders.Add(provider);
-            }
-
-            return mappings;
         }
     }
 }

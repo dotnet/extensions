@@ -540,7 +540,7 @@ character: ">");
         }
 
         [Fact]
-        public async Task FormatOnTypeAsync_MultipleProvider_SameTrigger_UsesSuccessfull()
+        public async Task FormatOnTypeAsync_MultipleProvider_SameTrigger_UsesSuccessful()
         {
             var unsuccessfulProvider = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected", returnValue: false);
             var successfulProvider = new TestOnTypeProvider(triggerCharacter: ">", insertText: "expected", returnValue: true);
@@ -552,7 +552,7 @@ character: ">");
         }
 
         [Fact]
-        public async Task FormatOnTypeAsync_MultipleProvider_SameTrigger_UsesFirstSuccessfull()
+        public async Task FormatOnTypeAsync_MultipleProvider_SameTrigger_UsesFirstSuccessful()
         {
             var provider1 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "expected", returnValue: true);
             var provider2 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected", returnValue: true);
@@ -564,7 +564,7 @@ character: ">");
         }
 
         [Fact]
-        public async Task FormatOnTypeAsync_NoSuccessfull()
+        public async Task FormatOnTypeAsync_NoSuccessful()
         {
             var provider1 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected1", returnValue: false);
             var provider2 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected2", returnValue: false);
