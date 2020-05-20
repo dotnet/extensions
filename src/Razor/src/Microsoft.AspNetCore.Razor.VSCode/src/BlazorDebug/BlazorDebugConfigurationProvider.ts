@@ -6,6 +6,7 @@
 import * as vscode from 'vscode';
 
 import { RazorLogger } from '../RazorLogger';
+import { HOSTED_APP_NAME, JS_DEBUG_NAME } from './Constants';
 import { onDidTerminateDebugSession } from './TerminateDebugHandler';
 
 export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
@@ -13,32 +14,70 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
     constructor(private readonly logger: RazorLogger, private readonly vscodeType: typeof vscode) { }
 
     public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration): Promise<vscode.DebugConfiguration | undefined> {
-        const shellPath = process.platform === 'win32' ? 'cmd.exe' : 'dotnet';
-        const shellArgs = process.platform === 'win32' ? ['/c', 'chcp 65001 >NUL & dotnet run'] : ['run'];
-        const spawnOptions = {
-            cwd: configuration.cwd || (folder && folder.uri && folder.uri.fsPath),
-        };
-
-        const output = this.vscodeType.window.createTerminal({
-          name: 'Blazor WebAssembly App',
-          shellPath,
-          shellArgs,
-          ...spawnOptions,
-        });
-
         /**
-         * On non-Windows platforms, we need to terminate the Blazor
-         * dev server and its child processes.
+         * If the user is debugging a hosted Blazor WebAssembly application,
+         * then the application server needs to be launched via VS Code's debug
+         * workflow to allow debugging on the server-side logic. If the app is
+         * not hosted, then it can be spun as a standalone process to avoid additional overhead.
          */
-        const terminate = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
-            await onDidTerminateDebugSession(event, this.logger, await output.processId);
-            terminate.dispose();
-        });
+        if (configuration.hosted) {
+            if (!configuration.program && !configuration.cwd) {
+                const message = `Must provide 'program' and 'cwd' properties in launch configuration for hosted Blazor WebAssembly apps.`;
+                this.vscodeType.window.showErrorMessage(message);
+            }
 
-        output.show(/*preserveFocus*/true);
+            const app = {
+                name: HOSTED_APP_NAME,
+                type: 'coreclr',
+                request: 'launch',
+                preLaunchTask: 'build',
+                program: configuration.program,
+                args: [],
+                cwd: configuration.cwd,
+                env: {
+                    ...configuration.env,
+                },
+            };
+
+            this.vscodeType.debug.startDebugging(folder, app).then((appStartFulfilled: boolean) => {
+                this.logger.logVerbose('[DEBUGGER] Launching hosted Blazor WebAssembly app...');
+                if (process.platform !== 'win32') {
+                    const terminate = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
+                        await onDidTerminateDebugSession(event, this.logger, /*targetPid*/undefined, /*hosted*/app.program);
+                        terminate.dispose();
+                    });
+                }
+            }, (error: Error) => {
+                this.logger.logError('[DEBUGGER] Error when launching application: ', error);
+            });
+        } else {
+            const shellPath = process.platform === 'win32' ? 'cmd.exe' : 'dotnet';
+            const shellArgs = process.platform === 'win32' ? ['/c', 'chcp 65001 >NUL & dotnet run'] : ['run'];
+            const spawnOptions = {
+                cwd: configuration.cwd || (folder && folder.uri && folder.uri.fsPath),
+            };
+
+            const output = this.vscodeType.window.createTerminal({
+              name: 'Blazor WebAssembly App',
+              shellPath,
+              shellArgs,
+              ...spawnOptions,
+            });
+
+            /**
+             * We need to terminate the Blazor
+             * dev server and its child processes.
+             */
+            const terminate = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
+                await onDidTerminateDebugSession(event, this.logger, await output.processId);
+                terminate.dispose();
+            });
+
+            output.show(/*preserveFocus*/true);
+        }
 
         const browser = {
-            name: '.NET Core Debug Blazor Web Assembly in Browser',
+            name: JS_DEBUG_NAME,
             type: configuration.browser === 'edge' ? 'pwa-msedge' : 'pwa-chrome',
             request: 'launch',
             timeout: configuration.timeout || 30000,
