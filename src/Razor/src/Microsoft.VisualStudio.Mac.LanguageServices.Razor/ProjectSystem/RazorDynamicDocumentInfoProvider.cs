@@ -18,14 +18,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     [System.Composition.Shared]
     [ExportMetadata("Extensions", new string[] { "cshtml", "razor", })]
     [Export(typeof(IDynamicDocumentInfoProvider))]
-    internal class DefaultRazorDynamicDocumentInfoProvider : IDynamicDocumentInfoProvider
+    internal class RazorDynamicDocumentInfoProvider : IDynamicDocumentInfoProvider
     {
         private readonly ConcurrentDictionary<Key, Entry> _entries;
         private readonly VisualStudioMacDocumentInfoFactory _documentInfoFactory;
         private readonly IRazorDynamicFileInfoProvider _dynamicFileInfoProvider;
 
         [ImportingConstructor]
-        public DefaultRazorDynamicDocumentInfoProvider(
+        public RazorDynamicDocumentInfoProvider(
             VisualStudioMacDocumentInfoFactory documentInfoFactory,
             IRazorDynamicFileInfoProvider dynamicFileInfoProvider)
         {
