@@ -8,7 +8,7 @@
   "description": "VS Code library for Razor language support.",
   "devDependencies": {
     "@types/node": "^10.9.4",
-    "@types/vscode": "1.31.0",
+    "@types/vscode": "1.45.1",
     "js-yaml": ">=3.13.1",
     "rimraf": "2.6.3",
     "tslint": "^5.11.0",
@@ -22,7 +22,7 @@
   "main": "./dist/extension.js",
   "types": "./dist/extension.d.ts",
   "engines": {
-    "vscode": "1.31.0"
+    "vscode": "1.45.1"
   },
   "scripts": {
     "clean": "rimraf out && rimraf dist",

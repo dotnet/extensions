@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 {
     internal class RazorSemanticTokenEndpoint : ISemanticTokenHandler
     {
-        private SemanticTokenCapability _capability;
+        private SemanticTokensCapability _capability;
         private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return tokens;
         }
 
-        public void SetCapability(SemanticTokenCapability capability)
+        public void SetCapability(SemanticTokensCapability capability)
         {
             _capability = capability;
         }

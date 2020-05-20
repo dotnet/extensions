@@ -64,7 +64,7 @@ export class RazorCompletionItemProvider
                         (range as any).replacing = new vscode.Range(replacingRangeStart, replacingRangeEnd);
                     }
 
-                    if (range.start && range.end) {
+                    if (range instanceof vscode.Range &&  range.start && range.end) {
                         const rangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, range.start);
                         const rangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, range.end);
                         completionItem.range = new vscode.Range(rangeStart, rangeEnd);

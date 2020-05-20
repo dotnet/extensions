@@ -37,6 +37,7 @@ import { RazorLogger } from './RazorLogger';
 import { RazorReferenceProvider } from './RazorReferenceProvider';
 import { RazorRenameProvider } from './RazorRenameProvider';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
+import { RazorDocumentSemanticTokensProvider } from './Semantic/RazorDocumentSemanticTokensProvider';
 import { TelemetryReporter } from './TelemetryReporter';
 
 // We specifically need to take a reference to a particular instance of the vscode namespace,
@@ -125,6 +126,15 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 documentManager,
                 languageServiceClient,
                 logger);
+            const legend = await languageServiceClient.getSemanticTokenLegend();
+            const semanticTokenProvider = new RazorDocumentSemanticTokensProvider(
+              documentSynchronizer,
+              documentManager,
+              languageServiceClient,
+              logger);
+            if (legend) {
+                localRegistrations.push(vscodeType.languages.registerDocumentSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
+            }
 
             localRegistrations.push(
                 languageConfiguration.register(),
@@ -166,11 +176,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 listenToConfigurationChanges(languageServerClient));
 
             if (enableProposedApis) {
-                const proposedApisFeature = new ProposedApisFeature(
-                    documentSynchronizer,
-                    documentManager,
-                    languageServiceClient,
-                    logger);
+                const proposedApisFeature = new ProposedApisFeature();
 
                 await proposedApisFeature.register(vscodeType, localRegistrations);
             }

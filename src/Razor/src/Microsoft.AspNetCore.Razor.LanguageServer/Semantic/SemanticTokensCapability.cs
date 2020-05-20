@@ -5,7 +5,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 {
-    public class SemanticTokenCapability : DynamicCapability
+    public class SemanticTokensCapability : DynamicCapability
     {
     }
 }

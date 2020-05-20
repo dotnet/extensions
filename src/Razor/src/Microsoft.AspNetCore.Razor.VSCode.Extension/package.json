@@ -7,10 +7,9 @@
     "defaults": {
         "razor": "0.0.1"
     },
-    "enableProposedApi": true,
     "publisher": "ms-dotnettools",
     "engines": {
-        "vscode": "^1.31.0"
+        "vscode": "^1.45.1"
     },
     "categories": [
         "Other"
@@ -130,77 +129,26 @@
             "description": "A Razor TagHelper Attribute"
           },
           {
-            "id": "razorTagHelperTransition",
-            "description": "A Razor TagHelper transition"
+            "id": "razorTransition",
+            "description": "A Razor transition"
           },
           {
-            "id": "razorTagHelperColon",
+            "id": "razorDirectiveAttribute",
+            "description": "A Razor Directive Attribute"
+          },
+          {
+            "id": "razorDirectiveColon",
             "description": "A colon between directive attribute parameters"
           }
         ],
-        "semanticTokenStyleDefaults": [
+        "semanticTokenScopes": [
           {
-            "selector": "razorTagHelperElement",
-            "scope": [ "razor.taghelpers.element" ],
-            "light": {
-              "foreground": "#800080",
-              "fontStyle": "bold"
-            },
-            "dark": {
-              "foreground": "#009696",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "selector": "razorTagHelperAttribute",
-            "scope": [ "razor.taghelpers.attribute" ],
-            "light": {
-              "foreground": "#800080",
-              "fontStyle": "bold"
-            },
-            "dark": {
-              "foreground": "#009696",
-              "fontStyle": "bold"
-            }
-          },
-          {
-            "selector": "razorTagHelperColon",
-            "scope": [ "razor.taghelper.colon"],
-            "light": {
-              "foreground": "#C586C0"
-            },
-            "dark": {
-              "foreground": "#C586C0"
-            }
-          },
-          {
-            "selector": "razorTransition",
-            "scope": [ "razor.transition"],
-            "light": {
-              "foreground": "#C586C0"
-            },
-            "dark": {
-              "foreground": "#C586C0"
-            }
-          },
-          {
-            "selector": "razorDirectiveAttribute",
-            "scope": [ "razor.directive.attribute"],
-            "light": {
-              "foreground": "#C586C0"
-            },
-            "dark": {
-              "foreground": "#C586C0"
-            }
-          },
-          {
-            "selector": "razorDirectiveAttributeParameter",
-            "scope": [ "razor.directive.parameter"],
-            "light": {
-              "foreground": "#C586C0"
-            },
-            "dark": {
-              "foreground": "#C586C0"
+            "scopes": {
+              "razorTagHelperElement": [ "entity.name.class.element.taghelper" ],
+              "razorTagHelperAttribute": [ "entity.name.class.attribute.taghelper" ],
+              "razorTransition": [ "keyword.control.razor.transition" ],
+              "razorDirectiveAttribute": [ "keyword.control.razor.directive.attribute", "keyword.control.cshtml.directive.attribute" ],
+              "razorDirectiveColon": [ "keyword.control.razor.directive.colon", "keyword.control.cshtml.directive.colon" ]
             }
           }
         ],
@@ -316,7 +264,7 @@
     },
     "devDependencies": {
         "@types/node": "9.4.7",
-        "@types/vscode": "1.31.0",
+        "@types/vscode": "1.45.1",
         "cross-env": "^5.2.0",
         "js-yaml": ">=3.13.1",
         "rimraf": "2.6.3",

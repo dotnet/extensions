@@ -3,7 +3,7 @@
     "private": true,
     "displayName": "Razor Functional Tests",
     "engines": {
-        "vscode": "^1.30.0"
+        "vscode": "1.45.1"
     },
     "scripts": {
         "vscode:prepublish": "yarn run compile",
@@ -18,7 +18,7 @@
         "@types/mocha": "^5.2.6",
         "@types/node": "^9.4.7",
         "@types/rimraf": "2.0.2",
-        "@types/vscode": "^1.30.0",
+        "@types/vscode": "1.45.1",
         "glob": "^7.1.4",
         "mocha": "^6.1.4",
         "rimraf": "2.6.3",

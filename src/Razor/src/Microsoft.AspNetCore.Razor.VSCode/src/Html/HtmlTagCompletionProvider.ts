@@ -58,7 +58,7 @@ export class HtmlTagCompletionProvider {
 
     private async onDidChangeTextDocument(
         document: vscode.TextDocument,
-        changes: vscode.TextDocumentContentChangeEvent[]) {
+        changes: ReadonlyArray<vscode.TextDocumentContentChangeEvent>) {
         if (!this.enabled) {
             return;
         }

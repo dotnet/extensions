@@ -55,6 +55,12 @@ export function createTestVSCodeApi(): TestVSCodeApi {
             match: (selector: vscode.DocumentSelector, document: vscode.TextDocument) => {
                 throw new Error('Not Implemented');
             },
+            registerDocumentSemanticTokensProvider: (selector: vscode.DocumentSelector, provider: vscode.DocumentSemanticTokensProvider, legend: vscode.SemanticTokensLegend) => {
+                throw new Error('Not Implemented');
+            },
+            registerDocumentRangeSemanticTokensProvider: (selector: vscode.DocumentSelector, provider: vscode.DocumentRangeSemanticTokensProvider, legend: vscode.SemanticTokensLegend) => {
+                throw new Error('Not Implemented');
+            },
         },
         window: {
             activeTextEditor: undefined,
