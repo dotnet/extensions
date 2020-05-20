@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [ClientName(ClientName)]
     [Export(typeof(ILanguageClient))]
-    [ContentType(RazorLSPContentTypeDefinition.Name)]
+    [ContentType(RazorLSPConstants.RazorLSPContentTypeName)]
     internal class RazorLanguageServerClient : ILanguageClient, ILanguageClientCustomMessage2
     {
         // ClientName enables us to turn on-off the ILanguageClient functionality for specific TextBuffers of content type RazorLSPContentTypeDefinition.Name.

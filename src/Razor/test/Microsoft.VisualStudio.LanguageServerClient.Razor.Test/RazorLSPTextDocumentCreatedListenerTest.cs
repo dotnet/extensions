@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         public RazorLSPTextDocumentCreatedListenerTest()
         {
-            RazorContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(RazorLSPContentTypeDefinition.Name) == true);
+            RazorContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName) == true);
             UnavailableFeatureDetector = Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsLSPEditorAvailable(It.IsAny<string>(), null) == false);
         }
 
@@ -230,7 +230,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             LSPEditorFeatureDetector lspEditorFeatureDetector = null)
         {
             var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>();
-            var contentTypeRegistry = Mock.Of<IContentTypeRegistryService>(registry => registry.GetContentType(RazorLSPContentTypeDefinition.Name) == RazorContentType);
+            var contentTypeRegistry = Mock.Of<IContentTypeRegistryService>(registry => registry.GetContentType(RazorLSPConstants.RazorLSPContentTypeName) == RazorContentType);
 
             lspDocumentManager ??= Mock.Of<TrackingLSPDocumentManager>();
             lspEditorFeatureDetector ??= Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsLSPEditorAvailable(It.IsAny<string>(), null) == true);

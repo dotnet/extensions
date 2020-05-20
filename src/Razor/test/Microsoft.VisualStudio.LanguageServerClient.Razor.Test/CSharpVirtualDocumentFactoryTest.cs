@@ -15,14 +15,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             var csharpContentType = Mock.Of<IContentType>();
             ContentTypeRegistry = Mock.Of<IContentTypeRegistryService>(
-                registry => registry.GetContentType(CSharpVirtualDocumentFactory.CSharpLSPContentTypeName) == csharpContentType);
+                registry => registry.GetContentType(RazorLSPConstants.CSharpLSPContentTypeName) == csharpContentType);
             var textBufferFactory = new Mock<ITextBufferFactoryService>();
             textBufferFactory
                 .Setup(factory => factory.CreateTextBuffer())
                 .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>() && buffer.Properties == new PropertyCollection()));
             TextBufferFactory = textBufferFactory.Object;
 
-            var razorLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(RazorLSPContentTypeDefinition.Name) == true);
+            var razorLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName) == true);
             RazorLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == razorLSPContentType);
 
             var nonRazorLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(It.IsAny<string>()) == false);
@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Assert
             Assert.True(result);
             Assert.NotNull(virtualDocument);
-            Assert.EndsWith(CSharpVirtualDocumentFactory.VirtualCSharpFileNameSuffix, virtualDocument.Uri.OriginalString, StringComparison.Ordinal);
+            Assert.EndsWith(RazorLSPConstants.VirtualCSharpFileNameSuffix, virtualDocument.Uri.OriginalString, StringComparison.Ordinal);
         }
     }
 }

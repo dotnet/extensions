@@ -93,7 +93,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             _textDocumentFactory.TextDocumentCreated += TextDocumentFactory_TextDocumentCreated;
             _textDocumentFactory.TextDocumentDisposed += TextDocumentFactory_TextDocumentDisposed;
-            _razorLSPContentType = contentTypeRegistry.GetContentType(RazorLSPContentTypeDefinition.Name);
+            _razorLSPContentType = contentTypeRegistry.GetContentType(RazorLSPConstants.RazorLSPContentTypeName);
         }
 
         // Internal for testing
@@ -110,7 +110,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             var textBuffer = args.TextDocument.TextBuffer;
-            if (!textBuffer.ContentType.IsOfType(RazorLSPContentTypeDefinition.Name))
+            if (!textBuffer.ContentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName))
             {
                 // This Razor text buffer has yet to be initialized.
 
@@ -172,8 +172,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return false;
             }
 
-            if (!filePath.EndsWith(RazorLSPContentTypeDefinition.CSHTMLFileExtension, FilePathComparison.Instance) &&
-                !filePath.EndsWith(RazorLSPContentTypeDefinition.RazorFileExtension, FilePathComparison.Instance))
+            if (!filePath.EndsWith(RazorLSPConstants.CSHTMLFileExtension, FilePathComparison.Instance) &&
+                !filePath.EndsWith(RazorLSPConstants.RazorFileExtension, FilePathComparison.Instance))
             {
                 // Not a Razor file
                 return false;

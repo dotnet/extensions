@@ -27,7 +27,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     FirstTriggerCharacter = ">",
                     MoreTriggerCharacter = new[] { "=", "-" }
                 },
-                HoverProvider = true
+                HoverProvider = true,
+                DefinitionProvider = true,
             }
         };
 

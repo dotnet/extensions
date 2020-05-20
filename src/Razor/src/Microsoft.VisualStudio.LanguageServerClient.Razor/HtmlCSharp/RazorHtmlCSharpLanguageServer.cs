@@ -115,6 +115,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return ExecuteRequestAsync<DocumentOnTypeFormattingParams, TextEdit[]>(Methods.TextDocumentOnTypeFormattingName, request, _clientCapabilities, cancellationToken);
         }
 
+        [JsonRpcMethod(Methods.TextDocumentDefinitionName, UseSingleObjectParameterDeserialization = true)]
+        public Task<Location[]> GoToDefinitionAsync(TextDocumentPositionParams positionParams, CancellationToken cancellationToken)
+        {
+            if (positionParams is null)
+            {
+                throw new ArgumentNullException(nameof(positionParams));
+            }
+
+            return ExecuteRequestAsync<TextDocumentPositionParams, Location[]>(Methods.TextDocumentDefinitionName, positionParams, _clientCapabilities, cancellationToken);
+        }
+
         // Internal for testing
         internal Task<ResponseType> ExecuteRequestAsync<RequestType, ResponseType>(
             string methodName,

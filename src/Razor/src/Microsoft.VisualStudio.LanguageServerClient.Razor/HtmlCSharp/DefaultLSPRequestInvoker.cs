@@ -90,14 +90,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentException("message", nameof(method));
             }
 
-            var contentType = RazorLSPContentTypeDefinition.Name;
+            var contentType = RazorLSPConstants.RazorLSPContentTypeName;
             if (serverKind == LanguageServerKind.CSharp)
             {
-                contentType = CSharpVirtualDocumentFactory.CSharpLSPContentTypeName;
+                contentType = RazorLSPConstants.CSharpLSPContentTypeName;
             }
             else if (serverKind == LanguageServerKind.Html)
             {
-                contentType = HtmlVirtualDocumentFactory.HtmlLSPContentTypeName;
+                contentType = RazorLSPConstants.HtmlLSPContentTypeName;
             }
 
             var serializedParams = JToken.FromObject(parameters);

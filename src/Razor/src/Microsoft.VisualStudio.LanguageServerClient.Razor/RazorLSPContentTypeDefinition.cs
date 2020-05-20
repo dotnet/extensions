@@ -9,15 +9,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     internal sealed class RazorLSPContentTypeDefinition
     {
-        public const string Name = "RazorLSP";
-        public const string CSHTMLFileExtension = ".cshtml";
-        public const string RazorFileExtension = ".razor";
-
         /// <summary>
         /// Exports the Razor LSP content type
         /// </summary>
         [Export]
-        [Name(Name)]
+        [Name(RazorLSPConstants.RazorLSPContentTypeName)]
         [BaseDefinition(CodeRemoteContentDefinition.CodeRemoteContentTypeName)]
         public ContentTypeDefinition RazorLSPContentType { get; set; }
 

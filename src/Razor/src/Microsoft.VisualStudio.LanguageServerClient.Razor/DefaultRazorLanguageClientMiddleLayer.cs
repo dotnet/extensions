@@ -72,7 +72,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 var token = JToken.FromObject(requestParams);
                 var result = await sendRequest(token).ConfigureAwait(false);
                 var edits = result?.ToObject<TextEdit[]>();
-                if (edits == null)
+                if (edits == null || edits.Length == 0)
                 {
                     return emptyResult;
                 }

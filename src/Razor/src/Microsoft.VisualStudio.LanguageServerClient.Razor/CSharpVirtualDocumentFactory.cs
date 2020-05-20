@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
@@ -17,12 +16,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Export(typeof(VirtualDocumentFactory))]
     internal class CSharpVirtualDocumentFactory : VirtualDocumentFactory
     {
-        public const string CSharpLSPContentTypeName = "C#_LSP";
-
-        // Internal for testing
-        internal const string VirtualCSharpFileNameSuffix = ".g.cs";
-        internal const string ContainedLanguageMarker = "ContainedLanguageMarker";
-
         private readonly IContentTypeRegistryService _contentTypeRegistry;
         private readonly ITextBufferFactoryService _textBufferFactory;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
@@ -68,7 +61,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 if (_csharpLSPContentType == null)
                 {
-                    var registeredContentType = _contentTypeRegistry.GetContentType(CSharpLSPContentTypeName);
+                    var registeredContentType = _contentTypeRegistry.GetContentType(RazorLSPConstants.CSharpLSPContentTypeName);
                     _csharpLSPContentType = new RemoteContentDefinitionType(registeredContentType);
                 }
 
@@ -83,7 +76,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(hostDocumentBuffer));
             }
 
-            if (!hostDocumentBuffer.ContentType.IsOfType(RazorLSPContentTypeDefinition.Name))
+            if (!hostDocumentBuffer.ContentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName))
             {
                 // Another content type we don't care about.
                 virtualDocument = null;
@@ -93,12 +86,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var hostDocumentUri = _fileUriProvider.GetOrCreate(hostDocumentBuffer);
 
             // Index.cshtml => Index.cshtml__virtual.cs
-            var virtualCSharpFilePath = hostDocumentUri.GetAbsoluteOrUNCPath() + VirtualCSharpFileNameSuffix;
+            var virtualCSharpFilePath = hostDocumentUri.GetAbsoluteOrUNCPath() + RazorLSPConstants.VirtualCSharpFileNameSuffix;
             var virtualCSharpUri = new Uri(virtualCSharpFilePath);
 
             var csharpBuffer = _textBufferFactory.CreateTextBuffer();
             _fileUriProvider.AddOrUpdate(csharpBuffer, virtualCSharpUri);
-            csharpBuffer.Properties.AddProperty(ContainedLanguageMarker, true);
+            csharpBuffer.Properties.AddProperty(RazorLSPConstants.ContainedLanguageMarker, true);
             csharpBuffer.Properties.AddProperty(LanguageClientConstants.ClientNamePropertyKey, "RazorCSharp");
 
             // Create a text document to trigger the C# language server initialization.

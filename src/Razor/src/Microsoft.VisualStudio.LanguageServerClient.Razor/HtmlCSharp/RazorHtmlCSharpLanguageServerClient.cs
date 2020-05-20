@@ -15,7 +15,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
     [ClientName(ClientName)]
     [Export(typeof(ILanguageClient))]
-    [ContentType(RazorLSPContentTypeDefinition.Name)]
+    [ContentType(RazorLSPConstants.RazorLSPContentTypeName)]
     internal class RazorHtmlCSharpLanguageServerClient : ILanguageClient, IDisposable
     {
         // ClientName enables us to turn on-off the ILanguageClient functionality for specific TextBuffers of content type RazorLSPContentTypeDefinition.Name.

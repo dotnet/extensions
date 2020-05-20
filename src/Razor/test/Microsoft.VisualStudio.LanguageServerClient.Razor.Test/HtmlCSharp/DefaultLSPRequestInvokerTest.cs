@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var broker = new TestLanguageClientBroker((contentType, method) =>
             {
                 called = true;
-                Assert.Equal(RazorLSPContentTypeDefinition.Name, contentType);
+                Assert.Equal(RazorLSPConstants.RazorLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
@@ -42,7 +42,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var broker = new TestLanguageClientBroker((contentType, method) =>
             {
                 called = true;
-                Assert.Equal(HtmlVirtualDocumentFactory.HtmlLSPContentTypeName, contentType);
+                Assert.Equal(RazorLSPConstants.HtmlLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
@@ -63,7 +63,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var broker = new TestLanguageClientBroker((contentType, method) =>
             {
                 called = true;
-                Assert.Equal(CSharpVirtualDocumentFactory.CSharpLSPContentTypeName, contentType);
+                Assert.Equal(RazorLSPConstants.CSharpLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
@@ -84,7 +84,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var broker = new TestLanguageClientBroker((contentType, method) =>
             {
                 called = true;
-                Assert.Equal(RazorLSPContentTypeDefinition.Name, contentType);
+                Assert.Equal(RazorLSPConstants.RazorLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
@@ -105,7 +105,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var broker = new TestLanguageClientBroker((contentType, method) =>
             {
                 called = true;
-                Assert.Equal(HtmlVirtualDocumentFactory.HtmlLSPContentTypeName, contentType);
+                Assert.Equal(RazorLSPConstants.HtmlLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
@@ -126,7 +126,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var broker = new TestLanguageClientBroker((contentType, method) =>
             {
                 called = true;
-                Assert.Equal(CSharpVirtualDocumentFactory.CSharpLSPContentTypeName, contentType);
+                Assert.Equal(RazorLSPConstants.CSharpLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
