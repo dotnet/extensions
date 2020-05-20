@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Editor.Razor;
 using Moq;
@@ -14,6 +15,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public DefaultRazorDocumentInfoProviderTest()
         {
+            var serviceProviderFactory = new DefaultRazorDocumentServiceProviderFactory();
+            InnerDynamicDocumentInfoProvider = new DefaultRazorDynamicFileInfoProvider(serviceProviderFactory);
             ProjectSnapshotManager = new TestProjectSnapshotManager(Workspace);
 
             var hostProject = new HostProject("C:/path/to/project.csproj", RazorConfiguration.Default, "RootNamespace");
@@ -39,6 +42,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private VisualStudioMacDocumentInfoFactory Factory { get; }
 
+        private DefaultRazorDynamicFileInfoProvider InnerDynamicDocumentInfoProvider { get; }
+
         private TestProjectSnapshotManager ProjectSnapshotManager { get; }
 
         private ProjectSnapshot ProjectSnapshot { get; }
@@ -46,22 +51,22 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private DocumentSnapshot DocumentSnapshot { get; }
 
         [Fact]
-        public void UpdateFileInfo_UnknownDocument_Noops()
+        public void DelegatedUpdateFileInfo_UnknownDocument_Noops()
         {
             // Arrange
-            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory);
+            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory, InnerDynamicDocumentInfoProvider);
             provider.Updated += (_) => throw new XunitException("This should not have been called.");
             var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Act & Assert
-            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
+            InnerDynamicDocumentInfoProvider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
         }
 
         [Fact]
-        public void UpdateFileInfo_KnownDocument_TriggersUpdate()
+        public void DelegatedUpdateFileInfo_KnownDocument_TriggersUpdate()
         {
             // Arrange
-            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory);
+            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory, InnerDynamicDocumentInfoProvider);
             DocumentInfo documentInfo = null;
             provider.Updated += (info) =>
             {
@@ -73,7 +78,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Act
-            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
+            InnerDynamicDocumentInfoProvider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
 
             // Assert
             Assert.NotNull(documentInfo);
@@ -81,22 +86,22 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
-        public void SuppressDocument_UnknownDocument_Noops()
+        public void DelegatedSuppressDocument_UnknownDocument_Noops()
         {
             // Arrange
-            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory);
+            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory, InnerDynamicDocumentInfoProvider);
             provider.Updated += (_) => throw new XunitException("This should not have been called.");
             var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Act & Assert
-            provider.SuppressDocument(ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
+            InnerDynamicDocumentInfoProvider.SuppressDocument(ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
         }
 
         [Fact]
-        public void SuppressDocument_KnownDocument_NotUpdated_Noops()
+        public void DelegatedSuppressDocument_KnownDocument_NotUpdated_Noops()
         {
             // Arrange
-            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory);
+            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory, InnerDynamicDocumentInfoProvider);
             provider.Updated += (_) => throw new XunitException("This should not have been called.");
 
             // Populate the providers understanding of our project/document
@@ -104,14 +109,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Act & Assert
-            provider.SuppressDocument(ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
+            InnerDynamicDocumentInfoProvider.SuppressDocument(ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
         }
 
         [Fact]
-        public void SuppressDocument_KnownAndUpdatedDocument_TriggersUpdate()
+        public void DelegatedSuppressDocument_KnownAndUpdatedDocument_TriggersUpdate()
         {
             // Arrange
-            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory);
+            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory, InnerDynamicDocumentInfoProvider);
             DocumentInfo documentInfo = null;
             provider.Updated += (info) =>
             {
@@ -123,10 +128,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Update the document with content
-            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
+            InnerDynamicDocumentInfoProvider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
 
             // Act
-            provider.SuppressDocument(ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
+            InnerDynamicDocumentInfoProvider.SuppressDocument(ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
 
             // Assert
             Assert.NotNull(documentInfo);
@@ -134,17 +139,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
-        public void RemoveDynamicDocumentInfo_UntracksDocument()
+        public void DelegatedRemoveDynamicDocumentInfo_UntracksDocument()
         {
             // Arrange
-            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory);
+            var provider = new DefaultRazorDynamicDocumentInfoProvider(Factory, InnerDynamicDocumentInfoProvider);
 
             // Populate the providers understanding of our project/document
             provider.GetDynamicDocumentInfo(ProjectId.CreateNewId(), ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
             var documentContainer = new DefaultDynamicDocumentContainer(DocumentSnapshot);
 
             // Update the document with content
-            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
+            InnerDynamicDocumentInfoProvider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
 
             // Now explode if any further updates happen
             provider.Updated += (_) => throw new XunitException("This should not have been called.");
@@ -153,7 +158,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             provider.RemoveDynamicDocumentInfo(ProjectId.CreateNewId(), ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
 
             // Assert this should not update
-            provider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
+            InnerDynamicDocumentInfoProvider.UpdateFileInfo(ProjectSnapshot.FilePath, documentContainer);
         }
     }
 }
