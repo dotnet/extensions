@@ -33,7 +33,7 @@ Later on, this will be checked using this condition:
       Microsoft.Extensions.Caching.StackExchangeRedis;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.10' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.11' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
