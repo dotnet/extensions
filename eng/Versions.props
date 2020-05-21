@@ -48,17 +48,17 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.6.20264.1</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.6.20264.1</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.6.20264.1</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.6.20264.1</MicrosoftNETCoreAppInternalPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.6.20264.1</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.6.20264.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.6.20264.1</MicrosoftNETCorePlatformsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.6.20264.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemResourcesExtensionsPackageVersion>5.0.0-preview.6.20264.1</SystemResourcesExtensionsPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.6.20264.1</SystemTextEncodingsWebPackageVersion>
-    <SystemReflectionMetadataPackageVersion>5.0.0-preview.6.20264.1</SystemReflectionMetadataPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.6.20270.12</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.6.20270.12</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.6.20270.12</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.6.20270.12</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.6.20270.12</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.6.20270.12</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.6.20270.12</MicrosoftNETCorePlatformsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.6.20270.12</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemResourcesExtensionsPackageVersion>5.0.0-preview.6.20270.12</SystemResourcesExtensionsPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.6.20270.12</SystemTextEncodingsWebPackageVersion>
+    <SystemReflectionMetadataPackageVersion>5.0.0-preview.6.20270.12</SystemReflectionMetadataPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>3.7.0-2.20267.1</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
