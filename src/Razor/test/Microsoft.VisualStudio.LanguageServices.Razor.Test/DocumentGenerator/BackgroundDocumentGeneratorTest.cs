@@ -214,8 +214,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
         }
 
-        [ForegroundFact]
-        [Flaky("https://github.com/dotnet/aspnetcore/issues/14805", FlakyOn.All)]
+        [ForegroundFact(Skip = "https://github.com/dotnet/aspnetcore/issues/14805")]
         public async Task DocumentChanged_ReparsesRelatedFiles()
         {
             // Arrange
