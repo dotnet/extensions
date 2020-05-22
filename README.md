@@ -86,7 +86,7 @@ The following list identifies all the packages we currently ship from [dotnet/ex
 * Remaining in [dotnet/extensions](https://github.com/dotnet/extensions) for now
     * **Caching**
         * [`Microsoft.Extensions.Caching.SqlServer`](https://nuget.org/packages/Microsoft.Extensions.Caching.SqlServer)
-        * [`Microsoft.Extensions.Caching.StackExchangeRedis`](https://nuget.org/packages/Microsoft.Extensions.Caching.StackExchangeRedi)
+        * [`Microsoft.Extensions.Caching.StackExchangeRedis`](https://nuget.org/packages/Microsoft.Extensions.Caching.StackExchangeRedis)
     * **Configuration**
         * [`Microsoft.Extensions.Configuration.NewtonsoftJson`](https://nuget.org/packages/Microsoft.Extensions.Configuration.NewtonsoftJson)
     * **Hosting**
