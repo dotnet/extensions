@@ -147,6 +147,10 @@ export class RazorCSharpLanguageMiddleware implements LanguageMiddleware {
     }
 
     private tryApplyingCodeActions(uri: vscode.Uri, edit: vscode.TextEdit): [ vscode.Uri?, vscode.TextEdit?] {
-        return this.compositeCodeActionTranslator.applyEdit(uri, edit);
+        if (this.compositeCodeActionTranslator.canHandleEdit(uri, edit)) {
+            return this.compositeCodeActionTranslator.applyEdit(uri, edit);
+        } else {
+            return [undefined, undefined];
+        }
     }
 }
