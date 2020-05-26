@@ -82,8 +82,6 @@
     <!-- We are temporarily pinning sources packages and M.AspNetCore.Testing until we migrate this repo to aspnetcore -->
     <MicrosoftAspNetCoreTestingPackageVersion>5.0.0-preview.2.20121.3</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>5.0.0-preview.2.20121.3</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>5.0.0-preview.2.20121.3</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>5.0.0-preview.2.20121.3</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>5.0.0-preview.2.20121.3</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.8.166</MicrosoftBuildFrameworkPackageVersion>
