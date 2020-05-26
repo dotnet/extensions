@@ -115,6 +115,42 @@
                     "description": "Environment variables passed to dotnet. Only valid for hosted apps."
                   }
                 }
+              },
+              "attach": {
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The URL of the application",
+                    "default": "https://localhost:5001"
+                  },
+                  "cwd": {
+                    "type": "string",
+                    "description": "The directory of the Blazor WebAssembly app, defaults to the workspace folder.",
+                    "default": "${workspaceFolder}"
+                  },
+                  "browser": {
+                    "type": "string",
+                    "description": "The debugging browser to launch (Edge or Chrome)",
+                    "default": "chrome",
+                    "enum": ["chrome", "edge"]
+                  },
+                  "trace": {
+                    "type": ["boolean", "string"],
+                    "default": "true",
+                    "enum": ["verbose", true],
+                    "description": "If true, verbose logs from JS debugger are sent to log file. If 'verbose', send logs to console."
+                  },
+                  "webRoot": {
+                    "type": "string",
+                    "default": "${workspaceFolder}",
+                    "description": "Specifies the absolute path to the webserver root."
+                  },
+                  "timeout": {
+                    "type": "number",
+                    "default": 30000,
+                    "description": "Retry for this number of milliseconds to connect to browser."
+                  }
+                }
               }
             }
           }
