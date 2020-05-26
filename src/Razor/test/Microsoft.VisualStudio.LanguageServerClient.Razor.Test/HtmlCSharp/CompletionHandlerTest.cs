@@ -585,7 +585,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         [InlineData("@", CompletionTriggerKind.Invoked, true)]
         [InlineData("a", CompletionTriggerKind.TriggerCharacter, true)] // Auto-invoked from VS platform
         [InlineData("a", CompletionTriggerKind.Invoked, true)]
-        [InlineData("(", CompletionTriggerKind.TriggerCharacter, false)]
         public void TriggerAppliedToProjection_Html_ReturnsExpectedResult(string character, CompletionTriggerKind kind, bool expected)
         {
             // Arrange
@@ -610,7 +609,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         [InlineData("<", CompletionTriggerKind.TriggerCharacter, false)]
         [InlineData("a", CompletionTriggerKind.TriggerCharacter, true)] // Auto-invoked from VS platform
         [InlineData("a", CompletionTriggerKind.Invoked, true)]
-        [InlineData("(", CompletionTriggerKind.TriggerCharacter, false)]
         public void TriggerAppliedToProjection_CSharp_ReturnsExpectedResult(string character, CompletionTriggerKind kind, bool expected)
         {
             // Arrange
