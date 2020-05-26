@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         private readonly CompletionCapability DefaultCapability = new CompletionCapability
         {
             CompletionItem = new CompletionItemCapability {
-                SnippetSupport = true
+                SnippetSupport = false
             }
         };
 
@@ -179,7 +179,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 }
             };
             completionEndpoint.SetCapability(capability);
-            var expectedInsert = "testInsert$1=\"$2\"$0";
 
             // Act
             var result = completionEndpoint.TryConvert(completionItem, out var converted);
@@ -187,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             // Assert
             Assert.True(result);
             Assert.Equal(completionItem.DisplayText, converted.Label);
-            Assert.Equal(expectedInsert, converted.InsertText);
+            Assert.Equal(completionItem.InsertText, converted.InsertText);
             Assert.Equal(completionItem.InsertText, converted.FilterText);
             Assert.Equal(completionItem.InsertText, converted.SortText);
             Assert.Null(converted.Detail);

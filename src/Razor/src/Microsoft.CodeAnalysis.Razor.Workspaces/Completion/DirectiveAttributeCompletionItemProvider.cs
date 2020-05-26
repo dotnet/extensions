@@ -160,7 +160,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     insertText = insertText.Substring(1);
                 }
 
-                (var attributeDescriptionInfos, var commitCharacters) = completion.Value;
+                var (attributeDescriptionInfos, commitCharacters) = completion.Value;
 
                 var razorCompletionItem = new RazorCompletionItem(
                     completion.Key,

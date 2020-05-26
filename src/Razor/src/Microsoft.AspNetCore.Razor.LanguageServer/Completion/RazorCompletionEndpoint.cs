@@ -275,13 +275,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters),
                         };
 
-                        var indexerCompletion = razorCompletionItem.DisplayText.EndsWith("...");
-                        if (TryResolveDirectiveAttributeInsertionSnippet(razorCompletionItem.InsertText, indexerCompletion, descriptionInfo, out var snippetText))
-                        {
-                            directiveAttributeCompletionItem.InsertText = snippetText;
-                            directiveAttributeCompletionItem.InsertTextFormat = InsertTextFormat.Snippet;
-                        }
-
                         directiveAttributeCompletionItem.SetDescriptionInfo(descriptionInfo);
                         directiveAttributeCompletionItem.SetRazorCompletionKind(razorCompletionItem.Kind);
                         completionItem = directiveAttributeCompletionItem;
@@ -325,41 +318,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             completionItem = null;
             return false;
-        }
-
-        private bool TryResolveDirectiveAttributeInsertionSnippet(
-            string insertText,
-            bool indexerCompletion,
-            AttributeCompletionDescription attributeCompletionDescription,
-            out string snippetText)
-        {
-            if (_capability?.CompletionItem?.SnippetSupport == null || !_capability.CompletionItem.SnippetSupport)
-            {
-                snippetText = null;
-                return false;
-            }
-
-            const string BoolTypeName = "System.Boolean";
-            var attributeInfos = attributeCompletionDescription.DescriptionInfos;
-
-            // Boolean returning bound attribute, auto-complete to just the attribute name.
-            if (attributeInfos.All(info => info.ReturnTypeName == BoolTypeName))
-            {
-                snippetText = null;
-                return false;
-            }
-
-            if (indexerCompletion)
-            {
-                // Indexer completion
-                snippetText = string.Concat(insertText, "$1=\"$2\"$0");
-            }
-            else
-            {
-                snippetText = string.Concat(insertText, "=\"$1\"$0");
-            }
-
-            return true;
         }
 
         private CompletionItem SetIcon(CompletionItem item)
