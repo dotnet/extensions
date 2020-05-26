@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         internal abstract RazorFormatOnTypeProvider CreateProvider();
 
-        protected void RunFormatOnTypeTest(string input, string expected, string character, bool expectCursorPlaceholder = true, int tabSize = 4, bool insertSpaces = true, string fileKind = default)
+        protected void RunFormatOnTypeTest(string input, string expected, string character, bool expectCursorPlaceholder = true, int tabSize = 4, bool insertSpaces = true, string fileKind = default, IReadOnlyList<TagHelperDescriptor> tagHelpers = default)
         {
             // Arrange
             var location = input.IndexOf('|') + character.Length;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             var path = "file:///path/to/document.razor";
             var uri = new Uri(path);
-            var codeDocument = CreateCodeDocument(source, uri.AbsolutePath, fileKind: fileKind);
+            var codeDocument = CreateCodeDocument(source, uri.AbsolutePath, tagHelpers, fileKind: fileKind);
             var options = new FormattingOptions()
             {
                 TabSize = tabSize,

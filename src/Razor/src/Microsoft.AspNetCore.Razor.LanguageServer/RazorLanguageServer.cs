@@ -134,6 +134,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<RazorCompletionItemProvider, MarkupTransitionCompletionItemProvider>();
 
                         // Formatting
+                        services.AddSingleton<RazorFormatOnTypeProvider, HtmlSmartIndentFormatOnTypeProvider>();
                         services.AddSingleton<RazorFormatOnTypeProvider, CloseRazorCommentFormatOnTypeProvider>();
                         services.AddSingleton<RazorFormatOnTypeProvider, CloseTextTagFormatOnTypeProvider>();
                         services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();

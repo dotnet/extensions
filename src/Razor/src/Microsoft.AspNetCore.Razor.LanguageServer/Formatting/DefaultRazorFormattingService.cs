@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 }
 
                 var leadingWhitespace = line.GetLeadingWhitespace();
-                var minCSharpIndentLength = GetIndentationString(context, minCSharpIndentLevel).Length;
+                var minCSharpIndentLength = context.GetIndentationLevelString(minCSharpIndentLevel).Length;
                 if (leadingWhitespace.Length < minCSharpIndentLength)
                 {
                     // For whatever reason, the C# formatter decided to not indent this. Leave it as is.
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     // All we want to do at this point is to indent/unindent this line based on the absolute indentation of the block
                     // and the minimum C# indent level. We don't need to worry about the actual existing indentation here because it doesn't matter.
                     var effectiveDesiredIndentationLevel = desiredIndentationLevel - minCSharpIndentLevel;
-                    var effectiveDesiredIndentation = GetIndentationString(context, Math.Abs(effectiveDesiredIndentationLevel));
+                    var effectiveDesiredIndentation = context.GetIndentationLevelString(Math.Abs(effectiveDesiredIndentationLevel));
                     if (effectiveDesiredIndentationLevel < 0)
                     {
                         // This means that we need to unindent.
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // First, make sure the first line is indented correctly.
             var firstLine = changedText.Lines[(int)changedBodyRange.Start.Line];
             var desiredIndentationLevel = context.Indentations[firstLine.LineNumber].IndentationLevel;
-            var desiredIndentation = GetIndentationString(context, desiredIndentationLevel);
+            var desiredIndentation = context.GetIndentationLevelString(desiredIndentationLevel);
             var firstNonWhitespaceOffset = firstLine.GetFirstNonWhitespaceOffset();
             if (firstNonWhitespaceOffset.HasValue)
             {
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var textAfterBlockStart = innerCodeBlockLine.ToString().Substring(innerCodeBlock.Position - innerCodeBlockLine.Start);
             var isBlockStartOnSeparateLine = string.IsNullOrWhiteSpace(textAfterBlockStart);
             var innerCodeBlockIndentationLevel = desiredIndentationLevel + 1;
-            var desiredInnerCodeBlockIndentation = GetIndentationString(context, innerCodeBlockIndentationLevel);
+            var desiredInnerCodeBlockIndentation = context.GetIndentationLevelString(innerCodeBlockIndentationLevel);
             var whitespaceAfterBlockStart = textAfterBlockStart.GetLeadingWhitespace();
 
             if (!isBlockStartOnSeparateLine)
@@ -428,7 +428,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             var firstLine = changedText.Lines[(int)changedBodyRange.Start.Line];
             var desiredIndentationLevel = context.Indentations[firstLine.LineNumber].IndentationLevel;
-            var desiredIndentation = GetIndentationString(context, desiredIndentationLevel);
+            var desiredIndentation = context.GetIndentationLevelString(desiredIndentationLevel);
 
             // we want to keep the close '}' on its own line. So bring it to the next line.
             var originalInnerCodeBlockSpan = TextSpan.FromBounds(innerCodeBlock.Position, innerCodeBlock.EndPosition);
@@ -507,18 +507,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var precedingWhitespaceLength = precedingLineText.GetTrailingWhitespace().Length;
 
             return TextSpan.FromBounds(start - precedingWhitespaceLength, end);
-        }
-
-        private static string GetIndentationString(FormattingContext context, int indentationLevel)
-        {
-            var indentChar = context.Options.InsertSpaces ? ' ' : '\t';
-            var indentationLength = indentationLevel;
-            if (context.Options.InsertSpaces)
-            {
-                indentationLength *= (int)context.Options.TabSize;
-            }
-            var indentation = new string(indentChar, indentationLength);
-            return indentation;
         }
 
         // Internal for testing
