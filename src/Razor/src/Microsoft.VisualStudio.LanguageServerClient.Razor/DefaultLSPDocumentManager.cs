@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics;
@@ -18,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly JoinableTaskContext _joinableTaskContext;
         private readonly FileUriProvider _fileUriProvider;
         private readonly LSPDocumentFactory _documentFactory;
-        private readonly Dictionary<Uri, LSPDocument> _documents;
+        private readonly ConcurrentDictionary<Uri, LSPDocument> _documents;
 
         public override event EventHandler<LSPDocumentChangeEventArgs> Changed;
 
@@ -47,7 +48,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _joinableTaskContext = joinableTaskContext;
             _fileUriProvider = fileUriProvider;
             _documentFactory = documentFactory;
-            _documents = new Dictionary<Uri, LSPDocument>();
+            _documents = new ConcurrentDictionary<Uri, LSPDocument>();
 
             foreach (var trigger in changeTriggers)
             {
@@ -92,10 +93,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return;
             }
 
-            _documents.Remove(uri);
-
-            var args = new LSPDocumentChangeEventArgs(lspDocument.CurrentSnapshot, @new: null, LSPDocumentChangeKind.Removed);
-            Changed?.Invoke(this, args);
+            if (_documents.TryRemove(uri, out _))
+            {
+                var args = new LSPDocumentChangeEventArgs(lspDocument.CurrentSnapshot, @new: null, LSPDocumentChangeKind.Removed);
+                Changed?.Invoke(this, args);
+            }
+            else
+            {
+                Debug.Fail($"Couldn't remove {uri.AbsolutePath}. This should never ever happen.");
+            }
         }
 
         public override void UpdateVirtualDocument<TVirtualDocument>(
@@ -156,8 +162,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public override bool TryGetDocument(Uri uri, out LSPDocumentSnapshot lspDocumentSnapshot)
         {
-            Debug.Assert(_joinableTaskContext.IsOnMainThread);
-
             if (!_documents.TryGetValue(uri, out var lspDocument))
             {
                 // This should never happen in practice but return `null` so our tests can validate

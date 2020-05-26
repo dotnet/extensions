@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Text;
@@ -50,7 +49,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var editorService = Mock.Of<LSPEditorService>();
 
-            var handler = new TestOnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, editorService);
+            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, editorService);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = "?",
@@ -90,7 +89,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var editorService = Mock.Of<LSPEditorService>();
 
-            var handler = new TestOnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, editorService);
+            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, editorService);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = ">",
@@ -136,7 +135,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var editorService = Mock.Of<LSPEditorService>();
 
-            var handler = new TestOnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider, editorService);
+            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider, editorService);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = ">",
@@ -183,7 +182,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var editorService = Mock.Of<LSPEditorService>();
 
-            var handler = new TestOnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider, editorService);
+            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider, editorService);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = ">",
@@ -240,7 +239,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             editorService.Setup(e => e.ApplyTextEditsAsync(Uri, It.IsAny<ITextSnapshot>(), It.IsAny<IEnumerable<TextEdit>>())).Callback(() => { appliedTextEdits = true; })
                 .Returns(Task.CompletedTask);
 
-            var handler = new TestOnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object, editorService.Object);
+            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object, editorService.Object);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = "=",
@@ -278,31 +277,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 _documents.Add(uri, documentSnapshot);
 
                 Changed?.Invoke(this, null);
-            }
-        }
-
-        private class TestOnTypeFormattingHandler : OnTypeFormattingHandler
-        {
-            public TestOnTypeFormattingHandler(
-            JoinableTaskContext joinableTaskContext,
-            LSPDocumentManager documentManager,
-            LSPRequestInvoker requestInvoker,
-            LSPProjectionProvider projectionProvider,
-            LSPDocumentMappingProvider documentMappingProvider,
-            LSPEditorService editorService) : base(
-                joinableTaskContext,
-                documentManager,
-                requestInvoker,
-                projectionProvider,
-                documentMappingProvider,
-                editorService)
-            {
-            }
-
-            protected override Task SwitchToBackgroundThread()
-            {
-                // Let it stay on the foreground thread because our fake JoinableTaskContext cannot handle switching back to the foreground thread.
-                return Task.CompletedTask;
             }
         }
     }

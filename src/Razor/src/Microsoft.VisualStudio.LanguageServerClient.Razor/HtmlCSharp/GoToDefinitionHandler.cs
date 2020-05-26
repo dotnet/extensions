@@ -73,15 +73,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(clientCapabilities));
             }
 
-            await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-
             if (!_documentManager.TryGetDocument(request.TextDocument.Uri, out var documentSnapshot))
             {
                 return null;
             }
-
-            // Switch to a background thread.
-            await TaskScheduler.Default;
 
             var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
             if (projectionResult == null || projectionResult.LanguageKind != RazorLanguageKind.CSharp)

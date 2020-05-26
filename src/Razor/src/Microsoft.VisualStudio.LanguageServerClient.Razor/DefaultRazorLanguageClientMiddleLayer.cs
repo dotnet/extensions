@@ -77,8 +77,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     return emptyResult;
                 }
 
-                await _joinableTaskFactory.SwitchToMainThreadAsync();
-
                 if (!_documentManager.TryGetDocument(requestParams.TextDocument.Uri, out var documentSnapshot))
                 {
                     return emptyResult;
