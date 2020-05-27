@@ -14,8 +14,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Remote.Razor", "src\Microsoft.CodeAnalysis.Remote.Razor\Microsoft.CodeAnalysis.Remote.Razor.csproj", "{4EAD959D-73B2-4FB2-B46F-16CEB1EF49D4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razor.Test", "test\Microsoft.CodeAnalysis.Razor.Test\Microsoft.CodeAnalysis.Razor.Test.csproj", "{7A8A1664-37CE-4376-81CA-1862CF5F91D9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.LanguageServices.Razor", "src\Microsoft.VisualStudio.LanguageServices.Razor\Microsoft.VisualStudio.LanguageServices.Razor.csproj", "{E5D92DB7-5CBF-410A-9685-FF76F71EC96F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.LanguageServices.Razor.Test", "test\Microsoft.VisualStudio.LanguageServices.Razor.Test\Microsoft.VisualStudio.LanguageServices.Razor.Test.csproj", "{37E61BDB-658E-4F44-A499-D64CC6D35485}"
@@ -104,14 +102,6 @@ Global
 		{4EAD959D-73B2-4FB2-B46F-16CEB1EF49D4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4EAD959D-73B2-4FB2-B46F-16CEB1EF49D4}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{4EAD959D-73B2-4FB2-B46F-16CEB1EF49D4}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
-		{7A8A1664-37CE-4376-81CA-1862CF5F91D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A8A1664-37CE-4376-81CA-1862CF5F91D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7A8A1664-37CE-4376-81CA-1862CF5F91D9}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A8A1664-37CE-4376-81CA-1862CF5F91D9}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
-		{7A8A1664-37CE-4376-81CA-1862CF5F91D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7A8A1664-37CE-4376-81CA-1862CF5F91D9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7A8A1664-37CE-4376-81CA-1862CF5F91D9}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
-		{7A8A1664-37CE-4376-81CA-1862CF5F91D9}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 		{E5D92DB7-5CBF-410A-9685-FF76F71EC96F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E5D92DB7-5CBF-410A-9685-FF76F71EC96F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5D92DB7-5CBF-410A-9685-FF76F71EC96F}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
@@ -367,7 +357,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0F265874-C592-448B-BC4F-3430AB03E0DC} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{4EAD959D-73B2-4FB2-B46F-16CEB1EF49D4} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
-		{7A8A1664-37CE-4376-81CA-1862CF5F91D9} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{E5D92DB7-5CBF-410A-9685-FF76F71EC96F} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{37E61BDB-658E-4F44-A499-D64CC6D35485} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{078AEF36-F319-4CE2-BAA2-5B58A6536B46} = {92463391-81BE-462B-AC3C-78C6C760741F}
