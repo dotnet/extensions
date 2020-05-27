@@ -11,7 +11,7 @@
 
   <Target Name="_ZipLanguageServerBinaries" AfterTargets="Pack"  Condition=" '$(OS)' == 'Windows_NT' ">
     <!-- This target is defined in eng/targets/Packaging.targets and included in every project. -->
-    <MSBuild Projects="$(RepoRoot)src\Razor\src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj"
+    <MSBuild Projects="$(RepoRoot)src\Razor\src\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />

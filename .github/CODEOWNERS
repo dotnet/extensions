@@ -8,5 +8,3 @@
 /eng/Versions.props                            @dotnet-maestro-bot @dougbu
 /eng/Version.Details.xml                       @dotnet-maestro-bot @dougbu
 /src/Razor/                                    @ajaybhargavb @NTaylorMullen @ryanbrandenburg @TanayParikh @noahbkim
-/src/Razor/src/Microsoft.NET.Sdk.Razor/        @ajaybhargavb @NTaylorMullen @pranavkm @javiercn
-/src/Razor/test/Microsoft.NET.Sdk.Razor.Test/  @ajaybhargavb @NTaylorMullen @pranavkm @javiercn
