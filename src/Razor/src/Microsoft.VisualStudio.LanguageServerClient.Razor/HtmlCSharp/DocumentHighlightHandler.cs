@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
     [Shared]
-    [ExportLspMethod(Methods.TextDocumentHoverName)]
-    internal class HoverHandler : IRequestHandler<TextDocumentPositionParams, Hover>
+    [ExportLspMethod(Methods.TextDocumentDocumentHighlightName)]
+    internal class DocumentHighlightHandler : IRequestHandler<DocumentHighlightParams, DocumentHighlight[]>
     {
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentManager _documentManager;
@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
 
         [ImportingConstructor]
-        public HoverHandler(
+        public DocumentHighlightHandler(
             LSPRequestInvoker requestInvoker,
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
@@ -52,22 +52,31 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             _documentMappingProvider = documentMappingProvider;
         }
 
-        public async Task<Hover> HandleRequestAsync(TextDocumentPositionParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
+        public async Task<DocumentHighlight[]> HandleRequestAsync(DocumentHighlightParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
         {
+            if (request is null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (clientCapabilities is null)
+            {
+                throw new ArgumentNullException(nameof(clientCapabilities));
+            }
+
             if (!_documentManager.TryGetDocument(request.TextDocument.Uri, out var documentSnapshot))
             {
                 return null;
             }
 
             var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
-            if (projectionResult == null)
+            if (projectionResult == null || projectionResult.LanguageKind != RazorLanguageKind.CSharp)
             {
                 return null;
             }
 
-            var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
-
-            var textDocumentPositionParams = new TextDocumentPositionParams()
+            var serverKind = LanguageServerKind.CSharp;
+            var documentHighlightParams = new DocumentHighlightParams()
             {
                 Position = projectionResult.Position,
                 TextDocument = new TextDocumentIdentifier()
@@ -76,43 +85,43 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
             };
 
-            var result = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Hover>(
-                Methods.TextDocumentHoverName,
+            var result = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentHighlightParams, DocumentHighlight[]>(
+                Methods.TextDocumentDocumentHighlightName,
                 serverKind,
-                textDocumentPositionParams,
+                documentHighlightParams,
                 cancellationToken).ConfigureAwait(false);
 
-            if (result?.Range == null || result?.Contents == null)
+            if (result == null || result.Length == 0)
             {
-                return null;
+                return result;
             }
 
-            var mappingResult = await _documentMappingProvider.MapToDocumentRangeAsync(projectionResult.LanguageKind, request.TextDocument.Uri, result.Range, cancellationToken).ConfigureAwait(false);
+            var remappedHighlights = new List<DocumentHighlight>();
 
-            if (mappingResult == null)
+            foreach (var highlight in result)
             {
-                // Couldn't remap the edits properly. Returning hover at initial request position.
-                return new Hover
+                var mappingResult = await _documentMappingProvider.MapToDocumentRangeAsync(
+                    projectionResult.LanguageKind,
+                    request.TextDocument.Uri,
+                    highlight.Range,
+                    cancellationToken).ConfigureAwait(false);
+
+                if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
                 {
-                    Contents = result.Contents,
-                    Range = new Range()
-                    {
-                        Start = request.Position,
-                        End = request.Position
-                    }
+                    // Couldn't remap the range or the document changed in the meantime. Discard this highlight.
+                    continue;
+                }
+
+                var remappedHighlight = new DocumentHighlight()
+                {
+                    Range = mappingResult.Range,
+                    Kind = highlight.Kind
                 };
-            }
-            else if (mappingResult.HostDocumentVersion != documentSnapshot.Version)
-            {
-                // Discard hover if document has changed.
-                return null;
+
+                remappedHighlights.Add(remappedHighlight);
             }
 
-            return new Hover
-            {
-                Contents = result.Contents,
-                Range = mappingResult.Range
-            };
+            return remappedHighlights.ToArray();
         }
     }
 }

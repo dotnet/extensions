@@ -16,12 +16,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     {
         public GoToDefinitionHandlerTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskContext = joinableTaskContext.Context;
             Uri = new Uri("C:/path/to/file.razor");
         }
-
-        private JoinableTaskContext JoinableTaskContext { get; }
 
         private Uri Uri { get; }
 
@@ -33,7 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>();
             var projectionProvider = Mock.Of<LSPProjectionProvider>();
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
-            var definitionHandler = new GoToDefinitionHandler(JoinableTaskContext, requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var definitionHandler = new GoToDefinitionHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var definitionRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -56,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>();
             var projectionProvider = Mock.Of<LSPProjectionProvider>();
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
-            var definitionHandler = new GoToDefinitionHandler(JoinableTaskContext, requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var definitionHandler = new GoToDefinitionHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var definitionRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -86,7 +82,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
-            var definitionHandler = new GoToDefinitionHandler(JoinableTaskContext, requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider);
+            var definitionHandler = new GoToDefinitionHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider);
             var definitionRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -137,7 +133,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, csharpLocation.Range, It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
-            var definitionHandler = new GoToDefinitionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
             var definitionRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -192,7 +188,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, externalUri, csharpLocation.Range, It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
-            var definitionHandler = new GoToDefinitionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
             var definitionRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -238,7 +234,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
 
-            var definitionHandler = new GoToDefinitionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
             var definitionRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -292,7 +288,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, csharpLocation.Range, It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
-            var definitionHandler = new GoToDefinitionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
             var definitionRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -339,7 +335,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, csharpLocation.Range, It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult<RazorMapToDocumentRangeResponse>(null));
 
-            var definitionHandler = new GoToDefinitionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
             var definitionRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },

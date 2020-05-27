@@ -29,6 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 },
                 HoverProvider = true,
                 DefinitionProvider = true,
+                DocumentHighlightProvider = true,
             }
         };
 

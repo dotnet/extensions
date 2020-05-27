@@ -20,7 +20,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private static readonly TextEdit[] EmptyEdits = Array.Empty<TextEdit>();
         private static readonly IReadOnlyList<string> AllowedTriggerCharacters = new[] { ">", "=", "-" };
 
-        private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPProjectionProvider _projectionProvider;
@@ -29,18 +28,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         [ImportingConstructor]
         public OnTypeFormattingHandler(
-            JoinableTaskContext joinableTaskContext,
             LSPDocumentManager documentManager,
             LSPRequestInvoker requestInvoker,
             LSPProjectionProvider projectionProvider,
             LSPDocumentMappingProvider documentMappingProvider,
             LSPEditorService editorService)
         {
-            if (joinableTaskContext is null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskContext));
-            }
-
             if (documentManager is null)
             {
                 throw new ArgumentNullException(nameof(documentManager));
@@ -66,7 +59,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(editorService));
             }
 
-            _joinableTaskFactory = joinableTaskContext.Factory;
             _documentManager = documentManager;
             _requestInvoker = requestInvoker;
             _projectionProvider = projectionProvider;

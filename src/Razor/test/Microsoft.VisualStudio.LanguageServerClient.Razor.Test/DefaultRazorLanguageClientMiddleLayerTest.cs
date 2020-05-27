@@ -18,12 +18,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         public DefaultRazorLanguageClientMiddleLayerTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskContext = joinableTaskContext.Context;
             Uri = new Uri("C:/path/to/file.razor");
         }
-
-        private JoinableTaskContext JoinableTaskContext { get; }
 
         private Uri Uri { get; }
 
@@ -61,7 +57,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return Task.FromResult(actualTextEdits);
             };
 
-            var middleLayer = new DefaultRazorLanguageClientMiddleLayer(JoinableTaskContext, documentManager, editorService.Object);
+            var middleLayer = new DefaultRazorLanguageClientMiddleLayer(documentManager, editorService.Object);
 
             // Act
             await middleLayer.HandleRequestAsync(Methods.TextDocumentOnTypeFormattingName, JToken.FromObject(inputParams), actualRequest).ConfigureAwait(false);

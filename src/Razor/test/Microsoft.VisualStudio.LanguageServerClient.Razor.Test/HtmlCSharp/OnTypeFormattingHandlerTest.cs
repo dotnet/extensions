@@ -19,12 +19,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     {
         public OnTypeFormattingHandlerTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskContext = joinableTaskContext.Context;
             Uri = new Uri("C:/path/to/file.razor");
         }
-
-        private JoinableTaskContext JoinableTaskContext { get; }
 
         private Uri Uri { get; }
 
@@ -49,7 +45,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var editorService = Mock.Of<LSPEditorService>();
 
-            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, editorService);
+            var handler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, editorService);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = "?",
@@ -89,7 +85,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var editorService = Mock.Of<LSPEditorService>();
 
-            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, editorService);
+            var handler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, editorService);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = ">",
@@ -135,7 +131,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var editorService = Mock.Of<LSPEditorService>();
 
-            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider, editorService);
+            var handler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider, editorService);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = ">",
@@ -182,7 +178,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var editorService = Mock.Of<LSPEditorService>();
 
-            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider, editorService);
+            var handler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider, editorService);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = ">",
@@ -239,7 +235,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             editorService.Setup(e => e.ApplyTextEditsAsync(Uri, It.IsAny<ITextSnapshot>(), It.IsAny<IEnumerable<TextEdit>>())).Callback(() => { appliedTextEdits = true; })
                 .Returns(Task.CompletedTask);
 
-            var handler = new OnTypeFormattingHandler(JoinableTaskContext, documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object, editorService.Object);
+            var handler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object, editorService.Object);
             var request = new DocumentOnTypeFormattingParams()
             {
                 Character = "=",

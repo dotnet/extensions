@@ -16,12 +16,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     {
         public HoverHandlerTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskContext = joinableTaskContext.Context;
             Uri = new Uri("C:/path/to/file.razor");
         }
-
-        private JoinableTaskContext JoinableTaskContext { get; }
 
         private Uri Uri { get; }
 
@@ -33,7 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>();
             var projectionProvider = Mock.Of<LSPProjectionProvider>();
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
-            var hoverhandler = new HoverHandler(JoinableTaskContext, requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var hoverhandler = new HoverHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var hoverRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -56,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>();
             var projectionProvider = Mock.Of<LSPProjectionProvider>();
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
-            var hoverhandler = new HoverHandler(JoinableTaskContext, requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var hoverhandler = new HoverHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var hoverRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -143,7 +139,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, It.IsAny<Uri>(), It.IsAny<Range>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
-            var hoverHandler = new HoverHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var hoverHandler = new HoverHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
 
             // Act
             var result = await hoverHandler.HandleRequestAsync(hoverRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -227,7 +223,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.Html, It.IsAny<Uri>(), It.IsAny<Range>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
-            var hoverHandler = new HoverHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var hoverHandler = new HoverHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
 
             // Act
             var result = await hoverHandler.HandleRequestAsync(hoverRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -272,7 +268,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
 
-            var hoverHandler = new HoverHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var hoverHandler = new HoverHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
 
             // Act
             var result = await hoverHandler.HandleRequestAsync(hoverRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -347,7 +343,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, It.IsAny<Uri>(), It.IsAny<Range>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult<RazorMapToDocumentRangeResponse>(null));
 
-            var hoverHandler = new HoverHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var hoverHandler = new HoverHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
 
             // Act
             var result = await hoverHandler.HandleRequestAsync(hoverRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -417,7 +413,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, It.IsAny<Uri>(), It.IsAny<Range>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
-            var hoverHandler = new HoverHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var hoverHandler = new HoverHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
 
             // Act
             var result = await hoverHandler.HandleRequestAsync(hoverRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);

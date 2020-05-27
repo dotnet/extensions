@@ -7,7 +7,6 @@ using System.Composition;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json.Linq;
 using Task = System.Threading.Tasks.Task;
 
@@ -17,21 +16,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Export(typeof(RazorLanguageClientMiddleLayer))]
     internal class DefaultRazorLanguageClientMiddleLayer : RazorLanguageClientMiddleLayer
     {
-        private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPEditorService _editorService;
 
         [ImportingConstructor]
-        public DefaultRazorLanguageClientMiddleLayer(
-            JoinableTaskContext joinableTaskContext,
-            LSPDocumentManager documentManager,
-            LSPEditorService editorService)
+        public DefaultRazorLanguageClientMiddleLayer(LSPDocumentManager documentManager, LSPEditorService editorService)
         {
-            if (joinableTaskContext is null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskContext));
-            }
-
             if (documentManager is null)
             {
                 throw new ArgumentNullException(nameof(documentManager));
@@ -42,7 +32,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(editorService));
             }
 
-            _joinableTaskFactory = joinableTaskContext.Factory;
             _documentManager = documentManager;
             _editorService = editorService;
         }

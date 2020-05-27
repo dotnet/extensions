@@ -15,7 +15,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ExportLspMethod(Methods.TextDocumentDefinitionName)]
     internal class GoToDefinitionHandler : IRequestHandler<TextDocumentPositionParams, Location[]>
     {
-        private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
@@ -23,17 +22,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         [ImportingConstructor]
         public GoToDefinitionHandler(
-            JoinableTaskContext joinableTaskContext,
             LSPRequestInvoker requestInvoker,
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
             LSPDocumentMappingProvider documentMappingProvider)
         {
-            if (joinableTaskContext is null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskContext));
-            }
-
             if (requestInvoker is null)
             {
                 throw new ArgumentNullException(nameof(requestInvoker));
@@ -54,7 +47,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(documentMappingProvider));
             }
 
-            _joinableTaskFactory = joinableTaskContext.Factory;
             _requestInvoker = requestInvoker;
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
