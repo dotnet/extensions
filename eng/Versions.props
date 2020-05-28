@@ -47,61 +47,61 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.6.20271.10</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.6.20271.10</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.6.20271.10</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.6.20277.12</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.6.20277.12</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.6.20277.12</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>5.0.0-preview.6.20271.10</MicrosoftWin32RegistryPackageVersion>
-    <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsCachingAbstractionsPackageVersion>
-    <MicrosoftExtensionsCachingMemoryPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsCachingMemoryPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationBinderPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
-    <MicrosoftExtensionsConfigurationIniPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationIniPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
-    <MicrosoftExtensionsConfigurationXmlPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationXmlPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersCompositePackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsFileProvidersCompositePackageVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsHostingPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsHttpPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsHttpPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConfigurationPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsLoggingConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsLoggingEventLogPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsLoggingEventLogPackageVersion>
-    <MicrosoftExtensionsLoggingEventSourcePackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsLoggingEventSourcePackageVersion>
-    <MicrosoftExtensionsLoggingTraceSourcePackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
-    <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.6.20271.10</MicrosoftExtensionsPrimitivesPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>5.0.0-preview.6.20271.10</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.6.20271.10</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>5.0.0-preview.6.20271.10</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>5.0.0-preview.6.20271.10</SystemIOPipelinesPackageVersion>
-    <SystemReflectionMetadataPackageVersion>5.0.0-preview.6.20271.10</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-preview.6.20271.10</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>5.0.0-preview.6.20271.10</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-preview.6.20271.10</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-preview.6.20271.10</SystemServiceProcessServiceControllerPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.6.20271.10</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>5.0.0-preview.6.20271.10</SystemTextJsonPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>5.0.0-preview.6.20277.12</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsCachingAbstractionsPackageVersion>
+    <MicrosoftExtensionsCachingMemoryPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsCachingMemoryPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
+    <MicrosoftExtensionsConfigurationIniPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationIniPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
+    <MicrosoftExtensionsConfigurationXmlPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationXmlPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersCompositePackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsFileProvidersCompositePackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsHostingPackageVersion>
+    <MicrosoftExtensionsHttpPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsHttpPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingEventLogPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsLoggingEventLogPackageVersion>
+    <MicrosoftExtensionsLoggingEventSourcePackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsLoggingEventSourcePackageVersion>
+    <MicrosoftExtensionsLoggingTraceSourcePackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>5.0.0-preview.6.20277.12</MicrosoftExtensionsPrimitivesPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>5.0.0-preview.6.20277.12</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.6.20277.12</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>5.0.0-preview.6.20277.12</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>5.0.0-preview.6.20277.12</SystemIOPipelinesPackageVersion>
+    <SystemReflectionMetadataPackageVersion>5.0.0-preview.6.20277.12</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-preview.6.20277.12</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>5.0.0-preview.6.20277.12</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>5.0.0-preview.6.20277.12</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>5.0.0-preview.6.20277.12</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.6.20277.12</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>5.0.0-preview.6.20277.12</SystemTextJsonPackageVersion>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
-    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.6.20271.10</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.6.20277.12</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.20261.9</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetVersion>3.7.0-2.20267.1</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetVersion>3.7.0-3.20271.4</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
