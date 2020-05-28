@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
 
                 // Act
                 stateGenerator.Dispose();
-                stateGenerator.Update(WorkspaceProject, ProjectSnapshot);
+                stateGenerator.Update(WorkspaceProject, ProjectSnapshot, CancellationToken.None);
 
                 // Assert
                 Assert.Empty(stateGenerator._updates);
@@ -75,7 +75,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 stateGenerator.BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false);
 
                 // Act
-                stateGenerator.Update(WorkspaceProject, ProjectSnapshot);
+                stateGenerator.Update(WorkspaceProject, ProjectSnapshot, CancellationToken.None);
 
                 // Assert
                 var update = Assert.Single(stateGenerator._updates);
@@ -90,11 +90,11 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             using (var stateGenerator = new DefaultProjectWorkspaceStateGenerator(Dispatcher))
             {
                 stateGenerator.BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false);
-                stateGenerator.Update(WorkspaceProject, ProjectSnapshot);
+                stateGenerator.Update(WorkspaceProject, ProjectSnapshot, CancellationToken.None);
                 var initialUpdate = stateGenerator._updates.Single().Value;
 
                 // Act
-                stateGenerator.Update(WorkspaceProject, ProjectSnapshot);
+                stateGenerator.Update(WorkspaceProject, ProjectSnapshot, CancellationToken.None);
 
                 // Assert
                 Assert.True(initialUpdate.Cts.IsCancellationRequested);
@@ -114,7 +114,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 projectManager.ProjectWorkspaceStateChanged(ProjectSnapshot.FilePath, ProjectWorkspaceStateWithTagHelpers);
 
                 // Act
-                stateGenerator.Update(workspaceProject: null, ProjectSnapshot);
+                stateGenerator.Update(workspaceProject: null, ProjectSnapshot, CancellationToken.None);
 
                 // Jump off the foreground thread so the background work can complete.
                 await Task.Run(() => stateGenerator.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
@@ -137,7 +137,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 projectManager.ProjectAdded(ProjectSnapshot.HostProject);
 
                 // Act
-                stateGenerator.Update(WorkspaceProject, ProjectSnapshot);
+                stateGenerator.Update(WorkspaceProject, ProjectSnapshot, CancellationToken.None);
 
                 // Jump off the foreground thread so the background work can complete.
                 await Task.Run(() => stateGenerator.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));

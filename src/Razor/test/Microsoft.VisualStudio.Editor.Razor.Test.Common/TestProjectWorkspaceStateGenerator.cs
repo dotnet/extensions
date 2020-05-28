@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis;
+using System.Threading;
 
 namespace Microsoft.VisualStudio.Editor.Razor.Test
 {
@@ -23,7 +24,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Test
         {
         }
 
-        public override void Update(Project workspaceProject, ProjectSnapshot projectSnapshot)
+        public override void Update(Project workspaceProject, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken)
         {
             var update = (workspaceProject, projectSnapshot);
             _updates.Add(update);

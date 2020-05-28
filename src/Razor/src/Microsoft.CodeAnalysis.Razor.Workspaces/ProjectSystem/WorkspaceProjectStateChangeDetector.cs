@@ -26,7 +26,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         // are being initialized.
         //
         // Internal for testing
-        internal Dictionary<ProjectId, Task> _deferredUpdates;
+        internal Dictionary<ProjectId, UpdateItem> _deferredUpdates;
 
         [ImportingConstructor]
         public WorkspaceProjectStateChangeDetector(ProjectWorkspaceStateGenerator workspaceStateGenerator)
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _projectManager.Changed += ProjectManager_Changed;
             _projectManager.Workspace.WorkspaceChanged += Workspace_WorkspaceChanged;
 
-            _deferredUpdates = new Dictionary<ProjectId, Task>();
+            _deferredUpdates = new Dictionary<ProjectId, UpdateItem>();
 
             // This will usually no-op, in the case that another project snapshot change trigger immediately adds projects we want to be able to handle those projects
             InitializeSolution(_projectManager.Workspace.CurrentSolution);
@@ -77,7 +77,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                         if (TryGetProjectSnapshot(project.FilePath, out var projectSnapshot))
                         {
-                            _workspaceStateGenerator.Update(project, projectSnapshot);
+                            _workspaceStateGenerator.Update(project, projectSnapshot, CancellationToken.None);
                         }
                         break;
                     }
@@ -101,7 +101,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                         if (TryGetProjectSnapshot(project?.FilePath, out var projectSnapshot))
                         {
-                            _workspaceStateGenerator.Update(workspaceProject: null, projectSnapshot);
+                            _workspaceStateGenerator.Update(workspaceProject: null, projectSnapshot, CancellationToken.None);
                         }
 
                         break;
@@ -158,7 +158,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                             if (TryGetProjectSnapshot(p?.FilePath, out var projectSnapshot))
                             {
-                                _workspaceStateGenerator.Update(workspaceProject: null, projectSnapshot);
+                                _workspaceStateGenerator.Update(workspaceProject: null, projectSnapshot, CancellationToken.None);
                             }
                         }
                     }
@@ -222,7 +222,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 if (TryGetProjectSnapshot(project?.FilePath, out var projectSnapshot))
                 {
-                    _workspaceStateGenerator.Update(project, projectSnapshot);
+                    _workspaceStateGenerator.Update(project, projectSnapshot, CancellationToken.None);
                 }
             }
         }
@@ -239,7 +239,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 if (associatedWorkspaceProject != null)
                 {
-                    _workspaceStateGenerator.Update(associatedWorkspaceProject, args.Newer);
+                    _workspaceStateGenerator.Update(associatedWorkspaceProject, args.Newer, CancellationToken.None);
                 }
             }
         }
@@ -248,15 +248,27 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // A race is not possible here because we use the main thread to synchronize the updates
             // by capturing the sync context.
-            if (!_deferredUpdates.TryGetValue(projectId, out var update) || update.IsCompleted)
+            if (_deferredUpdates.TryGetValue(projectId, out var deferredUpdate) && !deferredUpdate.Task.IsCompleted && !deferredUpdate.Task.IsCanceled)
             {
-                _deferredUpdates[projectId] = UpdateAfterDelay(projectId);
+                deferredUpdate.Cts.Cancel();
             }
+
+            var cts = new CancellationTokenSource();
+            var updateTask = UpdateAfterDelay(projectId, cts);
+            _deferredUpdates[projectId] = new UpdateItem(updateTask, cts);
         }
 
-        private async Task UpdateAfterDelay(ProjectId projectId)
+        private async Task UpdateAfterDelay(ProjectId projectId, CancellationTokenSource cts)
         {
-            await Task.Delay(EnqueueDelay);
+            try
+            {
+                await Task.Delay(EnqueueDelay, cts.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Task cancelled, don't queue additional work.
+                return;
+            }
 
             OnStartingDelayedUpdate();
 
@@ -264,7 +276,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var workspaceProject = solution.GetProject(projectId);
             if (workspaceProject != null && TryGetProjectSnapshot(workspaceProject.FilePath, out var projectSnapshot))
             {
-                _workspaceStateGenerator.Update(workspaceProject, projectSnapshot);
+                _workspaceStateGenerator.Update(workspaceProject, projectSnapshot, cts.Token);
             }
         }
 
@@ -278,6 +290,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             projectSnapshot = _projectManager.GetLoadedProject(projectFilePath);
             return projectSnapshot != null;
+        }
+
+        // Internal for testing
+        internal class UpdateItem
+        {
+            public UpdateItem(Task task, CancellationTokenSource cts)
+            {
+                if (task == null)
+                {
+                    throw new ArgumentNullException(nameof(task));
+                }
+
+                if (cts == null)
+                {
+                    throw new ArgumentNullException(nameof(cts));
+                }
+
+                Task = task;
+                Cts = cts;
+            }
+
+            public Task Task { get; }
+
+            public CancellationTokenSource Cts { get; }
         }
     }
 }

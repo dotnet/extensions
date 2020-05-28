@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
@@ -104,7 +105,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     // Trigger a tag helper update by forcing the project manager to see the workspace Project
                     // from the current solution.
-                    _workspaceStateGenerator.Update(workspaceProject, projectSnapshot);
+                    _workspaceStateGenerator.Update(workspaceProject, projectSnapshot, CancellationToken.None);
                 }
             }
 

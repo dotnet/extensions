@@ -56,7 +56,7 @@ namespace Microsoft.CodeAnalysis.Razor
             _tagHelperResolver = _projectManager.Workspace.Services.GetRequiredService<TagHelperResolver>();
         }
 
-        public override void Update(Project workspaceProject, ProjectSnapshot projectSnapshot)
+        public override void Update(Project workspaceProject, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken)
         {
             if (projectSnapshot == null)
             {
@@ -82,14 +82,14 @@ namespace Microsoft.CodeAnalysis.Razor
                 updateItem?.Cts.Dispose();
             }
 
-            var cts = new CancellationTokenSource();
+            var lcts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var updateTask = Task.Factory.StartNew(
-                () => UpdateWorkspaceStateAsync(workspaceProject, projectSnapshot, cts.Token),
-                cts.Token,
+                () => UpdateWorkspaceStateAsync(workspaceProject, projectSnapshot, lcts.Token),
+                lcts.Token,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.BackgroundScheduler).Unwrap();
             updateTask.ConfigureAwait(false);
-            updateItem = new UpdateItem(updateTask, cts);
+            updateItem = new UpdateItem(updateTask, lcts);
             _updates[projectSnapshot.FilePath] = updateItem;
         }
 

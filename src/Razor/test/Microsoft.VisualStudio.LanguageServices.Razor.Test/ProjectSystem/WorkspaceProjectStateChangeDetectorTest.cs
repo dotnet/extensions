@@ -184,7 +184,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
             Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
@@ -220,7 +220,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
             Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
@@ -256,7 +256,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
             Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
@@ -292,7 +292,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
             Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Components
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
             Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
