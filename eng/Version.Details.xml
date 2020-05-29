@@ -37,10 +37,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c44dc40b763b7c74012622a0a6120cd8ffa35ce4</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.Metadata" Version="5.0.0-preview.6.20271.10" CoherentParentDependency="Microsoft.CodeAnalysis.Razor" >
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>c44dc40b763b7c74012622a0a6120cd8ffa35ce4</Sha>
-    </Dependency>
     <Dependency Name="System.Resources.Extensions" Version="5.0.0-preview.6.20271.10" CoherentParentDependency="Microsoft.CodeAnalysis.Razor" >
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c44dc40b763b7c74012622a0a6120cd8ffa35ce4</Sha>
