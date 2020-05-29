@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.Extensions.Options;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
@@ -14,18 +13,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     internal class CloseRazorCommentFormatOnTypeProvider : RazorFormatOnTypeProvider
     {
-        private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
-
-        public CloseRazorCommentFormatOnTypeProvider(IOptionsMonitor<RazorLSPOptions> optionsMonitor)
-        {
-            if (optionsMonitor is null)
-            {
-                throw new ArgumentNullException(nameof(optionsMonitor));
-            }
-
-            _optionsMonitor = optionsMonitor;
-        }
-
         public override string TriggerCharacter => "*";
 
         public override bool TryFormatOnType(Position position, FormattingContext context, out TextEdit[] edits)

@@ -64,10 +64,7 @@ character: "*");
 
         internal override RazorFormatOnTypeProvider CreateProvider()
         {
-            var optionsMonitor = new Mock<IOptionsMonitor<RazorLSPOptions>>();
-            optionsMonitor.SetupGet(o => o.CurrentValue).Returns(RazorLSPOptions.Default);
-            var provider = new CloseRazorCommentFormatOnTypeProvider(optionsMonitor.Object);
-
+            var provider = new CloseRazorCommentFormatOnTypeProvider();
             return provider;
         }
     }

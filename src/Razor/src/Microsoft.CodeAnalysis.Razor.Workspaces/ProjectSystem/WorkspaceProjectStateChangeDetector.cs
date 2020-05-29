@@ -248,7 +248,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // A race is not possible here because we use the main thread to synchronize the updates
             // by capturing the sync context.
-            if (_deferredUpdates.TryGetValue(projectId, out var deferredUpdate) && !deferredUpdate.Task.IsCompleted && !deferredUpdate.Task.IsCanceled)
+            if (_deferredUpdates.TryGetValue(projectId, out var deferredUpdate)
+                    && !deferredUpdate.Task.IsCompleted
+                    && !deferredUpdate.Task.IsCanceled
+                    && !deferredUpdate.Cts.IsCancellationRequested)
             {
                 deferredUpdate.Cts.Cancel();
             }
