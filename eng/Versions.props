@@ -131,7 +131,6 @@
     <SystemPrivateUriPackageVersion>4.3.2</SystemPrivateUriPackageVersion>
     <VS_NewtonsoftJsonPackageVersion>12.0.2</VS_NewtonsoftJsonPackageVersion>
     <VSMAC_NewtonsoftJsonPackageVersion>12.0.2</VSMAC_NewtonsoftJsonPackageVersion>
-    <Runtime_MicrosoftCodeAnalysisCSharpPackageVersion>3.4.0</Runtime_MicrosoftCodeAnalysisCSharpPackageVersion>
     <StreamJsonRpcPackageVersion>2.3.103</StreamJsonRpcPackageVersion>
     <Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.7.0-2.20257.6</Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion>3.0.0</Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion>
