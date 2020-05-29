@@ -63,7 +63,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(DebugType) != 'embedded'">
-    <MPackFile Include="$(PkgMicrosoft.AspNetCore.Razor.Internal.Transport)\pdb\*.pdb" />
+    <MPackFile Include="$(PkgMicrosoft_AspNetCore_Razor_Internal_Transport)\pdb\*.pdb" />
     <MPackFile Include="$(ArtifactsBinDir)Microsoft.CodeAnalysis.Razor.Workspaces\$(Configuration)\netstandard2.0\Microsoft.CodeAnalysis.Razor.Workspaces.pdb" />
     <MPackFile Include="$(ArtifactsBinDir)Microsoft.VisualStudio.Editor.Razor\$(Configuration)\net472\Microsoft.VisualStudio.Editor.Razor.pdb" />
     <MPackFile Include="$(ArtifactsBinDir)Microsoft.VisualStudio.Mac.LanguageServices.Razor\$(Configuration)\net472\Microsoft.VisualStudio.Mac.LanguageServices.Razor.pdb" />
