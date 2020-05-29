@@ -61,7 +61,10 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
                 _delayStop.Set();
             });
 
-            new Thread(Run).Start(); // Otherwise this would block and prevent IHost.StartAsync from finishing.
+            Thread thread = new Thread(Run);
+            thread.IsBackground = true;
+            thread.Start(); // Otherwise this would block and prevent IHost.StartAsync from finishing.
+
             return _delayStart.Task;
         }
 
@@ -102,13 +105,13 @@ namespace Microsoft.Extensions.Hosting.WindowsServices
             _delayStop.Wait(_hostOptions.ShutdownTimeout);
             base.OnStop();
         }
-        
+
         protected override void OnShutdown()
         {
-             ApplicationLifetime.StopApplication();
-             // Wait for the host to shutdown before marking service as stopped.
-             _delayStop.Wait(_hostOptions.ShutdownTimeout);
-             base.OnShutdown();                
+            ApplicationLifetime.StopApplication();
+            // Wait for the host to shutdown before marking service as stopped.
+            _delayStop.Wait(_hostOptions.ShutdownTimeout);
+            base.OnShutdown();
         }
 
         protected override void Dispose(bool disposing)
