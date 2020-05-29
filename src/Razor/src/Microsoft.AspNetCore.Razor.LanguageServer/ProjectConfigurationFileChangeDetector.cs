@@ -72,12 +72,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return;
             }
 
-            // Start listening for file changes. If a project configuration file changes in any way we'll notify listeners.
-
-            // If we don't trim workspaceDirectory before passing it to FileSystemWatcher then when it eventually finds
-            // the file it reports the path as something like C:\some\dir\/deeper/dir/project.razor.json, while we'll be
-            // comparing it against C:\some\dir/deeper/dir/project.razor.json, and they won't match due to the extra \.
-            _watcher = new FileSystemWatcher(workspaceDirectory.TrimEnd('/','\\'), LanguageServerConstants.ProjectConfigurationFile)
+            _watcher = new RazorFileSystemWatcher(workspaceDirectory, LanguageServerConstants.ProjectConfigurationFile)
             {
                 NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
                 IncludeSubdirectories = true,

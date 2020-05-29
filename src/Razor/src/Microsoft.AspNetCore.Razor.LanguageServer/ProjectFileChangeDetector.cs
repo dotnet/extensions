@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Start listening for project file changes (added/removed/renamed).
 
-            _watcher = new FileSystemWatcher(workspaceDirectory, ProjectFileExtensionPattern)
+            _watcher = new RazorFileSystemWatcher(workspaceDirectory, ProjectFileExtensionPattern)
             {
                 NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
                 IncludeSubdirectories = true,
