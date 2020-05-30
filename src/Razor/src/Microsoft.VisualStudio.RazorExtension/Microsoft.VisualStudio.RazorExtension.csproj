@@ -27,12 +27,12 @@
 
   <!-- Include Razor SDK design time assets in the VSIX -->
   <ItemGroup>
-    <Content Include="..\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Microsoft.NET.Sdk.Razor.DesignTime.targets">
+    <Content Include="$(PkgMicrosoft_NET_Sdk_Razor)\build\netstandard2.0\Microsoft.NET.Sdk.Razor.DesignTime.targets">
       <IncludeInVsix>true</IncludeInVsix>
       <InstallRoot>MSBuild</InstallRoot>
       <VSIXSubPath>Microsoft\VisualStudio\Razor\</VSIXSubPath>
     </Content>
-    <Content Include="..\\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Rules\*.xaml">
+    <Content Include="$(PkgMicrosoft_NET_Sdk_Razor)\build\netstandard2.0\Rules\*.xaml">
       <IncludeInVsix>true</IncludeInVsix>
       <InstallRoot>MSBuild</InstallRoot>
       <VSIXSubPath>Microsoft\VisualStudio\Razor\Rules\</VSIXSubPath>
@@ -147,12 +147,7 @@
 
   <ItemGroup>
     <!-- Don't trim this list. It is used to feed into the binding redirects -->
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj" />
-    <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor\Microsoft.CodeAnalysis.Razor.csproj" />
     <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
     <ProjectReference Include="..\Microsoft.CodeAnalysis.Remote.Razor\Microsoft.CodeAnalysis.Remote.Razor.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.Editor.Razor\Microsoft.VisualStudio.Editor.Razor.csproj" />
@@ -164,7 +159,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)"/>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion)"/>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion)"/>
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)"/>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)" NoWarn="NU1608" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(MicrosoftVisualStudioComponentModelHostPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.SDK.Analyzers" Version="$(MicrosoftVisualStudioSDKAnalyzersVersion)" PrivateAssets="all" />

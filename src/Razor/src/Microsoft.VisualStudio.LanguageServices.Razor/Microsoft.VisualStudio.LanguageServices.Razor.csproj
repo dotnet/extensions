@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor design-time infrastructure for Visual Studio.</Description>
     <EnableApiCheck>false</EnableApiCheck>
-    <RulesDirectory>..\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Rules\</RulesDirectory>
+    <RulesDirectory>$(PkgMicrosoft_NET_Sdk_Razor)\build\netstandard2.0\Rules\</RulesDirectory>
     <CodeAnalysisRuleSet>Microsoft.VisualStudio.LanguageServices.Razor.ruleset</CodeAnalysisRuleSet>
     <IsShipping>false</IsShipping>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="$(Tooling_MicrosoftCodeAnalysisFeaturesPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" />
     <PackageReference Include="Microsoft.Net.RoslynDiagnostics" Version="$(MicrosoftNetRoslynDiagnosticsPackageVersion)" IncludeAssets="None" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(MicrosoftVisualStudioComponentModelHostPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Editor" Version="$(MicrosoftVisualStudioEditorPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" Version="$(MicrosoftVisualStudioImageCatalogPackageVersion)" />
