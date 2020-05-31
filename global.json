@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "5.0.100-preview.5.20258.4",
+    "dotnet": "5.0.100-preview.6.20266.3",
     "runtimes": {
       "dotnet": [
         "2.1.11",
@@ -15,10 +15,10 @@
     }
   },
   "sdk": {
-    "version": "5.0.100-preview.5.20258.4"
+    "version": "5.0.100-preview.6.20266.3"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20261.9",
+    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20278.4",
     "Yarn.MSBuild": "1.15.2"
   }
 }
