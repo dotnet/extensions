@@ -11,7 +11,7 @@
     <PatchVersion>0</PatchVersion>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>6</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>7</PreReleaseVersionIteration>
     <AssemblyVersion>$(VersionPrefix).0</AssemblyVersion>
     <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
     <!--
