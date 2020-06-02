@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(virtualDocumentUri));
             }
 
-            var path = virtualDocumentUri.GetAbsoluteOrUNCPath();
+            var path = virtualDocumentUri.AbsoluteUri;
             path = path.Replace(RazorLSPConstants.VirtualCSharpFileNameSuffix, string.Empty);
             path = path.Replace(RazorLSPConstants.VirtualHtmlFileNameSuffix, string.Empty);
 

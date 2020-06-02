@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    internal class RazorMapToDocumentRangeParams
+    internal struct RazorMapToDocumentRangeParams
     {
         public RazorLanguageKind Kind { get; set; }
 

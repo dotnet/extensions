@@ -11,5 +11,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     internal abstract class LSPDocumentMappingProvider
     {
         public abstract Task<RazorMapToDocumentRangeResponse> MapToDocumentRangeAsync(RazorLanguageKind languageKind, Uri razorDocumentUri, Range projectedRange, CancellationToken cancellationToken);
+
+        public abstract Task<WorkspaceEdit> RemapWorkspaceEditAsync(WorkspaceEdit workspaceEdit, CancellationToken cancellationToken);
     }
 }
