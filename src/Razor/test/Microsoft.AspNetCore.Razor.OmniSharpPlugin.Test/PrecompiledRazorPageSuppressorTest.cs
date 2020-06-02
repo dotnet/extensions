@@ -53,6 +53,28 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         [Fact]
+        public void Workspace_WorkspaceChanged_GEndingRazorCSharpFile_Noops()
+        {
+            // Arrange
+            var originalSolution = Workspace.CurrentSolution;
+            var addedDocument = AddRoslynDocument(filePath: "/path/Leg.cshtml.cs");
+            var newSolution = Workspace.CurrentSolution;
+            var workspaceChangeEventArgs = new WorkspaceChangeEventArgs(
+                WorkspaceChangeKind.DocumentChanged,
+                originalSolution,
+                newSolution,
+                addedDocument.Project.Id,
+                addedDocument.Id);
+            var processedPublisher = new PrecompiledRazorPageSuppressor(Workspace);
+
+            // Act
+            processedPublisher.Workspace_WorkspaceChanged(sender: null, workspaceChangeEventArgs);
+
+            // Assert
+            Assert.Same(newSolution, Workspace.CurrentSolution);
+        }
+
+        [Fact]
         public void Workspace_WorkspaceChanged_RazorTargetAssemblyInfo_RemovesDocument()
         {
             // Arrange
