@@ -3,6 +3,7 @@
 
 using System;
 using System.Composition;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -47,12 +48,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
         }
 
-        public override bool IsLSPEditorAvailable(string documentMoniker, IVsHierarchy hierarchy)
+        public override bool IsLSPEditorAvailable(string documentMoniker, object hierarchy)
         {
             if (documentMoniker == null)
             {
                 return false;
             }
+
+            var ivsHierarchy = hierarchy as IVsHierarchy;
 
             if (!IsLSPEditorFeatureEnabled())
             {
@@ -60,7 +63,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return false;
             }
 
-            if (!ProjectSupportsRazorLSPEditor(documentMoniker, hierarchy))
+            if (!ProjectSupportsRazorLSPEditor(documentMoniker, ivsHierarchy))
             {
                 // Current project hierarchy doesn't support the LSP Razor editor
                 return false;

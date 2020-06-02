@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Editor.Razor;
@@ -30,8 +29,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             HostProject1 = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
             HostProject2 = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.AnotherProject.RootNamespace);
 
-            DynamicFileInfoProvider = new DefaultRazorDynamicFileInfoProvider(new DefaultRazorDocumentServiceProviderFactory());
-
+            var razorDocumentServiceProviderFactory = new DefaultRazorDocumentServiceProviderFactory();
+            var testLSPEnabledEditorFeatureDetector = Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsLSPEditorFeatureEnabled() == true);
+            DynamicFileInfoProvider = new DefaultRazorDynamicFileInfoProvider(razorDocumentServiceProviderFactory, testLSPEnabledEditorFeatureDetector);
             DivergenceChecker = Mock.Of<DocumentDivergenceChecker>(checker => checker.PossibleDivergence(It.IsAny<DocumentSnapshot>(), It.IsAny<DocumentSnapshot>()) == true);
         }
 

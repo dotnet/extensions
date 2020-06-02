@@ -23,18 +23,25 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         private readonly ConcurrentDictionary<Key, Entry> _entries;
         private readonly Func<Key, Entry> _createEmptyEntry;
         private readonly RazorDocumentServiceProviderFactory _factory;
+        private readonly LSPEditorFeatureDetector _lspEditorFeatureDetector;
 
         [ImportingConstructor]
-        public DefaultRazorDynamicFileInfoProvider(RazorDocumentServiceProviderFactory factory)
+        public DefaultRazorDynamicFileInfoProvider(RazorDocumentServiceProviderFactory factory, LSPEditorFeatureDetector lspEditorFeatureDetector)
         {
             if (factory is null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
+            if (lspEditorFeatureDetector is null)
+            {
+                throw new ArgumentNullException(nameof(lspEditorFeatureDetector));
+            }
+
             _factory = factory;
+            _lspEditorFeatureDetector = lspEditorFeatureDetector;
             _entries = new ConcurrentDictionary<Key, Entry>();
-            _createEmptyEntry = (key) => new Entry(CreateEmptyInfo(key), supportsSuppression: true);
+            _createEmptyEntry = (key) => new Entry(CreateEmptyInfo(key));
         }
 
         public event EventHandler<string> Updated;
@@ -73,7 +80,6 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
 
             lock (associatedEntry.Lock)
             {
-                associatedEntry.SupportsSuppression = false;
                 associatedEntry.Current = CreateInfo(associatedKey, documentContainer);
             }
 
@@ -101,7 +107,6 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             {
                 lock (entry.Lock)
                 {
-                    entry.SupportsSuppression = true;
                     entry.Current = CreateInfo(key, documentContainer);
                 }
 
@@ -122,20 +127,17 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 throw new ArgumentNullException(nameof(documentFilePath));
             }
 
+            if (_lspEditorFeatureDetector.IsLSPEditorFeatureEnabled())
+            {
+                return;
+            }
+
             // There's a possible race condition here where we're processing an update
             // and the project is getting unloaded. So if we don't find an entry we can
             // just ignore it.
             var key = new Key(projectFilePath, documentFilePath);
             if (_entries.TryGetValue(key, out var entry))
             {
-                lock (entry.Lock)
-                {
-                    if (!entry.SupportsSuppression)
-                    {
-                        return;
-                    }
-                }
-
                 var updated = false;
                 lock (entry.Lock)
                 {
@@ -208,7 +210,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             // Can't ever be null for thread-safety reasons
             private RazorDynamicFileInfo _current;
 
-            public Entry(RazorDynamicFileInfo current, bool supportsSuppression)
+            public Entry(RazorDynamicFileInfo current)
             {
                 if (current == null)
                 {
@@ -216,7 +218,6 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 }
 
                 Current = current;
-                SupportsSuppression = supportsSuppression;
                 Lock = new object();
             }
 
@@ -235,8 +236,6 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             }
 
             public object Lock { get; }
-
-            public bool SupportsSuppression { get; set; }
 
             public override string ToString()
             {

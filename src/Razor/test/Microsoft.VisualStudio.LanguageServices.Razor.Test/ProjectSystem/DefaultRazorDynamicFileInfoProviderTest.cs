@@ -14,15 +14,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.ProjectSystem
         public DefaultRazorDynamicFileInfoProviderTest()
         {
             DocumentServiceFactory = Mock.Of<RazorDocumentServiceProviderFactory>();
+            EditorFeatureDetector = Mock.Of<LSPEditorFeatureDetector>();
         }
 
         private RazorDocumentServiceProviderFactory DocumentServiceFactory { get; }
+        private LSPEditorFeatureDetector EditorFeatureDetector { get; }
 
         [Fact]
         public void UpdateLSPFileInfo_UnknownFile_Noops()
         {
             // Arrange
-            var provider = new DefaultRazorDynamicFileInfoProvider(DocumentServiceFactory);
+            var provider = new DefaultRazorDynamicFileInfoProvider(DocumentServiceFactory, EditorFeatureDetector);
             provider.Updated += (sender, args) => throw new XunitException("Should not have been called.");
 
             // Act & Assert
