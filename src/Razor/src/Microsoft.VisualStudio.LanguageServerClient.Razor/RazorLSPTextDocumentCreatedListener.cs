@@ -7,12 +7,10 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
-using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
-using Microsoft.VisualStudio.Utilities;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
@@ -23,6 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private static readonly Guid HtmlLanguageServiceGuid = new Guid("9BBFD173-9770-47DC-B191-651B7FF493CD");
 
         private const string FilePathPropertyKey = "RazorTextBufferFilePath";
+        private const string RazorLSPBufferInitializedMarker = "RazorLSPBufferInitialized";
 
         private readonly TrackingLSPDocumentManager _lspDocumentManager;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
@@ -30,12 +29,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly LSPEditorService _editorService;
         private readonly SVsServiceProvider _serviceProvider;
         private readonly IEditorOptionsFactoryService _editorOptionsFactory;
-        private readonly IContentType _razorLSPContentType;
 
         [ImportingConstructor]
         public RazorLSPTextDocumentCreatedListener(
             ITextDocumentFactoryService textDocumentFactory,
-            IContentTypeRegistryService contentTypeRegistry,
             LSPDocumentManager lspDocumentManager,
             LSPEditorFeatureDetector lspEditorFeatureDetector,
             LSPEditorService editorService,
@@ -45,11 +42,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             if (textDocumentFactory is null)
             {
                 throw new ArgumentNullException(nameof(textDocumentFactory));
-            }
-
-            if (contentTypeRegistry is null)
-            {
-                throw new ArgumentNullException(nameof(contentTypeRegistry));
             }
 
             if (lspDocumentManager is null)
@@ -94,7 +86,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             _textDocumentFactory.TextDocumentCreated += TextDocumentFactory_TextDocumentCreated;
             _textDocumentFactory.TextDocumentDisposed += TextDocumentFactory_TextDocumentDisposed;
-            _razorLSPContentType = contentTypeRegistry.GetContentType(RazorLSPConstants.RazorLSPContentTypeName);
         }
 
         // Internal for testing
@@ -111,12 +102,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             var textBuffer = args.TextDocument.TextBuffer;
-            if (!textBuffer.ContentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName))
+            if (!textBuffer.IsRazorLSPBuffer())
             {
-                // This Razor text buffer has yet to be initialized.
-
-                InitializeRazorLSPTextBuffer(args.TextDocument.FilePath, textBuffer);
+                return;
             }
+
+            // This Razor text buffer has yet to be initialized.
+            TryInitializeRazorLSPTextBuffer(args.TextDocument.FilePath, textBuffer);
         }
 
         // Internal for testing
@@ -183,21 +175,23 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return true;
         }
 
-        private void InitializeRazorLSPTextBuffer(string filePath, ITextBuffer textBuffer)
+        private void TryInitializeRazorLSPTextBuffer(string filePath, ITextBuffer textBuffer)
         {
+            if (textBuffer.Properties.ContainsProperty(RazorLSPBufferInitializedMarker))
+            {
+                // Already initialized
+                return;
+            }
+
+            textBuffer.Properties.AddProperty(RazorLSPBufferInitializedMarker, true);
+
+            // Initialize the buffer with editor options.
+            // Temporary: Ideally in remote scenarios, we should be using host's settings.
+            // But we need this until that support is built.
+            InitializeOptions(textBuffer);
+
             if (_lspEditorFeatureDetector.IsRemoteClient())
             {
-                // We purposefully do not set ClientName's in remote client scenarios because we don't want to boot 2 langauge servers (one for both host and client).
-                // The ClientName controls whether or not an ILanguageClient instantiates.
-
-                // We still change the content type for remote scenarios in order to enable our TextMate grammar to light up the Razor editor properly.
-                textBuffer.ChangeContentType(_razorLSPContentType, editTag: null);
-
-                // Initialize the buffer with editor options.
-                // Temporary: Ideally in remote scenarios, we should be using host's settings.
-                // But we need this until that support is built.
-                InitializeOptions(textBuffer);
-
                 // Temporary: The guest needs to react to the host manually applying edits and moving the cursor.
                 // This can be removed once the client starts supporting snippets.
                 textBuffer.Properties.AddProperty(FilePathPropertyKey, filePath);
@@ -205,16 +199,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
             else
             {
-                // ClientName controls if the LSP infrastructure in VS will boot when it detects our Razor LSP contennt type. If the property exists then it will; otherwise
-                // the text buffer will be ignored by the LSP 
-                textBuffer.Properties.AddProperty(LanguageClientConstants.ClientNamePropertyKey, RazorLanguageServerClient.ClientName);
-
-                // Initialize the buffer with editor options.
-                InitializeOptions(textBuffer);
-
-                textBuffer.ChangeContentType(_razorLSPContentType, editTag: null);
-
-                // Must track the document after changing the content type so any LSPDocuments created understand they're being created for a Razor LSP document.
+                // Only need to track documents on a host because we don't do any extra work on remote clients.
                 _lspDocumentManager.TrackDocument(textBuffer);
             }
         }

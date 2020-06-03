@@ -13,15 +13,10 @@ using Nerdbank.Streams;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    [ClientName(ClientName)]
     [Export(typeof(ILanguageClient))]
     [ContentType(RazorLSPConstants.RazorLSPContentTypeName)]
     internal class RazorHtmlCSharpLanguageServerClient : ILanguageClient, IDisposable
     {
-        // ClientName enables us to turn on-off the ILanguageClient functionality for specific TextBuffers of content type RazorLSPContentTypeDefinition.Name.
-        // This typically is used in cloud scenarios where we want to utilize an ILanguageClient on the server but not the client; therefore we disable this
-        // ILanguageClient infrastructure on the guest to ensure that two language servers don't provide results.
-        public const string ClientName = "RazorLSPClientName";
         private readonly IEnumerable<Lazy<IRequestHandler, IRequestHandlerMetadata>> _requestHandlers;
         private RazorHtmlCSharpLanguageServer _languageServer;
 
