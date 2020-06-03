@@ -10,3 +10,9 @@
 // language name is (partial value of the content type name).
 [$RootKey$\TextMate\LanguageConfiguration\ContentTypeMapping]
 "RazorLSP"="$PackageFolder$\language-configuration.json"
+
+[$RootKey$\FeatureFlags\Razor\LSP\Editor]
+"Description"="Enables the Razor Language Server Protocol powered editor experience for all Razor editors. Razor documents will have to be re-opened to use the new editor, but reopening the solution would not be sufficient."
+"Value"=dword:00000000
+"Title"="Enable experimental Razor editor"
+"PreviewPaneChannels"="*"
