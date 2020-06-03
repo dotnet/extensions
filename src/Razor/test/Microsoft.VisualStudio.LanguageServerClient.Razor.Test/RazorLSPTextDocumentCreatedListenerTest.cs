@@ -107,7 +107,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Arrange
             var textBuffer = new Mock<ITextBuffer>();
             textBuffer.Setup(buffer => buffer.ContentType)
-                .Returns(Mock.Of<IContentType>());
+                .Returns(RazorContentType);
             var textBufferProperties = new PropertyCollection();
             textBuffer.Setup(buffer => buffer.Properties)
                 .Returns(textBufferProperties);
@@ -133,58 +133,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             lspDocumentManager.Setup(manager => manager.TrackDocument(It.IsAny<ITextBuffer>()))
                 .Throws<XunitException>();
             var featureDetector = Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsRemoteClient() == true);
-            var listener = CreateListener(lspDocumentManager.Object);
+            var listener = CreateListener(lspDocumentManager.Object, featureDetector);
             var textDocument = CreateTextDocument(filePath: "file.razor");
             var args = new TextDocumentEventArgs(textDocument);
 
             // Act & Assert
             listener.TextDocumentFactory_TextDocumentCreated(sender: null, args);
-        }
-
-        [Fact]
-        public void TextDocumentFactory_TextDocumentCreated_UninitializedTextBuffer_InitializesWithClientName()
-        {
-            // Arrange
-            var listener = CreateListener();
-            var textBuffer = new Mock<ITextBuffer>();
-            textBuffer.Setup(buffer => buffer.ContentType)
-                .Returns(Mock.Of<IContentType>());
-            var textBufferProperties = new PropertyCollection();
-            textBuffer.Setup(buffer => buffer.Properties)
-                .Returns(textBufferProperties);
-            var textDocument = CreateTextDocument(filePath: "file.razor", textBuffer.Object);
-            var args = new TextDocumentEventArgs(textDocument);
-
-            // Act
-            listener.TextDocumentFactory_TextDocumentCreated(sender: null, args);
-
-            // Assert
-            textBuffer.VerifyAll();
-            Assert.True(textBufferProperties.TryGetProperty<string>(LanguageClientConstants.ClientNamePropertyKey, out _));
-        }
-
-        [Fact]
-        public void TextDocumentFactory_TextDocumentCreated_UninitializedTextBuffer_RemoteClient_InitializesWithoutClientName()
-        {
-            // Arrange
-            var featureDetector = Mock.Of<LSPEditorFeatureDetector>(detector =>
-                detector.IsLSPEditorAvailable(It.IsAny<string>(), null) == true &&
-                detector.IsRemoteClient() == true);
-            var listener = CreateListener(lspEditorFeatureDetector: featureDetector);
-            var textBuffer = new Mock<ITextBuffer>();
-            textBuffer.Setup(buffer => buffer.ContentType)
-                .Returns(Mock.Of<IContentType>());
-            var textBufferProperties = new PropertyCollection();
-            textBuffer.Setup(buffer => buffer.Properties)
-                .Returns(textBufferProperties);
-            var textDocument = CreateTextDocument(filePath: "file.razor", textBuffer.Object);
-            var args = new TextDocumentEventArgs(textDocument);
-
-            // Act
-            listener.TextDocumentFactory_TextDocumentCreated(sender: null, args);
-
-            // Assert
-            Assert.False(textBufferProperties.TryGetProperty<string>(LanguageClientConstants.ClientNamePropertyKey, out _));
         }
 
         [Theory]
@@ -243,7 +197,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         private ITextDocument CreateTextDocument(string filePath, ITextBuffer textBuffer = null)
         {
-            textBuffer ??= Mock.Of<ITextBuffer>(buffer => buffer.ContentType == RazorContentType);
+            textBuffer ??= Mock.Of<ITextBuffer>(buffer => buffer.ContentType == RazorContentType && buffer.Properties == new PropertyCollection());
             var textDocument = Mock.Of<ITextDocument>(document =>
                 document.FilePath == filePath &&
                 document.TextBuffer == textBuffer);
