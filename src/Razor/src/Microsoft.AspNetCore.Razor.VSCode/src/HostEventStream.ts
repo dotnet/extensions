@@ -9,14 +9,49 @@ export interface HostEventStream {
     post(event: BaseEvent): void;
 }
 
-export class TelemetryEvent implements BaseEvent {
-    public type = EventType.TelemetryEvent;
+export function createTelemetryEvent(
+    eventName: string,
+    properties?: { [key: string]: string },
+    measures?: { [key: string]: number }): TelemetryEvent {
 
-    constructor(
-        public eventName: string,
-        public properties?: { [key: string]: string },
-        public measures?: { [key: string]: number }) {
-    }
+    return {
+        type: EventType.TelemetryEvent,
+        eventName,
+        properties,
+        measures,
+    };
+}
+
+export function createTelemetryErrorEvent(
+    eventName: string,
+    properties?: { [key: string]: string },
+    measures?: { [key: string]: number },
+    errorProps?: string[]): TelemetryErrorEvent {
+
+    return {
+        type: EventType.TelemetryErrorEvent,
+        eventName,
+        properties,
+        measures,
+        errorProps,
+    };
+}
+
+interface TelemetryEvent extends BaseEvent {
+    type: EventType.TelemetryEvent;
+
+    eventName: string;
+    properties?: { [key: string]: string };
+    measures?: { [key: string]: number };
+}
+
+interface TelemetryErrorEvent extends BaseEvent {
+    type: EventType.TelemetryErrorEvent;
+
+    eventName: string;
+    properties?: { [key: string]: string };
+    measures?: { [key: string]: number };
+    errorProps?: string[];
 }
 
 interface BaseEvent {
@@ -26,4 +61,5 @@ interface BaseEvent {
 // This is a sub-copied portion of OmniSharp's EventType class.
 enum EventType {
     TelemetryEvent = 1,
+    TelemetryErrorEvent = 78,
 }
