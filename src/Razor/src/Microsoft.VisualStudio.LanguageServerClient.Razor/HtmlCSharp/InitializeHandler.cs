@@ -31,6 +31,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 DefinitionProvider = true,
                 DocumentHighlightProvider = true,
                 RenameProvider = true,
+                ReferencesProvider = true
             }
         };
 

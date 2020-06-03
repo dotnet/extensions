@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,8 +11,8 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
     [Shared]
-    [ExportLspMethod(Methods.TextDocumentHoverName)]
-    internal class HoverHandler : IRequestHandler<TextDocumentPositionParams, Hover>
+    [ExportLspMethod(Methods.TextDocumentReferencesName)]
+    internal class FindAllReferencesHandler : IRequestHandler<ReferenceParams, VSReferenceItem[]>
     {
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentManager _documentManager;
@@ -19,7 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
 
         [ImportingConstructor]
-        public HoverHandler(
+        public FindAllReferencesHandler(
             LSPRequestInvoker requestInvoker,
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
@@ -51,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             _documentMappingProvider = documentMappingProvider;
         }
 
-        public async Task<Hover> HandleRequestAsync(TextDocumentPositionParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
+        public async Task<VSReferenceItem[]> HandleRequestAsync(ReferenceParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
         {
             if (request is null)
             {
@@ -69,59 +70,70 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
-            if (projectionResult == null)
+            if (projectionResult == null || projectionResult.LanguageKind != RazorLanguageKind.CSharp)
             {
                 return null;
             }
 
-            var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var textDocumentPositionParams = new TextDocumentPositionParams()
+            var serverKind = LanguageServerKind.CSharp;
+            var referenceParams = new ReferenceParams()
             {
                 Position = projectionResult.Position,
                 TextDocument = new TextDocumentIdentifier()
                 {
                     Uri = projectionResult.Uri
-                }
+                },
+                Context = request.Context,
+                PartialResultToken = request.PartialResultToken
             };
 
-            var result = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Hover>(
-                Methods.TextDocumentHoverName,
+            var result = await _requestInvoker.ReinvokeRequestOnServerAsync<ReferenceParams, VSReferenceItem[]>(
+                Methods.TextDocumentReferencesName,
                 serverKind,
-                textDocumentPositionParams,
+                referenceParams,
                 cancellationToken).ConfigureAwait(false);
 
-            if (result?.Range == null || result?.Contents == null)
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (result == null || result.Length == 0)
             {
-                return null;
+                return result;
             }
 
-            var mappingResult = await _documentMappingProvider.MapToDocumentRangeAsync(projectionResult.LanguageKind, request.TextDocument.Uri, result.Range, cancellationToken).ConfigureAwait(false);
+            var remappedLocations = new List<VSReferenceItem>();
 
-            if (mappingResult == null)
+            foreach (var referenceItem in result)
             {
-                // Couldn't remap the edits properly. Returning hover at initial request position.
-                return new Hover
+                if (!RazorLSPConventions.IsRazorCSharpFile(referenceItem.Location.Uri))
                 {
-                    Contents = result.Contents,
-                    Range = new Range()
-                    {
-                        Start = request.Position,
-                        End = request.Position
-                    }
-                };
-            }
-            else if (mappingResult.HostDocumentVersion != documentSnapshot.Version)
-            {
-                // Discard hover if document has changed.
-                return null;
+                    // This location doesn't point to a virtual cs file. No need to remap.
+                    remappedLocations.Add(referenceItem);
+                    continue;
+                }
+
+                var razorDocumentUri = RazorLSPConventions.GetRazorDocumentUri(referenceItem.Location.Uri);
+                var mappingResult = await _documentMappingProvider.MapToDocumentRangeAsync(
+                    projectionResult.LanguageKind,
+                    razorDocumentUri,
+                    referenceItem.Location.Range,
+                    cancellationToken).ConfigureAwait(false);
+
+                if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
+                {
+                    // Couldn't remap the location or the document changed in the meantime. Discard this location.
+                    continue;
+                }
+
+                referenceItem.Location.Uri = razorDocumentUri;
+                referenceItem.DisplayPath = razorDocumentUri.AbsolutePath;
+                referenceItem.Location.Range = mappingResult.Range;
+
+                remappedLocations.Add(referenceItem);
             }
 
-            return new Hover
-            {
-                Contents = result.Contents,
-                Range = mappingResult.Range
-            };
+            return remappedLocations.ToArray();
         }
     }
 }
