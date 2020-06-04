@@ -15,12 +15,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         [ImportingConstructor]
         public RazorFilePathToContentTypeProvider(
             IContentTypeRegistryService contentTypeRegistryService,
-            LSPEditorFeatureDetector lspEditorFeatureDetector,
-
-            // This RazorLSPTextDocumentCreatedListener is imported here for 1 purpose:
-            // To ensure that our listener tech gets instantiated early enough in the document creation pipeline to hook into
-            // the ITextDocumentFactoryService.TextDocumentCreated/TextDocumentDisposed methods to track Razor document lifetimes.
-            RazorLSPTextDocumentCreatedListener listener) : base(contentTypeRegistryService, lspEditorFeatureDetector)
+            LSPEditorFeatureDetector lspEditorFeatureDetector) : base(contentTypeRegistryService, lspEditorFeatureDetector)
         {
         }
     }
