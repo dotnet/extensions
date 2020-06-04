@@ -127,18 +127,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var remappingResult1 = new RazorMapToDocumentRangeResponse()
+            var remappingResult1 = new RazorMapToDocumentRangesResponse()
             {
-                Range = expectedLocation1.Location.Range
+                Ranges = new[] { expectedLocation1.Location.Range }
             };
-            var remappingResult2 = new RazorMapToDocumentRangeResponse()
+            var remappingResult2 = new RazorMapToDocumentRangesResponse()
             {
-                Range = expectedLocation2.Location.Range
+                Ranges = new[] { expectedLocation2.Location.Range }
             };
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider
-                .Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, It.IsAny<Range>(), It.IsAny<CancellationToken>()))
-                .Returns<RazorLanguageKind, Uri, Range, CancellationToken>((languageKind, uri, range, ct) => Task.FromResult(range == csharpLocation1.Location.Range ? remappingResult1 : remappingResult2));
+                .Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, Uri, It.IsAny<Range[]>(), It.IsAny<CancellationToken>()))
+                .Returns<RazorLanguageKind, Uri, Range[], CancellationToken>((languageKind, uri, ranges, ct) => Task.FromResult(ranges[0] == csharpLocation1.Location.Range ? remappingResult1 : remappingResult2));
             var referencesHandler = new FindAllReferencesHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
             var referenceRequest = new ReferenceParams()
             {
@@ -177,12 +177,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var remappingResult = new RazorMapToDocumentRangeResponse()
+            var remappingResult = new RazorMapToDocumentRangesResponse()
             {
-                Range = expectedLocation.Location.Range
+                Ranges = new[] { expectedLocation.Location.Range }
             };
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, externalUri, csharpLocation.Location.Range, It.IsAny<CancellationToken>())).
+            documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, externalUri, new[] { csharpLocation.Location.Range }, It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object);
@@ -254,13 +254,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var remappingResult = new RazorMapToDocumentRangeResponse()
+            var remappingResult = new RazorMapToDocumentRangesResponse()
             {
-                Range = expectedLocation.Location.Range,
+                Ranges = new[] { expectedLocation.Location.Range },
                 HostDocumentVersion = 122 // Different from document version (123)
             };
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, csharpLocation.Location.Range, It.IsAny<CancellationToken>())).
+            documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, Uri, new[] { csharpLocation.Location.Range }, It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object);
@@ -296,8 +296,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, csharpLocation.Location.Range, It.IsAny<CancellationToken>())).
-                Returns(Task.FromResult<RazorMapToDocumentRangeResponse>(null));
+            documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, Uri, new[] { csharpLocation.Location.Range }, It.IsAny<CancellationToken>())).
+                Returns(Task.FromResult<RazorMapToDocumentRangesResponse>(null));
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object);
             var referenceRequest = new ReferenceParams()

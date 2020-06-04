@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 
-export interface RazorMapToDocumentRangeResponse {
-    range: vscode.Range;
+export interface RazorMapToDocumentRangesResponse {
+    ranges: vscode.Range[];
     hostDocumentVersion: number;
 }

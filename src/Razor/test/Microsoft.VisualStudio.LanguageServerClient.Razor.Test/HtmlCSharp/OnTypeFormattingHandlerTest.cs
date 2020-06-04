@@ -218,8 +218,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 })
                 .Returns(Task.FromResult<TextEdit[]>(new[] { new TextEdit() { Range = new Range(), NewText = "sometext" } }));
 
+            var projectionUri = new Uri(Uri.AbsoluteUri + "__virtual.html");
             var projectionResult = new ProjectionResult()
             {
+                Uri = projectionUri,
                 LanguageKind = RazorLanguageKind.Html,
             };
             var projectionProvider = new Mock<LSPProjectionProvider>();
@@ -227,9 +229,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider
-                .Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.Html, Uri, It.IsAny<Range>(), It.IsAny<CancellationToken>()))
+                .Setup(d => d.RemapTextEditsAsync(projectionUri, It.IsAny<TextEdit[]>(), It.IsAny<CancellationToken>()))
                 .Callback(() => { mappedTextEdits = true; })
-                .Returns(Task.FromResult(new RazorMapToDocumentRangeResponse()));
+                .Returns(Task.FromResult(Array.Empty<TextEdit>()));
 
             var editorService = new Mock<LSPEditorService>(MockBehavior.Strict);
             editorService.Setup(e => e.ApplyTextEditsAsync(Uri, It.IsAny<ITextSnapshot>(), It.IsAny<IEnumerable<TextEdit>>())).Callback(() => { appliedTextEdits = true; })

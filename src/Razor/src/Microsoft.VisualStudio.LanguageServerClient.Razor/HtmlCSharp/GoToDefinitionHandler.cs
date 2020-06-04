@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,40 +95,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return result;
             }
 
-            var remappedLocations = new List<Location>();
-
-            foreach (var location in result)
-            {
-                if (!RazorLSPConventions.IsRazorCSharpFile(location.Uri))
-                {
-                    // This location doesn't point to a virtual cs file. No need to remap.
-                    remappedLocations.Add(location);
-                    continue;
-                }
-
-                var razorDocumentUri = RazorLSPConventions.GetRazorDocumentUri(location.Uri);
-                var mappingResult = await _documentMappingProvider.MapToDocumentRangeAsync(
-                    projectionResult.LanguageKind,
-                    razorDocumentUri,
-                    location.Range,
-                    cancellationToken).ConfigureAwait(false);
-
-                if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
-                {
-                    // Couldn't remap the location or the document changed in the meantime. Discard this location.
-                    continue;
-                }
-                
-                var remappedLocation = new Location()
-                {
-                    Uri = razorDocumentUri,
-                    Range = mappingResult.Range
-                };
-
-                remappedLocations.Add(remappedLocation);
-            }
-
-            return remappedLocations.ToArray();
+            var remappedLocations = await _documentMappingProvider.RemapLocationsAsync(result, cancellationToken).ConfigureAwait(false);
+            return remappedLocations;
         }
     }
 }

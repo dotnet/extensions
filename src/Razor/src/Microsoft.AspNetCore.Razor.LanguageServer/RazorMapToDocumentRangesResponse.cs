@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.VisualStudio.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
-namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
+namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorMapToDocumentRangeResponse
+    internal class RazorMapToDocumentRangesResponse
     {
-        public Range Range { get; set; }
+        public Range[] Ranges { get; set; }
 
         public long HostDocumentVersion { get; set; }
     }

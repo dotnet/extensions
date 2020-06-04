@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         // These are more integration tests to validate that all the pieces work together
         [Fact]
-        public async Task Handle_MapToDocumentRange_CSharp()
+        public async Task Handle_MapToDocumentRanges_CSharp()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
             var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
-            var request = new RazorMapToDocumentRangeParams()
+            var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
-                ProjectedRange = new Range(new Position(0, 10), new Position(0, 22)),
+                ProjectedRanges = new[] { new Range(new Position(0, 10), new Position(0, 22)) },
                 RazorDocumentUri = new Uri(documentPath),
             };
             var expectedRange = new Range(new Position(0, 4), new Position(0, 16));
@@ -65,12 +65,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(expectedRange, response.Range);
+            Assert.Equal(expectedRange, response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
         [Fact]
-        public async Task Handle_MapToDocumentRange_CSharp_Unmapped()
+        public async Task Handle_MapToDocumentRanges_CSharp_Unmapped()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
@@ -84,10 +84,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
             var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
-            var request = new RazorMapToDocumentRangeParams()
+            var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
-                ProjectedRange = new Range(new Position(0, 0), new Position(0, 3)),
+                ProjectedRanges = new[] { new Range(new Position(0, 0), new Position(0, 3)) },
                 RazorDocumentUri = new Uri(documentPath),
             };
 
@@ -95,12 +95,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Range);
+            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
         [Fact]
-        public async Task Handle_MapToDocumentRange_CSharp_LeadingOverlapsUnmapped()
+        public async Task Handle_MapToDocumentRanges_CSharp_LeadingOverlapsUnmapped()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
@@ -114,10 +114,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
             var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
-            var request = new RazorMapToDocumentRangeParams()
+            var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
-                ProjectedRange = new Range(new Position(0, 0), new Position(0, 22)),
+                ProjectedRanges = new[] { new Range(new Position(0, 0), new Position(0, 22)) },
                 RazorDocumentUri = new Uri(documentPath),
             };
 
@@ -125,12 +125,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Range);
+            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
         [Fact]
-        public async Task Handle_MapToDocumentRange_CSharp_TrailingOverlapsUnmapped()
+        public async Task Handle_MapToDocumentRanges_CSharp_TrailingOverlapsUnmapped()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
@@ -144,10 +144,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
             var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
-            var request = new RazorMapToDocumentRangeParams()
+            var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
-                ProjectedRange = new Range(new Position(0, 10), new Position(0, 23)),
+                ProjectedRanges = new[] { new Range(new Position(0, 10), new Position(0, 23)) },
                 RazorDocumentUri = new Uri(documentPath),
             };
 
@@ -155,22 +155,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Range);
+            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
         [Fact]
-        public async Task Handle_MapToDocumentRange_Html()
+        public async Task Handle_MapToDocumentRanges_Html()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<p>@DateTime.Now</p>");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
             var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
-            var request = new RazorMapToDocumentRangeParams()
+            var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.Html,
-                ProjectedRange = new Range(new Position(0, 16), new Position(0, 20)),
+                ProjectedRanges = new[] { new Range(new Position(0, 16), new Position(0, 20)) },
                 RazorDocumentUri = new Uri(documentPath),
             };
 
@@ -178,22 +178,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(request.ProjectedRange, response.Range);
+            Assert.Equal(request.ProjectedRanges[0], response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
         [Fact]
-        public async Task Handle_MapToDocumentRange_Razor()
+        public async Task Handle_MapToDocumentRanges_Razor()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<p>@DateTime.Now</p>");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
             var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
-            var request = new RazorMapToDocumentRangeParams()
+            var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.Razor,
-                ProjectedRange = new Range(new Position(0, 3), new Position(0, 4)),
+                ProjectedRanges = new[] { new Range(new Position(0, 3), new Position(0, 4)) },
                 RazorDocumentUri = new Uri(documentPath),
             };
 
@@ -201,12 +201,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(request.ProjectedRange, response.Range);
+            Assert.Equal(request.ProjectedRanges[0], response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
         [Fact]
-        public async Task Handle_MapToDocumentRange_Unsupported()
+        public async Task Handle_MapToDocumentRanges_Unsupported()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
@@ -221,10 +221,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             codeDocument.SetUnsupported();
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
             var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
-            var request = new RazorMapToDocumentRangeParams()
+            var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
-                ProjectedRange = new Range(new Position(0, 10), new Position(0, 22)),
+                ProjectedRanges = new[] { new Range(new Position(0, 10), new Position(0, 22)) },
                 RazorDocumentUri = new Uri(documentPath),
             };
 
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Range);
+            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 

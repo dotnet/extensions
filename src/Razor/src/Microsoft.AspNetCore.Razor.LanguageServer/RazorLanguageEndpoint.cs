@@ -18,7 +18,7 @@ using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler, IRazorMapToDocumentRangeHandler
+    internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler, IRazorMapToDocumentRangesHandler
     {
         // Internal for testing
         internal static readonly Range UndefinedRange = new Range(
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             };
         }
 
-        public async Task<RazorMapToDocumentRangeResponse> Handle(RazorMapToDocumentRangeParams request, CancellationToken cancellationToken)
+        public async Task<RazorMapToDocumentRangesResponse> Handle(RazorMapToDocumentRangesParams request, CancellationToken cancellationToken)
         {
             if (request is null)
             {
@@ -165,28 +165,32 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (request.Kind != RazorLanguageKind.CSharp)
             {
                 // All other non-C# requests map directly to where they are in the document.
-                return new RazorMapToDocumentRangeResponse()
+                return new RazorMapToDocumentRangesResponse()
                 {
-                    Range = request.ProjectedRange,
+                    Ranges = request.ProjectedRanges,
                     HostDocumentVersion = documentVersion,
                 };
             }
 
             var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
-            if (codeDocument.IsUnsupported() ||
-                !_documentMappingservice.TryMapFromProjectedDocumentRange(codeDocument, request.ProjectedRange, out var originalRange))
+            var ranges = new Range[request.ProjectedRanges.Length];
+            for (var i = 0; i < request.ProjectedRanges.Length; i++)
             {
-                // All language queries on unsupported documents return Html. This is equivalent to what pre-VSCode Razor was capable of.
-                return new RazorMapToDocumentRangeResponse()
+                var projectedRange = request.ProjectedRanges[i];
+                if (codeDocument.IsUnsupported() ||
+                    !_documentMappingservice.TryMapFromProjectedDocumentRange(codeDocument, projectedRange, out var originalRange))
                 {
-                    Range = UndefinedRange,
-                    HostDocumentVersion = documentVersion,
-                };
+                    // All language queries on unsupported documents return Html. This is equivalent to what pre-VSCode Razor was capable of.
+                    ranges[i] = UndefinedRange;
+                    continue;
+                }
+
+                ranges[i] = originalRange;
             }
 
-            return new RazorMapToDocumentRangeResponse()
+            return new RazorMapToDocumentRangesResponse()
             {
-                Range = originalRange,
+                Ranges = ranges,
                 HostDocumentVersion = documentVersion,
             };
         }

@@ -7,12 +7,12 @@ import * as vscode from 'vscode';
 import { LanguageKind } from './LanguageKind';
 import { SerializableRange } from './SerializableRange';
 
-export class RazorMapToDocumentRangeRequest {
+export class RazorMapToDocumentRangesRequest {
     public readonly razorDocumentUri: string;
 
     constructor(
         public readonly kind: LanguageKind,
-        public readonly projectedRange: SerializableRange,
+        public readonly projectedRanges: SerializableRange[],
         razorDocumentUri: vscode.Uri) {
         this.razorDocumentUri = razorDocumentUri.toString();
     }

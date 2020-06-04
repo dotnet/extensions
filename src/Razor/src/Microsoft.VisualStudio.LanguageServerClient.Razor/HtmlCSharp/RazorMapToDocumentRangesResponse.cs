@@ -1,17 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    internal struct RazorMapToDocumentRangeParams
+    internal class RazorMapToDocumentRangesResponse
     {
-        public RazorLanguageKind Kind { get; set; }
+        public Range[] Ranges { get; set; }
 
-        public Uri RazorDocumentUri { get; set; }
-
-        public Range ProjectedRange { get; set; }
+        public long HostDocumentVersion { get; set; }
     }
 }

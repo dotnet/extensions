@@ -38,12 +38,14 @@ export class RazorHoverProvider
         }
 
         // Re-map the projected hover range to the host document range
-        const remappedResponse = await this.serviceClient.mapToDocumentRange(
+        const remappedResponse = await this.serviceClient.mapToDocumentRanges(
             projection.languageKind,
-            applicableHover.range!,
+            [applicableHover.range!],
             document.uri);
 
-        if (!remappedResponse) {
+        if (!remappedResponse ||
+            !remappedResponse.ranges ||
+            !remappedResponse.ranges[0]) {
             // Couldn't remap the projected hover location, there's no hover information available.
             return;
         }
@@ -73,7 +75,7 @@ export class RazorHoverProvider
             }
         }
 
-        const hover = new vscode.Hover(rewrittenContent, remappedResponse.range);
+        const hover = new vscode.Hover(rewrittenContent, remappedResponse.ranges[0]);
         return hover;
     }
 }

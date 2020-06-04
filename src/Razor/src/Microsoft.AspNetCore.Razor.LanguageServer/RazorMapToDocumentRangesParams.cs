@@ -7,12 +7,12 @@ using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorMapToDocumentRangeParams : IRequest<RazorMapToDocumentRangeResponse>
+    internal class RazorMapToDocumentRangesParams : IRequest<RazorMapToDocumentRangesResponse>
     {
         public RazorLanguageKind Kind { get; set; }
 
         public Uri RazorDocumentUri { get; set; }
 
-        public Range ProjectedRange { get; set; }
+        public Range[] ProjectedRanges { get; set; }
     }
 }

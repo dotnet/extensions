@@ -67,12 +67,12 @@ export class RazorCodeLensProvider
             // Re-map the CodeLens locations to the original Razor document.
             const remappedCodeLenses = new Array<vscode.CodeLens>();
             for (const codeLens of codeLenses) {
-                const result = await this.serviceClient.mapToDocumentRange(
+                const result = await this.serviceClient.mapToDocumentRanges(
                     LanguageKind.CSharp,
-                    codeLens.range,
+                    [codeLens.range],
                     razorDocument.uri);
-                if (result) {
-                    const newCodeLens = new RazorCodeLens(result.range, razorDocument.uri, document, codeLens.command);
+                if (result && result.ranges.length > 0) {
+                    const newCodeLens = new RazorCodeLens(result.ranges[0], razorDocument.uri, document, codeLens.command);
                     remappedCodeLenses.push(newCodeLens);
                 } else {
                     // This means this CodeLens was for non-user code. We can safely ignore those.

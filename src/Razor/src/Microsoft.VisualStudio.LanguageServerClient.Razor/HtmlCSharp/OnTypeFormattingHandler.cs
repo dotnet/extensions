@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
@@ -111,43 +110,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return EmptyEdits;
             }
 
-            var mappedEdits = new List<TextEdit>();
-            foreach (var edit in edits)
-            {
-                if (edit.Range == null || edit.NewText == null)
-                {
-                    // Sometimes the HTML language server returns invalid edits like these. We should just ignore those.
-                    continue;
-                }
-
-                var mappingResult = await _documentMappingProvider.MapToDocumentRangeAsync(projectionResult.LanguageKind, request.TextDocument.Uri, edit.Range, cancellationToken).ConfigureAwait(false);
-
-                if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
-                {
-                    // Couldn't remap the edits properly. Discard this request.
-                    return EmptyEdits;
-                }
-
-                var mappedEdit = new TextEdit()
-                {
-                    NewText = edit.NewText,
-                    Range = mappingResult.Range
-                };
-                mappedEdits.Add(mappedEdit);
-            }
-
-            if (mappedEdits.Count == 0)
-            {
-                return EmptyEdits;
-            }
-
-            if (!_documentManager.TryGetDocument(request.TextDocument.Uri, out var newDocumentSnapshot) ||
-                newDocumentSnapshot.Version != documentSnapshot.Version)
-            {
-                // The document changed while were working on the background. Discard this request.
-                return EmptyEdits;
-            }
-
+            var mappedEdits = await _documentMappingProvider.RemapTextEditsAsync(projectionResult.Uri, edits, cancellationToken).ConfigureAwait(false);
+            
             await _editorService.ApplyTextEditsAsync(documentSnapshot.Uri, documentSnapshot.Snapshot, mappedEdits).ConfigureAwait(false);
 
             // We would have already applied the edits and moved the cursor. Return empty.

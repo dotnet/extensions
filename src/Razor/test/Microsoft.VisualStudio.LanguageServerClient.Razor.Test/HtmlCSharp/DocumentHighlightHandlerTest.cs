@@ -242,12 +242,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         private LSPDocumentMappingProvider GetDocumentMappingProvider(Range expectedRange, int expectedVersion)
         {
-            var remappingResult = new RazorMapToDocumentRangeResponse()
+            var remappingResult = new RazorMapToDocumentRangesResponse()
             {
-                Range = expectedRange
+                Ranges = new[] { expectedRange }
             };
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, It.IsAny<Range>(), It.IsAny<CancellationToken>())).
+            documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, Uri, It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
             return documentMappingProvider.Object;

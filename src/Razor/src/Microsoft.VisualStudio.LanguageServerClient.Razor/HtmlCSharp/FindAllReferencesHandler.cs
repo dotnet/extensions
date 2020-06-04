@@ -114,13 +114,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
 
                 var razorDocumentUri = RazorLSPConventions.GetRazorDocumentUri(referenceItem.Location.Uri);
-                var mappingResult = await _documentMappingProvider.MapToDocumentRangeAsync(
+                var mappingResult = await _documentMappingProvider.MapToDocumentRangesAsync(
                     projectionResult.LanguageKind,
                     razorDocumentUri,
-                    referenceItem.Location.Range,
+                    new[] { referenceItem.Location.Range },
                     cancellationToken).ConfigureAwait(false);
 
-                if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
+                if (mappingResult == null ||
+                    mappingResult.HostDocumentVersion != documentSnapshot.Version ||
+                    mappingResult.Ranges[0].IsUndefined())
                 {
                     // Couldn't remap the location or the document changed in the meantime. Discard this location.
                     continue;
@@ -128,7 +130,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 referenceItem.Location.Uri = razorDocumentUri;
                 referenceItem.DisplayPath = razorDocumentUri.AbsolutePath;
-                referenceItem.Location.Range = mappingResult.Range;
+                referenceItem.Location.Range = mappingResult.Ranges[0];
 
                 remappedLocations.Add(referenceItem);
             }

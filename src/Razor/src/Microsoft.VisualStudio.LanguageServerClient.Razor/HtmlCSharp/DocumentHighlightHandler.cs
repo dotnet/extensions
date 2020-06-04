@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -85,36 +86,45 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
             };
 
-            var result = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentHighlightParams, DocumentHighlight[]>(
+            var highlights = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentHighlightParams, DocumentHighlight[]>(
                 Methods.TextDocumentDocumentHighlightName,
                 serverKind,
                 documentHighlightParams,
                 cancellationToken).ConfigureAwait(false);
 
-            if (result == null || result.Length == 0)
+            if (highlights == null || highlights.Length == 0)
             {
-                return result;
+                return highlights;
             }
 
             var remappedHighlights = new List<DocumentHighlight>();
 
-            foreach (var highlight in result)
-            {
-                var mappingResult = await _documentMappingProvider.MapToDocumentRangeAsync(
-                    projectionResult.LanguageKind,
-                    request.TextDocument.Uri,
-                    highlight.Range,
-                    cancellationToken).ConfigureAwait(false);
+            var rangesToMap = highlights.Select(r => r.Range).ToArray();
+            var mappingResult = await _documentMappingProvider.MapToDocumentRangesAsync(
+                projectionResult.LanguageKind,
+                request.TextDocument.Uri,
+                rangesToMap,
+                cancellationToken).ConfigureAwait(false);
 
-                if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
+            if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
+            {
+                // Couldn't remap the range or the document changed in the meantime. Discard this highlight.
+                return Array.Empty<DocumentHighlight>();
+            }
+
+            for (var i = 0; i < highlights.Length; i++)
+            {
+                var highlight = highlights[i];
+                var range = mappingResult.Ranges[i];
+                if (range.IsUndefined())
                 {
-                    // Couldn't remap the range or the document changed in the meantime. Discard this highlight.
+                    // Couldn't remap the range correctly. Discard this range.
                     continue;
                 }
 
                 var remappedHighlight = new DocumentHighlight()
                 {
-                    Range = mappingResult.Range,
+                    Range = range,
                     Kind = highlight.Kind
                 };
 

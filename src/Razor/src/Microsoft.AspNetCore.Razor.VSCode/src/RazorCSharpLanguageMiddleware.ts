@@ -48,12 +48,14 @@ export class RazorCSharpLanguageMiddleware implements LanguageMiddleware {
 
             // Re-map each edit to its position in the original Razor document.
             for (const edit of edits) {
-                const remappedResponse = await this.serviceClient.mapToDocumentRange(
+                const remappedResponse = await this.serviceClient.mapToDocumentRanges(
                     LanguageKind.CSharp,
-                    edit.range,
+                    [edit.range],
                     documentUri);
 
-                if (!remappedResponse || !remappedResponse.range) {
+                if (!remappedResponse ||
+                    !remappedResponse.ranges ||
+                    !remappedResponse.ranges[0]) {
                     // This is kind of wrong. Workspace edits commonly consist of a bunch of different edits which
                     // don't make sense individually. If we try to introspect on them individually there won't be
                     // enough context to do anything intelligent. But we also need to know if the edit can just be handled by mapToDocumentRange.
@@ -69,14 +71,14 @@ export class RazorCSharpLanguageMiddleware implements LanguageMiddleware {
                         continue;
                     }
                 } else {
-                    const remappedEdit = new vscode.TextEdit(remappedResponse.range, edit.newText);
+                    const remappedEdit = new vscode.TextEdit(remappedResponse.ranges[0], edit.newText);
                     const [codeActionUri, codeActionEdit] = this.tryApplyingCodeActions(uri, remappedEdit);
 
                     if (codeActionUri && codeActionEdit) {
                         this.addElementToDictionary(map, documentUri, codeActionEdit);
                     } else {
                         this.logger.logVerbose(
-                            `Re-mapping text ${edit.newText} at ${edit.range} in ${uri.path} to ${remappedResponse.range} in ${documentUri.path}`);
+                            `Re-mapping text ${edit.newText} at ${edit.range} in ${uri.path} to ${remappedResponse.ranges[0]} in ${documentUri.path}`);
 
                         this.addElementToDictionary(map, documentUri, remappedEdit);
                     }
@@ -101,22 +103,24 @@ export class RazorCSharpLanguageMiddleware implements LanguageMiddleware {
 
             // We're now working with a Razor CSharp document.
             const documentUri = getRazorDocumentUri(location.uri);
-            const remappedResponse = await this.serviceClient.mapToDocumentRange(
+            const remappedResponse = await this.serviceClient.mapToDocumentRanges(
                 LanguageKind.CSharp,
-                location.range,
+                [location.range],
                 documentUri);
 
-            if (!remappedResponse || !remappedResponse.range) {
+            if (!remappedResponse ||
+                !remappedResponse.ranges ||
+                !remappedResponse.ranges[0]) {
                 // Something went wrong when re-mapping to the original document. Ignore this location.
                 this.logger.logWarning(`Unable to remap file ${location.uri.path} at ${location.range}.`);
                 continue;
             }
 
-            const newLocation = new vscode.Location(documentUri, remappedResponse.range);
+            const newLocation = new vscode.Location(documentUri, remappedResponse.ranges[0]);
             result.push(newLocation);
 
             this.logger.logVerbose(
-                `Re-mapping location ${location.range} in ${location.uri.path} to ${remappedResponse.range} in ${documentUri.path}`);
+                `Re-mapping location ${location.range} in ${location.uri.path} to ${remappedResponse.ranges[0]} in ${documentUri.path}`);
         }
 
         return result;

@@ -100,7 +100,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public async Task HandleRequestAsync_CSharpProjection_InvokesCSharpLanguageServer()
         {
             // Arrange
-            var called = false;
+            var invokedLSPRequest = false;
+            var invokedRemapRequest = false;
             var expectedLocation = GetLocation(5, 5, 5, 5, Uri);
             var documentManager = new TestDocumentManager();
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
@@ -114,7 +115,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 {
                     Assert.Equal(Methods.TextDocumentDefinitionName, method);
                     Assert.Equal(LanguageServerKind.CSharp, serverKind);
-                    called = true;
+                    invokedLSPRequest = true;
                 })
                 .Returns(Task.FromResult(new[] { csharpLocation }));
 
@@ -125,68 +126,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var remappingResult = new RazorMapToDocumentRangeResponse()
-            {
-                Range = expectedLocation.Range
-            };
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, csharpLocation.Range, It.IsAny<CancellationToken>())).
-                Returns(Task.FromResult(remappingResult));
-
-            var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
-            var definitionRequest = new TextDocumentPositionParams()
-            {
-                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Position = new Position(10, 5)
-            };
-
-            // Act
-            var result = await definitionHandler.HandleRequestAsync(definitionRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
-
-            // Assert
-            Assert.True(called);
-            var actualLocation = Assert.Single(result);
-            Assert.Equal(expectedLocation, actualLocation);
-        }
-
-        [Fact]
-        public async Task HandleRequestAsync_CSharpProjection_RemapsExternalRazorFiles()
-        {
-            // Arrange
-            var called = false;
-            var externalUri = new Uri("C:/path/to/someotherfile.razor");
-            var expectedLocation = GetLocation(5, 5, 5, 5, externalUri);
-            var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>());
-
-            var virtualCSharpUri = new Uri("C:/path/to/someotherfile.razor.g.cs");
-            var csharpLocation = GetLocation(100, 100, 100, 100, virtualCSharpUri);
-            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
-            requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, definitionParams, ct) =>
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            documentMappingProvider
+                .Setup(d => d.RemapLocationsAsync(It.IsAny<Location[]>(), It.IsAny<CancellationToken>()))
+                .Callback<Location[], CancellationToken>((locations, token) =>
                 {
-                    Assert.Equal(Methods.TextDocumentDefinitionName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
-                    called = true;
+                    Assert.Equal(csharpLocation, locations[0]);
+                    invokedRemapRequest = true;
                 })
-                .Returns(Task.FromResult(new[] { csharpLocation }));
-
-            var projectionResult = new ProjectionResult()
-            {
-                LanguageKind = RazorLanguageKind.CSharp,
-            };
-            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
-            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-
-            var remappingResult = new RazorMapToDocumentRangeResponse()
-            {
-                Range = expectedLocation.Range
-            };
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, externalUri, csharpLocation.Range, It.IsAny<CancellationToken>())).
-                Returns(Task.FromResult(remappingResult));
+                .Returns(Task.FromResult(Array.Empty<Location>()));
 
             var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
             var definitionRequest = new TextDocumentPositionParams()
@@ -199,155 +147,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var result = await definitionHandler.HandleRequestAsync(definitionRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            Assert.True(called);
-            var actualLocation = Assert.Single(result);
-            Assert.Equal(expectedLocation, actualLocation);
-        }
+            Assert.True(invokedLSPRequest);
+            Assert.True(invokedRemapRequest);
 
-        [Fact]
-        public async Task HandleRequestAsync_CSharpProjection_DoesNotRemapNonRazorFiles()
-        {
-            // Arrange
-            var called = false;
-            var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-
-            var externalCSharpUri = new Uri("C:/path/to/someotherfile.cs");
-            var externalCsharpLocation = GetLocation(100, 100, 100, 100, externalCSharpUri);
-            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
-            requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, definitionParams, ct) =>
-                {
-                    Assert.Equal(Methods.TextDocumentDefinitionName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
-                    called = true;
-                })
-                .Returns(Task.FromResult(new[] { externalCsharpLocation }));
-
-            var projectionResult = new ProjectionResult()
-            {
-                LanguageKind = RazorLanguageKind.CSharp,
-            };
-            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
-            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-
-            var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
-            var definitionRequest = new TextDocumentPositionParams()
-            {
-                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Position = new Position(10, 5)
-            };
-
-            // Act
-            var result = await definitionHandler.HandleRequestAsync(definitionRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
-
-            // Assert
-            Assert.True(called);
-            var actualLocation = Assert.Single(result);
-            Assert.Equal(externalCsharpLocation, actualLocation);
-        }
-
-        [Fact]
-        public async Task HandleRequestAsync_VersionMismatch_DiscardsLocation()
-        {
-            // Arrange
-            var called = false;
-            var expectedLocation = GetLocation(5, 5, 5, 5, Uri);
-            var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 123));
-
-            var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
-            var csharpLocation = GetLocation(100, 100, 100, 100, virtualCSharpUri);
-            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
-            requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, definitionParams, ct) =>
-                {
-                    Assert.Equal(Methods.TextDocumentDefinitionName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
-                    called = true;
-                })
-                .Returns(Task.FromResult(new[] { csharpLocation }));
-
-            var projectionResult = new ProjectionResult()
-            {
-                LanguageKind = RazorLanguageKind.CSharp,
-            };
-            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
-            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-
-            var remappingResult = new RazorMapToDocumentRangeResponse()
-            {
-                Range = expectedLocation.Range,
-                HostDocumentVersion = 122 // Different from document version (123)
-            };
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, csharpLocation.Range, It.IsAny<CancellationToken>())).
-                Returns(Task.FromResult(remappingResult));
-
-            var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
-            var definitionRequest = new TextDocumentPositionParams()
-            {
-                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Position = new Position(10, 5)
-            };
-
-            // Act
-            var result = await definitionHandler.HandleRequestAsync(definitionRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
-
-            // Assert
-            Assert.True(called);
-            Assert.Empty(result);
-        }
-
-        [Fact]
-        public async Task HandleRequestAsync_RemapFailure_DiscardsLocation()
-        {
-            // Arrange
-            var called = false;
-            var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-
-            var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
-            var csharpLocation = GetLocation(100, 100, 100, 100, virtualCSharpUri);
-            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
-            requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, definitionParams, ct) =>
-                {
-                    Assert.Equal(Methods.TextDocumentDefinitionName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
-                    called = true;
-                })
-                .Returns(Task.FromResult(new[] { csharpLocation }));
-
-            var projectionResult = new ProjectionResult()
-            {
-                LanguageKind = RazorLanguageKind.CSharp,
-            };
-            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
-            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            documentMappingProvider.Setup(d => d.MapToDocumentRangeAsync(RazorLanguageKind.CSharp, Uri, csharpLocation.Range, It.IsAny<CancellationToken>())).
-                Returns(Task.FromResult<RazorMapToDocumentRangeResponse>(null));
-
-            var definitionHandler = new GoToDefinitionHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
-            var definitionRequest = new TextDocumentPositionParams()
-            {
-                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Position = new Position(10, 5)
-            };
-
-            // Act
-            var result = await definitionHandler.HandleRequestAsync(definitionRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
-
-            // Assert
-            Assert.True(called);
-            Assert.Empty(result);
+            // Actual remapping behavior is tested elsewhere.
         }
 
         private Location GetLocation(int startLine, int startCharacter, int endLine, int endCharacter, Uri uri)
