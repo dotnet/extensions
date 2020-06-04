@@ -85,14 +85,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public void ContentTypeChanged(ITextBuffer textBuffer, IContentType oldContentType, IContentType newContentType)
         {
-            if (newContentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName))
+            var supportedBefore = oldContentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName);
+            var supportedAfter = newContentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName);
+
+            if (supportedBefore == supportedAfter)
             {
-                // Supported after
+                // We went from a Razor content type to another Razor content type.
+                return;
+            }
+
+            if (supportedAfter)
+            {
                 RazorBufferCreated(textBuffer);
             }
-            else if (oldContentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName))
+            else if (supportedBefore)
             {
-                // Supported before
                 RazorBufferDisposed(textBuffer);
             }
         }
