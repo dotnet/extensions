@@ -137,6 +137,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return ExecuteRequestAsync<ReferenceParams, VSReferenceItem[]>(Methods.TextDocumentReferencesName, referenceParams, _clientCapabilities, cancellationToken);
         }
 
+        [JsonRpcMethod(Methods.TextDocumentSignatureHelpName, UseSingleObjectParameterDeserialization = true)]
+        public Task<SignatureHelp> SignatureHelpAsync(TextDocumentPositionParams positionParams, CancellationToken cancellationToken)
+        {
+            if (positionParams is null)
+            {
+                throw new ArgumentNullException(nameof(positionParams));
+            }
+
+            return ExecuteRequestAsync<TextDocumentPositionParams, SignatureHelp>(Methods.TextDocumentSignatureHelpName, positionParams, _clientCapabilities, cancellationToken);
+        }
+
         [JsonRpcMethod(Methods.TextDocumentDocumentHighlightName, UseSingleObjectParameterDeserialization = true)]
         public Task<DocumentHighlight[]> HighlightDocumentAsync(DocumentHighlightParams documentHighlightParams, CancellationToken cancellationToken)
         {

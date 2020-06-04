@@ -400,7 +400,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(LanguageServerKind.CSharp, serverKind);
                     called = true;
                 })
-                .Returns(Task.FromResult<Hover>(lspResponse));
+                .Returns(Task.FromResult(lspResponse));
 
             var projectionResult = new ProjectionResult()
             {
