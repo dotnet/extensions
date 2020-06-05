@@ -35,7 +35,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 SignatureHelpProvider = new SignatureHelpOptions()
                 {
                     TriggerCharacters = new[] { "(", "," }
-                }
+                },
+                ImplementationProvider = true,
             }
         };
 

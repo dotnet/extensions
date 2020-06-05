@@ -106,6 +106,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     new[] { location.Range },
                     cancellationToken).ConfigureAwait(false);
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
                 {
                     // Couldn't remap the location or the document changed in the meantime. Discard these ranges.

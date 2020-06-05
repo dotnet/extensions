@@ -10,8 +10,8 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
     [Shared]
-    [ExportLspMethod(Methods.TextDocumentDefinitionName)]
-    internal class GoToDefinitionHandler : IRequestHandler<TextDocumentPositionParams, Location[]>
+    [ExportLspMethod(Methods.TextDocumentImplementationName)]
+    internal class GoToImplementationHandler : IRequestHandler<TextDocumentPositionParams, Location[]>
     {
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentManager _documentManager;
@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
 
         [ImportingConstructor]
-        public GoToDefinitionHandler(
+        public GoToImplementationHandler(
             LSPRequestInvoker requestInvoker,
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
@@ -87,7 +87,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(
-                Methods.TextDocumentDefinitionName,
+                Methods.TextDocumentImplementationName,
                 serverKind,
                 textDocumentPositionParams,
                 cancellationToken).ConfigureAwait(false);
@@ -96,6 +96,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 return result;
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             var remappedLocations = await _documentMappingProvider.RemapLocationsAsync(result, cancellationToken).ConfigureAwait(false);
             return remappedLocations;
