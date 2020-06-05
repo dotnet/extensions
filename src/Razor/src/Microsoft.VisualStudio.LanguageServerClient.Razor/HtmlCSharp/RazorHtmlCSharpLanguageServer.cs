@@ -66,9 +66,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [JsonRpcMethod(Methods.ShutdownName)]
-        public void ShutdownAsync(CancellationToken cancellationToken)
+        public Task ShutdownAsync(CancellationToken cancellationToken)
+        {
+            // Nothing to detatch to yet.
+
+            return Task.CompletedTask;
+        }
+
+        [JsonRpcMethod(Methods.ExitName)]
+        public Task ExitAsync(CancellationToken cancellationToken)
         {
             Dispose();
+
+            return Task.CompletedTask;
         }
 
         [JsonRpcMethod(Methods.TextDocumentCompletionName, UseSingleObjectParameterDeserialization =  true)]
@@ -221,7 +231,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public void Dispose()
         {
-            _jsonRpc.Dispose();
+            try
+            {
+                if (!_jsonRpc.IsDisposed)
+                {
+                    _jsonRpc.Dispose();
+                }
+            }
+            catch (Exception)
+            {
+                // Swallow exceptions thrown by disposing our JsonRpc object. Disconnected events can potentially throw their own exceptions so
+                // we purposefully ignore all of those exceptions in an effort to shutdown gracefully.
+            }
         }
     }
 }
