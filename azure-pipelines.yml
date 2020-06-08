@@ -86,7 +86,6 @@ stages:
     parameters:
       enablePublishBuildArtifacts: true
       enablePublishTestResults: true
-      enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       enableTelemetry: true
       helixRepo: dotnet/aspnetcore-tooling
       helixType: build.product/
@@ -94,6 +93,7 @@ stages:
       ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         enableMicrobuild: true
         enablePublishBuildAssets: true
+        enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       jobs:
       - job: Windows
         pool:
@@ -108,15 +108,15 @@ stages:
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
               debug:
                 _BuildConfig: Debug
-                _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                _PublishArgs: ''
               release:
                 _BuildConfig: Release
-                _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                _PublishArgs: ''
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
               release:
                 _BuildConfig: Release
                 ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
-                  _PublishArgs: /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
+                  _PublishArgs: ''
                 ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
                   _DotNetPublishToBlobFeed: true
                   _PublishArgs: /p:PublishToSymbolServer=true
@@ -131,7 +131,6 @@ stages:
         variables:
         - _DotNetPublishToBlobFeed : false
         - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json
-        - _PublishArgs: '/p:PublishToSymbolServer=false /p:PublishToAzure=false'
         - _BuildArgs: ''
 
         # Variables for internal Official builds
