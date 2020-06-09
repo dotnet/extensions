@@ -4,4 +4,4 @@
  *--------------------------------------------------------------------------------------------*/
 
 // The Razor experience is shipped as part of OmniSharp, this is their extension ID.
-export const razorExtensionId = 'ms-vscode.csharp';
+export const razorExtensionId = 'ms-dotnettools.csharp';

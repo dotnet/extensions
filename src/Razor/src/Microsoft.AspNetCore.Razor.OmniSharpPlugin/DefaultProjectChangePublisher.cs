@@ -94,10 +94,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         protected virtual void SerializeToFile(OmniSharpProjectSnapshot projectSnapshot, string publishFilePath)
         {
             var fileInfo = new FileInfo(publishFilePath);
-            using (var writer = fileInfo.CreateText())
-            {
-                _serializer.Serialize(writer, projectSnapshot);
-            }
+            using var writer = fileInfo.CreateText();
+            _serializer.Serialize(writer, projectSnapshot);
         }
 
         // Internal for testing

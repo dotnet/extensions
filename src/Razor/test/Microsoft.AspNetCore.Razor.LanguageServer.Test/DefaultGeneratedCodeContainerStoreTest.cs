@@ -17,13 +17,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public DefaultGeneratedCodeContainerStoreTest()
         {
             var documentVersionCache = Mock.Of<DocumentVersionCache>();
-            var server = new Lazy<ILanguageServer>(() => null);
-            Store = new DefaultGeneratedCodeContainerStore(Dispatcher, documentVersionCache, server);
+            var csharpPublisher = Mock.Of<GeneratedDocumentPublisher>();
+            Store = new DefaultGeneratedDocumentContainerStore(Dispatcher, documentVersionCache, csharpPublisher);
             ProjectManager = TestProjectSnapshotManager.Create(Dispatcher);
             Store.Initialize(ProjectManager);
         }
 
-        private DefaultGeneratedCodeContainerStore Store { get; }
+        private DefaultGeneratedDocumentContainerStore Store { get; }
 
         private TestProjectSnapshotManager ProjectManager { get; }
 
@@ -31,12 +31,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void Get_CachesValueBasedOnPath()
         {
             // Arrange
-            var filePath = "/C:/path/to/file.cshtml";
+            var filePath = "C:/path/to/file.cshtml";
 
             // Act
             var container1 = Store.Get(filePath);
             var container2 = Store.Get(filePath);
-            var otherContainer = Store.Get("/C:/path/to/other/file.cshtml");
+            var otherContainer = Store.Get("C:/path/to/other/file.cshtml");
 
             // Assert
             Assert.Same(container1, container2);
@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ProjectSnapshotManager_Changed_DocumentRemoved_EvictsCache()
         {
             // Arrange
-            var documentFilePath = "/C:/path/to/file.cshtml";
-            var projectFilePath = "/C:/path/to/project.csproj";
+            var documentFilePath = "C:/path/to/file.cshtml";
+            var projectFilePath = "C:/path/to/project.csproj";
             var container = Store.Get(documentFilePath);
             var oldProject = TestProjectSnapshot.Create(projectFilePath, new[] { documentFilePath });
             var newProjet = TestProjectSnapshot.Create(projectFilePath);
@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ProjectSnapshotManager_Changed_DocumentChanged_ClosedDoc_EvictsCache()
         {
             // Arrange
-            var documentFilePath = "/C:/path/to/file.cshtml";
-            var projectFilePath = "/C:/path/to/project.csproj";
+            var documentFilePath = "C:/path/to/file.cshtml";
+            var projectFilePath = "C:/path/to/project.csproj";
             var container = Store.Get(documentFilePath);
             var oldProject = TestProjectSnapshot.Create(projectFilePath, new[] { documentFilePath });
             var newProjet = TestProjectSnapshot.Create(projectFilePath, new[] { documentFilePath });
@@ -85,8 +85,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ProjectSnapshotManager_Changed_DocumentChanged_OpenDoc_DoesNotEvictCache()
         {
             // Arrange
-            var documentFilePath = "/C:/path/to/file.cshtml";
-            var projectFilePath = "/C:/path/to/project.csproj";
+            var documentFilePath = "C:/path/to/file.cshtml";
+            var projectFilePath = "C:/path/to/project.csproj";
             var container = Store.Get(documentFilePath);
             var project = new HostProject(projectFilePath, RazorConfiguration.Default, "TestRootNamespace");
             ProjectManager.ProjectAdded(project);

@@ -6,8 +6,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.Editor.Razor;
 using Moq;
 using Xunit;
 
@@ -28,8 +29,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             HostProject1 = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
             HostProject2 = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.AnotherProject.RootNamespace);
 
-            DynamicFileInfoProvider = new RazorDynamicFileInfoProvider(new DefaultDocumentServiceProviderFactory());
+            var razorDocumentServiceProviderFactory = new DefaultRazorDocumentServiceProviderFactory();
+            var testLSPEnabledEditorFeatureDetector = Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsLSPEditorFeatureEnabled() == true);
+            DynamicFileInfoProvider = new DefaultRazorDynamicFileInfoProvider(razorDocumentServiceProviderFactory, testLSPEnabledEditorFeatureDetector);
+            DivergenceChecker = Mock.Of<DocumentDivergenceChecker>(checker => checker.PossibleDivergence(It.IsAny<DocumentSnapshot>(), It.IsAny<DocumentSnapshot>()) == true);
         }
+
+        private DocumentDivergenceChecker DivergenceChecker { get; }
 
         private HostDocument[] Documents { get; }
 
@@ -37,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private HostProject HostProject2 { get; }
 
-        private RazorDynamicFileInfoProvider DynamicFileInfoProvider { get; }
+        private DefaultRazorDynamicFileInfoProvider DynamicFileInfoProvider { get; }
 
         protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
@@ -58,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
@@ -89,7 +95,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
@@ -118,7 +124,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -157,7 +163,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -208,8 +214,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
         }
 
-        [ForegroundFact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/14805", FlakyOn.All)]
+        [ForegroundFact(Skip = "https://github.com/dotnet/aspnetcore/issues/14805")]
         public async Task DocumentChanged_ReparsesRelatedFiles()
         {
             // Arrange
@@ -228,7 +233,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 projectManager.DocumentAdded(HostProject1, documents[i], null);
             }
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -284,7 +289,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             projectManager.DocumentAdded(HostProject1, TestProjectData.SomeProjectComponentFile1, null);
             projectManager.DocumentAdded(HostProject1, TestProjectData.SomeProjectImportFile, null);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider, DivergenceChecker)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),

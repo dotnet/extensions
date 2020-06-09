@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
@@ -11,6 +12,83 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
 {
     public class DefaultRazorProjectHostTest
     {
+        [Fact]
+        public void IsRazorDocumentItem_NonContentItem_ReturnsFalse()
+        {
+            // Arrange
+            var item = new TestMSBuildItem("NonContent")
+            {
+                Include = "\\Path\\To\\File.razor",
+            };
+
+            // Act
+            var result = DefaultRazorProjectHost.IsRazorDocumentItem(item);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsRazorDocumentItem_NoInclude_ReturnsFalse()
+        {
+            // Arrange
+            var item = new TestMSBuildItem("Content");
+
+            // Act
+            var result = DefaultRazorProjectHost.IsRazorDocumentItem(item);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsRazorDocumentItem_NonRazorFile_ReturnsFalse()
+        {
+            // Arrange
+            var item = new TestMSBuildItem("Content")
+            {
+                Include = "\\Path\\To\\File.notrazor",
+            };
+
+            // Act
+            var result = DefaultRazorProjectHost.IsRazorDocumentItem(item);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsRazorDocumentItem_RazorFile_ReturnsTrue()
+        {
+            // Arrange
+            var item = new TestMSBuildItem("Content")
+            {
+                Include = "\\Path\\To\\File.razor",
+            };
+
+            // Act
+            var result = DefaultRazorProjectHost.IsRazorDocumentItem(item);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsRazorDocumentItem_CSHTMLFile_ReturnsTrue()
+        {
+            // Arrange
+            var item = new TestMSBuildItem("Content")
+            {
+                Include = "\\Path\\To\\File.cshtml",
+            };
+
+            // Act
+            var result = DefaultRazorProjectHost.IsRazorDocumentItem(item);
+
+            // Assert
+            Assert.True(result);
+        }
+
         [Fact]
         public void TryGetDefaultConfiguration_FailsIfNoConfiguration()
         {
@@ -451,16 +529,16 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
 
             public IMSBuildPropertyGroupEvaluated Metadata => _metadata;
 
-            public string Condition => throw new System.NotImplementedException();
+            public string Condition => throw new NotImplementedException();
 
-            public bool IsImported => throw new System.NotImplementedException();
+            public bool IsImported => throw new NotImplementedException();
 
 
-            public string UnevaluatedInclude => throw new System.NotImplementedException();
+            public string UnevaluatedInclude => throw new NotImplementedException();
 
-            public MSBuildItem SourceItem => throw new System.NotImplementedException();
+            public MSBuildItem SourceItem => throw new NotImplementedException();
 
-            public IEnumerable<MSBuildItem> SourceItems => throw new System.NotImplementedException();
+            public IEnumerable<MSBuildItem> SourceItems => throw new NotImplementedException();
         }
     }
 }

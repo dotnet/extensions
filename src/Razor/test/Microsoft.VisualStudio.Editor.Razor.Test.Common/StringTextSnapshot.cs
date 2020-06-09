@@ -36,7 +36,14 @@ namespace Microsoft.VisualStudio.Text
                 if (delimiterIndex == -1)
                 {
                     delimiterLength = 1;
-                    delimiterIndex = Content.IndexOfAny(ParserHelpers.NewLineCharacters, start);
+                    for (int i = start; i < Content.Length; i++)
+                    {
+                        if (ParserHelpers.IsNewLine(content[i]))
+                        {
+                            delimiterIndex = i;
+                            break;
+                        }
+                    }
                 }
 
                 var nextLineStartIndex = delimiterIndex != -1 ? delimiterIndex + delimiterLength : Content.Length;
@@ -62,9 +69,9 @@ namespace Microsoft.VisualStudio.Text
 
         public IContentType ContentType => throw new NotImplementedException();
 
-        public int LineCount => throw new NotImplementedException();
+        public int LineCount => _lines.Count;
 
-        public IEnumerable<ITextSnapshotLine> Lines => throw new NotImplementedException();
+        public IEnumerable<ITextSnapshotLine> Lines => _lines;
 
         public ITextImage TextImage => new StringTextImage(Content);
 
@@ -203,7 +210,7 @@ namespace Microsoft.VisualStudio.Text
                 {
                     _content = _content.Substring(0, _content.Length - 2);
                 }
-                else if(_content.Length > 0 && ParserHelpers.NewLineCharacters.Contains(_content[_content.Length - 1]))
+                else if(_content.Length > 0 && ParserHelpers.IsNewLine(_content[_content.Length - 1]))
                 {
                     _content = _content.Substring(0, _content.Length - 1);
                 }

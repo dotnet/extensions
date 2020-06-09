@@ -7,13 +7,14 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    internal class RazorSpanMappingService: ISpanMappingService
+    internal class RazorSpanMappingService: IRazorSpanMappingService
     {
         private readonly DocumentSnapshot _document;
 
@@ -27,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Razor
             _document = document;
         }
 
-        public async Task<ImmutableArray<MappedSpanResult>> MapSpansAsync(
+        public async Task<ImmutableArray<RazorMappedSpanResult>> MapSpansAsync(
             Document document, 
             IEnumerable<TextSpan> spans, 
             CancellationToken cancellationToken)
@@ -45,18 +46,18 @@ namespace Microsoft.CodeAnalysis.Razor
             // Called on an uninitialized document.
             if (_document == null)
             {
-                return ImmutableArray.Create<MappedSpanResult>();
+                return ImmutableArray.Create<RazorMappedSpanResult>();
             }
 
             var source = await _document.GetTextAsync().ConfigureAwait(false);
             var output = await _document.GetGeneratedOutputAsync().ConfigureAwait(false);
 
-            var results = ImmutableArray.CreateBuilder<MappedSpanResult>();
+            var results = ImmutableArray.CreateBuilder<RazorMappedSpanResult>();
             foreach (var span in spans)
             {
                 if (TryGetLinePositionSpan(span, source, output.GetCSharpDocument(), out var linePositionSpan))
                 {
-                    results.Add(new MappedSpanResult(output.Source.FilePath, linePositionSpan, span));
+                    results.Add(new RazorMappedSpanResult(output.Source.FilePath, linePositionSpan, span));
                 }
                 else
                 {

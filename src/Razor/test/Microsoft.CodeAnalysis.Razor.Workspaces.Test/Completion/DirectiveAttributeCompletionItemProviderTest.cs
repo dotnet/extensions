@@ -92,7 +92,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         }
 
         [Fact]
-        public void GetCompletionItems_OnDirectiveAttributeName_ReturnsCompletions()
+        public void GetCompletionItems_OnDirectiveAttributeName_bind_ReturnsCompletions()
         {
             // Arrange
             var codeDocument = GetCodeDocument("<input @  />");
@@ -104,7 +104,103 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
 
             // Assert
-            AssertContains(completions, "bind", "@bind");
+            AssertContains(completions, "bind", "@bind", new[] { "=", ":" });
+        }
+
+        [Fact]
+        public void GetCompletionItems_OnDirectiveAttributeName_attributes_ReturnsCompletions()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<input @  />");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(8, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            AssertContains(completions, "attributes", "@attributes", new[] { "=" });
+        }
+
+        [Fact]
+        public void GetCompletionItems_AttributeAreaEndOfSelfClosingTag_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<input @bind:fo  />");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(16, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
+        public void GetCompletionItems_AttributeAreaEndOfOpeningTag_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<input @bind:fo   ></input>");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(16, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
+        public void GetCompletionItems_ExistingAttribute_LeadingEdge_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<input src=\"xyz\" />");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(7, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
+        public void GetCompletionItems_ExistingAttribute_TrailingEdge_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<input src=\"xyz\" />");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(16, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
+        }
+
+        [Fact]
+        public void GetCompletionItems_ExistingAttribute_Partial_ReturnsEmptyCollection()
+        {
+            // Arrange
+            var codeDocument = GetCodeDocument("<svg xml: ></svg>");
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var tagHelperDocumentContext = codeDocument.GetTagHelperContext();
+            var span = new SourceSpan(9, 0);
+
+            // Act
+            var completions = Provider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, span);
+
+            // Assert
+            Assert.Empty(completions);
         }
 
         [Fact]
@@ -146,7 +242,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@bind", "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            AssertContains(completions, "bind", "@bind");
+            AssertContains(completions, "bind", "@bind", new[] { "=", ":" });
         }
 
         [Fact]
@@ -158,7 +254,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@", "input", EmptyAttributes, DefaultTagHelperDocumentContext);
 
             // Assert
-            AssertContains(completions, "bind", "@bind");
+            AssertContains(completions, "bind", "@bind", new[] { "=", ":" });
         }
 
         [Fact]
@@ -171,7 +267,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@", "input", EmptyAttributes, DefaultTagHelperDocumentContext);
 
             // Assert
-            AssertContains(completions, "bind-", "@bind-...");
+            AssertContains(completions, "bind-", "@bind-...", Array.Empty<string>());
         }
 
         [Fact]
@@ -184,7 +280,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var completions = Provider.GetAttributeCompletions("@", "input", attributeNames, DefaultTagHelperDocumentContext);
 
             // Assert
-            AssertContains(completions, "bind", "@bind");
+            AssertContains(completions, "bind", "@bind", new[] { "=", ":" });
         }
 
         [Fact]
@@ -208,7 +304,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             AssertDoesNotContain(completions, "bind", "@bind");
         }
 
-        private static void AssertContains(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText)
+        private static void AssertContains(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText, IReadOnlyCollection<string> commitCharacters)
         {
             displayText = displayText ?? insertText;
 
@@ -216,6 +312,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             {
                 return insertText == completion.InsertText &&
                     displayText == completion.DisplayText &&
+                    commitCharacters.SequenceEqual(completion.CommitCharacters) &&
                     RazorCompletionItemKind.DirectiveAttribute == completion.Kind;
             });
         }

@@ -12,7 +12,7 @@ reporoot="$(dirname "$(dirname "$scriptroot")")"
 export DotNetBuildFromSource='true'
 
  # Build repo tasks
-"$reporoot/eng/common/build.sh" --restore --build --ci --configuration Release /p:ProjectToBuild=$reporoot/eng/tools/RepoTasks/RepoTasks.csproj
+"$reporoot/eng/common/build.sh" --restore --build --ci --configuration Release /p:ProjectToBuild=$reporoot/eng/tools/RepoTasks/RepoTasks.csproj "$@"
 
  # Build projects
 "$reporoot/eng/common/build.sh" --restore --build --pack "$@"

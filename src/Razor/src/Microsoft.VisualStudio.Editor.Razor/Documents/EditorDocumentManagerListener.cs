@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         private readonly EventHandler _onChangedInEditor;
         private readonly EventHandler _onOpened;
         private readonly EventHandler _onClosed;
-        
+
         private EditorDocumentManager _documentManager;
         private ProjectSnapshotManagerBase _projectManager;
 
@@ -41,6 +41,11 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             _onOpened = onOpened;
             _onClosed = onClosed;
         }
+
+        // InitializePriority controls when a snapshot change trigger gets initialized. By specifying 100 we're saying we're pretty important and should get initialized before
+        // other triggers with lesser priority so we can attach to Changed sooner. We happen to be so important because we control the open/close state of documents. If other triggers
+        // depend on a document being open/closed (some do) then we need to ensure we can mark open/closed prior to them running.
+        public override int InitializePriority => 100;
 
         public override void Initialize(ProjectSnapshotManagerBase projectManager)
         {

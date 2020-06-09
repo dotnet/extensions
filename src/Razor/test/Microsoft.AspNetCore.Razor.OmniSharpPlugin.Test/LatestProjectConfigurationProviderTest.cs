@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Build.Construction;
@@ -68,6 +69,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             {
                 [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "other/path/otherfile.cshtml",
             });
+            var projectDirectory = projectInstance.Directory;
 
             // Act
             var hostDocuments = LatestProjectConfigurationProvider.GetHostDocuments(projectInstance.Items);
@@ -77,14 +79,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 hostDocuments,
                 hostDocument =>
                 {
-                    Assert.Equal("file.cshtml", hostDocument.FilePath);
-                    Assert.Equal("path/file.cshtml", hostDocument.TargetPath);
+                    Assert.Equal(Path.Combine(projectDirectory, "file.cshtml"), hostDocument.FilePath);
+                    Assert.Equal("path\\file.cshtml", hostDocument.TargetPath);
                     Assert.Equal(FileKinds.Legacy, hostDocument.FileKind);
                 },
                 hostDocument =>
                 {
-                    Assert.Equal("otherfile.cshtml", hostDocument.FilePath);
-                    Assert.Equal("other/path/otherfile.cshtml", hostDocument.TargetPath);
+                    Assert.Equal(Path.Combine(projectDirectory, "otherfile.cshtml"), hostDocument.FilePath);
+                    Assert.Equal("other\\path\\otherfile.cshtml", hostDocument.TargetPath);
                     Assert.Equal(FileKinds.Legacy, hostDocument.FileKind);
                 });
         }
@@ -94,14 +96,15 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         {
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
-            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorComponentWithTargetPathItemType, "file.razor", new Dictionary<string, string>()
+            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorComponentWithTargetPathItemType, "path/file.razor", new Dictionary<string, string>()
             {
                 [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "path/file.razor",
             });
-            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorComponentWithTargetPathItemType, "otherfile.razor", new Dictionary<string, string>()
+            projectInstance.AddItem(LatestProjectConfigurationProvider.RazorComponentWithTargetPathItemType, "other/path/otherfile.razor", new Dictionary<string, string>()
             {
                 [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "other/path/otherfile.razor",
             });
+            var projectDirectory = projectInstance.Directory;
 
             // Act
             var hostDocuments = LatestProjectConfigurationProvider.GetHostDocuments(projectInstance.Items);
@@ -111,14 +114,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 hostDocuments,
                 hostDocument =>
                 {
-                    Assert.Equal("file.razor", hostDocument.FilePath);
-                    Assert.Equal("path/file.razor", hostDocument.TargetPath);
+                    Assert.Equal(Path.Combine(projectDirectory, "path/file.razor"), hostDocument.FilePath);
+                    Assert.Equal("path\\file.razor", hostDocument.TargetPath);
                     Assert.Equal(FileKinds.Component, hostDocument.FileKind);
                 },
                 hostDocument =>
                 {
-                    Assert.Equal("otherfile.razor", hostDocument.FilePath);
-                    Assert.Equal("other/path/otherfile.razor", hostDocument.TargetPath);
+                    Assert.Equal(Path.Combine(projectDirectory, "other/path/otherfile.razor"), hostDocument.FilePath);
+                    Assert.Equal("other\\path\\otherfile.razor", hostDocument.TargetPath);
                     Assert.Equal(FileKinds.Component, hostDocument.FileKind);
                 });
         }
@@ -136,6 +139,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             {
                 [LatestProjectConfigurationProvider.RazorTargetPathMetadataName] = "other/path/otherfile.cshtml",
             });
+            var projectDirectory = projectInstance.Directory;
 
             // Act
             var hostDocuments = LatestProjectConfigurationProvider.GetHostDocuments(projectInstance.Items);
@@ -145,14 +149,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 hostDocuments,
                 hostDocument =>
                 {
-                    Assert.Equal("file.razor", hostDocument.FilePath);
-                    Assert.Equal("path/file.razor", hostDocument.TargetPath);
+                    Assert.Equal(Path.Combine(projectDirectory, "file.razor"), hostDocument.FilePath);
+                    Assert.Equal("path\\file.razor", hostDocument.TargetPath);
                     Assert.Equal(FileKinds.Component, hostDocument.FileKind);
                 },
                 hostDocument =>
                 {
-                    Assert.Equal("otherfile.cshtml", hostDocument.FilePath);
-                    Assert.Equal("other/path/otherfile.cshtml", hostDocument.TargetPath);
+                    Assert.Equal(Path.Combine(projectDirectory, "otherfile.cshtml"), hostDocument.FilePath);
+                    Assert.Equal("other\\path\\otherfile.cshtml", hostDocument.TargetPath);
                     Assert.Equal(FileKinds.Legacy, hostDocument.FileKind);
                 });
         }
@@ -575,6 +579,29 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 extension => Assert.Equal(expectedExtension1Name, extension.ExtensionName),
                 extension => Assert.Equal(expectedExtension2Name, extension.ExtensionName));
             Assert.Equal(expectedRootNamespace, configuration.RootNamespace);
+        }
+
+        [Theory]
+        [InlineData("//Views//_Import.cshtml", "Views\\\\_Import.cshtml")]
+        [InlineData("/Views/_Import.cshtml", "Views\\_Import.cshtml")]
+        [InlineData("Views/_Import.cshtml", "Views\\_Import.cshtml")]
+        [InlineData("\\Views\\_Import.cshtml", "Views\\_Import.cshtml")]
+        [InlineData("Views\\_Import.cshtml", "Views\\_Import.cshtml")]
+        [InlineData("_Import.cshtml", "_Import.cshtml")]
+        public void NormalizeTargetPath_BehavesAccordingToTargetPathSpec(string originalTargetPath, string expectedTargetPath)
+        {
+            // Arrange & Act
+            var normalizedPath = LatestProjectConfigurationProvider.NormalizeTargetPath(originalTargetPath);
+
+            // Assert
+            Assert.Equal(expectedTargetPath, normalizedPath);
+        }
+
+        [Fact]
+        public void NormalizeTargetPath_HandlesNull()
+        {
+            // Arrange, Act & Assert
+            Assert.Throws<ArgumentNullException>(() => LatestProjectConfigurationProvider.NormalizeTargetPath(null));
         }
     }
 }

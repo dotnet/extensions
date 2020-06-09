@@ -138,3 +138,6 @@ node_modules/
 # VSCode extension outputs
 dist/
 out/
+
+# Test generated
+src/Razor/test/OutOfWorkspaceFile.razor
