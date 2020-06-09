@@ -95,10 +95,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
 
                 var razorDocumentUri = RazorLSPConventions.GetRazorDocumentUri(uri);
-                if (!_documentManager.TryGetDocument(razorDocumentUri, out var documentSnapshot))
-                {
-                    continue;
-                }
 
                 var mappingResult = await MapToDocumentRangesAsync(
                     languageKind,
@@ -108,7 +104,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
+                if (mappingResult == null ||
+                    (_documentManager.TryGetDocument(razorDocumentUri, out var documentSnapshot) &&
+                    mappingResult.HostDocumentVersion != documentSnapshot.Version))
                 {
                     // Couldn't remap the location or the document changed in the meantime. Discard these ranges.
                     continue;
@@ -194,18 +192,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 var edits = entry.Edits;
                 var (documentSnapshot, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, cancellationToken).ConfigureAwait(false);
-                if (documentSnapshot == null)
+                if (remappedEdits == null || remappedEdits.Length == 0)
                 {
-                    // Couldn't find the document. Ignore this edit.
+                    // Nothing to do.
                     continue;
                 }
 
+                var razorDocumentUri = RazorLSPConventions.GetRazorDocumentUri(uri);
                 remappedDocumentEdits.Add(new TextDocumentEdit()
                 {
                     TextDocument = new VersionedTextDocumentIdentifier()
                     {
-                        Uri = documentSnapshot.Uri,
-                        Version = documentSnapshot.Version
+                        Uri = razorDocumentUri,
+                        Version = documentSnapshot?.Version
                     },
                     Edits = remappedEdits
                 });
@@ -229,14 +228,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     continue;
                 }
 
-                var (documentSnapshot, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, cancellationToken).ConfigureAwait(false);
-                if (documentSnapshot == null)
+                var (_, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, cancellationToken).ConfigureAwait(false);
+                if (remappedEdits == null || remappedEdits.Length == 0)
                 {
-                    // Couldn't find the document. Ignore this edit.
+                    // Nothing to do.
                     continue;
                 }
 
-                remappedChanges[documentSnapshot.Uri.AbsoluteUri] = remappedEdits;
+                var razorDocumentUri = RazorLSPConventions.GetRazorDocumentUri(uri);
+                remappedChanges[razorDocumentUri.AbsoluteUri] = remappedEdits;
             }
 
             return remappedChanges;
@@ -259,10 +259,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             var razorDocumentUri = RazorLSPConventions.GetRazorDocumentUri(uri);
-            if (!_documentManager.TryGetDocument(razorDocumentUri, out var documentSnapshot))
-            {
-                return (null, EmptyEdits);
-            }
 
             var rangesToMap = edits.Select(e => e.Range).ToArray();
             var mappingResult = await MapToDocumentRangesAsync(
@@ -271,7 +267,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 rangesToMap,
                 cancellationToken).ConfigureAwait(false);
 
-            if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
+            if (mappingResult == null ||
+                (_documentManager.TryGetDocument(razorDocumentUri, out var documentSnapshot) &&
+                    mappingResult.HostDocumentVersion != documentSnapshot.Version))
             {
                 // Couldn't remap the location or the document changed in the meantime. Discard these ranges.
                 return (null, EmptyEdits);
