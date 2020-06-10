@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             options[LanguageServerConstants.ExpectsCursorPlaceholderKey] = expectCursorPlaceholder;
 
             var provider = CreateProvider();
-            var context = DefaultRazorFormattingService.CreateFormattingContext(uri, codeDocument, new OmniSharp.Extensions.LanguageServer.Protocol.Models.Range(position, position), options);
+            var context = FormattingContext.Create(uri, codeDocument, new OmniSharp.Extensions.LanguageServer.Protocol.Models.Range(position, position), options);
 
             // Act
             if (!provider.TryFormatOnType(position, context, out var edits))
