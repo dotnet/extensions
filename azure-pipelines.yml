@@ -67,16 +67,16 @@ stages:
       enablePublishBuildAssets: true
       enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
       enableTelemetry: true
-      helixRepo: aspnet/Extensions
+      helixRepo: dotnet/extensions
       jobs:
       - job: Windows
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCorePublic-Pool
-            queue: BuildPool.Server.Amd64.VS2017.Open
+            queue: BuildPool.Server.Amd64.VS2019.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCoreInternal-Pool
-            queue: BuildPool.Server.Amd64.VS2017
+            queue: BuildPool.Server.Amd64.VS2019
         variables:
         # Only enable publishing in official builds.
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -159,6 +159,15 @@ stages:
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
           displayName: Upload package artifacts
           condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
           inputs:
@@ -171,33 +180,16 @@ stages:
         displayName: 'Ubuntu 16.04'
         pool:
           vmImage: ubuntu-16.04
-        variables:
-        # Only enable publishing in official builds.
-        - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - name: _OfficialBuildArgs
-            value: -p:OfficialBuildId=$(Build.BuildNumber)
-        # else
-        - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          - name: _OfficialBuildArgs
-            value: ''
         strategy:
           matrix:
             ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
               Debug:
                 _BuildConfig: Debug
-                _SignType: none
-                _DotNetPublishToBlobFeed : false
             Release:
               _BuildConfig: Release
-              _SignType: none
-              _DotNetPublishToBlobFeed : false
         steps:
         - checkout: self
           clean: true
-        - task: NodeTool@0
-          displayName: Install Node 10.x
-          inputs:
-            versionSpec: 10.x
         - ${{ if ne(variables['System.TeamProject'], 'public') }}:
           - task: Bash@3
             displayName: Setup Private Feeds Credentials
@@ -209,7 +201,6 @@ stages:
         - script: eng/common/cibuild.sh
             --configuration $(_BuildConfig)
             --prepareMachine
-            -p:BuildNodeJS=true
             $(_OfficialBuildArgs)
             $(_InternalRuntimeDownloadArgs)
           displayName: Build
@@ -237,11 +228,12 @@ stages:
             artifactType: Container
             parallel: true
         - task: PublishBuildArtifacts@1
-          displayName: Upload NPM artifacts
-          condition: and(succeeded(), eq(variables['_BuildConfig'], 'Release'))
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
           inputs:
-            pathtoPublish: artifacts/npm/
-            artifactName: NpmArtifacts
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
 
@@ -254,12 +246,8 @@ stages:
             ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
               Debug:
                 _BuildConfig: Debug
-                _SignType: none
-                _DotNetPublishToBlobFeed : false
             Release:
               _BuildConfig: Release
-              _SignType: none
-              _DotNetPublishToBlobFeed : false
         steps:
         - checkout: self
           clean: true
@@ -297,6 +285,15 @@ stages:
           inputs:
             pathtoPublish: artifacts/TestResults/$(_BuildConfig)/
             artifactName: $(Agent.Os)_$(Agent.JobName) TestResults
+            artifactType: Container
+            parallel: true
+        - task: PublishBuildArtifacts@1
+          displayName: Upload Test Logs
+          condition: always()
+          continueOnError: true
+          inputs:
+            pathtoPublish: artifacts/log
+            artifactName: $(Agent.Os)_$(Agent.JobName) Test Logs
             artifactType: Container
             parallel: true
   - job: Source_Build
