@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace GenericHostSample
 {
@@ -10,9 +11,16 @@ namespace GenericHostSample
         private bool _stopping;
         private Task _backgroundTask;
 
+        public MyServiceB(ILoggerFactory loggerFactory)
+        {
+            Logger = loggerFactory.CreateLogger<MyServiceB>();
+        }
+
+        public ILogger Logger { get; }
+
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine("MyServiceB is starting.");
+            Logger.LogInformation("MyServiceB is starting.");
             _backgroundTask = BackgroundTask();
             return Task.CompletedTask;
         }
@@ -22,15 +30,15 @@ namespace GenericHostSample
             while (!_stopping)
             {
                 await Task.Delay(TimeSpan.FromSeconds(7));
-                Console.WriteLine("MyServiceB is doing background work.");
+                Logger.LogInformation("MyServiceB is doing background work.");
             }
 
-            Console.WriteLine("MyServiceB background task is stopping.");
+            Logger.LogInformation("MyServiceB background task is stopping.");
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine("MyServiceB is stopping.");
+            Logger.LogInformation("MyServiceB is stopping.");
             _stopping = true;
             if (_backgroundTask != null)
             {
@@ -41,7 +49,7 @@ namespace GenericHostSample
 
         public void Dispose()
         {
-            Console.WriteLine("MyServiceB is disposing.");
+            Logger.LogInformation("MyServiceB is disposing.");
         }
     }
 }

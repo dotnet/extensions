@@ -5,8 +5,21 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Logging
 {
+    /// <summary>
+    /// The options for a LoggerFilter.
+    /// </summary>
     public class LoggerFilterOptions
     {
+        /// <summary>
+        /// Creates a new <see cref="LoggerFilterOptions"/> instance.
+        /// </summary>
+        public LoggerFilterOptions() { }
+
+        /// <summary>
+        /// Gets or sets value indicating whether logging scopes are being captured. Defaults to <c>true</c>
+        /// </summary>
+        public bool CaptureScopes { get; set; } = true;
+
         /// <summary>
         /// Gets or sets the minimum level of log messages if none of the rules match.
         /// </summary>

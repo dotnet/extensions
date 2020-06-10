@@ -31,18 +31,17 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
         /// </summary>
         public override void Load()
         {
-            Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             if (Source.FileProvider == null)
             {
                 if (Source.Optional)
                 {
+                    Data = data;
                     return;
                 }
-                else
-                {
-                    throw new DirectoryNotFoundException("A non-null file provider for the directory is required when this source is not optional.");
-                }
+
+                throw new DirectoryNotFoundException("A non-null file provider for the directory is required when this source is not optional.");
             }
 
             var directory = Source.FileProvider.GetDirectoryContents("/");
@@ -63,10 +62,22 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 {
                     if (Source.IgnoreCondition == null || !Source.IgnoreCondition(file.Name))
                     {
-                        Data.Add(NormalizeKey(file.Name), TrimNewLine(streamReader.ReadToEnd()));
+                        data.Add(NormalizeKey(file.Name), TrimNewLine(streamReader.ReadToEnd()));
                     }
                 }
             }
+
+            Data = data;
         }
+
+        private string GetDirectoryName()
+            => Source.FileProvider?.GetFileInfo("/")?.PhysicalPath ?? "<Unknown>";
+
+        /// <summary>
+        /// Generates a string representing this provider name and relevant details.
+        /// </summary>
+        /// <returns> The configuration name. </returns>
+        public override string ToString()
+            => $"{GetType().Name} for files in '{GetDirectoryName()}' ({(Source.Optional ? "Optional" : "Required")})";
     }
 }
