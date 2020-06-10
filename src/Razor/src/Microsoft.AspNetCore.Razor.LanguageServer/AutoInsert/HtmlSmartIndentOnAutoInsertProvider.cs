@@ -5,16 +5,16 @@ using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
+namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 {
-    internal class HtmlSmartIndentFormatOnTypeProvider : RazorFormatOnTypeProvider
+    internal class HtmlSmartIndentOnAutoInsertProvider : RazorOnAutoInsertProvider
     {
         public override string TriggerCharacter => "\n";
 
-        public override bool TryFormatOnType(Position position, FormattingContext context, out TextEdit[] edits)
+        public override bool TryResolveInsertion(Position position, FormattingContext context, out TextEdit edit, out InsertTextFormat format)
         {
             if (position is null)
             {
@@ -26,14 +26,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!context.Options.TryGetValue(LanguageServerConstants.ExpectsCursorPlaceholderKey, out var value) || !value.IsBool || !value.Bool)
-            {
-                // Temporary:
-                // no-op if cursor placeholder isn't supported. This means the request isn't coming from VS.
-                edits = null;
-                return false;
-            }
-
             var syntaxTree = context.CodeDocument.GetSyntaxTree();
 
             var absoluteIndex = position.GetAbsoluteIndex(context.SourceText);
@@ -42,7 +34,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             if (!IsAtEnterRuleLocation(context, owner))
             {
-                edits = null;
+                format = default;
+                edit = default;
                 return false;
             }
 
@@ -59,13 +52,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             // We mark start position at the beginning of the line in order to remove any pre-existing whitespace.
             var startPosition = new Position(position.Line, 0);
-            var edit = new TextEdit()
+            format = InsertTextFormat.Snippet;
+            edit = new TextEdit()
             {
-                NewText = $"{innerIndentationString}{LanguageServerConstants.CursorPlaceholderString}{Environment.NewLine}{existingIndentationString}",
+                NewText = $"{innerIndentationString}$0{Environment.NewLine}{existingIndentationString}",
                 Range = new Range(startPosition, position)
             };
-
-            edits = new[] { edit };
             return true;
         }
 

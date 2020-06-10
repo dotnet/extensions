@@ -50,7 +50,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             // The underlying method doesn't actually do anything truly asynchronous which allows us to synchronously call it.
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             _ = _dynamicFileInfoProvider.GetDynamicFileInfoAsync(projectId, projectFilePath, filePath, CancellationToken.None).Result;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
             var key = new Key(projectId, projectFilePath, filePath);
             var entry = _entries.GetOrAdd(key, k => new Entry(_documentInfoFactory.CreateEmpty(k.FilePath, projectId)));
@@ -70,7 +72,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             // The underlying method doesn't actually do anything truly asynchronous which allows us to synchronously call and wait on it.
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             _dynamicFileInfoProvider.RemoveDynamicFileInfoAsync(projectId, projectFilePath, filePath, CancellationToken.None).Wait();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
             var key = new Key(projectId, projectFilePath, filePath);
             _entries.TryRemove(key, out _);
@@ -89,7 +93,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 lock (impactedEntry.Value.Lock)
                 {
                     // The underlying method doesn't actually do anything truly asynchronous which allows us to synchronously call it.
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                     var innerDynamicFileInfo = _dynamicFileInfoProvider.GetDynamicFileInfoAsync(impactedEntry.Key.ProjectId, impactedEntry.Key.ProjectFilePath, impactedEntry.Key.FilePath, CancellationToken.None).Result;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                     var newDocumentInfo = impactedEntry.Value.Current.WithTextLoader(innerDynamicFileInfo.TextLoader);
                     impactedEntry.Value.Current = newDocumentInfo;
                     Updated?.Invoke(newDocumentInfo);

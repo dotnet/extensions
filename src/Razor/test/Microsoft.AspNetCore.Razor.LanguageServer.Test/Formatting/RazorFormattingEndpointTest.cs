@@ -135,17 +135,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             public bool Called { get; private set; }
 
-            public override IReadOnlyList<string> OnTypeTriggerHandlers => throw new NotImplementedException();
-
             public override Task<TextEdit[]> FormatAsync(Uri uri, RazorCodeDocument codeDocument, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range, FormattingOptions options)
             {
                 Called = true;
                 return Task.FromResult(Array.Empty<TextEdit>());
-            }
-
-            public override Task<TextEdit[]> FormatOnTypeAsync(Uri uri, RazorCodeDocument codeDocument, Position position, string character, FormattingOptions options)
-            {
-                throw new NotImplementedException();
             }
         }
     }

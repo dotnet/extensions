@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
@@ -75,9 +76,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorLanguageEndpoint>()
                     .WithHandler<RazorConfigurationEndpoint>()
                     .WithHandler<RazorFormattingEndpoint>()
-                    .WithHandler<RazorOnTypeFormattingEndpoint>()
                     .WithHandler<RazorSemanticTokenEndpoint>()
                     .WithHandler<RazorSemanticTokenLegendEndpoint>()
+                    .WithHandler<OnAutoInsertEndpoint>()
                     .WithServices(services =>
                     {
                         var filePathNormalizer = new FilePathNormalizer();
@@ -141,11 +142,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeTransitionCompletionItemProvider>();
                         services.AddSingleton<RazorCompletionItemProvider, MarkupTransitionCompletionItemProvider>();
 
+                        // Auto insert
+                        services.AddSingleton<RazorOnAutoInsertProvider, HtmlSmartIndentOnAutoInsertProvider>();
+                        services.AddSingleton<RazorOnAutoInsertProvider, CloseRazorCommentOnAutoInsertProvider>();
+                        services.AddSingleton<RazorOnAutoInsertProvider, CloseTextTagOnAutoInsertProvider>();
+                        services.AddSingleton<RazorOnAutoInsertProvider, AttributeSnippetOnAutoInsertProvider>();
+
                         // Formatting
-                        services.AddSingleton<RazorFormatOnTypeProvider, HtmlSmartIndentFormatOnTypeProvider>();
-                        services.AddSingleton<RazorFormatOnTypeProvider, AttributeSnippetFormatOnTypeProvider>();
-                        services.AddSingleton<RazorFormatOnTypeProvider, CloseRazorCommentFormatOnTypeProvider>();
-                        services.AddSingleton<RazorFormatOnTypeProvider, CloseTextTagFormatOnTypeProvider>();
                         services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();
 
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Text;
@@ -528,65 +529,6 @@ expected: @"
 tabSize: 12);
         }
 
-        [Fact]
-        public async Task FormatOnTypeAsync_SingleProvider_Success()
-        {
-            var provider = new TestOnTypeProvider(triggerCharacter: ">", insertText: "Test", returnValue: true);
-            await RunFormatOnTypeTestAsync(
-                new[] { provider },
-input: "Hello World|",
-expected: "TestHello World>",
-character: ">");
-        }
-
-        [Fact]
-        public async Task FormatOnTypeAsync_MultipleProvider_SameTrigger_UsesSuccessful()
-        {
-            var unsuccessfulProvider = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected", returnValue: false);
-            var successfulProvider = new TestOnTypeProvider(triggerCharacter: ">", insertText: "expected", returnValue: true);
-            await RunFormatOnTypeTestAsync(
-                new[] { unsuccessfulProvider, successfulProvider },
-input: "Hello World|",
-expected: "expectedHello World>",
-character: ">");
-        }
-
-        [Fact]
-        public async Task FormatOnTypeAsync_MultipleProvider_SameTrigger_UsesFirstSuccessful()
-        {
-            var provider1 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "expected", returnValue: true);
-            var provider2 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected", returnValue: true);
-            await RunFormatOnTypeTestAsync(
-                new[] { provider1, provider2 },
-input: "Hello World|",
-expected: "expectedHello World>",
-character: ">");
-        }
-
-        [Fact]
-        public async Task FormatOnTypeAsync_NoSuccessful()
-        {
-            var provider1 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected1", returnValue: false);
-            var provider2 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "unexpected2", returnValue: false);
-            await RunFormatOnTypeTestAsync(
-                new[] { provider1, provider2 },
-input: "Hello World|",
-expected: "Hello World>",
-character: ">");
-        }
-
-        [Fact]
-        public async Task FormatOnTypeAsync_IgnoresUnmatchedTriggerCharacter()
-        {
-            var provider1 = new TestOnTypeProvider(triggerCharacter: "!", insertText: "unexpected", returnValue: true);
-            var provider2 = new TestOnTypeProvider(triggerCharacter: ">", insertText: "expected", returnValue: true);
-            await RunFormatOnTypeTestAsync(
-                new[] { provider1, provider2 },
-input: "Hello World|",
-expected: "expectedHello World>",
-character: ">");
-        }
-
         private async Task RunFormattingTestAsync(string input, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = default)
         {
             // Arrange
@@ -618,38 +560,7 @@ character: ">");
             Assert.Equal(expected, actual);
         }
 
-        private async Task RunFormatOnTypeTestAsync(RazorFormatOnTypeProvider[] providers, string input, string expected, string character, bool expectCursorPlaceholder = true, int tabSize = 4, bool insertSpaces = true, string fileKind = default)
-        {
-            // Arrange
-            var location = input.IndexOf('|') + character.Length;
-            input = input.Replace("|", character);
-
-            var source = SourceText.From(input);
-            source.GetLineAndOffset(location, out var line, out var column);
-            var position = new Position(line, column);
-
-            var path = "file:///path/to/document.razor";
-            var uri = new Uri(path);
-            var codeDocument = CreateCodeDocument(source, uri.AbsolutePath, fileKind: fileKind);
-            var options = new FormattingOptions()
-            {
-                TabSize = tabSize,
-                InsertSpaces = insertSpaces,
-            };
-            options[LanguageServerConstants.ExpectsCursorPlaceholderKey] = expectCursorPlaceholder;
-
-            var formattingService = CreateFormattingService(codeDocument, providers);
-
-            // Act
-            var edits = await formattingService.FormatOnTypeAsync(uri, codeDocument, position, character, options);
-
-            // Assert
-            var edited = ApplyEdits(source, edits);
-            var actual = edited.ToString();
-            Assert.Equal(expected, actual);
-        }
-
-        private RazorFormattingService CreateFormattingService(RazorCodeDocument codeDocument, RazorFormatOnTypeProvider[] onTypeProviders = null)
+        private RazorFormattingService CreateFormattingService(RazorCodeDocument codeDocument)
         {
             var mappingService = new DefaultRazorDocumentMappingService();
             var filePathNormalizer = new FilePathNormalizer();
@@ -658,9 +569,8 @@ character: ">");
             client.AddCodeDocument(codeDocument);
             var languageServer = Mock.Of<ILanguageServer>(ls => ls.Client == client);
 
-            onTypeProviders ??= Array.Empty<RazorFormatOnTypeProvider>();
 
-            return new DefaultRazorFormattingService(onTypeProviders, mappingService, filePathNormalizer, languageServer, LoggerFactory);
+            return new DefaultRazorFormattingService(mappingService, filePathNormalizer, languageServer, LoggerFactory);
         }
 
         private SourceText ApplyEdits(SourceText source, TextEdit[] edits)
@@ -677,40 +587,6 @@ character: ">");
             var projectEngine = RazorProjectEngine.Create(builder => { });
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), tagHelpers);
             return codeDocument;
-        }
-
-        private class TestOnTypeProvider : RazorFormatOnTypeProvider
-        {
-            private readonly string _insertText;
-            private readonly bool _returnValue;
-
-            public TestOnTypeProvider(string triggerCharacter, string insertText, bool returnValue)
-            {
-                TriggerCharacter = triggerCharacter;
-                _insertText = insertText;
-                _returnValue = returnValue;
-            }
-
-            public override string TriggerCharacter { get; }
-
-            public override bool TryFormatOnType(Position position, FormattingContext context, out TextEdit[] edits)
-            {
-                if (!_returnValue)
-                {
-                    edits = null;
-                    return false;
-                }
-
-                edits = new[]
-                {
-                    new TextEdit()
-                    {
-                        NewText = _insertText,
-                        Range = new Range(new Position(0, 0), new Position(0, 0))
-                    }
-                };
-                return _returnValue;
-            }
         }
     }
 }

@@ -6,18 +6,18 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.Extensions.Options;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
+namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 {
-    internal class CloseTextTagFormatOnTypeProvider : RazorFormatOnTypeProvider
+    internal class CloseTextTagOnAutoInsertProvider : RazorOnAutoInsertProvider
     {
         private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
 
-        public CloseTextTagFormatOnTypeProvider(IOptionsMonitor<RazorLSPOptions> optionsMonitor)
+        public CloseTextTagOnAutoInsertProvider(IOptionsMonitor<RazorLSPOptions> optionsMonitor)
         {
             if (optionsMonitor is null)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public override string TriggerCharacter => ">";
 
-        public override bool TryFormatOnType(Position position, FormattingContext context, out TextEdit[] edits)
+        public override bool TryResolveInsertion(Position position, FormattingContext context, out TextEdit edit, out InsertTextFormat format)
         {
             if (position is null)
             {
@@ -44,39 +44,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             if (!_optionsMonitor.CurrentValue.AutoClosingTags)
             {
                 // We currently only support auto-closing tags our onType formatter.
-                edits = null;
-                return false;
-            }
-
-            bool addCursorPlaceholder;
-            if (context.Options.TryGetValue(LanguageServerConstants.ExpectsCursorPlaceholderKey, out var value) && value.IsBool)
-            {
-                addCursorPlaceholder = value.Bool;
-            }
-            else
-            {
-                // Temporary:
-                // no-op if cursor placeholder isn't supported. This means the request isn't coming from VS.
-                // Can remove this once VSCode starts using this endpoint for auto closing <text> tags.
-                edits = null;
+                format = default;
+                edit = default;
                 return false;
             }
 
             if (!IsAtTextTag(context, position))
             {
-                edits = null;
+                format = default;
+                edit = default;
                 return false;
             }
 
             // This is a text tag.
-            var cursorPlaceholder = addCursorPlaceholder ? LanguageServerConstants.CursorPlaceholderString : string.Empty;
-            var edit = new TextEdit()
+            format = InsertTextFormat.Snippet;
+            edit = new TextEdit()
             {
-                NewText = $"{cursorPlaceholder}</{SyntaxConstants.TextTagName}>",
+                NewText = $"$0</{SyntaxConstants.TextTagName}>",
                 Range = new Range(position, position)
             };
 
-            edits = new[] { edit };
             return true;
         }
 

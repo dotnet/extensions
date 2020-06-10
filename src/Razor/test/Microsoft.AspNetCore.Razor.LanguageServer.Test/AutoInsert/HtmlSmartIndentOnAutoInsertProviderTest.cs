@@ -4,13 +4,11 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Formatting
+namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 {
-    public class HtmlSmartIndentFormatOnTypeProviderTest : FormatOnTypeProviderTestBase
+    public class HtmlSmartIndentOnAutoInsertProviderTest : RazorOnAutoInsertProviderTestBase
     {
         public static IReadOnlyList<TagHelperDescriptor> TagHelpers
         {
@@ -32,9 +30,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Formatting
         }
 
         [Fact]
-        public void FormatOnType_VoidHtmlTag_Noops()
+        public void TryResolveInsertion_VoidHtmlTag_Noops()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"<input>|<strong></strong>
 ",
 expected: @"<input>
@@ -44,9 +42,9 @@ character: Environment.NewLine);
         }
 
         [Fact]
-        public void FormatOnType_SelfClosingHtmlTag_Noops()
+        public void TryResolveInsertion_SelfClosingHtmlTag_Noops()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"<input />|<strong></strong>
 ",
 expected: @"<input />
@@ -56,9 +54,9 @@ character: Environment.NewLine);
         }
 
         [Fact]
-        public void FormatOnType_SelfClosingVoidHtmlTag_Noops()
+        public void TryResolveInsertion_SelfClosingVoidHtmlTag_Noops()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"<input />|<input>
 ",
 expected: @"<input />
@@ -68,29 +66,29 @@ character: Environment.NewLine);
         }
 
         [Fact]
-        public void FormatOnType_HtmlTag_SmartIndents()
+        public void TryResolveInsertion_HtmlTag_SmartIndents()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"<strong>|</strong>
 ",
-expected: $@"<strong>
-    {LanguageServerConstants.CursorPlaceholderString}
+expected: @"<strong>
+    $0
 </strong>
 ",
 character: Environment.NewLine);
         }
 
         [Fact]
-        public void FormatOnType_NestedHtmlTag_SmartIndents()
+        public void TryResolveInsertion_NestedHtmlTag_SmartIndents()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"<section>
     <div>|</div>
 </section>
 ",
-expected: $@"<section>
+expected: @"<section>
     <div>
-        {LanguageServerConstants.CursorPlaceholderString}
+        $0
     </div>
 </section>
 ",
@@ -98,9 +96,9 @@ character: Environment.NewLine);
         }
 
         [Fact]
-        public void FormatOnType_ComplexHtmlTag_SmartIndents()
+        public void TryResolveInsertion_ComplexHtmlTag_SmartIndents()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @if (true)
 {
@@ -110,34 +108,34 @@ input: @"
     <hr /></section>
 }
 ",
-expected: $@"
+expected: @"
 @if (true)
-{{
-    <section class='column-1'>@{{<hr>
+{
+    <section class='column-1'>@{<hr>
         <div onclick='invokeMethod(""Some Content</div>"")'>
-            {LanguageServerConstants.CursorPlaceholderString}
+            $0
         </div><input />
-    }}
+    }
     <hr /></section>
-}}
+}
 ",
 character: Environment.NewLine);
         }
 
         [Fact]
-        public void FormatOnType_TagHelperTag_SmartIndents()
+        public void TryResolveInsertion_TagHelperTag_SmartIndents()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @addTagHelper *, TestAssembly
 
 <span>|</span>
 ",
-expected: $@"
+expected: @"
 @addTagHelper *, TestAssembly
 
 <span>
-    {LanguageServerConstants.CursorPlaceholderString}
+    $0
 </span>
 ",
 character: Environment.NewLine,
@@ -146,9 +144,9 @@ tagHelpers: TagHelpers);
         }
 
         [Fact]
-        public void FormatOnType_NestedTagHelperTag_SmartIndents()
+        public void TryResolveInsertion_NestedTagHelperTag_SmartIndents()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @addTagHelper *, TestAssembly
 
@@ -156,12 +154,12 @@ input: @"
     <span>|</span>
 </section>
 ",
-expected: $@"
+expected: @"
 @addTagHelper *, TestAssembly
 
 <section>
     <span>
-        {LanguageServerConstants.CursorPlaceholderString}
+        $0
     </span>
 </section>
 ",
@@ -171,9 +169,9 @@ tagHelpers: TagHelpers);
         }
 
         [Fact]
-        public void FormatOnType_ComplexTagHelperTag_SmartIndents()
+        public void TryResolveInsertion_ComplexTagHelperTag_SmartIndents()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @addTagHelper *, TestAssembly
 
@@ -186,25 +184,25 @@ input: @"
     <hr /></section>
 }
 ",
-expected: $@"
+expected: @"
 @addTagHelper *, TestAssembly
 
 
 @if (true)
-{{
-    <section class='column-1'>@{{<hr>
+{
+    <section class='column-1'>@{<hr>
         <span onclick='invokeMethod(""Some Content</span>"")' test='hello world'>
-            {LanguageServerConstants.CursorPlaceholderString}
+            $0
         </span><input />
-    }}
+    }
     <hr /></section>
-}}
+}
 ",
 character: Environment.NewLine,
 fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }
 
-        internal override RazorFormatOnTypeProvider CreateProvider() => new HtmlSmartIndentFormatOnTypeProvider();
+        internal override RazorOnAutoInsertProvider CreateProvider() => new HtmlSmartIndentOnAutoInsertProvider();
     }
 }

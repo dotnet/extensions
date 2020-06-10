@@ -1,24 +1,22 @@
-﻿
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
+namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 {
-    public abstract class FormatOnTypeProviderTestBase : LanguageServerTestBase
+    public abstract class RazorOnAutoInsertProviderTestBase : LanguageServerTestBase
     {
-        internal abstract RazorFormatOnTypeProvider CreateProvider();
+        internal abstract RazorOnAutoInsertProvider CreateProvider();
 
-        protected void RunFormatOnTypeTest(string input, string expected, string character, bool expectCursorPlaceholder = true, int tabSize = 4, bool insertSpaces = true, string fileKind = default, IReadOnlyList<TagHelperDescriptor> tagHelpers = default)
+        protected void RunAutoInsertTest(string input, string expected, string character, int tabSize = 4, bool insertSpaces = true, string fileKind = default, IReadOnlyList<TagHelperDescriptor> tagHelpers = default)
         {
             // Arrange
             var location = input.IndexOf('|') + character.Length;
@@ -36,27 +34,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 TabSize = tabSize,
                 InsertSpaces = insertSpaces,
             };
-            options[LanguageServerConstants.ExpectsCursorPlaceholderKey] = expectCursorPlaceholder;
 
             var provider = CreateProvider();
             var context = FormattingContext.Create(uri, codeDocument, new OmniSharp.Extensions.LanguageServer.Protocol.Models.Range(position, position), options);
 
             // Act
-            if (!provider.TryFormatOnType(position, context, out var edits))
+            if (!provider.TryResolveInsertion(position, context, out var edit, out var format))
             {
-                edits = Array.Empty<TextEdit>();
+                edit = null;
             }
 
             // Assert
-            var edited = ApplyEdits(source, edits);
+            var edited = edit == null ? source : ApplyEdit(source, edit);
             var actual = edited.ToString();
             Assert.Equal(expected, actual);
         }
 
-        private SourceText ApplyEdits(SourceText source, TextEdit[] edits)
+        private SourceText ApplyEdit(SourceText source, TextEdit edit)
         {
-            var changes = edits.Select(e => e.AsTextChange(source));
-            return source.WithChanges(changes);
+            var change = edit.AsTextChange(source);
+            return source.WithChanges(change);
         }
 
         private static RazorCodeDocument CreateCodeDocument(SourceText text, string path, IReadOnlyList<TagHelperDescriptor> tagHelpers = null, string fileKind = default)

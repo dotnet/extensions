@@ -5,17 +5,17 @@ using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
+namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 {
-    internal class CloseRazorCommentFormatOnTypeProvider : RazorFormatOnTypeProvider
+    internal class CloseRazorCommentOnAutoInsertProvider : RazorOnAutoInsertProvider
     {
         public override string TriggerCharacter => "*";
 
-        public override bool TryFormatOnType(Position position, FormattingContext context, out TextEdit[] edits)
+        public override bool TryResolveInsertion(Position position, FormattingContext context, out TextEdit edit, out InsertTextFormat format)
         {
             if (position is null)
             {
@@ -27,34 +27,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(context));
             }
 
-            bool addCursorPlaceholder;
-            if (context.Options.TryGetValue(LanguageServerConstants.ExpectsCursorPlaceholderKey, out var value) && value.IsBool)
-            {
-                addCursorPlaceholder = value.Bool;
-            }
-            else
-            {
-                // Temporary:
-                // no-op if cursor placeholder isn't supported. This means the request isn't coming from VS.
-                edits = null;
-                return false;
-            }
-
             if (!IsAtRazorCommentStart(context, position))
             {
-                edits = null;
+                format = default;
+                edit = default;
                 return false;
             }
 
             // We've just typed a Razor comment start.
-            var cursorPlaceholder = addCursorPlaceholder ? LanguageServerConstants.CursorPlaceholderString : string.Empty;
-            var edit = new TextEdit()
+            format = InsertTextFormat.Snippet;
+            edit = new TextEdit()
             {
-                NewText = $" {cursorPlaceholder} *@",
+                NewText = " $0 *@",
                 Range = new Range(position, position)
             };
 
-            edits = new[] { edit };
             return true;
         }
 

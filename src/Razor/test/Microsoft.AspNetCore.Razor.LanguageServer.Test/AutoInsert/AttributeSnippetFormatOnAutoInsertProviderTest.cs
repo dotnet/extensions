@@ -2,18 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.VisualStudio.Editor.Razor;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
+namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 {
-    public class AttributeSnippetFormatOnTypeProviderTest : FormatOnTypeProviderTestBase
+    public class AttributeSnippetOnAutoInsertProviderTest : RazorOnAutoInsertProviderTestBase
     {
         [Fact]
         public void OnTypeEqual_AfterTagHelperIntAttribute_TriggersAttributeValueSnippet()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @addTagHelper *, TestAssembly
 
@@ -25,7 +24,7 @@ expected: $@"
 @addTagHelper *, TestAssembly
 
 <section>
-    <span intAttribute=""{ LanguageServerConstants.CursorPlaceholderString}""></span>
+    <span intAttribute=""$0""></span>
 </section>
 ",
 character: "=",
@@ -36,7 +35,7 @@ tagHelpers: TagHelpers);
         [Fact]
         public void OnTypeEqual_AfterNonTagHelperAttribute_Noops()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @addTagHelper *, TestAssembly
 
@@ -59,7 +58,7 @@ tagHelpers: TagHelpers);
         [Fact]
         public void OnTypeEqual_AfterTagHelperStringAttribute_Noops()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @addTagHelper *, TestAssembly
 
@@ -82,7 +81,7 @@ tagHelpers: TagHelpers);
         [Fact]
         public void OnTypeEqual_AfterTagHelperTag_Noops()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @addTagHelper *, TestAssembly
 
@@ -105,7 +104,7 @@ tagHelpers: TagHelpers);
         [Fact]
         public void OnTypeEqual_AfterTagHelperAttributeEqual_Noops()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @addTagHelper *, TestAssembly
 
@@ -125,9 +124,9 @@ fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }
 
-        internal override RazorFormatOnTypeProvider CreateProvider()
+        internal override RazorOnAutoInsertProvider CreateProvider()
         {
-            var provider = new AttributeSnippetFormatOnTypeProvider(new DefaultTagHelperFactsService());
+            var provider = new AttributeSnippetOnAutoInsertProvider(new DefaultTagHelperFactsService());
             return provider;
         }
 

@@ -1,24 +1,21 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
+namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
 {
-    public class CloseRazorCommentFormatOnTypeProviderTest : FormatOnTypeProviderTestBase
+    public class CloseRazorCommentOnAutoInsertProviderTest : RazorOnAutoInsertProviderTestBase
     {
         [Fact]
         public void OnTypeStar_ClosesRazorComment()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @|
 ",
-expected: $@"
-@* {LanguageServerConstants.CursorPlaceholderString} *@
+expected: @"
+@* $0 *@
 ",
 character: "*");
         }
@@ -26,7 +23,7 @@ character: "*");
         [Fact]
         public void OnTypeStar_InsideRazorComment_Noops()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @* @| *@
 ",
@@ -39,7 +36,7 @@ character: "*");
         [Fact]
         public void OnTypeStar_EndRazorComment_Noops()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @* Hello |@
 ",
@@ -52,19 +49,19 @@ character: "*");
         [Fact]
         public void OnTypeStar_BeforeText_ClosesRazorComment()
         {
-            RunFormatOnTypeTest(
+            RunAutoInsertTest(
 input: @"
 @| Hello
 ",
-expected: $@"
-@* {LanguageServerConstants.CursorPlaceholderString} *@ Hello
+expected: @"
+@* $0 *@ Hello
 ",
 character: "*");
         }
 
-        internal override RazorFormatOnTypeProvider CreateProvider()
+        internal override RazorOnAutoInsertProvider CreateProvider()
         {
-            var provider = new CloseRazorCommentFormatOnTypeProvider();
+            var provider = new CloseRazorCommentOnAutoInsertProvider();
             return provider;
         }
     }

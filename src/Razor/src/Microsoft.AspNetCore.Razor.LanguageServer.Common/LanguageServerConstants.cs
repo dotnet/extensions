@@ -7,10 +7,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
     {
         public const string ProjectConfigurationFile = "project.razor.json";
 
-        public const string ExpectsCursorPlaceholderKey = "expectsCursorPlaceholder";
-
-        public const string CursorPlaceholderString = "__placeholder__";
-
         public const string RazorSemanticTokensEndpoint = "_ms_/textDocument/semanticTokens";
 
         public const string RazorSemanticTokenLegendEndpoint = "_ms_/textDocument/semanticTokensLegend";

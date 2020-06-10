@@ -3,8 +3,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Linq;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.Shell;
@@ -25,7 +23,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly TrackingLSPDocumentManager _lspDocumentManager;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
         private readonly LSPEditorFeatureDetector _lspEditorFeatureDetector;
-        private readonly LSPEditorService _editorService;
         private readonly SVsServiceProvider _serviceProvider;
         private readonly IEditorOptionsFactoryService _editorOptionsFactory;
 
@@ -34,7 +31,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             ITextDocumentFactoryService textDocumentFactory,
             LSPDocumentManager lspDocumentManager,
             LSPEditorFeatureDetector lspEditorFeatureDetector,
-            LSPEditorService editorService,
             SVsServiceProvider serviceProvider,
             IEditorOptionsFactoryService editorOptionsFactory)
         {
@@ -51,11 +47,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             if (lspEditorFeatureDetector is null)
             {
                 throw new ArgumentNullException(nameof(lspEditorFeatureDetector));
-            }
-
-            if (editorService is null)
-            {
-                throw new ArgumentNullException(nameof(editorService));
             }
 
             if (serviceProvider is null)
@@ -79,7 +70,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             _textDocumentFactory = textDocumentFactory;
             _lspEditorFeatureDetector = lspEditorFeatureDetector;
-            _editorService = editorService;
             _serviceProvider = serviceProvider;
             _editorOptionsFactory = editorOptionsFactory;
         }
@@ -118,14 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // But we need this until that support is built.
             InitializeOptions(textBuffer);
 
-            if (_lspEditorFeatureDetector.IsRemoteClient())
-            {
-                // Temporary: The guest needs to react to the host manually applying edits and moving the cursor.
-                // This can be removed once the client starts supporting snippets.
-
-                textBuffer.ChangedHighPriority += RazorGuestBuffer_Changed;
-            }
-            else
+            if (!_lspEditorFeatureDetector.IsRemoteClient())
             {
                 // Only need to track documents on a host because we don't do any extra work on remote clients.
                 _lspDocumentManager.TrackDocument(textBuffer);
@@ -142,12 +125,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // If we don't know about this document we'll no-op
             _lspDocumentManager.UntrackDocument(textBuffer);
-
-            if (_lspEditorFeatureDetector.IsRemoteClient())
-            {
-                // We no longer want to watch for guest buffer changes.
-                textBuffer.ChangedHighPriority -= RazorGuestBuffer_Changed;
-            }
         }
 
         private void InitializeOptions(ITextBuffer textBuffer)
@@ -168,25 +145,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 razorOptions.SetOptionValue(DefaultOptions.ConvertTabsToSpacesOptionId, insertSpaces);
                 razorOptions.SetOptionValue(DefaultOptions.TabSizeOptionId, (int)tabSize);
             }
-        }
-
-        private void RazorGuestBuffer_Changed(object sender, TextContentChangedEventArgs args)
-        {
-            var replacePlaceholderChange = args.Changes.FirstOrDefault(
-                c => c.OldText == LanguageServerConstants.CursorPlaceholderString && c.NewText == string.Empty);
-
-            if (replacePlaceholderChange == null)
-            {
-                return;
-            }
-
-            if (!(sender is ITextBuffer buffer) ||
-                !_textDocumentFactory.TryGetTextDocument(buffer, out var textDocument))
-            {
-                return;
-            }
-
-            _editorService.MoveCaretToPosition(textDocument.FilePath, replacePlaceholderChange.NewPosition);
         }
     }
 }

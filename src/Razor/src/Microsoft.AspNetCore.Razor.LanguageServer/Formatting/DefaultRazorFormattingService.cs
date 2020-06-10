@@ -19,26 +19,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     internal class DefaultRazorFormattingService : RazorFormattingService
     {
-        private readonly IReadOnlyList<RazorFormatOnTypeProvider> _formatOnTypeProviders;
-        private readonly IReadOnlyList<string> _formatOnTypeTriggerCharacters;
         private readonly ILanguageServer _server;
         private readonly CSharpFormatter _csharpFormatter;
         private readonly HtmlFormatter _htmlFormatter;
         private readonly ILogger _logger;
 
-        private static readonly TextEdit[] EmptyArray = Array.Empty<TextEdit>();
 
         public DefaultRazorFormattingService(
-            IEnumerable<RazorFormatOnTypeProvider> formatOnTypeProviders,
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
             ILanguageServer server,
             ILoggerFactory loggerFactory)
         {
-            if (formatOnTypeProviders is null)
-            {
-                throw new ArgumentNullException(nameof(formatOnTypeProviders));
-            }
 
             if (documentMappingService is null)
             {
@@ -60,73 +52,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _formatOnTypeProviders = formatOnTypeProviders.ToList();
-            _formatOnTypeTriggerCharacters = _formatOnTypeProviders.Select(provider => provider.TriggerCharacter).ToList();
             _server = server;
             _csharpFormatter = new CSharpFormatter(documentMappingService, server, filePathNormalizer);
             _htmlFormatter = new HtmlFormatter(server, filePathNormalizer);
             _logger = loggerFactory.CreateLogger<DefaultRazorFormattingService>();
-        }
-
-        public override IReadOnlyList<string> OnTypeTriggerHandlers => _formatOnTypeTriggerCharacters;
-
-        public override Task<TextEdit[]> FormatOnTypeAsync(Uri uri, RazorCodeDocument codeDocument, Position position, string character, FormattingOptions options)
-        {
-            if (uri is null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
-
-            if (codeDocument is null)
-            {
-                throw new ArgumentNullException(nameof(codeDocument));
-            }
-
-            if (position is null)
-            {
-                throw new ArgumentNullException(nameof(position));
-            }
-
-            if (string.IsNullOrEmpty(character))
-            {
-                throw new ArgumentNullException(nameof(character));
-            }
-
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            var applicableProviders = new List<RazorFormatOnTypeProvider>();
-            for (var i = 0; i < _formatOnTypeProviders.Count; i++)
-            {
-                var formatOnTypeProvider = _formatOnTypeProviders[i];
-                if (formatOnTypeProvider.TriggerCharacter == character)
-                {
-                    applicableProviders.Add(formatOnTypeProvider);
-                }
-            }
-
-            if (applicableProviders.Count == 0)
-            {
-                // There's currently a bug in the LSP platform where other language clients OnTypeFormatting trigger characters influence every language clients trigger characters.
-                // To combat this we need to pre-emptively return so we don't try having our providers handle characters that they can't.
-                return Task.FromResult(EmptyArray);
-            }
-
-            var formattingContext = FormattingContext.Create(uri, codeDocument, new Range(position, position), options);
-            for (var i = 0; i < applicableProviders.Count; i++)
-            {
-                if (applicableProviders[i].TryFormatOnType(position, formattingContext, out var textEdits))
-                {
-                    // We don't currently aggregate text edits from multiple providers because we're making the assumption that one set of text edits at a given position will probably
-                    // clash with any other ones that are generated from another provider.
-                    return Task.FromResult(textEdits);
-                }
-            }
-
-            // No provider could handle the text edit.
-            return Task.FromResult(EmptyArray);
         }
 
         public override async Task<TextEdit[]> FormatAsync(Uri uri, RazorCodeDocument codeDocument, Range range, FormattingOptions options)
