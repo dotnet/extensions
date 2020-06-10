@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor

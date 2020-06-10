@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
+using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {

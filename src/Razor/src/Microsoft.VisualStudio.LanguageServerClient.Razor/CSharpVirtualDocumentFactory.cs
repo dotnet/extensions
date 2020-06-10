@@ -7,6 +7,7 @@ using System.Composition;
 using System.Linq;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.LanguageServer.Client;
+using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
 

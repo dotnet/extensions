@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Newtonsoft.Json.Linq;
 using Task = System.Threading.Tasks.Task;

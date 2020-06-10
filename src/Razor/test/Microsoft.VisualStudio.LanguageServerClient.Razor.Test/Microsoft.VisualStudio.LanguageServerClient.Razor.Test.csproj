@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.VisualStudio.LanguageServerClient.Razor\Microsoft.VisualStudio.LanguageServerClient.Razor.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.Editor.Razor.Test\Microsoft.VisualStudio.Editor.Razor.Test.csproj" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test.Common\Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test.Common.csproj" />
   </ItemGroup>
 
 </Project>

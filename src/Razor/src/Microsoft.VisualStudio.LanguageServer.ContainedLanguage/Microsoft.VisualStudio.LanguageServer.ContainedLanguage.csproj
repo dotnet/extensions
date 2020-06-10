@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <Description>This package contains the Visual Studio Language Server infrastructure for interacting with contained languages.</Description>
+    <EnableApiCheck>false</EnableApiCheck>
+    <CodeAnalysisRuleSet>Microsoft.VisualStudio.LanguageServer.ContainedLanguage.ruleset</CodeAnalysisRuleSet>
+    <IsShipping>false</IsShipping>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(Tooling_MicrosoftCodeAnalysisPackageVersion)" NoWarn="NU1608" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)" NoWarn="NU1608" />
+    <PackageReference Include="Microsoft.VisualStudio.Editor" Version="$(MicrosoftVisualStudioEditorPackageVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Package.LanguageService.15.0" Version="$(MicrosoftVisualStudioPackageLanguageService150PackageVersion)" />
+    <!-- TODO: Remove this after we get rid of DefaultLSPEditorService -->
+    <PackageReference Include="Microsoft.VisualStudio.LanguageServer.Protocol" Version="$(MicrosoftVisualStudioLanguageServerProtocolPackageVersion)" />
+  </ItemGroup>
+
+</Project>

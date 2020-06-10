@@ -65,5 +65,7 @@
     <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.LiveShare.Razor.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly"  Path="Microsoft.VisualStudio.LanguageServerClient.Razor.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.LanguageServerClient.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly"  Path="Microsoft.VisualStudio.LanguageServer.ContainedLanguage.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.LanguageServer.ContainedLanguage.dll" />
   </Assets>
 </PackageManifest>

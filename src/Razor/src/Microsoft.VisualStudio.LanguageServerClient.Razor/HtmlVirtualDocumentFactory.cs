@@ -4,6 +4,7 @@
 using System;
 using System.Composition;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
 
