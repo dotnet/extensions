@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using MediatR;
@@ -21,7 +22,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.JsonRpc.Serialization.Converters;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server;
@@ -49,6 +49,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         .SetMinimumLevel(RazorLSPOptions.GetLogLevelForTrace(trace)))
                     .OnInitialized(async (s, request, response) =>
                     {
+                        var jsonRpcHandlers = s.Services.GetServices<IJsonRpcHandler>();
+                        var registrationExtensions = jsonRpcHandlers.OfType<IRegistrationExtension>();
+                        if (registrationExtensions.Any())
+                        {
+                            var capabilities = new ExtendableServerCapabilities(response.Capabilities, registrationExtensions);
+                            response.Capabilities = capabilities;
+                        }
+
                         var fileChangeDetectorManager = s.Services.GetRequiredService<RazorFileChangeDetectorManager>();
                         await fileChangeDetectorManager.InitializedAsync(s);
 
