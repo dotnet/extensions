@@ -1,0 +1,83 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Do not pack in servicing builds. -->
+    <IsPackable>false</IsPackable>
+    <IsPackable Condition=" '$(PatchVersion)' == '0' ">true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <!-- This project is not included in the shared framework -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <!-- Subject to change: see https://github.com/dotnet/designs/pull/50 -->
+    <PackageType>TargetingPack</PackageType>
+    <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
+
+    <!-- There are no symbols for reference assemblies. -->
+    <IncludeSymbols>false</IncludeSymbols>
+
+    <!-- The project representing the shared framework doesn't produce a .NET assembly or symbols. -->
+    <DebugType>none</DebugType>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+
+    <!-- This project should not be referenced via the `<Reference>` implementation. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+
+    <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Don't reference anything unless building a targeting pack. Otherwise will use ref and non-ref assemblies. -->
+    <Reference Include="@(ProjectReferenceProvider)" Condition="$(IsPackable)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\**\*.props" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      _ResolveTargetingPackContent;
+    </BuildDependsOn>
+
+    <!-- Suppresses building this project completely during servicing builds. -->
+    <BuildDependsOn Condition="! $(IsPackable)" />
+  </PropertyGroup>
+
+  <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
+  <Target Name="GetTargetPath" />
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TargetDir)" Condition="$(IsPackable)" />
+    <Message Importance="High" Text="$(MSBuildProjectName) not building" Condition="! $(IsPackable)" />
+  </Target>
+
+  <!-- This project doesn't compile anything. -->
+  <Target Name="CoreCompile" />
+
+  <!-- Completely disable default targets for copying to output. -->
+  <Target Name="CopyFilesToOutputDirectory" />
+
+  <!-- This target finds the reference assemblies. -->
+  <Target Name="_ResolveTargetingPackContent"
+          BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <AspNetCoreReferenceAssemblyPath Include="@(ReferencePathWithRefAssemblies->WithMetadataValue('IsReferenceAssembly', 'true'))" />
+      <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
+
+      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />
+
+      <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test
@@ -121,6 +122,128 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             Assert.Equal(new[] { "provider1.Test-Hello" }, store);
+        }
+
+        [Fact]
+        public void ScopesAreNotCreatedForDisabledLoggers()
+        {
+            var provider = new Mock<ILoggerProvider>();
+            var logger = new Mock<ILogger>();
+
+            provider.Setup(loggerProvider => loggerProvider.CreateLogger(It.IsAny<string>()))
+                .Returns(logger.Object);
+
+            var factory = TestLoggerBuilder.Create(
+                builder => {
+                    builder.AddProvider(provider.Object);
+                    // Disable all logs
+                    builder.AddFilter(null, LogLevel.None);
+                });
+
+            var newLogger = factory.CreateLogger("Logger");
+            using (newLogger.BeginScope("Scope"))
+            {
+            }
+
+            provider.Verify(p => p.CreateLogger("Logger"), Times.Once);
+            logger.Verify(l => l.BeginScope(It.IsAny<object>()), Times.Never);
+        }
+
+        [Fact]
+        public void ScopesAreNotCreatedWhenScopesAreDisabled()
+        {
+            var provider = new Mock<ILoggerProvider>();
+            var logger = new Mock<ILogger>();
+
+            provider.Setup(loggerProvider => loggerProvider.CreateLogger(It.IsAny<string>()))
+                .Returns(logger.Object);
+
+            var factory = TestLoggerBuilder.Create(
+                builder => {
+                    builder.AddProvider(provider.Object);
+                    builder.Services.Configure<LoggerFilterOptions>(options => options.CaptureScopes = false);
+                });
+
+            var newLogger = factory.CreateLogger("Logger");
+            using (newLogger.BeginScope("Scope"))
+            {
+            }
+
+            provider.Verify(p => p.CreateLogger("Logger"), Times.Once);
+            logger.Verify(l => l.BeginScope(It.IsAny<object>()), Times.Never);
+        }
+
+        [Fact]
+        public void ScopesAreNotCreatedInIScopeProviderWhenScopesAreDisabled()
+        {
+            var provider = new Mock<ILoggerProvider>();
+            var logger = new Mock<ILogger>();
+
+            IExternalScopeProvider externalScopeProvider = null;
+
+            provider.Setup(loggerProvider => loggerProvider.CreateLogger(It.IsAny<string>()))
+                .Returns(logger.Object);
+            provider.As<ISupportExternalScope>().Setup(scope => scope.SetScopeProvider(It.IsAny<IExternalScopeProvider>()))
+                .Callback((IExternalScopeProvider scopeProvider) => externalScopeProvider = scopeProvider);
+
+            var factory = TestLoggerBuilder.Create(
+                builder => {
+                    builder.AddProvider(provider.Object);
+                    builder.Services.Configure<LoggerFilterOptions>(options => options.CaptureScopes = false);
+                });
+
+            var newLogger = factory.CreateLogger("Logger");
+            int scopeCount = 0;
+
+            using (newLogger.BeginScope("Scope"))
+            {
+                externalScopeProvider.ForEachScope<object>((_, __) => scopeCount ++, null);
+            }
+
+            provider.Verify(p => p.CreateLogger("Logger"), Times.Once);
+            logger.Verify(l => l.BeginScope(It.IsAny<object>()), Times.Never);
+            Assert.Equal(0, scopeCount);
+        }
+
+        [Fact]
+        public void CaptureScopesIsReadFromConfiguration()
+        {
+            var provider = new Mock<ILoggerProvider>();
+            var logger = new Mock<ILogger>();
+            var json = @"{ ""CaptureScopes"": ""false"" }";
+
+            var config = TestConfiguration.Create(() => json);
+            IExternalScopeProvider externalScopeProvider = null;
+
+            provider.Setup(loggerProvider => loggerProvider.CreateLogger(It.IsAny<string>()))
+                .Returns(logger.Object);
+            provider.As<ISupportExternalScope>().Setup(scope => scope.SetScopeProvider(It.IsAny<IExternalScopeProvider>()))
+                .Callback((IExternalScopeProvider scopeProvider) => externalScopeProvider = scopeProvider);
+
+            var factory = TestLoggerBuilder.Create(
+                builder => {
+                    builder.AddProvider(provider.Object);
+                    builder.AddConfiguration(config);
+                });
+
+            var newLogger = factory.CreateLogger("Logger");
+            int scopeCount = 0;
+
+            using (newLogger.BeginScope("Scope"))
+            {
+                externalScopeProvider.ForEachScope<object>((_, __) => scopeCount ++, null);
+                Assert.Equal(0, scopeCount);
+            }
+
+            json = @"{ ""CaptureScopes"": ""true"" }";
+            config.Reload();
+
+            scopeCount = 0;
+            using (newLogger.BeginScope("Scope"))
+            {
+                externalScopeProvider.ForEachScope<object>((_, __) => scopeCount ++, null);
+                Assert.Equal(1, scopeCount);
+            }
         }
 
         private class CustomLoggerProvider : ILoggerProvider
