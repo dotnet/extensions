@@ -143,6 +143,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                         // Formatting
                         services.AddSingleton<RazorFormatOnTypeProvider, HtmlSmartIndentFormatOnTypeProvider>();
+                        services.AddSingleton<RazorFormatOnTypeProvider, AttributeSnippetFormatOnTypeProvider>();
                         services.AddSingleton<RazorFormatOnTypeProvider, CloseRazorCommentFormatOnTypeProvider>();
                         services.AddSingleton<RazorFormatOnTypeProvider, CloseTextTagFormatOnTypeProvider>();
                         services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();
