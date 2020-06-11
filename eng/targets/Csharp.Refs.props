@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <NoWarn>$(NoWarn);CS0618</NoWarn>
-  </PropertyGroup>
-</Project>
