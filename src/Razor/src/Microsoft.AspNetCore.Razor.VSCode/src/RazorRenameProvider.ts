@@ -34,7 +34,10 @@ export class RazorRenameProvider
             return Promise.reject('Cannot rename this symbol.');
         }
 
-        // Let the rename go through.
+        // Let the rename go through. OmniSharp doesn't currently support "prepareRename" so we need to utilize document
+        // APIs in order to resolve the appropriate rename range.
+        const range = document.getWordRangeAtPosition(position);
+        return range;
     }
 
     public async provideRenameEdits(
