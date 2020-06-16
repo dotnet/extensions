@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -29,6 +29,16 @@
     <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestWorkspaceServices.cs">
       <Link>TestServices\%(FileName)%(Extension)</Link>
     </Compile>
+    <Compile Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\SourceTextDiffer.cs">
+      <Link>LanguageServer\%(FileName)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\TextDiffer.cs">
+      <Link>LanguageServer\%(FileName)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\DiffEdit.cs">
+      <Link>LanguageServer\%(FileName)%(Extension)</Link>
+    </Compile>
+    <None Include="MSN.cshtml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

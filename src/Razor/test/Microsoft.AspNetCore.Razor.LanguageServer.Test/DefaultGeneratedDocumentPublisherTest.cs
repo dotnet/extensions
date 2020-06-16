@@ -81,11 +81,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
-            var initialSourceText = SourceText.From("// Initial content");
+            var initialSourceText = SourceText.From("// Initial content\n");
             generatedDocumentPublisher.PublishCSharp("/path/to/file.razor", initialSourceText, 123);
             var change = new TextChange(
                 new TextSpan(initialSourceText.Length, 0),
-                "!!");
+                "// Another line");
             var changedSourceText = initialSourceText.WithChanges(change);
 
             // Act
@@ -105,11 +105,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
-            var initialSourceText = SourceText.From("HTML content");
+            var initialSourceText = SourceText.From("HTML content\n");
             generatedDocumentPublisher.PublishHtml("/path/to/file.razor", initialSourceText, 123);
             var change = new TextChange(
                 new TextSpan(initialSourceText.Length, 0),
-                "!!");
+                "More content!!");
             var changedSourceText = initialSourceText.WithChanges(change);
 
             // Act

@@ -65,14 +65,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 previouslyPublishedData = PublishData.Default;
             }
 
-            IReadOnlyList<TextChange> textChanges = Array.Empty<TextChange>();
-            if (!sourceText.ContentEquals(previouslyPublishedData.SourceText))
+            var textChanges = SourceTextDiffer.GetMinimalTextChanges(previouslyPublishedData.SourceText, sourceText);
+            if (textChanges.Count == 0 && hostDocumentVersion == previouslyPublishedData.HostDocumentVersion)
             {
-                textChanges = sourceText.GetTextChanges(previouslyPublishedData.SourceText);
-            }
-            else if (hostDocumentVersion == previouslyPublishedData.HostDocumentVersion)
-            {
-                // Source texts match along with host documetn versions. We've already published something that looks like this. No-op.
+                // Source texts match along with host document versions. We've already published something that looks like this. No-op.
                 return;
             }
 
@@ -107,12 +103,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 previouslyPublishedData = PublishData.Default;
             }
 
-            IReadOnlyList<TextChange> textChanges = Array.Empty<TextChange>();
-            if (!sourceText.ContentEquals(previouslyPublishedData.SourceText))
-            {
-                textChanges = sourceText.GetTextChanges(previouslyPublishedData.SourceText);
-            }
-            else if (hostDocumentVersion == previouslyPublishedData.HostDocumentVersion)
+            var textChanges = SourceTextDiffer.GetMinimalTextChanges(previouslyPublishedData.SourceText, sourceText);
+            if (textChanges.Count == 0 && hostDocumentVersion == previouslyPublishedData.HostDocumentVersion)
             {
                 // Source texts match along with host document versions. We've already published something that looks like this. No-op.
                 return;
