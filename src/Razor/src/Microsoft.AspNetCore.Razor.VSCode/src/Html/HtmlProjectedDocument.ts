@@ -34,7 +34,7 @@ export class HtmlProjectedDocument implements IProjectedDocument {
         }
 
         let content = this.content;
-        for (const edit of edits) {
+        for (const edit of edits.reverse()) {
             // TODO: Use a better data structure to represent the content, string concatenation is slow.
             content = this.getEditedContent(edit.newText, edit.span.start, edit.span.end, content);
         }
