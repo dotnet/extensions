@@ -248,6 +248,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             SortText = razorCompletionItem.DisplayText,
                             Documentation = descriptionInfo.Description,
                             Kind = CompletionItemKind.Struct,
+                            CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters),
                         };
 
                         if (razorCompletionItem == DirectiveAttributeTransitionCompletionItemProvider.TransitionCompletionItem)

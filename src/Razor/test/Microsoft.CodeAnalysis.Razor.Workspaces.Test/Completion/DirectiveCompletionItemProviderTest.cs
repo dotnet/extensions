@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
-using Moq;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.Completion
@@ -289,6 +288,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             Assert.Equal(item.InsertText, directive.Directive);
             var completionDescription = item.GetDirectiveCompletionDescription();
             Assert.Equal(directive.Description, completionDescription.Description);
+            Assert.Single(item.CommitCharacters, " ");
         }
 
         private static void AssertRazorCompletionItem(DirectiveDescriptor directive, RazorCompletionItem item) =>
