@@ -122,8 +122,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     cancellationToken).ConfigureAwait(false);
 
                 if (mappingResult == null ||
-                    mappingResult.HostDocumentVersion != documentSnapshot.Version ||
-                    mappingResult.Ranges[0].IsUndefined())
+                    mappingResult.Ranges[0].IsUndefined() ||
+                    (_documentManager.TryGetDocument(razorDocumentUri, out var mappedDocumentSnapshot) &&
+                    mappingResult.HostDocumentVersion != mappedDocumentSnapshot.Version))
                 {
                     // Couldn't remap the location or the document changed in the meantime. Discard this location.
                     continue;
