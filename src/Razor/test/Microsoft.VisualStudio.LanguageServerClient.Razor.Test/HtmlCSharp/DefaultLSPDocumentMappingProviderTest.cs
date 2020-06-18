@@ -49,8 +49,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Setup(r => r.CustomRequestServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(LanguageServerConstants.RazorMapToDocumentRangesEndpoint, LanguageServerKind.Razor, It.IsAny<RazorMapToDocumentRangesParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(response));
 
-            var documentManager = new TestDocumentManager();
-            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker.Object, documentManager);
+            var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => new TestDocumentManager());
+            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker.Object, lazyDocumentManager);
             var projectedRange = new Range()
             {
                 Start = new Position(10, 10),
@@ -74,14 +74,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Arrange
             var expectedRange = new TestRange(1, 1, 1, 5);
             var expectedVersion = 1;
-            var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion && d.Uri == RazorFile));
+            var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => {
+                var documentManager = new TestDocumentManager();
+                documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion && d.Uri == RazorFile));
+                return documentManager;
+            });
 
             var requestInvoker = GetRequestInvoker(new[]
             {
                 ((RazorLanguageKind.CSharp, RazorFile, new[] { new TestRange(10, 10, 10, 15) }), (new[] { expectedRange }, expectedVersion))
             });
-            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, documentManager);
+            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, lazyDocumentManager);
 
             var workspaceEdit = new TestWorkspaceEdit(versionedEdits: true);
             workspaceEdit.AddEdits(RazorVirtualCSharpFile, 10, new TestTextEdit("newText", new TestRange(10, 10, 10, 15)));
@@ -105,14 +108,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Arrange
             var expectedRange = new TestRange(1, 1, 1, 5);
             var expectedVersion = 1;
-            var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion && d.Uri == RazorFile));
+
+            var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => {
+                var documentManager = new TestDocumentManager();
+                documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion && d.Uri == RazorFile));
+                return documentManager;
+            });
 
             var requestInvoker = GetRequestInvoker(new[]
             {
                 ((RazorLanguageKind.CSharp, RazorFile, new[] { new TestRange(10, 10, 10, 15) }), (new[] { expectedRange }, expectedVersion))
             });
-            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, documentManager);
+            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, lazyDocumentManager);
 
             var workspaceEdit = new TestWorkspaceEdit(versionedEdits: false);
             workspaceEdit.AddEdits(RazorVirtualCSharpFile, 10, new TestTextEdit("newText", new TestRange(10, 10, 10, 15)));
@@ -136,11 +143,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Arrange
             var expectedRange = new TestRange(10, 10, 10, 15);
             var expectedVersion = 10;
-            var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(CSharpFile, Mock.Of<LSPDocumentSnapshot>());
+
+            var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => {
+                var documentManager = new TestDocumentManager();
+                documentManager.AddDocument(CSharpFile, Mock.Of<LSPDocumentSnapshot>());
+                return documentManager;
+            });
 
             var requestInvoker = GetRequestInvoker(mappingPairs: null); // will throw if RequestInvoker is called.
-            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, documentManager);
+            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, lazyDocumentManager);
 
             var workspaceEdit = new TestWorkspaceEdit(versionedEdits: true);
             workspaceEdit.AddEdits(CSharpFile, expectedVersion, new TestTextEdit("newText", expectedRange));
@@ -166,16 +177,20 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var expectedRange2 = new TestRange(5, 5, 5, 10);
             var expectedVersion1 = 1;
             var expectedVersion2 = 5;
-            var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion1 && d.Uri == RazorFile));
-            documentManager.AddDocument(AnotherRazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion2 && d.Uri == AnotherRazorFile));
+
+            var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => {
+                var documentManager = new TestDocumentManager();
+                documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion1 && d.Uri == RazorFile));
+                documentManager.AddDocument(AnotherRazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion2 && d.Uri == AnotherRazorFile));
+                return documentManager;
+            });
 
             var requestInvoker = GetRequestInvoker(new[]
             {
                 ((RazorLanguageKind.CSharp, RazorFile, new[] { new TestRange(10, 10, 10, 15) }), (new[] { expectedRange1 }, expectedVersion1)),
                 ((RazorLanguageKind.CSharp, AnotherRazorFile, new[] { new TestRange(20, 20, 20, 25) }), (new[] { expectedRange2 }, expectedVersion2))
             });
-            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, documentManager);
+            var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, lazyDocumentManager);
 
             var workspaceEdit = new TestWorkspaceEdit(versionedEdits: true);
             workspaceEdit.AddEdits(RazorVirtualCSharpFile, 10, new TestTextEdit("newText", new TestRange(10, 10, 10, 15)));

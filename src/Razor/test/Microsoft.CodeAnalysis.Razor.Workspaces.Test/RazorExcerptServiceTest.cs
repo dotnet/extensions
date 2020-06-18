@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
+using static Microsoft.CodeAnalysis.Razor.DocumentExcerptServiceBase;
 using static Microsoft.CodeAnalysis.Razor.RazorDocumentExcerptService;
 
 namespace Microsoft.CodeAnalysis.Razor

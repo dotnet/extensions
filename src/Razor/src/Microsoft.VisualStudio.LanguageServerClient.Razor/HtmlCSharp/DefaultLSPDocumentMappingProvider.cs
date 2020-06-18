@@ -21,23 +21,27 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private static readonly TextEdit[] EmptyEdits = Array.Empty<TextEdit>();
 
         private readonly LSPRequestInvoker _requestInvoker;
-        private readonly LSPDocumentManager _documentManager;
+
+        // Lazy loading the document manager to get around circular dependencies
+        // The Document Manager is a more "Core Service" it depends on the ChangeTriggers which require the LSPDocumentMappingProvider
+        // LSPDocumentManager => LSPDocumentMappingProvider => LSPDocumentManagerChangeTrigger => LSPDocumentManager
+        private readonly Lazy<LSPDocumentManager> _lazyDocumentManager;
 
         [ImportingConstructor]
-        public DefaultLSPDocumentMappingProvider(LSPRequestInvoker requestInvoker, LSPDocumentManager documentManager)
+        public DefaultLSPDocumentMappingProvider(LSPRequestInvoker requestInvoker, Lazy<LSPDocumentManager> lazyDocumentManager)
         {
             if (requestInvoker is null)
             {
                 throw new ArgumentNullException(nameof(requestInvoker));
             }
 
-            if (documentManager is null)
+            if (lazyDocumentManager is null)
             {
-                throw new ArgumentNullException(nameof(documentManager));
+                throw new ArgumentNullException(nameof(lazyDocumentManager));
             }
 
             _requestInvoker = requestInvoker;
-            _documentManager = documentManager;
+            _lazyDocumentManager = lazyDocumentManager;
         }
 
         public async override Task<RazorMapToDocumentRangesResponse> MapToDocumentRangesAsync(RazorLanguageKind languageKind, Uri razorDocumentUri, Range[] projectedRanges, CancellationToken cancellationToken)
@@ -106,7 +110,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (mappingResult == null ||
-                    (_documentManager.TryGetDocument(razorDocumentUri, out var documentSnapshot) &&
+                    (_lazyDocumentManager.Value.TryGetDocument(razorDocumentUri, out var documentSnapshot) &&
                     mappingResult.HostDocumentVersion != documentSnapshot.Version))
                 {
                     // Couldn't remap the location or the document changed in the meantime. Discard these ranges.
@@ -269,7 +273,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 cancellationToken).ConfigureAwait(false);
 
             if (mappingResult == null ||
-                (_documentManager.TryGetDocument(razorDocumentUri, out var documentSnapshot) &&
+                (_lazyDocumentManager.Value.TryGetDocument(razorDocumentUri, out var documentSnapshot) &&
                     mappingResult.HostDocumentVersion != documentSnapshot.Version))
             {
                 // Couldn't remap the location or the document changed in the meantime. Discard these ranges.
