@@ -18,9 +18,9 @@ using static Microsoft.CodeAnalysis.Razor.RazorDocumentExcerptService;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public class RazorExcerptServiceTest : WorkspaceTestBase
+    public class RazorDocumentExcerptServiceTest : WorkspaceTestBase
     {
-        public RazorExcerptServiceTest()
+        public RazorDocumentExcerptServiceTest()
         {
             HostProject = TestProjectData.SomeProject;
             HostDocument = TestProjectData.SomeProjectFile1;
@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Razor
             services.Add(new TestTagHelperResolver());
         }
 
-        [Fact(Skip = "This test is flakey due to https://github.com/dotnet/roslyn/issues/31548. Skipping until the blocking issue is resolved.")]
+        [Fact]
         public async Task TryGetExcerptInternalAsync_SingleLine_CanClassifyCSharp()
         {
             // Arrange
@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var service = CreateExcerptService(primary);
 
             var secondarySpan = await GetSecondarySpanAsync(primary, primarySpan, secondary);
-            
+
             // Act
             var result = await service.TryGetExcerptInternalAsync(secondary, secondarySpan, ExcerptModeInternal.SingleLine, CancellationToken.None);
 
@@ -76,7 +76,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
                     Assert.Equal("    ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
-                c => 
+                c =>
                 {
                     Assert.Equal(ClassificationTypeNames.Keyword, c.ClassificationType);
                     Assert.Equal("var", result.Value.Content.GetSubText(c.TextSpan).ToString());
@@ -118,7 +118,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 });
         }
 
-        [Fact(Skip = "This test is flakey due to https://github.com/dotnet/roslyn/issues/31548. Skipping until the blocking issue is resolved.")]
+        [Fact]
         public async Task TryGetExcerptInternalAsync_SingleLine_CanClassifyCSharp_ImplicitExpression()
         {
             // Arrange
@@ -172,7 +172,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 });
         }
 
-        [Fact(Skip = "This test is flakey due to https://github.com/dotnet/roslyn/issues/31548. Skipping until the blocking issue is resolved.")]
+        [Fact]
         public async Task TryGetExcerptInternalAsync_SingleLine_CanClassifyCSharp_ComplexLine()
         {
             // Arrange
@@ -276,7 +276,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 });
         }
 
-        [Fact(Skip = "This test is flakey due to https://github.com/dotnet/roslyn/issues/31548. Skipping until the blocking issue is resolved.")]
+        [Fact]
         public async Task TryGetExcerptInternalAsync_MultiLine_CanClassifyCSharp()
         {
             // Arrange
@@ -317,7 +317,7 @@ namespace Microsoft.CodeAnalysis.Razor
     var foo = ""Hello, World!"";
 }
   <body></body>
-  <div></div>", 
+  <div></div>",
                 result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
 
             Assert.Collection(
@@ -328,7 +328,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     Assert.Equal(
 @"
 <html>
-@{", 
+@{",
                             result.Value.Content.GetSubText(c.TextSpan).ToString(),
                             ignoreLineEndingDifferences: true);
                 },
@@ -388,13 +388,13 @@ namespace Microsoft.CodeAnalysis.Razor
                     Assert.Equal(
 @"}
   <body></body>
-  <div></div>", 
-                        result.Value.Content.GetSubText(c.TextSpan).ToString(), 
+  <div></div>",
+                        result.Value.Content.GetSubText(c.TextSpan).ToString(),
                         ignoreLineEndingDifferences: true);
                 });
         }
 
-        [Fact(Skip = "This test is flakey due to https://github.com/dotnet/roslyn/issues/31548. Skipping until the blocking issue is resolved.")]
+        [Fact]
         public async Task TryGetExcerptInternalAsync_MultiLine_Boundaries_CanClassifyCSharp()
         {
             // Arrange
