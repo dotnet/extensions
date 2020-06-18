@@ -47,13 +47,23 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return await _inner.ReadAsync(buffer, offset, count).ConfigureAwait(false);
+            return await _inner.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            await _inner.WriteAsync(buffer, offset, count).ConfigureAwait(false);
-            await FlushAsync().ConfigureAwait(false);
+            await _inner.WriteAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+            await FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _inner.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

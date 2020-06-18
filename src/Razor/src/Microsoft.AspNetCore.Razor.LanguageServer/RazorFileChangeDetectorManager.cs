@@ -10,9 +10,11 @@ using ILanguageServer = OmniSharp.Extensions.LanguageServer.Server.ILanguageServ
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorFileChangeDetectorManager
+    internal class RazorFileChangeDetectorManager : IDisposable
     {
         private readonly IEnumerable<IFileChangeDetector> _fileChangeDetectors;
+        private readonly object _disposeLock = new object();
+        private bool _disposed;
 
         public RazorFileChangeDetectorManager(IEnumerable<IFileChangeDetector> fileChangeDetectors)
         {
@@ -41,6 +43,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 var cancellationToken = CancellationToken.None;
                 await fileChangeDetector.StartAsync(workspaceDirectory, cancellationToken);
             }
+
+            lock (_disposeLock)
+            {
+                if (_disposed)
+                {
+                    // Got disposed while starting our file change detectors. We need to re-stop our change detectors.
+                    Stop();
+                }
+            }
+        }
+
+        private void Stop()
+        {
+            foreach (var fileChangeDetector in _fileChangeDetectors)
+            {
+                fileChangeDetector.Stop();
+            }
         }
 
         // Internal for testing
@@ -53,6 +72,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             return clientSettings.RootUri.LocalPath;
+        }
+
+        public void Dispose()
+        {
+            lock (_disposeLock)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _disposed = true;
+
+                Stop();
+            }
         }
     }
 }

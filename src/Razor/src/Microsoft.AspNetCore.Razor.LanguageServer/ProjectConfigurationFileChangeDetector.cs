@@ -100,6 +100,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _watcher.EnableRaisingEvents = true;
         }
 
+        public void Stop()
+        {
+            // We're relying on callers to synchronize start/stops so we don't need to ensure one happens before the other.
+
+            _watcher?.Dispose();
+            _watcher = null;
+        }
+
         // Protected virtual for testing
         protected virtual void OnInitializationFinished()
         {

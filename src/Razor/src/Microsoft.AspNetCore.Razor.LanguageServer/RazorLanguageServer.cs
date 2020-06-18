@@ -157,23 +157,37 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<HtmlFactsService, DefaultHtmlFactsService>();
                     }));
 
-            server.OnShutdown(() =>
-            {
-                TempDirectory.Instance.Dispose();
-                return Unit.Task;
-            });
-
             try
             {
                 var factory = new LoggerFactory();
                 var logger = factory.CreateLogger<RazorLanguageServer>();
                 var assemblyInformationAttribute = typeof(RazorLanguageServer).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
                 logger.LogInformation("Razor Language Server version " + assemblyInformationAttribute.InformationalVersion);
+                factory.Dispose();
             }
             catch
             {
                 // Swallow exceptions from determining assembly information.
             }
+
+            IDisposable shutdownSubscription = null;
+            shutdownSubscription = server.Shutdown.Subscribe((_) =>
+            {
+                shutdownSubscription.Dispose();
+                TempDirectory.Instance.Dispose();
+            });
+
+            IDisposable exitSubscription = null;
+            exitSubscription = server.Exit.Subscribe((_) =>
+            {
+                exitSubscription.Dispose();
+                server.Dispose();
+
+                // Disposing the server doesn't actually dispose the servers Services for whatever reason. We cast the services collection
+                // to IDisposable and try to dispose it ourselves to account for this.
+                var disposableServices = server.Services as IDisposable;
+                disposableServices?.Dispose();
+            });
 
             return Task.FromResult(server);
         }

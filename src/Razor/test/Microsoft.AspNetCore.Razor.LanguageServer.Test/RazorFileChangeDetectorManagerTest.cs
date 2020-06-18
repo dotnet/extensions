@@ -75,5 +75,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             detector1.VerifyAll();
             detector2.VerifyAll();
         }
+
+        [Fact]
+        public async Task InitializedAsync_Disposed_ReStopsFileChangeDetectors()
+        {
+            // Arrange
+            var expectedWorkspaceDirectory = "\\\\testpath";
+            var clientSettings = new InitializeParams()
+            {
+                RootUri = new Uri(expectedWorkspaceDirectory),
+            };
+            var languageServer = Mock.Of<ILanguageServer>(server => server.ClientSettings == clientSettings);
+            var detector = new Mock<IFileChangeDetector>(MockBehavior.Strict);
+            var cts = new TaskCompletionSource<bool>();
+            detector.Setup(d => d.StartAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(cts.Task);
+            var stopCount = 0;
+            detector.Setup(d => d.Stop()).Callback(() => stopCount++);
+            var detectorManager = new RazorFileChangeDetectorManager(new[] { detector.Object });
+
+            // Act
+            var initializeTask = detectorManager.InitializedAsync(languageServer);
+            detectorManager.Dispose();
+
+            // Unblock the detector start
+            cts.SetResult(true);
+            await initializeTask;
+
+            // Assert
+            Assert.Equal(2, stopCount);
+        }
     }
 }
