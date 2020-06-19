@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using DocumentSnapshot = Microsoft.CodeAnalysis.Razor.ProjectSystem.DocumentSnapshot;
 using SourceText = Microsoft.CodeAnalysis.Text.SourceText;
 using TextLineCollection = Microsoft.CodeAnalysis.Text.TextLineCollection;
@@ -32,7 +31,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         // The goal of this method is to decide if the older and newer snapshots have diverged in a way that could result in
         // impactful changes to other Razor files. Detecting divergence is an optimization which allows us to not always re-parse
-        // dependent files and therefore not notify anyone else listening (Roslyn).
+        // dependent files and therefore not not notify anyone else listening (Roslyn).
         //
         // Here's how we calculate "divergence":
         //
@@ -59,6 +58,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             if (@new is null)
             {
+
                 throw new ArgumentNullException(nameof(@new));
             }
 
@@ -174,7 +174,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var propertyList = new List<PropertyDeclarationSyntax>();
             for (var i = 0; i < codeBlocks.Count; i++)
             {
-                var bodyRange = ((RazorDirectiveBodySyntax)codeBlocks[i].Body).CSharpCode.Span;
+                var bodyRange = codeBlocks[i].Body.Span;
                 var bodyTextSpan = TextSpan.FromBounds(bodyRange.Start, bodyRange.End);
                 var subText = newText.GetSubText(bodyTextSpan);
                 var parsedText = CSharpSyntaxTree.ParseText(subText);
@@ -189,28 +189,95 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private bool TryGetSyntaxTreeAndSource(DocumentSnapshot document, out RazorSyntaxTree syntaxTree, out SourceText sourceText)
         {
-            if (!document.TryGetText(out sourceText))
-            {
-                // Can't get the source text synchronously
-                syntaxTree = null;
-                return false;
-            }
-
-            if (document.TryGetGeneratedOutput(out var codeDocument))
+            if (document.TryGetGeneratedOutput(out var codeDocument) &&
+                document.TryGetText(out sourceText))
             {
                 syntaxTree = codeDocument.GetSyntaxTree();
                 return true;
             }
+            else
+            {
+                if (!document.TryGetText(out sourceText))
+                {
+                    // Can't get the source text synchronously
+                    syntaxTree = null;
+                    return false;
+                }
 
-            syntaxTree = ParseSourceText(document.FilePath, sourceText);
-            return true;
+                syntaxTree = ParseSourceText(document.FilePath, sourceText);
+                return true;
+            }
         }
 
         private RazorSyntaxTree ParseSourceText(string filePath, SourceText sourceText)
         {
-            var sourceDocument = sourceText.GetRazorSourceDocument(filePath, filePath);
+            var sourceDocument = new SourceTextSourceDocument(filePath, sourceText);
             var syntaxTree = RazorSyntaxTree.Parse(sourceDocument, ParserOptions);
             return syntaxTree;
+        }
+
+        private class SourceTextSourceDocument : RazorSourceDocument
+        {
+            private readonly string _filePath;
+            private readonly SourceText _sourceText;
+            private readonly RazorSourceTextLineCollection _lines;
+
+            public SourceTextSourceDocument(string filePath, SourceText sourceText)
+            {
+                if (filePath is null)
+                {
+                    throw new ArgumentNullException(nameof(filePath));
+                }
+
+                if (sourceText is null)
+                {
+                    throw new ArgumentNullException(nameof(sourceText));
+                }
+
+                _filePath = filePath;
+                _sourceText = sourceText;
+                _lines = new RazorSourceTextLineCollection(_sourceText.Lines);
+            }
+
+            public override char this[int position] => _sourceText[position];
+
+            public override Encoding Encoding => _sourceText.Encoding;
+
+            public override string FilePath => _filePath;
+
+            public override int Length => _sourceText.Length;
+
+            public override RazorSourceLineCollection Lines => _lines;
+
+            public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count) => _sourceText.CopyTo(sourceIndex, destination, destinationIndex, count);
+
+            public override byte[] GetChecksum() => Array.Empty<byte>();
+
+            private class RazorSourceTextLineCollection : RazorSourceLineCollection
+            {
+                private readonly TextLineCollection _textLines;
+
+                public RazorSourceTextLineCollection(TextLineCollection textLines)
+                {
+                    if (textLines is null)
+                    {
+                        throw new ArgumentNullException(nameof(textLines));
+                    }
+
+                    _textLines = textLines;
+                }
+
+                public override int Count => _textLines.Count;
+
+                public override int GetLineLength(int index) => _textLines[index].Span.Length;
+
+                internal override SourceLocation GetLocation(int position)
+                {
+                    var line = _textLines.GetLinePosition(position);
+                    var sourceLocation = new SourceLocation(position, line.Line, line.Character);
+                    return sourceLocation;
+                }
+            }
         }
 
         private class CodeFunctionsExtractor : SyntaxWalker

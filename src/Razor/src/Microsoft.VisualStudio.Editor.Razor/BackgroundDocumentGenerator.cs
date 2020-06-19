@@ -329,20 +329,14 @@ namespace Microsoft.CodeAnalysis.Razor
                         Enqueue(project, newer);
 
                         var older = e.Older.GetDocument(e.DocumentFilePath);
-                        var possibleDivergence = _documentDivergenceChecker.PossibleDivergence(older, newer);
+                        if (!_documentDivergenceChecker.PossibleDivergence(older, newer))
+                        {
+                            break;
+                        }
 
                         foreach (var relatedDocument in project.GetRelatedDocuments(newer))
                         {
-                            if (_projectManager.IsDocumentOpen(relatedDocument.FilePath) || possibleDivergence)
-                            {
-                                // If the document is open we always want to re-parse it. This ensures that any visible code will always be "up-to-date".
-
-                                Enqueue(project, relatedDocument);
-                            }
-                            else
-                            {
-                                // Closed file without a possible divergence. Don't reparse to avoid notifying Roslyn with unneeded noise.
-                            }
+                            Enqueue(project, relatedDocument);
                         }
 
                         break;
