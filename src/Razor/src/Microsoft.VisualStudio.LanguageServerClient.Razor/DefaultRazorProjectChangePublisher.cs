@@ -121,7 +121,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 case ProjectChangeKind.DocumentRemoved:
                 case ProjectChangeKind.DocumentAdded:
-                case ProjectChangeKind.DocumentChanged:
                 case ProjectChangeKind.ProjectChanged:
                     // These changes can come in bursts so we don't want to overload the publishing system. Therefore,
                     // we enqueue publishes and then publish the latest project after a delay.
