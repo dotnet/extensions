@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public static Task<ILanguageServer> CreateAsync(Stream input, Stream output, Trace trace)
         {
+            Serializer.Instance.Settings.Converters.Add(SemanticTokensOrSemanticTokensEditsConverter.Instance);
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
 
             ILanguageServer server = null;
@@ -76,8 +77,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorLanguageEndpoint>()
                     .WithHandler<RazorConfigurationEndpoint>()
                     .WithHandler<RazorFormattingEndpoint>()
-                    .WithHandler<RazorSemanticTokenEndpoint>()
-                    .WithHandler<RazorSemanticTokenLegendEndpoint>()
+                    .WithHandler<RazorSemanticTokensEndpoint>()
+                    .WithHandler<RazorSemanticTokensLegendEndpoint>()
                     .WithHandler<OnAutoInsertEndpoint>()
                     .WithServices(services =>
                     {
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();
 
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
-                        services.AddSingleton<RazorSemanticTokenInfoService, DefaultRazorSemanticTokenInfoService>();
+                        services.AddSingleton<RazorSemanticTokensInfoService, DefaultRazorSemanticTokensInfoService>();
                         services.AddSingleton<RazorHoverInfoService, DefaultRazorHoverInfoService>();
                         services.AddSingleton<HtmlFactsService, DefaultHtmlFactsService>();
                     }));

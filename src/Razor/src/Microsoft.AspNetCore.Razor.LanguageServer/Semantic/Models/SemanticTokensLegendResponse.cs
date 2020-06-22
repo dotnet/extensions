@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
 {
-    public struct SemanticTokenLegendResponse
+    internal struct SemanticTokensLegendResponse
     {
         public IReadOnlyCollection<string> TokenTypes;
         public IReadOnlyCollection<string> TokenModifiers;

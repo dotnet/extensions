@@ -3,10 +3,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
 {
-    public static class SemanticTokenLegend
+    internal class SemanticTokensLegend
     {
         public const string RazorTagHelperElement = "razorTagHelperElement";
         public const string RazorTagHelperAttribute = "razorTagHelperAttribute";
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         public const string RazorDirectiveAttribute = "razorDirectiveAttribute";
         public const string RazorDirectiveColon = "razorDirectiveColon";
 
-        private static readonly string[] _tokenTypes = new string[] {
+        private static readonly IReadOnlyCollection<string> _tokenTypes = new string[] {
             RazorTagHelperElement,
             RazorTagHelperAttribute,
             RazorTransition,
@@ -24,30 +25,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
         private static readonly IReadOnlyCollection<string> _tokenModifiers = new string[] { };
 
-        public static IReadOnlyDictionary<string, uint> TokenTypesLegend
+        public static readonly IReadOnlyDictionary<string, uint> TokenTypesLegend = GetMap(_tokenTypes);
+
+        private SemanticTokensLegend()
         {
-            get
-            {
-                return GetMap(_tokenTypes);
-            }
         }
 
-        public static IReadOnlyDictionary<string, uint> TokenModifiersLegend
+        public static readonly SemanticTokensLegend Instance = new SemanticTokensLegend
         {
-            get
-            {
-                return GetMap(_tokenModifiers);
-            }
-        }
+            TokenModifiers = new Container<string>(_tokenModifiers),
+            TokenTypes = new Container<string>(_tokenTypes),
+        };
 
-        public static SemanticTokenLegendResponse GetResponse()
-        {
-            return new SemanticTokenLegendResponse
-            {
-                TokenModifiers = _tokenModifiers,
-                TokenTypes = _tokenTypes
-            };
-        }
+        public Container<string> TokenTypes { get; private set; }
+
+        public Container<string> TokenModifiers { get; private set; }
 
         private static IReadOnlyDictionary<string, uint> GetMap(IReadOnlyCollection<string> tokens)
         {

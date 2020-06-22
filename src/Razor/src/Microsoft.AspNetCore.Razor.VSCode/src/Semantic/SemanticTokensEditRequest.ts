@@ -6,11 +6,13 @@
 import * as vscode from 'vscode';
 import { TextDocumentIdentifier } from 'vscode-languageclient';
 
-export class SemanticTokensRequest {
+export class SemanticTokensEditRequest {
     public readonly textDocument: TextDocumentIdentifier;
 
     constructor(
-        razorDocumentUri: vscode.Uri) {
+        razorDocumentUri: vscode.Uri,
+        public readonly previousResultId: string,
+    ) {
         this.textDocument = TextDocumentIdentifier.create(razorDocumentUri.toString());
     }
 }

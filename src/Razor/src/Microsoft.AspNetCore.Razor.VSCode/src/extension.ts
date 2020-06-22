@@ -134,6 +134,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
               logger);
             if (legend) {
                 localRegistrations.push(vscodeType.languages.registerDocumentSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
+                localRegistrations.push(vscodeType.languages.registerDocumentRangeSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
             }
 
             localRegistrations.push(
