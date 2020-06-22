@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
+using CodeAnalysisWorkspace = Microsoft.CodeAnalysis.Workspace;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
@@ -146,7 +147,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     _filePath = filePath;
                 }
 
-                public override Task<TextAndVersion> LoadTextAndVersionAsync(Workspace workspace, DocumentId documentId, CancellationToken cancellationToken)
+                public override Task<TextAndVersion> LoadTextAndVersionAsync(CodeAnalysisWorkspace workspace, DocumentId documentId, CancellationToken cancellationToken)
                 {
                     return Task.FromResult(TextAndVersion.Create(_sourceText, VersionStamp.Default, _filePath));
                 }
