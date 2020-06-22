@@ -48,25 +48,25 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-preview.7.20322.3</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>5.0.0-preview.7.20322.3</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-preview.7.20322.3</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-preview.7.20322.3</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>5.0.0-preview.7.20322.3</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>5.0.0-preview.7.20322.3</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.7.20318.2</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.7.20318.2</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.7.20318.2</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.7.20318.2</MicrosoftNETCoreAppInternalPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.7.20318.2</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.7.20318.2</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.7.20318.2</MicrosoftNETCorePlatformsPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>5.0.0-preview.7.20322.3</MicrosoftNETSdkRazorPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.7.20318.2</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemResourcesExtensionsPackageVersion>5.0.0-preview.7.20318.2</SystemResourcesExtensionsPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.7.20318.2</SystemTextEncodingsWebPackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-preview.8.20322.5</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>5.0.0-preview.8.20322.5</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-preview.8.20322.5</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-preview.8.20322.5</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>5.0.0-preview.8.20322.5</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>5.0.0-preview.8.20322.5</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>5.0.0-preview.7.20321.2</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.7.20321.2</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>5.0.0-preview.7.20321.2</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-preview.7.20321.2</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>5.0.0-preview.7.20321.2</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.7.20321.2</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>5.0.0-preview.7.20321.2</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>5.0.0-preview.8.20322.5</MicrosoftNETSdkRazorPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-preview.7.20321.2</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemResourcesExtensionsPackageVersion>5.0.0-preview.7.20321.2</SystemResourcesExtensionsPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>5.0.0-preview.7.20321.2</SystemTextEncodingsWebPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>3.7.0-4.20316.2</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.7.0-4.20319.6</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
