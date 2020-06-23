@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Editor.Razor;
 using Moq;
+using Newtonsoft.Json;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
@@ -77,6 +78,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Equal(description, converted.Documentation.String);
             Assert.True(converted.TryGetRazorCompletionKind(out var convertedKind));
             Assert.Equal(RazorCompletionItemKind.Directive, convertedKind);
+        }
+
+        [Fact]
+        public void TryConvert_Directive_SerializationDoesNotThrow()
+        {
+            // Arrange
+            var completionItem = new RazorCompletionItem("testDisplay", "testInsert", RazorCompletionItemKind.Directive);
+            var description = "Something";
+            completionItem.SetDirectiveCompletionDescription(new DirectiveCompletionDescription(description));
+            var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
+            completionEndpoint.SetCapability(DefaultCapability);
+            completionEndpoint.TryConvert(completionItem, out var converted);
+
+            // Act & Assert
+            JsonConvert.SerializeObject(converted);
         }
 
         [Fact]
