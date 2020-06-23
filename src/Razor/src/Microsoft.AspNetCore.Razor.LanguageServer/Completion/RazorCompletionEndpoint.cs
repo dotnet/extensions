@@ -277,8 +277,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             FilterText = razorCompletionItem.InsertText,
                             SortText = razorCompletionItem.InsertText,
                             Kind = CompletionItemKind.TypeParameter,
-                            CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters),
                         };
+
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
+                        {
+                            directiveAttributeCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
+                        }
 
                         directiveAttributeCompletionItem.SetDescriptionInfo(descriptionInfo);
                         directiveAttributeCompletionItem.SetRazorCompletionKind(razorCompletionItem.Kind);
@@ -313,8 +317,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             SortText = razorCompletionItem.DisplayText,
                             Documentation = descriptionInfo.Description,
                             Kind = CompletionItemKind.TypeParameter,
-                            CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters)
                         };
+
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
+                        {
+                            markupTransitionCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
+                        }
 
                         completionItem = markupTransitionCompletionItem;
                         return true;

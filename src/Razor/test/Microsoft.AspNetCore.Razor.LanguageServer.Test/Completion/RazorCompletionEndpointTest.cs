@@ -97,6 +97,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         [Fact]
+        public void TryConvert_DirectiveAttributeTransition_SerializationDoesNotThrow()
+        {
+            // Arrange
+            var completionItem = DirectiveAttributeTransitionCompletionItemProvider.TransitionCompletionItem;
+            var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
+            completionEndpoint.TryConvert(completionItem, out var converted);
+
+            // Act & Assert
+            JsonConvert.SerializeObject(converted);
+        }
+
+        [Fact]
         public void TryConvert_DirectiveAttributeTransition_ReturnsTrue()
         {
             // Arrange
@@ -143,6 +156,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Null(converted.Detail);
             Assert.Equal(description, converted.Documentation.String);
             Assert.Equal(converted.CommitCharacters, completionItem.CommitCharacters);
+        }
+
+        [Fact]
+        public void TryConvert_MarkupTransition_SerializationDoesNotThrow()
+        {
+            // Arrange
+            var completionItem = MarkupTransitionCompletionItemProvider.MarkupTransitionCompletionItem;
+            var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
+            completionEndpoint.TryConvert(completionItem, out var converted);
+
+            // Act & Assert
+            JsonConvert.SerializeObject(converted);
         }
 
         [Fact]
