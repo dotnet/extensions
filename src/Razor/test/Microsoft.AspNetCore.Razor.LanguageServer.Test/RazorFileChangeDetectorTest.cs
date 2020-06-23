@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Assert
             fileChangeDetector.BlockNotificationWorkStart.Set();
-            Assert.True(fileChangeDetector.NotifyNotificationNoop.Wait(TimeSpan.FromSeconds(2)));
+            Assert.True(fileChangeDetector.NotifyNotificationNoop.Wait(TimeSpan.FromSeconds(10)));
             Assert.False(listenerCalled);
         }
 
