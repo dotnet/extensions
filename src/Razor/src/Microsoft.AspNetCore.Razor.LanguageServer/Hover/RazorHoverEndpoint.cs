@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
+using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
@@ -100,6 +101,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
             _logger.LogTrace($"Found hover info items.");
 
             return hoverItem;
+        }
+
+        public RegistrationExtensionResult GetRegistration()
+        {
+            var semanticTokensOptions = new SemanticTokensOptions
+            {
+                DocumentProvider = new SemanticTokensDocumentProviderOptions
+                {
+                    Edits = false,
+                },
+                Legend = SemanticTokensLegend.Instance,
+                RangeProvider = false,
+            };
+
+            return new RegistrationExtensionResult(LanguageServerConstants.SemanticTokensProviderName, semanticTokensOptions);
         }
 
         public void SetCapability(HoverCapability capability)

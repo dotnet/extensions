@@ -45,14 +45,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 throw new ArgumentNullException(nameof(codeDocument));
             }
 
-            if (string.IsNullOrEmpty(previousResultId))
-            {
-                throw new ArgumentException(nameof(previousResultId));
-            }
-
             var semanticRanges = TagHelperSemanticRangeVisitor.VisitAllNodes(codeDocument);
 
-            var previousResults = _semanticTokensCache.Get(previousResultId);
+            IReadOnlyList<uint> previousResults;
+            if(previousResultId is null)
+            {
+                previousResults = null;
+            }
+            else
+            {
+                previousResults = _semanticTokensCache.Get(previousResultId);
+            }
             var newTokens = ConvertSemanticRangesToSemanticTokens(semanticRanges, codeDocument);
 
             var semanticEdits = SyntaxTokenToSemanticTokensEditHelper.ConvertSyntaxTokensToSemanticEdits(newTokens, previousResults);

@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             var cache = new TestMemoryCache();
             var sizeLimit = TestMemoryCache.DefaultSizeLimit;
 
-            for(var i = 0; i < sizeLimit; i++)
+            for (var i = 0; i < sizeLimit; i++)
             {
                 var key = GetKey();
                 var value = new List<uint> { (uint)i };
@@ -59,6 +59,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             cache.Set(GetKey(), new List<uint> { (uint)sizeLimit + 1 });
             Assert.True(cache.WasCompacted, "Compaction is not happening");
+        }
+
+        [Fact]
+        public void MissingKey()
+        {
+            var cache = new TestMemoryCache();
+            var key = GetKey();
+
+            var value = cache.Get(key);
+
+            Assert.Null(value);
+        }
+
+        [Fact]
+        public void NullKey()
+        {
+            var cache = new TestMemoryCache();
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var value = cache.Get(key: null);
+            });
         }
 
         private static string GetKey()

@@ -87,7 +87,7 @@ export class RazorLanguageServiceClient {
         await this.ensureStarted();
 
         const request = new SemanticTokensEditRequest(uri, previousResultId);
-        const response = await this.serverClient.sendRequest<vscode.SemanticTokens | vscode.SemanticTokensEdits>('textDocument/semanticTokens/edit', request);
+        const response = await this.serverClient.sendRequest<vscode.SemanticTokens | vscode.SemanticTokensEdits>('textDocument/semanticTokens/edits', request);
 
         if (this.isSemanticTokens(response)) {
             return response;

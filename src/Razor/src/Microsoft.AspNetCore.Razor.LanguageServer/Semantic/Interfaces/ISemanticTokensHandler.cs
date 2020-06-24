@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Interfaces
 {
     [Serial, Method(LanguageServerConstants.RazorSemanticTokensEndpoint)]
     internal interface ISemanticTokensHandler :
-        IJsonRpcRequestHandler<SemanticTokensParams, SemanticTokens>
+        IJsonRpcRequestHandler<SemanticTokensParams, SemanticTokens>,
+        IRegistrationExtension
     {
     }
 }

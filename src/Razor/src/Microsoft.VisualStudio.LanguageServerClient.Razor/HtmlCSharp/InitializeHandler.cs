@@ -31,6 +31,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 DocumentHighlightProvider = true,
                 RenameProvider = true,
                 ReferencesProvider = true,
+                SemanticTokensOptions = new SemanticTokensOptions()
+                {
+                    RangeProvider = true,
+                    DocumentProvider = new SemanticTokensDocumentProviderOptions(){
+                        Edits = true,
+                    },
+                },
                 SignatureHelpProvider = new SignatureHelpOptions()
                 {
                     TriggerCharacters = new[] { "(", "," }

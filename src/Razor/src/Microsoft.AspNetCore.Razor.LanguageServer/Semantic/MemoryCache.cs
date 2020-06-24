@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Services
 {
     // We've created our own MemoryCache here, ideally we would use the one in Microsoft.Extensions.Caching.Memory,
     // but until we update O# that causes an Assembly load problem.
-    internal class MemoryCache<TResult>
+    internal class MemoryCache<TResult> where TResult: class
     {
         protected virtual int SizeLimit { get; } = 50;
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Services
                 value.LastAccess = DateTime.UtcNow;
             }
 
-            return value.Result;
+            return value?.Result;
         }
 
         public void Set(string key, TResult value)
