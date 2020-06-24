@@ -121,6 +121,34 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         }
 
         [Fact]
+        public async Task TrySynchronizeVirtualDocumentAsync_SimultaneousSynchronizationRequests_PlatformCancelsFirst_ReturnsFalseThenTrue()
+        {
+            // Arrange
+            var (lspDocument, virtualDocument) = CreateDocuments(lspDocumentVersion: 124, virtualDocumentSyncVersion: 123);
+            var fileUriProvider = CreateUriProviderFor(VirtualDocumentTextBuffer, virtualDocument.Uri);
+            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider);
+            synchronizer._synchronizationTimeout = TimeSpan.FromMilliseconds(500);
+            NotifyLSPDocumentAdded(lspDocument, synchronizer);
+            var cts = new CancellationTokenSource();
+
+            // Act
+
+            // Start synchronization, this will hang until we notify the buffer versions been updated because the above virtual document expects host doc version 123 but the host doc is 124
+            var synchronizeTask1 = synchronizer.TrySynchronizeVirtualDocumentAsync(lspDocument.Version, virtualDocument, cts.Token);
+            var synchronizeTask2 = synchronizer.TrySynchronizeVirtualDocumentAsync(lspDocument.Version, virtualDocument, CancellationToken.None);
+
+            cts.Cancel();
+
+            NotifyBufferVersionUpdated(VirtualDocumentTextBuffer, lspDocument.Version);
+            var result1 = await synchronizeTask1.ConfigureAwait(false);
+            var result2 = await synchronizeTask2.ConfigureAwait(false);
+
+            // Assert
+            Assert.False(result1);
+            Assert.True(result2);
+        }
+
+        [Fact]
         public async Task TrySynchronizeVirtualDocumentAsync_Timeout_ReturnsFalse()
         {
             // Arrange

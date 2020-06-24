@@ -77,6 +77,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var serverKind = LanguageServerKind.CSharp;
             var documentHighlightParams = new DocumentHighlightParams()
             {

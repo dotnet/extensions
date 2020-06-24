@@ -64,18 +64,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                     return Task.FromResult(true);
                 }
 
-                if (requiredHostDocumentVersion != documentContext.SynchronizingContext?.RequiredHostDocumentVersion)
-                {
-                    // Currently tracked synchronizing context is not sufficient, need to update a new one.
-                    documentContext.UpdateSynchronizingContext(requiredHostDocumentVersion, cancellationToken);
-                }
-                else
-                {
-                    // Already have a synchronizing context for this type of request, memoize the results.
-                }
-
-                var synchronizingContext = documentContext.SynchronizingContext;
-                return synchronizingContext.OnSynchronizedAsync;
+                // Currently tracked synchronizing context is not sufficient, need to update a new one.
+                var onSynchronizedTask = documentContext.GetSynchronizationTaskAsync(requiredHostDocumentVersion, cancellationToken);
+                return onSynchronizedTask;
             }
         }
 
@@ -100,30 +91,6 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                 }
 
                 documentContext.UpdateSeenDocumentVersion(hostDocumentVersion);
-
-                var synchronizingContext = documentContext.SynchronizingContext;
-                if (synchronizingContext == null)
-                {
-                    // No active synchronizing context for this document.
-                    return;
-                }
-
-                if (documentContext.SeenHostDocumentVersion == synchronizingContext.RequiredHostDocumentVersion)
-                {
-                    // The buffers host document version indicates that it's now "synchronized". If we were to re-request the VirtualDocumentSnapshot
-                    // from the LSPDocumentManager we would see a synchronized LSPDocument. Instead of re-requesting we're making the assumption that
-                    // whenever a VirtualDocumentSnapshot is updated it also updates its ITextBuffer sync version.
-                    synchronizingContext.SetSynchronized(true);
-                }
-                else if (documentContext.SeenHostDocumentVersion > synchronizingContext.RequiredHostDocumentVersion)
-                {
-                    // The LSP document version has surpassed what the projected document was expecting for a version. No longer able to synchronize.
-                    synchronizingContext.SetSynchronized(false);
-                }
-                else
-                {
-                    // Seen host document version is less than the required version, need to wait longer.
-                }
             }
         }
 
@@ -171,65 +138,106 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         private class DocumentContext
         {
             private readonly TimeSpan _synchronizingTimeout;
+            private readonly List<DocumentSynchronizingContext> _synchronizingContexts;
 
             public DocumentContext(TimeSpan synchronizingTimeout)
             {
                 _synchronizingTimeout = synchronizingTimeout;
+                _synchronizingContexts = new List<DocumentSynchronizingContext>();
             }
 
             public long SeenHostDocumentVersion { get; private set; }
 
-            public DocumentSynchronizingContext SynchronizingContext { get; private set; }
-
             public void UpdateSeenDocumentVersion(long seenDocumentVersion)
             {
                 SeenHostDocumentVersion = seenDocumentVersion;
-            }
 
-            public void UpdateSynchronizingContext(int requiredHostDocumentVersion, CancellationToken cancellationToken)
-            {
-                // Cancel our existing synchronizing context.
-                SynchronizingContext?.SetSynchronized(result: false);
-                SynchronizingContext = new DocumentSynchronizingContext(requiredHostDocumentVersion, _synchronizingTimeout, cancellationToken);
-            }
-        }
-
-        private class DocumentSynchronizingContext
-        {
-            private readonly TaskCompletionSource<bool> _onSynchronizedSource;
-            private readonly CancellationTokenSource _cts;
-            private bool _synchronizedSet;
-
-            public DocumentSynchronizingContext(
-                int requiredHostDocumentVersion,
-                TimeSpan timeout,
-                CancellationToken requestCancellationToken)
-            {
-                RequiredHostDocumentVersion = requiredHostDocumentVersion;
-                _onSynchronizedSource = new TaskCompletionSource<bool>();
-                _cts = CancellationTokenSource.CreateLinkedTokenSource(requestCancellationToken);
-
-                // This cancellation token is the one passed in from the call-site that needs to synchronize an LSP document with a virtual document.
-                // Meaning, if the outer token is cancelled we need to fail to synchronize.
-                _cts.Token.Register(() => SetSynchronized(false));
-                _cts.CancelAfter(timeout);
-            }
-
-            public int RequiredHostDocumentVersion { get; }
-
-            public Task<bool> OnSynchronizedAsync => _onSynchronizedSource.Task;
-
-            public void SetSynchronized(bool result)
-            {
-                lock (_onSynchronizedSource)
+                if (_synchronizingContexts.Count == 0)
                 {
-                    if (_synchronizedSet)
-                    {
-                        return;
-                    }
+                    // No active synchronizing context for this document.
+                    return;
+                }
 
-                    _synchronizedSet = true;
-                    _onSynchronizedSource.SetResult(result);
+                for (var i = _synchronizingContexts.Count - 1; i >= 0; i--)
+                {
+                    var synchronizingContext = _synchronizingContexts[i];
+                    if (SeenHostDocumentVersion == synchronizingContext.RequiredHostDocumentVersion)
+                    {
+                        // We're now synchronized!
+
+                        synchronizingContext.SetSynchronized(true);
+                        _synchronizingContexts.RemoveAt(i);
+                    }
+                    else if (SeenHostDocumentVersion > synchronizingContext.RequiredHostDocumentVersion)
+                    {
+                        // The LSP document version has surpassed what the projected document was expecting for a version. No longer able to synchronize.
+                        synchronizingContext.SetSynchronized(false);
+                        _synchronizingContexts.RemoveAt(i);
+                    }
+                    else
+                    {
+                        // Seen host document version is less than the required version, need to wait longer.
+                    }
+                }
+            }
+
+            public Task<bool> GetSynchronizationTaskAsync(int requiredHostDocumentVersion, CancellationToken cancellationToken)
+            {
+                // Cancel any out-of-date existing synchronizing contexts.
+
+                for (var i = _synchronizingContexts.Count - 1; i >= 0; i--)
+                {
+                    var context = _synchronizingContexts[i];
+                    if (context.RequiredHostDocumentVersion < requiredHostDocumentVersion)
+                    {
+                        // All of the existing synchronizations that are older than this version are no longer valid.
+                        context.SetSynchronized(result: false);
+                        _synchronizingContexts.RemoveAt(i);
+                    }
+                }
+
+                var synchronizingContext = new DocumentSynchronizingContext(requiredHostDocumentVersion, _synchronizingTimeout, cancellationToken);
+                _synchronizingContexts.Add(synchronizingContext);
+                return synchronizingContext.OnSynchronizedAsync;
+            }
+
+            private class DocumentSynchronizingContext
+            {
+                private readonly TaskCompletionSource<bool> _onSynchronizedSource;
+                private readonly CancellationTokenSource _cts;
+                private bool _synchronizedSet;
+
+                public DocumentSynchronizingContext(
+                    int requiredHostDocumentVersion,
+                    TimeSpan timeout,
+                    CancellationToken requestCancellationToken)
+                {
+                    RequiredHostDocumentVersion = requiredHostDocumentVersion;
+                    _onSynchronizedSource = new TaskCompletionSource<bool>();
+                    _cts = CancellationTokenSource.CreateLinkedTokenSource(requestCancellationToken);
+
+                    // This cancellation token is the one passed in from the call-site that needs to synchronize an LSP document with a virtual document.
+                    // Meaning, if the outer token is cancelled we need to fail to synchronize.
+                    _cts.Token.Register(() => SetSynchronized(false));
+                    _cts.CancelAfter(timeout);
+                }
+
+                public int RequiredHostDocumentVersion { get; }
+
+                public Task<bool> OnSynchronizedAsync => _onSynchronizedSource.Task;
+
+                public void SetSynchronized(bool result)
+                {
+                    lock (_onSynchronizedSource)
+                    {
+                        if (_synchronizedSet)
+                        {
+                            return;
+                        }
+
+                        _synchronizedSet = true;
+                        _onSynchronizedSource.SetResult(result);
+                    }
                 }
             }
         }
