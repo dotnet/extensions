@@ -82,6 +82,52 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         }
 
         [Fact]
+        public void GetDirectiveCompletionItems_CodeBlockCommitCharacters()
+        {
+            // Arrange
+            var customDirective = DirectiveDescriptor.CreateCodeBlockDirective("custom", builder =>
+            {
+                builder.DisplayName = "code";
+                builder.Description = "My Custom Code Block Directive.";
+            });
+            var syntaxTree = CreateSyntaxTree("@cod", customDirective);
+
+            // Act
+            var completionItems = DirectiveCompletionItemProvider.GetDirectiveCompletionItems(syntaxTree);
+
+            // Assert
+            Assert.Collection(
+                completionItems,
+                item => AssertRazorCompletionItem("code", customDirective, item, DirectiveCompletionItemProvider.BlockDirectiveCommitCharacters),
+                item => AssertRazorCompletionItem(DefaultDirectives[0], item),
+                item => AssertRazorCompletionItem(DefaultDirectives[1], item),
+                item => AssertRazorCompletionItem(DefaultDirectives[2], item));
+        }
+
+        [Fact]
+        public void GetDirectiveCompletionItems_RazorBlockCommitCharacters()
+        {
+            // Arrange
+            var customDirective = DirectiveDescriptor.CreateRazorBlockDirective("custom", builder =>
+            {
+                builder.DisplayName = "section";
+                builder.Description = "My Custom Razozr Block Directive.";
+            });
+            var syntaxTree = CreateSyntaxTree("@sec", customDirective);
+
+            // Act
+            var completionItems = DirectiveCompletionItemProvider.GetDirectiveCompletionItems(syntaxTree);
+
+            // Assert
+            Assert.Collection(
+                completionItems,
+                item => AssertRazorCompletionItem("section", customDirective, item, DirectiveCompletionItemProvider.BlockDirectiveCommitCharacters),
+                item => AssertRazorCompletionItem(DefaultDirectives[0], item),
+                item => AssertRazorCompletionItem(DefaultDirectives[1], item),
+                item => AssertRazorCompletionItem(DefaultDirectives[2], item));
+        }
+
+        [Fact]
         public void GetDirectiveCompletionItems_ComponentDocument_DoesNotReturnsDefaultDirectivesAsCompletionItems()
         {
             // Arrange
@@ -282,13 +328,13 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             Assert.False(result);
         }
 
-        private static void AssertRazorCompletionItem(string completionDisplayText, DirectiveDescriptor directive, RazorCompletionItem item)
+        private static void AssertRazorCompletionItem(string completionDisplayText, DirectiveDescriptor directive, RazorCompletionItem item, IReadOnlyCollection<string> commitCharacters = null)
         {
             Assert.Equal(item.DisplayText, completionDisplayText);
             Assert.Equal(item.InsertText, directive.Directive);
             var completionDescription = item.GetDirectiveCompletionDescription();
             Assert.Equal(directive.Description, completionDescription.Description);
-            Assert.Single(item.CommitCharacters, " ");
+            Assert.Equal(item.CommitCharacters, commitCharacters ?? DirectiveCompletionItemProvider.SingleLineDirectiveCommitCharacters);
         }
 
         private static void AssertRazorCompletionItem(DirectiveDescriptor directive, RazorCompletionItem item) =>

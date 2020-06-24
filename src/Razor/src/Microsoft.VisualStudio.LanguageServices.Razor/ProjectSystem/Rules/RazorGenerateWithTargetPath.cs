@@ -10,58 +10,58 @@
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
 {
-
-
+    
+    
     internal partial class RazorGenerateWithTargetPath
     {
-
+        
         /// <summary>Backing field for deserialized rule.<see cref='Microsoft.Build.Framework.XamlTypes.Rule'/>.</summary>
         private static Microsoft.Build.Framework.XamlTypes.Rule deserializedFallbackRule;
-
+        
         /// <summary>The name of the schema to look for at runtime to fulfill property access.</summary>
         internal const string SchemaName = "RazorGenerateWithTargetPath";
-
+        
         /// <summary>The ItemType given in the Rule.DataSource property.  May not apply to every Property's individual DataSource.</summary>
         internal const string PrimaryDataSourceItemType = "RazorGenerateWithTargetPath";
-
+        
         /// <summary>The Label given in the Rule.DataSource property.  May not apply to every Property's individual DataSource.</summary>
         internal const string PrimaryDataSourceLabel = "";
-
+        
         /// <summary> (The "TargetPath" property).</summary>
         internal const string TargetPathProperty = "TargetPath";
-
+        
         /// <summary>Backing field for the <see cref='Microsoft.Build.Framework.XamlTypes.Rule'/> property.</summary>
         private Microsoft.VisualStudio.ProjectSystem.Properties.IRule rule;
-
+        
         /// <summary>Backing field for the file name of the rule property.</summary>
         private string file;
-
+        
         /// <summary>Backing field for the ItemType property.</summary>
         private string itemType;
-
+        
         /// <summary>Backing field for the ItemName property.</summary>
         private string itemName;
-
+        
         /// <summary>Configured Project</summary>
         private Microsoft.VisualStudio.ProjectSystem.ConfiguredProject configuredProject;
-
+        
         /// <summary>The dictionary of named catalogs.</summary>
         private System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog> catalogs;
-
+        
         /// <summary>Backing field for the <see cref='Microsoft.VisualStudio.ProjectSystem.Properties.IRule'/> property.</summary>
         private Microsoft.VisualStudio.ProjectSystem.Properties.IRule fallbackRule;
-
+        
         /// <summary>Thread locking object</summary>
         private object locker = new object();
-
+        
         /// <summary>Initializes a new instance of the RazorGenerateWithTargetPath class.</summary>
         internal RazorGenerateWithTargetPath(Microsoft.VisualStudio.ProjectSystem.Properties.IRule rule)
         {
             this.rule = rule;
         }
-
+        
         /// <summary>Initializes a new instance of the RazorGenerateWithTargetPath class.</summary>
-        internal RazorGenerateWithTargetPath(Microsoft.VisualStudio.ProjectSystem.ConfiguredProject configuredProject, System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog> catalogs, string context, string file, string itemType, string itemName) :
+        internal RazorGenerateWithTargetPath(Microsoft.VisualStudio.ProjectSystem.ConfiguredProject configuredProject, System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog> catalogs, string context, string file, string itemType, string itemName) : 
                 this(GetRule(System.Collections.Immutable.ImmutableDictionary.GetValueOrDefault(catalogs, context), file, itemType, itemName))
         {
             if ((configuredProject == null))
@@ -74,9 +74,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
             this.itemType = itemType;
             this.itemName = itemName;
         }
-
+        
         /// <summary>Initializes a new instance of the RazorGenerateWithTargetPath class.</summary>
-        internal RazorGenerateWithTargetPath(Microsoft.VisualStudio.ProjectSystem.Properties.IRule rule, Microsoft.VisualStudio.ProjectSystem.ConfiguredProject configuredProject) :
+        internal RazorGenerateWithTargetPath(Microsoft.VisualStudio.ProjectSystem.Properties.IRule rule, Microsoft.VisualStudio.ProjectSystem.ConfiguredProject configuredProject) : 
                 this(rule)
         {
             if ((rule == null))
@@ -93,19 +93,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
             this.itemType = this.rule.ItemType;
             this.itemName = this.rule.ItemName;
         }
-
+        
         /// <summary>Initializes a new instance of the RazorGenerateWithTargetPath class.</summary>
-        internal RazorGenerateWithTargetPath(Microsoft.VisualStudio.ProjectSystem.ConfiguredProject configuredProject, System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog> catalogs, string context, Microsoft.VisualStudio.ProjectSystem.Properties.IProjectPropertiesContext propertyContext) :
+        internal RazorGenerateWithTargetPath(Microsoft.VisualStudio.ProjectSystem.ConfiguredProject configuredProject, System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog> catalogs, string context, Microsoft.VisualStudio.ProjectSystem.Properties.IProjectPropertiesContext propertyContext) : 
                 this(configuredProject, catalogs, context, GetContextFile(propertyContext), propertyContext.ItemType, propertyContext.ItemName)
         {
         }
-
+        
         /// <summary>Initializes a new instance of the RazorGenerateWithTargetPath class that assumes a project context (neither property sheet nor items).</summary>
-        internal RazorGenerateWithTargetPath(Microsoft.VisualStudio.ProjectSystem.ConfiguredProject configuredProject, System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog> catalogs) :
+        internal RazorGenerateWithTargetPath(Microsoft.VisualStudio.ProjectSystem.ConfiguredProject configuredProject, System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog> catalogs) : 
                 this(configuredProject, catalogs, "Project", null, null, null)
         {
         }
-
+        
         /// <summary>Gets the IRule used to get and set properties.</summary>
         public Microsoft.VisualStudio.ProjectSystem.Properties.IRule Rule
         {
@@ -114,7 +114,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
                 return this.rule;
             }
         }
-
+        
         /// <summary>TargetPath</summary>
         internal Microsoft.VisualStudio.ProjectSystem.Properties.IEvaluatedProperty TargetPath
         {
@@ -130,7 +130,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
                     return null;
                 }
                 Microsoft.VisualStudio.ProjectSystem.Properties.IEvaluatedProperty property = ((Microsoft.VisualStudio.ProjectSystem.Properties.IEvaluatedProperty)(localRule.GetProperty(TargetPathProperty)));
-                if (((property == null)
+                if (((property == null) 
                             && (this.GeneratedFallbackRule != null)))
                 {
                     localRule = this.GeneratedFallbackRule;
@@ -139,13 +139,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
                 return property;
             }
         }
-
+        
         /// <summary>Get the fallback rule if the current rule on disk is missing or a property in the rule on disk is missing</summary>
         private Microsoft.VisualStudio.ProjectSystem.Properties.IRule GeneratedFallbackRule
         {
             get
             {
-                if (((this.fallbackRule == null)
+                if (((this.fallbackRule == null) 
                             && (this.configuredProject != null)))
                 {
                     System.Threading.Monitor.Enter(this.locker);
@@ -164,7 +164,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
                 return this.fallbackRule;
             }
         }
-
+        
         private static Microsoft.VisualStudio.ProjectSystem.Properties.IRule GetRule(Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog catalog, string file, string itemType, string itemName)
         {
             if ((catalog == null))
@@ -173,7 +173,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
             }
             return catalog.BindToContext(SchemaName, file, itemType, itemName);
         }
-
+        
         private static string GetContextFile(Microsoft.VisualStudio.ProjectSystem.Properties.IProjectPropertiesContext propertiesContext)
         {
             if ((propertiesContext.IsProjectFile == true))
@@ -185,7 +185,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
                 return propertiesContext.File;
             }
         }
-
+        
         private void InitializeFallbackRule()
         {
             if ((this.configuredProject == null))
@@ -203,8 +203,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
                     Microsoft.Build.Framework.XamlTypes.IProjectSchemaNode root = ((Microsoft.Build.Framework.XamlTypes.IProjectSchemaNode)(System.Xaml.XamlServices.Load(xamlStream)));
                     System.Collections.Generic.IEnumerator<System.Object> ruleEnumerator = root.GetSchemaObjects(typeof(Microsoft.Build.Framework.XamlTypes.Rule)).GetEnumerator();
                     for (
-                    ; ((unboundRule == null)
-                                && ruleEnumerator.MoveNext());
+                    ; ((unboundRule == null) 
+                                && ruleEnumerator.MoveNext()); 
                     )
                     {
                         Microsoft.Build.Framework.XamlTypes.Rule t = ((Microsoft.Build.Framework.XamlTypes.Rule)(ruleEnumerator.Current));
@@ -229,25 +229,25 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
             this.fallbackRule = catalog.BindToContext(unboundRule.Name, this.file, this.itemType, this.itemName);
         }
     }
-
+    
     internal partial class RazorProjectProperties
     {
         
         private static System.Func<System.Threading.Tasks.Task<System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog>>, object, RazorGenerateWithTargetPath> CreateRazorGenerateWithTargetPathPropertiesDelegate = new System.Func<System.Threading.Tasks.Task<System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog>>, object, RazorGenerateWithTargetPath>(CreateRazorGenerateWithTargetPathProperties);
-
+        
         private static RazorGenerateWithTargetPath CreateRazorGenerateWithTargetPathProperties(System.Threading.Tasks.Task<System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog>> namedCatalogs, object state)
         {
             RazorProjectProperties that = ((RazorProjectProperties)(state));
             return new RazorGenerateWithTargetPath(that.ConfiguredProject, namedCatalogs.Result, "Project", that.File, that.ItemType, that.ItemName);
         }
-
+        
         /// <summary>Gets the strongly-typed property accessor used to get and set Razor Document Properties properties.</summary>
         internal System.Threading.Tasks.Task<RazorGenerateWithTargetPath> GetRazorGenerateWithTargetPathPropertiesAsync()
         {
             System.Threading.Tasks.Task<System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IPropertyPagesCatalog>> namedCatalogsTask = this.GetNamedCatalogsAsync();
             return namedCatalogsTask.ContinueWith(CreateRazorGenerateWithTargetPathPropertiesDelegate, this, System.Threading.CancellationToken.None, System.Threading.Tasks.TaskContinuationOptions.ExecuteSynchronously, System.Threading.Tasks.TaskScheduler.Default);
         }
-
+        
         /// <summary>Gets the strongly-typed property accessor used to get value from the current project snapshot Razor Document Properties properties.</summary>
         internal bool TryGetCurrentRazorGenerateWithTargetPathPropertiesSnapshot(out RazorGenerateWithTargetPath snapshot, [System.Runtime.InteropServices.OptionalAttribute()] [System.Runtime.InteropServices.DefaultParameterValueAttribute(true)] bool requiredToMatchProjectVersion)
         {

@@ -15,7 +15,8 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
     [Export(typeof(RazorCompletionItemProvider))]
     internal class DirectiveCompletionItemProvider : RazorCompletionItemProvider
     {
-        private static readonly IReadOnlyCollection<string> DirectiveCommitCharacters = new string[] { " " };
+        internal static readonly IReadOnlyCollection<string> SingleLineDirectiveCommitCharacters = new string[] { " " };
+        internal static readonly IReadOnlyCollection<string> BlockDirectiveCommitCharacters = new string[] { " ", "{" };
 
         private static readonly IEnumerable<DirectiveDescriptor> DefaultDirectives = new[]
         {
@@ -107,17 +108,30 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             foreach (var directive in directives)
             {
                 var completionDisplayText = directive.DisplayName ?? directive.Directive;
+                var commitCharacters = GetDirectiveCommitCharacters(directive.Kind);
                 var completionItem = new RazorCompletionItem(
                     completionDisplayText,
                     directive.Directive,
                     RazorCompletionItemKind.Directive,
-                    DirectiveCommitCharacters);
+                    commitCharacters);
                 var completionDescription = new DirectiveCompletionDescription(directive.Description);
                 completionItem.SetDirectiveCompletionDescription(completionDescription);
                 completionItems.Add(completionItem);
             }
 
             return completionItems;
+        }
+
+        private static IReadOnlyCollection<string> GetDirectiveCommitCharacters(DirectiveKind directiveKind)
+        {
+            switch (directiveKind)
+            {
+                case DirectiveKind.CodeBlock:
+                case DirectiveKind.RazorBlock:
+                    return BlockDirectiveCommitCharacters;
+                default:
+                    return SingleLineDirectiveCommitCharacters;
+            }
         }
 
         // Internal for testing
