@@ -26,7 +26,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d908270add914db0e9fb3ce72e93c410e8f0f95a</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="5.0.0-preview.7.20321.2">
+    <Dependency Name="System.IO.Pipelines" Version="5.0.0-preview.8.20323.9">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d908270add914db0e9fb3ce72e93c410e8f0f95a</Sha>
     </Dependency>
