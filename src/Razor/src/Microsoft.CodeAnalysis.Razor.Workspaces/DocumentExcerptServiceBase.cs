@@ -72,45 +72,5 @@ namespace Microsoft.CodeAnalysis.Razor
 
             return excerptText;
         }
-
-        // We have IVT access to the Roslyn APIs for product code, but not for testing.
-        internal enum ExcerptModeInternal
-        {
-            SingleLine = RazorExcerptMode.SingleLine,
-            Tooltip = RazorExcerptMode.Tooltip,
-        }
-
-        // We have IVT access to the Roslyn APIs for product code, but not for testing.
-        internal readonly struct ExcerptResultInternal
-        {
-            public readonly SourceText Content;
-
-            public readonly TextSpan MappedSpan;
-
-            public readonly ImmutableArray<ClassifiedSpan> ClassifiedSpans;
-
-            public readonly Document Document;
-
-            public readonly TextSpan Span;
-
-            public ExcerptResultInternal(
-                SourceText content,
-                TextSpan mappedSpan,
-                ImmutableArray<ClassifiedSpan> classifiedSpans,
-                Document document,
-                TextSpan span)
-            {
-                Content = content;
-                MappedSpan = mappedSpan;
-                ClassifiedSpans = classifiedSpans;
-                Document = document;
-                Span = span;
-            }
-
-            public RazorExcerptResult ToExcerptResult()
-            {
-                return new RazorExcerptResult(Content, MappedSpan, ClassifiedSpans, Document, Span);
-            }
-        }
     }
 }

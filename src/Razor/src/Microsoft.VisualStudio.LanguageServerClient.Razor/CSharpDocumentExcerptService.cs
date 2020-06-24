@@ -6,13 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.VisualStudio.Text;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Razor;
-using System.Diagnostics;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
@@ -40,20 +38,41 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _documentSnapshot = documentSnapshot;
         }
 
+        // For testing use only
+        internal CSharpDocumentExcerptService()
+        {
+        }
+
         internal override async Task<ExcerptResultInternal?> TryGetExcerptInternalAsync(
             Document document,
             TextSpan span,
             ExcerptModeInternal mode,
             CancellationToken cancellationToken)
         {
-            var mapped = await _mappingService.MapSpansAsync(document, new[] { span }, cancellationToken).ConfigureAwait(false);
-            if (mapped.Length == 0 || mapped[0].Equals(default(RazorMappedSpanResult)))
+            var mappedSpans = await _mappingService.MapSpansAsync(document, new[] { span }, cancellationToken).ConfigureAwait(false);
+            if (mappedSpans.Length == 0 || mappedSpans[0].Equals(default(RazorMappedSpanResult)))
             {
                 return null;
             }
 
-            var razorDocumentText = _documentSnapshot.Snapshot.AsText();
-            var razorDocumentSpan = razorDocumentText.Lines.GetTextSpan(mapped[0].LinePositionSpan);
+            return await TryGetExcerptInternalAsync(
+                document,
+                span,
+                mode,
+                _documentSnapshot.Snapshot.AsText(),
+                mappedSpans[0].LinePositionSpan,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        internal async Task<ExcerptResultInternal?> TryGetExcerptInternalAsync(
+            Document document,
+            TextSpan span,
+            ExcerptModeInternal mode,
+            SourceText razorDocumentText,
+            LinePositionSpan mappedLinePosition,
+            CancellationToken cancellationToken)
+        {
+            var razorDocumentSpan = razorDocumentText.Lines.GetTextSpan(mappedLinePosition);
 
             var generatedDocument = document;
 
