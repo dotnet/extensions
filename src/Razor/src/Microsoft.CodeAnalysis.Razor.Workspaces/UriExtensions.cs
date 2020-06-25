@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -20,7 +21,8 @@ namespace Microsoft.CodeAnalysis.Razor
                 return uri.LocalPath;
             }
 
-            return uri.AbsolutePath;
+            // Absolute paths are usually encoded.
+            return WebUtility.UrlDecode(uri.AbsolutePath);
         }
     }
 }
