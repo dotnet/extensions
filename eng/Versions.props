@@ -127,7 +127,7 @@
     <MonoDevelopSdkPackageVersion>1.0.15</MonoDevelopSdkPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <!-- STOP!!! We need to reference the version of JSON that our HOSTS supprt. -->
-    <NewtonsoftJsonPackageVersion>9.0.1</NewtonsoftJsonPackageVersion>
+    <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <OmniSharpExtensionsLanguageServerPackageVersion>0.14.2</OmniSharpExtensionsLanguageServerPackageVersion>
     <OmniSharpMSBuildPackageVersion>1.33.0</OmniSharpMSBuildPackageVersion>
     <SystemPrivateUriPackageVersion>4.3.2</SystemPrivateUriPackageVersion>

@@ -39,6 +39,7 @@
       <Link>LanguageServer\%(FileName)%(Extension)</Link>
     </Compile>
     <None Include="MSN.cshtml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="taghelpers.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
