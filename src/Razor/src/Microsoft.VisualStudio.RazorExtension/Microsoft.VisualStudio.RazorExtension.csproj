@@ -175,11 +175,18 @@
 
   <!-- Include our Razor package dependency dlls in our extension -->
   <ItemGroup>
-    <VSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
-    <VSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
-    <VSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
-    <VSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Razor.Language.dll" />
-    <VSIXSourceItem Include="$(OutputPath)Microsoft.CodeAnalysis.Razor.dll" />
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Razor.Language.dll" />
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.CodeAnalysis.Razor.dll" />
+
+    <VSIXSourceItem Include="@(RazorNgendVSIXSourceItem)">
+      <Ngen>$(Ngen)</Ngen>
+      <NgenApplication>$(NgenApplication)</NgenApplication>
+      <NgenArchitecture>$(NgenArchitecture)</NgenArchitecture>
+      <NgenPriority>$(NgenPriority)</NgenPriority>
+    </VSIXSourceItem>
   </ItemGroup>
 
   <PropertyGroup>
