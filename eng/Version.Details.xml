@@ -228,9 +228,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0f7b3532e573b72f9d3eb9161513d8405be24d6f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.7.0-4.20319.6">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.7.0-4.20324.3">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>5911981d56de6afdaa84b26343ab915c5f9aca56</Sha>
+      <Sha>1462b1e9c78a7efe338a6859ee5f88fa07d4adc8</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
