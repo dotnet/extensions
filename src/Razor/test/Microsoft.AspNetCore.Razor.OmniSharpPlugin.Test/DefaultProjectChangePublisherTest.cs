@@ -54,8 +54,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var expectedPublishFilePath = "/path/to/obj/bin/Debug/project.razor.json";
             var publisher = new TestProjectChangePublisher(
                 LoggerFactory,
-                onSerializeToFile: (snapshot, publishFilePath) => attemptedToSerialize = true,
-                onDeleteFile: (path) => { })
+                onSerializeToFile: (snapshot, publishFilePath) => attemptedToSerialize = true)
             {
                 EnqueueDelay = 10
             };
@@ -177,49 +176,19 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             await RunOnForegroundAsync(() => snapshotManager.ProjectRemoved(hostProject));
         }
 
-        [Fact]
-        public async Task ProjectRemoved_DeletesPublishFile()
-        {
-            // Arrange
-            var attemptedToDelete = false;
-            var snapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
-            var expectedPublishFilePath = "/path/to/obj/bin/Debug/project.razor.json";
-            var publisher = new TestProjectChangePublisher(LoggerFactory,
-                onSerializeToFile: (_, __) => { },
-                onDeleteFile: (publishFilePath) =>
-                {
-                    attemptedToDelete = true;
-                    Assert.Equal(expectedPublishFilePath, publishFilePath);
-                });
-            publisher.Initialize(snapshotManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
-            publisher.SetPublishFilePath(hostProject.FilePath, expectedPublishFilePath);
-            await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
-
-            // Act
-            await RunOnForegroundAsync(() => snapshotManager.ProjectRemoved(hostProject));
-
-            // Assert
-            Assert.True(attemptedToDelete);
-        }
-
         private class TestProjectChangePublisher : DefaultProjectChangePublisher
         {
             private readonly Action<OmniSharpProjectSnapshot, string> _onSerializeToFile;
-            private readonly Action<string> _onDeleteFile;
 
             public TestProjectChangePublisher(
                 ILoggerFactory loggerFactory,
-                Action<OmniSharpProjectSnapshot, string> onSerializeToFile = null,
-                Action<string> onDeleteFile = null) : base(loggerFactory)
+                Action<OmniSharpProjectSnapshot, string> onSerializeToFile = null
+            ) : base(loggerFactory)
             {
                 _onSerializeToFile = onSerializeToFile ?? ((_, __) => throw new XunitException("SerializeToFile should not have been called."));
-                _onDeleteFile = onDeleteFile ?? ((_) => throw new XunitException("DeleteFile should not have been called."));
             }
 
             protected override void SerializeToFile(OmniSharpProjectSnapshot projectSnapshot, string publishFilePath) => _onSerializeToFile?.Invoke(projectSnapshot, publishFilePath);
-
-            protected override void DeleteFile(string publishFilePath) => _onDeleteFile?.Invoke(publishFilePath);
         }
     }
 }

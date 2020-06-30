@@ -71,26 +71,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         // Virtual for testing
-        protected virtual void DeleteFile(string publishFilePath)
-        {
-            var info = new FileInfo(publishFilePath);
-            if (info.Exists)
-            {
-                try
-                {
-                    // Try catch around the delete in case it was deleted between the Exists and this delete call. This also
-                    // protects against unauthorized access issues.
-                    info.Delete();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning($@"Failed to delete Razor configuration file '{publishFilePath}':
-{ex}");
-                }
-            }
-        }
-
-        // Virtual for testing
         protected virtual void SerializeToFile(OmniSharpProjectSnapshot projectSnapshot, string publishFilePath)
         {
             var fileInfo = new FileInfo(publishFilePath);
@@ -167,8 +147,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                                 // Project was removed while a delayed publish was in flight. Clear the in-flight publish so it noops.
                                 _pendingProjectPublishes.Remove(oldProjectFilePath);
                             }
-
-                            DeleteFile(publishFilePath);
                         }
                     }
                     break;

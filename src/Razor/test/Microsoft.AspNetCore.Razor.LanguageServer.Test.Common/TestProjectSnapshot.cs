@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
 {
     internal class TestProjectSnapshot : DefaultProjectSnapshot
     {
-        public static TestProjectSnapshot Create(string filePath) => Create(filePath, new string[0]);
+        public static TestProjectSnapshot Create(string filePath, ProjectWorkspaceState projectWorkspaceState = null) => Create(filePath, new string[0], projectWorkspaceState);
 
-        public static TestProjectSnapshot Create(string filePath, string[] documentFilePaths) =>
-            Create(filePath, documentFilePaths, RazorConfiguration.Default, projectWorkspaceState: null);
+        public static TestProjectSnapshot Create(string filePath, string[] documentFilePaths, ProjectWorkspaceState projectWorkspaceState = null) =>
+            Create(filePath, documentFilePaths, RazorConfiguration.Default, projectWorkspaceState);
 
         public static TestProjectSnapshot Create(
             string filePath,
