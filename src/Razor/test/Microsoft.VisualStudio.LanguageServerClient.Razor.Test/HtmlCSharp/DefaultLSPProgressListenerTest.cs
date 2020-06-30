@@ -183,7 +183,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(onProgressNotifyAsyncCalled);
         }
 
-        [Fact]
+        [Fact (Skip = "https://github.com/dotnet/aspnetcore/issues/23523")]
         public async Task TryListenForProgress_MultipleProgressNotificationReported()
         {
             // Arrange
