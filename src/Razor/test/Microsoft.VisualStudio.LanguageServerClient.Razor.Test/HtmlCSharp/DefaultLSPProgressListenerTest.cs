@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
@@ -183,7 +185,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(onProgressNotifyAsyncCalled);
         }
 
-        [Fact (Skip = "https://github.com/dotnet/aspnetcore/issues/23523")]
+        [Fact]
         public async Task TryListenForProgress_MultipleProgressNotificationReported()
         {
             // Arrange
@@ -205,7 +207,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 });
             }
 
-            var receivedResults = new List<int>();
+            var receivedResults = new ConcurrentBag<int>();
             Func<JToken, CancellationToken, Task> onProgressNotifyAsync = (value, ct) => {
                 receivedResults.Add(value.ToObject<int>());
                 return Task.CompletedTask;
@@ -227,10 +229,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Assert
             Assert.True(listenerAdded);
-            receivedResults.Sort();
+            var sortedResults = receivedResults.ToList();
+            sortedResults.Sort();
             for (var i = 0; i < NUM_NOTIFICATIONS; ++i)
             {
-                Assert.Equal(i, receivedResults[i]);
+                Assert.Equal(i, sortedResults[i]);
             }
         }
     }

@@ -17,12 +17,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ExportLspMethod(Methods.TextDocumentReferencesName)]
     internal class FindAllReferencesHandler : IRequestHandler<ReferenceParams, VSReferenceItem[]>
     {
-        // Roslyn sends Progress Notifications every 0.5s *only* if results have been found.
-        // Consequently, at ~ time > 0.5s ~ after the last notification, we don't know whether Roslyn is
-        // done searching for results, or just hasn't found any additional results yet.
-        // To work around this, we wait for up to 3.5s since the last notification before timing out.
-        private static readonly TimeSpan WaitForProgressNotificationTimeout = TimeSpan.FromSeconds(3.5);
-
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
@@ -68,6 +62,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             _documentMappingProvider = documentMappingProvider;
             _lspProgressListener = lspProgressListener;
         }
+
+        // Roslyn sends Progress Notifications every 0.5s *only* if results have been found.
+        // Consequently, at ~ time > 0.5s ~ after the last notification, we don't know whether Roslyn is
+        // done searching for results, or just hasn't found any additional results yet.
+        // To work around this, we wait for up to 3.5s since the last notification before timing out.
+        //
+        // Internal for testing
+        internal TimeSpan WaitForProgressNotificationTimeout { private get; set; } = TimeSpan.FromSeconds(3.5);
 
         public async Task<VSReferenceItem[]> HandleRequestAsync(ReferenceParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
         {

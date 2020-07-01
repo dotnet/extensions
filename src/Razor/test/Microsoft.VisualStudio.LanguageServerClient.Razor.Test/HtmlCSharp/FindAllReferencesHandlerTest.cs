@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
@@ -20,9 +22,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public FindAllReferencesHandlerTest()
         {
             Uri = new Uri("C:/path/to/file.razor");
+
+            // Long timeout after last notification to avoid triggering even in slow CI environments
+            TestWaitForProgressNotificationTimeout = TimeSpan.FromSeconds(30);
         }
 
         private Uri Uri { get; }
+        private TimeSpan TestWaitForProgressNotificationTimeout { get; }
 
         [Fact]
         public async Task HandleRequestAsync_DocumentNotFound_ReturnsNull()
@@ -34,6 +40,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var progressListener = Mock.Of<LSPProgressListener>();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
             var referenceRequest = new ReferenceParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -58,6 +65,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var progressListener = Mock.Of<LSPProgressListener>();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
             var referenceRequest = new ReferenceParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -89,6 +97,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
             var progressListener = Mock.Of<LSPProgressListener>();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
             var referenceRequest = new ReferenceParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -128,6 +137,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     out onCompleted) == false);
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
             var referenceRequest = new ReferenceParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -203,6 +213,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Returns<RazorLanguageKind, Uri, Range[], CancellationToken>((languageKind, uri, ranges, ct) => Task.FromResult(uri.LocalPath.Contains("file1") ? remappingResult1 : remappingResult2));
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object, lspProgressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -259,6 +270,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Returns(Task.FromResult(remappingResult));
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -304,6 +316,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -358,6 +371,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -414,6 +428,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -462,6 +477,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -491,13 +507,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Arrange
             var lspFarEndpointCalled = false;
-            var progressBatchesReported = 0;
 
             const int BATCH_SIZE = 10;
             const int NUM_BATCHES = 10;
             const int NUM_DOCUMENTS = BATCH_SIZE * NUM_BATCHES;
             const int MAPPING_OFFSET = 10;
-            const int DELAY_BETWEEN_BATCHES_MS = 1250;
 
             var expectedUris = new Uri[NUM_DOCUMENTS];
             var virtualUris = new Uri[NUM_DOCUMENTS];
@@ -540,7 +554,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, VSReferenceItem[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>(async (method, serverKind, definitionParams, ct) =>
+                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, definitionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentReferencesName, method);
                     Assert.Equal(LanguageServerKind.CSharp, serverKind);
@@ -548,7 +562,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                     for (var i = 0; i < NUM_BATCHES; ++i)
                     {
-                        await Task.Delay(DELAY_BETWEEN_BATCHES_MS);
                         _ = lspProgressListener.ProcessProgressNotificationAsync(Methods.ProgressNotificationName, parameterTokens[i]);
                     }
                 })
@@ -584,18 +597,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 });
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object, lspProgressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
 
+            var progressBatchesReported = new ConcurrentBag<VSReferenceItem[]>();
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
                 var results = Assert.IsType<VSReferenceItem[]>(val);
                 Assert.Equal(BATCH_SIZE, results.Length);
-
-                for (var i = 0; i < BATCH_SIZE; ++i)
-                {
-                    AssertVSReferenceItem(expectedReferences[progressBatchesReported][i], results[i]);
-                }
-
-                ++progressBatchesReported;
+                progressBatchesReported.Add(results);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -609,7 +618,26 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Assert
             Assert.True(lspFarEndpointCalled);
-            Assert.Equal(NUM_BATCHES, progressBatchesReported);
+
+            var sortedBatchesReported = progressBatchesReported.ToList();
+            sortedBatchesReported.Sort((VSReferenceItem[] a, VSReferenceItem[] b) =>
+            {
+                var indexA = a[0].Location.Range.Start.Character;
+                var indexB = b[0].Location.Range.Start.Character;
+                return indexA.CompareTo(indexB);
+            });
+
+            Assert.Equal(NUM_BATCHES, sortedBatchesReported.Count);
+
+            for (var batch = 0; batch < NUM_BATCHES; ++batch)
+            {
+                for (var documentInBatch = 0; documentInBatch < BATCH_SIZE; ++documentInBatch)
+                {
+                    AssertVSReferenceItem(
+                        expectedReferences[batch][documentInBatch],
+                        sortedBatchesReported[batch][documentInBatch]);
+                }
+            }
         }
 
         private bool AssertVSReferenceItem(VSReferenceItem expected, VSReferenceItem actual)
