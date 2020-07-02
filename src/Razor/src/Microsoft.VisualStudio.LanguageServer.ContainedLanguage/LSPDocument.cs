@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
@@ -20,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public abstract IReadOnlyList<VirtualDocument> VirtualDocuments { get; }
 
-        public abstract LSPDocumentSnapshot UpdateVirtualDocument<TVirtualDocument>(IReadOnlyList<TextChange> changes, long hostDocumentVersion) where TVirtualDocument : VirtualDocument;
+        public abstract LSPDocumentSnapshot UpdateVirtualDocument<TVirtualDocument>(IReadOnlyList<ITextChange> changes, long hostDocumentVersion) where TVirtualDocument : VirtualDocument;
 
         public bool TryGetVirtualDocument<TVirtualDocument>(out TVirtualDocument virtualDocument) where TVirtualDocument : VirtualDocument
         {

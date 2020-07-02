@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
@@ -38,7 +37,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             throw new NotImplementedException();
         }
 
-        public override void UpdateVirtualDocument<TVirtualDocument>(Uri hostDocumentUri, IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+        public override void UpdateVirtualDocument<TVirtualDocument>(Uri hostDocumentUri, IReadOnlyList<ITextChange> changes, long hostDocumentVersion)
         {
             UpdateVirtualDocumentCallCount++;
         }

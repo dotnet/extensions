@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Moq;
 using Xunit;
@@ -58,7 +57,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             public override VirtualDocumentSnapshot CurrentSnapshot => throw new NotImplementedException();
 
-            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+            public override VirtualDocumentSnapshot Update(IReadOnlyList<ITextChange> changes, long hostDocumentVersion)
             {
                 throw new NotImplementedException();
             }

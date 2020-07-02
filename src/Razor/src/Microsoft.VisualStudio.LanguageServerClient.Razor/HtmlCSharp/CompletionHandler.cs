@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
@@ -155,9 +156,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Edit the CSharp projected document to contain a '.'. This allows C# completion to provide valid
             // completion items for moments when a user has typed a '.' that's typically interpreted as Html.
-            var addProvisionalDot = new TextChange(
-                TextSpan.FromBounds(previousCharacterProjection.PositionIndex, previousCharacterProjection.PositionIndex),
-                ".");
+            var addProvisionalDot = new VisualStudioTextChange(previousCharacterProjection.PositionIndex, 0, ".");
 
             await _joinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -177,10 +176,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 cancellationToken).ConfigureAwait(true);
 
             // We have now obtained the necessary completion items. We no longer need the provisional change. Revert.
-            var removeProvisionalDot = new TextChange(
-                TextSpan.FromBounds(previousCharacterProjection.PositionIndex, previousCharacterProjection.PositionIndex + 1),
-                string.Empty);
-
+            var removeProvisionalDot = new VisualStudioTextChange(previousCharacterProjection.PositionIndex, 1, string.Empty);
+            
             trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, new[] { removeProvisionalDot }, previousCharacterProjection.HostDocumentVersion);
 
             return (true, result);

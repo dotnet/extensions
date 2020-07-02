@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
@@ -18,6 +17,6 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public abstract long? HostDocumentSyncVersion { get; }
 
-        public abstract VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion);
+        public abstract VirtualDocumentSnapshot Update(IReadOnlyList<ITextChange> changes, long hostDocumentVersion);
     }
 }

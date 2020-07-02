@@ -131,6 +131,7 @@
     <OmniSharpExtensionsLanguageServerPackageVersion>0.14.2</OmniSharpExtensionsLanguageServerPackageVersion>
     <OmniSharpMSBuildPackageVersion>1.33.0</OmniSharpMSBuildPackageVersion>
     <SystemPrivateUriPackageVersion>4.3.2</SystemPrivateUriPackageVersion>
+    <SystemCompositionPackageVersion>1.0.31.0</SystemCompositionPackageVersion>
     <VS_NewtonsoftJsonPackageVersion>12.0.2</VS_NewtonsoftJsonPackageVersion>
     <VSMAC_NewtonsoftJsonPackageVersion>12.0.2</VSMAC_NewtonsoftJsonPackageVersion>
     <StreamJsonRpcPackageVersion>2.4.34</StreamJsonRpcPackageVersion>

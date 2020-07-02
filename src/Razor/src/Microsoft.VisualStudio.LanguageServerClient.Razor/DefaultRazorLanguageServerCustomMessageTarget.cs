@@ -4,6 +4,7 @@
 using System;
 using System.Composition;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
@@ -85,7 +86,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var hostDocumentUri = new Uri(request.HostDocumentFilePath);
             _documentManager.UpdateVirtualDocument<CSharpVirtualDocument>(
                 hostDocumentUri,
-                request.Changes,
+                request.Changes?.Select(change => change.ToVisualStudioTextChange()).ToArray(),
                 request.HostDocumentVersion);
         }
 
@@ -113,7 +114,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var hostDocumentUri = new Uri(request.HostDocumentFilePath);
             _documentManager.UpdateVirtualDocument<HtmlVirtualDocument>(
                 hostDocumentUri,
-                request.Changes,
+                request.Changes?.Select(change => change.ToVisualStudioTextChange()).ToArray(),
                 request.HostDocumentVersion);
         }
 

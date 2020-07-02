@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
 using Moq;
@@ -27,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                 document.Uri == Uri &&
                 document.CurrentSnapshot == LSPDocumentSnapshot &&
                 document.VirtualDocuments == new[] { new TestVirtualDocument() } &&
-                document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<TextChange>>(), It.IsAny<long>()) == Mock.Of<LSPDocumentSnapshot>());
+                document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<ITextChange>>(), It.IsAny<long>()) == Mock.Of<LSPDocumentSnapshot>());
             LSPDocumentFactory = Mock.Of<LSPDocumentFactory>(factory => factory.Create(TextBuffer) == LSPDocument);
         }
 
@@ -100,7 +99,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             {
                 changedCalled = true;
             };
-            var changes = new[] { new TextChange(new TextSpan(1, 1), string.Empty) };
+            var changes = new[] { new VisualStudioTextChange(1, 1, string.Empty) };
 
             // Act
             manager.UpdateVirtualDocument<TestVirtualDocument>(Uri, changes, 123);
@@ -120,7 +119,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             {
                 changedCalled = true;
             };
-            var changes = Array.Empty<TextChange>();
+            var changes = Array.Empty<ITextChange>();
 
             // Act
             manager.UpdateVirtualDocument<TestVirtualDocument>(Uri, changes, 123);
@@ -143,7 +142,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                 Assert.NotSame(LSPDocumentSnapshot, args.New);
                 Assert.Equal(LSPDocumentChangeKind.VirtualDocumentChanged, args.Kind);
             };
-            var changes = new[] { new TextChange(new TextSpan(1, 1), string.Empty) };
+            var changes = new[] { new VisualStudioTextChange(1, 1, string.Empty) };
 
             // Act
             manager.UpdateVirtualDocument<TestVirtualDocument>(Uri, changes, 123);
@@ -207,7 +206,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             public override long? HostDocumentSyncVersion => 123;
 
-            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+            public override VirtualDocumentSnapshot Update(IReadOnlyList<ITextChange> changes, long hostDocumentVersion)
             {
                 throw new NotImplementedException();
             }

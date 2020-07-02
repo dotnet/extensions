@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
@@ -58,7 +57,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             }
         }
 
-        public override LSPDocumentSnapshot UpdateVirtualDocument<TVirtualDocument>(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+        public override LSPDocumentSnapshot UpdateVirtualDocument<TVirtualDocument>(IReadOnlyList<ITextChange> changes, long hostDocumentVersion)
         {
             if (!TryGetVirtualDocument<TVirtualDocument>(out var virtualDocument))
             {

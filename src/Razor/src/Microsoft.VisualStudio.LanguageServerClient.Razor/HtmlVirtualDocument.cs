@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.Text;
 
@@ -39,7 +38,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public override VirtualDocumentSnapshot CurrentSnapshot => _currentSnapshot;
 
-        public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+        public override VirtualDocumentSnapshot Update(IReadOnlyList<ITextChange> changes, long hostDocumentVersion)
         {
             if (changes is null)
             {
@@ -66,15 +65,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
                 if (change.IsDelete())
                 {
-                    edit.Delete(change.Span.Start, change.Span.Length);
+                    edit.Delete(change.OldSpan.Start, change.OldSpan.Length);
                 }
                 else if (change.IsReplace())
                 {
-                    edit.Replace(change.Span.Start, change.Span.Length, change.NewText);
+                    edit.Replace(change.OldSpan.Start, change.OldSpan.Length, change.NewText);
                 }
                 else if (change.IsInsert())
                 {
-                    edit.Insert(change.Span.Start, change.NewText);
+                    edit.Insert(change.OldSpan.Start, change.NewText);
                 }
                 else
                 {

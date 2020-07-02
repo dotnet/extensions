@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Moq;
 using Xunit;
@@ -27,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == snapshot);
             var virtualDocument = new TestVirtualDocument();
             var document = new DefaultLSPDocument(Uri, textBuffer, new[] { virtualDocument });
-            var changes = Array.Empty<TextChange>();
+            var changes = Array.Empty<ITextChange>();
             var originalSnapshot = document.CurrentSnapshot;
 
             // Act
@@ -43,7 +42,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             private long? _hostDocumentVersion;
 
-            public IReadOnlyList<TextChange> Changes { get; private set; }
+            public IReadOnlyList<ITextChange> Changes { get; private set; }
 
             public override Uri Uri => throw new NotImplementedException();
 
@@ -53,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             public override long? HostDocumentSyncVersion => _hostDocumentVersion;
 
-            public override VirtualDocumentSnapshot Update(IReadOnlyList<TextChange> changes, long hostDocumentVersion)
+            public override VirtualDocumentSnapshot Update(IReadOnlyList<ITextChange> changes, long hostDocumentVersion)
             {
                 _hostDocumentVersion = hostDocumentVersion;
                 Changes = changes;

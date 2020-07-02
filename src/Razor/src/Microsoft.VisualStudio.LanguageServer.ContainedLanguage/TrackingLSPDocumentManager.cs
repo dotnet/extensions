@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
@@ -16,7 +15,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public abstract void UpdateVirtualDocument<TVirtualDocument>(
             Uri hostDocumentUri,
-            IReadOnlyList<TextChange> changes,
+            IReadOnlyList<ITextChange> changes,
             long hostDocumentVersion) where TVirtualDocument : VirtualDocument;
     }
 }

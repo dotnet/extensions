@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
 
@@ -106,7 +105,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public override void UpdateVirtualDocument<TVirtualDocument>(
             Uri hostDocumentUri,
-            IReadOnlyList<TextChange> changes,
+            IReadOnlyList<ITextChange> changes,
             long hostDocumentVersion)
         {
             if (hostDocumentUri is null)
