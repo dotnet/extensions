@@ -10,11 +10,11 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
     {
         private long? _hostDocumentSyncVersion;
 
-        public TestVirtualDocumentSnapshot(Uri uri, long hostDocumentVersion) : this(uri, hostDocumentVersion, snapshot: null)
+        public TestVirtualDocumentSnapshot(Uri uri, long? hostDocumentVersion) : this(uri, hostDocumentVersion, snapshot: null)
         {
         }
 
-        public TestVirtualDocumentSnapshot(Uri uri, long hostDocumentVersion, ITextSnapshot snapshot)
+        public TestVirtualDocumentSnapshot(Uri uri, long? hostDocumentVersion, ITextSnapshot snapshot)
         {
             Uri = uri;
             _hostDocumentSyncVersion = hostDocumentVersion;

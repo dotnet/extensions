@@ -1,19 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
-using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
+﻿using System;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Xunit;
 
-namespace Microsoft.VisualStudio.LanguageServerClient.Razor
+namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 {
-    public class HtmlVirtualDocumentTest
+    public class VirtualDocumentBaseTest
     {
-        public HtmlVirtualDocumentTest()
+        public VirtualDocumentBaseTest()
         {
-            Uri = new Uri("C:/path/to/file.razor__virtual.html");
+            Uri = new Uri("C:/path/to/file.razor__virtual.test");
         }
 
         private Uri Uri { get; }
@@ -23,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var textBuffer = new TestTextBuffer(StringTextSnapshot.Empty);
-            var document = new HtmlVirtualDocument(Uri, textBuffer);
+            var document = new TestVirtualDocument(Uri, textBuffer);
             var originalSnapshot = document.CurrentSnapshot;
 
             // Act
@@ -40,7 +36,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Arrange
             var insert = new VisualStudioTextChange(0, 0, "inserted text");
             var textBuffer = new TestTextBuffer(StringTextSnapshot.Empty);
-            var document = new HtmlVirtualDocument(Uri, textBuffer);
+            var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(new[] { insert }, hostDocumentVersion: 1);
@@ -56,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Arrange
             var textBuffer = new TestTextBuffer(new StringTextSnapshot("original"));
             var replace = new VisualStudioTextChange(0, textBuffer.CurrentSnapshot.Length, "replaced text");
-            var document = new HtmlVirtualDocument(Uri, textBuffer);
+            var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(new[] { replace }, hostDocumentVersion: 1);
@@ -72,7 +68,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Arrange
             var textBuffer = new TestTextBuffer(new StringTextSnapshot("Hello World"));
             var delete = new VisualStudioTextChange(6, 5, string.Empty);
-            var document = new HtmlVirtualDocument(Uri, textBuffer);
+            var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(new[] { delete }, hostDocumentVersion: 1);
@@ -89,7 +85,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var textBuffer = new TestTextBuffer(new StringTextSnapshot("Hello World"));
             var replace = new VisualStudioTextChange(6, 5, "Replaced");
             var delete = new VisualStudioTextChange(0, 6, string.Empty);
-            var document = new HtmlVirtualDocument(Uri, textBuffer);
+            var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(new[] { replace, delete }, hostDocumentVersion: 1);
@@ -113,7 +109,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 called += 1;
             };
 
-            var document = new HtmlVirtualDocument(Uri, textBuffer);
+            var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(Array.Empty<ITextChange>(), hostDocumentVersion: 1);
