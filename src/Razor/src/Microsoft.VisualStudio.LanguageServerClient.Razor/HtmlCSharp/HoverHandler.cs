@@ -77,6 +77,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var textDocumentPositionParams = new TextDocumentPositionParams()
             {
                 Position = projectionResult.Position,

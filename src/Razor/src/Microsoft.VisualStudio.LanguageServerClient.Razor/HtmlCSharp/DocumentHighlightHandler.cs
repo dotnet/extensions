@@ -72,14 +72,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
-            if (projectionResult == null || projectionResult.LanguageKind != RazorLanguageKind.CSharp)
+            if (projectionResult == null)
             {
                 return null;
             }
 
+            var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
+
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serverKind = LanguageServerKind.CSharp;
             var documentHighlightParams = new DocumentHighlightParams()
             {
                 Position = projectionResult.Position,

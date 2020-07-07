@@ -67,35 +67,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
-        public async Task HandleRequestAsync_HtmlProjection_ReturnsNull()
-        {
-            // Arrange
-            var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionResult = new ProjectionResult()
-            {
-                LanguageKind = RazorLanguageKind.Html,
-            };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
-            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
-            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider);
-            var highlightRequest = new DocumentHighlightParams()
-            {
-                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Position = new Position(0, 1)
-            };
-
-            // Act
-            var result = await highlightHandler.HandleRequestAsync(highlightRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        [Fact]
         public async Task HandleRequestAsync_CSharpProjection_RemapsHighlightRange()
         {
             // Arrange
@@ -120,7 +91,50 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var projectionProvider = GetProjectionProvider(projectionResult);
 
-            var documentMappingProvider = GetDocumentMappingProvider(expectedHighlight.Range, 0);
+            var documentMappingProvider = GetDocumentMappingProvider(expectedHighlight.Range, 0, RazorLanguageKind.CSharp);
+
+            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var highlightRequest = new DocumentHighlightParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Position = new Position(10, 5)
+            };
+
+            // Act
+            var result = await highlightHandler.HandleRequestAsync(highlightRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(called);
+            var actualHighlight = Assert.Single(result);
+            Assert.Equal(expectedHighlight.Range, actualHighlight.Range);
+        }
+
+        [Fact]
+        public async Task HandleRequestAsync_HtmlProjection_RemapsHighlightRange()
+        {
+            // Arrange
+            var called = false;
+            var expectedHighlight = GetHighlight(5, 5, 5, 5);
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 0));
+
+            var htmlHighlight = GetHighlight(100, 100, 100, 100);
+            var requestInvoker = GetRequestInvoker<DocumentHighlightParams, DocumentHighlight[]>(
+                new[] { htmlHighlight },
+                (method, serverKind, highlightParams, ct) =>
+                {
+                    Assert.Equal(Methods.TextDocumentDocumentHighlightName, method);
+                    Assert.Equal(LanguageServerKind.Html, serverKind);
+                    called = true;
+                });
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.Html,
+            };
+            var projectionProvider = GetProjectionProvider(projectionResult);
+
+            var documentMappingProvider = GetDocumentMappingProvider(expectedHighlight.Range, 0, RazorLanguageKind.Html);
 
             var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var highlightRequest = new DocumentHighlightParams()
@@ -163,7 +177,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var projectionProvider = GetProjectionProvider(projectionResult);
 
-            var documentMappingProvider = GetDocumentMappingProvider(expectedHighlight.Range, 0 /* Different from document version (1) */);
+            var documentMappingProvider = GetDocumentMappingProvider(expectedHighlight.Range, 0 /* Different from document version (1) */, RazorLanguageKind.CSharp);
 
             var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var highlightRequest = new DocumentHighlightParams()
@@ -241,14 +255,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return requestInvoker.Object;
         }
 
-        private LSPDocumentMappingProvider GetDocumentMappingProvider(Range expectedRange, int expectedVersion)
+        private LSPDocumentMappingProvider GetDocumentMappingProvider(Range expectedRange, int expectedVersion, RazorLanguageKind languageKind)
         {
             var remappingResult = new RazorMapToDocumentRangesResponse()
             {
                 Ranges = new[] { expectedRange }
             };
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, Uri, It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).
+            documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(languageKind, Uri, It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
             return documentMappingProvider.Object;
