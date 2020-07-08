@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     [Export(typeof(ILanguageClient))]
     [ContentType(RazorLSPConstants.RazorLSPContentTypeName)]
-    internal class RazorLanguageServerClient : ILanguageClient, ILanguageClientCustomMessage2
+    internal class RazorLanguageServerClient : ILanguageClient, ILanguageClientCustomMessage2, ILanguageClientPriority
     {
         private readonly RazorLanguageServerCustomMessageTarget _customMessageTarget;
         private readonly ILanguageClientMiddleLayer _middleLayer;
@@ -52,6 +52,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public object MiddleLayer => _middleLayer;
 
         public object CustomMessageTarget => _customMessageTarget;
+
+        public bool IsOverriding => false;
+
+        // We set a priority to ensure that our Razor language server is always chosen if there's a conflict for which language server to prefer.
+        public int Priority => 10;
 
         public event AsyncEventHandler<EventArgs> StartAsync;
         public event AsyncEventHandler<EventArgs> StopAsync
