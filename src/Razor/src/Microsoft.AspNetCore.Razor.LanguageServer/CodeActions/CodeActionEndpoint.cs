@@ -58,31 +58,31 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var document = await Task.Factory.StartNew(() =>
+            var documentSnapshot = await Task.Factory.StartNew(() =>
             {
                 _documentResolver.TryResolveDocument(request.TextDocument.Uri.GetAbsoluteOrUNCPath(), out var documentSnapshot);
                 return documentSnapshot;
             }, cancellationToken, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
 
-            if (document is null)
+            if (documentSnapshot is null)
             {
                 return null;
             }
 
-            var codeDocument = await document.GetGeneratedOutputAsync().ConfigureAwait(false);
+            var codeDocument = await documentSnapshot.GetGeneratedOutputAsync().ConfigureAwait(false);
             if (codeDocument.IsUnsupported())
             {
                 return null;
             }
 
-            var sourceText = await document.GetTextAsync().ConfigureAwait(false);
+            var sourceText = await documentSnapshot.GetTextAsync().ConfigureAwait(false);
             var linePosition = new LinePosition((int)request.Range.Start.Line, (int)request.Range.Start.Character);
             var hostDocumentIndex = sourceText.Lines.GetPosition(linePosition);
             var location = new SourceLocation(hostDocumentIndex, (int)request.Range.Start.Line, (int)request.Range.Start.Character);
 
-            var context = new RazorCodeActionContext(request, codeDocument, location);
+            var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location);
             var tasks = new List<Task<CommandOrCodeActionContainer>>();
-            
+
             foreach (var provider in _providers)
             {
                 var result = provider.ProvideAsync(context, cancellationToken);

@@ -3,21 +3,24 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal sealed class RazorCodeActionContext
     {
-        public RazorCodeActionContext(CodeActionParams request, RazorCodeDocument document, SourceLocation location)
+        public RazorCodeActionContext(CodeActionParams request, DocumentSnapshot documentSnapshot, RazorCodeDocument codeDocument, SourceLocation location)
         {
             Request = request ?? throw new ArgumentNullException(nameof(request));
-            Document = document ?? throw new ArgumentNullException(nameof(document));
+            DocumentSnapshot = documentSnapshot ?? throw new ArgumentNullException(nameof(documentSnapshot));
+            CodeDocument = codeDocument ?? throw new ArgumentNullException(nameof(codeDocument));
             Location = location;
         }
 
         public CodeActionParams Request { get; }
-        public RazorCodeDocument Document { get; }
-        public SourceLocation Location { get; }
+        public DocumentSnapshot DocumentSnapshot { get; }
+        public RazorCodeDocument CodeDocument { get; }
+        public SourceLocation Location { get;  }
     }
 }

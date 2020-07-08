@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
-    internal class ExtractToCodeBehindParams
+    internal sealed class ExtractToCodeBehindParams
     {
         public Uri Uri { get; set; }
         public int ExtractStart { get; set; }

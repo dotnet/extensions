@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -28,13 +28,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return EmptyResult;
             }
 
-            if (!FileKinds.IsComponent(context.Document.GetFileKind()))
+            if (!FileKinds.IsComponent(context.CodeDocument.GetFileKind()))
             {
                 return EmptyResult;
             }
 
             var change = new SourceChange(context.Location.AbsoluteIndex, length: 0, newText: string.Empty);
-            var syntaxTree = context.Document.GetSyntaxTree();
+            var syntaxTree = context.CodeDocument.GetSyntaxTree();
             if (syntaxTree?.Root is null)
             {
                 return EmptyResult;

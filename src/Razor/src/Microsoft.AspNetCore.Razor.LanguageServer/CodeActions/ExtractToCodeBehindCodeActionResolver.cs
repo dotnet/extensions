@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             if (document is null)
             {
                 return null;
-            }            
+            }
 
             var codeDocument = await document.GetGeneratedOutputAsync().ConfigureAwait(false);
             if (codeDocument.IsUnsupported())
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                             NewText = string.Empty,
                             Range = removeRange,
                         }
-                    },               
+                    },
                 }),
                 new WorkspaceEditDocumentChange(new TextDocumentEdit
                 {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                     },
                 })
             };
-            
+
             return new WorkspaceEdit
             {
                 DocumentChanges = documentChanges,

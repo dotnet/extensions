@@ -25,7 +25,6 @@ export class RazorCodeActionRunner {
         const response: CodeActionResolutionResponse = await this.serverClient.sendRequest('razor/resolveCodeAction', {Action: request.Action, Data: request.Data});
         let changesWorkspaceEdit: vscode.WorkspaceEdit;
         let documentChangesWorkspaceEdit: vscode.WorkspaceEdit;
-        this.logger.logAlways(`Received response ${JSON.stringify(response)}`);
         try {
             changesWorkspaceEdit = convertWorkspaceEditFromSerializable({changes: response.edit.changes});
             documentChangesWorkspaceEdit = convertWorkspaceEditFromSerializable({documentChanges: response.edit.documentChanges});
