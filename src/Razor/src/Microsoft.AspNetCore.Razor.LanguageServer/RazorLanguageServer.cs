@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         }
 
                         var fileChangeDetectorManager = s.Services.GetRequiredService<RazorFileChangeDetectorManager>();
-                        await fileChangeDetectorManager.InitializedAsync(s);
+                        await fileChangeDetectorManager.InitializedAsync();
 
                         // Workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/106
                         var languageServer = (OmniSharp.Extensions.LanguageServer.Server.LanguageServer)server;
@@ -155,14 +155,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         // Formatting
                         services.AddSingleton<RazorFormattingService, DefaultRazorFormattingService>();
 
+                        // Code actions
+                        services.AddSingleton<RazorCodeActionProvider, ExtractToCodeBehindCodeActionProvider>();
+                        services.AddSingleton<RazorCodeActionResolver, ExtractToCodeBehindCodeActionResolver>();
+
+                        // Other
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
                         services.AddSingleton<RazorSemanticTokensInfoService, DefaultRazorSemanticTokensInfoService>();
                         services.AddSingleton<RazorHoverInfoService, DefaultRazorHoverInfoService>();
                         services.AddSingleton<HtmlFactsService, DefaultHtmlFactsService>();
-
-                        // Code actions
-                        services.AddSingleton<RazorCodeActionProvider, ExtractToCodeBehindCodeActionProvider>();
-                        services.AddSingleton<RazorCodeActionResolver, ExtractToCodeBehindCodeActionResolver>();
+                        services.AddSingleton<WorkspaceDirectoryPathResolver, DefaultWorkspaceDirectoryPathResolver>();
                     }));
 
             try
