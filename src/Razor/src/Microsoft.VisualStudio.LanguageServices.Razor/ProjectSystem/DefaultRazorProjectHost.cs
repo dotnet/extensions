@@ -34,8 +34,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public DefaultRazorProjectHost(
             IUnconfiguredProjectCommonServices commonServices,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace,
-            RazorProjectChangePublisher razorProjectChangePublisher)
-            : base(commonServices, workspace, razorProjectChangePublisher)
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore)
+            : base(commonServices, workspace, projectConfigurationFilePathStore)
         {
         }
 
@@ -43,9 +43,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         internal DefaultRazorProjectHost(
             IUnconfiguredProjectCommonServices commonServices,
                 Workspace workspace,
-                RazorProjectChangePublisher razorProjectChangePublisher,
+                ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
                 ProjectSnapshotManagerBase projectManager)
-        : base(commonServices, workspace, razorProjectChangePublisher, projectManager)
+        : base(commonServices, workspace, projectConfigurationFilePathStore, projectManager)
         {
         }
 
@@ -116,7 +116,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                             if (TryGetIntermediateOutputPath(update.Value.CurrentState, out var intermediatePath))
                             {
                                 var projectRazorJson = Path.Combine(intermediatePath, "project.razor.json");
-                                _razorProjectChangePublisher.SetPublishFilePath(hostProject.FilePath, projectRazorJson);
+                                _projectConfigurationFilePathStore.Set(hostProject.FilePath, projectRazorJson);
                             }
 
                             UpdateProjectUnsafe(hostProject);

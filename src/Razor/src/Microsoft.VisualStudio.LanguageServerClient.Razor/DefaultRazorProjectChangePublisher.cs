@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
@@ -21,14 +20,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     /// </summary>
     [Shared]
     [Export(typeof(ProjectSnapshotChangeTrigger))]
-    [Export(typeof(RazorProjectChangePublisher))]
-    internal class DefaultRazorProjectChangePublisher : RazorProjectChangePublisher
+    internal class DefaultRazorProjectChangePublisher : ProjectSnapshotChangeTrigger
     {
         internal readonly Dictionary<string, Task> _deferredPublishTasks;
         private const string TempFileExt = ".temp";
-        private readonly JoinableTaskContext _joinableTaskContext;
         private readonly RazorLogger _logger;
         private readonly LSPEditorFeatureDetector _lspEditorFeatureDetector;
+        private readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
         private readonly Dictionary<string, ProjectSnapshot> _pendingProjectPublishes;
         private readonly object _publishLock;
 
@@ -38,18 +36,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         [ImportingConstructor]
         public DefaultRazorProjectChangePublisher(
-                    JoinableTaskContext joinableTaskContext,
-                    LSPEditorFeatureDetector lSPEditorFeatureDetector,
-                    RazorLogger logger)
+            LSPEditorFeatureDetector lSPEditorFeatureDetector,
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
+            RazorLogger logger)
         {
-            if (joinableTaskContext is null)
-            {
-                throw new ArgumentNullException(nameof(joinableTaskContext));
-            }
-
             if (lSPEditorFeatureDetector is null)
             {
                 throw new ArgumentNullException(nameof(lSPEditorFeatureDetector));
+            }
+
+            if (projectConfigurationFilePathStore is null)
+            {
+                throw new ArgumentNullException(nameof(projectConfigurationFilePathStore));
             }
 
             if (logger is null)
@@ -62,13 +60,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _publishLock = new object();
 
             _lspEditorFeatureDetector = lSPEditorFeatureDetector;
-
+            _projectConfigurationFilePathStore = projectConfigurationFilePathStore;
             _logger = logger;
 
             _serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
             _serializer.Converters.Add(RazorConfigurationJsonConverter.Instance);
             _serializer.Converters.Add(CodeAnalysis.Razor.Workspaces.Serialization.ProjectSnapshotJsonConverter.Instance);
-            _joinableTaskContext = joinableTaskContext;
         }
 
         // Internal settable for testing
@@ -79,19 +76,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             _projectSnapshotManager = projectManager;
             _projectSnapshotManager.Changed += ProjectSnapshotManager_Changed;
-        }
-
-        public override void RemovePublishFilePath(string projectFilePath)
-        {
-            Debug.Assert(_joinableTaskContext.IsOnMainThread, "RemovePublishFilePath should have been on main thread");
-            PublishFilePathMappings.TryRemove(projectFilePath, out var _);
-        }
-
-        public override void SetPublishFilePath(string projectFilePath, string publishFilePath)
-        {
-            // Should only be called from the main thread.
-            Debug.Assert(_joinableTaskContext.IsOnMainThread, "SetPublishFilePath should have been on main thread");
-            PublishFilePathMappings[projectFilePath] = publishFilePath;
         }
 
         // Internal for testing
@@ -155,19 +139,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             lock (_publishLock)
             {
-                string publishFilePath = null;
+                string configurationFilePath = null;
                 try
                 {
-                    if (!PublishFilePathMappings.TryGetValue(projectSnapshot.FilePath, out publishFilePath))
+                    if (!_projectConfigurationFilePathStore.TryGet(projectSnapshot.FilePath, out configurationFilePath))
                     {
                         return;
                     }
 
-                    SerializeToFile(projectSnapshot, publishFilePath);
+                    SerializeToFile(projectSnapshot, configurationFilePath);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning($@"Could not update Razor project configuration file '{publishFilePath}':
+                    _logger.LogWarning($@"Could not update Razor project configuration file '{configurationFilePath}':
 {ex}");
                 }
             }
@@ -179,7 +163,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             lock (_publishLock)
             {
                 var oldProjectFilePath = projectSnapshot.FilePath;
-                if (!PublishFilePathMappings.TryGetValue(oldProjectFilePath, out var publishFilePath))
+                if (!_projectConfigurationFilePathStore.TryGet(oldProjectFilePath, out var configurationFilePath))
                 {
                     // If we don't track the value in PublishFilePathMappings that means it's already been removed, do nothing.
                     return;

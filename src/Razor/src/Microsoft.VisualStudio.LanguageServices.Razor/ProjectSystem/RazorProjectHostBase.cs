@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private ProjectSnapshotManagerBase _projectManager;
         private readonly Dictionary<string, HostDocument> _currentDocuments;
-        protected readonly RazorProjectChangePublisher _razorProjectChangePublisher;
+        protected readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
 
         internal const string BaseIntermediateOutputPathPropertyName = "BaseIntermediateOutputPath";
         internal const string IntermediateOutputPathPropertyName = "IntermediateOutputPath";
@@ -42,7 +42,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public RazorProjectHostBase(
             IUnconfiguredProjectCommonServices commonServices,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace,
-            RazorProjectChangePublisher razorProjectChangePublisher)
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore)
             : base(commonServices.ThreadingService.JoinableTaskContext)
         {
             if (commonServices == null)
@@ -60,16 +60,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             _lock = new AsyncSemaphore(initialCount: 1);
             _currentDocuments = new Dictionary<string, HostDocument>(FilePathComparer.Instance);
-            _razorProjectChangePublisher = razorProjectChangePublisher;
+            _projectConfigurationFilePathStore = projectConfigurationFilePathStore;
         }
 
         // Internal for testing
         protected RazorProjectHostBase(
             IUnconfiguredProjectCommonServices commonServices,
             Workspace workspace,
-            RazorProjectChangePublisher razorProjectChangePublisher,
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
             ProjectSnapshotManagerBase projectManager)
-            : this(commonServices, workspace, razorProjectChangePublisher)
+            : this(commonServices, workspace, projectConfigurationFilePathStore)
         {
             if (projectManager == null)
             {
@@ -184,7 +184,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 Debug.Assert(_currentDocuments.Count == 0);
                 projectManager.ProjectRemoved(Current);
-                _razorProjectChangePublisher.RemovePublishFilePath(Current.FilePath);
+                _projectConfigurationFilePathStore.Remove(Current.FilePath);
             }
             else
             {
