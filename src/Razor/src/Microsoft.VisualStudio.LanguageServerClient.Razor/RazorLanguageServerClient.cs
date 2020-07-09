@@ -33,7 +33,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
         private object _shutdownLock;
-        private ILanguageServer _server;
+        private RazorLanguageServer _server;
         private IDisposable _serverShutdownDisposable;
 
         [ImportingConstructor]
@@ -97,6 +97,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public async Task<Connection> ActivateAsync(CancellationToken token)
         {
             var (clientStream, serverStream) = FullDuplexStream.CreatePair();
+
+            await EnsureCleanedUpServerAsync(token).ConfigureAwait(false);
+
             // Need an auto-flushing stream for the server because O# doesn't currently flush after writing responses. Without this
             // performing the Initialize handshake with the LanguageServer hangs.
             var autoFlushingStream = new AutoFlushingNerdbankStream(serverStream);
@@ -107,6 +110,35 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var connection = new Connection(clientStream, clientStream);
             return connection;
+        }
+
+        private async Task EnsureCleanedUpServerAsync(CancellationToken token)
+        {
+            const int WaitForShutdownAttempts = 10;
+
+            if (_server == null)
+            {
+                // Server was already cleaned up
+                return;
+            }
+
+            var attempts = 0;
+            while (_server != null && ++attempts < WaitForShutdownAttempts)
+            {
+                // Server failed to shutdown, lets wait a little bit and check again.
+                await Task.Delay(100, token);
+            }
+
+            lock (_shutdownLock)
+            {
+                if (_server != null)
+                {
+                    // Server still hasn't shutdown, attempt an ungraceful shutdown.
+                    _server.Dispose();
+
+                    ServerShutdown();
+                }
+            }
         }
 
         public async Task OnLoadedAsync()
@@ -121,7 +153,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public Task OnServerInitializedAsync()
         {
-            _serverShutdownDisposable = _server.Shutdown.Subscribe((_) => ServerShutdown());
+            _serverShutdownDisposable = _server.OnShutdown.Subscribe((_) => ServerShutdown());
 
             ServerStarted();
 
@@ -176,6 +208,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             catch (Exception)
             {
                 // We're fire and forgetting here, if the request fails we're ok with that.
+                //
+                // Note: When moving between solutions this can fail with a null reference exception because the underlying LSP platform's
+                // JsonRpc object will be `null`. This can happen in two situations:
+                //      1.  There's currently a race in the platform on shutting down/activating so we don't get the opportunity to properly detatch
+                //          from the configuration file path store changed event properly.
+                //          Tracked by: https://github.com/dotnet/aspnetcore/issues/23819
+                //      2.  The LSP platform failed to shutdown our language server properly due to a JsonRpc timeout. There's currently a limitation in
+                //          the LSP platform APIs where we don't know if the LSP platform requested shutdown but our language server never saw it. Therefore,
+                //          we will null-ref until our language server client boot-logic kicks back in and re-activates resulting in the old server being
+                //          being cleaned up.
             }
         }
 

@@ -28,16 +28,34 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server;
 using ILanguageServer = OmniSharp.Extensions.LanguageServer.Server.ILanguageServer;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    public sealed class RazorLanguageServer
+    public sealed class RazorLanguageServer : IDisposable
     {
-        private RazorLanguageServer()
+        private readonly ILanguageServer _innerServer;
+        private readonly object _disposeLock;
+        private bool _disposed;
+
+        private RazorLanguageServer(ILanguageServer innerServer)
         {
+            if (innerServer is null)
+            {
+                throw new ArgumentNullException(nameof(innerServer));
+            }
+
+            _innerServer = innerServer;
+            _disposeLock = new object();
         }
 
-        public static Task<ILanguageServer> CreateAsync(Stream input, Stream output, Trace trace)
+        public IObservable<bool> OnShutdown => _innerServer.Shutdown;
+
+        public Task WaitForExit => _innerServer.WaitForExit;
+
+        public Task InitializedAsync(CancellationToken token) => _innerServer.InitializedAsync(token);
+
+        public static Task<RazorLanguageServer> CreateAsync(Stream input, Stream output, Trace trace)
         {
             Serializer.Instance.Settings.Converters.Add(SemanticTokensOrSemanticTokensEditsConverter.Instance);
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
@@ -181,26 +199,38 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 // Swallow exceptions from determining assembly information.
             }
 
-            IDisposable shutdownSubscription = null;
-            shutdownSubscription = server.Shutdown.Subscribe((_) =>
-            {
-                shutdownSubscription.Dispose();
-                TempDirectory.Instance.Dispose();
-            });
+            var razorLanguageServer = new RazorLanguageServer(server);
 
             IDisposable exitSubscription = null;
             exitSubscription = server.Exit.Subscribe((_) =>
             {
                 exitSubscription.Dispose();
-                server.Dispose();
+                razorLanguageServer.Dispose();
+            });
+
+            return Task.FromResult(razorLanguageServer);
+        }
+
+        public void Dispose()
+        {
+            lock (_disposeLock)
+            {
+                if (_disposed)
+                {
+                    // Already disposed
+                    return;
+                }
+
+                _disposed = true;
+
+                TempDirectory.Instance.Dispose();
+                _innerServer.Dispose();
 
                 // Disposing the server doesn't actually dispose the servers Services for whatever reason. We cast the services collection
                 // to IDisposable and try to dispose it ourselves to account for this.
-                var disposableServices = server.Services as IDisposable;
+                var disposableServices = _innerServer.Services as IDisposable;
                 disposableServices?.Dispose();
-            });
-
-            return Task.FromResult(server);
+            }
         }
     }
 }
