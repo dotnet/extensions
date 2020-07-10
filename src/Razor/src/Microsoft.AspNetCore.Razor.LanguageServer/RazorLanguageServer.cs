@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<OnAutoInsertEndpoint>()
                     .WithHandler<CodeActionEndpoint>()
                     .WithHandler<CodeActionResolutionEndpoint>()
+                    .WithHandler<MonitorProjectConfigurationFilePathEndpoint>()
                     .WithServices(services =>
                     {
                         var filePathNormalizer = new FilePathNormalizer();

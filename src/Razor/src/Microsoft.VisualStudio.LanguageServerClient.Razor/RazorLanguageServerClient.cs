@@ -4,15 +4,22 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.LanguageServer.Client;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using Nerdbank.Streams;
+using OmniSharp.Extensions.LanguageServer.Server;
 using StreamJsonRpc;
+using Task = System.Threading.Tasks.Task;
 using Trace = Microsoft.AspNetCore.Razor.LanguageServer.Trace;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
@@ -23,9 +30,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private readonly RazorLanguageServerCustomMessageTarget _customMessageTarget;
         private readonly ILanguageClientMiddleLayer _middleLayer;
+        private readonly LSPRequestInvoker _requestInvoker;
+        private readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
+        private object _shutdownLock;
+        private ILanguageServer _server;
+        private IDisposable _serverShutdownDisposable;
 
         [ImportingConstructor]
-        public RazorLanguageServerClient(RazorLanguageServerCustomMessageTarget customTarget, RazorLanguageClientMiddleLayer middleLayer)
+        public RazorLanguageServerClient(
+            RazorLanguageServerCustomMessageTarget customTarget,
+            RazorLanguageClientMiddleLayer middleLayer,
+            LSPRequestInvoker requestInvoker,
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore)
         {
             if (customTarget is null)
             {
@@ -37,8 +53,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(middleLayer));
             }
 
+            if (requestInvoker is null)
+            {
+                throw new ArgumentNullException(nameof(requestInvoker));
+            }
+
+            if (projectConfigurationFilePathStore is null)
+            {
+                throw new ArgumentNullException(nameof(projectConfigurationFilePathStore));
+            }
+
             _customMessageTarget = customTarget;
             _middleLayer = middleLayer;
+            _requestInvoker = requestInvoker;
+            _projectConfigurationFilePathStore = projectConfigurationFilePathStore;
+            _shutdownLock = new object();
         }
 
         public string Name => "Razor Language Server Client";
@@ -68,14 +97,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public async Task<Connection> ActivateAsync(CancellationToken token)
         {
             var (clientStream, serverStream) = FullDuplexStream.CreatePair();
-
             // Need an auto-flushing stream for the server because O# doesn't currently flush after writing responses. Without this
             // performing the Initialize handshake with the LanguageServer hangs.
             var autoFlushingStream = new AutoFlushingNerdbankStream(serverStream);
-            var server = await RazorLanguageServer.CreateAsync(autoFlushingStream, autoFlushingStream, Trace.Verbose).ConfigureAwait(false);
+            _server = await RazorLanguageServer.CreateAsync(autoFlushingStream, autoFlushingStream, Trace.Verbose).ConfigureAwait(false);
 
             // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize.
-            _ = server.InitializedAsync(token);
+            _server.InitializedAsync(token).FileAndForget("RazorLanguageServerClient_ActivateAsync");
+
             var connection = new Connection(clientStream, clientStream);
             return connection;
         }
@@ -92,7 +121,62 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public Task OnServerInitializedAsync()
         {
+            _serverShutdownDisposable = _server.Shutdown.Subscribe((_) => ServerShutdown());
+
+            ServerStarted();
+
             return Task.CompletedTask;
+        }
+
+        private void ServerStarted()
+        {
+            _projectConfigurationFilePathStore.Changed += ProjectConfigurationFilePathStore_Changed;
+
+            var mappings = _projectConfigurationFilePathStore.GetMappings();
+            foreach (var mapping in mappings)
+            {
+                var args = new ProjectConfigurationFilePathChangedEventArgs(mapping.Key, mapping.Value);
+                ProjectConfigurationFilePathStore_Changed(this, args);
+            }
+        }
+
+        private void ServerShutdown()
+        {
+            lock (_shutdownLock)
+            {
+                if (_server == null)
+                {
+                    // Already shutdown
+                    return;
+                }
+
+                _projectConfigurationFilePathStore.Changed -= ProjectConfigurationFilePathStore_Changed;
+                _serverShutdownDisposable?.Dispose();
+                _serverShutdownDisposable = null;
+                _server = null;
+            }
+        }
+
+        private async void ProjectConfigurationFilePathStore_Changed(object sender, ProjectConfigurationFilePathChangedEventArgs args)
+        {
+            try
+            {
+                var parameter = new MonitorProjectConfigurationFilePathParams()
+                {
+                    ProjectFilePath = args.ProjectFilePath,
+                    ConfigurationFilePath = args.ConfigurationFilePath,
+                };
+
+                await _requestInvoker.CustomRequestServerAsync<MonitorProjectConfigurationFilePathParams, object>(
+                    LanguageServerConstants.RazorMonitorProjectConfigurationFilePathEndpoint,
+                    LanguageServerKind.Razor,
+                    parameter,
+                    CancellationToken.None);
+            }
+            catch (Exception)
+            {
+                // We're fire and forgetting here, if the request fails we're ok with that.
+            }
         }
 
         public Task AttachForCustomMessageAsync(JsonRpc rpc) => Task.CompletedTask;

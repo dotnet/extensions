@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
         public const string RazorLanguageQueryEndpoint = "razor/languageQuery";
 
+        public const string RazorMonitorProjectConfigurationFilePathEndpoint = "razor/monitorProjectConfigurationFilePath";
+
         public const string RazorMapToDocumentRangesEndpoint = "razor/mapToDocumentRanges";
 
         public const string SemanticTokensProviderName = "semanticTokensProvider";
