@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void TryGetVirtualCSharpDocument_CSharpDocument_ReturnsTrue()
         {
             // Arrange
-            var testVirtualDocument = new TestVirtualDocument();
+            var testVirtualDocument = new TestVirtualDocument(Uri, Mock.Of<ITextBuffer>());
             var lspDocument = new DefaultLSPDocument(Uri, Mock.Of<ITextBuffer>(), new[] { Mock.Of<VirtualDocument>(), testVirtualDocument });
 
             // Act
@@ -45,22 +45,6 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Assert
             Assert.True(result);
             Assert.Same(testVirtualDocument, virtualDocument);
-        }
-
-        private class TestVirtualDocument : VirtualDocument
-        {
-            public override Uri Uri => throw new NotImplementedException();
-
-            public override long? HostDocumentSyncVersion => throw new NotImplementedException();
-
-            public override ITextBuffer TextBuffer => throw new NotImplementedException();
-
-            public override VirtualDocumentSnapshot CurrentSnapshot => throw new NotImplementedException();
-
-            public override VirtualDocumentSnapshot Update(IReadOnlyList<ITextChange> changes, long hostDocumentVersion)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

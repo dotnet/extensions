@@ -59,6 +59,10 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
                 return null;
             }
+
+            public override void Dispose()
+            {
+            }
         }
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 {
-    public abstract class LSPDocument
+    public abstract class LSPDocument : IDisposable
     {
         public abstract int Version { get; }
 
@@ -34,6 +34,14 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             virtualDocument = null;
             return false;
+        }
+
+        public void Dispose()
+        {
+            foreach (var virtualDocument in VirtualDocuments)
+            {
+                virtualDocument.Dispose();
+            }
         }
     }
 }

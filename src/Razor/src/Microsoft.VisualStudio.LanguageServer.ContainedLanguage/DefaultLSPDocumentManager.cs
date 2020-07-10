@@ -101,6 +101,8 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             {
                 Debug.Fail($"Couldn't remove {uri.AbsolutePath}. This should never ever happen.");
             }
+
+            lspDocument.Dispose();
         }
 
         public override void UpdateVirtualDocument<TVirtualDocument>(

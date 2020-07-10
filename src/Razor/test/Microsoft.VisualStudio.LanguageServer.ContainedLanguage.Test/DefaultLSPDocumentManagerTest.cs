@@ -210,6 +210,10 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             {
                 throw new NotImplementedException();
             }
+
+            public override void Dispose()
+            {                
+            }
         }
     }
 }

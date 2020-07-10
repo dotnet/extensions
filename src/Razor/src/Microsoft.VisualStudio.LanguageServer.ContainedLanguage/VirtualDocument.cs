@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 {
-    public abstract class VirtualDocument
+    public abstract class VirtualDocument : IDisposable
     {
         public abstract Uri Uri { get; }
 
@@ -18,5 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public abstract long? HostDocumentSyncVersion { get; }
 
         public abstract VirtualDocumentSnapshot Update(IReadOnlyList<ITextChange> changes, long hostDocumentVersion);
+
+        public abstract void Dispose();
     }
 }

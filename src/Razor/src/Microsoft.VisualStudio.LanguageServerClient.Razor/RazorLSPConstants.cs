@@ -11,8 +11,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public const string RazorFileExtension = ".razor";
 
-        public const string ContainedLanguageMarker = "ContainedLanguageMarker";
-
         public const string CSharpLSPContentTypeName = "C#_LSP";
 
         public const string HtmlLSPContentTypeName = "htmlyLSP";
