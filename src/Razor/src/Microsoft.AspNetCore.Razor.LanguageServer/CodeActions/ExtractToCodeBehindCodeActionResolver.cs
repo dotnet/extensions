@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         public override async Task<WorkspaceEdit> ResolveAsync(JObject data, CancellationToken cancellationToken)
         {
-            var actionParams = data.ToObject<ExtractToCodeBehindParams>();
+            var actionParams = data.ToObject<ExtractToCodeBehindCodeActionParams>();
             var path = _filePathNormalizer.Normalize(actionParams.Uri.GetAbsoluteOrUNCPath());
 
             var document = await Task.Factory.StartNew(() =>

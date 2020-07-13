@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         {
             // Arrange
             var resolver = new ExtractToCodeBehindCodeActionResolver(new DefaultForegroundDispatcher(), EmptyDocumentResolver, FilePathNormalizer);
-            var data = JObject.FromObject(new ExtractToCodeBehindParams()
+            var data = JObject.FromObject(new ExtractToCodeBehindCodeActionParams()
             {
                 Uri = new Uri("c:/Test.razor"),
                 RemoveStart = 14,
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             codeDocument.SetUnsupported();
 
             var resolver = new ExtractToCodeBehindCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument), FilePathNormalizer);
-            var data = JObject.FromObject(new ExtractToCodeBehindParams()
+            var data = JObject.FromObject(new ExtractToCodeBehindCodeActionParams()
             {
                 Uri = new Uri("c:/Test.razor"),
                 RemoveStart = 14,
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             codeDocument.SetFileKind(FileKinds.Legacy);
 
             var resolver = new ExtractToCodeBehindCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument), FilePathNormalizer);
-            var data = JObject.FromObject(new ExtractToCodeBehindParams()
+            var data = JObject.FromObject(new ExtractToCodeBehindCodeActionParams()
             {
                 Uri = new Uri("c:/Test.razor"),
                 RemoveStart = 14,
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var codeDocument = CreateCodeDocument(contents);
 
             var resolver = new ExtractToCodeBehindCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument), FilePathNormalizer);
-            var actionParams = new ExtractToCodeBehindParams
+            var actionParams = new ExtractToCodeBehindCodeActionParams
             {
                 Uri = documentUri,
                 RemoveStart = contents.IndexOf("@code"),
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var codeDocument = CreateCodeDocument(contents);
 
             var resolver = new ExtractToCodeBehindCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument), FilePathNormalizer);
-            var actionParams = new ExtractToCodeBehindParams
+            var actionParams = new ExtractToCodeBehindCodeActionParams
             {
                 Uri = documentUri,
                 RemoveStart = contents.IndexOf("@functions"),
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var codeDocument = CreateCodeDocument(contents);
 
             var resolver = new ExtractToCodeBehindCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument), FilePathNormalizer);
-            var actionParams = new ExtractToCodeBehindParams
+            var actionParams = new ExtractToCodeBehindCodeActionParams
             {
                 Uri = documentUri,
                 RemoveStart = contents.IndexOf("@code"),

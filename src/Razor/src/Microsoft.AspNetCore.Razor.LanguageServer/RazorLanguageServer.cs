@@ -177,6 +177,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         // Code actions
                         services.AddSingleton<RazorCodeActionProvider, ExtractToCodeBehindCodeActionProvider>();
                         services.AddSingleton<RazorCodeActionResolver, ExtractToCodeBehindCodeActionResolver>();
+                        services.AddSingleton<RazorCodeActionResolver, CreateComponentCodeActionResolver>();
 
                         // Other
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();

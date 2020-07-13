@@ -36,6 +36,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         public static class CodeActions
         {
             public const string ExtractToCodeBehindAction = "ExtractToCodeBehind";
+
+            public const string CreateComponentFromTag = "CreateComponentFromTag";
         }
     }
 }

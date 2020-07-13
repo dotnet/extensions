@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return EmptyResult;
             }
 
-            var actionParams = new ExtractToCodeBehindParams()
+            var actionParams = new ExtractToCodeBehindCodeActionParams()
             {
                 Uri = context.Request.TextDocument.Uri,
                 ExtractStart = cSharpCodeBlockNode.Span.Start,
