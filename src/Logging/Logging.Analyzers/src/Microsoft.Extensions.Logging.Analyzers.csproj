@@ -14,8 +14,4 @@
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\Logging.Abstractions\src\LogValuesFormatter.cs" />
-  </ItemGroup>
-
 </Project>
