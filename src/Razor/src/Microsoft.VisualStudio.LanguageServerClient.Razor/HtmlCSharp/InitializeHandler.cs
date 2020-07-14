@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 CompletionProvider = new CompletionOptions()
                 {
-                    AllCommitCharacters = new[] { " ", ".", ";", ">", "=", ":", "(", ")", "[", "]", "{", "}", "!" }, // This is necessary to workaround a bug where the commit character in CompletionItem is not respected. https://github.com/dotnet/aspnetcore/issues/21346
+                    AllCommitCharacters = new[] { " ", ".", ";", ">", "=", "(", ")", "[", "]", "{", "}", "!" },
                     ResolveProvider = true,
                     TriggerCharacters = new[] { ".", "@", "<", "&", "\\", "/", "'", "\"", "=", ":", " " }
                 },
