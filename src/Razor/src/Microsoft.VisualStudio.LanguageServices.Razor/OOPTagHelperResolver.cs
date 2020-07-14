@@ -117,23 +117,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 var args = new object[]
                 {
                     JObject.FromObject(projectSnapshot, _serializer),
-                    factory == null ? null : factory.GetType().AssemblyQualifiedName,
+                    factory?.GetType().AssemblyQualifiedName,
                 };
 
-                var resolutionJObject = await remoteClient.TryRunRemoteAsync<JObject>(
+                var result = await remoteClient.TryRunRemoteAsync<TagHelperResolutionResult>(
                     "GetTagHelpersAsync",
                     workspaceProject.Solution,
                     args,
                     CancellationToken.None).ConfigureAwait(false);
 
-                if (!resolutionJObject.HasValue)
-                {
-                    return null;
-                }
-
-                var resolutionResult = resolutionJObject.Value.ToObject<TagHelperResolutionResult>(_serializer);
-
-                return resolutionResult;
+                return result.HasValue ? result.Value : null;
             }
             catch (Exception ex)
             {

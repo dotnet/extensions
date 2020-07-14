@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Newtonsoft.Json;
 
@@ -26,12 +25,12 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             }
 
             // Required tokens (order matters)
-            var descriptorKind = ReadNextStringProperty(reader, nameof(TagHelperDescriptor.Kind));
-            var typeName = ReadNextStringProperty(reader, nameof(TagHelperDescriptor.Name));
-            var assemblyName = ReadNextStringProperty(reader, nameof(TagHelperDescriptor.AssemblyName));
+            var descriptorKind = reader.ReadNextStringProperty(nameof(TagHelperDescriptor.Kind));
+            var typeName = reader.ReadNextStringProperty(nameof(TagHelperDescriptor.Name));
+            var assemblyName = reader.ReadNextStringProperty(nameof(TagHelperDescriptor.AssemblyName));
             var builder = TagHelperDescriptorBuilder.Create(descriptorKind, typeName, assemblyName);
 
-            ReadProperties(reader, propertyName =>
+            reader.ReadProperties(propertyName =>
             {
                 switch (propertyName)
                 {
@@ -381,7 +380,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
 
             builder.BindAttribute(attribute =>
             {
-                ReadProperties(reader, propertyName =>
+                reader.ReadProperties(propertyName =>
                 {
                     switch (propertyName)
                     {
@@ -481,7 +480,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
 
             builder.BindAttributeParameter(parameter =>
             {
-                ReadProperties(reader, propertyName =>
+                reader.ReadProperties(propertyName =>
                 {
                     switch (propertyName)
                     {
@@ -556,7 +555,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
 
             builder.TagMatchingRule(rule =>
             {
-                ReadProperties(reader, propertyName =>
+                reader.ReadProperties(propertyName =>
                 {
                     switch (propertyName)
                     {
@@ -620,7 +619,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
 
             builder.Attribute(attribute =>
             {
-                ReadProperties(reader, propertyName =>
+                reader.ReadProperties(propertyName =>
                 {
                     switch (propertyName)
                     {
@@ -689,7 +688,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
 
             builder.AllowChildTag(childTag =>
             {
-                ReadProperties(reader, propertyName =>
+                reader.ReadProperties(propertyName =>
                 {
                     switch (propertyName)
                     {
@@ -727,7 +726,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
                 return;
             }
 
-            ReadProperties(reader, propertyName =>
+            reader.ReadProperties(propertyName =>
             {
                 if (reader.Read())
                 {
@@ -772,7 +771,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             string message = default;
             SourceSpan sourceSpan = default;
 
-            ReadProperties(reader, propertyName =>
+            reader.ReadProperties(propertyName =>
             {
                 switch (propertyName)
                 {
@@ -821,7 +820,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             int characterIndex = default;
             int length = default;
 
-            ReadProperties(reader, propertyName =>
+            reader.ReadProperties(propertyName =>
             {
                 switch (propertyName)
                 {
@@ -848,45 +847,6 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
 
             var sourceSpan = new SourceSpan(filePath, absoluteIndex, lineIndex, characterIndex, length);
             return sourceSpan;
-        }
-
-        private static void ReadProperties(JsonReader reader, Action<string> onProperty)
-        {
-            while (reader.Read())
-            {
-                switch (reader.TokenType)
-                {
-                    case JsonToken.PropertyName:
-                        var propertyName = reader.Value.ToString();
-                        onProperty(propertyName);
-                        break;
-                    case JsonToken.EndObject:
-                        return;
-                }
-            }
-        }
-
-        private string ReadNextStringProperty(JsonReader reader, string propertyName)
-        {
-            while (reader.Read())
-            {
-                switch (reader.TokenType)
-                {
-                    case JsonToken.PropertyName:
-                        Debug.Assert(reader.Value.ToString() == propertyName);
-                        if (reader.Read())
-                        {
-                            var value = (string)reader.Value;
-                            return value;
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                }
-            }
-
-            throw new JsonSerializationException("Could not find string property '" + propertyName + "'.");
         }
     }
 }
