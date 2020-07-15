@@ -9,24 +9,15 @@ using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     internal class OOPTagHelperResolver : TagHelperResolver
     {
-        private static readonly JsonSerializer _serializer;
-
         private readonly DefaultTagHelperResolver _defaultResolver;
         private readonly ProjectSnapshotProjectEngineFactory _factory;
         private readonly ErrorReporter _errorReporter;
         private readonly Workspace _workspace;
-
-        static OOPTagHelperResolver()
-        {
-            _serializer = new JsonSerializer();
-            _serializer.Converters.RegisterRazorConverters();
-        }
 
         public OOPTagHelperResolver(ProjectSnapshotProjectEngineFactory factory, ErrorReporter errorReporter, Workspace workspace)
         {
@@ -116,7 +107,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
                 var args = new object[]
                 {
-                    JObject.FromObject(projectSnapshot, _serializer),
+                    projectSnapshot,
                     factory?.GetType().AssemblyQualifiedName,
                 };
 

@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.CodeAnalysis.Razor.Serialization
 {
@@ -24,12 +23,16 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
                 return null;
             }
 
-            var obj = JObject.Load(reader);
-            var configurationName = obj[nameof(RazorConfiguration.ConfigurationName)].Value<string>();
-            var languageVersion = obj[nameof(RazorConfiguration.LanguageVersion)].Value<string>();
-            var extensions = obj[nameof(RazorConfiguration.Extensions)].ToObject<RazorExtension[]>(serializer);
+            var configurationName = reader.ReadNextStringProperty(nameof(RazorConfiguration.ConfigurationName));
+            var languageVersionValue = reader.ReadNextStringProperty(nameof(RazorConfiguration.LanguageVersion));
+            var extensions = reader.ReadPropertyArray<RazorExtension>(serializer, nameof(RazorConfiguration.Extensions));
 
-            return RazorConfiguration.Create(RazorLanguageVersion.Parse(languageVersion), configurationName, extensions);
+            if (!RazorLanguageVersion.TryParse(languageVersionValue, out var languageVersion))
+            {
+                languageVersion = RazorLanguageVersion.Version_2_1;
+            }
+
+            return RazorConfiguration.Create(languageVersion, configurationName, extensions);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -42,7 +45,14 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             writer.WriteValue(configuration.ConfigurationName);
 
             writer.WritePropertyName(nameof(RazorConfiguration.LanguageVersion));
-            writer.WriteValue(configuration.LanguageVersion.ToString());
+            if (configuration.LanguageVersion == RazorLanguageVersion.Experimental)
+            {
+                writer.WriteValue("Experimental");
+            }
+            else
+            {
+                writer.WriteValue(configuration.LanguageVersion.ToString());
+            }
 
             writer.WritePropertyName(nameof(RazorConfiguration.Extensions));
             serializer.Serialize(writer, configuration.Extensions);

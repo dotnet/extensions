@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Newtonsoft.Json;
 
@@ -25,7 +24,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             // Verify expected object structure based on `WriteJson`
-            if (!reader.ReadTokenAndAdvance(JsonToken.StartObject, out _))
+            if (reader.TokenType != JsonToken.StartObject)
             {
                 return null;
             }
@@ -44,21 +43,10 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
 
             writer.WriteStartObject();
 
-            WritePropertyArray(writer, result.Descriptors, nameof(TagHelperResolutionResult.Descriptors));
-            WritePropertyArray(writer, result.Diagnostics, nameof(TagHelperResolutionResult.Diagnostics));
+            writer.WritePropertyArray(nameof(TagHelperResolutionResult.Descriptors), result.Descriptors, _serializer);
+            writer.WritePropertyArray(nameof(TagHelperResolutionResult.Diagnostics), result.Diagnostics, _serializer);
 
             writer.WriteEndObject();
-        }
-
-        private void WritePropertyArray<T>(JsonWriter writer, IReadOnlyList<T> collection, string propertyName)
-        {
-            writer.WritePropertyName(propertyName);
-            writer.WriteStartArray();
-            foreach (var item in collection)
-            {
-                _serializer.Serialize(writer, item);
-            }
-            writer.WriteEndArray();
         }
     }
 }

@@ -55,20 +55,36 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             throw new JsonSerializationException($"Could not find string property '{propertyName}'.");
         }
 
-        public static IReadOnlyList<T> ReadPropertyArray<T>(this JsonReader reader, JsonSerializer serializer, string expectedPropertyName)
+        public static IReadOnlyList<T> ReadPropertyArray<T>(this JsonReader reader, JsonSerializer serializer, string propertyName)
             where T : class
         {
-            // Ensure we can read the property name
-            if (!reader.ReadTokenAndAdvance(JsonToken.PropertyName, out var propertyName) ||
-                propertyName.ToString() != expectedPropertyName)
+            do
             {
-                return Array.Empty<T>();
-            }
+                switch (reader.TokenType)
+                {
+                    case JsonToken.PropertyName:
+                        Debug.Assert(reader.Value.ToString() == propertyName);
+                        if (reader.Read())
+                        {
+                            return reader.ReadArray<T>(serializer);
+                        }
+                        else
+                        {
+                            return Array.Empty<T>();
+                        }
+                }
+            } while (reader.Read());
 
+            throw new JsonSerializationException($"Could not find array property '{propertyName}'.");
+        }
+
+        public static IReadOnlyList<T> ReadArray<T>(this JsonReader reader, JsonSerializer serializer)
+            where T : class
+        {
             // Ensure we're at the start of an array
             if (!reader.ReadTokenAndAdvance(JsonToken.StartArray, out _))
             {
-                return Array.Empty<T>();
+                throw new JsonSerializationException($"Invalid array structure, missing StartArray token. Got '{reader.TokenType}'.");
             }
 
             var results = new List<T>();

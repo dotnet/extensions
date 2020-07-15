@@ -24,13 +24,13 @@ namespace Microsoft.AspNetCore.Razor.Performance
         public ProjectSnapshotManagerBenchmarkBase()
         {
             var current = new DirectoryInfo(AppContext.BaseDirectory);
-            while (current != null && !File.Exists(Path.Combine(current.FullName, "Razor.sln")))
+            while (current != null && !File.Exists(Path.Combine(current.FullName, "src", "Razor", "Razor.sln")))
             {
                 current = current.Parent;
             }
 
             var root = current;
-            var projectRoot = Path.Combine(root.FullName, "test", "testapps", "LargeProject");
+            var projectRoot = Path.Combine(root.FullName, "src", "Razor", "test", "testapps", "LargeProject");
 
             HostProject = new HostProject(Path.Combine(projectRoot, "LargeProject.csproj"), FallbackRazorConfiguration.MVC_2_1, rootNamespace: null);
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
                 Documents[i] = new HostDocument(filePath, $"/Views/Home/View00{i}.cshtml", FileKinds.Legacy);
             }
 
-            var tagHelpers = Path.Combine(root.FullName, "benchmarks", "Microsoft.AspNetCore.Razor.Performance", "taghelpers.json");
+            var tagHelpers = Path.Combine(root.FullName, "src", "Razor", "benchmarks", "Microsoft.AspNetCore.Razor.Performance", "taghelpers.json");
             TagHelperResolver = new StaticTagHelperResolver(ReadTagHelpers(tagHelpers));
         }
 
@@ -74,10 +74,10 @@ namespace Microsoft.AspNetCore.Razor.Performance
                 });
 
             return new DefaultProjectSnapshotManager(
-            new TestForegroundDispatcher(),
-            new TestErrorReporter(),
-            Array.Empty<ProjectSnapshotChangeTrigger>(),
-            new AdhocWorkspace(services));
+                new TestForegroundDispatcher(),
+                new TestErrorReporter(),
+                Array.Empty<ProjectSnapshotChangeTrigger>(),
+                new AdhocWorkspace(services));
         }
 
         private static IReadOnlyList<TagHelperDescriptor> ReadTagHelpers(string filePath)
