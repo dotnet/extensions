@@ -10,6 +10,11 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 {
     internal abstract class VirtualDocumentFactoryBase : VirtualDocumentFactory
     {
+        /// <summary>
+        /// This marker is understood by LiveShare in order to ensure that virtual documents are not serialized to disk.
+        /// </summary>
+        private const string ContainedLanguageMarker = "ContainedLanguageMarker";
+
         private readonly ITextBufferFactoryService _textBufferFactory;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
         private readonly FileUriProvider _fileUriProvider;
@@ -73,6 +78,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             var languageBuffer = _textBufferFactory.CreateTextBuffer();
             _fileUriProvider.AddOrUpdate(languageBuffer, virtualLanguageUri);
+
+            // This ensures that LiveShare does not serialize this virtual document to disk in LiveShare & Codespaces scenarios.
+            languageBuffer.Properties.AddProperty(ContainedLanguageMarker, true);
 
             if (!(LanguageBufferProperties is null))
             {
