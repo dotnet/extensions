@@ -17,6 +17,9 @@ After doing either of the above running the `Microsoft.VisualStudio.RazorExtensi
 
 # FAQ
 
+### How do I view the logs?
+Logs are off by default. If you'd like to adjust that set the `RAZOR_TRACE` environment variable to `Verbose`, `Messages` or `Off` depending on your needs.
+
 ### Opening a project results in my Razor file saying "waiting for IntelliSense to initialize", why does it never stop?
 This is a combo issue dealing with how Visual Studio serializes project state after a feature flag / environment variable has been set. Basically, prior to setting `Razor.LSP.Editor` Visual Studio will have serialized project state that says a Razor file was opened with the WTE editor. Therefore, when you first open a project that Razor file will attempt to be opened under the WTE editor but the core editor will conflict saying it should be opened by our editor. This results in the endless behavior of "waiting for IntelliSense to initialize".
 

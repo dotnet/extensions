@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
@@ -14,10 +12,10 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using Nerdbank.Streams;
-using OmniSharp.Extensions.LanguageServer.Server;
 using StreamJsonRpc;
 using Task = System.Threading.Tasks.Task;
 using Trace = Microsoft.AspNetCore.Razor.LanguageServer.Trace;
@@ -35,6 +33,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private object _shutdownLock;
         private RazorLanguageServer _server;
         private IDisposable _serverShutdownDisposable;
+
+        private const string RazorLSPLogLevel = "RAZOR_TRACE";
 
         [ImportingConstructor]
         public RazorLanguageServerClient(
@@ -103,13 +103,60 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Need an auto-flushing stream for the server because O# doesn't currently flush after writing responses. Without this
             // performing the Initialize handshake with the LanguageServer hangs.
             var autoFlushingStream = new AutoFlushingNerdbankStream(serverStream);
-            _server = await RazorLanguageServer.CreateAsync(autoFlushingStream, autoFlushingStream, Trace.Verbose).ConfigureAwait(false);
+            var traceLevel = GetVerbosity();
+            _server = await RazorLanguageServer.CreateAsync(autoFlushingStream, autoFlushingStream, traceLevel).ConfigureAwait(false);
 
             // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize.
             _server.InitializedAsync(token).FileAndForget("RazorLanguageServerClient_ActivateAsync");
 
             var connection = new Connection(clientStream, clientStream);
             return connection;
+        }
+
+        private Trace GetVerbosity()
+        {
+            Trace result;
+
+            // Since you can't set an Environment variable in CodeSpaces we need to default that scenario to Verbose.
+            if (IsVSServer())
+            {
+                result = Trace.Verbose;
+            }
+            else
+            {
+                var logString = Environment.GetEnvironmentVariable(RazorLSPLogLevel);
+                if (Enum.TryParse<Trace>(logString, out var parsedTrace))
+                {
+                    result = parsedTrace;
+                }
+                else
+                {
+                    result = Trace.Off;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns true if the client is a CodeSpace instance.
+        /// </summary>
+        protected virtual bool IsVSServer()
+        {
+            var shell = AsyncPackage.GetGlobalService(typeof(SVsShell)) as IVsShell;
+            var result = shell.GetProperty((int)__VSSPROPID11.VSSPROPID_ShellMode, out var mode);
+
+            bool isVSServer;
+            if (ErrorHandler.Succeeded(result))
+            {
+                isVSServer = ((int)mode == (int)__VSShellMode.VSSM_Server);
+            }
+            else
+            {
+                isVSServer = false;
+            }
+
+            return isVSServer;
         }
 
         private async Task EnsureCleanedUpServerAsync(CancellationToken token)
