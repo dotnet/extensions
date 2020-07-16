@@ -111,11 +111,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private static WorkspaceEditDocumentChange GenerateSingleUsingEditsInterpolated(
             RazorCodeDocument codeDocument,
             VersionedTextDocumentIdentifier codeDocumentIdentifier,
-            string @namespace,
+            string newUsingNamespace,
             List<RazorUsingDirective> existingUsingDirectives)
         {
             var edits = new List<TextEdit>();
-            var newText = $"@using {@namespace}{Environment.NewLine}";
+            var newText = $"@using {newUsingNamespace}{Environment.NewLine}";
 
             foreach (var usingDirective in existingUsingDirectives)
             {
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                     continue;
                 }
 
-                if (@namespace.CompareTo(usingDirectiveNamespace) < 0)
+                if (newUsingNamespace.CompareTo(usingDirectiveNamespace) < 0)
                 {
                     var usingDirectiveLineIndex = codeDocument.Source.Lines.GetLocation(usingDirective.Node.Span.Start).LineIndex;
                     var head = new Position(usingDirectiveLineIndex, 0);
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private static WorkspaceEditDocumentChange GenerateSingleUsingEditsAtTop(
             RazorCodeDocument codeDocument,
             VersionedTextDocumentIdentifier codeDocumentIdentifier,
-            string @namespace)
+            string newUsingNamespace)
         {
             // If we don't have usings, insert after the last namespace or page directive, which ever comes later
             var head = new Position(1, 0);
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 {
                     new TextEdit()
                     {
-                        NewText = string.Concat($"@using {@namespace}{Environment.NewLine}"),
+                        NewText = string.Concat($"@using {newUsingNamespace}{Environment.NewLine}"),
                         Range = range,
                     }
                 }
