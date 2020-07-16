@@ -215,10 +215,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         {
                             // We're at an edge.
 
-                            if (span.Length > 0 &&
-                                classifiedSpan.AcceptedCharacters == AcceptedCharactersInternal.None)
+                            if (i == classifiedSpans.Count - 1)
                             {
-                                // Non-marker spans do not own the edges after it
+                                // Last classified span in the document. The last span always owns the edge because there's nothing to the right.
+                            }
+                            else if (span.Length > 0 &&
+                                classifiedSpan.AcceptedCharacters != AcceptedCharactersInternal.NonWhitespace)
+                            {
+                                // Non-marker spans do not own the edges after it unless they're whitespace sensitive. For instance:
+                                //      <p>@DateTi|</p>
+                                // The above example is whitespace sensitive because adding any sort of whitespace at that location will result in a different langauge experience.
+                                // At its core this check is semi-hacky because we're assuming that if something breaks down when whitespace is inserted then the edge should belong
+                                // to the left-hand-side. In practice, Razor almost always has this assumption.
                                 continue;
                             }
                         }

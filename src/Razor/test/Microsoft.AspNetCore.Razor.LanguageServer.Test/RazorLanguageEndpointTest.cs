@@ -471,6 +471,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void GetLanguageKind_RazorEdgeWithCSharp()
         {
             // Arrange
+            var text = "@{var x = 1;}";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, 12);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.Razor, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKind_RazorEdgeWithCSharpMarker()
+        {
+            // Arrange
             var text = "@{}";
             var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
 

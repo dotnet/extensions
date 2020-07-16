@@ -136,15 +136,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return (false, result);
             }
 
-            if (projection.Position.Character == 0)
+            if (projection.Position.Character <= 2)
             {
                 // We're at the start of line. Can't have provisional completions here.
+                // i.e:
+                // .|
+                // @.|
                 return (false, result);
             }
 
-            var previousCharacterPosition = new Position(projection.Position.Line, projection.Position.Character - 1);
-            var previousCharacterProjection = await _projectionProvider.GetProjectionAsync(documentSnapshot, previousCharacterPosition, cancellationToken).ConfigureAwait(false);
-            if (previousCharacterProjection == null || previousCharacterProjection.LanguageKind != RazorLanguageKind.CSharp)
+            var characterBeforeTriggerPosition = new Position(projection.Position.Line, projection.Position.Character - 2);
+            var characterBeforeTriggerProjection = await _projectionProvider.GetProjectionAsync(documentSnapshot, characterBeforeTriggerPosition, cancellationToken).ConfigureAwait(false);
+            if (characterBeforeTriggerProjection == null || characterBeforeTriggerProjection.LanguageKind != RazorLanguageKind.CSharp)
             {
                 return (false, result);
             }
@@ -156,17 +159,20 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Edit the CSharp projected document to contain a '.'. This allows C# completion to provide valid
             // completion items for moments when a user has typed a '.' that's typically interpreted as Html.
-            var addProvisionalDot = new VisualStudioTextChange(previousCharacterProjection.PositionIndex, 0, ".");
 
             await _joinableTaskFactory.SwitchToMainThreadAsync();
+            var provisionalDotInsertIndex = characterBeforeTriggerProjection.PositionIndex + 1;
+            var addProvisionalDot = new VisualStudioTextChange(provisionalDotInsertIndex, 0, ".");
+            trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, new[] { addProvisionalDot }, characterBeforeTriggerProjection.HostDocumentVersion);
 
-            trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, new[] { addProvisionalDot }, previousCharacterProjection.HostDocumentVersion);
-
+            var provisionalDotInsertPosition = new Position(
+                characterBeforeTriggerProjection.Position.Line,
+                characterBeforeTriggerProjection.Position.Character + 1);
             var provisionalCompletionParams = new CompletionParams()
             {
                 Context = request.Context,
-                Position = new Position(previousCharacterProjection.Position.Line, previousCharacterProjection.Position.Character + 1),
-                TextDocument = new TextDocumentIdentifier() { Uri = previousCharacterProjection.Uri }
+                Position = new Position(provisionalDotInsertPosition.Line, provisionalDotInsertPosition.Character + 1),
+                TextDocument = new TextDocumentIdentifier() { Uri = characterBeforeTriggerProjection.Uri }
             };
 
             result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
@@ -176,9 +182,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 cancellationToken).ConfigureAwait(true);
 
             // We have now obtained the necessary completion items. We no longer need the provisional change. Revert.
-            var removeProvisionalDot = new VisualStudioTextChange(previousCharacterProjection.PositionIndex, 1, string.Empty);
+            var removeProvisionalDot = new VisualStudioTextChange(provisionalDotInsertIndex, 1, string.Empty);
             
-            trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, new[] { removeProvisionalDot }, previousCharacterProjection.HostDocumentVersion);
+            trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, new[] { removeProvisionalDot }, characterBeforeTriggerProjection.HostDocumentVersion);
 
             return (true, result);
         }
