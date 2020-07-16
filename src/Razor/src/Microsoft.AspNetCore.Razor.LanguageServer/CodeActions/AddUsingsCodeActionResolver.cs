@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             {
                 // Skip System directives; if they're at the top we don't want to insert before them
                 var usingDirectiveNamespace = usingDirective.Statement.ParsedNamespace;
-                if (usingDirectiveNamespace.StartsWith("System"))
+                if (usingDirectiveNamespace.StartsWith("System", StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -136,6 +136,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 }
             }
 
+            // If we haven't actually found a place to insert the using directive, do so at the end
             if (edits.Count == 0)
             {
                 var endIndex = existingUsingDirectives.Last().Node.Span.End;
