@@ -57,5 +57,4 @@ build of Extensions. Update this list when preparing for a new patch.
   <Package Id="Microsoft.Extensions.Primitives" Version="3.1.6" />
   <Package Id="Microsoft.Extensions.WebEncoders" Version="3.1.6" />
   <Package Id="Microsoft.JSInterop" Version="3.1.6" />
->>>>>>> origin/release/3.1
 </Baseline>
