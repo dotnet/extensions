@@ -11,17 +11,10 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
     public class ServiceProviderCompilationTest
     {
         [Theory]
-#if DEBUG
-        [InlineData(ServiceProviderMode.Dynamic, typeof(I150))]
-        [InlineData(ServiceProviderMode.Runtime, typeof(I150))]
-        [InlineData(ServiceProviderMode.ILEmit, typeof(I150))]
-        [InlineData(ServiceProviderMode.Expressions, typeof(I150))]
-#else
-        [InlineData(ServiceProviderMode.Dynamic, typeof(I350))]
-        [InlineData(ServiceProviderMode.Runtime, typeof(I350))]
-        [InlineData(ServiceProviderMode.ILEmit, typeof(I350))]
-        [InlineData(ServiceProviderMode.Expressions, typeof(I350))]
-#endif
+        [InlineData(ServiceProviderMode.Dynamic, typeof(I999))]
+        [InlineData(ServiceProviderMode.Runtime, typeof(I999))]
+        [InlineData(ServiceProviderMode.ILEmit, typeof(I999))]
+        [InlineData(ServiceProviderMode.Expressions, typeof(I999))]
         private async Task CompilesInLimitedStackSpace(ServiceProviderMode mode, Type serviceType)
         {
             // Arrange

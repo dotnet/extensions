@@ -7,7 +7,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration.Test;
 using Xunit;
 
@@ -15,6 +14,40 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
 {
     public class XmlConfigurationTest
     {
+        [Fact]
+        public void LoadValidXmlFromStreamProvider()
+        {
+            var xml = @"
+                <settings>
+                    <Data.Setting>
+                        <DefaultConnection>
+                            <Connection.String>Test.Connection.String</Connection.String>
+                            <Provider>SqlClient</Provider>
+                        </DefaultConnection>
+                        <Inventory>
+                            <ConnectionString>AnotherTestConnectionString</ConnectionString>
+                            <Provider>MySql</Provider>
+                        </Inventory>
+                    </Data.Setting>
+                </settings>";
+            var config = new ConfigurationBuilder().AddXmlStream(TestStreamHelpers.StringToStream(xml)).Build();
+
+            Assert.Equal("Test.Connection.String", config["DATA.SETTING:DEFAULTCONNECTION:CONNECTION.STRING"]);
+            Assert.Equal("SqlClient", config["DATA.SETTING:DefaultConnection:Provider"]);
+            Assert.Equal("AnotherTestConnectionString", config["data.setting:inventory:connectionstring"]);
+            Assert.Equal("MySql", config["Data.setting:Inventory:Provider"]);
+        }
+
+        [Fact]
+        public void ReloadThrowsFromStreamProvider()
+        {
+            var xml = @"
+                <settings>
+                </settings>";
+            var config = new ConfigurationBuilder().AddXmlStream(TestStreamHelpers.StringToStream(xml)).Build();
+            Assert.Throws<InvalidOperationException>(() => config.Reload());
+        }
+
         [Fact]
         public void LoadKeyValuePairsFromValidXml()
         {

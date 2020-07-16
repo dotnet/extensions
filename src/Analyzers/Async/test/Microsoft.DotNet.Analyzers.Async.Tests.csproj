@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <!-- Analyzers tests can't find netfx ref assemblies from a package -->
+    <UsingToolNetFrameworkReferenceAssemblies Condition="'$(OS)' == 'Windows_NT'">false</UsingToolNetFrameworkReferenceAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Microsoft.DotNet.Analyzers.Async.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
+    <Reference Include="Microsoft.CodeAnalysis.Common" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

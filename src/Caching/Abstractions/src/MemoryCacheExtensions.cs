@@ -17,16 +17,24 @@ namespace Microsoft.Extensions.Caching.Memory
 
         public static TItem Get<TItem>(this IMemoryCache cache, object key)
         {
-            cache.TryGetValue(key, out TItem value);
-            return value;
+            return (TItem)(cache.Get(key) ?? default(TItem));
         }
 
         public static bool TryGetValue<TItem>(this IMemoryCache cache, object key, out TItem value)
         {
             if (cache.TryGetValue(key, out object result))
             {
-                value = (TItem)result;
-                return true;
+                if (result == null)
+                {
+                    value = default;
+                    return true;
+                }
+
+                if (result is TItem item)
+                {
+                    value = item;
+                    return true;
+                }
             }
 
             value = default;
