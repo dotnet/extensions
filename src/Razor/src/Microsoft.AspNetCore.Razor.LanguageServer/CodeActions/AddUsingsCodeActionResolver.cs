@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -19,7 +20,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
-    class AddUsingsCodeActionResolver : RazorCodeActionResolver
+    internal class AddUsingsCodeActionResolver : RazorCodeActionResolver
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
@@ -34,6 +35,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         public override async Task<WorkspaceEdit> ResolveAsync(JObject data, CancellationToken cancellationToken)
         {
+            if (data is null)
+            {
+                return null;
+            }
+
             var actionParams = data.ToObject<AddUsingsCodeActionParams>();
             var path = actionParams.Uri.GetAbsoluteOrUNCPath();
 
@@ -64,19 +70,36 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return null;
             }
 
-            var codeDocumentIdentifier = new VersionedTextDocumentIdentifier() { Uri = actionParams.Uri, Version = 0 };
+            var codeDocumentIdentifier = new VersionedTextDocumentIdentifier() { Uri = actionParams.Uri };
             var documentChanges = new List<WorkspaceEditDocumentChange>();
 
-            var namespaceList = actionParams.Namespaces;
-
+            /* The heuristic is as follows:
+             * 
+             * - If no @using, @namespace, or @page directives are present, insert the statements at the top of the 
+             *   file in alphabetical order.
+             * - If a @namespace or @page are present, the statements are inserted after the last line-wise in
+             *   alphabetical order.
+             * - If @using directives are present and alphabetized with System directives at the top, the statements
+             *   will be placed in the correct locations according to that ordering.
+             * - Otherwise it's kinda undefined; it's only geared to insert based on alphabetization.
+             * 
+             * This is generally sufficient for our current situation (inserting a single @using statement to include a
+             * component), however it has holes if we eventually use it for other purposes. If we want to deal with 
+             * that now I can come up with a more sophisticated heuristic (something along the lines of checking if 
+             * there's already an ordering, etc.).
+             */
             var usingDirectives = FindUsingDirectives(codeDocument);
             if (usingDirectives.Count > 0)
             {
-                documentChanges.Add(GenerateUsingEditsInterpolated(codeDocument, codeDocumentIdentifier, actionParams.Namespaces, usingDirectives));
+                // Interpolate based on existing @using statements
+                var edits = GenerateSingleUsingEditsInterpolated(codeDocument, codeDocumentIdentifier, actionParams.Namespace, usingDirectives);
+                documentChanges.Add(edits);
             }
             else
             {
-                documentChanges.Add(GenerateUsingEditsAtTop(codeDocument, codeDocumentIdentifier, actionParams.Namespaces));
+                // Just throw them at the top
+                var edits = GenerateSingleUsingEditsAtTop(codeDocument, codeDocumentIdentifier, actionParams.Namespace);
+                documentChanges.Add(edits);
             }
 
             return new WorkspaceEdit()
@@ -85,58 +108,40 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             };
         }
 
-        private static WorkspaceEditDocumentChange GenerateUsingEditsInterpolated(
+        private static WorkspaceEditDocumentChange GenerateSingleUsingEditsInterpolated(
             RazorCodeDocument codeDocument,
             VersionedTextDocumentIdentifier codeDocumentIdentifier,
-            string[] namespaceArray,
-            List<RazorUsingDirective> usingDirectives)
+            string @namespace,
+            List<RazorUsingDirective> existingUsingDirectives)
         {
-            // Sort and queue namespaces
-            var namespaceList = namespaceArray.ToList();
-            namespaceList.Sort();
-            var namespaces = new Queue<string>(namespaceList);
-
             var edits = new List<TextEdit>();
-            foreach (var usingDirective in usingDirectives)
-            {
-                // Break early if we're done
-                if (namespaces.Count == 0)
-                {
-                    break;
-                }
+            var newText = $"@using {@namespace}{Environment.NewLine}";
 
-                // Skip using directives 
+            foreach (var usingDirective in existingUsingDirectives)
+            {
+                // Skip System directives; if they're at the top we don't want to insert before them
                 var usingDirectiveNamespace = usingDirective.Statement.ParsedNamespace;
-                if (usingDirectiveNamespace.StartsWith("System") || usingDirectiveNamespace.Contains("="))
+                if (usingDirectiveNamespace.StartsWith("System"))
                 {
                     continue;
                 }
 
-                // Insert all using directives that fit before the next using
-                if (namespaces.Peek().CompareTo(usingDirectiveNamespace) < 0)
+                if (@namespace.CompareTo(usingDirectiveNamespace) < 0)
                 {
                     var usingDirectiveLineIndex = codeDocument.Source.Lines.GetLocation(usingDirective.Node.Span.Start).LineIndex;
                     var head = new Position(usingDirectiveLineIndex, 0);
-                    var edit = new TextEdit() { Range = new Range(head, head), NewText = "" };
-                    do
-                    {
-                        edit.NewText += $"@using {namespaces.Dequeue()}{Environment.NewLine}";
-                    } while (namespaces.Count > 0 && namespaces.Peek().CompareTo(usingDirectiveNamespace) < 0);
+                    var edit = new TextEdit() { Range = new Range(head, head), NewText = newText };
                     edits.Add(edit);
+                    break;
                 }
             }
 
-            // Add the remaining usings to the end
-            if (namespaces.Count > 0)
+            if (edits.Count == 0)
             {
-                var endIndex = usingDirectives.Last().Node.Span.End;
+                var endIndex = existingUsingDirectives.Last().Node.Span.End;
                 var lineIndex = GetLineIndexOrEnd(codeDocument, endIndex - 1) + 1;
                 var head = new Position(lineIndex, 0);
-                var edit = new TextEdit() { Range = new Range(head, head), NewText = "" };
-                do
-                {
-                    edit.NewText += $"@using {namespaces.Dequeue()}{Environment.NewLine}";
-                } while (namespaces.Count > 0);
+                var edit = new TextEdit() { Range = new Range(head, head), NewText = newText };
                 edits.Add(edit);
             }
 
@@ -147,17 +152,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             });
         }
 
-        private static WorkspaceEditDocumentChange GenerateUsingEditsAtTop(
+        private static WorkspaceEditDocumentChange GenerateSingleUsingEditsAtTop(
             RazorCodeDocument codeDocument,
             VersionedTextDocumentIdentifier codeDocumentIdentifier,
-            string[] namespaceArray)
+            string @namespace)
         {
-            var namespaceList = namespaceArray.ToList();
-            namespaceList.Sort();
-
             // If we don't have usings, insert after the last namespace or page directive, which ever comes later
             var head = new Position(1, 0);
-            var lastNamespaceOrPageDirective = codeDocument.GetSyntaxTree().Root
+            var syntaxTreeRoot = codeDocument.GetSyntaxTree().Root;
+            var lastNamespaceOrPageDirective = syntaxTreeRoot
                 .DescendantNodes()
                 .Where(n => IsNamespaceOrPageDirective(n))
                 .LastOrDefault();
@@ -176,7 +179,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 {
                     new TextEdit()
                     {
-                        NewText = string.Concat(namespaceList.Select(n => $"@using {n}{Environment.NewLine}")),
+                        NewText = string.Concat($"@using {@namespace}{Environment.NewLine}"),
                         Range = range,
                     }
                 }
@@ -198,7 +201,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private static List<RazorUsingDirective> FindUsingDirectives(RazorCodeDocument codeDocument)
         {
             var directives = new List<RazorUsingDirective>();
-            foreach (var node in codeDocument.GetSyntaxTree().Root.DescendantNodes())
+            var syntaxTreeRoot = codeDocument.GetSyntaxTree().Root;
+            foreach (var node in syntaxTreeRoot.DescendantNodes())
             {
                 if (node is RazorDirectiveSyntax directiveNode)
                 {

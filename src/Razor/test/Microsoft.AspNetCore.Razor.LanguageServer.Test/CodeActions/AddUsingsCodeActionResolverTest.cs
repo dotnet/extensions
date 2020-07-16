@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -14,9 +15,6 @@ using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using Microsoft.AspNetCore.Razor.Language.Extensions;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
-using System.Runtime.ExceptionServices;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 {
@@ -47,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         {
             // Arrange
             var documentPath = "c:/Test.razor";
-            var contents = $"@page \"/test\"";
+            var contents = "@page \"/test\"";
             var codeDocument = CreateCodeDocument(contents);
             codeDocument.SetUnsupported();
 
@@ -70,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         {
             // Arrange
             var documentPath = "c:/Test.razor";
-            var contents = $"@page \"/test\"";
+            var contents = "@page \"/test\"";
             var codeDocument = CreateCodeDocument(contents);
             codeDocument.SetFileKind(FileKinds.Legacy);
 
@@ -94,17 +92,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var documentUri = new Uri(documentPath);
-            var contents = $"";
+            var contents = string.Empty;
             var codeDocument = CreateCodeDocument(contents);
 
             var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument));
             var actionParams = new AddUsingsCodeActionParams
             {
                 Uri = documentUri,
-                Namespaces = new string[]
-                {
-                    "System"
-                }
+                Namespace = "System"
             };
             var data = JObject.FromObject(actionParams);
 
@@ -126,45 +121,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         }
 
         [Fact]
-        public async Task Handle_AddMultipleUsingsToEmpty()
-        {
-            // Arrange
-            var documentPath = "c:/Test.razor";
-            var documentUri = new Uri(documentPath);
-            var contents = $"";
-            var codeDocument = CreateCodeDocument(contents);
-
-            var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument));
-            var actionParams = new AddUsingsCodeActionParams
-            {
-                Uri = documentUri,
-                Namespaces = new string[]
-                {
-                    "System",
-                    "System.Linq",
-                    "System.Threading.Task"
-                }
-            };
-            var data = JObject.FromObject(actionParams);
-
-            // Act
-            var workspaceEdit = await resolver.ResolveAsync(data, default);
-
-            // Assert
-            Assert.NotNull(workspaceEdit);
-            Assert.NotNull(workspaceEdit.DocumentChanges);
-            Assert.Single(workspaceEdit.DocumentChanges);
-
-            var documentChanges = workspaceEdit.DocumentChanges.ToArray();
-            var addUsingsChange = documentChanges[0];
-            Assert.True(addUsingsChange.IsTextDocumentEdit);
-            Assert.Single(addUsingsChange.TextDocumentEdit.Edits);
-            var firstEdit = addUsingsChange.TextDocumentEdit.Edits.First();
-            Assert.Equal(1, firstEdit.Range.Start.Line);
-            Assert.Equal($"@using System{Environment.NewLine}@using System.Linq{Environment.NewLine}@using System.Threading.Task{Environment.NewLine}", firstEdit.NewText);
-        }
-
-        [Fact]
         public async Task Handle_AddOneUsingToPage()
         {
             // Arrange
@@ -177,10 +133,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var actionParams = new AddUsingsCodeActionParams
             {
                 Uri = documentUri,
-                Namespaces = new string[]
-                {
-                    "System"
-                }
+                Namespace = "System"
             };
             var data = JObject.FromObject(actionParams);
 
@@ -214,10 +167,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var actionParams = new AddUsingsCodeActionParams
             {
                 Uri = documentUri,
-                Namespaces = new string[]
-                {
-                    "System"
-                }
+                Namespace = "System"
             };
             var data = JObject.FromObject(actionParams);
 
@@ -251,10 +201,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var actionParams = new AddUsingsCodeActionParams
             {
                 Uri = documentUri,
-                Namespaces = new string[]
-                {
-                    "System"
-                }
+                Namespace = "System"
             };
             var data = JObject.FromObject(actionParams);
 
@@ -288,10 +235,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var actionParams = new AddUsingsCodeActionParams
             {
                 Uri = documentUri,
-                Namespaces = new string[]
-                {
-                    "System.Linq"
-                }
+                Namespace = "System.Linq"
             };
             var data = JObject.FromObject(actionParams);
 
@@ -325,10 +269,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var actionParams = new AddUsingsCodeActionParams
             {
                 Uri = documentUri,
-                Namespaces = new string[]
-                {
-                    "Microsoft.AspNetCore.Razor.Language"
-                }
+                Namespace = "Microsoft.AspNetCore.Razor.Language"
             };
             var data = JObject.FromObject(actionParams);
 
@@ -347,96 +288,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var firstEdit = addUsingsChange.TextDocumentEdit.Edits.First();
             Assert.Equal(2, firstEdit.Range.Start.Line);
             Assert.Equal($"@using Microsoft.AspNetCore.Razor.Language{Environment.NewLine}", firstEdit.NewText);
-        }
-
-        [Fact]
-        public async Task Handle_AddMultipleUsingsToUsingsNonSystem()
-        {
-            // Arrange
-            var documentPath = "c:/Test.razor";
-            var documentUri = new Uri(documentPath);
-            var contents = $"@using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions{Environment.NewLine}@using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem{Environment.NewLine}";
-            var codeDocument = CreateCodeDocument(contents);
-
-            var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument));
-            var actionParams = new AddUsingsCodeActionParams
-            {
-                Uri = documentUri,
-                Namespaces = new string[]
-                {
-                    "Microsoft.AspNetCore.Razor.Language",
-                    "Microsoft.AspNetCore.Razor.LanguageServer.Common",
-                    "Microsoft.AspNetCore.Razor.Test.Common",
-                }
-            };
-            var data = JObject.FromObject(actionParams);
-
-            // Act
-            var workspaceEdit = await resolver.ResolveAsync(data, default);
-
-            // Assert
-            Assert.NotNull(workspaceEdit);
-            Assert.NotNull(workspaceEdit.DocumentChanges);
-            Assert.Single(workspaceEdit.DocumentChanges);
-
-            var documentChanges = workspaceEdit.DocumentChanges.ToArray();
-            var addUsingsChange = documentChanges[0];
-            Assert.True(addUsingsChange.IsTextDocumentEdit);
-            Assert.Equal(3, addUsingsChange.TextDocumentEdit.Edits.Count());
-            var firstEdit = addUsingsChange.TextDocumentEdit.Edits.First();
-            Assert.Equal(0, firstEdit.Range.Start.Line);
-            Assert.Equal($"@using Microsoft.AspNetCore.Razor.Language{Environment.NewLine}", firstEdit.NewText);
-            var secondEdit = addUsingsChange.TextDocumentEdit.Edits.ElementAt(1);
-            Assert.Equal(1, secondEdit.Range.Start.Line);
-            Assert.Equal($"@using Microsoft.AspNetCore.Razor.LanguageServer.Common{Environment.NewLine}", secondEdit.NewText);
-            var thirdEdit = addUsingsChange.TextDocumentEdit.Edits.ElementAt(2);
-            Assert.Equal(2, thirdEdit.Range.Start.Line);
-            Assert.Equal($"@using Microsoft.AspNetCore.Razor.Test.Common{Environment.NewLine}", thirdEdit.NewText);
-        }
-
-        [Fact]
-        public async Task Handle_AddMultipleUsingsToUsingsSkippingSystem()
-        {
-            // Arrange
-            var documentPath = "c:/Test.razor";
-            var documentUri = new Uri(documentPath);
-            var contents = $"@using System{Environment.NewLine}@using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions{Environment.NewLine}@using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem{Environment.NewLine}";
-            var codeDocument = CreateCodeDocument(contents);
-
-            var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument));
-            var actionParams = new AddUsingsCodeActionParams
-            {
-                Uri = documentUri,
-                Namespaces = new string[]
-                {
-                    "Microsoft.AspNetCore.Razor.Language",
-                    "Microsoft.AspNetCore.Razor.LanguageServer.Common",
-                    "Microsoft.AspNetCore.Razor.Test.Common",
-                }
-            };
-            var data = JObject.FromObject(actionParams);
-
-            // Act
-            var workspaceEdit = await resolver.ResolveAsync(data, default);
-
-            // Assert
-            Assert.NotNull(workspaceEdit);
-            Assert.NotNull(workspaceEdit.DocumentChanges);
-            Assert.Single(workspaceEdit.DocumentChanges);
-
-            var documentChanges = workspaceEdit.DocumentChanges.ToArray();
-            var addUsingsChange = documentChanges[0];
-            Assert.True(addUsingsChange.IsTextDocumentEdit);
-            Assert.Equal(3, addUsingsChange.TextDocumentEdit.Edits.Count());
-            var firstEdit = addUsingsChange.TextDocumentEdit.Edits.First();
-            Assert.Equal(1, firstEdit.Range.Start.Line);
-            Assert.Equal($"@using Microsoft.AspNetCore.Razor.Language{Environment.NewLine}", firstEdit.NewText);
-            var secondEdit = addUsingsChange.TextDocumentEdit.Edits.ElementAt(1);
-            Assert.Equal(2, secondEdit.Range.Start.Line);
-            Assert.Equal($"@using Microsoft.AspNetCore.Razor.LanguageServer.Common{Environment.NewLine}", secondEdit.NewText);
-            var thirdEdit = addUsingsChange.TextDocumentEdit.Edits.ElementAt(2);
-            Assert.Equal(3, thirdEdit.Range.Start.Line);
-            Assert.Equal($"@using Microsoft.AspNetCore.Razor.Test.Common{Environment.NewLine}", thirdEdit.NewText);
         }
 
         private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)
@@ -459,7 +310,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var projectItem = new TestRazorProjectItem("c:/Test.razor", "c:/Test.razor", "Test.razor") { Content = text };
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) =>
             {
-                // NamespaceDirective.Register(builder);
                 PageDirective.Register(builder);
             });
             var codeDocument = projectEngine.Process(projectItem);
