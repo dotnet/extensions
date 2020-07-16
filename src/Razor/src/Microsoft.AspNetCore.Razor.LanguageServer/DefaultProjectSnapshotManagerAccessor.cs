@@ -12,12 +12,13 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class DefaultProjectSnapshotManagerAccessor : ProjectSnapshotManagerAccessor
+    internal class DefaultProjectSnapshotManagerAccessor : ProjectSnapshotManagerAccessor, IDisposable
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly IEnumerable<ProjectSnapshotChangeTrigger> _changeTriggers;
         private readonly FilePathNormalizer _filePathNormalizer;
         private ProjectSnapshotManagerBase _instance;
+        private bool _disposed;
 
         public DefaultProjectSnapshotManagerAccessor(
             ForegroundDispatcher foregroundDispatcher,
@@ -66,6 +67,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 return _instance;
             }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            _instance?.Workspace.Dispose();
         }
     }
 }

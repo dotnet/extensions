@@ -40,14 +40,63 @@ export class RazorCompletionItemProvider
             // In the code behind it's represented as __o = DateTime.
             const completionCharacterOffset = projectedPosition.character - hostDocumentPosition.character;
             for (const completionItem of completionItems) {
+                const doc = completionItem.documentation as vscode.MarkdownString;
+                if (doc) {
+                    // Without this, the documentation doesn't get rendered in the editor.
+                    const newDoc = new vscode.MarkdownString(doc.value);
+                    newDoc.isTrusted = doc.isTrusted;
+                    completionItem.documentation = newDoc;
+                }
+
                 if (completionItem.range) {
-                    const rangeStart = new vscode.Position(
-                        hostDocumentPosition.line,
-                        completionItem.range.start.character - completionCharacterOffset);
-                    const rangeEnd = new vscode.Position(
-                        hostDocumentPosition.line,
-                        completionItem.range.end.character - completionCharacterOffset);
-                    completionItem.range = new vscode.Range(rangeStart, rangeEnd);
+                    const range = completionItem.range;
+                    const insertingRange = (range as any).inserting;
+                    if (insertingRange) {
+                        const insertingRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertingRange.start);
+                        const insertingRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertingRange.end);
+                        (range as any).inserting = new vscode.Range(insertingRangeStart, insertingRangeEnd);
+                    }
+
+                    const replacingRange = (range as any).replacing;
+                    if (replacingRange) {
+                        const replacingRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replacingRange.start);
+                        const replacingRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replacingRange.end);
+                        (range as any).replacing = new vscode.Range(replacingRangeStart, replacingRangeEnd);
+                    }
+
+                    if (range instanceof vscode.Range &&  range.start && range.end) {
+                        const rangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, range.start);
+                        const rangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, range.end);
+                        completionItem.range = new vscode.Range(rangeStart, rangeEnd);
+                    }
+                } else if ((completionItem as any).range2) {
+                    const insertRange = (completionItem as any).range2.insert;
+                    if (insertRange) {
+                        const insertRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertRange.start);
+                        const insertRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertRange.end);
+                        (completionItem as any).range2.insert = new vscode.Range(insertRangeStart, insertRangeEnd);
+                    }
+
+                    const replaceRange = (completionItem as any).range2.replace;
+                    if (replaceRange) {
+                        const replaceRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replaceRange.start);
+                        const replaceRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replaceRange.end);
+                        (completionItem as any).range2.replace = new vscode.Range(replaceRangeStart, replaceRangeEnd);
+                    }
+
+                    const insertingRange = (completionItem as any).range2.inserting;
+                    if (insertingRange) {
+                        const insertingRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertingRange.start);
+                        const insertingRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, insertingRange.end);
+                        (completionItem as any).range2.inserting = new vscode.Range(insertingRangeStart, insertingRangeEnd);
+                    }
+
+                    const replacingRange = (completionItem as any).range2.replacing;
+                    if (replacingRange) {
+                        const replacingRangeStart = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replacingRange.start);
+                        const replacingRangeEnd = this.offsetColumn(completionCharacterOffset, hostDocumentPosition.line, replacingRange.end);
+                        (completionItem as any).range2.replacing = new vscode.Range(replacingRangeStart, replacingRangeEnd);
+                    }
                 }
 
                 // textEdit is deprecated in favor of .range. Clear out its value to avoid any unexpected behavior.
@@ -69,13 +118,20 @@ export class RazorCompletionItemProvider
         }
     }
 
+    private static offsetColumn(offset: number, hostDocumentLine: number, projectedPosition: vscode.Position) {
+        const offsetPosition = new vscode.Position(
+            hostDocumentLine,
+            projectedPosition.character - offset);
+        return offsetPosition;
+    }
+
     constructor(
         documentSynchronizer: RazorDocumentSynchronizer,
         documentManager: RazorDocumentManager,
         serviceClient: RazorLanguageServiceClient,
         private readonly provisionalCompletionOrchestrator: ProvisionalCompletionOrchestrator,
-        private readonly logger: RazorLogger) {
-        super(documentSynchronizer, documentManager, serviceClient);
+        logger: RazorLogger) {
+        super(documentSynchronizer, documentManager, serviceClient, logger);
     }
 
     public async provideCompletionItems(

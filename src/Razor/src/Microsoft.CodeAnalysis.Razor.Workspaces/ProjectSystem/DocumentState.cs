@@ -67,7 +67,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public HostWorkspaceServices Services { get; }
 
-        public GeneratedCodeContainer GeneratedCodeContainer => HostDocument.GeneratedCodeContainer;
+        public GeneratedDocumentContainer GeneratedDocumentContainer => HostDocument.GeneratedDocumentContainer;
 
         public bool IsGeneratedOutputResultAvailable => ComputedState.IsResultAvailable == true;
 
@@ -90,7 +90,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public Task<(RazorCodeDocument output, VersionStamp inputVersion, VersionStamp outputVersion)> GetGeneratedOutputAndVersionAsync(DefaultProjectSnapshot project, DefaultDocumentSnapshot document)
+        public Task<(RazorCodeDocument output, VersionStamp inputVersion, VersionStamp outputCSharpVersion, VersionStamp outputHtmlVersion)> GetGeneratedOutputAndVersionAsync(DefaultProjectSnapshot project, DefaultDocumentSnapshot document)
         {
             return ComputedState.GetGeneratedOutputAndVersionAsync(project, document);
         }
@@ -279,7 +279,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // We utilize a WeakReference here to avoid bloating committed memory. If pieces request document output inbetween GC collections
             // then we will provide the weak referenced task; otherwise we require any state requests to be re-computed.
-            public WeakReference<Task<(RazorCodeDocument, VersionStamp, VersionStamp)>> TaskUnsafeReference;
+            public WeakReference<Task<(RazorCodeDocument, VersionStamp, VersionStamp, VersionStamp)>> TaskUnsafeReference;
 
             public ComputedStateTracker(DocumentState state, ComputedStateTracker older = null)
             {
@@ -305,7 +305,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
             }
 
-            public Task<(RazorCodeDocument, VersionStamp, VersionStamp)> GetGeneratedOutputAndVersionAsync(DefaultProjectSnapshot project, DocumentSnapshot document)
+            public Task<(RazorCodeDocument, VersionStamp, VersionStamp, VersionStamp)> GetGeneratedOutputAndVersionAsync(DefaultProjectSnapshot project, DocumentSnapshot document)
             {
                 if (project == null)
                 {
@@ -326,7 +326,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                             !TaskUnsafeReference.TryGetTarget(out taskUnsafe))
                         {
                             taskUnsafe = GetGeneratedOutputAndVersionCoreAsync(project, document);
-                            TaskUnsafeReference = new WeakReference<Task<(RazorCodeDocument, VersionStamp, VersionStamp)>>(taskUnsafe);
+                            TaskUnsafeReference = new WeakReference<Task<(RazorCodeDocument, VersionStamp, VersionStamp, VersionStamp)>>(taskUnsafe);
                         }
                     }
                 }
@@ -334,7 +334,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 return taskUnsafe;
             }
 
-            private async Task<(RazorCodeDocument, VersionStamp, VersionStamp)> GetGeneratedOutputAndVersionCoreAsync(DefaultProjectSnapshot project, DocumentSnapshot document)
+            private async Task<(RazorCodeDocument, VersionStamp, VersionStamp, VersionStamp)> GetGeneratedOutputAndVersionCoreAsync(DefaultProjectSnapshot project, DocumentSnapshot document)
             {
                 // We only need to produce the generated code if any of our inputs is newer than the
                 // previously cached output.
@@ -380,11 +380,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 RazorCodeDocument olderOutput = null;
                 var olderInputVersion = default(VersionStamp);
-                var olderOutputVersion = default(VersionStamp);
+                var olderCSharpOutputVersion = default(VersionStamp);
+                var olderHtmlOutputVersion = default(VersionStamp);
                 if (_older?.TaskUnsafeReference != null &&
                     _older.TaskUnsafeReference.TryGetTarget(out var taskUnsafe))
                 {
-                    (olderOutput, olderInputVersion, olderOutputVersion) = await taskUnsafe.ConfigureAwait(false);
+                    (olderOutput, olderInputVersion, olderCSharpOutputVersion, olderHtmlOutputVersion) = await taskUnsafe.ConfigureAwait(false);
                     if (inputVersion.GetNewerVersion(olderInputVersion) == olderInputVersion)
                     {
                         // Nothing has changed, we can use the cached result.
@@ -392,7 +393,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                         {
                             TaskUnsafeReference = _older.TaskUnsafeReference;
                             _older = null;
-                            return (olderOutput, olderInputVersion, olderOutputVersion);
+                            return (olderOutput, olderInputVersion, olderCSharpOutputVersion, olderHtmlOutputVersion);
                         }
                     }
                 }
@@ -413,29 +414,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 var codeDocument = projectEngine.ProcessDesignTime(documentSource, fileKind: document.FileKind, importSources, project.TagHelpers);
                 var csharpDocument = codeDocument.GetCSharpDocument();
+                var htmlDocument = codeDocument.GetHtmlDocument();
 
                 // OK now we've generated the code. Let's check if the output is actually different. This is
                 // a valuable optimization for our use cases because lots of changes you could make require
                 // us to run code generation, but don't change the result.
                 //
-                // Note that we're talking about the effect on the generated C# code here (not the other artifacts).
-                // This is the reason why we have two versions associated with the output. 
+                // Note that we're talking about the effect on the generated C#/HTML here (not the other artifacts).
+                // This is the reason why we have three versions associated with the document. 
                 //
                 // The INPUT version is related the .cshtml files and tag helpers
-                // The OUTPUT version is related to the generated C#.
+                // The CSHARPOUTPUT version is related to the generated C#
+                // The HTMLOUTPUT version is related to the generated HTML
                 //
                 // Examples: 
                 // 
                 // A change to a tag helper not used by this document - updates the INPUT version, but not 
                 // the OUTPUT version.
                 //
-                // A change in the HTML - updates the INPUT version, but not the OUTPUT version.
-                //
                 //
                 // Razor IDE features should always retrieve the output and party on it regardless. Depending
                 // on the use cases we may or may not need to synchronize the output.
 
-                var outputVersion = inputVersion;
+                var outputCSharpVersion = inputVersion;
+                var outputHtmlVersion = inputVersion;
                 if (olderOutput != null)
                 {
                     if (string.Equals(
@@ -443,20 +445,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                         csharpDocument.GeneratedCode,
                         StringComparison.Ordinal))
                     {
-                        outputVersion = olderOutputVersion;
+                        outputCSharpVersion = olderCSharpOutputVersion;
+                    }
+
+                    if (string.Equals(
+                        olderOutput.GetHtmlDocument().GeneratedHtml,
+                        htmlDocument.GeneratedHtml,
+                        StringComparison.Ordinal))
+                    {
+                        outputHtmlVersion = olderHtmlOutputVersion;
                     }
                 }
 
                 if (document is DefaultDocumentSnapshot defaultDocument)
                 {
-                    defaultDocument.State.HostDocument.GeneratedCodeContainer.SetOutput(
+                    defaultDocument.State.HostDocument.GeneratedDocumentContainer.SetOutput(
                         defaultDocument,
                         csharpDocument,
+                        htmlDocument,
                         inputVersion,
-                        outputVersion);
+                        outputCSharpVersion,
+                        outputHtmlVersion);
                 }
 
-                return (codeDocument, inputVersion, outputVersion);
+                return (codeDocument, inputVersion, outputCSharpVersion, outputHtmlVersion);
             }
 
             private async Task<RazorSourceDocument> GetRazorSourceDocumentAsync(DocumentSnapshot document, RazorProjectItem projectItem)

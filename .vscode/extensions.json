@@ -1,7 +1,7 @@
 {
 	"recommendations": [
 		"ms-vscode.vscode-typescript-tslint-plugin",
-		"ms-vscode.csharp",
+		"ms-dotnettools.csharp",
 		"EditorConfig.EditorConfig"
 	]
 }

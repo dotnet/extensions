@@ -3,10 +3,9 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Serialization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
 {
@@ -26,10 +25,34 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
                 return null;
             }
 
-            var obj = JObject.Load(reader);
-            var filePath = obj[nameof(ProjectSnapshotHandle.FilePath)].Value<string>();
-            var configuration = obj[nameof(ProjectSnapshotHandle.Configuration)].ToObject<RazorConfiguration>(serializer);
-            var rootNamespace = obj[nameof(ProjectSnapshotHandle.RootNamespace)].Value<string>();
+            string filePath = null;
+            RazorConfiguration configuration = null;
+            string rootNamespace = null;
+
+            reader.ReadProperties(propertyName =>
+            {
+                switch (propertyName)
+                {
+                    case nameof(ProjectSnapshotHandle.FilePath):
+                        if (reader.Read())
+                        {
+                            filePath = (string)reader.Value;
+                        }
+                        break;
+                    case nameof(ProjectSnapshotHandle.Configuration):
+                        if (reader.Read())
+                        {
+                            configuration = RazorConfigurationJsonConverter.Instance.ReadJson(reader, objectType, existingValue, serializer) as RazorConfiguration;
+                        }
+                        break;
+                    case nameof(ProjectSnapshotHandle.RootNamespace):
+                        if (reader.Read())
+                        {
+                            rootNamespace = (string)reader.Value;
+                        }
+                        break;
+                }
+            });
 
             return new ProjectSnapshotHandle(filePath, configuration, rootNamespace);
         }

@@ -39,9 +39,8 @@ export class CSharpProjectedDocument implements IProjectedDocument {
         }
 
         let content = this.content;
-        for (const edit of edits) {
-            // TODO: Use a better data structure to represent the content, string concats
-            // are slow.
+        for (const edit of edits.reverse()) {
+            // TODO: Use a better data structure to represent the content, string concatenation is slow.
             content = this.getEditedContent(edit.newText, edit.span.start, edit.span.end, content);
         }
 

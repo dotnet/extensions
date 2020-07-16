@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Threading;
@@ -23,6 +25,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         private readonly ProjectSnapshotManagerBase _projectSnapshotManager;
         private readonly AsyncSemaphore _onProjectChangedInnerSemaphore;
         private readonly AsyncSemaphore _projectChangedSemaphore;
+        private readonly Dictionary<string, HostDocument> _currentDocuments;
         private HostProject _currentHostProject;
 
         public RazorProjectHostBase(
@@ -50,6 +53,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             _projectSnapshotManager = projectSnapshotManager;
             _onProjectChangedInnerSemaphore = new AsyncSemaphore(initialCount: 1);
             _projectChangedSemaphore = new AsyncSemaphore(initialCount: 1);
+            _currentDocuments = new Dictionary<string, HostDocument>(FilePathComparer.Instance);
 
             AttachToProject();
         }
@@ -164,6 +168,30 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             }
 
             _currentHostProject = newHostProject;
+        }
+
+        protected void AddDocument(HostProject hostProject, string filePath, string relativeFilePath)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            if (_currentDocuments.ContainsKey(filePath))
+            {
+                return;
+            }
+
+            var hostDocument = new HostDocument(filePath, relativeFilePath);
+            _projectSnapshotManager.DocumentAdded(hostProject, hostDocument, new FileTextLoader(filePath, defaultEncoding: null));
+
+            _currentDocuments[filePath] = hostDocument;
+        }
+
+        protected void RemoveDocument(HostProject hostProject, string filePath)
+        {
+            if (_currentDocuments.TryGetValue(filePath, out var hostDocument))
+            {
+                _projectSnapshotManager.DocumentRemoved(hostProject, hostDocument);
+                _currentDocuments.Remove(filePath);
+            }
         }
     }
 }

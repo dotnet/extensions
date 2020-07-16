@@ -7,10 +7,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using Moq;
 using OmniSharp.MSBuild.Logging;
 using OmniSharp.MSBuild.Notification;
@@ -284,7 +286,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var intermediateOutputPath = "C:/project\\obj";
             projectRootElement.AddProperty(MSBuildProjectManager.IntermediateOutputPathPropertyName, intermediateOutputPath);
             var projectInstance = new ProjectInstance(projectRootElement);
-            var expectedPath = string.Format("C:{0}project{0}obj{0}{1}", Path.DirectorySeparatorChar, MSBuildProjectManager.RazorConfigurationFileName);
+            var expectedPath = string.Format("C:{0}project{0}obj{0}{1}", Path.DirectorySeparatorChar, LanguageServerConstants.ProjectConfigurationFile);
 
             // Act
             var result = MSBuildProjectManager.TryResolveConfigurationOutputPath(projectInstance, out var path);
@@ -316,7 +318,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var intermediateOutputPath = string.Format("C:{0}project{0}obj", Path.DirectorySeparatorChar);
             projectRootElement.AddProperty(MSBuildProjectManager.IntermediateOutputPathPropertyName, intermediateOutputPath);
             var projectInstance = new ProjectInstance(projectRootElement);
-            var expectedPath = Path.Combine(intermediateOutputPath, MSBuildProjectManager.RazorConfigurationFileName);
+            var expectedPath = Path.Combine(intermediateOutputPath, LanguageServerConstants.ProjectConfigurationFile);
 
             // Act
             var result = MSBuildProjectManager.TryResolveConfigurationOutputPath(projectInstance, out var path);
@@ -337,7 +339,6 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Project directory is automatically set to the current test project (it's a reserved MSBuild property).
 
             var projectInstance = new ProjectInstance(projectRootElement);
-            var expectedPath = Path.Combine(intermediateOutputPath, MSBuildProjectManager.RazorConfigurationFileName);
 
             // Act
             var result = MSBuildProjectManager.TryResolveConfigurationOutputPath(projectInstance, out var path);

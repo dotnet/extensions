@@ -4,9 +4,12 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Razor.Workspaces.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
+    [JsonConverter(typeof(ProjectSnapshotJsonConverter))]
     internal abstract class ProjectSnapshot
     {
         public abstract RazorConfiguration Configuration { get; }

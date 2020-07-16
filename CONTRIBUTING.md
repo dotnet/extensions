@@ -4,16 +4,16 @@ One of the easiest ways to contribute is to participate in discussions on GitHub
 
 
 ## General feedback and discussions?
-Please start a discussion on the [aspnet/AspNetCore issue tracker](https://github.com/aspnet/AspNetCore/issues).
+Please start a discussion on the [dotnet/aspnetcore issue tracker](https://github.com/dotnet/aspnetcore/issues).
 
 
 ## Bugs and feature requests?
 For non-security related bugs please log a new issue in the appropriate GitHub repo. Here are some of the most common repos:
 
 * [Docs](https://github.com/aspnet/Docs)
-* [ASP.NET Core (runtime)](https://github.com/aspnet/AspNetCore)
-* [Entity Framework Core](https://github.com/aspnet/EntityFrameworkCore)
-* [Extensions](https://github.com/aspnet/Extensions)
+* [ASP.NET Core (runtime)](https://github.com/dotnet/aspnetcore)
+* [Entity Framework Core](https://github.com/dotnet/efcore)
+* [Extensions](https://github.com/dotnet/extensions)
 
 Or browse the full list of repos in the [aspnet](https://github.com/aspnet/) organization.
 
@@ -38,7 +38,7 @@ If you would like to contribute to one of our repositories, first identify the s
 
 You will need to sign a [Contributor License Agreement](https://cla.dotnetfoundation.org/) when submitting your pull request. To complete the Contributor License Agreement (CLA), you will need to follow the instructions provided by the CLA bot when you send the pull request. This needs to only be done once for any .NET Foundation OSS project.
 
-If you don't know what a pull request is read this article: https://help.github.com/articles/using-pull-requests. Make sure the respository can build and all tests pass. Familiarize yourself with the project workflow and our coding conventions. The coding, style, and general engineering guidelines are published on the [Engineering guidelines](https://github.com/aspnet/AspNetCore/wiki/Engineering-guidelines) page.
+If you don't know what a pull request is read this article: https://help.github.com/articles/using-pull-requests. Make sure the respository can build and all tests pass. Familiarize yourself with the project workflow and our coding conventions. The coding, style, and general engineering guidelines are published on the [Engineering guidelines](https://github.com/dotnet/aspnetcore/wiki/Engineering-guidelines) page.
 
 
 ### Tests
@@ -51,7 +51,3 @@ If you don't know what a pull request is read this article: https://help.github.
 ### Feedback
 
 Your pull request will now go through extensive checks by the subject matter experts on our team. Please be patient; we have hundreds of pull requests across all of our repositories. Update your pull request according to feedback until it is approved by one of the ASP.NET team members. After that, one of our team members may adjust the branch you merge into based on the expected release schedule.
-
-## Code of conduct
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).  For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.

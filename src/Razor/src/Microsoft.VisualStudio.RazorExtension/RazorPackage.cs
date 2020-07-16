@@ -3,37 +3,30 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.VisualStudio.RazorExtension
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [AboutDialogInfo(PackageGuidString, "ASP.NET Core Razor Language Services", "#110", "#112", IconResourceID = "#400")]
     [Guid(PackageGuidString)]
-    public sealed class RazorPackage : Package
+    public sealed class RazorPackage : AsyncPackage
     {
         public const string PackageGuidString = "13b72f58-279e-49e0-a56d-296be02f0805";
+        public const string CSharpPackageGuidString = "13c3bbb4-f18f-4111-9f54-a0fb010d9194";
 
-        private const string CSharpPackageIdString = "13c3bbb4-f18f-4111-9f54-a0fb010d9194";
-
-        protected override void Initialize()
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-            ThreadHelper.ThrowIfNotOnUIThread();
+            cancellationToken.ThrowIfCancellationRequested();
 
-            // We need to force the CSharp package to load. That's responsible for the initialization
-            // of the remote host client.
-            var shell = GetService(typeof(SVsShell)) as IVsShell;
-            if (shell == null)
-            {
-                return;
-            }
-
-            IVsPackage package = null;
-            var packageGuid = new Guid(CSharpPackageIdString);
-            shell.LoadPackage(ref packageGuid, out package);
+            // Explicitly trigger the load of the CSharp package. This ensures that UI-bound services are appropriately prefetched. Ideally, we shouldn't need this but until Roslyn fixes it on their side, we have to live with it.
+            var shellService = (IVsShell7)AsyncPackage.GetGlobalService(typeof(SVsShell));
+            await shellService.LoadPackageAsync(new Guid(CSharpPackageGuidString));
         }
     }
 }

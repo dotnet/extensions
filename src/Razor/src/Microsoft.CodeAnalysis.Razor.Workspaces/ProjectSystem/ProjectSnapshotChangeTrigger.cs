@@ -5,6 +5,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal abstract class ProjectSnapshotChangeTrigger
     {
+        public virtual int InitializePriority { get; }
+
         public abstract void Initialize(ProjectSnapshotManagerBase projectManager);
     }
 }

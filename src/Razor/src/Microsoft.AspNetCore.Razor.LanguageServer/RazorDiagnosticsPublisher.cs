@@ -19,11 +19,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     internal class RazorDiagnosticsPublisher : DocumentProcessedListener
     {
         // Internal for testing
+        internal TimeSpan _publishDelay = TimeSpan.FromSeconds(2);
         internal readonly Dictionary<string, IReadOnlyList<RazorDiagnostic>> _publishedDiagnostics;
         internal Timer _workTimer;
         internal Timer _documentClosedTimer;
 
-        private static readonly TimeSpan PublishDelay = TimeSpan.FromSeconds(2);
         private static readonly TimeSpan CheckForDocumentClosedDelay = TimeSpan.FromSeconds(5);
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ILanguageServer _languageServer;
@@ -58,6 +58,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _logger = loggerFactory.CreateLogger<RazorDiagnosticsPublisher>();
         }
 
+        // Used in tests to ensure we can control when background work completes.
+        public ManualResetEventSlim BlockBackgroundWorkCompleting { get; set; }
+
+        // Used in tests to ensure we can control when background work completes.
+        public ManualResetEventSlim NotifyBackgroundWorkCompleting { get; set; }
+
         public override void Initialize(ProjectSnapshotManager projectManager)
         {
             if (projectManager == null)
@@ -87,20 +93,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private void StartWorkTimer()
         {
-            _foregroundDispatcher.AssertForegroundThread();
-
             // Access to the timer is protected by the lock in Synchronize and in Timer_Tick
             if (_workTimer == null)
             {
                 // Timer will fire after a fixed delay, but only once.
-                _workTimer = new Timer(WorkTimer_Tick, null, PublishDelay, Timeout.InfiniteTimeSpan);
+                _workTimer = new Timer(WorkTimer_Tick, null, _publishDelay, Timeout.InfiniteTimeSpan);
             }
         }
 
         private void StartDocumentClosedCheckTimer()
         {
-            _foregroundDispatcher.AssertForegroundThread();
-
             if (_documentClosedTimer == null)
             {
                 _documentClosedTimer = new Timer(DocumentClosedTimer_Tick, null, CheckForDocumentClosedDelay, Timeout.InfiniteTimeSpan);
@@ -143,9 +145,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 if (_publishedDiagnostics.Count > 0)
                 {
-                    // There's no way for us to know when a document is closed at this layer. Therefore, we need to poll every X seconds
-                    // and check if the currently tracked documents are closed. In practice this work is super minimal.
-                    StartDocumentClosedCheckTimer();
+                    lock (_work)
+                    {
+                        // There's no way for us to know when a document is closed at this layer. Therefore, we need to poll every X seconds
+                        // and check if the currently tracked documents are closed. In practice this work is super minimal.
+                        StartDocumentClosedCheckTimer();
+                    }
                 }
             }
         }
@@ -199,6 +204,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 await PublishDiagnosticsAsync(document);
             }
 
+            OnCompletingBackgroundWork();
+
             lock (_work)
             {
                 // Resetting the timer allows another batch of work to start.
@@ -210,6 +217,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 {
                     StartWorkTimer();
                 }
+            }
+        }
+
+        private void OnCompletingBackgroundWork()
+        {
+            if (NotifyBackgroundWorkCompleting != null)
+            {
+                NotifyBackgroundWorkCompleting.Set();
+            }
+
+            if (BlockBackgroundWorkCompleting != null)
+            {
+                BlockBackgroundWorkCompleting.Wait();
+                BlockBackgroundWorkCompleting.Reset();
             }
         }
 

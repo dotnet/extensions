@@ -3,33 +3,46 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Composition;
 using Microsoft.VisualStudio.LanguageServices;
-using Microsoft.VisualStudio.LanguageServices.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
+    /// <summary>
+    /// Needs to SetPublisherPath for DefaultRazorProjectChangePublisher
+    /// </summary>
     internal abstract class RazorProjectHostBase : OnceInitializedOnceDisposedAsync, IProjectDynamicLoadComponent
     {
         private readonly Workspace _workspace;
         private readonly AsyncSemaphore _lock;
 
         private ProjectSnapshotManagerBase _projectManager;
-        private HostProject _current;
-        private Dictionary<string, HostDocument> _currentDocuments;
+        private readonly Dictionary<string, HostDocument> _currentDocuments;
+        protected readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
+
+        internal const string BaseIntermediateOutputPathPropertyName = "BaseIntermediateOutputPath";
+        internal const string IntermediateOutputPathPropertyName = "IntermediateOutputPath";
+        internal const string MSBuildProjectDirectoryPropertyName = "MSBuildProjectDirectory";
+
+        internal const string ConfigurationGeneralSchemaName = "ConfigurationGeneral";
+
+        // Internal settable for testing
+        // 250ms between publishes to prevent bursts of changes yet still be responsive to changes.
+        internal int EnqueueDelay { get; set; } = 250;
 
         public RazorProjectHostBase(
             IUnconfiguredProjectCommonServices commonServices,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
+            [Import(typeof(VisualStudioWorkspace))] Workspace workspace,
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore)
             : base(commonServices.ThreadingService.JoinableTaskContext)
         {
             if (commonServices == null)
@@ -47,39 +60,26 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             _lock = new AsyncSemaphore(initialCount: 1);
             _currentDocuments = new Dictionary<string, HostDocument>(FilePathComparer.Instance);
+            _projectConfigurationFilePathStore = projectConfigurationFilePathStore;
         }
 
         // Internal for testing
         protected RazorProjectHostBase(
             IUnconfiguredProjectCommonServices commonServices,
-             Workspace workspace,
-             ProjectSnapshotManagerBase projectManager)
-            : base(commonServices.ThreadingService.JoinableTaskContext)
+            Workspace workspace,
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
+            ProjectSnapshotManagerBase projectManager)
+            : this(commonServices, workspace, projectConfigurationFilePathStore)
         {
-            if (commonServices == null)
-            {
-                throw new ArgumentNullException(nameof(commonServices));
-            }
-
-            if (workspace == null)
-            {
-                throw new ArgumentNullException(nameof(workspace));
-            }
-
             if (projectManager == null)
             {
                 throw new ArgumentNullException(nameof(projectManager));
             }
 
-            CommonServices = commonServices;
-            _workspace = workspace;
             _projectManager = projectManager;
-
-            _lock = new AsyncSemaphore(initialCount: 1);
-            _currentDocuments = new Dictionary<string, HostDocument>(FilePathComparer.Instance);
         }
 
-        protected HostProject Current => _current;
+        protected HostProject Current { get; private set; }
 
         protected IUnconfiguredProjectCommonServices CommonServices { get; }
 
@@ -104,7 +104,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 await ExecuteWithLock(async () =>
                 {
-                    if (_current != null)
+                    if (Current != null)
                     {
                         await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
                     }
@@ -122,9 +122,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // FilePath.
             await ExecuteWithLock(async () =>
             {
-                if (_current != null)
+                if (Current != null)
                 {
-                    var old = _current;
+                    var old = Current;
                     var oldDocuments = _currentDocuments.Values.ToArray();
 
                     await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
@@ -172,25 +172,26 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         protected void UpdateProjectUnsafe(HostProject project)
         {
             var projectManager = GetProjectManager();
-            if (_current == null && project == null)
+            if (Current == null && project == null)
             {
                 // This is a no-op. This project isn't using Razor.
             }
-            else if (_current == null && project != null)
+            else if (Current == null && project != null)
             {
                 projectManager.ProjectAdded(project);
             }
-            else if (_current != null && project == null)
+            else if (Current != null && project == null)
             {
                 Debug.Assert(_currentDocuments.Count == 0);
-                projectManager.ProjectRemoved(_current);
+                projectManager.ProjectRemoved(Current);
+                _projectConfigurationFilePathStore.Remove(Current.FilePath);
             }
             else
             {
                 projectManager.ProjectConfigurationChanged(project);
             }
 
-            _current = project;
+            Current = project;
         }
 
         protected void AddDocumentUnsafe(HostDocument document)
@@ -203,7 +204,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 return;
             }
 
-            projectManager.DocumentAdded(_current, document, new FileTextLoader(document.FilePath, null));
+            projectManager.DocumentAdded(Current, document, new FileTextLoader(document.FilePath, null));
             _currentDocuments.Add(document.FilePath, document);
         }
 
@@ -211,7 +212,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             var projectManager = GetProjectManager();
 
-            projectManager.DocumentRemoved(_current, document);
+            projectManager.DocumentRemoved(Current, document);
             _currentDocuments.Remove(document.FilePath);
         }
 
@@ -221,7 +222,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             foreach (var kvp in _currentDocuments)
             {
-                _projectManager.DocumentRemoved(_current, kvp.Value);
+                projectManager.DocumentRemoved(Current, kvp.Value);
             }
 
             _currentDocuments.Clear();
@@ -252,6 +253,41 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private async Task UnconfiguredProject_ProjectRenaming(object sender, ProjectRenamedEventArgs args)
         {
             await OnProjectRenamingAsync().ConfigureAwait(false);
+        }
+
+        // Internal for testing
+        internal static bool TryGetIntermediateOutputPath(
+            IImmutableDictionary<string, IProjectRuleSnapshot> state,
+            out string path)
+        {
+            if (!state.TryGetValue(ConfigurationGeneralSchemaName, out var rule))
+            {
+                path = null;
+                return false;
+            }
+
+            if (!rule.Properties.TryGetValue(BaseIntermediateOutputPathPropertyName, out var baseIntermediateOutputPathValue))
+            {
+                path = null;
+                return false;
+            }
+
+            if (!rule.Properties.TryGetValue(IntermediateOutputPathPropertyName, out var intermediateOutputPathValue))
+            {
+                path = null;
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(intermediateOutputPathValue) || string.IsNullOrEmpty(baseIntermediateOutputPathValue))
+            {
+                path = null;
+                return false;
+            }
+            var basePath = new DirectoryInfo(baseIntermediateOutputPathValue).Parent;
+            var joinedPath = Path.Combine(basePath.FullName, intermediateOutputPathValue);
+
+            path = joinedPath;
+            return true;
         }
     }
 }

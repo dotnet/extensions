@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
 using Xunit;
@@ -15,9 +16,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
-            var document = TestDocumentSnapshot.Create("/C:/file.cshtml");
+            var document = TestDocumentSnapshot.Create("C:/file.cshtml");
             documentVersionCache.TrackDocumentVersion(document, 123);
-            var untrackedDocument = TestDocumentSnapshot.Create("/C:/other.cshtml");
+            var untrackedDocument = TestDocumentSnapshot.Create("C:/other.cshtml");
 
             // Act
             documentVersionCache.MarkAsLatestVersion(untrackedDocument);
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
-            var documentInitial = TestDocumentSnapshot.Create("/C:/file.cshtml");
+            var documentInitial = TestDocumentSnapshot.Create("C:/file.cshtml");
             documentVersionCache.TrackDocumentVersion(documentInitial, 123);
             var documentLatest = TestDocumentSnapshot.Create(documentInitial.FilePath);
 
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
-            var filePath = "/C:/file.cshtml";
+            var filePath = "C:/file.cshtml";
             var document1 = TestDocumentSnapshot.Create(filePath);
             var document2 = TestDocumentSnapshot.Create(filePath);
             documentVersionCache.TrackDocumentVersion(document1, 123);
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
 
             // Act
-            var result = documentVersionCache.TryGetLatestVersionFromPath("/C:/file.cshtml", out var version);
+            var result = documentVersionCache.TryGetLatestVersionFromPath("C:/file.cshtml", out var version);
 
             // Assert
             Assert.False(result);
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void ProjectSnapshotManager_Changed_DocumentRemoved_EvictsDocument()
+        public void ProjectSnapshotManager_Changed_DocumentRemoved_DoesNotEvictDocument()
         {
             // Arrange
             var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
@@ -104,7 +105,39 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             result = documentVersionCache.TryGetDocumentVersion(document, out version);
 
             // Assert - 2
-            Assert.False(result);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ProjectSnapshotManager_Changed_OpenDocumentRemoved_DoesNotEvictDocument()
+        {
+            // Arrange
+            var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
+            var projectSnapshotManager = TestProjectSnapshotManager.Create(Dispatcher);
+            projectSnapshotManager.AllowNotifyListeners = true;
+            documentVersionCache.Initialize(projectSnapshotManager);
+            var document = TestDocumentSnapshot.Create("C:/file.cshtml");
+            document.TryGetText(out var text);
+            document.TryGetTextVersion(out var textVersion);
+            var textAndVersion = TextAndVersion.Create(text, textVersion);
+            documentVersionCache.TrackDocumentVersion(document, 1337);
+            projectSnapshotManager.ProjectAdded(document.ProjectInternal.HostProject);
+            projectSnapshotManager.DocumentAdded(document.ProjectInternal.HostProject, document.State.HostDocument, TextLoader.From(textAndVersion));
+            projectSnapshotManager.DocumentOpened(document.ProjectInternal.FilePath, document.FilePath, textAndVersion.Text);
+
+            // Act - 1
+            var result = documentVersionCache.TryGetDocumentVersion(document, out var version);
+
+            // Assert - 1
+            Assert.True(result);
+            Assert.True(projectSnapshotManager.IsDocumentOpen(document.FilePath));
+
+            // Act - 2
+            projectSnapshotManager.DocumentRemoved(document.ProjectInternal.HostProject, document.State.HostDocument);
+            result = documentVersionCache.TryGetDocumentVersion(document, out version);
+
+            // Assert - 2
+            Assert.True(result);
         }
 
         [Fact]

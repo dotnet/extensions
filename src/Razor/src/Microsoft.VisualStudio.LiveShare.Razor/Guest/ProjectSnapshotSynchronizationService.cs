@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Threading;
+using IAsyncDisposable = Microsoft.VisualStudio.Threading.IAsyncDisposable;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 {

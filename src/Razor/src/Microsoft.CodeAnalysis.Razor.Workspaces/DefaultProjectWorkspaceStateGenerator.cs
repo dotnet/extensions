@@ -23,6 +23,7 @@ namespace Microsoft.CodeAnalysis.Razor
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private ProjectSnapshotManagerBase _projectManager;
         private TagHelperResolver _tagHelperResolver;
+        private bool _disposed;
 
         [ImportingConstructor]
         public DefaultProjectWorkspaceStateGenerator(ForegroundDispatcher foregroundDispatcher)
@@ -55,7 +56,7 @@ namespace Microsoft.CodeAnalysis.Razor
             _tagHelperResolver = _projectManager.Workspace.Services.GetRequiredService<TagHelperResolver>();
         }
 
-        public override void Update(Project workspaceProject, ProjectSnapshot projectSnapshot)
+        public override void Update(Project workspaceProject, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken)
         {
             if (projectSnapshot == null)
             {
@@ -64,22 +65,31 @@ namespace Microsoft.CodeAnalysis.Razor
 
             _foregroundDispatcher.AssertForegroundThread();
 
+            if (_disposed)
+            {
+                return;
+            }
+
             if (_updates.TryGetValue(projectSnapshot.FilePath, out var updateItem) &&
-                !updateItem.Task.IsCompleted)
+                !updateItem.Task.IsCompleted &&
+                !updateItem.Cts.IsCancellationRequested)
             {
                 updateItem.Cts.Cancel();
             }
 
-            updateItem?.Cts.Dispose();
+            if (updateItem?.Cts.IsCancellationRequested == false)
+            {
+                updateItem?.Cts.Dispose();
+            }
 
-            var cts = new CancellationTokenSource();
+            var lcts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var updateTask = Task.Factory.StartNew(
-                () => UpdateWorkspaceStateAsync(workspaceProject, projectSnapshot, cts.Token),
-                cts.Token,
+                () => UpdateWorkspaceStateAsync(workspaceProject, projectSnapshot, lcts.Token),
+                lcts.Token,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.BackgroundScheduler).Unwrap();
             updateTask.ConfigureAwait(false);
-            updateItem = new UpdateItem(updateTask, cts);
+            updateItem = new UpdateItem(updateTask, lcts);
             _updates[projectSnapshot.FilePath] = updateItem;
         }
 
@@ -87,9 +97,12 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             _foregroundDispatcher.AssertForegroundThread();
 
+            _disposed = true;
+
             foreach (var update in _updates)
             {
-                if (!update.Value.Task.IsCompleted)
+                if (!update.Value.Task.IsCompleted &&
+                    !update.Value.Cts.IsCancellationRequested)
                 {
                     update.Value.Cts.Cancel();
                 }

@@ -45,19 +45,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var normalizedPath = _filePathNormalizer.Normalize(documentFilePath);
-            if (!_projectResolver.TryResolvePotentialProject(normalizedPath, out var project))
+            if (!_projectResolver.TryResolvePotentialProject(normalizedPath, out var potentialProject))
             {
-                project = _projectResolver.GetMiscellaneousProject();
+                potentialProject = _projectResolver.GetMiscellaneousProject();
+            }
+            
+            if (!potentialProject.DocumentFilePaths.Contains(normalizedPath, FilePathComparer.Instance))
+            {
+                var miscProject = _projectResolver.GetMiscellaneousProject();
+                if (!miscProject.DocumentFilePaths.Contains(normalizedPath, FilePathComparer.Instance))
+                {
+                    // Miscellaneous project and other tracked projects do not contain document.
+                    document = null;
+                    return false;
+                }
+
+                potentialProject = miscProject;
             }
 
-            if (!project.DocumentFilePaths.Contains(normalizedPath, FilePathComparer.Instance))
-            {
-                // Miscellaneous project and other tracked projects do not contain document.
-                document = null;
-                return false;
-            }
-
-            document = project.GetDocument(normalizedPath);
+            document = potentialProject.GetDocument(normalizedPath);
             return true;
         }
     }
