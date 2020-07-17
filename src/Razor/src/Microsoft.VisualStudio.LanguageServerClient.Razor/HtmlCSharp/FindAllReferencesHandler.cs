@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.Text.Adornments;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
@@ -195,10 +197,62 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 referenceItem.DisplayPath = razorDocumentUri.AbsolutePath;
                 referenceItem.Location.Range = mappingResult.Ranges[0];
 
+                // Temporary fix for codebehind leaking through
+                // Revert when https://github.com/dotnet/aspnetcore/issues/22512 is resolved
+                referenceItem.DefinitionText = FilterReferenceDisplayText(referenceItem.DefinitionText);
+                referenceItem.Text = FilterReferenceDisplayText(referenceItem.Text);
+
                 remappedLocations.Add(referenceItem);
             }
 
             return remappedLocations.ToArray();
+        }
+
+        private object FilterReferenceDisplayText(object referenceText)
+        {
+            const string codeBehindObjectPrefix = "__o = ";
+            const string codeBehindBackingFieldSuffix = "k__BackingField";
+
+            if (referenceText is string text)
+            {
+                if (text.StartsWith(codeBehindObjectPrefix))
+                {
+                    return text
+                        .Substring(codeBehindObjectPrefix.Length, text.Length - codeBehindObjectPrefix.Length - 1); // -1 for trailing `;`
+                }
+
+                return text.Replace(codeBehindBackingFieldSuffix, string.Empty);
+            }
+
+            if (referenceText is ClassifiedTextElement textElement &&
+                FilterReferenceClassifiedRuns(textElement.Runs))
+            {
+                var filteredRuns = textElement.Runs.Skip(4); // `__o`, ` `, `=`, ` `
+                filteredRuns = filteredRuns.Take(filteredRuns.Count() - 1); // Trailing `;`
+                return new ClassifiedTextElement(filteredRuns);
+            }
+
+            return referenceText;
+        }
+
+        private bool FilterReferenceClassifiedRuns(IEnumerable<ClassifiedTextRun> runs)
+        {
+            if (runs.Count() < 5)
+            {
+                return false;
+            }
+
+            return VerifyRunMatches(runs.ElementAt(0), "field name", "__o") &&
+                VerifyRunMatches(runs.ElementAt(1), "text", " ") &&
+                VerifyRunMatches(runs.ElementAt(2), "operator", "=") &&
+                VerifyRunMatches(runs.ElementAt(3), "text", " ") &&
+                VerifyRunMatches(runs.Last(), "punctuation", ";");
+
+            static bool VerifyRunMatches(ClassifiedTextRun run, string expectedClassificationType, string expectedText)
+            {
+                return run.ClassificationTypeName == expectedClassificationType &&
+                    run.Text == expectedText;
+            }
         }
 
         // Temporary while the PartialResultToken serialization fix is in

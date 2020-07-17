@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using Newtonsoft.Json.Linq;
@@ -159,15 +160,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var progressReported = false;
             var expectedUri1 = new Uri("C:/path/to/file1.razor");
             var expectedUri2 = new Uri("C:/path/to/file2.razor");
-            var expectedLocation1 = GetReferenceItem(5, 5, 5, 5, expectedUri1);
-            var expectedLocation2 = GetReferenceItem(10, 10, 10, 10, expectedUri2);
+            var expectedLocation1 = GetReferenceItem(5, expectedUri1);
+            var expectedLocation2 = GetReferenceItem(10, expectedUri2);
             var documentManager = new TestDocumentManager();
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
 
             var virtualCSharpUri1 = new Uri("C:/path/to/file1.razor.g.cs");
             var virtualCSharpUri2 = new Uri("C:/path/to/file2.razor.g.cs");
-            var csharpLocation1 = GetReferenceItem(100, 100, 100, 100, virtualCSharpUri1);
-            var csharpLocation2 = GetReferenceItem(200, 200, 200, 200, virtualCSharpUri2);
+            var csharpLocation1 = GetReferenceItem(100, virtualCSharpUri1);
+            var csharpLocation2 = GetReferenceItem(200, virtualCSharpUri2);
 
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
             var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
@@ -244,13 +245,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Arrange
             var progressReported = false;
             var externalUri = new Uri("C:/path/to/someotherfile.razor");
-            var expectedLocation = GetReferenceItem(5, 5, 5, 5, externalUri);
+            var expectedLocation = GetReferenceItem(5, externalUri);
             var documentManager = new TestDocumentManager();
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2));
             documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5));
 
             var virtualCSharpUri = new Uri("C:/path/to/someotherfile.razor.g.cs");
-            var csharpLocation = GetReferenceItem(100, 100, 100, 100, virtualCSharpUri);
+            var csharpLocation = GetReferenceItem(100, virtualCSharpUri);
             var (requestInvoker, progressListener) = MockServices(csharpLocation, out var token);
 
             var projectionResult = new ProjectionResult()
@@ -293,6 +294,132 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(progressReported);
         }
 
+        [Theory]
+        [InlineData("__o = food;", "food")]
+        [InlineData("string Todo.<Title>k__BackingField", "string Todo.<Title>")]
+        public async Task HandleRequestAsync_CSharpProjection_FiltersReferenceText(string rawText, string filteredText)
+        {
+            // Arrange
+            var progressReported = false;
+            var externalUri = new Uri("C:/path/to/someotherfile.razor");
+            var expectedReferenceItem = GetReferenceItem(5, 5, 5, 5, externalUri, text: filteredText);
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2));
+            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5));
+
+            var virtualCSharpUri = new Uri("C:/path/to/someotherfile.razor.g.cs");
+            var csharpLocation = GetReferenceItem(100, 100, 100, 100, virtualCSharpUri, text: rawText);
+            var (requestInvoker, progressListener) = MockServices(csharpLocation, out var token);
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.CSharp,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
+
+            var remappingResult = new RazorMapToDocumentRangesResponse()
+            {
+                Ranges = new[] { expectedReferenceItem.Location.Range },
+                HostDocumentVersion = 5
+            };
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, externalUri, new[] { csharpLocation.Location.Range }, It.IsAny<CancellationToken>())).
+                Returns(Task.FromResult(remappingResult));
+
+            var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+
+            var progressToken = new ProgressWithCompletion<object>((val) =>
+            {
+                var results = Assert.IsType<VSReferenceItem[]>(val);
+                var actualReferenceItem = Assert.Single(results);
+                AssertVSReferenceItem(expectedReferenceItem, actualReferenceItem);
+                progressReported = true;
+            });
+            var referenceRequest = new ReferenceParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Position = new Position(10, 5),
+                PartialResultToken = progressToken
+            };
+
+            // Act
+            var result = await referencesHandler.HandleRequestAsync(referenceRequest, new ClientCapabilities(), token, CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(progressReported);
+        }
+
+        [Fact]
+        public async Task HandleRequestAsync_CSharpProjection_FiltersReferenceClassifiedRuns()
+        {
+            // Arrange
+            var progressReported = false;
+            var externalUri = new Uri("C:/path/to/someotherfile.razor");
+
+            var expectedClassifiedRun = new ClassifiedTextElement(new ClassifiedTextRun[]
+            {
+                new ClassifiedTextRun("text", "counter"),
+            });
+            var expectedReferenceItem = GetReferenceItem(5, 5, 5, 5, externalUri, text: expectedClassifiedRun);
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2));
+            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5));
+
+            var virtualClassifiedRun = new ClassifiedTextElement(new ClassifiedTextRun[]
+            {
+                new ClassifiedTextRun("field name", "__o"),
+                new ClassifiedTextRun("text", " "),
+                new ClassifiedTextRun("operator", "="),
+                new ClassifiedTextRun("text", " "),
+                new ClassifiedTextRun("text", "counter"),
+                new ClassifiedTextRun("punctuation", ";"),
+            });
+            var virtualCSharpUri = new Uri("C:/path/to/someotherfile.razor.g.cs");
+            var csharpLocation = GetReferenceItem(100, 100, 100, 100, virtualCSharpUri, text: virtualClassifiedRun);
+            var (requestInvoker, progressListener) = MockServices(csharpLocation, out var token);
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.CSharp,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
+
+            var remappingResult = new RazorMapToDocumentRangesResponse()
+            {
+                Ranges = new[] { expectedReferenceItem.Location.Range },
+                HostDocumentVersion = 5
+            };
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, externalUri, new[] { csharpLocation.Location.Range }, It.IsAny<CancellationToken>())).
+                Returns(Task.FromResult(remappingResult));
+
+            var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
+            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+
+            var progressToken = new ProgressWithCompletion<object>((val) =>
+            {
+                var results = Assert.IsType<VSReferenceItem[]>(val);
+                var actualReferenceItem = Assert.Single(results);
+                AssertVSReferenceItem(expectedReferenceItem, actualReferenceItem);
+                progressReported = true;
+            });
+            var referenceRequest = new ReferenceParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Position = new Position(10, 5),
+                PartialResultToken = progressToken
+            };
+
+            // Act
+            var result = await referencesHandler.HandleRequestAsync(referenceRequest, new ClientCapabilities(), token, CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(progressReported);
+        }
+
         [Fact]
         public async Task HandleRequestAsync_CSharpProjection_DoesNotRemapNonRazorFiles()
         {
@@ -302,7 +429,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
 
             var externalCSharpUri = new Uri("C:/path/to/someotherfile.cs");
-            var externalCsharpLocation = GetReferenceItem(100, 100, 100, 100, externalCSharpUri);
+            var externalCsharpLocation = GetReferenceItem(100, externalCSharpUri);
             var (requestInvoker, progressListener) = MockServices(externalCsharpLocation, out var token);
 
             var projectionResult = new ProjectionResult()
@@ -344,12 +471,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var progressReported = false;
-            var expectedLocation = GetReferenceItem(5, 5, 5, 5, Uri);
+            var expectedLocation = GetReferenceItem(5, Uri);
             var documentManager = new TestDocumentManager();
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 123));
 
             var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
-            var csharpLocation = GetReferenceItem(100, 100, 100, 100, virtualCSharpUri);
+            var csharpLocation = GetReferenceItem(100, virtualCSharpUri);
             var (requestInvoker, progressListener) = MockServices(csharpLocation, out var token);
 
             var projectionResult = new ProjectionResult()
@@ -400,13 +527,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Arrange
             var progressReported = false;
             var externalUri = new Uri("C:/path/to/someotherfile.razor");
-            var expectedLocation = GetReferenceItem(5, 5, 5, 5, externalUri);
+            var expectedLocation = GetReferenceItem(5, externalUri);
             var documentManager = new TestDocumentManager();
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2));
             documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5));
 
             var virtualCSharpUri = new Uri("C:/path/to/someotherfile.razor.g.cs");
-            var csharpLocation = GetReferenceItem(100, 100, 100, 100, virtualCSharpUri);
+            var csharpLocation = GetReferenceItem(100, virtualCSharpUri);
             var (requestInvoker, progressListener) = MockServices(csharpLocation, out var token);
 
             var projectionResult = new ProjectionResult()
@@ -460,7 +587,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
 
             var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
-            var csharpLocation = GetReferenceItem(100, 100, 100, 100, virtualCSharpUri);
+            var csharpLocation = GetReferenceItem(100, virtualCSharpUri);
             var (requestInvoker, progressListener) = MockServices(csharpLocation, out var token);
 
             var projectionResult = new ProjectionResult()
@@ -644,6 +771,24 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             Assert.Equal(expected.Location, actual.Location);
             Assert.Equal(expected.DisplayPath, actual.DisplayPath);
+
+            if (actual.Text is string)
+            {
+                Assert.Equal(expected.Text, actual.Text);
+                Assert.Equal(expected.DefinitionText, actual.DefinitionText);
+            }
+            else
+            {
+                Assert.Equal(
+                    expected.Text as ClassifiedTextElement,
+                    actual.Text as ClassifiedTextElement,
+                    ClassifiedTextElementComparer.Default);
+                Assert.Equal(
+                    expected.DefinitionText as ClassifiedTextElement,
+                    actual.DefinitionText as ClassifiedTextElement,
+                    ClassifiedTextElementComparer.Default);
+            }
+
             return true;
         }
 
@@ -674,9 +819,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return (requestInvoker.Object, lspProgressListener);
         }
 
-        private VSReferenceItem GetReferenceItem(int position, Uri uri)
+        private VSReferenceItem GetReferenceItem(int position, Uri uri, string text = "text")
         {
-            return GetReferenceItem(position, position, position, position, uri);
+            return GetReferenceItem(position, position, position, position, uri, text);
         }
 
         private VSReferenceItem GetReferenceItem(
@@ -685,9 +830,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             int endLine,
             int endCharacter,
             Uri uri,
+            object text,
             string documentName = "document",
-            string projectName = "project",
-            string text = "text")
+            string projectName = "project")
         {
             return new VSReferenceItem()
             {
@@ -703,7 +848,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 DocumentName = documentName,
                 ProjectName = projectName,
                 DisplayPath = uri.AbsolutePath,
-                Text = text
+                Text = text,
+                DefinitionText = text
             };
         }
     }
