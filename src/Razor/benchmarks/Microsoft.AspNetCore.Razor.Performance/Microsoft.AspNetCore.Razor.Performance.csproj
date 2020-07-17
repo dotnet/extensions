@@ -40,6 +40,7 @@
     </Compile>
     <None Include="MSN.cshtml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="taghelpers.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="ProjectSystem\project.razor.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

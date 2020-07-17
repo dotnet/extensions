@@ -4,8 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Serialization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.CodeAnalysis.Razor.Workspaces.Serialization
 {
@@ -26,29 +26,64 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces.Serialization
                 return null;
             }
 
-            var obj = JObject.Load(reader);
+            string serializationFormat = null;
+            string filePath = null;
+            RazorConfiguration configuration = null;
+            string rootNamespace = null;
+            ProjectWorkspaceState projectWorkspaceState = null;
+            DocumentSnapshotHandle[] documents = null;
+
+            reader.ReadProperties(propertyName =>
+            {
+                switch (propertyName)
+                {
+                    case SerializationFormatPropertyName:
+                        if (reader.Read())
+                        {
+                            serializationFormat = (string)reader.Value;
+                        }
+                        break;
+                    case nameof(FullProjectSnapshotHandle.FilePath):
+                        if (reader.Read())
+                        {
+                            filePath = (string)reader.Value;
+                        }
+                        break;
+                    case nameof(FullProjectSnapshotHandle.Configuration):
+                        if (reader.Read())
+                        {
+                            configuration = RazorConfigurationJsonConverter.Instance.ReadJson(reader, objectType, existingValue, serializer) as RazorConfiguration;
+                        }
+                        break;
+                    case nameof(FullProjectSnapshotHandle.RootNamespace):
+                        if (reader.Read())
+                        {
+                            rootNamespace = (string)reader.Value;
+                        }
+                        break;
+                    case nameof(FullProjectSnapshotHandle.ProjectWorkspaceState):
+                        if (reader.Read())
+                        {
+                            projectWorkspaceState = serializer.Deserialize<ProjectWorkspaceState>(reader);
+                        }
+                        break;
+                    case nameof(FullProjectSnapshotHandle.Documents):
+                        if (reader.Read())
+                        {
+                            documents = serializer.Deserialize<DocumentSnapshotHandle[]>(reader);
+                        }
+                        break;
+                }
+            });
 
             // We need to add a serialization format to the project response to indicate that this version of the code is compatible with what's being serialized.
             // This scenario typically happens when a user has an incompatible serialized project snapshot but is using the latest Razor bits.
 
-            if (!obj.TryGetValue(SerializationFormatPropertyName, out var serializationFormatToken))
-            {
-                // Pre-serialization format release.
-                return null;
-            }
-
-            var serializationFormat = serializationFormatToken.Value<string>();
-            if (serializationFormat != ProjectSerializationFormat.Version)
+            if (string.IsNullOrEmpty(serializationFormat) || serializationFormat != ProjectSerializationFormat.Version)
             {
                 // Unknown serialization format.
                 return null;
             }
-
-            var filePath = obj[nameof(FullProjectSnapshotHandle.FilePath)].Value<string>();
-            var configuration = obj[nameof(FullProjectSnapshotHandle.Configuration)].ToObject<RazorConfiguration>(serializer);
-            var rootNamespace = obj[nameof(FullProjectSnapshotHandle.RootNamespace)].ToObject<string>(serializer);
-            var projectWorkspaceState = obj[nameof(FullProjectSnapshotHandle.ProjectWorkspaceState)].ToObject<ProjectWorkspaceState>(serializer);
-            var documents = obj[nameof(FullProjectSnapshotHandle.Documents)].ToObject<DocumentSnapshotHandle[]>(serializer);
 
             return new FullProjectSnapshotHandle(filePath, configuration, rootNamespace, projectWorkspaceState, documents);
         }
