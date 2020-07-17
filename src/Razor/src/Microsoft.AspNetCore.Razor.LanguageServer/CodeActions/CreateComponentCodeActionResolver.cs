@@ -34,6 +34,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         public override async Task<WorkspaceEdit> ResolveAsync(JObject data, CancellationToken cancellationToken)
         {
+            if (data is null)
+            {
+                return null;
+            }
+
             var actionParams = data.ToObject<CreateComponentCodeActionParams>();
             var path = actionParams.Uri.GetAbsoluteOrUNCPath();
 

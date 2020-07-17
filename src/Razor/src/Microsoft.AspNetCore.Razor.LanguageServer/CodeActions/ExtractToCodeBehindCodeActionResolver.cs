@@ -15,7 +15,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using CSharpSyntaxFactory = Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -45,6 +44,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         public override async Task<WorkspaceEdit> ResolveAsync(JObject data, CancellationToken cancellationToken)
         {
+            if (data is null)
+            {
+                return null;
+            }
+
             var actionParams = data.ToObject<ExtractToCodeBehindCodeActionParams>();
             var path = _filePathNormalizer.Normalize(actionParams.Uri.GetAbsoluteOrUNCPath());
 
