@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.Hosting
                 {
                     services.Configure<ConsoleLoggerOptions>(options =>
                     {
-                        options.Format = ConsoleLoggerFormat.Systemd;
+                        options.FormatterName = ConsoleFormatterNames.Systemd;
                     });
 
                     services.AddSingleton<ISystemdNotifier, SystemdNotifier>();
