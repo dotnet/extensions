@@ -29,6 +29,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>f37dd6fc8595e130909dcb3085a56342d04aa20c</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="5.0.0-preview.8.20361.2" CoherentParentDependency="Microsoft.CodeAnalysis.Razor">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>f37dd6fc8595e130909dcb3085a56342d04aa20c</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging" Version="5.0.0-preview.8.20361.2" CoherentParentDependency="Microsoft.CodeAnalysis.Razor">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>f37dd6fc8595e130909dcb3085a56342d04aa20c</Sha>
