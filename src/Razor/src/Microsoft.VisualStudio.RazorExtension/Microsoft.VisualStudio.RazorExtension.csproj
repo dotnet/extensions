@@ -100,9 +100,6 @@
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Options.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
-    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Caching.Abstractions.dll" />
-    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Caching.Memory.dll" />
-    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Primitives.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.Json.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.FileExtensions.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.dll" />
