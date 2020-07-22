@@ -47,7 +47,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
             var semanticRanges = TagHelperSemanticRangeVisitor.VisitAllNodes(codeDocument);
 
-            var previousResults = previousResultId is null ? null : _semanticTokensCache.Get(previousResultId);
+            IReadOnlyList<uint> previousResults = null;
+
+            if (previousResultId != null)
+            {
+                _semanticTokensCache.TryGetValue(previousResultId, out previousResults);
+            }
             var newTokens = ConvertSemanticRangesToSemanticTokens(semanticRanges, codeDocument);
 
             if (previousResults is null)

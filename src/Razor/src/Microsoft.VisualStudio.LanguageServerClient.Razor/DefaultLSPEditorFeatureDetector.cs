@@ -3,6 +3,7 @@
 
 using System;
 using System.Composition;
+using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -16,11 +17,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private const string DotNetCoreCSharpCapability = "CSharp&CPS";
         private const string RazorLSPEditorFeatureFlag = "Razor.LSP.Editor";
+
         private static readonly Guid LiveShareHostUIContextGuid = Guid.Parse("62de1aa5-70b0-4934-9324-680896466fe1");
         private static readonly Guid LiveShareGuestUIContextGuid = Guid.Parse("fd93f3eb-60da-49cd-af15-acda729e357e");
+
         private readonly ProjectHierarchyInspector _projectHierarchyInspector;
         private readonly Lazy<IVsUIShellOpenDocument> _vsUIShellOpenDocument;
         private readonly IVsFeatureFlags _featureFlags;
+
+        private readonly MemoryCache<bool> _projectSupportsRazorLSPCache;
+
         private bool? _featureFlagEnabled;
         private bool? _environmentFeatureEnabled;
         private bool? _isVSServer;
@@ -42,6 +48,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
                 return shellOpenDocument;
             });
+
+            _projectSupportsRazorLSPCache = new MemoryCache<bool>();
         }
 
         // Test constructor
@@ -90,7 +98,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return true;
             }
 
-            if (IsFeatureFlagEnabled())
+            if (IsFeatureFlagEnabledCached())
             {
                 return true;
             }
@@ -125,24 +133,35 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         // Private protected virtual for testing
         private protected virtual bool ProjectSupportsRazorLSPEditor(string documentMoniker, IVsHierarchy hierarchy)
         {
+            if (_projectSupportsRazorLSPCache.TryGetValue(documentMoniker, out var isSupported))
+            {
+                return isSupported;
+            }
+
             if (hierarchy == null)
             {
                 var hr = _vsUIShellOpenDocument.Value.IsDocumentInAProject(documentMoniker, out var uiHierarchy, out _, out _, out _);
                 hierarchy = uiHierarchy;
                 if (!ErrorHandler.Succeeded(hr) || hierarchy == null)
                 {
-                    return false;
+                    return CacheProjectRazorLSPEditorSupport(documentMoniker, false);
                 }
             }
 
             if (_projectHierarchyInspector.HasCapability(documentMoniker, hierarchy, DotNetCoreCSharpCapability))
             {
                 // .NET Core project that supports C#
-                return true;
+                return CacheProjectRazorLSPEditorSupport(documentMoniker, true);
             }
 
             // Not a C# .NET Core project. This typically happens for legacy Razor scenarios
-            return false;
+            return CacheProjectRazorLSPEditorSupport(documentMoniker, false);
+        }
+
+        private bool CacheProjectRazorLSPEditorSupport(string documentMoniker, bool isSupported)
+        {
+            _projectSupportsRazorLSPCache.Set(documentMoniker, isSupported);
+            return isSupported;
         }
 
         // Private protected virtual for testing
@@ -159,7 +178,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         }
 
         // Private protected virtual for testing
-        private protected virtual bool IsFeatureFlagEnabled()
+        private protected virtual bool IsFeatureFlagEnabledCached()
         {
             if (!_featureFlagEnabled.HasValue)
             {

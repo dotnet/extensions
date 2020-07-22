@@ -236,7 +236,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             private protected override bool EnvironmentFeatureEnabled() => EnvironmentFeatureEnabledValue;
 
-            private protected override bool IsFeatureFlagEnabled() => IsFeatureFlagEnabledValue;
+            private protected override bool IsFeatureFlagEnabledCached() => IsFeatureFlagEnabledValue;
 
             private protected override bool IsLiveShareGuest() => IsLiveShareGuestValue;
 

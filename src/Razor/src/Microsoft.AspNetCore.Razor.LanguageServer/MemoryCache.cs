@@ -6,11 +6,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Services
+namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     // We've created our own MemoryCache here, ideally we would use the one in Microsoft.Extensions.Caching.Memory,
     // but until we update O# that causes an Assembly load problem.
-    internal class MemoryCache<TResult> where TResult: class
+    internal class MemoryCache<TResult>
     {
         protected virtual int SizeLimit { get; } = 50;
 
@@ -21,16 +21,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Services
             _dict = new ConcurrentDictionary<string, CacheEntry>(concurrencyLevel: 2, capacity: SizeLimit);
         }
 
-        public TResult Get(string key)
+        public bool TryGetValue(string key, out TResult result)
         {
-            _dict.TryGetValue(key, out var value);
+            var entryFound = _dict.TryGetValue(key, out var value);
 
-            if (value != null)
+            if (entryFound)
             {
                 value.LastAccess = DateTime.UtcNow;
+                result = value.Result;
+            }
+            else
+            {
+                result = default;
             }
 
-            return value?.Result;
+            return entryFound;
         }
 
         public void Set(string key, TResult value)

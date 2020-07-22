@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Services;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 {
     public class MemoryCacheTest
     {
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             Thread.Sleep(millisecondsTimeout: 10);
 
-            cache.Get(key);
+            cache.TryGetValue(key, out _);
             var newAccessTime = cache.GetAccessTime(key);
 
             Assert.True(newAccessTime > oldAccessTime, "New AccessTime should be greater than old");
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             cache.Set(key, value);
 
-            var result = cache.Get(key);
+            cache.TryGetValue(key, out var result);
 
             Assert.Same(value, result);
         }
@@ -67,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             var cache = new TestMemoryCache();
             var key = GetKey();
 
-            var value = cache.Get(key);
+            cache.TryGetValue(key, out var value);
 
             Assert.Null(value);
         }
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var value = cache.Get(key: null);
+                cache.TryGetValue(key: null, out var result);
             });
         }
 
