@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
+namespace Microsoft.CodeAnalysis.Razor.Serialization
 {
     internal class SerializedRazorExtension : RazorExtension
     {

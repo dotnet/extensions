@@ -4,9 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
+namespace Microsoft.CodeAnalysis.Razor.Serialization
 {
     internal class RazorExtensionJsonConverter : JsonConverter
     {
@@ -24,8 +23,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
                 return null;
             }
 
-            var obj = JObject.Load(reader);
-            var extensionName = obj[nameof(RazorExtension.ExtensionName)].Value<string>();
+            var extensionName = string.Empty;
+
+            reader.ReadProperties(propertyName =>
+            {
+                switch (propertyName)
+                {
+                    case nameof(RazorExtension.ExtensionName):
+                        if (reader.Read())
+                        {
+                            extensionName = (string)reader.Value;
+                        }
+                        break;
+                }
+            });
 
             return new SerializedRazorExtension(extensionName);
         }

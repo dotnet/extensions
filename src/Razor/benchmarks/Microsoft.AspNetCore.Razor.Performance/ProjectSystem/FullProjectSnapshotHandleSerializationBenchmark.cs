@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
             Serializer.Converters.Add(FullProjectSnapshotHandleJsonConverter.Instance);
         }
 
-        [Benchmark(Description = "Razor ProjectSnapshotHandle Roundtrip JsonConverter Serialization")]
+        [Benchmark(Description = "Razor FullProjectSnapshotHandle Roundtrip JsonConverter Serialization")]
         public void TagHelper_JsonConvert_Serialization_RoundTrip()
         {
             var stream = new MemoryStream(FullProjectSnapshotBuffer);
