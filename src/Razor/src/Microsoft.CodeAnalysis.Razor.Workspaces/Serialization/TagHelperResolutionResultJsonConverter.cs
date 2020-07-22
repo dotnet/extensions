@@ -29,8 +29,27 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
                 return null;
             }
 
-            var descriptors = reader.ReadPropertyArray<TagHelperDescriptor>(_serializer, nameof(TagHelperResolutionResult.Descriptors));
-            var diagnostics = reader.ReadPropertyArray<RazorDiagnostic>(_serializer, nameof(TagHelperResolutionResult.Diagnostics));
+            var descriptors = Array.Empty<TagHelperDescriptor>();
+            var diagnostics = Array.Empty<RazorDiagnostic>();
+
+            reader.ReadProperties(propertyName =>
+            {
+                switch (propertyName)
+                {
+                    case nameof(TagHelperResolutionResult.Descriptors):
+                        if (reader.Read())
+                        {
+                            descriptors = _serializer.Deserialize<TagHelperDescriptor[]>(reader);
+                        }
+                        break;
+                    case nameof(TagHelperResolutionResult.Diagnostics):
+                        if (reader.Read())
+                        {
+                            diagnostics = _serializer.Deserialize<RazorDiagnostic[]>(reader);
+                        }
+                        break;
+                }
+            });
 
             reader.ReadTokenAndAdvance(JsonToken.EndObject, out _);
 
