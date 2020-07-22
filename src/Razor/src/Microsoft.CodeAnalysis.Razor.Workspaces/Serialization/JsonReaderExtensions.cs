@@ -64,6 +64,7 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
                 {
                     case JsonToken.PropertyName:
                         Debug.Assert(reader.Value.ToString() == propertyName);
+
                         if (reader.Read())
                         {
                             return reader.ReadArray<T>(serializer);

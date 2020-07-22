@@ -123,32 +123,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 result = SetResolveData(result.Value, serverKind);
             }
 
-            // This is a bit fraught. Basically in the scenario That someone types "@<slight pause>{" they'll get @__builder because '{' is a commit character.
-            // Our solution is to make the results in this case empty, which is a bit of a lie.
-            // It's the best we can do for now, if a user complains we can revisit.
-            if (result.HasValue && request.Context.TriggerCharacter != null && request.Context.TriggerCharacter.Equals("@"))
-            {
-                var items = result.Value.Match(
-                    itemArray => itemArray,
-                    list =>
-                    {
-                        return list?.Items;
-                    });
-
-                foreach(var item in items)
-                {
-                    item.InsertText = string.Empty;
-                }
-
-                var list = new CompletionList
-                {
-                    IsIncomplete = true,
-                    Items = items,
-                };
-
-                return list;
-            }
-
             return result;
         }
 
