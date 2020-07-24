@@ -246,7 +246,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     ConfigurationFilePath = args.ConfigurationFilePath,
                 };
 
-                await _requestInvoker.CustomRequestServerAsync<MonitorProjectConfigurationFilePathParams, object>(
+                await _requestInvoker.ReinvokeRequestOnServerAsync<MonitorProjectConfigurationFilePathParams, object>(
                     LanguageServerConstants.RazorMonitorProjectConfigurationFilePathEndpoint,
                     LanguageServerKind.Razor,
                     parameter,
