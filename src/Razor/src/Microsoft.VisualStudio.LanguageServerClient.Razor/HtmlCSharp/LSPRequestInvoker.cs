@@ -13,11 +13,5 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             LanguageServerKind serverKind,
             TIn parameters,
             CancellationToken cancellationToken);
-
-        public abstract Task<TOut> CustomRequestServerAsync<TIn, TOut>(
-            string method,
-            LanguageServerKind serverKind,
-            TIn parameters,
-            CancellationToken cancellationToken);
     }
 }

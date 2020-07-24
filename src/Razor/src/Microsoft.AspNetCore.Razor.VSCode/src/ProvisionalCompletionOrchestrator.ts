@@ -86,25 +86,25 @@ export class ProvisionalCompletionOrchestrator {
             return null;
         }
 
-        const characterBeforeTriggerPosition = new vscode.Position(
+        const previousCharacterPosition = new vscode.Position(
             htmlPosition.line,
-            htmlPosition.character - 2,
+            htmlPosition.character - 1,
         );
-        const characterBeforeTriggerProjection = await this.serviceClient.languageQuery(
-            characterBeforeTriggerPosition,
+        const previousCharacterQuery = await this.serviceClient.languageQuery(
+            previousCharacterPosition,
             hostDocumentUri);
 
-        if (characterBeforeTriggerProjection.kind !== LanguageKind.CSharp) {
+        if (previousCharacterQuery.kind !== LanguageKind.CSharp) {
             return null;
         }
 
         const document = await this.documentManager.getDocument(hostDocumentUri);
         const projectedDocument = document.csharpDocument as CSharpProjectedDocument;
-        const provisionalDotInsertIndex = characterBeforeTriggerProjection.positionIndex + 1;
+        const absoluteIndex = previousCharacterQuery.positionIndex;
 
         if (this.logger.verboseEnabled) {
             this.logger.logVerbose(`Applying provisional completion on ${projectedDocument.uri} ` +
-                `at (${characterBeforeTriggerProjection.position.line}, ${characterBeforeTriggerProjection.position.character})`);
+                `at (${previousCharacterQuery.position.line}, ${previousCharacterQuery.position.character})`);
         }
 
         // Edit the projected document to contain a '.'. This allows C# completion to provide valid completion items
@@ -114,7 +114,7 @@ export class ProvisionalCompletionOrchestrator {
         //  2. The user swaps active documents
         //  3. The user selects different content
         //  4. The projected document gets an update request
-        projectedDocument.addProvisionalDotAt(provisionalDotInsertIndex);
+        projectedDocument.addProvisionalDotAt(absoluteIndex);
         this.projectedCSharpProvider.ensureDocumentContent(projectedDocument.uri);
 
         // We open and then re-save because we're adding content to the text document within an event.
@@ -122,13 +122,13 @@ export class ProvisionalCompletionOrchestrator {
         const newDocument = await vscode.workspace.openTextDocument(projectedDocument.uri);
         await newDocument.save();
 
-        const completionRetriggerLocation = new vscode.Position(
-            characterBeforeTriggerProjection.position.line,
-            characterBeforeTriggerProjection.position.character + 2);
+        const provisionalPosition = new vscode.Position(
+            previousCharacterQuery.position.line,
+            previousCharacterQuery.position.character + 1);
         const completionList = await RazorCompletionItemProvider.getCompletions(
             projectedDocument.uri,
             htmlPosition,
-            completionRetriggerLocation,
+            provisionalPosition,
             completionContext.triggerCharacter);
 
         // We track when we add provisional dots to avoid doing unnecessary work on commonly invoked events.
