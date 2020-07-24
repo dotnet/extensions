@@ -63,7 +63,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 ProjectedRanges = projectedRanges
             };
 
-            var documentMappingResponse = await _requestInvoker.CustomRequestServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(
+            var documentMappingResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(
                 LanguageServerConstants.RazorMapToDocumentRangesEndpoint,
                 LanguageServerKind.Razor,
                 mapToDocumentRangeParams,
