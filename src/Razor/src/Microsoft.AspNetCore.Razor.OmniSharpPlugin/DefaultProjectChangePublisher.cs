@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     [Export(typeof(IOmniSharpProjectSnapshotManagerChangeTrigger))]
     internal class DefaultProjectChangePublisher : ProjectChangePublisher, IOmniSharpProjectSnapshotManagerChangeTrigger
     {
+        private const string TempFileExt = ".temp";
+
         // Internal for testing
         internal readonly Dictionary<string, Task> _deferredPublishTasks;
         private readonly ILogger<DefaultProjectChangePublisher> _logger;
@@ -73,9 +75,31 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         // Virtual for testing
         protected virtual void SerializeToFile(OmniSharpProjectSnapshot projectSnapshot, string publishFilePath)
         {
-            var fileInfo = new FileInfo(publishFilePath);
-            using var writer = fileInfo.CreateText();
-            _serializer.Serialize(writer, projectSnapshot);
+            // We need to avoid having an incomplete file at any point, but our
+            // project.razor.json is large enough that it will be written as multiple operations.
+            var tempFilePath = string.Concat(publishFilePath, TempFileExt);
+            var tempFileInfo = new FileInfo(tempFilePath);
+
+            if (tempFileInfo.Exists)
+            {
+                // This could be caused by failures during serialization or early process termination.
+                tempFileInfo.Delete();
+            }
+
+            // This needs to be in explicit brackets because the operation needs to be completed
+            // by the time we move the tempfile into its place
+            using (var writer = tempFileInfo.CreateText())
+            {
+                _serializer.Serialize(writer, projectSnapshot);
+
+                var fileInfo = new FileInfo(publishFilePath);
+                if (fileInfo.Exists)
+                {
+                    fileInfo.Delete();
+                }
+            }
+
+            tempFileInfo.MoveTo(publishFilePath);
         }
 
         // Internal for testing
