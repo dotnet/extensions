@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 {
-    public class DefaultTagHelperFactsService : DefaultTagHelperServiceTestBase
+    public class DefaultTagHelperFactsServiceTest : DefaultTagHelperServiceTestBase
     {
         [Fact]
         public void StringifyAttributes_DirectiveAttribute()

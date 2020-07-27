@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             _documentResolver = documentResolver ?? throw new ArgumentNullException(nameof(documentResolver));
         }
 
-        public override string Action => LanguageServerConstants.CodeActions.AddUsings;
+        public override string Action => LanguageServerConstants.CodeActions.AddUsing;
 
         public override async Task<WorkspaceEdit> ResolveAsync(JObject data, CancellationToken cancellationToken)
         {

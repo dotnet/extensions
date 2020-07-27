@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
             public const string CreateComponentFromTag = "CreateComponentFromTag";
 
-            public const string AddUsings = "AddUsings";
+            public const string AddUsing = "AddUsing";
         }
     }
 }
