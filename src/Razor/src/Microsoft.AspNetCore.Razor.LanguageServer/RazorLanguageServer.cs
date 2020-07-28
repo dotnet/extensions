@@ -187,6 +187,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<RazorHoverInfoService, DefaultRazorHoverInfoService>();
                         services.AddSingleton<HtmlFactsService, DefaultHtmlFactsService>();
                         services.AddSingleton<WorkspaceDirectoryPathResolver, DefaultWorkspaceDirectoryPathResolver>();
+                        services.AddSingleton<RazorComponentSearchEngine, DefaultRazorComponentSearchEngine>();
                     }));
 
             try
