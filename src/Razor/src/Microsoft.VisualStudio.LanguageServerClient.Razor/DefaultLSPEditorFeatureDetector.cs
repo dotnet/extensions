@@ -3,7 +3,6 @@
 
 using System;
 using System.Composition;
-using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
