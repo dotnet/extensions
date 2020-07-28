@@ -156,7 +156,14 @@ export class RazorDocumentManager implements IRazorDocumentManager {
     }
 
     private addDocument(uri: vscode.Uri) {
-        const document = createDocument(uri);
+        const path = getUriPath(uri);
+        let document = this.razorDocuments[path];
+        if (document) {
+            this.logger.logMessage(`Skipping document creation for '${path}' because it already exists.`);
+            return document;
+        }
+
+        document = createDocument(uri);
         this.razorDocuments[document.path] = document;
 
         this.notifyDocumentChange(document, RazorDocumentChangeKind.added);
