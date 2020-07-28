@@ -138,31 +138,6 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         }
 
         [Fact]
-        public async Task ProjectAdded_PublishesToCorrectFilePath()
-        {
-            // Arrange
-            var snapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
-            var serializationSuccessful = false;
-            var expectedPublishFilePath = "/path/to/obj/bin/Debug/project.razor.json";
-            var publisher = new TestProjectChangePublisher(
-                LoggerFactory,
-                onSerializeToFile: (snapshot, publishFilePath) =>
-                {
-                    Assert.Equal(expectedPublishFilePath, publishFilePath);
-                    serializationSuccessful = true;
-                });
-            publisher.Initialize(snapshotManager);
-            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
-            publisher.SetPublishFilePath(hostProject.FilePath, expectedPublishFilePath);
-
-            // Act
-            await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject));
-
-            // Assert
-            Assert.True(serializationSuccessful);
-        }
-
-        [Fact]
         public async Task ProjectRemoved_UnSetPublishFilePath_Noops()
         {
             // Arrange

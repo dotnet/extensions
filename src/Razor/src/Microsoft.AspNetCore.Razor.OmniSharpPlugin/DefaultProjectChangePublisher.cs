@@ -91,15 +91,15 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             using (var writer = tempFileInfo.CreateText())
             {
                 _serializer.Serialize(writer, projectSnapshot);
-
-                var fileInfo = new FileInfo(publishFilePath);
-                if (fileInfo.Exists)
-                {
-                    fileInfo.Delete();
-                }
             }
 
-            tempFileInfo.MoveTo(publishFilePath);
+            var fileInfo = new FileInfo(publishFilePath);
+            if (fileInfo.Exists)
+            {
+                fileInfo.Delete();
+            }
+
+            File.Move(tempFileInfo.FullName, publishFilePath);
         }
 
         // Internal for testing
@@ -133,14 +133,14 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         // Internal for testing
         internal void EnqueuePublish(OmniSharpProjectSnapshot projectSnapshot)
         {
-            // A race is not possible here because we use the main thread to synchronize the updates
-            // by capturing the sync context.
-
-            _pendingProjectPublishes[projectSnapshot.FilePath] = projectSnapshot;
-
-            if (!_deferredPublishTasks.TryGetValue(projectSnapshot.FilePath, out var update) || update.IsCompleted)
+            lock (_publishLock)
             {
-                _deferredPublishTasks[projectSnapshot.FilePath] = PublishAfterDelay(projectSnapshot.FilePath);
+                _pendingProjectPublishes[projectSnapshot.FilePath] = projectSnapshot;
+
+                if (!_deferredPublishTasks.TryGetValue(projectSnapshot.FilePath, out var update) || update.IsCompleted)
+                {
+                    _deferredPublishTasks[projectSnapshot.FilePath] = PublishAfterDelay(projectSnapshot.FilePath);
+                }
             }
         }
 
@@ -155,25 +155,36 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     // These changes can come in bursts so we don't want to overload the publishing system. Therefore,
                     // we enqueue publishes and then publish the latest project after a delay.
 
-                    EnqueuePublish(args.Newer);
-                    break;
-                case OmniSharpProjectChangeKind.ProjectAdded:
-                    Publish(args.Newer);
-                    break;
-                case OmniSharpProjectChangeKind.ProjectRemoved:
-                    lock (_publishLock)
+                    if (args.Newer.ProjectWorkspaceState != null)
                     {
-                        var oldProjectFilePath = args.Older.FilePath;
-                        if (_publishFilePathMappings.TryGetValue(oldProjectFilePath, out var publishFilePath))
-                        {
-                            if (_pendingProjectPublishes.TryGetValue(oldProjectFilePath, out _))
-                            {
-                                // Project was removed while a delayed publish was in flight. Clear the in-flight publish so it noops.
-                                _pendingProjectPublishes.Remove(oldProjectFilePath);
-                            }
-                        }
+                        EnqueuePublish(args.Newer);
                     }
                     break;
+                case OmniSharpProjectChangeKind.ProjectRemoved:
+                    RemovePublishingData(args.Older);
+                    break;
+
+                // We don't care about ProjectAdded scenarios because a newly added project does not have a workspace state associated with it meaning
+                // it isn't interesting for us to serialize quite yet.
+            }
+        }
+
+        internal void RemovePublishingData(OmniSharpProjectSnapshot projectSnapshot)
+        {
+            lock (_publishLock)
+            {
+                var oldProjectFilePath = projectSnapshot.FilePath;
+                if (!_publishFilePathMappings.TryGetValue(oldProjectFilePath, out var configurationFilePath))
+                {
+                    // If we don't track the value in PublishFilePathMappings that means it's already been removed, do nothing.
+                    return;
+                }
+
+                if (_pendingProjectPublishes.TryGetValue(oldProjectFilePath, out _))
+                {
+                    // Project was removed while a delayed publish was in flight. Clear the in-flight publish so it noops.
+                    _pendingProjectPublishes.Remove(oldProjectFilePath);
+                }
             }
         }
 
@@ -181,15 +192,19 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         {
             await Task.Delay(EnqueueDelay);
 
-            if (!_pendingProjectPublishes.TryGetValue(projectFilePath, out var projectSnapshot))
+            lock (_publishLock)
             {
-                // Project was removed while waiting for the publish delay.
-                return;
+                if (!_pendingProjectPublishes.TryGetValue(projectFilePath, out var projectSnapshot))
+                {
+                    // Project was removed while waiting for the publish delay.
+                    return;
+                }
+
+                _pendingProjectPublishes.Remove(projectFilePath);
+
+                Publish(projectSnapshot);
             }
 
-            _pendingProjectPublishes.Remove(projectFilePath);
-
-            Publish(projectSnapshot);
         }
     }
 }
