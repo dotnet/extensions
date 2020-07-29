@@ -3,15 +3,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.Composition;
+using System.ComponentModel.Composition;
 using System.IO;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.VisualStudio.OperationProgress;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json;
+using Task = System.Threading.Tasks.Task;
+using Shared = System.Composition.SharedAttribute;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
@@ -26,6 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private const string TempFileExt = ".temp";
         private readonly RazorLogger _logger;
         private readonly LSPEditorFeatureDetector _lspEditorFeatureDetector;
+        private readonly IVsOperationProgressStatusService _operationProgressStatusService = null;
         private readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
         private readonly Dictionary<string, ProjectSnapshot> _pendingProjectPublishes;
         private readonly object _publishLock;
@@ -38,6 +42,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public DefaultRazorProjectChangePublisher(
             LSPEditorFeatureDetector lSPEditorFeatureDetector,
             ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
+            [Import(typeof(SVsServiceProvider))] IServiceProvider serviceProvider,
             RazorLogger logger)
         {
             if (lSPEditorFeatureDetector is null)
@@ -55,6 +60,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            if (serviceProvider is null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
             _deferredPublishTasks = new Dictionary<string, Task>(FilePathComparer.Instance);
             _pendingProjectPublishes = new Dictionary<string, ProjectSnapshot>(FilePathComparer.Instance);
             _publishLock = new object();
@@ -66,6 +76,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
             _serializer.Converters.Add(RazorConfigurationJsonConverter.Instance);
             _serializer.Converters.Add(CodeAnalysis.Razor.Workspaces.Serialization.ProjectSnapshotJsonConverter.Instance);
+
+            if (serviceProvider.GetService(typeof(SVsOperationProgress)) is IVsOperationProgressStatusService service)
+            {
+                _operationProgressStatusService = service;
+            }
         }
 
         // Internal settable for testing
@@ -147,7 +162,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                         return;
                     }
 
-                    SerializeToFile(projectSnapshot, configurationFilePath);
+
+                    // We don't want to serialize the project until it's ready to avoid flashing as the project loads different parts.
+                    // Since the project.razor.json from last session likely still exists the experience is unlikely to be degraded by this delay.
+                    // An exception is made for when there's no existing project.razor.json because some flashing is preferable to having no TagHelper knowledge.
+                    if (ShouldSerialize(configurationFilePath))
+                    {
+                        SerializeToFile(projectSnapshot, configurationFilePath);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -204,6 +226,23 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             tempFileInfo.MoveTo(publishFilePath);
+        }
+
+        protected virtual bool ShouldSerialize(string configurationFilePath)
+        {
+            if (!File.Exists(configurationFilePath))
+            {
+                return true;
+            }
+
+            var status = _operationProgressStatusService?.GetStageStatusForSolutionLoad(CommonOperationProgressStageIds.Intellisense);
+
+            if (status is null)
+            {
+                return true;
+            }
+
+            return !status.IsInProgress;
         }
 
         private async Task PublishAfterDelayAsync(string projectFilePath)

@@ -9,14 +9,44 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.VisualStudio.OperationProgress;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Threading;
 using Moq;
 using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
 {
+    public class TestServiceProvider: IServiceProvider
+    {
+        public TestServiceProvider()
+        {
+        }
+
+        public object GetService(Type serviceType)
+        {
+            return new TestVsOperationProgressStatusService();
+        }
+
+        private class TestVsOperationProgressStatusService : IVsOperationProgressStatusService
+        {
+
+            public TestVsOperationProgressStatusService()
+            {
+            }
+
+            public IVsOperationProgressStageStatus GetStageStatus(string operationProgressStageId)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IVsOperationProgressStageStatusForSolutionLoad GetStageStatusForSolutionLoad(string operationProgressStageId)
+            {
+                throw new NotImplementedException();
+            }
+        }
+    }
+
     public class DefaultRazorProjectChangePublisherTest : LanguageServerTestBase
     {
         private readonly RazorLogger RazorLogger = Mock.Of<RazorLogger>();
@@ -79,7 +109,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
             publisher.ProjectSnapshotManager_Changed(null, args);
 
             // Assert
-            await Task.Delay(publisher.EnqueueDelay * 3).ConfigureAwait(false);
+            var kvp = Assert.Single(publisher._deferredPublishTasks);
+            await kvp.Value.ConfigureAwait(false);
 
             Assert.False(attemptedToSerialize);
         }
@@ -212,6 +243,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
             // Act
             await RunOnForegroundAsync(() => snapshotManager.ProjectAdded(hostProject)).ConfigureAwait(false);
 
+            Assert.Empty(publisher._deferredPublishTasks);
+
             // Assert
             Assert.False(serializationSuccessful);
         }
@@ -230,6 +263,44 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
 
             // Act & Assert
             await RunOnForegroundAsync(() => snapshotManager.ProjectRemoved(hostProject)).ConfigureAwait(false);
+
+            Assert.Empty(publisher._deferredPublishTasks);
+        }
+
+        [ForegroundFact]
+        public async Task ProjectAdded_DoesNotFireWhenNotReadyAsync()
+        {
+            // Arrange
+            var snapshotManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
+            var serializationSuccessful = false;
+            var expectedConfigurationFilePath = "/path/to/obj/bin/Debug/project.razor.json";
+
+            var publisher = new TestDefaultRazorProjectChangePublisher(
+                ProjectConfigurationFilePathStore,
+                RazorLogger,
+                onSerializeToFile: (snapshot, configurationFilePath) =>
+                {
+                    Assert.Equal(expectedConfigurationFilePath, configurationFilePath);
+                    serializationSuccessful = true;
+                },
+                shouldSerialize: false);
+            publisher.Initialize(snapshotManager);
+            var projectFilePath = "/path/to/project.csproj";
+            var hostProject = new HostProject(projectFilePath, RazorConfiguration.Default, "TestRootNamespace");
+            ProjectConfigurationFilePathStore.Set(hostProject.FilePath, expectedConfigurationFilePath);
+            var projectWorkspaceState = new ProjectWorkspaceState(Array.Empty<TagHelperDescriptor>(), CodeAnalysis.CSharp.LanguageVersion.Default);
+
+            // Act
+            await RunOnForegroundAsync(() =>
+            {
+                snapshotManager.ProjectAdded(hostProject);
+                snapshotManager.ProjectWorkspaceStateChanged(projectFilePath, projectWorkspaceState);
+            }).ConfigureAwait(false);
+
+            // Assert
+            var kvp = Assert.Single(publisher._deferredPublishTasks);
+            await kvp.Value.ConfigureAwait(false);
+            Assert.False(serializationSuccessful);
         }
 
         internal ProjectSnapshot CreateProjectSnapshot(string projectFilePath, ProjectWorkspaceState projectWorkspaceState = null)
@@ -287,6 +358,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
 
             private readonly Action<ProjectSnapshot, string> _onSerializeToFile;
 
+            private readonly bool _shouldSerialize;
+
             static TestDefaultRazorProjectChangePublisher()
             {
                 _lspEditorFeatureDetector
@@ -297,13 +370,20 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
             public TestDefaultRazorProjectChangePublisher(
                 ProjectConfigurationFilePathStore projectStatePublishFilePathStore,
                 RazorLogger logger,
-                Action<ProjectSnapshot, string> onSerializeToFile = null)
-                : base(_lspEditorFeatureDetector.Object, projectStatePublishFilePathStore, logger)
+                Action<ProjectSnapshot, string> onSerializeToFile = null,
+                bool shouldSerialize = true)
+                : base(_lspEditorFeatureDetector.Object, projectStatePublishFilePathStore, new TestServiceProvider(), logger)
             {
                 _onSerializeToFile = onSerializeToFile ?? ((_, __) => throw new XunitException("SerializeToFile should not have been called."));
+                _shouldSerialize = shouldSerialize;
             }
 
             protected override void SerializeToFile(ProjectSnapshot projectSnapshot, string configurationFilePath) => _onSerializeToFile?.Invoke(projectSnapshot, configurationFilePath);
+
+            protected override bool ShouldSerialize(string configurationFilePath)
+            {
+                return _shouldSerialize;
+            }
         }
     }
 }
