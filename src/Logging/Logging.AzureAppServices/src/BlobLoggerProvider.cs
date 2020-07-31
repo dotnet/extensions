@@ -57,10 +57,19 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         internal override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
         {
             var eventGroups = messages.GroupBy(GetBlobKey);
+            DateTime currDate = DateTime.Now;
             foreach (var eventGroup in eventGroups)
             {
                 var key = eventGroup.Key;
-                var blobName = $"{_appName}/{key.Year}/{key.Month:00}/{key.Day:00}/{key.Hour:00}/{_fileName}";
+                string blobName;
+
+                if (!string.IsNullOrEmpty(AzureAppServicesFlatBlobLoggerFactoryExtension.BlobFileName))
+                {
+                    string filename = $"{AzureAppServicesFlatBlobLoggerFactoryExtension.BlobFileName}{currDate.Year}{currDate.Month:00}{currDate.Day:00}.txt";
+                    blobName = $"{_appName}/{filename}";
+                }
+                else
+                    blobName = $"{_appName}/{key.Year}/{key.Month:00}/{key.Day:00}/{key.Hour:00}/{_fileName}";
 
                 var blob = _blobReferenceFactory(blobName);
 
