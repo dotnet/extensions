@@ -4,11 +4,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
@@ -16,11 +15,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultRazorComponentSearchEngine : RazorComponentSearchEngine
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectSnapshotManager _projectSnapshotManager;
 
-        public DefaultRazorComponentSearchEngine(ProjectSnapshotManager projectSnapshotManager)
+        public DefaultRazorComponentSearchEngine(
+            ForegroundDispatcher foregroundDispatcher,
+            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor)
         {
-            _projectSnapshotManager = projectSnapshotManager ?? throw new ArgumentNullException(nameof(projectSnapshotManager));
+            _foregroundDispatcher = foregroundDispatcher ?? throw new ArgumentNullException(nameof(foregroundDispatcher));
+            _projectSnapshotManager = projectSnapshotManagerAccessor?.Instance ?? throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
         }
 
         /// <summary>Search for a component in a project based on its tag name and fully qualified name.</summary>
@@ -43,7 +46,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var namespaceName = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(namespaceSpan, tagHelper.Name);
             var typeName = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(typeSpan, tagHelper.Name);
 
-            foreach (var project in _projectSnapshotManager.Projects)
+            var projects = await Task.Factory.StartNew(() =>
+            {
+                return _projectSnapshotManager.Projects.ToArray();
+            }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
+
+            foreach (var project in projects)
             {
                 if (!project.FilePath.EndsWith($"{tagHelper.AssemblyName}.csproj", FilePathComparison.Instance))
                 {

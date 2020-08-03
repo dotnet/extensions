@@ -17,8 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 {
     public class DefaultRazorComponentSearchEngineTest : LanguageServerTestBase
     {
-        private static ProjectSnapshotManager _projectSnapshotManager = CreateProjectSnapshotManager();
-        private static readonly DefaultRazorComponentSearchEngine _searchEngine = new DefaultRazorComponentSearchEngine(_projectSnapshotManager);
+        private static ProjectSnapshotManagerAccessor _projectSnapshotManager = CreateProjectSnapshotManagerAccessor();
 
         [Fact]
         public async void Handle_SearchFound()
@@ -26,10 +25,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             // Arrange
             var tagHelperDescriptor1 = CreateRazorComponentTagHelperDescriptor("First", "First.Components", "Component1");
             var tagHelperDescriptor2 = CreateRazorComponentTagHelperDescriptor("Second", "Second.Components", "Component3");
+            var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, _projectSnapshotManager);
 
             // Act
-            var documentSnapshot1 = await _searchEngine.TryLocateComponentAsync(tagHelperDescriptor1).ConfigureAwait(false);
-            var documentSnapshot2 = await _searchEngine.TryLocateComponentAsync(tagHelperDescriptor2).ConfigureAwait(false);
+            var documentSnapshot1 = await searchEngine.TryLocateComponentAsync(tagHelperDescriptor1).ConfigureAwait(false);
+            var documentSnapshot2 = await searchEngine.TryLocateComponentAsync(tagHelperDescriptor2).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(documentSnapshot1);
@@ -41,9 +41,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         {
             // Arrange
             var tagHelperDescriptor = CreateRazorComponentTagHelperDescriptor("First", "Test", "Component2");
+            var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, _projectSnapshotManager);
 
             // Act
-            var documentSnapshot = await _searchEngine.TryLocateComponentAsync(tagHelperDescriptor).ConfigureAwait(false);
+            var documentSnapshot = await searchEngine.TryLocateComponentAsync(tagHelperDescriptor).ConfigureAwait(false);
 
             // Assert
             Assert.NotNull(documentSnapshot);
@@ -54,9 +55,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         {
             // Arrange
             var tagHelperDescriptor = CreateRazorComponentTagHelperDescriptor("Third", "First.Components", "Component3");
+            var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, _projectSnapshotManager);
 
             // Act
-            var documentSnapshot = await _searchEngine.TryLocateComponentAsync(tagHelperDescriptor).ConfigureAwait(false);
+            var documentSnapshot = await searchEngine.TryLocateComponentAsync(tagHelperDescriptor).ConfigureAwait(false);
 
             // Assert
             Assert.Null(documentSnapshot);
@@ -67,9 +69,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         {
             // Arrange
             var tagHelperDescriptor = CreateRazorComponentTagHelperDescriptor("First", "First.Components", "Component2");
+            var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, _projectSnapshotManager);
 
             // Act
-            var documentSnapshot = await _searchEngine.TryLocateComponentAsync(tagHelperDescriptor).ConfigureAwait(false);
+            var documentSnapshot = await searchEngine.TryLocateComponentAsync(tagHelperDescriptor).ConfigureAwait(false);
 
             // Assert
             Assert.Null(documentSnapshot);
@@ -80,9 +83,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         {
             // Arrange
             var tagHelperDescriptor = CreateRazorComponentTagHelperDescriptor("First", "First.Components", "Component3");
+            var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, _projectSnapshotManager);
 
             // Act
-            var documentSnapshot = await _searchEngine.TryLocateComponentAsync(tagHelperDescriptor).ConfigureAwait(false);
+            var documentSnapshot = await searchEngine.TryLocateComponentAsync(tagHelperDescriptor).ConfigureAwait(false);
 
             // Assert
             Assert.Null(documentSnapshot);
@@ -101,7 +105,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, builder => {
                 builder.AddDirective(NamespaceDirective.Directive);
-                builder.SetRootNamespace(rootNamespaceName);
             });
             var codeDocument = projectEngine.Process(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), Array.Empty<TagHelperDescriptor>());
 
@@ -118,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             return documentSnapshot;
         }
     
-        internal static ProjectSnapshotManager CreateProjectSnapshotManager()
+        internal static ProjectSnapshotManagerAccessor CreateProjectSnapshotManagerAccessor()
         {
             var firstProject = Mock.Of<ProjectSnapshot>(p =>
                 p.FilePath == "c:/First/First.csproj" &&
@@ -131,7 +134,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
                 p.DocumentFilePaths == new[] { "c:/Second/Component3.razor" } &&
                 p.GetDocument("c:/Second/Component3.razor") == CreateRazorDocumentSnapshot("", "c:/Second/Component3.razor", "Second.Components"));
 
-            return Mock.Of<ProjectSnapshotManager>(p => p.Projects == new[] { firstProject, secondProject });
+            var projectSnapshotManager = Mock.Of<ProjectSnapshotManagerBase>(p => p.Projects == new[] { firstProject, secondProject });
+            return new TestProjectSnapshotManagerAccessor(projectSnapshotManager);
+        }
+
+        internal class TestProjectSnapshotManagerAccessor : ProjectSnapshotManagerAccessor
+        {
+            public TestProjectSnapshotManagerAccessor(ProjectSnapshotManagerBase instance)
+            {
+                Instance = instance;
+            }
+
+            public override ProjectSnapshotManagerBase Instance { get; }
         }
     }
 }
