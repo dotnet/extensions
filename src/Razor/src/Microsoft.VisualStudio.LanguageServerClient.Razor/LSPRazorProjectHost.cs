@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private static readonly string[] _applicableContentTypes = new string[]
         {
             RazorLSPConstants.RazorLSPContentTypeName,
-            RazorLSPConstants.CSharpContentTypeName,
+            RazorLSPConstants.CSharpLSPContentTypeName,
             RazorLSPConstants.HtmlLSPContentTypeName,
         };
 
@@ -89,7 +89,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private static List<Lazy<ILanguageClient, ILanguageClientMetadata>> GetApplicableClients(IEnumerable<Lazy<ILanguageClient, IDictionary<string, object>>> languageClients)
         {
             var applicableClients = new List<Lazy<ILanguageClient, ILanguageClientMetadata>>();
-
             foreach (var client in languageClients)
             {
                 if (!client.Metadata.TryGetValue(nameof(ILanguageClientMetadata.ContentTypes), out var contentTypeValue) ||
@@ -105,34 +104,25 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     clientName = clientNameValue.ToString();
                 }
 
-                var disableUserExperience = false;
-                if (client.Metadata.TryGetValue("DisableUserExperience", out var disableUserExperienceValue))
-                {
-                    disableUserExperience = (bool)disableUserExperienceValue;
-                }
-
                 applicableClients.Add(new Lazy<ILanguageClient, ILanguageClientMetadata>(
                     () => { return client.Value; },
-                    new LanguageClientMetadata(clientName, contentTypes, disableUserExperience)));
+                    new LanguageClientMetadata(clientName, contentTypes)));
             }
 
             return applicableClients;
         }
 
-        private class LanguageClientMetadata : ILanguageClientMetadata, IIsUserExperienceDisabledMetadata
+        private class LanguageClientMetadata : ILanguageClientMetadata
         {
-            public LanguageClientMetadata(string clientName, IEnumerable<string> contentTypes, bool isUserExperienceDisabled)
+            public LanguageClientMetadata(string clientName, IEnumerable<string> contentTypes)
             {
                 ClientName = clientName;
                 ContentTypes = contentTypes;
-                IsUserExperienceDisabled = isUserExperienceDisabled;
             }
 
             public string ClientName { get; }
 
             public IEnumerable<string> ContentTypes { get; }
-
-            public bool IsUserExperienceDisabled { get; }
         }
     }
 }
