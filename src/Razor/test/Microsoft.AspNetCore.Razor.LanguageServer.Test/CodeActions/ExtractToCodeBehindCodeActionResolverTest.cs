@@ -108,10 +108,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var actionParams = new ExtractToCodeBehindCodeActionParams
             {
                 Uri = documentUri,
-                RemoveStart = contents.IndexOf("@code"),
-                ExtractStart = contents.IndexOf("{"),
-                ExtractEnd = contents.IndexOf("}"),
-                RemoveEnd = contents.IndexOf("}"),
+                RemoveStart = contents.IndexOf("@code", StringComparison.Ordinal),
+                ExtractStart = contents.IndexOf("{", StringComparison.Ordinal),
+                ExtractEnd = contents.IndexOf("}", StringComparison.Ordinal),
+                RemoveEnd = contents.IndexOf("}", StringComparison.Ordinal),
             };
             var data = JObject.FromObject(actionParams);
 
@@ -134,9 +134,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
             var editCodeBehindChange = documentChanges[2];
             var editCodeBehindEdit = editCodeBehindChange.TextDocumentEdit.Edits.First();
-            Assert.Contains("public partial class Test", editCodeBehindEdit.NewText);
-            Assert.Contains("private var x = 1", editCodeBehindEdit.NewText);
-            Assert.Contains("namespace test.Pages", editCodeBehindEdit.NewText);
+            Assert.Contains("public partial class Test", editCodeBehindEdit.NewText, StringComparison.Ordinal);
+            Assert.Contains("private var x = 1", editCodeBehindEdit.NewText, StringComparison.Ordinal);
+            Assert.Contains("namespace test.Pages", editCodeBehindEdit.NewText, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -152,10 +152,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var actionParams = new ExtractToCodeBehindCodeActionParams
             {
                 Uri = documentUri,
-                RemoveStart = contents.IndexOf("@functions"),
-                ExtractStart = contents.IndexOf("{"),
-                ExtractEnd = contents.IndexOf("}"),
-                RemoveEnd = contents.IndexOf("}"),
+                RemoveStart = contents.IndexOf("@functions", StringComparison.Ordinal),
+                ExtractStart = contents.IndexOf("{", StringComparison.Ordinal),
+                ExtractEnd = contents.IndexOf("}", StringComparison.Ordinal),
+                RemoveEnd = contents.IndexOf("}", StringComparison.Ordinal),
             };
             var data = JObject.FromObject(actionParams);
 
@@ -178,9 +178,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
             var editCodeBehindChange = documentChanges[2];
             var editCodeBehindEdit = editCodeBehindChange.TextDocumentEdit.Edits.First();
-            Assert.Contains("public partial class Test", editCodeBehindEdit.NewText);
-            Assert.Contains("private var x = 1", editCodeBehindEdit.NewText);
-            Assert.Contains("namespace test.Pages", editCodeBehindEdit.NewText);
+            Assert.Contains("public partial class Test", editCodeBehindEdit.NewText, StringComparison.Ordinal);
+            Assert.Contains("private var x = 1", editCodeBehindEdit.NewText, StringComparison.Ordinal);
+            Assert.Contains("namespace test.Pages", editCodeBehindEdit.NewText, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -196,10 +196,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var actionParams = new ExtractToCodeBehindCodeActionParams
             {
                 Uri = documentUri,
-                RemoveStart = contents.IndexOf("@code"),
-                ExtractStart = contents.IndexOf("{"),
-                ExtractEnd = contents.IndexOf("}"),
-                RemoveEnd = contents.IndexOf("}"),
+                RemoveStart = contents.IndexOf("@code", StringComparison.Ordinal),
+                ExtractStart = contents.IndexOf("{", StringComparison.Ordinal),
+                ExtractEnd = contents.IndexOf("}", StringComparison.Ordinal),
+                RemoveEnd = contents.IndexOf("}", StringComparison.Ordinal),
             };
             var data = JObject.FromObject(actionParams);
 
@@ -222,10 +222,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
             var editCodeBehindChange = documentChanges[2];
             var editCodeBehindEdit = editCodeBehindChange.TextDocumentEdit.Edits.First();
-            Assert.Contains("using System.Diagnostics", editCodeBehindEdit.NewText);
-            Assert.Contains("public partial class Test", editCodeBehindEdit.NewText);
-            Assert.Contains("private var x = 1", editCodeBehindEdit.NewText);
-            Assert.Contains("namespace test.Pages", editCodeBehindEdit.NewText);
+            Assert.Contains("using System.Diagnostics", editCodeBehindEdit.NewText, StringComparison.Ordinal);
+            Assert.Contains("public partial class Test", editCodeBehindEdit.NewText, StringComparison.Ordinal);
+            Assert.Contains("private var x = 1", editCodeBehindEdit.NewText, StringComparison.Ordinal);
+            Assert.Contains("namespace test.Pages", editCodeBehindEdit.NewText, StringComparison.Ordinal);
         }
 
         private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)

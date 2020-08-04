@@ -83,6 +83,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
             _foregroundDispatcher.AssertForegroundThread();
 
             _projectSnapshotManager.Changed -= ProjectSnapshotManager_Changed;
+            _latestStateSemaphore.Dispose();
             _disposed = true;
         }
 

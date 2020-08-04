@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void TryGetVirtualDocument_NoCSharpDocument_ReturnsFalse()
         {
             // Arrange
-            var lspDocument = new DefaultLSPDocument(Uri, Mock.Of<ITextBuffer>(), new[] { Mock.Of<VirtualDocument>() });
+            using var lspDocument = new DefaultLSPDocument(Uri, Mock.Of<ITextBuffer>(), new[] { Mock.Of<VirtualDocument>() });
 
             // Act
             var result = lspDocument.TryGetVirtualDocument<TestVirtualDocument>(out var virtualDocument);
@@ -37,7 +37,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             // Arrange
             var testVirtualDocument = new TestVirtualDocument(Uri, Mock.Of<ITextBuffer>());
-            var lspDocument = new DefaultLSPDocument(Uri, Mock.Of<ITextBuffer>(), new[] { Mock.Of<VirtualDocument>(), testVirtualDocument });
+            using var lspDocument = new DefaultLSPDocument(Uri, Mock.Of<ITextBuffer>(), new[] { Mock.Of<VirtualDocument>(), testVirtualDocument });
 
             // Act
             var result = lspDocument.TryGetVirtualDocument<TestVirtualDocument>(out var virtualDocument);

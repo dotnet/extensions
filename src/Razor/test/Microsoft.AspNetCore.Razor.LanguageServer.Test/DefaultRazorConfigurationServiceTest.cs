@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task GetLatestOptionsAsync_EmptyResponse_ReturnsNull()
         {
             // Arrange
-            var languageServer = GetLanguageServer(new object[] { });
+            var languageServer = GetLanguageServer(Array.Empty<object>());
             var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
 
             // Act
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task GetLatestOptionsAsync_ClientRequestThrows_ReturnsNull()
         {
             // Arrange
-            var languageServer = GetLanguageServer(new object[] { }, shouldThrow: true);
+            var languageServer = GetLanguageServer(Array.Empty<object>(), shouldThrow: true);
             var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
 
             // Act

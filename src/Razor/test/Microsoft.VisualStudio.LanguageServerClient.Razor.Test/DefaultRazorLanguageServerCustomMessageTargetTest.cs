@@ -23,8 +23,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         public DefaultRazorLanguageServerCustomMessageTargetTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskContext = joinableTaskContext.Context;
+            JoinableTaskContext = new JoinableTaskContext();
         }
 
         private JoinableTaskContext JoinableTaskContext { get; }

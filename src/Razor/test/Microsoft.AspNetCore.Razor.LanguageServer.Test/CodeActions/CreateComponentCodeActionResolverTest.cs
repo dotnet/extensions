@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
             var editNewComponentChange = documentChanges[1];
             var editNewComponentEdit = editNewComponentChange.TextDocumentEdit.Edits.First();
-            Assert.Contains("@namespace Another.Namespace", editNewComponentEdit.NewText);
+            Assert.Contains("@namespace Another.Namespace", editNewComponentEdit.NewText, StringComparison.Ordinal);
         }
 
         private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)

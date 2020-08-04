@@ -27,7 +27,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var previousLineEndIndex = DefaultRazorIndentationFactsService.GetPreviousLineEndIndex(textSnapshot, line);
 
             // Assert
-            Assert.Equal(txt.IndexOf("</p>") + 2 + Environment.NewLine.Length, previousLineEndIndex);
+            Assert.Equal(txt.IndexOf("</p>", StringComparison.Ordinal) + 2 + Environment.NewLine.Length, previousLineEndIndex);
         }
 
         [Fact]

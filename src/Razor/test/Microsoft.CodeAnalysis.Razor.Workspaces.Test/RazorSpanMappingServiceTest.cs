@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -49,7 +50,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var generated = output.GetCSharpDocument();
 
             var symbol = "SomeProperty";
-            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol), symbol.Length);
+            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, StringComparison.Ordinal), symbol.Length);
 
             // Act
             var result = RazorSpanMappingService.TryGetLinePositionSpan(span, await document.GetTextAsync(), generated, out var mapped);
@@ -84,7 +85,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var symbol = "SomeProperty";
             // Second occurrence
-            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, generated.GeneratedCode.IndexOf(symbol) + symbol.Length), symbol.Length);
+            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, generated.GeneratedCode.IndexOf(symbol, StringComparison.Ordinal) + symbol.Length, StringComparison.Ordinal), symbol.Length);
 
             // Act
             var result = RazorSpanMappingService.TryGetLinePositionSpan(span, await document.GetTextAsync(), generated, out var mapped);
@@ -118,7 +119,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var generated = output.GetCSharpDocument();
 
             var symbol = "SomeProperty";
-            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol), symbol.Length);
+            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, StringComparison.Ordinal), symbol.Length);
 
             // Act
             var result = RazorSpanMappingService.TryGetLinePositionSpan(span, await document.GetTextAsync(), generated, out var mapped);
@@ -152,7 +153,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var generated = output.GetCSharpDocument();
 
             var symbol = "ExecuteAsync";
-            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol), symbol.Length);
+            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, StringComparison.Ordinal), symbol.Length);
 
             // Act
             var result = RazorSpanMappingService.TryGetLinePositionSpan(span, await document.GetTextAsync(), generated, out var mapped);

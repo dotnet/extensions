@@ -16,8 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public DefaultLSPDocumentManagerTest()
         {
             ChangeTriggers = Enumerable.Empty<LSPDocumentManagerChangeTrigger>();
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskContext = joinableTaskContext.Context;
+            JoinableTaskContext = new JoinableTaskContext();
             TextBuffer = Mock.Of<ITextBuffer>();
             Uri = new Uri("C:/path/to/file.razor");
             UriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(TextBuffer) == Uri);

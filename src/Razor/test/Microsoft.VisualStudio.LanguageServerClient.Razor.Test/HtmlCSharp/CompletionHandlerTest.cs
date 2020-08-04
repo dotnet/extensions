@@ -16,8 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     {
         public CompletionHandlerTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskContext = joinableTaskContext.Context;
+            JoinableTaskContext = new JoinableTaskContext();
             Uri = new Uri("C:/path/to/file.razor");
         }
 

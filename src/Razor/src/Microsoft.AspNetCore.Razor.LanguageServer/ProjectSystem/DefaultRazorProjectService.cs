@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         private string EnsureFullPath(string filePath, string projectDirectory)
         {
             var normalizedFilePath = _filePathNormalizer.Normalize(filePath);
-            if (!normalizedFilePath.StartsWith(projectDirectory))
+            if (!normalizedFilePath.StartsWith(projectDirectory, StringComparison.Ordinal))
             {
                 var absolutePath = Path.Combine(projectDirectory, normalizedFilePath);
                 normalizedFilePath = _filePathNormalizer.Normalize(absolutePath);

@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             // Arrange
             var textBuffer = new TestTextBuffer(StringTextSnapshot.Empty);
-            var document = new TestVirtualDocument(Uri, textBuffer);
+            using var document = new TestVirtualDocument(Uri, textBuffer);
             var originalSnapshot = document.CurrentSnapshot;
 
             // Act
@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Arrange
             var insert = new VisualStudioTextChange(0, 0, "inserted text");
             var textBuffer = new TestTextBuffer(StringTextSnapshot.Empty);
-            var document = new TestVirtualDocument(Uri, textBuffer);
+            using var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(new[] { insert }, hostDocumentVersion: 1);
@@ -52,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Arrange
             var textBuffer = new TestTextBuffer(new StringTextSnapshot("original"));
             var replace = new VisualStudioTextChange(0, textBuffer.CurrentSnapshot.Length, "replaced text");
-            var document = new TestVirtualDocument(Uri, textBuffer);
+            using var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(new[] { replace }, hostDocumentVersion: 1);
@@ -68,7 +68,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Arrange
             var textBuffer = new TestTextBuffer(new StringTextSnapshot("Hello World"));
             var delete = new VisualStudioTextChange(6, 5, string.Empty);
-            var document = new TestVirtualDocument(Uri, textBuffer);
+            using var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(new[] { delete }, hostDocumentVersion: 1);
@@ -85,7 +85,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             var textBuffer = new TestTextBuffer(new StringTextSnapshot("Hello World"));
             var replace = new VisualStudioTextChange(6, 5, "Replaced");
             var delete = new VisualStudioTextChange(0, 6, string.Empty);
-            var document = new TestVirtualDocument(Uri, textBuffer);
+            using var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(new[] { replace, delete }, hostDocumentVersion: 1);
@@ -109,7 +109,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                 called += 1;
             };
 
-            var document = new TestVirtualDocument(Uri, textBuffer);
+            using var document = new TestVirtualDocument(Uri, textBuffer);
 
             // Act
             document.Update(Array.Empty<ITextChange>(), hostDocumentVersion: 1);

@@ -10,8 +10,8 @@
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
 {
-    
-    
+
+
     internal partial class RazorConfiguration
     {
         

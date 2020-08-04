@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             if (summaryTagStart == -1 || summaryTagEndStart == -1)
             {
                 // A really wrong but cheap way to check if this is XML
-                if (!documentation.StartsWith("<") && !documentation.EndsWith(">"))
+                if (!documentation.StartsWith("<", StringComparison.Ordinal) && !documentation.EndsWith(">", StringComparison.Ordinal))
                 {
                     // This doesn't look like a doc comment, we'll return it as-is.
                     summary = documentation;

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         {
             // Arrange
             var documentPath = "C:/path/to/Page.razor";
-            var codeActionEndpoint = new CodeActionEndpoint(new RazorCodeActionProvider[] { }, Dispatcher, EmptyDocumentResolver, LoggerFactory);
+            var codeActionEndpoint = new CodeActionEndpoint(Array.Empty<RazorCodeActionProvider>(), Dispatcher, EmptyDocumentResolver, LoggerFactory);
             var request = new CodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var codeDocument = CreateCodeDocument("@code {}");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
             codeDocument.SetUnsupported();
-            var codeActionEndpoint = new CodeActionEndpoint(new RazorCodeActionProvider[] { }, Dispatcher, documentResolver, LoggerFactory);
+            var codeActionEndpoint = new CodeActionEndpoint(Array.Empty<RazorCodeActionProvider>(), Dispatcher, documentResolver, LoggerFactory);
             var request = new CodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var documentPath = "C:/path/to/Page.razor";
             var codeDocument = CreateCodeDocument("@code {}");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var codeActionEndpoint = new CodeActionEndpoint(new RazorCodeActionProvider[] { }, Dispatcher, documentResolver, LoggerFactory);
+            var codeActionEndpoint = new CodeActionEndpoint(Array.Empty<RazorCodeActionProvider>(), Dispatcher, documentResolver, LoggerFactory);
             var request = new CodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),

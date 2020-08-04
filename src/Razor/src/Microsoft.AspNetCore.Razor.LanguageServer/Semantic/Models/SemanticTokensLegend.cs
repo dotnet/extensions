@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
         private static IReadOnlyDictionary<string, uint> GetMap(IReadOnlyCollection<string> tokens)
         {
             var result = new Dictionary<string, uint>();
-            for (var i = 0; i < tokens.Count(); i++)
+            for (var i = 0; i < tokens.Count; i++)
             {
                 result[tokens.ElementAt(i)] = (uint)i;
             }

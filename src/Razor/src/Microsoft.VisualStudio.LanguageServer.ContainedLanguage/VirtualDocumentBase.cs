@@ -76,7 +76,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             TextBuffer.ChangeContentType(InertContentType.Instance, null);
 
-            if (TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument textDocument))
+            if (TextBuffer.Properties != null && TextBuffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument textDocument))
             {
                 TextBuffer.Properties.RemoveProperty(typeof(ITextDocument));
 

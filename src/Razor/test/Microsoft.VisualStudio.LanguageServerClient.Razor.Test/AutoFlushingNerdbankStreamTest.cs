@@ -15,7 +15,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var (clientStream, serverStream) = FullDuplexStream.CreatePair();
-            var autoFlushingStream = new AutoFlushingNerdbankStream(serverStream);
+            using var autoFlushingStream = new AutoFlushingNerdbankStream(serverStream);
             const int INIT_BYTES = 10000;
             var fileContents = new byte[INIT_BYTES];
             var randomGenerator = new Random();

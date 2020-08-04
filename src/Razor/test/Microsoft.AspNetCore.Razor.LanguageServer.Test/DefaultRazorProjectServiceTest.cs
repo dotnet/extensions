@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
-            var ownerProject = TestProjectSnapshot.Create("C:/path/to/project.csproj", new string[0]);
+            var ownerProject = TestProjectSnapshot.Create("C:/path/to/project.csproj", Array.Empty<string>());
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>
                 {
@@ -584,7 +584,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
-            var miscellaneousProject = TestProjectSnapshot.Create("C:/__MISC_PROJECT__", new string[0]);
+            var miscellaneousProject = TestProjectSnapshot.Create("C:/__MISC_PROJECT__", Array.Empty<string>());
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>(),
                 miscellaneousProject);

@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
             filePath = physicalPath.Replace('\\', '/');
-            if (!filePath.StartsWith("/"))
+            if (!filePath.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
                 filePath = '/' + filePath;
             }
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 throw new InvalidOperationException(message);
             }
 
-            var suffixIndex = FileName.LastIndexOf("_");
+            var suffixIndex = FileName.LastIndexOf("_", StringComparison.Ordinal);
             var normalizedFileName = suffixIndex == -1 ? FileName : FileName.Substring(0, suffixIndex);
             var sourceFileName = Path.ChangeExtension(normalizedFileName, FileExtension);
             var testFile = TestFile.Create(sourceFileName, GetType().GetTypeInfo().Assembly);
@@ -191,8 +191,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             sourceFileName = sourceFileName.Replace('\\', '/');
 
             // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
-            filePath = filePath ?? sourceFileName;
-            if (!filePath.StartsWith("/"))
+            filePath ??= sourceFileName;
+            if (!filePath.StartsWith("/", StringComparison.Ordinal))
             {
                 filePath = '/' + filePath;
             }
@@ -511,7 +511,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 }
 
                 // See #2594
-                if (string.Equals("@", expectedSpan))
+                if (string.Equals("@", expectedSpan, StringComparison.Ordinal))
                 {
                     // For now we don't verify an escaped transition. In some cases one of the @ tokens in @@foo
                     // will be mapped as C# but will not be present in the output buffer because it's not actually C#.

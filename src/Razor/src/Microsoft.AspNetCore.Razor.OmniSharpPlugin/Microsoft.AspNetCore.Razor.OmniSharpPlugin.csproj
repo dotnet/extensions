@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)" NoWarn="NU1608" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(Tooling_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)" />
     <PackageReference Include="OmniSharp.MSBuild" Version="$(OmniSharpMSBuildPackageVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />

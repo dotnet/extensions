@@ -119,7 +119,8 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
                 return false;
             }
 
-            if (!item.Include.EndsWith(".razor") && !item.Include.EndsWith(".cshtml"))
+
+            if (!item.Include.EndsWith(".razor", StringComparison.Ordinal) && !item.Include.EndsWith(".cshtml", StringComparison.Ordinal))
             {
                 // Doesn't have a Razor looking file extension
                 return false;

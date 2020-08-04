@@ -148,6 +148,7 @@
     <Tooling_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>3.7.0-4.20351.7</Tooling_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
     <Tooling_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>3.7.0-4.20351.7</Tooling_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
     <Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.7.0-4.20351.7</Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <Tooling_MicrosoftNetCoreAnalyzersPackageVersion>$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)</Tooling_MicrosoftNetCoreAnalyzersPackageVersion>
     <Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>3.7.0-4.20351.7</Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>
     <Tooling_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>3.7.0-4.20351.7</Tooling_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>

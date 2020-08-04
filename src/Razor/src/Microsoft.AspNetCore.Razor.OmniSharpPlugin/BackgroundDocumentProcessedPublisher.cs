@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                                 break;
                             }
 
-                            if (document.FilePath.EndsWith(ActiveVirtualDocumentSuffix) && !document.FilePath.EndsWith(BackgroundVirtualDocumentSuffix))
+                            if (document.FilePath.EndsWith(ActiveVirtualDocumentSuffix, StringComparison.Ordinal) && !document.FilePath.EndsWith(BackgroundVirtualDocumentSuffix, StringComparison.Ordinal))
                             {
                                 // Document from editor got opened, clear out any background documents of the same type
 
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                                 break;
                             }
 
-                            if (document.FilePath.EndsWith(ActiveVirtualDocumentSuffix) && !document.FilePath.EndsWith(BackgroundVirtualDocumentSuffix))
+                            if (document.FilePath.EndsWith(ActiveVirtualDocumentSuffix, StringComparison.Ordinal) && !document.FilePath.EndsWith(BackgroundVirtualDocumentSuffix, StringComparison.Ordinal))
                             {
                                 var razorDocumentFilePath = GetRazorDocumentFilePath(document);
 
@@ -247,12 +247,12 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         private static string GetRazorDocumentFilePath(Document document)
         {
-            if (document.FilePath.EndsWith(BackgroundVirtualDocumentSuffix))
+            if (document.FilePath.EndsWith(BackgroundVirtualDocumentSuffix, StringComparison.Ordinal))
             {
                 var razorDocumentFilePath = document.FilePath.Substring(0, document.FilePath.Length - BackgroundVirtualDocumentSuffix.Length);
                 return razorDocumentFilePath;
             }
-            else if (document.FilePath.EndsWith(ActiveVirtualDocumentSuffix))
+            else if (document.FilePath.EndsWith(ActiveVirtualDocumentSuffix, StringComparison.Ordinal))
             {
                 var razorDocumentFilePath = document.FilePath.Substring(0, document.FilePath.Length - ActiveVirtualDocumentSuffix.Length);
                 return razorDocumentFilePath;

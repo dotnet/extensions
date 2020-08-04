@@ -215,7 +215,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             if (referenceText is string text)
             {
-                if (text.StartsWith(codeBehindObjectPrefix))
+                if (text.StartsWith(codeBehindObjectPrefix, StringComparison.Ordinal))
                 {
                     return text
                         .Substring(codeBehindObjectPrefix.Length, text.Length - codeBehindObjectPrefix.Length - 1); // -1 for trailing `;`

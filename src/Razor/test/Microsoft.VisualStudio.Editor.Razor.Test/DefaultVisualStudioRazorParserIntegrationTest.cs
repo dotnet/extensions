@@ -523,7 +523,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 // Verify if the syntax tree represents the expected input.
                 var syntaxTreeContent = manager.PartialParsingSyntaxTreeRoot.ToFullString();
-                Assert.Contains(expectedCode, syntaxTreeContent);
+                Assert.Contains(expectedCode, syntaxTreeContent, StringComparison.Ordinal);
             }
 
             var sourceDocument = TestRazorSourceDocument.Create(content);
@@ -745,6 +745,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             public void Dispose()
             {
                 _parser.Dispose();
+                _parserComplete.Dispose();
+                _reparseComplete.Dispose();
             }
         }
 

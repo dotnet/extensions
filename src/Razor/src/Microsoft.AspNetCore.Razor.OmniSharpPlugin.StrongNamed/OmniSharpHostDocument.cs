@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 throw new FormatException("TargetPath's must use '\\' instead of '/'");
             }
 
-            if (targetPath.StartsWith("\\"))
+            if (targetPath.StartsWith("\\", StringComparison.Ordinal))
             {
                 throw new FormatException("TargetPath's can't start with '\\'");
             }

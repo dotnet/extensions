@@ -532,9 +532,9 @@ tabSize: 12);
         private async Task RunFormattingTestAsync(string input, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = default)
         {
             // Arrange
-            var start = input.IndexOf('|');
+            var start = input.IndexOf('|', StringComparison.Ordinal);
             var end = input.LastIndexOf('|');
-            input = input.Replace("|", string.Empty);
+            input = input.Replace("|", string.Empty, StringComparison.Ordinal);
 
             var source = SourceText.From(input);
             var span = TextSpan.FromBounds(start, end - 1);

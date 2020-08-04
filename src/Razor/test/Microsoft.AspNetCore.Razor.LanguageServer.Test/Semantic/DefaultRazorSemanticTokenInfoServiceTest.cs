@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 1, 1, 5, 0, 0, //line, character pos, length, tokenType, modifier
             };
 
-            var startIndex = txt.IndexOf("test1");
+            var startIndex = txt.IndexOf("test1", StringComparison.Ordinal);
             var endIndex = startIndex + 5;
 
             var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);

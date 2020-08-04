@@ -388,7 +388,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         {
             // Arrange
             var projectProperties = new MSBuildPropertyGroup();
-            var projectItems = new IMSBuildItemEvaluated[0];
+            var projectItems = Array.Empty<IMSBuildItemEvaluated>();
 
             // Act
             var result = DefaultRazorProjectHost.TryGetConfiguration(projectProperties, projectItems, out var configuration);
@@ -404,7 +404,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             // Arrange
             var projectProperties = new MSBuildPropertyGroup();
             projectProperties.SetValue("RazorDefaultConfiguration", "Razor-13.37");
-            var projectItems = new IMSBuildItemEvaluated[0];
+            var projectItems = Array.Empty<IMSBuildItemEvaluated>();
 
             // Act
             var result = DefaultRazorProjectHost.TryGetConfiguration(projectProperties, projectItems, out var configuration);
@@ -421,7 +421,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             var projectProperties = new MSBuildPropertyGroup();
             projectProperties.SetValue("RazorDefaultConfiguration", "Razor-13.37");
             projectProperties.SetValue("RazorLangVersion", "1.0");
-            var projectItems = new IMSBuildItemEvaluated[0];
+            var projectItems = Array.Empty<IMSBuildItemEvaluated>();
 
             // Act
             var result = DefaultRazorProjectHost.TryGetConfiguration(projectProperties, projectItems, out var configuration);

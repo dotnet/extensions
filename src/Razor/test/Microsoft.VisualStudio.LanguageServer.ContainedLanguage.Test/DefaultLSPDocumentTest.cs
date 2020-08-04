@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             var snapshot = Mock.Of<ITextSnapshot>(s => s.Version == Mock.Of<ITextVersion>());
             var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == snapshot);
             var virtualDocument = new TestVirtualDocument();
-            var document = new DefaultLSPDocument(Uri, textBuffer, new[] { virtualDocument });
+            using var document = new DefaultLSPDocument(Uri, textBuffer, new[] { virtualDocument });
             var changes = Array.Empty<ITextChange>();
             var originalSnapshot = document.CurrentSnapshot;
 

@@ -129,7 +129,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider);
             synchronizer._synchronizationTimeout = TimeSpan.FromMilliseconds(500);
             NotifyLSPDocumentAdded(lspDocument, synchronizer);
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
 
             // Act
 

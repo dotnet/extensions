@@ -27,9 +27,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
 
             var token = Guid.NewGuid().ToString();
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
 
-            var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
+            using var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
 
             // Act
             var listenerAdded = lspProgressListener.TryListenForProgress(
@@ -52,9 +52,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
 
             var token = Guid.NewGuid().ToString();
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
 
-            var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
+            using var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
 
             // Act
             _ = lspProgressListener.TryListenForProgress(
@@ -83,10 +83,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var token = Guid.NewGuid().ToString();
             var notificationTimeout = TimeSpan.FromSeconds(15);
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
             var onProgressNotifyAsyncCalled = false;
 
-            var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
+            using var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
 
             // Act 1
             var listenerAdded = lspProgressListener.TryListenForProgress(
@@ -119,10 +119,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
 
             var token = Guid.NewGuid().ToString();
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
             var onProgressNotifyAsyncCalled = false;
 
-            var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
+            using var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
 
             // Act
             var listenerAdded = lspProgressListener.TryListenForProgress(
@@ -150,7 +150,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
 
             var token = Guid.NewGuid().ToString();
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
 
             var expectedValue = "abcxyz";
             var parameterToken = new JObject
@@ -168,7 +168,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return Task.CompletedTask;
             };
 
-            var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
+            using var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
 
             // Act
             var listenerAdded = lspProgressListener.TryListenForProgress(
@@ -193,9 +193,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
 
             var token = Guid.NewGuid().ToString();
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
 
-            var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
+            using var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
 
             var parameterTokens = new List<JObject>();
             for (var i = 0; i < NUM_NOTIFICATIONS; ++i)

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
-            var projectResolver = CreateProjectResolver(() => new ProjectSnapshot[0]);
+            var projectResolver = CreateProjectResolver(() => Array.Empty<ProjectSnapshot>());
 
             // Act
             var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);

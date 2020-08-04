@@ -31,7 +31,7 @@ namespace Microsoft.VisualStudio.Text
             while (delimiterIndex != -1)
             {
                 var delimiterLength = 2;
-                delimiterIndex = Content.IndexOf("\r\n", start);
+                delimiterIndex = Content.IndexOf("\r\n", start, StringComparison.Ordinal);
 
                 if (delimiterIndex == -1)
                 {
@@ -206,7 +206,7 @@ namespace Microsoft.VisualStudio.Text
                 _contentWithLineBreak = contentWithLineBreak;
                 _content = contentWithLineBreak;
 
-                if (_content.EndsWith("\r\n"))
+                if (_content.EndsWith("\r\n", StringComparison.Ordinal))
                 {
                     _content = _content.Substring(0, _content.Length - 2);
                 }

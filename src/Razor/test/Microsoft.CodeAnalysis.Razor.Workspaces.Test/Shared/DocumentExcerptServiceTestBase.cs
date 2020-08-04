@@ -30,11 +30,13 @@ namespace Microsoft.CodeAnalysis.Razor
         public (SourceText sourceText, TextSpan span) CreateText(string text)
         {
             // Since we're using positions, normalize to Windows style
+#pragma warning disable CA1307 // Specify StringComparison
             text = text.Replace("\r", "").Replace("\n", "\r\n");
 
             var start = text.IndexOf('|');
             var length = text.IndexOf('|', start + 1) - start - 1;
             text = text.Replace("|", "");
+#pragma warning restore CA1307 // Specify StringComparison
 
             if (start < 0 || length < 0)
             {

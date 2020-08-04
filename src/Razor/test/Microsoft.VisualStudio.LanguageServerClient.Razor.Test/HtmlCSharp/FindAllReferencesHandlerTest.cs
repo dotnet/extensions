@@ -171,7 +171,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var csharpLocation2 = GetReferenceItem(200, virtualCSharpUri2);
 
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
-            var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
+            using var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
 
             var token = Guid.NewGuid().ToString();
             var parameterToken = new JObject
@@ -676,7 +676,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
 
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
-            var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
+            using var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
 
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker

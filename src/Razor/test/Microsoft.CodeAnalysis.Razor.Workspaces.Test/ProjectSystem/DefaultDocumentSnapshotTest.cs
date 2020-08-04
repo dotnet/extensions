@@ -139,7 +139,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.NotNull(ComponentCshtmlHostDocument.GeneratedDocumentContainer.OutputCSharp);
-            Assert.Contains("using Microsoft.AspNetCore.Components", ComponentCshtmlHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode);
+            Assert.Contains("using Microsoft.AspNetCore.Components", ComponentCshtmlHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
         }
         [Fact]
         public async Task GetGeneratedOutputAsync_Component()
@@ -149,7 +149,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.NotNull(ComponentHostDocument.GeneratedDocumentContainer.OutputCSharp);
-            Assert.Contains("ComponentBase", ComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode);
+            Assert.Contains("ComponentBase", ComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -160,9 +160,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.NotNull(NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp);
-            Assert.Contains("ComponentBase", NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode);
-            Assert.Contains("namespace SomeProject.Nested", NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode);
-            Assert.Contains("class File3", NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode);
+            Assert.Contains("ComponentBase", NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
+            Assert.Contains("namespace SomeProject.Nested", NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
+            Assert.Contains("class File3", NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
         }
 
         // This is a sanity test that we invoke legacy codegen for .cshtml files. It's a little fragile but
@@ -175,7 +175,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.NotNull(LegacyHostDocument.GeneratedDocumentContainer.OutputCSharp);
-            Assert.Contains("Template", LegacyHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode);
+            Assert.Contains("Template", LegacyHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
         }
 
         [Fact]

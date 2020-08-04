@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 //   1. Determine if this specific completion is an indexer based completion
                 //   2. Resolve an appropriate snippet if it is. This is more troublesome because we need to remove the ... suffix to accurately
                 //      build a snippet that makes sense for the user to type.
-                var indexerCompletion = filterText.EndsWith("...");
+                var indexerCompletion = filterText.EndsWith("...", StringComparison.Ordinal);
                 if (indexerCompletion)
                 {
                     filterText = filterText.Substring(0, filterText.Length - 3);

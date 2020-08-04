@@ -16,8 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         public LSPRazorProjectHostTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskContext = joinableTaskContext.Context;
+            JoinableTaskContext = new JoinableTaskContext();
         }
 
         private JoinableTaskContext JoinableTaskContext { get; }

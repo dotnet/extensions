@@ -77,7 +77,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
             var session = new Mock<CollaborationSession>();
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
             IDisposable sessionService = null;
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))
                 .Returns<CancellationToken>((cancellationToken) =>
@@ -109,7 +109,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
             var session = new Mock<CollaborationSession>();
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource();
             IDisposable sessionService = null;
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))
                 .Returns<CancellationToken>((cancellationToken) =>

@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var syntaxTree = GetSyntaxTree(str);
 
-            var location = new SourceSpan(str.IndexOf("tag") - 1, 13);
+            var location = new SourceSpan(str.IndexOf("tag", StringComparison.Ordinal) - 1, 13);
             var service = new DefaultRazorSyntaxFactsService();
 
             // Act

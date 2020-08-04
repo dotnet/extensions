@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Services
                         break;
                     case DiffEdit.Type.Insert:
                         if (current != null &&
-                            current.Data.Count() > 0 &&
+                            current.Data.Any() &&
                             current.Start == diff.Position)
                         {
                             current.Data = current.Data.Append(NewArray[diff.NewTextPosition.Value]);

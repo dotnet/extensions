@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         {
             var normalized = Normalize(directoryFilePath);
 
-            if (!normalized.EndsWith("/"))
+            if (!normalized.EndsWith("/", StringComparison.Ordinal))
             {
                 normalized += '/';
             }

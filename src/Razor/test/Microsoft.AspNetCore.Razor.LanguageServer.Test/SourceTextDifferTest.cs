@@ -53,11 +53,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 <div>
   Hello!
 </div>
-".Replace(Environment.NewLine, "\r\n"));
+".Replace(Environment.NewLine, "\r\n", StringComparison.Ordinal));
             var newText = SourceText.From(@"
 <div>
   Hola!
-</div>".Replace(Environment.NewLine, "\r\n"));
+</div>".Replace(Environment.NewLine, "\r\n", StringComparison.Ordinal));
 
             // Act 1
             var characterChanges = SourceTextDiffer.GetMinimalTextChanges(oldText, newText, lineDiffOnly: false);

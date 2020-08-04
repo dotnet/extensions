@@ -236,7 +236,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void ProjectConfigurationFilePathStore_Changed(object sender, ProjectConfigurationFilePathChangedEventArgs args)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             try
             {

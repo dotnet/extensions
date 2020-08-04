@@ -53,9 +53,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Act
             var result = factory.TryCreateFor(NonRazorLSPBuffer, out var virtualDocument);
 
-            // Assert
-            Assert.False(result);
-            Assert.Null(virtualDocument);
+            using (virtualDocument)
+            {
+                // Assert
+                Assert.False(result);
+                Assert.Null(virtualDocument);
+            }
         }
 
         [Fact]
@@ -69,10 +72,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Act
             var result = factory.TryCreateFor(RazorLSPBuffer, out var virtualDocument);
 
-            // Assert
-            Assert.True(result);
-            Assert.NotNull(virtualDocument);
-            Assert.EndsWith(RazorLSPConstants.VirtualCSharpFileNameSuffix, virtualDocument.Uri.OriginalString, StringComparison.Ordinal);
+            using (virtualDocument)
+            {
+                // Assert
+                Assert.True(result);
+                Assert.NotNull(virtualDocument);
+                Assert.EndsWith(RazorLSPConstants.VirtualCSharpFileNameSuffix, virtualDocument.Uri.OriginalString, StringComparison.Ordinal);
+            }
         }
     }
 }

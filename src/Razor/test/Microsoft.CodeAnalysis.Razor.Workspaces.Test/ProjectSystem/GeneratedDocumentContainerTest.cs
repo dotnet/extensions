@@ -17,7 +17,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void SetOutput_AcceptsSameVersionedDocuments()
         {
             // Arrange
-            var services = TestWorkspace.Create().Services;
+            using var workspace = TestWorkspace.Create();
+
+            var services = workspace.Services;
             var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default, "project");
             var projectState = ProjectState.Create(services, hostProject);
             var project = new DefaultProjectSnapshot(projectState);
@@ -47,7 +49,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void SetOutput_AcceptsInitialOutput()
         {
             // Arrange
-            var services = TestWorkspace.Create().Services;
+            using var workspace = TestWorkspace.Create();
+
+            var services = workspace.Services;
             var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default, "project");
             var projectState = ProjectState.Create(services, hostProject);
             var project = new DefaultProjectSnapshot(projectState);
@@ -74,7 +78,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void SetOutput_InvokesChangedEvent()
         {
             // Arrange
-            var services = TestWorkspace.Create().Services;
+            using var workspace = TestWorkspace.Create();
+
+            var services = workspace.Services;
             var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default, "project");
             var projectState = ProjectState.Create(services, hostProject);
             var project = new DefaultProjectSnapshot(projectState);

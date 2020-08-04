@@ -82,7 +82,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             // We don't provide Directive Attribute completions when we're in the middle of
             // another unrelated (doesn't start with @) partially completed attribute.
             // <svg xml:| ></svg> (attributeName = "xml:") should not get any directive attribute completions.
-            if (string.IsNullOrWhiteSpace(attributeName) || attributeName.StartsWith("@"))
+            if (string.IsNullOrWhiteSpace(attributeName) || attributeName.StartsWith("@", StringComparison.Ordinal))
             {
                 return completionItems;
             }
@@ -146,13 +146,13 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             foreach (var completion in attributeCompletions)
             {
                 var insertText = completion.Key;
-                if (insertText.EndsWith("..."))
+                if (insertText.EndsWith("...", StringComparison.Ordinal))
                 {
                     // Indexer attribute, we don't want to insert with the triple dot.
                     insertText = insertText.Substring(0, insertText.Length - 3);
                 }
 
-                if (insertText.StartsWith("@"))
+                if (insertText.StartsWith("@", StringComparison.Ordinal))
                 {
                     // Strip off the @ from the insertion text. This change is here to align the insertion text with the
                     // completion hooks into VS and VSCode. Basically, completion triggers when `@` is typed so we don't
@@ -206,7 +206,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     boundAttributeDescriptor.Documentation);
                 attributeDescriptionInfos.Add(descriptionInfo);
 
-                if (attributeName.EndsWith("..."))
+                if (attributeName.EndsWith("...", StringComparison.Ordinal))
                 {
                     // Indexer attribute, we don't want to commit with standard chars
                     return;

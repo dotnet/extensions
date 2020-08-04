@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Range = new Range(),
             };
 
-            var location = new SourceLocation(contents.IndexOf("code"), -1, -1);
+            var location = new SourceLocation(contents.IndexOf("code", StringComparison.Ordinal), -1, -1);
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents);
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Range = new Range(),
             };
 
-            var location = new SourceLocation(contents.IndexOf("test"), -1, -1);
+            var location = new SourceLocation(contents.IndexOf("test", StringComparison.Ordinal), -1, -1);
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents);
 
             var provider = new ExtractToCodeBehindCodeActionProvider();
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Range = new Range(),
             };
 
-            var location = new SourceLocation(contents.IndexOf("code") + 6, -1, -1);
+            var location = new SourceLocation(contents.IndexOf("code", StringComparison.Ordinal) + 6, -1, -1);
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents);
 
             var provider = new ExtractToCodeBehindCodeActionProvider();
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Range = new Range(),
             };
 
-            var location = new SourceLocation(contents.IndexOf("code"), -1, -1);
+            var location = new SourceLocation(contents.IndexOf("code", StringComparison.Ordinal), -1, -1);
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents);
 
             var provider = new ExtractToCodeBehindCodeActionProvider();
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Range = new Range(),
             };
 
-            var location = new SourceLocation(contents.IndexOf("code"), -1, -1);
+            var location = new SourceLocation(contents.IndexOf("code", StringComparison.Ordinal), -1, -1);
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents);
 
             var provider = new ExtractToCodeBehindCodeActionProvider();
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Range = new Range(),
             };
 
-            var location = new SourceLocation(contents.IndexOf("code"), -1, -1);
+            var location = new SourceLocation(contents.IndexOf("code", StringComparison.Ordinal), -1, -1);
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents);
 
             var provider = new ExtractToCodeBehindCodeActionProvider();
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Range = new Range(),
             };
 
-            var location = new SourceLocation(contents.IndexOf("functions"), -1, -1);
+            var location = new SourceLocation(contents.IndexOf("functions", StringComparison.Ordinal), -1, -1);
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents);
 
             var provider = new ExtractToCodeBehindCodeActionProvider();

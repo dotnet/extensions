@@ -69,15 +69,15 @@ namespace Microsoft.AspNetCore.Razor.Performance
                     TagHelperResolver,
                     new StaticProjectSnapshotProjectEngineFactory(),
                 },
-                new ILanguageService[]
-                {
-                });
+                Array.Empty<ILanguageService>());
 
             return new DefaultProjectSnapshotManager(
                 new TestForegroundDispatcher(),
                 new TestErrorReporter(),
                 Array.Empty<ProjectSnapshotChangeTrigger>(),
+#pragma warning disable CA2000 // Dispose objects before losing scope
                 new AdhocWorkspace(services));
+#pragma warning restore CA2000 // Dispose objects before losing scope
         }
 
         private static IReadOnlyList<TagHelperDescriptor> ReadTagHelpers(string filePath)

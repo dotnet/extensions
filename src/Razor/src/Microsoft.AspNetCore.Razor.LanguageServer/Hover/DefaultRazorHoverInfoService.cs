@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                 }
                 else
                 {
-                    Debug.Assert(binding.Descriptors.Count() > 0);
+                    Debug.Assert(binding.Descriptors.Any());
 
                     var range = containingTagNameToken.GetRange(codeDocument.Source);
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                 }
                 else
                 {
-                    Debug.Assert(binding.Descriptors.Count() > 0);
+                    Debug.Assert(binding.Descriptors.Any());
                     var tagHelperAttributes = _tagHelperFactsService.GetBoundTagHelperAttributes(tagHelperDocumentContext, selectedAttributeName, binding);
 
                     var attribute = attributes.Single(a => a.Span.IntersectsWith(location.AbsoluteIndex));

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
@@ -183,7 +184,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             // It's possible that the attribute looks like a directive attribute but is incomplete. 
             // We should try and extract out the transition and parameter.
 
-            if (!attributeName.StartsWith("@"))
+            if (!attributeName.StartsWith("@", StringComparison.Ordinal))
             {
                 // Doesn't look like a directive attribute. Not an incomplete directive attribute.
                 return;

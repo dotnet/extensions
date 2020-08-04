@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
         protected void RunAutoInsertTest(string input, string expected, string character, int tabSize = 4, bool insertSpaces = true, string fileKind = default, IReadOnlyList<TagHelperDescriptor> tagHelpers = default)
         {
             // Arrange
-            var location = input.IndexOf('|') + character.Length;
-            input = input.Replace("|", character);
+            var location = input.IndexOf('|', StringComparison.Ordinal) + character.Length;
+            input = input.Replace("|", character, StringComparison.Ordinal);
 
             var source = SourceText.From(input);
             source.GetLineAndOffset(location, out var line, out var column);

@@ -129,7 +129,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                             document.FilePath.EndsWith(".razor", StringComparison.Ordinal) ||
 
                             // VSCode's background C# document
-                            document.FilePath.EndsWith("__bg__virtual.cs"))
+                            document.FilePath.EndsWith("__bg__virtual.cs", StringComparison.Ordinal))
                         {
                             EnqueueUpdate(e.ProjectId);
                             return;

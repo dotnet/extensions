@@ -15,7 +15,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            return uri.GetAbsoluteOrUNCPath()?.EndsWith(RazorLSPConstants.VirtualCSharpFileNameSuffix) ?? false;
+            return uri.GetAbsoluteOrUNCPath()?.EndsWith(RazorLSPConstants.VirtualCSharpFileNameSuffix, StringComparison.Ordinal) ?? false;
         }
 
         public static bool IsRazorHtmlFile(Uri uri)
@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            return uri.GetAbsoluteOrUNCPath()?.EndsWith(RazorLSPConstants.VirtualHtmlFileNameSuffix) ?? false;
+            return uri.GetAbsoluteOrUNCPath()?.EndsWith(RazorLSPConstants.VirtualHtmlFileNameSuffix, StringComparison.Ordinal) ?? false;
         }
 
         public static Uri GetRazorDocumentUri(Uri virtualDocumentUri)

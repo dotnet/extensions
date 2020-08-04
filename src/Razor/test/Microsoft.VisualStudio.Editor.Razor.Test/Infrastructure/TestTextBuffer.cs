@@ -85,7 +85,7 @@ namespace Microsoft.VisualStudio.Test
                 _attachedChangedEvents.Remove(value);
             }
         }
-            
+
 
         public event EventHandler<TextContentChangedEventArgs> ChangedLowPriority;
         public event EventHandler<TextContentChangedEventArgs> ChangedHighPriority;
@@ -99,7 +99,8 @@ namespace Microsoft.VisualStudio.Test
 
         public ITextEdit CreateEdit() => new BufferEdit(this);
 
-        public void ChangeContentType(IContentType newContentType, object editTag) => throw new NotImplementedException();
+        public void ChangeContentType(IContentType newContentType, object editTag){
+        }
 
         public bool CheckEditAccess() => throw new NotImplementedException();
 

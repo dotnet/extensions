@@ -57,6 +57,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void Dispose()
         {
             _main.Cancel();
+            _main.Dispose();
         }
 
         public IDisposable SynchronizeMainThreadState()

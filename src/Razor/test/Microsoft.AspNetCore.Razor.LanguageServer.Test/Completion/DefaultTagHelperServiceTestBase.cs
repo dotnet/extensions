@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             tagHelpers = tagHelpers ?? Array.Empty<TagHelperDescriptor>();
             var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
             var projectEngine = RazorProjectEngine.Create(builder => { });
-            var fileKind = filePath.EndsWith(".razor") ? FileKinds.Component : FileKinds.Legacy;
+            var fileKind = filePath.EndsWith(".razor", StringComparison.Ordinal) ? FileKinds.Component : FileKinds.Legacy;
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), tagHelpers);
             return codeDocument;
         }

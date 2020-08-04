@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (attributeNameLocation.IntersectsWith(location.AbsoluteIndex) && attributeName.StartsWith("@"))
+            if (attributeNameLocation.IntersectsWith(location.AbsoluteIndex) && attributeName.StartsWith("@", StringComparison.Ordinal))
             {
                 // The transition is already provided for the attribute name
                 return Array.Empty<RazorCompletionItem>();
