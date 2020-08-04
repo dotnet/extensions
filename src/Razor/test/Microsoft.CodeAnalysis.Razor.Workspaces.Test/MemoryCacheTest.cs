@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
+namespace Microsoft.CodeAnalysis.Razor.Test
 {
     public class MemoryCacheTest
     {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         public void Compaction()
         {
             var cache = new TestMemoryCache();
-            var sizeLimit = TestMemoryCache.DefaultSizeLimit;
+            var sizeLimit = TestMemoryCache.SizeLimit;
 
             for (var i = 0; i < sizeLimit; i++)
             {
@@ -87,13 +87,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             return Guid.NewGuid().ToString();
         }
 
-        private class TestMemoryCache : MemoryCache<IReadOnlyList<uint>>
+        private class TestMemoryCache : MemoryCache<string, IReadOnlyList<uint>>
         {
-            public static int DefaultSizeLimit = 10;
-
-            protected override int SizeLimit => DefaultSizeLimit;
-
+            public static int SizeLimit = 10;
             public bool WasCompacted = false;
+
+            public TestMemoryCache() : base(SizeLimit)
+            {
+            }
 
             public DateTime GetAccessTime(string key)
             {

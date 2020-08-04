@@ -3,6 +3,7 @@
 
 using System;
 using System.Composition;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -24,7 +25,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly Lazy<IVsUIShellOpenDocument> _vsUIShellOpenDocument;
         private readonly IVsFeatureFlags _featureFlags;
 
-        private readonly MemoryCache<bool> _projectSupportsRazorLSPCache;
+        private readonly MemoryCache<string, bool> _projectSupportsRazorLSPCache;
 
         private bool? _featureFlagEnabled;
         private bool? _environmentFeatureEnabled;
@@ -48,7 +49,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return shellOpenDocument;
             });
 
-            _projectSupportsRazorLSPCache = new MemoryCache<bool>();
+            _projectSupportsRazorLSPCache = new MemoryCache<string, bool>();
         }
 
         // Test constructor

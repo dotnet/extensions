@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Services;
+using Microsoft.CodeAnalysis.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
@@ -15,9 +16,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
     internal class DefaultRazorSemanticTokensInfoService : RazorSemanticTokensInfoService
     {
         // This cache is not created for performance, but rather to restrict memory growth.
-        // We need to keep track of the last couple of requests for use in previousResultId, but if we let the grow unbounded it could quickly allocate a lot of memory.
+        // We need to keep track of the last couple of requests for use in previousResultId,
+        // but if we let the grow unbounded it could quickly allocate a lot of memory.
         // Solution: an in-memory cache
-        private static readonly MemoryCache<IReadOnlyList<uint>> _semanticTokensCache = new MemoryCache<IReadOnlyList<uint>>();
+        private static readonly MemoryCache<string, IReadOnlyList<uint>> _semanticTokensCache =
+            new MemoryCache<string, IReadOnlyList<uint>>();
 
         public override SemanticTokens GetSemanticTokens(RazorCodeDocument codeDocument)
         {

@@ -6,29 +6,32 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.CodeAnalysis.Razor
 {
     // We've created our own MemoryCache here, ideally we would use the one in Microsoft.Extensions.Caching.Memory,
     // but until we update O# that causes an Assembly load problem.
-    internal class MemoryCache<TResult>
+    internal class MemoryCache<TKey, TValue>
     {
-        protected virtual int SizeLimit { get; } = 50;
+        private const int DefaultSizeLimit = 50;
 
-        protected IDictionary<string, CacheEntry> _dict;
+        protected IDictionary<TKey, CacheEntry> _dict;
 
-        public MemoryCache()
+        public MemoryCache(int sizeLimit = DefaultSizeLimit)
         {
-            _dict = new ConcurrentDictionary<string, CacheEntry>(concurrencyLevel: 2, capacity: SizeLimit);
+            SizeLimit = sizeLimit;
+            _dict = new ConcurrentDictionary<TKey, CacheEntry>(concurrencyLevel: 2, capacity: SizeLimit);
         }
 
-        public bool TryGetValue(string key, out TResult result)
+        private int SizeLimit { get; }
+
+        public bool TryGetValue(TKey key, out TValue result)
         {
             var entryFound = _dict.TryGetValue(key, out var value);
 
             if (entryFound)
             {
                 value.LastAccess = DateTime.UtcNow;
-                result = value.Result;
+                result = value.Value;
             }
             else
             {
@@ -38,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return entryFound;
         }
 
-        public void Set(string key, TResult value)
+        public void Set(TKey key, TValue value)
         {
             if (_dict.Count >= SizeLimit)
             {
@@ -48,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _dict.Add(key, new CacheEntry
             {
                 LastAccess = DateTime.UtcNow,
-                Result = value,
+                Value = value,
             });
         }
 
@@ -64,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         protected class CacheEntry
         {
-            public TResult Result { get; set; }
+            public TValue Value { get; set; }
 
             public DateTime LastAccess { get; set; }
         }
