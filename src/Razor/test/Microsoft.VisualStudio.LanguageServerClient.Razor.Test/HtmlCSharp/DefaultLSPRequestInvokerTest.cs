@@ -60,7 +60,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var broker = new TestLanguageServiceBroker((contentType, method) =>
             {
                 called = true;
-                Assert.Equal(RazorLSPConstants.CSharpLSPContentTypeName, contentType);
+                Assert.Equal(RazorLSPConstants.CSharpContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
@@ -123,7 +123,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var broker = new TestLanguageServiceBroker((contentType, method) =>
             {
                 called = true;
-                Assert.Equal(RazorLSPConstants.CSharpLSPContentTypeName, contentType);
+                Assert.Equal(RazorLSPConstants.CSharpContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
             var requestInvoker = new DefaultLSPRequestInvoker(broker);

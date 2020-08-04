@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             { LanguageClientConstants.ClientNamePropertyKey, "RazorCSharp" }
         };
 
-        private static IContentType _csharpLSPContentType;
+        private static IContentType _csharpContentType;
 
         [ImportingConstructor]
         public CSharpVirtualDocumentFactory(
@@ -37,13 +37,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             get
             {
-                if (_csharpLSPContentType == null)
+                if (_csharpContentType == null)
                 {
-                    var contentType = ContentTypeRegistry.GetContentType(RazorLSPConstants.CSharpLSPContentTypeName);
-                    _csharpLSPContentType = new RemoteContentDefinitionType(contentType);
+                    var contentType = ContentTypeRegistry.GetContentType(RazorLSPConstants.CSharpContentTypeName);
+                    _csharpContentType = new RemoteContentDefinitionType(contentType);
                 }
 
-                return _csharpLSPContentType;
+                return _csharpContentType;
             }
         }
 
