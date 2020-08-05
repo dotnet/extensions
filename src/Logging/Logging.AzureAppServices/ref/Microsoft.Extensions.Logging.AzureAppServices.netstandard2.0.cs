@@ -6,6 +6,7 @@ namespace Microsoft.Extensions.Logging
     public static partial class AzureAppServicesLoggerFactoryExtensions
     {
         public static Microsoft.Extensions.Logging.ILoggingBuilder AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggingBuilder builder) { throw null; }
+        public static Microsoft.Extensions.Logging.ILoggingBuilder AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggingBuilder builder, string customPrefix) { throw null; }
     }
 }
 namespace Microsoft.Extensions.Logging.AzureAppServices
