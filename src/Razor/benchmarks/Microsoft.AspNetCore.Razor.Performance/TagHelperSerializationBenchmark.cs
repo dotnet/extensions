@@ -12,35 +12,8 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Razor.Performance
 {
-    public class TagHelperSerializationBenchmark
+    public class TagHelperSerializationBenchmark : TagHelperBenchmarkBase
     {
-        private readonly byte[] _tagHelperBuffer;
-
-        public TagHelperSerializationBenchmark()
-        {
-            var current = new DirectoryInfo(AppContext.BaseDirectory);
-            while (current != null && !File.Exists(Path.Combine(current.FullName, "taghelpers.json")))
-            {
-                current = current.Parent;
-            }
-
-            var tagHelperFilePath = Path.Combine(current.FullName, "taghelpers.json");
-            _tagHelperBuffer = File.ReadAllBytes(tagHelperFilePath);
-
-            // Deserialize from json file.
-            DefaultSerializer = new JsonSerializer();
-            DefaultSerializer.Converters.Add(new TagHelperDescriptorJsonConverter());
-            using (var stream = new MemoryStream(_tagHelperBuffer))
-            using (var reader = new JsonTextReader(new StreamReader(stream)))
-            {
-                DefaultTagHelpers = DefaultSerializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
-            }
-        }
-
-        public IReadOnlyList<TagHelperDescriptor> DefaultTagHelpers { get; set; }
-
-        public JsonSerializer DefaultSerializer { get; set; }
-
         [Benchmark(Description = "Razor TagHelper Roundtrip Serialization")]
         public void TagHelper_Serialization_RoundTrip()
         {
@@ -80,6 +53,15 @@ namespace Microsoft.AspNetCore.Razor.Performance
             using (var reader = new JsonTextReader(new StreamReader(stream)))
             {
                 tagHelpers = DefaultSerializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
+            }
+        }
+
+        [Benchmark(Description = "TagHelpers GetHashCode")]
+        public void Benchmark_TagHelpersGetHashCode()
+        {
+            for (var i = 0; i < DefaultTagHelpers.Count; i++)
+            {
+                _ = DefaultTagHelpers[i].GetHashCode();
             }
         }
     }

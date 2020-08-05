@@ -16,13 +16,13 @@ namespace Microsoft.CodeAnalysis.Razor
 
         protected IDictionary<TKey, CacheEntry> _dict;
 
+        private readonly int _sizeLimit;
+
         public MemoryCache(int sizeLimit = DefaultSizeLimit)
         {
-            SizeLimit = sizeLimit;
-            _dict = new ConcurrentDictionary<TKey, CacheEntry>(concurrencyLevel: 2, capacity: SizeLimit);
+            _sizeLimit = sizeLimit;
+            _dict = new ConcurrentDictionary<TKey, CacheEntry>(concurrencyLevel: 2, capacity: _sizeLimit);
         }
-
-        private int SizeLimit { get; }
 
         public bool TryGetValue(TKey key, out TValue result)
         {
@@ -43,9 +43,14 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public void Set(TKey key, TValue value)
         {
-            if (_dict.Count >= SizeLimit)
+            if (_dict.Count >= _sizeLimit)
             {
                 Compact();
+            }
+
+            if (_dict.ContainsKey(key))
+            {
+                _dict.Remove(key);
             }
 
             _dict.Add(key, new CacheEntry
@@ -59,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             var kvps = _dict.OrderBy(x => x.Value.LastAccess);
 
-            for (var i = 0; i < SizeLimit / 2; i++)
+            for (var i = 0; i < _sizeLimit / 2; i++)
             {
                 _dict.Remove(kvps.ElementAt(i).Key);
             }

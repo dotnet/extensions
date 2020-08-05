@@ -30,10 +30,25 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public int GetHashCode(TagHelperResolutionResult obj)
         {
-            var hashCodeCombiner = new HashCodeCombiner();
-            hashCodeCombiner.Add(obj.Descriptors);
-            hashCodeCombiner.Add(obj.Diagnostics);
-            return hashCodeCombiner.CombinedHash;
+            var hash = new HashCodeCombiner();
+
+            if (obj.Descriptors != null)
+            {
+                for (var i = 0; i < obj.Descriptors.Count; i++)
+                {
+                    hash.Add(obj.Descriptors[i]);
+                }
+            }
+
+            if (obj.Diagnostics != null)
+            {
+                for (var i = 0; i < obj.Diagnostics.Count; i++)
+                {
+                    hash.Add(obj.Diagnostics[i]);
+                }
+            }
+
+            return hash.CombinedHash;
         }
     }
 }

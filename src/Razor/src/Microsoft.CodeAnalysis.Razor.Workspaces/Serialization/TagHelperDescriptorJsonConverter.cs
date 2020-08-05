@@ -12,6 +12,8 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
     {
         public static readonly TagHelperDescriptorJsonConverter Instance = new TagHelperDescriptorJsonConverter();
 
+        public static bool DisableCachingForTesting { private get; set; } = false;
+
         public override bool CanConvert(Type objectType)
         {
             return typeof(TagHelperDescriptor).IsAssignableFrom(objectType);
@@ -24,10 +26,32 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
                 return null;
             }
 
+            // Try reading the optional hashcode
+            // Note; the JsonReader will read a numeric value as a Int64 (long) by default
+            var hashWasRead = reader.TryReadNextProperty<long>(RazorSerializationConstants.HashCodePropertyName, out var hashLong);
+            var hash = hashWasRead ? Convert.ToInt32(hashLong) : 0;
+            if (!DisableCachingForTesting &&
+                hashWasRead &&
+                TagHelperDescriptorCache.TryGetDescriptor(hash, out var descriptor))
+            {
+                ReadToEndOfCurrentObject(reader);
+                return descriptor;
+            }
+
             // Required tokens (order matters)
-            var descriptorKind = reader.ReadNextStringProperty(nameof(TagHelperDescriptor.Kind));
-            var typeName = reader.ReadNextStringProperty(nameof(TagHelperDescriptor.Name));
-            var assemblyName = reader.ReadNextStringProperty(nameof(TagHelperDescriptor.AssemblyName));
+            if (!reader.TryReadNextProperty<string>(nameof(TagHelperDescriptor.Kind), out var descriptorKind))
+            {
+                return default;
+            }
+            if (!reader.TryReadNextProperty<string>(nameof(TagHelperDescriptor.Name), out var typeName))
+            {
+                return default;
+            }
+            if (!reader.TryReadNextProperty<string>(nameof(TagHelperDescriptor.AssemblyName), out var assemblyName))
+            {
+                return default;
+            }
+
             var builder = TagHelperDescriptorBuilder.Create(descriptorKind, typeName, assemblyName);
 
             reader.ReadProperties(propertyName =>
@@ -73,7 +97,12 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
                 }
             });
 
-            return builder.Build();
+            descriptor = builder.Build();
+            if (!DisableCachingForTesting && hashWasRead)
+            {
+                TagHelperDescriptorCache.Set(hash, descriptor);
+            }
+            return descriptor;
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -81,6 +110,9 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             var tagHelper = (TagHelperDescriptor)value;
 
             writer.WriteStartObject();
+
+            writer.WritePropertyName(RazorSerializationConstants.HashCodePropertyName);
+            writer.WriteValue(tagHelper.GetHashCode());
 
             writer.WritePropertyName(nameof(TagHelperDescriptor.Kind));
             writer.WriteValue(tagHelper.Kind);
@@ -847,6 +879,32 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
 
             var sourceSpan = new SourceSpan(filePath, absoluteIndex, lineIndex, characterIndex, length);
             return sourceSpan;
+        }
+
+        private static void ReadToEndOfCurrentObject(JsonReader reader)
+        {
+            var nestingLevel = 0;
+
+            while (reader.Read())
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonToken.StartObject:
+                        nestingLevel++;
+                        break;
+                    case JsonToken.EndObject:
+                        nestingLevel--;
+
+                        if (nestingLevel == -1)
+                        {
+                            return;
+                        }
+
+                        break;
+                }
+            }
+
+            throw new JsonSerializationException($"Could not read till end of object, end of stream. Got '{reader.TokenType}'.");
         }
     }
 }
