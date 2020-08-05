@@ -1,4 +1,7 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.VisualStudio.Shell;
 
 [assembly: ProvideBindingRedirection(
     AssemblyName = "Microsoft.AspNetCore.Mvc.Razor.Extensions",

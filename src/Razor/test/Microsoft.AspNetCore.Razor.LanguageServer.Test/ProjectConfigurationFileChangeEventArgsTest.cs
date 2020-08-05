@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.Workspaces.Serialization;
 using Moq;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
