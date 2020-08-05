@@ -103,15 +103,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             if (mappingResult == null || mappingResult.Ranges[0].IsUndefined())
             {
                 // Couldn't remap the edits properly. Returning hover at initial request position.
-                return new Hover
+                return CreateHover(result, new Range
                 {
-                    Contents = result.Contents,
-                    Range = new Range()
-                    {
-                        Start = request.Position,
-                        End = request.Position
-                    }
-                };
+                    Start = request.Position,
+                    End = request.Position
+                });
             }
             else if (mappingResult.HostDocumentVersion != documentSnapshot.Version)
             {
@@ -119,10 +115,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            return new Hover
+            return CreateHover(result, mappingResult.Ranges[0]);
+        }
+
+        private static VSHover CreateHover(Hover originalHover, Range range)
+        {
+            return new VSHover
             {
-                Contents = result.Contents,
-                Range = mappingResult.Ranges[0]
+                Contents = originalHover.Contents,
+                Range = range,
+                RawContent = originalHover is VSHover originalVSHover ? originalVSHover.RawContent : null
             };
         }
     }
