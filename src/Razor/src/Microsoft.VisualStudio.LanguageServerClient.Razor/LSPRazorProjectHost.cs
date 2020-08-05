@@ -104,25 +104,34 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     clientName = clientNameValue.ToString();
                 }
 
+                var disableUserExperience = false;
+                if (client.Metadata.TryGetValue("DisableUserExperience", out var disableUserExperienceValue))
+                {
+                    disableUserExperience = (bool)disableUserExperienceValue;
+                }
+
                 applicableClients.Add(new Lazy<ILanguageClient, ILanguageClientMetadata>(
                     () => { return client.Value; },
-                    new LanguageClientMetadata(clientName, contentTypes)));
+                    new LanguageClientMetadata(clientName, contentTypes, disableUserExperience)));
             }
 
             return applicableClients;
         }
 
-        private class LanguageClientMetadata : ILanguageClientMetadata
+        private class LanguageClientMetadata : ILanguageClientMetadata, IIsUserExperienceDisabledMetadata
         {
-            public LanguageClientMetadata(string clientName, IEnumerable<string> contentTypes)
+            public LanguageClientMetadata(string clientName, IEnumerable<string> contentTypes, bool isUserExperienceDisabled)
             {
                 ClientName = clientName;
                 ContentTypes = contentTypes;
+                IsUserExperienceDisabled = isUserExperienceDisabled;
             }
 
             public string ClientName { get; }
 
             public IEnumerable<string> ContentTypes { get; }
+
+            public bool IsUserExperienceDisabled { get; }
         }
     }
 }
