@@ -2,10 +2,10 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
 {
     public static class AzureAppServicesFlatBlobLoggerFactoryExtension
     {
-        public static string BlobFileName;
+        public static string BlobPrefixFileName;
         public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, string fileName)
         {
-            BlobFileName = fileName;
+            BlobPrefixFileName = fileName;
 
             var context = WebAppContext.Default;
 

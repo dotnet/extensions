@@ -63,9 +63,9 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
                 var key = eventGroup.Key;
                 string blobName;
 
-                if (!string.IsNullOrEmpty(AzureAppServicesFlatBlobLoggerFactoryExtension.BlobFileName))
+                if (!string.IsNullOrEmpty(AzureAppServicesFlatBlobLoggerFactoryExtension.BlobPrefixFileName))
                 {
-                    string filename = $"{AzureAppServicesFlatBlobLoggerFactoryExtension.BlobFileName}{currDate.Year}{currDate.Month:00}{currDate.Day:00}.txt";
+                    string filename = $"{AzureAppServicesFlatBlobLoggerFactoryExtension.BlobPrefixFileName}{currDate.Year}{currDate.Month:00}{currDate.Day:00}.txt";
                     blobName = $"{_appName}/{filename}";
                 }
                 else
