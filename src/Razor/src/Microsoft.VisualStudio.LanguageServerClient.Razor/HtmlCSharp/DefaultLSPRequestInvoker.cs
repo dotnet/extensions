@@ -3,7 +3,6 @@
 
 using System;
 using System.Composition;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
@@ -18,7 +17,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     internal class DefaultLSPRequestInvoker : LSPRequestInvoker
     {
         private readonly ILanguageServiceBroker2 _languageServiceBroker;
-        private readonly MethodInfo _requestAsyncMethod;
         private readonly JsonSerializer _serializer;
 
         [ImportingConstructor]
@@ -30,22 +28,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             _languageServiceBroker = languageServiceBroker;
-
-            // Ideally we want to call ILanguageServiceBroker2.RequestAsync & SynchronizedRequestAsync directly
-            // but only RequestAsync is referenced in the LanguageClient.Implementation assembly.
-            // So for now, we invoke it using reflection. This will go away eventually.
-            // https://github.com/dotnet/aspnetcore/issues/23191
-            var type = _languageServiceBroker.GetType();
-            _requestAsyncMethod = type.GetMethod(
-                "RequestAsync",
-                new[]
-                {
-                    typeof(string[]),
-                    typeof(Func<JToken, bool>),
-                    typeof(string),
-                    typeof(JToken),
-                    typeof(CancellationToken)
-                });
 
             // We need these converters so we don't lose information as part of the deserialization.
             _serializer = new JsonSerializer();
@@ -60,16 +42,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public override Task<TOut> ReinvokeRequestOnServerAsync<TIn, TOut>(string method, LanguageServerKind serverKind, TIn parameters, CancellationToken cancellationToken)
         {
-            return RequestServerCoreAsync<TIn, TOut>(_requestAsyncMethod, method, serverKind, parameters, cancellationToken);
+            return RequestServerCoreAsync<TIn, TOut>(method, serverKind, parameters, cancellationToken);
         }
 
-        private async Task<TOut> RequestServerCoreAsync<TIn, TOut>(MethodInfo lspPlatformMethod, string method, LanguageServerKind serverKind, TIn parameters, CancellationToken cancellationToken)
+        private async Task<TOut> RequestServerCoreAsync<TIn, TOut>(string method, LanguageServerKind serverKind, TIn parameters, CancellationToken cancellationToken)
         {
-            if (lspPlatformMethod is null)
-            {
-                throw new ArgumentNullException(nameof(lspPlatformMethod));
-            }
-
             if (string.IsNullOrEmpty(method))
             {
                 throw new ArgumentException("message", nameof(method));
@@ -86,18 +63,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             var serializedParams = JToken.FromObject(parameters);
-            var task = (Task<(ILanguageClient, JToken)>)lspPlatformMethod.Invoke(
-                _languageServiceBroker,
-                new object[]
-                {
-                    new[] { contentType },
-                    (Func<JToken, bool>)(token => true),
-                    method,
-                    serializedParams,
-                    cancellationToken
-                });
 
-            var (_, resultToken) = await task.ConfigureAwait(false);
+            var (_, resultToken) = await _languageServiceBroker.RequestAsync(
+                new[] { contentType },
+                token => true,
+                method,
+                serializedParams,
+                cancellationToken).ConfigureAwait(false);
 
             var result = resultToken != null ? resultToken.ToObject<TOut>(_serializer) : default;
             return result;

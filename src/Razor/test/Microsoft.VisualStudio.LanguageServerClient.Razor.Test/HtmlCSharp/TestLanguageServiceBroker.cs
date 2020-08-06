@@ -77,22 +77,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             throw new NotImplementedException();
         }
 
-#pragma warning disable CA1801 // Parameter is never used
-        public Task<(ILanguageClient, JToken)> SynchronizedRequestAsync(
-            string[] contentTypes,
-            Func<JToken, bool> capabilitiesFilter,
-            string method,
-            JToken parameters,
-            CancellationToken cancellationToken)
-        {
-            // We except it to be called with only one content type.
-            var contentType = Assert.Single(contentTypes);
-
-            _callback?.Invoke(contentType, method);
-
-            return Task.FromResult<(ILanguageClient, JToken)>((null, null));
-        }
-
         public Task<(ILanguageClient, JToken)> RequestAsync(
             string[] contentTypes,
             Func<JToken, bool> capabilitiesFilter,
@@ -197,6 +181,5 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             throw new NotImplementedException();
         }
-#pragma warning restore CA1801 // Parameter is never used
     }
 }
