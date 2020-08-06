@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,6 +42,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             var owner = syntaxTree.Root.LocateOwner(change);
+            if (owner == null)
+            {
+                Debug.Fail("Owner should never be null.");
+                return EmptyResult;
+            }
+
             var node = owner.Ancestors().FirstOrDefault(n => n.Kind == SyntaxKind.RazorDirective);
             if (node == null || !(node is RazorDirectiveSyntax directiveNode))
             {

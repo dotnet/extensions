@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 return;
             }
 
-            if (!_projectResolver.TryResolvePotentialProject(textDocumentPath, out var projectSnapshot))
+            if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot, enforceDocumentInProject: false))
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
             }
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 AddDocument(filePath);
             }
 
-            if (!_projectResolver.TryResolvePotentialProject(textDocumentPath, out var projectSnapshot))
+            if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
             }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var textDocumentPath = _filePathNormalizer.Normalize(filePath);
-            if (!_projectResolver.TryResolvePotentialProject(textDocumentPath, out var projectSnapshot))
+            if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
             }
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var textDocumentPath = _filePathNormalizer.Normalize(filePath);
-            if (!_projectResolver.TryResolvePotentialProject(textDocumentPath, out var projectSnapshot))
+            if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
             }
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var textDocumentPath = _filePathNormalizer.Normalize(filePath);
-            if (!_projectResolver.TryResolvePotentialProject(textDocumentPath, out var projectSnapshot))
+            if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
             }
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             {
                 var documentSnapshot = (DefaultDocumentSnapshot)project.GetDocument(documentFilePath);
 
-                if (!_projectResolver.TryResolvePotentialProject(documentFilePath, out var toProject))
+                if (!_projectResolver.TryResolveProject(documentFilePath, out var toProject, enforceDocumentInProject: false))
                 {
                     // This is the common case. It'd be rare for a project to be nested but we need to protect against it anyhow.
                     toProject = miscellaneousProject;
@@ -443,7 +443,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             foreach (var documentFilePath in miscellaneousProject.DocumentFilePaths)
             {
-                if (!_projectResolver.TryResolvePotentialProject(documentFilePath, out var projectSnapshot))
+                if (!_projectResolver.TryResolveProject(documentFilePath, out var projectSnapshot, enforceDocumentInProject: false))
                 {
                     continue;
                 }
