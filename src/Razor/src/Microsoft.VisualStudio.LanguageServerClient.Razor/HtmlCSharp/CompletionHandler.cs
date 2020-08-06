@@ -7,6 +7,7 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Threading;
@@ -20,6 +21,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private static readonly IReadOnlyList<string> CSharpTriggerCharacters = new[] { ".", "@" };
         private static readonly IReadOnlyList<string> HtmlTriggerCharacters = new[] { "<", "&", "\\", "/", "'", "\"", "=", ":", " " };
         private static readonly IReadOnlyList<string> AllTriggerCharacters = CSharpTriggerCharacters.Concat(HtmlTriggerCharacters).ToArray();
+
+        private static readonly IReadOnlyCollection<string> Keywords = new string[] {
+            "for", "foreach", "while", "switch", "lock",
+            "case", "if", "try", "do", "using"
+        };
+
+        private static readonly IReadOnlyCollection<CompletionItem> KeywordCompletionItems = Keywords.Select(k => new CompletionItem
+        {
+            Label = k,
+            InsertText = k,
+            FilterText = k,
+            Kind = CompletionItemKind.Keyword,
+            SortText = k,
+            InsertTextFormat = InsertTextFormat.Plaintext,
+        }).ToArray();
 
         private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly LSPRequestInvoker _requestInvoker;
@@ -119,6 +135,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 // Set some context on the CompletionItem so the CompletionResolveHandler can handle it accordingly.
                 result = SetResolveData(result.Value, serverKind);
+                if (serverKind == LanguageServerKind.CSharp)
+                {
+                    result = IncludeCSharpKeywords(result.Value, serverKind);
+                }
             }
 
             return result;
@@ -179,6 +199,28 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, new[] { removeProvisionalDot }, previousCharacterProjection.HostDocumentVersion);
 
             return (true, result);
+        }
+
+        // C# keywords were previously provided by snippets, but as of now C# LSP doesn't provide snippets. 
+        // We're providing these for now to improve the user experience (not having to ESC out of completions to finish),
+        // but once C# starts providing them their completion will be offered instead, at which point we should be able to remove this step.
+        private SumType<CompletionItem[], CompletionList>? IncludeCSharpKeywords(SumType<CompletionItem[], CompletionList> completionResult, LanguageServerKind kind)
+        {
+            var result = completionResult.Match<SumType<CompletionItem[], CompletionList>?>(
+                items =>
+                {
+                    var newList = items.Union(KeywordCompletionItems, CompletionItemComparer.Instance);
+                    return newList.ToArray();
+                },
+                list =>
+                {
+                    var newList = list.Items.Union(KeywordCompletionItems, CompletionItemComparer.Instance);
+                    list.Items = newList.ToArray();
+
+                    return list;
+                });
+
+            return result;
         }
 
         // Internal for testing
@@ -273,6 +315,27 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Unknown trigger character.
             return false;
+        }
+
+        private class CompletionItemComparer : IEqualityComparer<CompletionItem>
+        {
+            public static CompletionItemComparer Instance = new CompletionItemComparer();
+
+            public bool Equals(CompletionItem x, CompletionItem y)
+            {
+                if (x is null && y is null)
+                {
+                    return true;
+                }
+                else if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.Label.Equals(y.Label, StringComparison.Ordinal);
+            }
+
+            public int GetHashCode(CompletionItem obj) => obj?.Label?.GetHashCode() ?? 0;
         }
     }
 }
