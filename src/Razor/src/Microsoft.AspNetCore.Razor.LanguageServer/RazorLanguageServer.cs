@@ -29,6 +29,7 @@ using OmniSharp.Extensions.LanguageServer.Server;
 using ILanguageServer = OmniSharp.Extensions.LanguageServer.Server.ILanguageServer;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.LanguageServer.Refactoring;
+using Microsoft.AspNetCore.Razor.LanguageServer.Definition;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -103,6 +104,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<CodeActionResolutionEndpoint>()
                     .WithHandler<MonitorProjectConfigurationFilePathEndpoint>()
                     .WithHandler<RazorComponentRenameEndpoint>()
+                    .WithHandler<RazorDefinitionEndpoint>()
                     .WithServices(services =>
                     {
                         var filePathNormalizer = new FilePathNormalizer();
