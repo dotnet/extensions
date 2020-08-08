@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <ExtensionsBaselineVersion>3.1.6</ExtensionsBaselineVersion>
+    <ExtensionsBaselineVersion>3.1.7</ExtensionsBaselineVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Caching.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Abstractions' ">
