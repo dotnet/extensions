@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Client;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -30,6 +33,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly ILanguageClientMiddleLayer _middleLayer;
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
+        private readonly FeedbackFileLoggerProviderFactory _feedbackFileLoggerProviderFactory;
         private object _shutdownLock;
         private RazorLanguageServer _server;
         private IDisposable _serverShutdownDisposable;
@@ -41,7 +45,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             RazorLanguageServerCustomMessageTarget customTarget,
             RazorLanguageClientMiddleLayer middleLayer,
             LSPRequestInvoker requestInvoker,
-            ProjectConfigurationFilePathStore projectConfigurationFilePathStore)
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
+            FeedbackFileLoggerProviderFactory feedbackFileLoggerProviderFactory)
         {
             if (customTarget is null)
             {
@@ -63,10 +68,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(projectConfigurationFilePathStore));
             }
 
+            if (feedbackFileLoggerProviderFactory is null)
+            {
+                throw new ArgumentNullException(nameof(feedbackFileLoggerProviderFactory));
+            }
+
             _customMessageTarget = customTarget;
             _middleLayer = middleLayer;
             _requestInvoker = requestInvoker;
             _projectConfigurationFilePathStore = projectConfigurationFilePathStore;
+            _feedbackFileLoggerProviderFactory = feedbackFileLoggerProviderFactory;
             _shutdownLock = new object();
         }
 
@@ -104,13 +115,24 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // performing the Initialize handshake with the LanguageServer hangs.
             var autoFlushingStream = new AutoFlushingNerdbankStream(serverStream);
             var traceLevel = GetVerbosity();
-            _server = await RazorLanguageServer.CreateAsync(autoFlushingStream, autoFlushingStream, traceLevel).ConfigureAwait(false);
+            _server = await RazorLanguageServer.CreateAsync(autoFlushingStream, autoFlushingStream, traceLevel, ConfigureLanguageServer).ConfigureAwait(false);
 
             // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize.
             _server.InitializedAsync(token).FileAndForget("RazorLanguageServerClient_ActivateAsync");
 
             var connection = new Connection(clientStream, clientStream);
             return connection;
+        }
+
+        private void ConfigureLanguageServer(IServiceCollection services)
+        {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            var loggerProvider = _feedbackFileLoggerProviderFactory.GetOrCreate();
+            services.AddSingleton<ILoggerProvider>(loggerProvider);
         }
 
         private Trace GetVerbosity()
