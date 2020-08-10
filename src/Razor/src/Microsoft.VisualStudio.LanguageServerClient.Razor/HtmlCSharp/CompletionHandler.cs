@@ -135,7 +135,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 // Set some context on the CompletionItem so the CompletionResolveHandler can handle it accordingly.
                 result = SetResolveData(result.Value, serverKind);
-                if (serverKind == LanguageServerKind.CSharp)
+                if (serverKind == LanguageServerKind.CSharp && string.Equals(request.Context.TriggerCharacter, "@", StringComparison.Ordinal))
                 {
                     result = IncludeCSharpKeywords(result.Value, serverKind);
                 }
