@@ -26,6 +26,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 {
                     TriggerCharacters = new[] { ">", "=", "-" }
                 },
+                DocumentOnTypeFormattingProvider = new DocumentOnTypeFormattingOptions()
+                {
+                    // These trigger characters cannot overlap with OnAutoInsert trigger characters or they will be ignored.
+                    FirstTriggerCharacter = "}",
+                    MoreTriggerCharacter = new[] { ";" }
+                },
                 HoverProvider = true,
                 DefinitionProvider = true,
                 DocumentHighlightProvider = true,

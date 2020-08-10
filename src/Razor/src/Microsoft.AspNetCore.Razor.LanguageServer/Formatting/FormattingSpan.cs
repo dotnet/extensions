@@ -7,13 +7,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     internal class FormattingSpan
     {
-        public FormattingSpan(TextSpan span, TextSpan blockSpan, FormattingSpanKind spanKind, FormattingBlockKind blockKind, int indentationLevel)
+        public FormattingSpan(TextSpan span, TextSpan blockSpan, FormattingSpanKind spanKind, FormattingBlockKind blockKind, int indentationLevel, bool isInClassBody = false)
         {
             Span = span;
             BlockSpan = blockSpan;
             Kind = spanKind;
             BlockKind = blockKind;
             IndentationLevel = indentationLevel;
+            IsInClassBody = isInClassBody;
         }
 
         public TextSpan Span { get; }
@@ -25,5 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public FormattingSpanKind Kind { get; }
 
         public int IndentationLevel { get; }
+
+        public bool IsInClassBody { get; }
     }
 }

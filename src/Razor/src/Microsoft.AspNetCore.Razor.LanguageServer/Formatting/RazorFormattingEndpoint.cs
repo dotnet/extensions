@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             var span = TextSpan.FromBounds(0, codeDocument.Source.Length);
             var range = span.AsRange(codeDocument.GetSourceText());
-            var edits = await _razorFormattingService.FormatAsync(request.TextDocument.Uri, codeDocument, range, request.Options);
+            var edits = await _razorFormattingService.FormatAsync(request.TextDocument.Uri, document, range, request.Options);
 
             var editContainer = new TextEditContainer(edits);
             return editContainer;
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 return null;
             }
 
-            var edits = await _razorFormattingService.FormatAsync(request.TextDocument.Uri, codeDocument, request.Range, request.Options);
+            var edits = await _razorFormattingService.FormatAsync(request.TextDocument.Uri, document, request.Range, request.Options);
 
             var editContainer = new TextEditContainer(edits);
             return editContainer;

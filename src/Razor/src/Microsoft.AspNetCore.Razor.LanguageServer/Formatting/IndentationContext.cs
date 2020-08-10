@@ -15,6 +15,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public FormattingSpan FirstSpan { get; set; }
 
+        public bool StartsInHtmlContext => FirstSpan.Kind == FormattingSpanKind.Markup;
+
+        public bool StartsInCSharpContext => FirstSpan.Kind == FormattingSpanKind.Code;
+
+        public bool StartsInRazorContext => !StartsInHtmlContext && !StartsInCSharpContext;
+
+        public int MinCSharpIndentLevel => FirstSpan.IsInClassBody ? 2 : 3;
+
         public override string ToString()
         {
             return $"Line: {Line}, IndentationLevel: {IndentationLevel}, RelativeIndentationLevel: {RelativeIndentationLevel}, ExistingIndentation: {ExistingIndentation}";

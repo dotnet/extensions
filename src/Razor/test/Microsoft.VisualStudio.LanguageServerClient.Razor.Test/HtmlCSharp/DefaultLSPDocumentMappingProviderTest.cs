@@ -82,7 +82,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = GetRequestInvoker(new[]
             {
-                ((RazorLanguageKind.CSharp, RazorFile, new[] { new TestRange(10, 10, 10, 15) }), (new[] { expectedRange }, expectedVersion))
+                ((RazorLanguageKind.CSharp, RazorFile, new[] { new TestTextEdit("newText", new TestRange(10, 10, 10, 15)) }), (new[] { new TestTextEdit("newText", expectedRange) }, expectedVersion))
             });
             var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, lazyDocumentManager);
 
@@ -117,7 +117,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = GetRequestInvoker(new[]
             {
-                ((RazorLanguageKind.CSharp, RazorFile, new[] { new TestRange(10, 10, 10, 15) }), (new[] { expectedRange }, expectedVersion))
+                ((RazorLanguageKind.CSharp, RazorFile, new[] { new TestTextEdit("newText", new TestRange(10, 10, 10, 15)) }), (new[] { new TestTextEdit("newText", expectedRange) }, expectedVersion))
             });
             var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, lazyDocumentManager);
 
@@ -187,8 +187,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = GetRequestInvoker(new[]
             {
-                ((RazorLanguageKind.CSharp, RazorFile, new[] { new TestRange(10, 10, 10, 15) }), (new[] { expectedRange1 }, expectedVersion1)),
-                ((RazorLanguageKind.CSharp, AnotherRazorFile, new[] { new TestRange(20, 20, 20, 25) }), (new[] { expectedRange2 }, expectedVersion2))
+                ((RazorLanguageKind.CSharp, RazorFile, new[] { new TestTextEdit("newText", new TestRange(10, 10, 10, 15)) }), (new[] { new TestTextEdit("newText", expectedRange1) }, expectedVersion1)),
+                ((RazorLanguageKind.CSharp, AnotherRazorFile, new[] { new TestTextEdit("newText", new TestRange(20, 20, 20, 25)) }), (new[] { new TestTextEdit("newText", expectedRange2) }, expectedVersion2))
             });
             var mappingProvider = new DefaultLSPDocumentMappingProvider(requestInvoker, lazyDocumentManager);
 
@@ -221,7 +221,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 });
         }
 
-        private LSPRequestInvoker GetRequestInvoker(((RazorLanguageKind, Uri, TestRange[]), (TestRange[], int))[] mappingPairs)
+        private LSPRequestInvoker GetRequestInvoker(((RazorLanguageKind, Uri, TestTextEdit[]), (TestTextEdit[], int))[] mappingPairs)
         {
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             if (mappingPairs == null)
@@ -230,22 +230,22 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             // mappingPairs will contain the request/response pair for each of MapToDocumentRange LSP request we want to mock.
-            foreach (var ((kind, uri, projectedRanges), (mappedRanges, version)) in mappingPairs)
+            foreach (var ((kind, uri, projectedEdits), (mappedEdits, version)) in mappingPairs)
             {
-                var requestParams = new RazorMapToDocumentRangesParams()
+                var requestParams = new RazorMapToDocumentEditsParams()
                 {
                     Kind = kind,
                     RazorDocumentUri = uri,
-                    ProjectedRanges = projectedRanges
+                    ProjectedTextEdits = projectedEdits
                 };
-                var response = new RazorMapToDocumentRangesResponse()
+                var response = new RazorMapToDocumentEditsResponse()
                 {
-                    Ranges = mappedRanges,
+                    TextEdits = mappedEdits,
                     HostDocumentVersion = version
                 };
 
                 requestInvoker
-                    .Setup(r => r.ReinvokeRequestOnServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(LanguageServerConstants.RazorMapToDocumentRangesEndpoint, LanguageServerKind.Razor, requestParams, It.IsAny<CancellationToken>()))
+                    .Setup(r => r.ReinvokeRequestOnServerAsync<RazorMapToDocumentEditsParams, RazorMapToDocumentEditsResponse>(LanguageServerConstants.RazorMapToDocumentEditsEndpoint, LanguageServerKind.Razor, requestParams, It.IsAny<CancellationToken>()))
                     .Returns(Task.FromResult(response));
             }
 

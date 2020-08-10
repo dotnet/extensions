@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -147,6 +149,91 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectedPosition = default;
             projectedIndex = default;
             return false;
+        }
+
+        public override RazorLanguageKind GetLanguageKind(RazorCodeDocument codeDocument, int originalIndex)
+        {
+            if (codeDocument is null)
+            {
+                throw new ArgumentNullException(nameof(codeDocument));
+            }
+
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var classifiedSpans = syntaxTree.GetClassifiedSpans();
+            var tagHelperSpans = syntaxTree.GetTagHelperSpans();
+            var languageKind = GetLanguageKindCore(classifiedSpans, tagHelperSpans, originalIndex);
+
+            return languageKind;
+        }
+
+        // Internal for testing
+        internal static RazorLanguageKind GetLanguageKindCore(
+            IReadOnlyList<ClassifiedSpanInternal> classifiedSpans,
+            IReadOnlyList<TagHelperSpanInternal> tagHelperSpans,
+            int absoluteIndex)
+        {
+            for (var i = 0; i < classifiedSpans.Count; i++)
+            {
+                var classifiedSpan = classifiedSpans[i];
+                var span = classifiedSpan.Span;
+
+                if (span.AbsoluteIndex <= absoluteIndex)
+                {
+                    var end = span.AbsoluteIndex + span.Length;
+                    if (end >= absoluteIndex)
+                    {
+                        if (end == absoluteIndex)
+                        {
+                            // We're at an edge.
+
+                            if (span.Length > 0 &&
+                                classifiedSpan.AcceptedCharacters == AcceptedCharactersInternal.None)
+                            {
+                                // Non-marker spans do not own the edges after it
+                                continue;
+                            }
+                        }
+
+                        // Overlaps with request
+                        switch (classifiedSpan.SpanKind)
+                        {
+                            case SpanKindInternal.Markup:
+                                return RazorLanguageKind.Html;
+                            case SpanKindInternal.Code:
+                                return RazorLanguageKind.CSharp;
+                        }
+
+                        // Content type was non-C# or Html or we couldn't find a classified span overlapping the request position.
+                        // All other classified span kinds default back to Razor
+                        return RazorLanguageKind.Razor;
+                    }
+                }
+            }
+
+            for (var i = 0; i < tagHelperSpans.Count; i++)
+            {
+                var tagHelperSpan = tagHelperSpans[i];
+                var span = tagHelperSpan.Span;
+
+                if (span.AbsoluteIndex <= absoluteIndex)
+                {
+                    var end = span.AbsoluteIndex + span.Length;
+                    if (end >= absoluteIndex)
+                    {
+                        if (end == absoluteIndex)
+                        {
+                            // We're at an edge. TagHelper spans never own their edge and aren't represented by marker spans
+                            continue;
+                        }
+
+                        // Found intersection
+                        return RazorLanguageKind.Html;
+                    }
+                }
+            }
+
+            // Default to Razor
+            return RazorLanguageKind.Razor;
         }
     }
 }

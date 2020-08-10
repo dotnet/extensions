@@ -7,8 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<p>@DateTime.Now</p>");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.Html,
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<p>@DateTime.Now</p>");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.Razor,
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 });
             codeDocument.SetUnsupported();
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorMapToDocumentRangesParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("@{}");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<s");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 "/* CSharp */",
                 new[] { new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 12)) });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 new[] { new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 12)) });
             codeDocument.SetUnsupported();
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, Mock.Of<RazorFormattingService>(), LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -338,170 +338,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(0, response.Position.Line);
             Assert.Equal(1, response.Position.Character);
             Assert.Equal(1337, response.HostDocumentVersion);
-        }
-
-        [Fact]
-        public void GetLanguageKind_TagHelperElementOwnsName()
-        {
-            // Arrange
-            var descriptor = TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly");
-            descriptor.TagMatchingRule(rule => rule.TagName = "test");
-            descriptor.SetTypeName("TestTagHelper");
-            var text = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test>@Name</test>";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text, new[] { descriptor.Build() });
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, 32 + Environment.NewLine.Length);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.Html, languageKind);
-        }
-
-        [Fact]
-        public void GetLanguageKind_TagHelpersDoNotOwnTrailingEdge()
-        {
-            // Arrange
-            var descriptor = TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly");
-            descriptor.TagMatchingRule(rule => rule.TagName = "test");
-            descriptor.SetTypeName("TestTagHelper");
-            var text = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test></test>";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text, new[] { descriptor.Build() });
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, 42 + Environment.NewLine.Length);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.Razor, languageKind);
-        }
-
-        [Fact]
-        public void GetLanguageKind_TagHelperNestedCSharpAttribute()
-        {
-            // Arrange
-            var descriptor = TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly");
-            descriptor.TagMatchingRule(rule => rule.TagName = "test");
-            descriptor.BindAttribute(builder =>
-            {
-                builder.Name = "asp-int";
-                builder.TypeName = typeof(int).FullName;
-                builder.SetPropertyName("AspInt");
-            });
-            descriptor.SetTypeName("TestTagHelper");
-            var text = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test asp-int='123'></test>";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text, new[] { descriptor.Build() });
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, 46 + Environment.NewLine.Length);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
-        }
-
-        [Fact]
-        public void GetLanguageKind_CSharp()
-        {
-            // Arrange
-            var text = "<p>@Name</p>";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, 5);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
-        }
-
-        [Fact]
-        public void GetLanguageKind_Html()
-        {
-            // Arrange
-            var text = "<p>Hello World</p>";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, 5);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.Html, languageKind);
-        }
-
-        [Fact]
-        public void GetLanguageKind_DefaultsToRazorLanguageIfCannotLocateOwner()
-        {
-            // Arrange
-            var text = "<p>Hello World</p>";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, text.Length + 1);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.Razor, languageKind);
-        }
-
-        [Fact]
-        public void GetLanguageKind_HtmlEdgeEnd()
-        {
-            // Arrange
-            var text = "Hello World";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, text.Length);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.Html, languageKind);
-        }
-
-        [Fact]
-        public void GetLanguageKind_CSharpEdgeEnd()
-        {
-            // Arrange
-            var text = "@Name";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, text.Length);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
-        }
-
-        [Fact]
-        public void GetLanguageKind_RazorEdgeWithCSharp()
-        {
-            // Arrange
-            var text = "@{}";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, 2);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
-        }
-
-        [Fact]
-        public void GetLanguageKind_RazorEdgeWithHtml()
-        {
-            // Arrange
-            var text = "@{<br />}";
-            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
-
-            // Act
-            var languageKind = RazorLanguageEndpoint.GetLanguageKind(classifiedSpans, tagHelperSpans, 2);
-
-            // Assert
-            Assert.Equal(RazorLanguageKind.Html, languageKind);
-        }
-
-        private (IReadOnlyList<ClassifiedSpanInternal> classifiedSpans, IReadOnlyList<TagHelperSpanInternal> tagHelperSpans) GetClassifiedSpans(string text, IReadOnlyList<TagHelperDescriptor> tagHelpers = null)
-        {
-            var codeDocument = CreateCodeDocument(text, tagHelpers);
-            var syntaxTree = codeDocument.GetSyntaxTree();
-            var classifiedSpans = syntaxTree.GetClassifiedSpans();
-            var tagHelperSpans = syntaxTree.GetTagHelperSpans();
-            return (classifiedSpans, tagHelperSpans);
         }
 
         private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -158,6 +157,28 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return remappedEdits;
         }
 
+        public async override Task<TextEdit[]> RemapFormattedTextEditsAsync(Uri uri, TextEdit[] edits, FormattingOptions options, CancellationToken cancellationToken)
+        {
+            if (uri is null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            if (edits is null)
+            {
+                throw new ArgumentNullException(nameof(edits));
+            }
+
+            if (!RazorLSPConventions.IsRazorCSharpFile(uri) && !RazorLSPConventions.IsRazorHtmlFile(uri))
+            {
+                // This is not a virtual razor file. No need to remap.
+                return edits;
+            }
+
+            var (_, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, cancellationToken, shouldFormat: true, formattingOptions: options).ConfigureAwait(false);
+            return remappedEdits;
+        }
+
         public async override Task<WorkspaceEdit> RemapWorkspaceEditAsync(WorkspaceEdit workspaceEdit, CancellationToken cancellationToken)
         {
             if (workspaceEdit?.DocumentChanges != null)
@@ -247,7 +268,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return remappedChanges;
         }
 
-        private async Task<(LSPDocumentSnapshot, TextEdit[])> RemapTextEditsCoreAsync(Uri uri, TextEdit[] edits, CancellationToken cancellationToken)
+        private async Task<(LSPDocumentSnapshot, TextEdit[])> RemapTextEditsCoreAsync(
+            Uri uri,
+            TextEdit[] edits,
+            CancellationToken cancellationToken,
+            bool shouldFormat = false,
+            FormattingOptions formattingOptions = null)
         {
             var languageKind = RazorLanguageKind.Razor;
             if (RazorLSPConventions.IsRazorCSharpFile(uri))
@@ -265,11 +291,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var razorDocumentUri = RazorLSPConventions.GetRazorDocumentUri(uri);
 
-            var rangesToMap = edits.Select(e => e.Range).ToArray();
-            var mappingResult = await MapToDocumentRangesAsync(
-                languageKind,
-                razorDocumentUri,
-                rangesToMap,
+            var mapToDocumentEditsParams = new RazorMapToDocumentEditsParams()
+            {
+                Kind = languageKind,
+                RazorDocumentUri = razorDocumentUri,
+                ProjectedTextEdits = edits,
+                ShouldFormat = shouldFormat,
+                FormattingOptions = formattingOptions
+            };
+
+            var mappingResult = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentEditsParams, RazorMapToDocumentEditsResponse>(
+                LanguageServerConstants.RazorMapToDocumentEditsEndpoint,
+                LanguageServerKind.Razor,
+                mapToDocumentEditsParams,
                 cancellationToken).ConfigureAwait(false);
 
             if (mappingResult == null ||
@@ -280,27 +314,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return (null, EmptyEdits);
             }
 
-            var remappedEdits = new List<TextEdit>();
-            for (var i = 0; i < edits.Length; i++)
-            {
-                var edit = edits[i];
-                var range = mappingResult.Ranges[i];
-                if (range.IsUndefined())
-                {
-                    // Couldn't remap the range correctly. Discard this range.
-                    continue;
-                }
-
-                var remappedEdit = new TextEdit()
-                {
-                    Range = range,
-                    NewText = edit.NewText
-                };
-
-                remappedEdits.Add(remappedEdit);
-            }
-
-            return (documentSnapshot, remappedEdits.ToArray());
+            return (documentSnapshot, mappingResult.TextEdits);
         }
 
         private static bool CanRemap(Uri uri)

@@ -134,7 +134,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             public bool Called { get; private set; }
 
-            public override Task<TextEdit[]> FormatAsync(Uri uri, RazorCodeDocument codeDocument, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range, FormattingOptions options)
+            public override Task<TextEdit[]> ApplyFormattedEditsAsync(Uri uri, DocumentSnapshot documentSnapshot, RazorLanguageKind kind, TextEdit[] formattedEdits, FormattingOptions options)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<TextEdit[]> FormatAsync(Uri uri, DocumentSnapshot documentSnapshot, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range, FormattingOptions options)
             {
                 Called = true;
                 return Task.FromResult(Array.Empty<TextEdit>());

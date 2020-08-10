@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -18,7 +17,7 @@ using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler, IRazorMapToDocumentRangesHandler
+    internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler, IRazorMapToDocumentRangesHandler, IRazorMapToDocumentEditsHandler
     {
         // Internal for testing
         internal static readonly Range UndefinedRange = new Range(
@@ -29,7 +28,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly DocumentVersionCache _documentVersionCache;
-        private readonly RazorDocumentMappingService _documentMappingservice;
+        private readonly RazorDocumentMappingService _documentMappingService;
+        private readonly RazorFormattingService _razorFormattingService;
         private readonly ILogger _logger;
 
         public RazorLanguageEndpoint(
@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             DocumentResolver documentResolver,
             DocumentVersionCache documentVersionCache,
             RazorDocumentMappingService documentMappingService,
+            RazorFormattingService razorFormattingService, 
             ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
@@ -59,6 +60,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentMappingService));
             }
 
+            if (razorFormattingService == null)
+            {
+                throw new ArgumentNullException(nameof(razorFormattingService));
+            }
+
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
@@ -67,7 +73,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _documentVersionCache = documentVersionCache;
-            _documentMappingservice = documentMappingService;
+            _documentMappingService = documentMappingService;
+            _razorFormattingService = razorFormattingService;
             _logger = loggerFactory.CreateLogger<RazorLanguageEndpoint>();
         }
 
@@ -105,16 +112,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 };
             }
 
-            var syntaxTree = codeDocument.GetSyntaxTree();
-            var classifiedSpans = syntaxTree.GetClassifiedSpans();
-            var tagHelperSpans = syntaxTree.GetTagHelperSpans();
-            var languageKind = GetLanguageKind(classifiedSpans, tagHelperSpans, hostDocumentIndex);
-
             var responsePositionIndex = hostDocumentIndex;
 
+            var languageKind = _documentMappingService.GetLanguageKind(codeDocument, hostDocumentIndex);
             if (languageKind == RazorLanguageKind.CSharp)
             {
-                if (_documentMappingservice.TryMapToProjectedDocumentPosition(codeDocument, hostDocumentIndex, out var projectedPosition, out var projectedIndex))
+                if (_documentMappingService.TryMapToProjectedDocumentPosition(codeDocument, hostDocumentIndex, out var projectedPosition, out var projectedIndex))
                 {
                     // For C# locations, we attempt to return the corresponding position
                     // within the projected document
@@ -158,8 +161,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 {
                     documentVersion = UndefinedDocumentVersion;
                 }
-
-                return documentSnapshot;
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
 
             if (request.Kind != RazorLanguageKind.CSharp)
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 var projectedRange = request.ProjectedRanges[i];
                 if (codeDocument.IsUnsupported() ||
-                    !_documentMappingservice.TryMapFromProjectedDocumentRange(codeDocument, projectedRange, out var originalRange))
+                    !_documentMappingService.TryMapFromProjectedDocumentRange(codeDocument, projectedRange, out var originalRange))
                 {
                     // All language queries on unsupported documents return Html. This is equivalent to what pre-VSCode Razor was capable of.
                     ranges[i] = UndefinedRange;
@@ -195,74 +196,80 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             };
         }
 
-        // Internal for testing
-        internal static RazorLanguageKind GetLanguageKind(
-            IReadOnlyList<ClassifiedSpanInternal> classifiedSpans,
-            IReadOnlyList<TagHelperSpanInternal> tagHelperSpans,
-            int absoluteIndex)
+        public async Task<RazorMapToDocumentEditsResponse> Handle(RazorMapToDocumentEditsParams request, CancellationToken cancellationToken)
         {
-            for (var i = 0; i < classifiedSpans.Count; i++)
+            if (request is null)
             {
-                var classifiedSpan = classifiedSpans[i];
-                var span = classifiedSpan.Span;
-
-                if (span.AbsoluteIndex <= absoluteIndex)
-                {
-                    var end = span.AbsoluteIndex + span.Length;
-                    if (end >= absoluteIndex)
-                    {
-                        if (end == absoluteIndex)
-                        {
-                            // We're at an edge.
-
-                            if (span.Length > 0 &&
-                                classifiedSpan.AcceptedCharacters == AcceptedCharactersInternal.None)
-                            {
-                                // Non-marker spans do not own the edges after it
-                                continue;
-                            }
-                        }
-
-                        // Overlaps with request
-                        switch (classifiedSpan.SpanKind)
-                        {
-                            case SpanKindInternal.Markup:
-                                return RazorLanguageKind.Html;
-                            case SpanKindInternal.Code:
-                                return RazorLanguageKind.CSharp;
-                        }
-
-                        // Content type was non-C# or Html or we couldn't find a classified span overlapping the request position.
-                        // All other classified span kinds default back to Razor
-                        return RazorLanguageKind.Razor;
-                    }
-                }
+                throw new ArgumentNullException(nameof(request));
             }
 
-            for (var i = 0; i < tagHelperSpans.Count; i++)
+            var documentVersion = UndefinedDocumentVersion;
+            DocumentSnapshot documentSnapshot = null;
+            await Task.Factory.StartNew(() =>
             {
-                var tagHelperSpan = tagHelperSpans[i];
-                var span = tagHelperSpan.Span;
-
-                if (span.AbsoluteIndex <= absoluteIndex)
+                _documentResolver.TryResolveDocument(request.RazorDocumentUri.GetAbsoluteOrUNCPath(), out documentSnapshot);
+                if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
                 {
-                    var end = span.AbsoluteIndex + span.Length;
-                    if (end >= absoluteIndex)
-                    {
-                        if (end == absoluteIndex)
-                        {
-                            // We're at an edge. TagHelper spans never own their edge and aren't represented by marker spans
-                            continue;
-                        }
-
-                        // Found intersection
-                        return RazorLanguageKind.Html;
-                    }
+                    documentVersion = UndefinedDocumentVersion;
                 }
+            }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+
+            var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
+            if (codeDocument.IsUnsupported())
+            {
+                return new RazorMapToDocumentEditsResponse()
+                {
+                    TextEdits = Array.Empty<TextEdit>(),
+                    HostDocumentVersion = documentVersion
+                };
             }
 
-            // Default to Razor
-            return RazorLanguageKind.Razor;
+            if (request.ShouldFormat)
+            {
+                var mappedEdits = await _razorFormattingService.ApplyFormattedEditsAsync(
+                    request.RazorDocumentUri, documentSnapshot, request.Kind, request.ProjectedTextEdits, request.FormattingOptions);
+
+                return new RazorMapToDocumentEditsResponse()
+                {
+                    TextEdits = mappedEdits,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+
+            if (request.Kind != RazorLanguageKind.CSharp)
+            {
+                // All other non-C# requests map directly to where they are in the document.
+                return new RazorMapToDocumentEditsResponse()
+                {
+                    TextEdits = request.ProjectedTextEdits,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+
+            var edits = new List<TextEdit>();
+            for (var i = 0; i < request.ProjectedTextEdits.Length; i++)
+            {
+                var projectedRange = request.ProjectedTextEdits[i].Range;
+                if (!_documentMappingService.TryMapFromProjectedDocumentRange(codeDocument, projectedRange, out var originalRange))
+                {
+                    // Can't map range. Discard this edit.
+                    continue;
+                }
+
+                var edit = new TextEdit()
+                {
+                    Range = originalRange,
+                    NewText = request.ProjectedTextEdits[i].NewText
+                };
+
+                edits.Add(edit);
+            }
+
+            return new RazorMapToDocumentEditsResponse()
+            {
+                TextEdits = edits.ToArray(),
+                HostDocumentVersion = documentVersion,
+            };
         }
     }
 }

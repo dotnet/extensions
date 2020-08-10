@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.CodeAnalysis.Text;
 
@@ -22,9 +23,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 : null;
         }
 
-        public static int? GetFirstNonWhitespaceOffset(this TextLine line)
+        public static int? GetFirstNonWhitespaceOffset(this TextLine line, int startOffset = 0)
         {
-            return line.ToString().GetFirstNonWhitespaceOffset();
+            if (startOffset >= line.SpanIncludingLineBreak.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startOffset), "Invalid offset.");
+            }
+
+            return line.Text.GetFirstNonWhitespaceOffset(TextSpan.FromBounds(line.Start + startOffset, line.EndIncludingLineBreak));
         }
     }
 }

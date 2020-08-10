@@ -79,5 +79,66 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             source.CopyTo(span.Start, charBuffer, 0, span.Length);
             return new string(charBuffer);
         }
+
+        public static bool NonWhitespaceContentEquals(this SourceText source, SourceText other)
+        {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (other is null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            var i = 0;
+            var j = 0;
+            while (i < source.Length && j < other.Length)
+            {
+                if (char.IsWhiteSpace(source[i]))
+                {
+                    i++;
+                    continue;
+                }
+                else if (char.IsWhiteSpace(other[j]))
+                {
+                    j++;
+                    continue;
+                }
+                else if (source[i] != other[j])
+                {
+                    return false;
+                }
+
+                i++;
+                j++;
+            }
+
+            while (i < source.Length && char.IsWhiteSpace(source[i])) i++;
+            while (j < other.Length && char.IsWhiteSpace(other[j])) j++;
+
+            return i == source.Length && j == other.Length;
+        }
+
+        public static int? GetFirstNonWhitespaceOffset(this SourceText source, TextSpan? span = null)
+        {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            span ??= new TextSpan(0, source.Length);
+
+            for (var i = span.Value.Start; i <= span.Value.End; i++)
+            {
+                if (!char.IsWhiteSpace(source[i]))
+                {
+                    return i - span.Value.Start;
+                }
+            }
+
+            return null;
+        }
     }
 }

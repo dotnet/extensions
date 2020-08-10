@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -218,6 +219,170 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(2, hostDocumentPosition.Line);
             Assert.Equal(9, hostDocumentPosition.Character);
             Assert.Equal(35, hostDocumentIndex);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_TagHelperElementOwnsName()
+        {
+            // Arrange
+            var descriptor = TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly");
+            descriptor.TagMatchingRule(rule => rule.TagName = "test");
+            descriptor.SetTypeName("TestTagHelper");
+            var text = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test>@Name</test>";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text, new[] { descriptor.Build() });
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 32 + Environment.NewLine.Length);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.Html, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_TagHelpersDoNotOwnTrailingEdge()
+        {
+            // Arrange
+            var descriptor = TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly");
+            descriptor.TagMatchingRule(rule => rule.TagName = "test");
+            descriptor.SetTypeName("TestTagHelper");
+            var text = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test></test>";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text, new[] { descriptor.Build() });
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 42 + Environment.NewLine.Length);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.Razor, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_TagHelperNestedCSharpAttribute()
+        {
+            // Arrange
+            var descriptor = TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly");
+            descriptor.TagMatchingRule(rule => rule.TagName = "test");
+            descriptor.BindAttribute(builder =>
+            {
+                builder.Name = "asp-int";
+                builder.TypeName = typeof(int).FullName;
+                builder.SetPropertyName("AspInt");
+            });
+            descriptor.SetTypeName("TestTagHelper");
+            var text = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test asp-int='123'></test>";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text, new[] { descriptor.Build() });
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 46 + Environment.NewLine.Length);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_CSharp()
+        {
+            // Arrange
+            var text = "<p>@Name</p>";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 5);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_Html()
+        {
+            // Arrange
+            var text = "<p>Hello World</p>";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 5);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.Html, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_DefaultsToRazorLanguageIfCannotLocateOwner()
+        {
+            // Arrange
+            var text = "<p>Hello World</p>";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, text.Length + 1);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.Razor, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_HtmlEdgeEnd()
+        {
+            // Arrange
+            var text = "Hello World";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, text.Length);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.Html, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_CSharpEdgeEnd()
+        {
+            // Arrange
+            var text = "@Name";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, text.Length);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_RazorEdgeWithCSharp()
+        {
+            // Arrange
+            var text = "@{}";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 2);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_RazorEdgeWithHtml()
+        {
+            // Arrange
+            var text = "@{<br />}";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 2);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.Html, languageKind);
+        }
+
+        private (IReadOnlyList<ClassifiedSpanInternal> classifiedSpans, IReadOnlyList<TagHelperSpanInternal> tagHelperSpans) GetClassifiedSpans(string text, IReadOnlyList<TagHelperDescriptor> tagHelpers = null)
+        {
+            var codeDocument = CreateCodeDocument(text, tagHelpers);
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var classifiedSpans = syntaxTree.GetClassifiedSpans();
+            var tagHelperSpans = syntaxTree.GetTagHelperSpans();
+            return (classifiedSpans, tagHelperSpans);
         }
 
         private static RazorCodeDocument CreateCodeDocument(string text, IReadOnlyList<TagHelperDescriptor> tagHelpers = null)

@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
@@ -11,6 +11,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     internal abstract class RazorFormattingService
     {
-        public abstract Task<TextEdit[]> FormatAsync(Uri uri, RazorCodeDocument codeDocument, Range range, FormattingOptions options);
+        public abstract Task<TextEdit[]> FormatAsync(
+            Uri uri,
+            DocumentSnapshot documentSnapshot,
+            Range range,
+            FormattingOptions options);
+
+        public abstract Task<TextEdit[]> ApplyFormattedEditsAsync(
+            Uri uri,
+            DocumentSnapshot documentSnapshot,
+            RazorLanguageKind kind,
+            TextEdit[] formattedEdits,
+            FormattingOptions options);
     }
 }

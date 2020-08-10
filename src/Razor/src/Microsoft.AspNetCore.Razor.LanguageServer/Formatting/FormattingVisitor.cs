@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private FormattingBlockKind _currentBlockKind;
         private SyntaxNode _currentBlock;
         private int _currentIndentationLevel = 0;
+        private bool _isInClassBody = false;
 
         public FormattingVisitor(RazorSourceDocument source)
         {
@@ -66,7 +67,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 {
                     _currentIndentationLevel++;
                 }
+
+                var isInCodeBlockDirective =
+                    node.Parent?.Parent?.Parent is RazorDirectiveSyntax directive &&
+                    directive.DirectiveDescriptor.Kind == DirectiveKind.CodeBlock;
+
+                if (isInCodeBlockDirective)
+                {
+                    // This means this is the code portion of an @code or @functions kind of block.
+                    _isInClassBody = true;
+                }
+
                 base.VisitCSharpCodeBlock(node);
+
+                if (isInCodeBlockDirective)
+                {
+                    // Finished visiting the code portion. We are no longer in it.
+                    _isInClassBody = false;
+                }
+
                 if (!(node.Parent is RazorDirectiveBodySyntax))
                 {
                     _currentIndentationLevel--;
@@ -321,7 +340,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var spanSource = new TextSpan(node.Position, node.FullWidth);
             var blockSource = new TextSpan(_currentBlock.Position, _currentBlock.FullWidth);
 
-            var span = new FormattingSpan(spanSource, blockSource, kind, _currentBlockKind, _currentIndentationLevel);
+            var span = new FormattingSpan(spanSource, blockSource, kind, _currentBlockKind, _currentIndentationLevel, _isInClassBody);
             _spans.Add(span);
         }
 

@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
@@ -16,11 +18,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         public Uri Uri { get; set; }
 
+        public DocumentSnapshot OriginalSnapshot { get; set; }
+
         public RazorCodeDocument CodeDocument { get; set; }
 
         public SourceText SourceText => CodeDocument?.GetSourceText();
 
         public FormattingOptions Options { get; set; }
+
+        public string NewLineString => Environment.NewLine;
+
+        public bool IsFormatOnType { get; set; }
 
         public Range Range { get; set; }
 
@@ -62,11 +70,65 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
         }
 
-        public static FormattingContext Create(Uri uri, RazorCodeDocument codedocument, Range range, FormattingOptions options)
+        public bool TryGetIndentationLevel(int position, out int indentationLevel)
+        {
+            var syntaxTree = CodeDocument.GetSyntaxTree();
+            var formattingSpans = syntaxTree.GetFormattingSpans();
+            if (TryGetFormattingSpan(position, formattingSpans, out var span))
+            {
+                indentationLevel = span.IndentationLevel;
+                return true;
+            }
+
+            indentationLevel = 0;
+            return false;
+        }
+
+        public async Task<FormattingContext> WithTextAsync(SourceText changedText)
+        {
+            if (changedText is null)
+            {
+                throw new ArgumentNullException(nameof(changedText));
+            }
+
+            var engine = OriginalSnapshot.Project.GetProjectEngine();
+            var importSources = new List<RazorSourceDocument>();
+
+            if (OriginalSnapshot is DefaultDocumentSnapshot documentSnapshot)
+            {
+                var imports = documentSnapshot.State.GetImports((DefaultProjectSnapshot)OriginalSnapshot.Project);
+                foreach (var import in imports)
+                {
+                    var sourceText = await import.GetTextAsync();
+                    var source = sourceText.GetRazorSourceDocument(import.FilePath, import.TargetPath);
+                    importSources.Add(source);
+                }
+            }
+
+            var changedSourceDocument = changedText.GetRazorSourceDocument(OriginalSnapshot.FilePath, OriginalSnapshot.TargetPath);
+
+            var codeDocument = engine.ProcessDesignTime(changedSourceDocument, OriginalSnapshot.FileKind, importSources, OriginalSnapshot.Project.TagHelpers);
+
+            var newContext = Create(Uri, OriginalSnapshot, codeDocument, Options, Range);
+            return newContext;
+        }
+
+        public static FormattingContext Create(
+            Uri uri,
+            DocumentSnapshot originalSnapshot,
+            RazorCodeDocument codedocument,
+            FormattingOptions options,
+            Range range = null,
+            bool isFormatOnType = false)
         {
             if (uri is null)
             {
                 throw new ArgumentNullException(nameof(uri));
+            }
+
+            if (originalSnapshot is null)
+            {
+                throw new ArgumentNullException(nameof(originalSnapshot));
             }
 
             if (codedocument is null)
@@ -74,22 +136,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(codedocument));
             }
 
-            if (range is null)
-            {
-                throw new ArgumentNullException(nameof(range));
-            }
-
             if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
+            var text = codedocument.GetSourceText();
+            range ??= TextSpan.FromBounds(0, text.Length).AsRange(text);
+
             var result = new FormattingContext()
             {
                 Uri = uri,
+                OriginalSnapshot = originalSnapshot,
                 CodeDocument = codedocument,
                 Range = range,
-                Options = options
+                Options = options,
+                IsFormatOnType = isFormatOnType
             };
 
             var source = codedocument.Source;

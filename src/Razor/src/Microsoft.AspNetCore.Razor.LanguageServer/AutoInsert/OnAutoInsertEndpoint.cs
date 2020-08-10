@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly IReadOnlyList<RazorOnAutoInsertProvider> _onAutoInsertProviders;
-        private readonly Container<string> _formatOnTypeTriggerCharacters;
+        private readonly Container<string> _onAutoInsertTriggerCharacters;
 
         public OnAutoInsertEndpoint(
             ForegroundDispatcher foregroundDispatcher,
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _onAutoInsertProviders = onAutoInsertProvider.ToList();
-            _formatOnTypeTriggerCharacters = _onAutoInsertProviders.Select(provider => provider.TriggerCharacter).ToList();
+            _onAutoInsertTriggerCharacters = _onAutoInsertProviders.Select(provider => provider.TriggerCharacter).ToList();
         }
 
         public RegistrationExtensionResult GetRegistration()
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             var registrationOptions = new OnAutoInsertRegistrationOptions()
             {
                 DocumentSelector = RazorDefaults.Selector,
-                TriggerCharacters = _formatOnTypeTriggerCharacters,
+                TriggerCharacters = _onAutoInsertTriggerCharacters,
             };
 
             return new RegistrationExtensionResult(AssociatedServerCapability, registrationOptions);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             var uri = request.TextDocument.Uri;
             var position = request.Position;
 
-            var formattingContext = FormattingContext.Create(uri, codeDocument, new Range(position, position), request.Options);
+            var formattingContext = FormattingContext.Create(uri, document, codeDocument, request.Options, new Range(position, position));
             for (var i = 0; i < applicableProviders.Count; i++)
             {
                 if (applicableProviders[i].TryResolveInsertion(position, formattingContext, out var textEdit, out var format))

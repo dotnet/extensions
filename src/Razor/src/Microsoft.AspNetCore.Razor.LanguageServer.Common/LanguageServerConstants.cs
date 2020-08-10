@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
         public const string RazorMapToDocumentRangesEndpoint = "razor/mapToDocumentRanges";
 
+        public const string RazorMapToDocumentEditsEndpoint = "razor/mapToDocumentEdits";
+
         public const string SemanticTokensProviderName = "semanticTokensProvider";
 
         public const string RazorCodeActionRunnerCommand = "razor/runCodeAction";
