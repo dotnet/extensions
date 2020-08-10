@@ -363,6 +363,76 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
+        public void GetLanguageKindCore_CSharpEdgeWithCSharpMarker()
+        {
+            // Arrange
+            var text = "@{var x = 1;}";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 12);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_ExplicitExpressionStartCSharp()
+        {
+            // Arrange
+            var text = "@()";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 2);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_ExplicitExpressionInProgressCSharp()
+        {
+            // Arrange
+            var text = "@(Da)";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 4);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_ImplicitExpressionStartCSharp()
+        {
+            // Arrange
+            var text = "@";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 1);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
+        }
+
+        [Fact]
+        public void GetLanguageKindCore_ImplicitExpressionInProgressCSharp()
+        {
+            // Arrange
+            var text = "@Da";
+            var (classifiedSpans, tagHelperSpans) = GetClassifiedSpans(text);
+
+            // Act
+            var languageKind = DefaultRazorDocumentMappingService.GetLanguageKindCore(classifiedSpans, tagHelperSpans, 3);
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.CSharp, languageKind);
+        }
+
+        [Fact]
         public void GetLanguageKindCore_RazorEdgeWithHtml()
         {
             // Arrange
