@@ -47,10 +47,108 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         [Fact]
-        public void Execute_OnTypeFormatting_EditInsideCodeDirective_Allowed()
+        public void Execute_OnTypeFormatting_EditInsidePureCSharpCodeDirective_Allowed()
         {
             // Arrange
             var source = SourceText.From(@"
+@{
+if (true) { }
+}
+@code {
+public class Foo { }
+}
+");
+            var context = CreateFormattingContext(source, isFormatOnType: true);
+            var edits = new[]
+            {
+                new TextEdit()
+                {
+                    NewText = "    ",
+                    Range = new Range(new Position(5, 0), new Position(5, 0))
+                }
+            };
+            var input = new FormattingResult(edits, RazorLanguageKind.Razor);
+            var pass = GetPass(context.CodeDocument);
+
+            // Act
+            var result = pass.Execute(context, input);
+
+            // Assert
+            Assert.Equal(input, result);
+        }
+
+        [Fact]
+        public void Execute_OnTypeFormatting_EditInsideMixedCodeDirective_Rejected()
+        {
+            // Arrange
+            var source = SourceText.From(@"
+@{
+if (true) { }
+}
+@code {
+@* some comment *@
+public class Foo { }
+}
+");
+            var context = CreateFormattingContext(source, isFormatOnType: true);
+            var edits = new[]
+            {
+                new TextEdit()
+                {
+                    NewText = "    ",
+                    Range = new Range(new Position(5, 0), new Position(5, 0))
+                }
+            };
+            var input = new FormattingResult(edits, RazorLanguageKind.Razor);
+            var pass = GetPass(context.CodeDocument);
+
+            // Act
+            var result = pass.Execute(context, input);
+
+            // Assert
+            Assert.Empty(result.Edits);
+        }
+
+        [Fact]
+        public void Execute_OnTypeFormatting_EditOutsideCodeDirective_Rejected()
+        {
+            // Arrange
+            var source = SourceText.From(@"
+@{
+if (true) { }
+}
+
+@code {
+    public class Foo { }
+}
+");
+            var context = CreateFormattingContext(source, isFormatOnType: true);
+            var edits = new[]
+            {
+                new TextEdit()
+                {
+                    NewText = "    ",
+                    Range = new Range(new Position(4, 0), new Position(4, 0))
+                }
+            };
+            var input = new FormattingResult(edits, RazorLanguageKind.Razor);
+            var pass = GetPass(context.CodeDocument);
+
+            // Act
+            var result = pass.Execute(context, input);
+
+            // Assert
+            Assert.Empty(result.Edits);
+        }
+
+        [Fact]
+        public void Execute_OnTypeFormatting_EditInsidePureCSharpStatementBlock_Allowed()
+        {
+            // Arrange
+            var source = SourceText.From(@"
+@{
+if (true) { }
+}
 @code {
     public class Foo { }
 }
@@ -75,10 +173,44 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         [Fact]
-        public void Execute_OnTypeFormatting_EditOutsideCodeDirective_Rejected()
+        public void Execute_OnTypeFormatting_EditInsideMixedStatementBlock_Rejected()
         {
             // Arrange
             var source = SourceText.From(@"
+@{
+if (true) { <p></p> }
+}
+@code {
+    public class Foo { }
+}
+");
+            var context = CreateFormattingContext(source, isFormatOnType: true);
+            var edits = new[]
+            {
+                new TextEdit()
+                {
+                    NewText = "    ",
+                    Range = new Range(new Position(2, 0), new Position(2, 0))
+                }
+            };
+            var input = new FormattingResult(edits, RazorLanguageKind.Razor);
+            var pass = GetPass(context.CodeDocument);
+
+            // Act
+            var result = pass.Execute(context, input);
+
+            // Assert
+            Assert.Empty(result.Edits);
+        }
+
+        [Fact]
+        public void Execute_OnTypeFormatting_EditOutsidePureCSharpStatementBlock_Rejected()
+        {
+            // Arrange
+            var source = SourceText.From(@"
+@{
+if (true) { }
+}
 @code {
     public class Foo { }
 }

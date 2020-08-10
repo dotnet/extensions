@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var allEdits = new List<TextEdit>();
 
             // Iterate in reverse so that the newline changes don't affect the next code block directive.
-            for (var i = nodes.Length - 1; i >= 0; i--)
+            for (var i = nodes.Count - 1; i >= 0; i--)
             {
                 var directive = nodes[i];
                 if (!(directive.Body is RazorDirectiveBodySyntax directiveBody))
