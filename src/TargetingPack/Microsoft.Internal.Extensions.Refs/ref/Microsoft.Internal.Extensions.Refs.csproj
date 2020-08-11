@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
-    <!-- Do not pack in servicing builds. -->
+    <!-- Do not pack in servicing builds except in special circumstances e.g. 3.1.8. -->
     <IsPackable>false</IsPackable>
-    <IsPackable Condition=" '$(PatchVersion)' == '0' ">true</IsPackable>
+    <IsPackable Condition=" '$(PatchVersion)' == '0' OR '$(PatchVersion)' == '8' ">true</IsPackable>
     <IsShipping>false</IsShipping>
     <!-- This project is not included in the shared framework -->
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
@@ -31,6 +31,12 @@
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+
+    <!--
+      We are ignoring MSB3243 warnings since implementation and reference assemblies are versioned differently.
+      We need both to compose the targeting pack with reference assemblies and xml docs.
+    -->
+    <MSBuildWarningsAsMessages>MSB3243</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <ItemGroup>
