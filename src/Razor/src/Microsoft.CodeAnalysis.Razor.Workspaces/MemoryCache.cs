@@ -48,16 +48,11 @@ namespace Microsoft.CodeAnalysis.Razor
                 Compact();
             }
 
-            if (_dict.ContainsKey(key))
-            {
-                _dict.Remove(key);
-            }
-
-            _dict.Add(key, new CacheEntry
+            _dict[key] = new CacheEntry
             {
                 LastAccess = DateTime.UtcNow,
                 Value = value,
-            });
+            };
         }
 
         protected virtual void Compact()
