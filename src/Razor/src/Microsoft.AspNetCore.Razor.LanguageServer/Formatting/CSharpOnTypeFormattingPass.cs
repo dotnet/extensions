@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
@@ -46,15 +47,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var csharpText = SourceText.From(codeDocument.GetCSharpDocument().GeneratedCode);
             var normalizedEdits = NormalizeTextEdits(csharpText, result.Edits);
             var mappedEdits = RemapTextEdits(codeDocument, normalizedEdits, result.Kind);
-            if (mappedEdits.Length == 0)
+            var filteredEdits = FilterCSharpTextEdits(context, mappedEdits);
+            if (filteredEdits.Length == 0)
             {
                 // There are no CSharp edits for us to apply. No op.
-                return new FormattingResult(mappedEdits);
+                return new FormattingResult(filteredEdits);
             }
 
             // Find the lines that were affected by these edits.
             var originalText = codeDocument.GetSourceText();
-            var changes = mappedEdits.Select(e => e.AsTextChange(originalText));
+            var changes = filteredEdits.Select(e => e.AsTextChange(originalText));
             var changedText = originalText.WithChanges(changes);
             TrackEncompassingChange(originalText, changedText, out var spanBeforeChange, out var spanAfterChange);
             var rangeBeforeEdit = spanBeforeChange.AsRange(originalText);
@@ -70,9 +72,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // and lines inside @{} should be reduced by two levels.
             var indentationChanges = AdjustCSharpIndentation(changedContext, (int)rangeAfterEdit.Start.Line, (int)rangeAfterEdit.End.Line);
 
-            // Apply the edits that remove indentation.
-            changedText = changedText.WithChanges(indentationChanges);
-            changedContext = await changedContext.WithTextAsync(changedText);
+            if (indentationChanges.Count > 0)
+            {
+                // Apply the edits that remove indentation.
+                changedText = changedText.WithChanges(indentationChanges);
+                changedContext = await changedContext.WithTextAsync(changedText);
+            }
 
             // We make an optimistic attempt at fixing corner cases.
             changedText = CleanupDocument(changedContext, rangeAfterEdit);
@@ -82,6 +87,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var finalEdits = finalChanges.Select(f => f.AsTextEdit(originalText)).ToArray();
 
             return new FormattingResult(finalEdits);
+        }
+
+        private TextEdit[] FilterCSharpTextEdits(FormattingContext context, TextEdit[] edits)
+        {
+            var filteredEdits = edits.Where(e => !AffectsWhitespaceInNonCSharpLine(e)).ToArray();
+            return filteredEdits;
+
+            bool AffectsWhitespaceInNonCSharpLine(TextEdit edit)
+            {
+                //
+                // Example:
+                //     @{
+                //       var x = "asdf";
+                // |  |}
+                // ^  ^ - C# formatter wants to remove this whitespace because it doesn't know about the '}'.
+                // But we can't let it happen.
+                //
+                return
+                    edit.Range.Start.Character == 0 &&
+                    edit.Range.Start.Line == edit.Range.End.Line &&
+                    !context.Indentations[(int)edit.Range.Start.Line].StartsInCSharpContext;
+            }
         }
 
         private SourceText CleanupDocument(FormattingContext context, Range range = null)

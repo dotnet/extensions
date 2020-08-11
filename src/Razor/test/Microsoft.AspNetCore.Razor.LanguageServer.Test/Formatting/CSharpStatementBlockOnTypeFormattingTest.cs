@@ -47,6 +47,39 @@ triggerCharacter: "}");
         }
 
         [Fact]
+        public async Task CloseCurly_MultipleStatementBlocks()
+        {
+            await RunOnTypeFormattingTestAsync(
+input: @"
+<div>
+    @{
+      if(true) { }
+    }
+</div>
+
+@{
+ if(true)
+{
+ |}|
+}
+",
+expected: @"
+<div>
+    @{
+      if(true) { }
+    }
+</div>
+
+@{
+    if (true)
+    {
+    }
+}
+",
+triggerCharacter: "}");
+        }
+
+        [Fact]
         public async Task Semicolon_Variable_SingleLine()
         {
             await RunOnTypeFormattingTestAsync(
