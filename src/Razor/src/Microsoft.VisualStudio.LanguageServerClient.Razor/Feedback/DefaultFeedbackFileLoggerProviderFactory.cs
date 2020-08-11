@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
             _creationLock = new object();
         }
 
-        public override FeedbackFileLoggerProvider GetOrCreate()
+        public override object GetOrCreate()
         {
             lock (_creationLock)
             {

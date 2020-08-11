@@ -12,6 +12,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
         internal const string OmniSharpFrameworkCategoryPrefix = "OmniSharp.Extensions.LanguageServer.Server";
         private const string RazorLanguageServerPrefix = "Microsoft.AspNetCore.Razor.LanguageServer";
         private readonly FeedbackFileLogWriter _feedbackFileLogWriter;
+        private readonly ILogger _noopLogger;
 
         public FeedbackFileLoggerProvider(FeedbackFileLogWriter feedbackFileLogWriter)
         {
@@ -21,6 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
             }
 
             _feedbackFileLogWriter = feedbackFileLogWriter;
+            _noopLogger = new NoopLogger();
         }
 
         public ILogger CreateLogger(string categoryName)
@@ -33,7 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
             if (categoryName.StartsWith(OmniSharpFrameworkCategoryPrefix, StringComparison.Ordinal))
             {
                 // Loggers created for O# framework pieces should be ignored for feedback. They emit too much noise.
-                return NoopLogger.Instance;
+                return _noopLogger;
             }
 
             if (categoryName.StartsWith(RazorLanguageServerPrefix, StringComparison.Ordinal))
@@ -52,12 +54,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
 
         private class NoopLogger : ILogger
         {
-            public static readonly ILogger Instance = new NoopLogger();
-
-            private NoopLogger()
-            {
-            }
-
             public IDisposable BeginScope<TState>(TState state) => Scope.Instance;
 
             public bool IsEnabled(LogLevel logLevel) => false;

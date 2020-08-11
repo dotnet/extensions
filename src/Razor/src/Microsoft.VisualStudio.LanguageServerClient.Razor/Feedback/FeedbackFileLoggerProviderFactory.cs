@@ -5,6 +5,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
 {
     internal abstract class FeedbackFileLoggerProviderFactory
     {
-        public abstract FeedbackFileLoggerProvider GetOrCreate();
+        /// <summary>
+        /// Returns a <see cref="FeedbackFileLoggerProvider"/>. This is an optimization to ensure we don't load an extra logging dll at MEF load time in Visual Studio.
+        /// </summary>
+        /// <returns>A created <see cref="FeedbackFileLoggerProvider"/>.</returns>
+        public abstract object GetOrCreate();
     }
 }

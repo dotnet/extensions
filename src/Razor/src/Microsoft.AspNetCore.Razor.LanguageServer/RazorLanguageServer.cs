@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public Task InitializedAsync(CancellationToken token) => _innerServer.InitializedAsync(token);
 
-        public static Task<RazorLanguageServer> CreateAsync(Stream input, Stream output, Trace trace, Action<IServiceCollection> configure = null)
+        public static Task<RazorLanguageServer> CreateAsync(Stream input, Stream output, Trace trace, Action<RazorLanguageServerBuilder> configure = null)
         {
             Serializer.Instance.Settings.Converters.Add(SemanticTokensOrSemanticTokensEditsConverter.Instance);
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
@@ -107,7 +107,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorDefinitionEndpoint>()
                     .WithServices(services =>
                     {
-                        configure?.Invoke(services);
+                        if (configure != null)
+                        {
+                            var builder = new RazorLanguageServerBuilder(services);
+                            configure(builder);
+                        }
 
                         var filePathNormalizer = new FilePathNormalizer();
                         services.AddSingleton<FilePathNormalizer>(filePathNormalizer);

@@ -124,14 +124,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return connection;
         }
 
-        private void ConfigureLanguageServer(IServiceCollection services)
+        private void ConfigureLanguageServer(RazorLanguageServerBuilder builder)
         {
-            if (services is null)
+            if (builder is null)
             {
-                throw new ArgumentNullException(nameof(services));
+                throw new ArgumentNullException(nameof(builder));
             }
 
-            var loggerProvider = _feedbackFileLoggerProviderFactory.GetOrCreate();
+            var services = builder.Services;
+            var loggerProvider = (FeedbackFileLoggerProvider)_feedbackFileLoggerProviderFactory.GetOrCreate();
             services.AddSingleton<ILoggerProvider>(loggerProvider);
         }
 

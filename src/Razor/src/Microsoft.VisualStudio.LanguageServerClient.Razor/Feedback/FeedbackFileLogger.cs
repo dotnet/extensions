@@ -10,6 +10,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
     {
         private readonly string _categoryName;
         private readonly FeedbackFileLogWriter _feedbackFileLogWriter;
+        private readonly Scope _noopScope;
 
         public FeedbackFileLogger(string categoryName, FeedbackFileLogWriter feedbackFileLogWriter)
         {
@@ -25,9 +26,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
 
             _categoryName = categoryName;
             _feedbackFileLogWriter = feedbackFileLogWriter;
+            _noopScope = new Scope();
         }
 
-        public IDisposable BeginScope<TState>(TState state) => Scope.Instance;
+        public IDisposable BeginScope<TState>(TState state) => _noopScope;
 
         public bool IsEnabled(LogLevel logLevel) => true;
 
@@ -40,8 +42,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
 
         private class Scope : IDisposable
         {
-            public static readonly Scope Instance = new Scope();
-
             public void Dispose()
             {
             }
