@@ -20,6 +20,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
         private string _baseLogDirectory;
         private string _logDirectory;
 
+        public override bool DirectoryCreated => _logDirectory != null;
+
         public override string GetDirectory()
         {
             // Start cleaning up old directories in the background. Fire and forget
