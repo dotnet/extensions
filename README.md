@@ -26,6 +26,7 @@ and make pull-requests.
     * [Community Standup](http://live.asp.net): The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
     * [Roadmap](https://github.com/dotnet/aspnetcore/wiki/Roadmap): The schedule and milestone themes for ASP.NET Core.
 * Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
+* [Instructions to build ASP.NET Core Tooling source code](https://github.com/dotnet/aspnetcore-tooling/blob/master/docs/contributing/BuildFromSource.md)
 
 ## Reporting security issues and bugs
 
