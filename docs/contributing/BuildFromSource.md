@@ -77,7 +77,9 @@ Use these command to launch VS Code with the right settings.
 On Windows (requires PowerShell):
 
 ```ps1
-.\activate.ps1
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
+. .\activate.ps1
 code .
 ```
 
