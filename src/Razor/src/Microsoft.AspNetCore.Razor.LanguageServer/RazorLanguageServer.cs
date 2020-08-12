@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public Task InitializedAsync(CancellationToken token) => _innerServer.InitializedAsync(token);
 
-        public static Task<RazorLanguageServer> CreateAsync(Stream input, Stream output, Trace trace, Action<RazorLanguageServerBuilder> configure = null)
+        public static Task<RazorLanguageServer> CreateAsync(Stream input, Stream output, Trace trace)
         {
             Serializer.Instance.Settings.Converters.Add(SemanticTokensOrSemanticTokensEditsConverter.Instance);
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
@@ -67,8 +67,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithInput(input)
                     .WithOutput(output)
                     .ConfigureLogging(builder => builder
-                        .AddLanguageServer(RazorLSPOptions.GetLogLevelForTrace(trace))
-                        .SetMinimumLevel(LogLevel.Trace)) // We set the minimum level here to "Trace" to ensure that other providers still get the opportunity to act on logs if they prefer.
+                        .AddLanguageServer()
+                        .SetMinimumLevel(RazorLSPOptions.GetLogLevelForTrace(trace)))
                     .OnInitialized(async (s, request, response) =>
                     {
                         var jsonRpcHandlers = s.Services.GetServices<IJsonRpcHandler>();
@@ -107,12 +107,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorDefinitionEndpoint>()
                     .WithServices(services =>
                     {
-                        if (configure != null)
-                        {
-                            var builder = new RazorLanguageServerBuilder(services);
-                            configure(builder);
-                        }
-
                         var filePathNormalizer = new FilePathNormalizer();
                         services.AddSingleton<FilePathNormalizer>(filePathNormalizer);
 
