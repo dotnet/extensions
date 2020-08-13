@@ -14,12 +14,12 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Host
 {
-    public class DefaultProjectSnapshotManagerProxyTest : ForegroundDispatcherTestBase
+    public class DefaultProjectSnapshotManagerProxyTest : ForegroundDispatcherTestBase, IDisposable
     {
         public DefaultProjectSnapshotManagerProxyTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskFactory = new JoinableTaskFactory(joinableTaskContext.Context);
+            JoinableTaskContext = new JoinableTaskContext();
+            JoinableTaskFactory = new JoinableTaskFactory(JoinableTaskContext);
             Workspace = TestWorkspace.Create();
             var projectWorkspaceState1 = new ProjectWorkspaceState(new[]
             {
@@ -43,6 +43,8 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
 
         private JoinableTaskFactory JoinableTaskFactory { get; }
 
+        private JoinableTaskContext JoinableTaskContext { get; }
+
         private Workspace Workspace { get; }
 
         private ProjectSnapshot ProjectSnapshot1 { get; }
@@ -54,7 +56,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
         {
             // Arrange
             var projectSnapshotManager = new TestProjectSnapshotManager(ProjectSnapshot1, ProjectSnapshot2);
-            var proxy = new DefaultProjectSnapshotManagerProxy(
+            using var proxy = new DefaultProjectSnapshotManagerProxy(
                 new TestCollaborationSession(true),
                 Dispatcher,
                 projectSnapshotManager,
@@ -83,7 +85,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
         {
             // Arrange
             var projectSnapshotManager = new TestProjectSnapshotManager(ProjectSnapshot1);
-            var proxy = new DefaultProjectSnapshotManagerProxy(
+            using var proxy = new DefaultProjectSnapshotManagerProxy(
                 new TestCollaborationSession(true),
                 Dispatcher,
                 projectSnapshotManager,
@@ -132,7 +134,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
         {
             // Arrange
             var projectSnapshotManager = new TestProjectSnapshotManager(ProjectSnapshot1);
-            var proxy = new DefaultProjectSnapshotManagerProxy(
+            using var proxy = new DefaultProjectSnapshotManagerProxy(
                 new TestCollaborationSession(true),
                 Dispatcher,
                 projectSnapshotManager,
@@ -151,7 +153,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
         {
             // Arrange
             var projectSnapshotManager = new TestProjectSnapshotManager(ProjectSnapshot1, ProjectSnapshot2);
-            var proxy = new DefaultProjectSnapshotManagerProxy(
+            using var proxy = new DefaultProjectSnapshotManagerProxy(
                 new TestCollaborationSession(true),
                 Dispatcher,
                 projectSnapshotManager,
@@ -180,7 +182,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
         {
             // Arrange
             var projectSnapshotManager = new TestProjectSnapshotManager(ProjectSnapshot1);
-            var proxy = new DefaultProjectSnapshotManagerProxy(
+            using var proxy = new DefaultProjectSnapshotManagerProxy(
                 new TestCollaborationSession(true),
                 Dispatcher,
                 projectSnapshotManager,
@@ -192,6 +194,11 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
 
             // Assert
             Assert.Same(state1, state2);
+        }
+
+        public void Dispose()
+        {
+            JoinableTaskContext.Dispose();
         }
 
         private class TestProjectSnapshotManager : ProjectSnapshotManager

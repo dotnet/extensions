@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Internal;
+using System.Collections.Generic;
 
 namespace Microsoft.CodeAnalysis.Razor.Completion
 {
@@ -15,7 +16,8 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         public RazorCompletionItem(
             string displayText,
             string insertText,
-            RazorCompletionItemKind kind)
+            RazorCompletionItemKind kind,
+            IReadOnlyCollection<string> commitCharacters = null)
         {
             if (displayText == null)
             {
@@ -30,6 +32,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             DisplayText = displayText;
             InsertText = insertText;
             Kind = kind;
+            CommitCharacters = commitCharacters;
         }
 
         public string DisplayText { get; }
@@ -37,6 +40,8 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         public string InsertText { get; }
 
         public RazorCompletionItemKind Kind { get; }
+
+        public IReadOnlyCollection<string> CommitCharacters { get; }
 
         public ItemCollection Items
         {
@@ -89,6 +94,13 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 return false;
             }
 
+            if ((CommitCharacters == null ^ other.CommitCharacters == null) ||
+                (CommitCharacters != null && other.CommitCharacters != null &&
+                    !CommitCharacters.SequenceEqual(other.CommitCharacters)))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -98,6 +110,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             hashCodeCombiner.Add(DisplayText);
             hashCodeCombiner.Add(InsertText);
             hashCodeCombiner.Add(Kind);
+            hashCodeCombiner.Add(CommitCharacters);
 
             return hashCodeCombiner.CombinedHash;
         }

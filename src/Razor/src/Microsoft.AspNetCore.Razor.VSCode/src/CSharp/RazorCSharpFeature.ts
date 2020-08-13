@@ -7,30 +7,36 @@ import * as vscode from 'vscode';
 import { IEventEmitterFactory } from '../IEventEmitterFactory';
 import { RazorDocumentManager } from '../RazorDocumentManager';
 import { RazorLogger } from '../RazorLogger';
-import { CSharpPreviewDocumentContentProvider } from './CSharpPreviewDocumentContentProvider';
+import { CSharpPreviewPanel } from './CSharpPreviewPanel';
 import { CSharpProjectedDocumentContentProvider } from './CSharpProjectedDocumentContentProvider';
 
 export class RazorCSharpFeature {
     public readonly projectionProvider: CSharpProjectedDocumentContentProvider;
-    public readonly previewProvider: CSharpPreviewDocumentContentProvider;
+    private readonly csharpPreviewPanel: CSharpPreviewPanel;
 
     constructor(
         documentManager: RazorDocumentManager,
         eventEmitterFactory: IEventEmitterFactory,
         logger: RazorLogger) {
         this.projectionProvider = new CSharpProjectedDocumentContentProvider(documentManager, eventEmitterFactory, logger);
-        this.previewProvider = new CSharpPreviewDocumentContentProvider(documentManager);
+        this.csharpPreviewPanel = new CSharpPreviewPanel(documentManager);
     }
 
     public register() {
         const registrations = [
             vscode.workspace.registerTextDocumentContentProvider(
                 CSharpProjectedDocumentContentProvider.scheme, this.projectionProvider),
-            vscode.workspace.registerTextDocumentContentProvider(
-                CSharpPreviewDocumentContentProvider.scheme, this.previewProvider),
             vscode.commands.registerCommand(
-                'extension.showRazorCSharpWindow', () => this.previewProvider.showRazorCSharpWindow()),
+                'extension.showRazorCSharpWindow', () => this.csharpPreviewPanel.show()),
         ];
+
+        if (vscode.window.registerWebviewPanelSerializer) {
+            registrations.push(vscode.window.registerWebviewPanelSerializer(CSharpPreviewPanel.viewType, {
+                deserializeWebviewPanel: async (panel: vscode.WebviewPanel) => {
+                    await this.csharpPreviewPanel.revive(panel);
+                },
+            }));
+        }
 
         return vscode.Disposable.from(...registrations);
     }

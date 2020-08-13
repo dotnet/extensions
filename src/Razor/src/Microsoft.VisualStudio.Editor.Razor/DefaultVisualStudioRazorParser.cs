@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.Extensions.Internal;
@@ -632,9 +631,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     }
 
                     _done = true;
-                    _cancellationTokenRegistration.Dispose();
-                    _taskCompletionSource.SetResult(codeDocument);
                 }
+
+                _cancellationTokenRegistration.Dispose();
+                _taskCompletionSource.SetResult(codeDocument);
             }
 
             public void Cancel()
@@ -646,10 +646,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         return;
                     }
 
-                    _taskCompletionSource.TrySetCanceled();
-                    _cancellationTokenRegistration.Dispose();
                     _done = true;
                 }
+
+                _taskCompletionSource.TrySetCanceled();
+                _cancellationTokenRegistration.Dispose();
             }
         }
     }
