@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             if (!text.NonWhitespaceContentEquals(changedText))
             {
-                // Looks like we nuked some non-whitespace content as part of formatting. Oops.
+                // Looks like we removed some non-whitespace content as part of formatting. Oops.
                 // Discard this formatting result.
 
                 if (DebugAssertsEnabled)
