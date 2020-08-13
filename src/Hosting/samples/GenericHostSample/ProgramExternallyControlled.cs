@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace GenericHostSample
 {
@@ -15,6 +16,10 @@ namespace GenericHostSample
         {
             _host = new HostBuilder()
                 .UseServiceProviderFactory<MyContainer>(new MyContainerFactory())
+                .ConfigureLogging(logging =>
+                {
+                    logging.AddConsole();
+                })
                 .ConfigureContainer<MyContainer>((hostContext, container) =>
                 {
                 })

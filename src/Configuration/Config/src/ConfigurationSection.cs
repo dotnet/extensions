@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Configuration
     /// </summary>
     public class ConfigurationSection : IConfigurationSection
     {
-        private readonly ConfigurationRoot _root;
+        private readonly IConfigurationRoot _root;
         private readonly string _path;
         private string _key;
 
@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         /// <param name="root">The configuration root.</param>
         /// <param name="path">The path to this section.</param>
-        public ConfigurationSection(ConfigurationRoot root, string path)
+        public ConfigurationSection(IConfigurationRoot root, string path)
         {
             if (root == null)
             {
@@ -111,7 +111,7 @@ namespace Microsoft.Extensions.Configuration
         /// <summary>
         /// Returns a <see cref="IChangeToken"/> that can be used to observe when this configuration is reloaded.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The <see cref="IChangeToken"/>.</returns>
         public IChangeToken GetReloadToken() => _root.GetReloadToken();
     }
 }

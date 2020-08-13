@@ -202,6 +202,44 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         [Fact]
+        public void TryGetValue_WillCreateDefaultValue_WhenGenericTypeIsIncompatible()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            int value = 42;
+
+            cache.Set(key, value);
+
+            Assert.False(cache.TryGetValue(key, out string obj));
+        }
+
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValueAndSucceed_WhenValueNull()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            string value = null;
+
+            cache.Set(key, value);
+
+            Assert.True(cache.TryGetValue(key, out string obj));
+        }
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValueAndSucceed_WhenValueNullForValueType()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            string value = null;
+
+            cache.Set(key, value);
+
+            Assert.True(cache.TryGetValue(key, out int obj));
+            Assert.Equal(default, obj);
+        }
+
+        [Fact]
         public void SetOverwritesAndInvokesCallbacks()
         {
             var cache = CreateCache();
@@ -541,7 +579,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             var task1 = Task.Run(() =>
             {
@@ -550,7 +588,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             var task2 = Task.Run(() =>
             {
@@ -559,7 +597,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             cts.CancelAfter(TimeSpan.FromSeconds(5));
             var task3 = Task.Delay(TimeSpan.FromSeconds(7));

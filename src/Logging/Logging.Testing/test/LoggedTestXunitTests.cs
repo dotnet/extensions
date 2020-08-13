@@ -1,13 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Testing.xunit;
+using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing.Tests
 {
+    [LogLevel(LogLevel.Debug)]
     [ShortClassName]
     public class LoggedTestXunitTests : TestLoggedTest
     {
@@ -16,18 +19,6 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public LoggedTestXunitTests(ITestOutputHelper output)
         {
             _output = output;
-        }
-
-        [Fact]
-        public void ShortClassNameUsedWhenShortClassNameAttributeSpecified()
-        {
-            Assert.Equal(GetType().Name, ResolvedTestClassName);
-        }
-
-        [Fact]
-        public void LoggedTestTestOutputHelperSameInstanceAsInjectedConstructorArg()
-        {
-            Assert.Same(_output, TestOutputHelper);
         }
 
         [Fact]
@@ -74,7 +65,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
 
         [Fact]
         [LogLevel(LogLevel.Information)]
-        public void LoggedFactFilteredByLogLevel()
+        public void LoggedFactFilteredByMethodLogLevel()
         {
             Logger.LogInformation("Information");
             Logger.LogDebug("Debug");
@@ -82,6 +73,17 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             var message = Assert.Single(TestSink.Writes);
             Assert.Equal(LogLevel.Information, message.LogLevel);
             Assert.Equal("Information", message.Formatter(message.State, null));
+        }
+
+        [Fact]
+        public void LoggedFactFilteredByClassLogLevel()
+        {
+            Logger.LogDebug("Debug");
+            Logger.LogTrace("Trace");
+
+            var message = Assert.Single(TestSink.Writes);
+            Assert.Equal(LogLevel.Debug, message.LogLevel);
+            Assert.Equal("Debug", message.Formatter(message.State, null));
         }
 
         [Theory]
@@ -128,14 +130,62 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         {
             Assert.True(SetupInvoked);
         }
+
+        [Fact]
+        public void MessageWrittenEventInvoked()
+        {
+            WriteContext context = null;
+            TestSink.MessageLogged += ctx => context = ctx;
+            Logger.LogInformation("Information");
+            Assert.Equal(TestSink.Writes.Single(), context);
+        }
+
+        [Fact]
+        public void ScopeStartedEventInvoked()
+        {
+            BeginScopeContext context = null;
+            TestSink.ScopeStarted += ctx => context = ctx;
+            using (Logger.BeginScope("Scope")) {}
+            Assert.Equal(TestSink.Scopes.Single(), context);
+        }
+    }
+
+    public class LoggedTestXunitLogLevelTests : LoggedTest
+    {
+        [Fact]
+        public void LoggedFactFilteredByAssemblyLogLevel()
+        {
+            Logger.LogTrace("Trace");
+
+            var message = Assert.Single(TestSink.Writes);
+            Assert.Equal(LogLevel.Trace, message.LogLevel);
+            Assert.Equal("Trace", message.Formatter(message.State, null));
+        }
+    }
+
+    public class LoggedTestXunitInitializationTests : TestLoggedTest
+    {
+        [Fact]
+        public void ITestOutputHelperInitializedByDefault()
+        {
+            Assert.True(ITestOutputHelperIsInitialized);
+        }
     }
 
     public class TestLoggedTest : LoggedTest
     {
         public bool SetupInvoked { get; private set; } = false;
+        public bool ITestOutputHelperIsInitialized { get; private set; } = false;
 
-        public override void AdditionalSetup()
+        public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
+            base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+
+            try
+            {
+                TestOutputHelper.WriteLine("Test");
+                ITestOutputHelperIsInitialized = true;
+            } catch { }
             SetupInvoked = true;
         }
     }

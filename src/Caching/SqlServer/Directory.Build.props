@@ -2,6 +2,8 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <IsProductComponent>true</IsProductComponent>
+    <!-- These projects depend on code which is not open source. -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <NoWarn>$(NoWarn);PKG0001</NoWarn>
   </PropertyGroup>
 </Project>
