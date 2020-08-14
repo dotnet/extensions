@@ -52,14 +52,6 @@
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true' ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
-
-    <!-- Specifies if reference assembly projects should be resolved for Reference items -->
-    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND ('$(IsReferenceAssemblyProject)' == 'true' OR '$(IsImplementationProject)' == 'true')">true</ReferenceReferenceAssemblies>
-    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
-
-    <!-- Specifies if implementation assembly projects should be resolved for Reference items -->
-    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true' AND '$(IsImplementationProject)' != 'true'">true</ReferenceImplementationAssemblies>
-    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' ">false</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
@@ -92,12 +84,8 @@
       Exclude="@(_UnusedProjectReferenceProvider)" />
 
     <!-- Use ref assembly project paths for ref assembly projects -->
-    <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
+    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
       <IsReferenceAssembly>false</IsReferenceAssembly>
-    </ProjectReference>
-
-    <ProjectReference Condition="'$(ReferenceReferenceAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" >
-      <IsReferenceAssembly>true</IsReferenceAssembly>
     </ProjectReference>
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
@@ -189,11 +177,11 @@
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
 
-    <Warning Condition="'$(IsReferenceAssemblyProject)' != 'true' AND '$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != ''"
+    <Warning Condition="'$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != ''"
              Code="BUILD001"
              Text="Reference to '%(UnusedBaselinePackageReference.Identity)' was removed since the last stable release of this package. This could be a breaking change. See docs/ReferenceResolution.md for instructions on how to update changes to references or suppress this warning if the error was intentional." />
 
-    <Error Condition="'$(IsReferenceAssemblyProject)' != 'true' AND '$(IsServicingBuild)' == 'true' AND @(UnusedBaselinePackageReference->Count()) != 0"
+    <Error Condition="'$(IsServicingBuild)' == 'true' AND @(UnusedBaselinePackageReference->Count()) != 0"
            Code="BUILD002"
            Text="Package references changed since the last release. This could be a breaking change and is not allowed in a servicing update. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
 
@@ -218,20 +206,11 @@
   </Target>
 
   <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
-    <PropertyGroup>
-      <ReferenceAssemblyDirectory>$(MSBuildProjectDirectory)/../ref/</ReferenceAssemblyDirectory>
-      <ReferenceAssemblyProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), '$(ReferenceAssemblyDirectory)$(MSBuildProjectFile)'))</ReferenceAssemblyProjectFileRelativePath>
-    </PropertyGroup>
-
-    <Error Condition="'$(SkipRefDirectoryCheck)' != 'true' AND '$(IsImplementationProject)' == 'true' AND '$(HasReferenceAssembly)' != 'true' AND Exists($(ReferenceAssemblyDirectory))" Text="Project shouldn't have reference assembly but folder exists $(ReferenceAssemblyDirectory)" />
-    <Error Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' == 'true' AND '$(HasReferenceAssembly)' != 'true'" Text="All assemblies which have set IsAspNetCoreApp=true should produce a reference assembly." />
-
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
         <IsShippingPackage>$([MSBuild]::ValueOrDefault($(IsShippingPackage),'false'))</IsShippingPackage>
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
-        <ReferenceAssemblyProjectFileRelativePath Condition="'$(HasReferenceAssembly)' == 'true'">$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
       </ProvidesReference>
     </ItemGroup>
   </Target>
