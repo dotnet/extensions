@@ -103,12 +103,13 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
     }
 
     private async launchBrowser(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration) {
+        const setNoDebugFlag = (url: string) => configuration.noDebug ? `${url}?_blazor_debug=false` : url;
         const browser = {
             name: JS_DEBUG_NAME,
             type: configuration.browser === 'edge' ? 'pwa-msedge' : 'pwa-chrome',
             request: 'launch',
             timeout: configuration.timeout || 30000,
-            url: configuration.url || 'https://localhost:5001',
+            url: setNoDebugFlag(configuration.url || 'https://localhost:5001'),
             webRoot: configuration.webRoot || '${workspaceFolder}',
             inspectUri: '{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}',
             trace: configuration.trace || false,
