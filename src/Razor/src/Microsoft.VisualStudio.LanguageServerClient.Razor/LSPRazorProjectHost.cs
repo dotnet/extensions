@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private static readonly string[] _applicableContentTypes = new string[]
         {
             RazorLSPConstants.RazorLSPContentTypeName,
-            RazorLSPConstants.CSharpLSPContentTypeName,
+            RazorLSPConstants.CSharpContentTypeName,
             RazorLSPConstants.HtmlLSPContentTypeName,
         };
 

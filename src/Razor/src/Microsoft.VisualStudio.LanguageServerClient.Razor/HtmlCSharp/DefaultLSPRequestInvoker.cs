@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var contentType = RazorLSPConstants.RazorLSPContentTypeName;
             if (serverKind == LanguageServerKind.CSharp)
             {
-                contentType = RazorLSPConstants.CSharpLSPContentTypeName;
+                contentType = RazorLSPConstants.CSharpContentTypeName;
             }
             else if (serverKind == LanguageServerKind.Html)
             {
