@@ -41,7 +41,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
       <Sha>059a4a19e602494bfbed473dbbb18f2dbfbd0878</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" Pinned="true">
+    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>8a3ffed558ddf943c1efa87d693227722d6af094</Sha>
     </Dependency>
