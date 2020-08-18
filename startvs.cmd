@@ -11,7 +11,7 @@ SET DOTNET_MULTILEVEL_LOOKUP=0
 :: Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
 SET PATH=%DOTNET_ROOT%;%PATH%
 
-SET sln=%1
+SET sln=%~1
 
 IF "%sln%"=="" (
     SET sln=Extensions.sln
@@ -22,4 +22,4 @@ IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
     call restore.cmd
 )
 
-start %sln%
+start "" "%sln%"

@@ -45,11 +45,4 @@
           Command="echo '$(ProjectListContent.Replace('\t','\\t'))' > $(ProjectListFile)" />
   </Target>
 
-  <Target Name="GenerateReferenceSources">
-      <MSBuild
-          Projects="@(ProjectToBuild)"
-          Targets="GenerateReferenceSource"
-          SkipNonexistentTargets="true"
-          SkipNonexistentProjects="true" />
-  </Target>
 </Project>
