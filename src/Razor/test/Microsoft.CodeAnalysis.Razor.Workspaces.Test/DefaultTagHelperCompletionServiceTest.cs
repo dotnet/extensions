@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
-using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor

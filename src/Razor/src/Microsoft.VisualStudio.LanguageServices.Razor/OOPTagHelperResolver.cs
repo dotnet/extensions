@@ -5,11 +5,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.VisualStudio.Editor.Razor;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
@@ -104,24 +102,21 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // This will change in the future to an easier to consume API but for VS RTM this is what we have.
             try
             {
-                var client = await RazorLanguageServiceClientFactory.CreateAsync(_workspace, CancellationToken.None).ConfigureAwait(false);
-                if (client != null)
-                {
-                    using (var session = await client.CreateSessionAsync(workspaceProject.Solution).ConfigureAwait(false))
-                    {
-                        if (session != null)
-                        {
-                            var args = new object[]
-                            {
-                                Serialize(projectSnapshot),
-                                factory == null ? null : factory.GetType().AssemblyQualifiedName,
-                            };
+                var remoteClient = await RazorRemoteHostClient.CreateAsync(_workspace, CancellationToken.None);
 
-                            var json = await session.InvokeAsync<JObject>("GetTagHelpersAsync", args, CancellationToken.None).ConfigureAwait(false);
-                            return Deserialize(json);
-                        }
-                    }
-                }
+                var args = new object[]
+                {
+                    projectSnapshot,
+                    factory?.GetType().AssemblyQualifiedName,
+                };
+
+                var result = await remoteClient.TryRunRemoteAsync<TagHelperResolutionResult>(
+                    "GetTagHelpersAsync",
+                    workspaceProject.Solution,
+                    args,
+                    CancellationToken.None).ConfigureAwait(false);
+
+                return result.HasValue ? result.Value : null;
             }
             catch (Exception ex)
             {
@@ -137,25 +132,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         protected virtual Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(Project project, ProjectSnapshot projectSnapshot)
         {
             return _defaultResolver.GetTagHelpersAsync(project, projectSnapshot);
-        }
-
-        private static JObject Serialize(ProjectSnapshot snapshot)
-        {
-            var serializer = new JsonSerializer();
-            serializer.Converters.RegisterRazorConverters();
-
-            return JObject.FromObject(snapshot, serializer);
-        }
-
-        private static TagHelperResolutionResult Deserialize(JObject jsonObject)
-        {
-            var serializer = new JsonSerializer();
-            serializer.Converters.RegisterRazorConverters();
-
-            using (var reader = jsonObject.CreateReader())
-            {
-                return serializer.Deserialize<TagHelperResolutionResult>(reader);
-            }
         }
     }
 }

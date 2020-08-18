@@ -12,12 +12,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
         [Fact]
         public void IsTagHelperSpan_ReturnsTrue()
         {
-            // Arrange
-            var syntaxTree = GetSyntaxTree(
+            var str =
 @"<div>
     <taghelper />
-</div>");
-            var location = new SourceSpan(9 + Environment.NewLine.Length, 13);
+</div>";
+
+            // Arrange
+            var syntaxTree = GetSyntaxTree(str);
+
+            var location = new SourceSpan(str.IndexOf("tag", StringComparison.Ordinal) - 1, 13);
             var service = new DefaultRazorSyntaxFactsService();
 
             // Act

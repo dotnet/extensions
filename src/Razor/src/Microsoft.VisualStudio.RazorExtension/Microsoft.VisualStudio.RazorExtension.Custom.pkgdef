@@ -1,0 +1,18 @@
+﻿[$RootKey$\TextMate\Repositories]
+"AspNetCoreRazor"="$PackageFolder$\Grammars"
+
+// Defines where the language configuration file for a given
+// grammar name is (value of the ScopeName tag in the tmlanguage file).
+[$RootKey$\TextMate\LanguageConfiguration\GrammarMapping]
+"text.aspnetcorerazor"="$PackageFolder$\language-configuration.json"
+
+// Defines where the language configuration file for a given
+// language name is (partial value of the content type name).
+[$RootKey$\TextMate\LanguageConfiguration\ContentTypeMapping]
+"RazorLSP"="$PackageFolder$\language-configuration.json"
+
+[$RootKey$\FeatureFlags\Razor\LSP\Editor]
+"Description"="Enables the Razor Language Server Protocol powered editor experience for all Razor editors."
+"Value"=dword:00000000
+"Title"="Enable experimental Razor editor (requires restart)"
+"PreviewPaneChannels"="*"

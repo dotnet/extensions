@@ -81,7 +81,7 @@ export declare class EventEmitter<T> {
      *
      * @param data The event object.
      */
-    fire(data?: T): void;
+    fire(data: T): void;
 
     /**
      * Dispose this object and free resources.
@@ -191,7 +191,7 @@ export interface WorkspaceConfiguration {
      * The *effective* value (returned by [`get`](#WorkspaceConfiguration.get))
      * is computed like this: `defaultValue` overwritten by `globalValue`,
      * `globalValue` overwritten by `workspaceValue`. `workspaceValue` overwritten by `workspaceFolderValue`.
-     * Refer to [Settings Inheritence](https://code.visualstudio.com/docs/getstarted/settings)
+     * Refer to [Settings Inheritance](https://code.visualstudio.com/docs/getstarted/settings)
      * for more information.
      *
      * *Note:* The configuration name must denote a leaf in the configuration tree
@@ -216,7 +216,7 @@ export interface WorkspaceConfiguration {
      * has no observable effect in that workspace, but in others. Setting a workspace value
      * in the presence of a more specific folder value has no observable effect for the resources
      * under respective [folder](#workspace.workspaceFolders), but in others. Refer to
-     * [Settings Inheritence](https://code.visualstudio.com/docs/getstarted/settings) for more information.
+     * [Settings Inheritance](https://code.visualstudio.com/docs/getstarted/settings) for more information.
      *
      * *Note 2:* To remove a configuration value use `undefined`, like so: `config.update('somekey', undefined)`
      *
@@ -338,7 +338,6 @@ export interface StatusBarItem {
 }
 
 export interface Event<T> {
-
     /**
      * A function that represents an event to which you subscribe by calling it with
      * a listener function as argument.
@@ -491,7 +490,7 @@ export interface Uri {
      * [Uri.parse](#Uri.parse).
      *
      * @param skipEncoding Do not percentage-encode the result, defaults to `false`. Note that
-     *	the `#` and `?` characters occuring in the path will always be encoded.
+     *	the `#` and `?` characters occurring in the path will always be encoded.
      * @returns A string representation of this Uri.
      */
     toString(skipEncoding?: boolean): string;
@@ -636,7 +635,7 @@ export interface TextDocument {
 
     /**
      * Get a word-range at the given position. By default words are defined by
-     * common separators, like space, -, _, etc. In addition, per languge custom
+     * common separators, like space, -, _, etc. In addition, per language custom
      * [word definitions](#LanguageConfiguration.wordPattern) can be defined. It
      * is also possible to provide a custom regular expression.
      *
@@ -911,7 +910,7 @@ export interface TextLine {
 
     /**
      * The offset of the first character which is not a whitespace character as defined
-     * by `/\s/`. **Note** that if a line is all whitespaces the length of the line is returned.
+     * by `/\s/`. **Note** that if a line is all whitespace the length of the line is returned.
      */
     readonly firstNonWhitespaceCharacterIndex: number;
 
@@ -972,7 +971,7 @@ export interface ConfigurationChangeEvent {
 
 export interface WebviewPanelSerializer {
     /**
-     * Restore a webview panel from its seriailzed `state`.
+     * Restore a webview panel from its serialized `state`.
      *
      * Called when a serialized webview first becomes visible.
      *
@@ -980,7 +979,7 @@ export interface WebviewPanelSerializer {
      * serializer must restore the webview's `.html` and hook up all webview events.
      * @param state Persisted state from the webview content.
      *
-     * @return Thanble indicating that the webview has been fully restored.
+     * @return Thenable indicating that the webview has been fully restored.
      */
     deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any): Thenable<void>;
 }
@@ -1132,6 +1131,30 @@ export interface Webview {
      * @param message Body of the message.
      */
     postMessage(message: any): Thenable<boolean>;
+
+    /**
+     * Convert a uri for the local file system to one that can be used inside webviews.
+     *
+     * Webviews cannot directly load resources from the workspace or local file system using `file:` uris. The
+     * `asWebviewUri` function takes a local `file:` uri and converts it into a uri that can be used inside of
+     * a webview to load the same resource:
+     *
+     * ```ts
+     * webview.html = `<img src="${webview.asWebviewUri(vscode.Uri.file('/Users/codey/workspace/cat.gif'))}">`
+     * ```
+     */
+    asWebviewUri(localResource: Uri): Uri;
+
+    /**
+     * Content security policy source for webview resources.
+     *
+     * This is the origin that should be used in a content security policy rule:
+     *
+     * ```
+     * img-src https: ${webview.cspSource} ...;
+     * ```
+     */
+    readonly cspSource: string;
 }
 
 /**
@@ -1164,7 +1187,7 @@ export interface WebviewOptions {
 
 /**
  * Thenable is a common denominator between ES6 promises, Q, jquery.Deferred, WinJS.Promise,
- * and others. This API makes no assumption about what promise libary is being used which
+ * and others. This API makes no assumption about what promise library is being used which
  * enables reusing existing code without migrating to a specific promise implementation. Still,
  * we recommend the use of native promises which are available in this editor.
  */
@@ -1184,6 +1207,197 @@ export interface Extension<T> {
     readonly packageJSON: any;
 }
 
+/**
+ * Represents semantic tokens, either in a range or in an entire document.
+ * @see [provideDocumentSemanticTokens](#DocumentSemanticTokensProvider.provideDocumentSemanticTokens) for an explanation of the format.
+ * @see [SemanticTokensBuilder](#SemanticTokensBuilder) for a helper to create an instance.
+ */
+export class SemanticTokens {
+    /**
+     * The result id of the tokens.
+     *
+     * This is the id that will be passed to `DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits` (if implemented).
+     */
+    readonly resultId?: string;
+    /**
+     * The actual tokens data.
+     * @see [provideDocumentSemanticTokens](#DocumentSemanticTokensProvider.provideDocumentSemanticTokens) for an explanation of the format.
+     */
+    readonly data: Uint32Array;
+
+    constructor(data: Uint32Array, resultId?: string) {
+        this.data = data;
+        this.resultId = resultId;
+    }
+}
+
+/**
+ * Represents edits to semantic tokens.
+ * @see [provideDocumentSemanticTokensEdits](#DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits) for an explanation of the format.
+ */
+export class SemanticTokensEdits {
+    /**
+     * The result id of the tokens.
+     *
+     * This is the id that will be passed to `DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits` (if implemented).
+     */
+    readonly resultId?: string;
+    /**
+     * The edits to the tokens data.
+     * All edits refer to the initial data state.
+     */
+    readonly edits: SemanticTokensEdit[];
+
+    constructor(edits: SemanticTokensEdit[], resultId?: string) {
+        this.edits = edits;
+        this.resultId = resultId;
+    }
+}
+
+/**
+ * Represents an edit to semantic tokens.
+ * @see [provideDocumentSemanticTokensEdits](#DocumentSemanticTokensProvider.provideDocumentSemanticTokensEdits) for an explanation of the format.
+ */
+export class SemanticTokensEdit {
+    /**
+     * The start offset of the edit.
+     */
+    readonly start: number;
+    /**
+     * The count of elements to remove.
+     */
+    readonly deleteCount: number;
+    /**
+     * The elements to insert.
+     */
+    readonly data?: Uint32Array;
+
+    constructor(start: number, deleteCount: number, data?: Uint32Array) {
+        this.start = start;
+        this.deleteCount = deleteCount;
+        this.data = data;
+    }
+}
+
+export interface SemanticTokensLegend {
+    readonly tokenTypes: string[];
+    readonly tokenModifiers: string[];
+}
+
+/**
+ * The document semantic tokens provider interface defines the contract between extensions and
+ * semantic tokens.
+ */
+export interface DocumentSemanticTokensProvider {
+    /**
+     * An optional event to signal that the semantic tokens from this provider have changed.
+     */
+    onDidChangeSemanticTokens?: Event<void>;
+
+    /**
+     * Tokens in a file are represented as an array of integers. The position of each token is expressed relative to
+     * the token before it, because most tokens remain stable relative to each other when edits are made in a file.
+     *
+     * ---
+     * In short, each token takes 5 integers to represent, so a specific token `i` in the file consists of the following array indices:
+     *  - at index `5*i`   - `deltaLine`: token line number, relative to the previous token
+     *  - at index `5*i+1` - `deltaStart`: token start character, relative to the previous token (relative to 0 or the previous token's start if they are on the same line)
+     *  - at index `5*i+2` - `length`: the length of the token. A token cannot be multiline.
+     *  - at index `5*i+3` - `tokenType`: will be looked up in `SemanticTokensLegend.tokenTypes`. We currently ask that `tokenType` < 65536.
+     *  - at index `5*i+4` - `tokenModifiers`: each set bit will be looked up in `SemanticTokensLegend.tokenModifiers`
+     *
+     * ---
+     * ### How to encode tokens
+     *
+     * Here is an example for encoding a file with 3 tokens in a uint32 array:
+     * ```
+     *    { line: 2, startChar:  5, length: 3, tokenType: "property",  tokenModifiers: ["private", "static"] },
+     *    { line: 2, startChar: 10, length: 4, tokenType: "type",      tokenModifiers: [] },
+     *    { line: 5, startChar:  2, length: 7, tokenType: "class",     tokenModifiers: [] }
+     * ```
+     *
+     * 1. First of all, a legend must be devised. This legend must be provided up-front and capture all possible token types.
+     * For this example, we will choose the following legend which must be passed in when registering the provider:
+     * ```
+     *    tokenTypes: ['property', 'type', 'class'],
+     *    tokenModifiers: ['private', 'static']
+     * ```
+     *
+     * 2. The first transformation step is to encode `tokenType` and `tokenModifiers` as integers using the legend. Token types are looked
+     * up by index, so a `tokenType` value of `1` means `tokenTypes[1]`. Multiple token modifiers can be set by using bit flags,
+     * so a `tokenModifier` value of `3` is first viewed as binary `0b00000011`, which means `[tokenModifiers[0], tokenModifiers[1]]` because
+     * bits 0 and 1 are set. Using this legend, the tokens now are:
+     * ```
+     *    { line: 2, startChar:  5, length: 3, tokenType: 0, tokenModifiers: 3 },
+     *    { line: 2, startChar: 10, length: 4, tokenType: 1, tokenModifiers: 0 },
+     *    { line: 5, startChar:  2, length: 7, tokenType: 2, tokenModifiers: 0 }
+     * ```
+     *
+     * 3. The next step is to represent each token relative to the previous token in the file. In this case, the second token
+     * is on the same line as the first token, so the `startChar` of the second token is made relative to the `startChar`
+     * of the first token, so it will be `10 - 5`. The third token is on a different line than the second token, so the
+     * `startChar` of the third token will not be altered:
+     * ```
+     *    { deltaLine: 2, deltaStartChar: 5, length: 3, tokenType: 0, tokenModifiers: 3 },
+     *    { deltaLine: 0, deltaStartChar: 5, length: 4, tokenType: 1, tokenModifiers: 0 },
+     *    { deltaLine: 3, deltaStartChar: 2, length: 7, tokenType: 2, tokenModifiers: 0 }
+     * ```
+     *
+     * 4. Finally, the last step is to inline each of the 5 fields for a token in a single array, which is a memory friendly representation:
+     * ```
+     *    // 1st token,  2nd token,  3rd token
+     *    [  2,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ]
+     * ```
+     *
+     * @see [SemanticTokensBuilder](#SemanticTokensBuilder) for a helper to encode tokens as integers.
+     * *NOTE*: When doing edits, it is possible that multiple edits occur until VS Code decides to invoke the semantic tokens provider.
+     * *NOTE*: If the provider cannot temporarily compute semantic tokens, it can indicate this by throwing an error with the message 'Busy'.
+     */
+    provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens>;
+
+    /**
+     * Instead of always returning all the tokens in a file, it is possible for a `DocumentSemanticTokensProvider` to implement
+     * this method (`provideDocumentSemanticTokensEdits`) and then return incremental updates to the previously provided semantic tokens.
+     *
+     * ---
+     * ### How tokens change when the document changes
+     *
+     * Suppose that `provideDocumentSemanticTokens` has previously returned the following semantic tokens:
+     * ```
+     *    // 1st token,  2nd token,  3rd token
+     *    [  2,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ]
+     * ```
+     *
+     * Also suppose that after some edits, the new semantic tokens in a file are:
+     * ```
+     *    // 1st token,  2nd token,  3rd token
+     *    [  3,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ]
+     * ```
+     * It is possible to express these new tokens in terms of an edit applied to the previous tokens:
+     * ```
+     *    [  2,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ] // old tokens
+     *    [  3,5,3,0,3,  0,5,4,1,0,  3,2,7,2,0 ] // new tokens
+     *
+     *    edit: { start:  0, deleteCount: 1, data: [3] } // replace integer at offset 0 with 3
+     * ```
+     *
+     * *NOTE*: If the provider cannot compute `SemanticTokensEdits`, it can "give up" and return all the tokens in the document again.
+     * *NOTE*: All edits in `SemanticTokensEdits` contain indices in the old integers array, so they all refer to the previous result state.
+     */
+    provideDocumentSemanticTokensEdits?(document: TextDocument, previousResultId: string, token: CancellationToken): ProviderResult<SemanticTokens | SemanticTokensEdits>;
+}
+
+/**
+ * The document range semantic tokens provider interface defines the contract between extensions and
+ * semantic tokens.
+ */
+export interface DocumentRangeSemanticTokensProvider {
+    /**
+     * @see [provideDocumentSemanticTokens](#DocumentSemanticTokensProvider.provideDocumentSemanticTokens).
+     */
+    provideDocumentRangeSemanticTokens(document: TextDocument, range: Range, token: CancellationToken): ProviderResult<SemanticTokens>;
+}
+
 export interface api {
     commands: {
         executeCommand: <T>(command: string, ...rest: any[]) => Thenable<T | undefined>;
@@ -1191,6 +1405,38 @@ export interface api {
     };
     languages: {
         match: (selector: DocumentSelector, document: TextDocument) => number;
+        /**
+        * Register a semantic tokens provider for a whole document.
+        *
+        * Multiple providers can be registered for a language. In that case providers are sorted
+        * by their [score](#languages.match) and the best-matching provider is used. Failure
+        * of the selected provider will cause a failure of the whole operation.
+        *
+        * @param selector A selector that defines the documents this provider is applicable to.
+        * @param provider A document semantic tokens provider.
+        * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+        */
+       registerDocumentSemanticTokensProvider(selector: DocumentSelector, provider: DocumentSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
+
+       /**
+        * Register a semantic tokens provider for a document range.
+        *
+        * *Note:* If a document has both a `DocumentSemanticTokensProvider` and a `DocumentRangeSemanticTokensProvider`,
+        * the range provider will be invoked only initially, for the time in which the full document provider takes
+        * to resolve the first request. Once the full document provider resolves the first request, the semantic tokens
+        * provided via the range provider will be discarded and from that point forward, only the document provider
+        * will be used.
+        *
+        * Multiple providers can be registered for a language. In that case providers are sorted
+        * by their [score](#languages.match) and the best-matching provider is used. Failure
+        * of the selected provider will cause a failure of the whole operation.
+        *
+        * @param selector A selector that defines the documents this provider is applicable to.
+        * @param provider A document range semantic tokens provider.
+        * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+        */
+       registerDocumentRangeSemanticTokensProvider(selector: DocumentSelector, provider: DocumentRangeSemanticTokensProvider, legend: SemanticTokensLegend): Disposable;
+
     };
     window: {
         activeTextEditor: TextEditor | undefined;
@@ -1209,7 +1455,7 @@ export interface api {
     };
     extensions: {
         getExtension(extensionId: string): Extension<any> | undefined;
-        all: Extension<any>[];
+        all: ReadonlyArray<Extension<any>>;
     };
     Uri: {
         parse(value: string): Uri;

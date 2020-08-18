@@ -85,7 +85,7 @@ namespace Microsoft.CodeAnalysis.Razor
             for (var i = 0; i < _factories.Length; i++)
             {
                 var factory = _factories[i];
-                if (string.Equals(configuration.ConfigurationName, factory.Metadata.ConfigurationName))
+                if (string.Equals(configuration.ConfigurationName, factory.Metadata.ConfigurationName, StringComparison.Ordinal))
                 {
                     return requireSerializable && !factory.Metadata.SupportsSerialization ? null : factory.Value;
                 }

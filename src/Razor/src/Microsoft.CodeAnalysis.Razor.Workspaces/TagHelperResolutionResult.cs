@@ -4,9 +4,12 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
+    [JsonConverter(typeof(TagHelperResolutionResultJsonConverter))]
     internal sealed class TagHelperResolutionResult
     {
         internal static readonly TagHelperResolutionResult Empty = new TagHelperResolutionResult(Array.Empty<TagHelperDescriptor>(), Array.Empty<RazorDiagnostic>());

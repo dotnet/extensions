@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
@@ -80,23 +79,26 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.False(LegacyDocument.TryGetGeneratedOutput(out _));
-            Assert.False(LegacyDocument.TryGetGeneratedOutputVersionAsync(out _));
+            Assert.False(LegacyDocument.TryGetGeneratedCSharpOutputVersionAsync(out _));
+            Assert.False(LegacyDocument.TryGetGeneratedHtmlOutputVersionAsync(out _));
         }
 
         [Fact]
         public async Task GCCollect_OnRegenerationMaintainsOutputVersion()
         {
             // Arrange
-            var initialOutputVersion = await LegacyDocument.GetGeneratedOutputVersionAsync();
+            var initialOutputVersion = await LegacyDocument.GetGeneratedCSharpOutputVersionAsync();
 
             // Forces collection of the cached document output
             GC.Collect();
 
             // Act
-            var regeneratedOutputVersion = await LegacyDocument.GetGeneratedOutputVersionAsync();
+            var regeneratedCSharpOutputVersion = await LegacyDocument.GetGeneratedCSharpOutputVersionAsync();
+            var regeneratedHtmlOutputVersion = await LegacyDocument.GetGeneratedHtmlOutputVersionAsync();
 
             // Assert
-            Assert.Equal(initialOutputVersion, regeneratedOutputVersion);
+            Assert.Equal(initialOutputVersion, regeneratedCSharpOutputVersion);
+            Assert.Equal(initialOutputVersion, regeneratedHtmlOutputVersion);
         }
 
         [Fact]
@@ -110,7 +112,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Act & Assert
             Assert.True(LegacyDocument.TryGetGeneratedOutput(out _));
-            Assert.True(LegacyDocument.TryGetGeneratedOutputVersionAsync(out _));
+            Assert.True(LegacyDocument.TryGetGeneratedCSharpOutputVersionAsync(out _));
+            Assert.True(LegacyDocument.TryGetGeneratedHtmlOutputVersionAsync(out _));
         }
 
         [Fact]
@@ -120,8 +123,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await LegacyDocument.GetGeneratedOutputAsync();
 
             // Assert
-            Assert.NotNull(LegacyHostDocument.GeneratedCodeContainer.Output);
-            Assert.Same(SourceText, LegacyHostDocument.GeneratedCodeContainer.Source);
+            Assert.NotNull(LegacyHostDocument.GeneratedDocumentContainer.OutputCSharp);
+            Assert.NotNull(LegacyHostDocument.GeneratedDocumentContainer.OutputHtml);
+            Assert.Same(SourceText, LegacyHostDocument.GeneratedDocumentContainer.Source);
         }
 
         // This is a sanity test that we invoke component codegen for components. It's a little fragile but
@@ -134,8 +138,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await ComponentCshtmlDocument.GetGeneratedOutputAsync();
 
             // Assert
-            Assert.NotNull(ComponentCshtmlHostDocument.GeneratedCodeContainer.Output);
-            Assert.Contains("using Microsoft.AspNetCore.Components", ComponentCshtmlHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
+            Assert.NotNull(ComponentCshtmlHostDocument.GeneratedDocumentContainer.OutputCSharp);
+            Assert.Contains("using Microsoft.AspNetCore.Components", ComponentCshtmlHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
         }
         [Fact]
         public async Task GetGeneratedOutputAsync_Component()
@@ -144,8 +148,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await ComponentDocument.GetGeneratedOutputAsync();
 
             // Assert
-            Assert.NotNull(ComponentHostDocument.GeneratedCodeContainer.Output);
-            Assert.Contains("ComponentBase", ComponentHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
+            Assert.NotNull(ComponentHostDocument.GeneratedDocumentContainer.OutputCSharp);
+            Assert.Contains("ComponentBase", ComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -155,10 +159,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await NestedComponentDocument.GetGeneratedOutputAsync();
 
             // Assert
-            Assert.NotNull(NestedComponentHostDocument.GeneratedCodeContainer.Output);
-            Assert.Contains("ComponentBase", NestedComponentHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
-            Assert.Contains("namespace SomeProject.Nested", NestedComponentHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
-            Assert.Contains("class File3", NestedComponentHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
+            Assert.NotNull(NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp);
+            Assert.Contains("ComponentBase", NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
+            Assert.Contains("namespace SomeProject.Nested", NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
+            Assert.Contains("class File3", NestedComponentHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
         }
 
         // This is a sanity test that we invoke legacy codegen for .cshtml files. It's a little fragile but
@@ -170,8 +174,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await LegacyDocument.GetGeneratedOutputAsync();
 
             // Assert
-            Assert.NotNull(LegacyHostDocument.GeneratedCodeContainer.Output);
-            Assert.Contains("Template", LegacyHostDocument.GeneratedCodeContainer.Output.GeneratedCode);
+            Assert.NotNull(LegacyHostDocument.GeneratedDocumentContainer.OutputCSharp);
+            Assert.Contains("Template", LegacyHostDocument.GeneratedDocumentContainer.OutputCSharp.GeneratedCode, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -189,8 +193,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await newDocument.GetGeneratedOutputAsync();
 
             // Assert
-            Assert.NotNull(LegacyHostDocument.GeneratedCodeContainer.Output);
-            Assert.Same(newSourceText, LegacyHostDocument.GeneratedCodeContainer.Source);
+            Assert.NotNull(LegacyHostDocument.GeneratedDocumentContainer.OutputCSharp);
+            Assert.Same(newSourceText, LegacyHostDocument.GeneratedDocumentContainer.Source);
+            Assert.Equal("NEW!", LegacyHostDocument.GeneratedDocumentContainer.OutputHtml.GeneratedHtml);
         }
 
         [Fact]
@@ -208,8 +213,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             await LegacyDocument.GetGeneratedOutputAsync();
 
             // Assert
-            Assert.NotNull(LegacyHostDocument.GeneratedCodeContainer.Output);
-            Assert.Same(newSourceText, LegacyHostDocument.GeneratedCodeContainer.Source);
+            Assert.NotNull(LegacyHostDocument.GeneratedDocumentContainer.OutputCSharp);
+            Assert.Same(newSourceText, LegacyHostDocument.GeneratedDocumentContainer.Source);
+            Assert.Equal("NEW!", LegacyHostDocument.GeneratedDocumentContainer.OutputHtml.GeneratedHtml);
         }
     }
 }

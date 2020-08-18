@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -45,14 +44,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var normalizedPath = _filePathNormalizer.Normalize(documentFilePath);
-            if (!_projectResolver.TryResolvePotentialProject(normalizedPath, out var project))
+            if (!_projectResolver.TryResolveProject(normalizedPath, out var project))
             {
-                project = _projectResolver.GetMiscellaneousProject();
-            }
-
-            if (!project.DocumentFilePaths.Contains(normalizedPath, FilePathComparer.Instance))
-            {
-                // Miscellaneous project and other tracked projects do not contain document.
+                // Neither the potential project determined by file path,
+                // nor the Miscellaneous project contain the document.
                 document = null;
                 return false;
             }
