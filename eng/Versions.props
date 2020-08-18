@@ -66,7 +66,9 @@
     <SystemComponentModelAnnotationsPackageVersion>4.7.0</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.7.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.7.0</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.7.1</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.7.2</SystemIOPipelinesPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.7.2</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.7.1</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.8.1</SystemReflectionMetadataPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.7.1</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.7.0</SystemSecurityCryptographyCngPackageVersion>
@@ -74,6 +76,7 @@
     <SystemServiceProcessServiceControllerPackageVersion>4.7.0</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.7.1</SystemTextEncodingsWebPackageVersion>
     <SystemTextJsonPackageVersion>4.7.2</SystemTextJsonPackageVersion>
+    <SystemThreadingChannelsPackageVersion>4.7.1</SystemThreadingChannelsPackageVersion>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
     <MicrosoftNETCorePlatformsPackageVersion>3.1.2</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
