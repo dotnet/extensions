@@ -65,9 +65,6 @@
     <SystemDiagnosticsDiagnosticSourcePackageVersion>5.0.0-rc.1.20417.14</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemResourcesExtensionsPackageVersion>5.0.0-rc.1.20417.14</SystemResourcesExtensionsPackageVersion>
     <SystemTextEncodingsWebPackageVersion>5.0.0-rc.1.20417.14</SystemTextEncodingsWebPackageVersion>
-    <SystemTextJsonPackageVersion>5.0.0-rc.1.20417.14</SystemTextJsonPackageVersion>
-    <SystemReflectionMetadataPackageVersion>5.0.0-rc.1.20417.14</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-rc.1.20417.14</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>3.8.0-2.20408.4</MicrosoftNetCompilersToolsetPackageVersion>
   </PropertyGroup>
