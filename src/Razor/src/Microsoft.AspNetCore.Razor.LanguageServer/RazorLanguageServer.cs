@@ -30,6 +30,7 @@ using ILanguageServer = OmniSharp.Extensions.LanguageServer.Server.ILanguageServ
 using System.Threading;
 using Microsoft.AspNetCore.Razor.LanguageServer.Refactoring;
 using Microsoft.AspNetCore.Razor.LanguageServer.Definition;
+using Microsoft.AspNetCore.Razor.LanguageServer.Serialization;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -60,6 +61,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             Serializer.Instance.Settings.Converters.Add(SemanticTokensOrSemanticTokensEditsConverter.Instance);
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
+
+            // Custom ClientCapabilities deserializer to extract experimental capabilities
+            Serializer.Instance.JsonSerializer.Converters.Add(ExtendableClientCapabilitiesJsonConverter.Instance);
 
             ILanguageServer server = null;
             server = OmniSharp.Extensions.LanguageServer.Server.LanguageServer.PreInit(options =>

@@ -4,7 +4,7 @@
 using System.IO;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Serialization
 {
     internal abstract class JsonFileDeserializer
     {

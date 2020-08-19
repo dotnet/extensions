@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
-    internal class CodeActionResolutionEndpoint : IRazorCodeActionResolutionHandler
+    internal class CodeActionResolutionEndpoint : ICodeActionResolutionHandler
     {
         private readonly IReadOnlyDictionary<string, RazorCodeActionResolver> _resolvers;
         private readonly ILogger _logger;

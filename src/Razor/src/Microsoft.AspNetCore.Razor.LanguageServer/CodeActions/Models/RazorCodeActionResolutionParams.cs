@@ -4,7 +4,7 @@
 using MediatR;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models
 {
     internal class RazorCodeActionResolutionParams : IRequest<RazorCodeActionResolutionResponse>
     {

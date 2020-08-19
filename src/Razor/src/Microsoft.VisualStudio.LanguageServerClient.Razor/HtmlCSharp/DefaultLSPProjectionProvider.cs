@@ -45,7 +45,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var languageQueryParams = new RazorLanguageQueryParams()
             {
-                Position = new Position(position.Line, position.Character),
+                Position = position,
                 Uri = documentSnapshot.Uri
             };
 

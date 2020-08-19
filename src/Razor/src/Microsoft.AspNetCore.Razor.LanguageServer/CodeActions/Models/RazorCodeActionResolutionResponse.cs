@@ -3,7 +3,7 @@
 
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer
+namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models
 {
     internal class RazorCodeActionResolutionResponse
     {

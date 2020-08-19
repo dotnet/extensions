@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             // If this assumption is ever untrue we'll have to start informing this class about if a request is for Hover or Completions.
             var supportedKinds = completionSupportedKinds ?? hoverSupportedKinds;
 
-            if (supportedKinds.Contains(MarkupKind.Markdown))
+            if (supportedKinds?.Contains(MarkupKind.Markdown) ?? false)
             {
                 return MarkupKind.Markdown;
             }

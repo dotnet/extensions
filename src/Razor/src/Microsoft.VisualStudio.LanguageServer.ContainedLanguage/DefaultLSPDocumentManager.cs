@@ -129,11 +129,18 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             }
 
             var virtualDocumentAcquired = lspDocument.TryGetVirtualDocument<TVirtualDocument>(out var virtualDocument);
+            if (!virtualDocumentAcquired)
+            {
+                // Unable to locate virtual document of typeof(TVirtualDocument)
+                // Ex. Microsoft.WebTools.Languages.LanguageServer.Delegation.ContainedLanguage.Css.CssVirtualDocument
+                return;
+            }
+
             if (changes.Count == 0 &&
-                virtualDocumentAcquired &&
                 virtualDocument.HostDocumentSyncVersion == hostDocumentVersion)
             {
-                // The current virtual document already knows about this update. Ignore it so we don't prematurely invoke a change event.
+                // The current virtual document already knows about this update.
+                // Ignore it so we don't prematurely invoke a change event.
                 return;
             }
 

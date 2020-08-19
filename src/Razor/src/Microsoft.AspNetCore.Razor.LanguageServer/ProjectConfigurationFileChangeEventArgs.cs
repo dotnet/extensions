@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Serialization;
 using Microsoft.CodeAnalysis.Razor.Workspaces.Serialization;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
