@@ -157,8 +157,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             VersionedTextDocumentIdentifier codeDocumentIdentifier,
             string newUsingNamespace)
         {
+            var head = new Position(0, 0);
+
             // If we don't have usings, insert after the last namespace or page directive, which ever comes later
-            var head = new Position(1, 0);
             var syntaxTreeRoot = codeDocument.GetSyntaxTree().Root;
             var lastNamespaceOrPageDirective = syntaxTreeRoot
                 .DescendantNodes()

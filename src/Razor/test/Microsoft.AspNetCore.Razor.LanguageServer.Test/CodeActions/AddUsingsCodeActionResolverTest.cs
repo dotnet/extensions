@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             Assert.True(addUsingsChange.IsTextDocumentEdit);
             Assert.Single(addUsingsChange.TextDocumentEdit.Edits);
             var firstEdit = addUsingsChange.TextDocumentEdit.Edits.First();
-            Assert.Equal(1, firstEdit.Range.Start.Line);
+            Assert.Equal(0, firstEdit.Range.Start.Line);
             Assert.Equal($"@using System{Environment.NewLine}", firstEdit.NewText);
         }
 
@@ -151,6 +151,40 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             Assert.Single(addUsingsChange.TextDocumentEdit.Edits);
             var firstEdit = addUsingsChange.TextDocumentEdit.Edits.First();
             Assert.Equal(1, firstEdit.Range.Start.Line);
+            Assert.Equal($"@using System{Environment.NewLine}", firstEdit.NewText);
+        }
+
+        [Fact]
+        public async Task Handle_AddOneUsingToHTML()
+        {
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var documentUri = new Uri(documentPath);
+            var contents = $"<table>{Environment.NewLine}<tr>{Environment.NewLine}</tr>{Environment.NewLine}</table>";
+            var codeDocument = CreateCodeDocument(contents);
+
+            var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument));
+            var actionParams = new AddUsingsCodeActionParams
+            {
+                Uri = documentUri,
+                Namespace = "System"
+            };
+            var data = JObject.FromObject(actionParams);
+
+            // Act
+            var workspaceEdit = await resolver.ResolveAsync(data, default);
+
+            // Assert
+            Assert.NotNull(workspaceEdit);
+            Assert.NotNull(workspaceEdit.DocumentChanges);
+            Assert.Single(workspaceEdit.DocumentChanges);
+
+            var documentChanges = workspaceEdit.DocumentChanges.ToArray();
+            var addUsingsChange = documentChanges[0];
+            Assert.True(addUsingsChange.IsTextDocumentEdit);
+            Assert.Single(addUsingsChange.TextDocumentEdit.Edits);
+            var firstEdit = addUsingsChange.TextDocumentEdit.Edits.First();
+            Assert.Equal(0, firstEdit.Range.Start.Line);
             Assert.Equal($"@using System{Environment.NewLine}", firstEdit.NewText);
         }
 
