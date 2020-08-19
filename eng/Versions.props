@@ -46,14 +46,6 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <!-- Packages from dotnet/core-setup -->
-    <MicrosoftDotNetPlatformAbstractionsPackageVersion>3.1.6</MicrosoftDotNetPlatformAbstractionsPackageVersion>
-    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
-    <!-- Packages from dotnet/corefx -->
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.1.6</MicrosoftExtensionsDependencyModelPackageVersion>
-    <SystemNetHttpWinHttpHandlerPackageVersion>4.7.2</SystemNetHttpWinHttpHandlerPackageVersion>
-    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.7.1</SystemNetWebSocketsWebSocketProtocolPackageVersion>
-    <SystemThreadingChannelsPackageVersion>4.7.1</SystemThreadingChannelsPackageVersion>
     <!-- Packages from dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0-rc.1.20417.14</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-rc.1.20417.14</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
@@ -111,14 +103,6 @@
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetVersion>3.8.0-3.20416.3</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
-
-  <!-- For the targeting pack, always use packages with PatchVersion=0 -->
-  <PropertyGroup Condition=" '$(MSBuildProjectName)' == 'Microsoft.Internal.Extensions.Refs' OR '$(IsReferenceAssemblyProject)' == 'true' ">
-    <SystemDiagnosticsEventLogPackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlPackageVersion>
-  </PropertyGroup>
-
   <PropertyGroup Label="Dependency version settings">
     <!--
       Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
