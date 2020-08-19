@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
                 return null;
             }
 
-            var newPath = MakeNewPath(requestDocumentSnapshot.FilePath, request.NewName);
+            var newPath = MakeNewPath(originComponentDocumentSnapshot.FilePath, request.NewName);
             if (File.Exists(newPath))
             {
                 return null;
