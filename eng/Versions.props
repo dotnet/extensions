@@ -84,14 +84,12 @@
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetVersion>3.4.1-beta4-20127-10</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
-
   <!-- For the targeting pack, always use packages with PatchVersion=0 -->
   <PropertyGroup Condition=" '$(MSBuildProjectName)' == 'Microsoft.Internal.Extensions.Refs' OR '$(IsReferenceAssemblyProject)' == 'true' ">
     <SystemDiagnosticsEventLogPackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogPackageVersion>
     <SystemIOPipelinesPackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlPackageVersion>
   </PropertyGroup>
-
   <PropertyGroup Label="Dependency version settings">
     <!--
       Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
