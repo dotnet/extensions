@@ -8,11 +8,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
-    internal class CodeActionResolutionEndpoint : ICodeActionResolutionHandler
+    internal class CodeActionResolutionEndpoint : ICodeActionResolveHandler
     {
+        private static readonly string CodeActionsResolveProviderCapability = "codeActionsResolveProvider";
+
         private readonly IReadOnlyDictionary<string, RazorCodeActionResolver> _resolvers;
         private readonly ILogger _logger;
 
@@ -25,12 +29,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _logger = loggerFactory.CreateLogger<CodeActionResolutionEndpoint>();
-
             if (resolvers is null)
             {
                 throw new ArgumentNullException(nameof(resolvers));
             }
+
+            _logger = loggerFactory.CreateLogger<CodeActionResolutionEndpoint>();
 
             var resolverMap = new Dictionary<string, RazorCodeActionResolver>();
             foreach (var resolver in resolvers)
@@ -44,23 +48,39 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             _resolvers = resolverMap;
         }
 
-        public async Task<RazorCodeActionResolutionResponse> Handle(RazorCodeActionResolutionParams request, CancellationToken cancellationToken)
+        // Register VS LSP code action resolution server capability
+        public RegistrationExtensionResult GetRegistration() => new RegistrationExtensionResult(CodeActionsResolveProviderCapability, true);
+
+        public async Task<RazorCodeAction> Handle(RazorCodeAction request, CancellationToken cancellationToken)
         {
             if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            _logger.LogDebug($"Resolving action {request.Action} with data {request.Data}.");
-
-            if (!_resolvers.TryGetValue(request.Action, out var resolver))
+            if (!(request.Data is JObject paramsObj))
             {
-                Debug.Fail($"No resolver registered for {request.Action}.");
-                return new RazorCodeActionResolutionResponse();
+                Debug.Fail($"Invalid CodeAction Received {request.Title}.");
+                return request;
             }
 
-            var edit = await resolver.ResolveAsync(request.Data, cancellationToken).ConfigureAwait(false);
-            return new RazorCodeActionResolutionResponse() { Edit = edit };
+            var resolutionParams = paramsObj.ToObject<RazorCodeActionResolutionParams>();
+            request.Edit = await GetWorkspaceEditAsync(resolutionParams, cancellationToken).ConfigureAwait(false);
+            return request;
+        }
+
+        // Internal for testing
+        internal async Task<WorkspaceEdit> GetWorkspaceEditAsync(RazorCodeActionResolutionParams resolutionParams, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation($"Resolving workspace edit for action `{resolutionParams.Action}`.");
+
+            if (!_resolvers.TryGetValue(resolutionParams.Action, out var resolver))
+            {
+                Debug.Fail($"No resolver registered for {resolutionParams.Action}.");
+                return default;
+            }
+
+            return await resolver.ResolveAsync(resolutionParams.Data as JObject, cancellationToken).ConfigureAwait(false);
         }
     }
 }

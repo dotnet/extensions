@@ -15,13 +15,15 @@ using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Editor.Razor;
-using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal class ComponentAccessibilityCodeActionProvider : RazorCodeActionProvider
     {
+        private static readonly string CreateComponentFromTagTitle = "Create component from tag";
+        private static readonly Task<RazorCodeAction[]> EmptyResult = Task.FromResult<RazorCodeAction[]>(null);
+
         private readonly TagHelperFactsService _tagHelperFactsService;
         private readonly FilePathNormalizer _filePathNormalizer;
 
@@ -33,41 +35,41 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             _filePathNormalizer = filePathNormalizer ?? throw new ArgumentNullException(nameof(filePathNormalizer));
         }
 
-        public override Task<CommandOrCodeActionContainer> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+        public override Task<RazorCodeAction[]> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
-            var commandOrCodeActions = new List<CommandOrCodeAction>();
+            var codeActions = new List<RazorCodeAction>();
 
             // Locate cursor
             var change = new SourceChange(context.Location.AbsoluteIndex, length: 0, newText: string.Empty);
             var node = context.CodeDocument.GetSyntaxTree().Root.LocateOwner(change);
             if (node is null)
             {
-                return Task.FromResult<CommandOrCodeActionContainer>(null);
+                return EmptyResult;
             }
 
             // Find start tag
             var startTag = (MarkupStartTagSyntax)node.Ancestors().FirstOrDefault(n => n is MarkupStartTagSyntax);
             if (startTag is null)
             {
-                return Task.FromResult<CommandOrCodeActionContainer>(null);
+                return EmptyResult;
             }
 
             // Ignore if start tag has dots, as we only handle short tags
             if (startTag.Name.Content.Contains("."))
             {
-                return Task.FromResult<CommandOrCodeActionContainer>(null);
+                return EmptyResult;
             }
 
             if (IsTagUnknown(startTag, context))
             {
-                AddComponentAccessFromTag(context, startTag, commandOrCodeActions);
-                AddCreateComponentFromTag(context, startTag, commandOrCodeActions);
+                AddComponentAccessFromTag(context, startTag, codeActions);
+                AddCreateComponentFromTag(context, startTag, codeActions);
             }
 
-            return Task.FromResult(new CommandOrCodeActionContainer(commandOrCodeActions));
+            return Task.FromResult(codeActions.ToArray());
         }
 
-        private void AddCreateComponentFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<CommandOrCodeAction> container)
+        private void AddCreateComponentFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<RazorCodeAction> container)
         {
             var path = context.Request.TextDocument.Uri.GetAbsoluteOrUNCPath();
             path = _filePathNormalizer.Normalize(path);
@@ -82,25 +84,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 Uri = context.Request.TextDocument.Uri,
                 Path = newComponentPath,
             };
-            var data = JObject.FromObject(actionParams);
 
             var resolutionParams = new RazorCodeActionResolutionParams
             {
                 Action = LanguageServerConstants.CodeActions.CreateComponentFromTag,
-                Data = data,
+                Data = actionParams,
             };
-            var serializedParams = JToken.FromObject(resolutionParams);
-            var arguments = new JArray(serializedParams);
 
-            container.Add(new CommandOrCodeAction(new Command
+            container.Add(new RazorCodeAction()
             {
-                Title = "Create component from tag",
-                Name = LanguageServerConstants.RazorCodeActionRunnerCommand,
-                Arguments = arguments,
-            }));
+                Title = CreateComponentFromTagTitle,
+                Data = resolutionParams
+            });
         }
 
-        private void AddComponentAccessFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<CommandOrCodeAction> container)
+        private void AddComponentAccessFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<RazorCodeAction> container)
         {
             var matching = FindMatchingTagHelpers(context, startTag);
 
@@ -115,35 +113,32 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 var fullyQualifiedComponentName = tagHelperPair.Short.Name;  // We assume .Name is the fully qualified component name
                 DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.TrySplitNamespaceAndType(fullyQualifiedComponentName, out var namespaceSpan, out var _);
                 var namespaceName = tagHelperPair.Short.Name.Substring(namespaceSpan.Start, namespaceSpan.Length);
+
                 var actionParams = new AddUsingsCodeActionParams
                 {
                     Uri = context.Request.TextDocument.Uri,
                     Namespace = namespaceName,
                 };
-                var data = JObject.FromObject(actionParams);
 
                 var resolutionParams = new RazorCodeActionResolutionParams
                 {
                     Action = LanguageServerConstants.CodeActions.AddUsing,
-                    Data = data,
+                    Data = actionParams,
                 };
-                var serializedParams = JToken.FromObject(resolutionParams);
-                var arguments = new JArray(serializedParams);
 
                 // Insert @using
-                container.Add(new CommandOrCodeAction(new Command
+                container.Add(new RazorCodeAction()
                 {
                     Title = $"@using {namespaceName}",
-                    Name = LanguageServerConstants.RazorCodeActionRunnerCommand,
-                    Arguments = arguments,
-                }));
+                    Data = resolutionParams
+                });
 
                 // Fully qualify
-                container.Add(new CommandOrCodeAction(new CodeAction
+                container.Add(new RazorCodeAction()
                 {
                     Title = $"{tagHelperPair.Short.Name}",
                     Edit = CreateRenameTagEdit(context, startTag, tagHelperPair.Short.Name),
-                }));
+                });
             }
         }
 
@@ -160,6 +155,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             {
                 parentTagName = parentTagHelperElement.StartTag.Name.Content;
             }
+
             var attributes = _tagHelperFactsService.StringifyAttributes(startTag.Attributes);
 
             // Find all matching tag helpers
@@ -197,6 +193,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                     NewText = newTagName,
                 },
             };
+
             var endTag = (startTag.Parent as MarkupElementSyntax).EndTag;
             if (endTag != null)
             {
@@ -206,6 +203,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                     NewText = newTagName,
                 });
             }
+
             return new WorkspaceEdit
             {
                 Changes = new Dictionary<Uri, IEnumerable<TextEdit>> {
@@ -214,18 +212,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             };
         }
 
-        private sealed class TagHelperPair
-        {
-            public TagHelperDescriptor Short = null;
-            public TagHelperDescriptor FullyQualified = null;
-        }
-
         private bool IsTagUnknown(MarkupStartTagSyntax startTag, RazorCodeActionContext context)
         {
             foreach (var diagnostic in context.CodeDocument.GetCSharpDocument().Diagnostics)
             {
                 // Check that the diagnostic is to do with our start tag
-                if (!(diagnostic.Span.AbsoluteIndex > startTag.Span.End || startTag.Span.Start > diagnostic.Span.AbsoluteIndex + diagnostic.Span.Length))
+                if (!(diagnostic.Span.AbsoluteIndex > startTag.Span.End
+                    || startTag.Span.Start > diagnostic.Span.AbsoluteIndex + diagnostic.Span.Length))
                 {
                     // Component is not recognized in environment
                     if (diagnostic.Id == ComponentDiagnosticFactory.UnexpectedMarkupElement.Id)
@@ -235,6 +228,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 }
             }
             return false;
+        }
+
+        private class TagHelperPair
+        {
+            public TagHelperDescriptor Short = null;
+            public TagHelperDescriptor FullyQualified = null;
         }
     }
 }

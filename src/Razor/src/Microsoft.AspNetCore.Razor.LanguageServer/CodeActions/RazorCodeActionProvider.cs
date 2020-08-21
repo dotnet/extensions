@@ -3,12 +3,12 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal abstract class RazorCodeActionProvider
     {
-        public abstract Task<CommandOrCodeActionContainer> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken);
+        public abstract Task<RazorCodeAction[]> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken);
     }
 }

@@ -3,8 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { SerializableWorkspaceEdit } from './SerializableWorkspaceEdit';
-
-export interface CodeActionResolutionResponse {
-    edit: SerializableWorkspaceEdit;
+export interface RazorCodeActionResolutionParams {
+    action: string;
+    data: object;
 }

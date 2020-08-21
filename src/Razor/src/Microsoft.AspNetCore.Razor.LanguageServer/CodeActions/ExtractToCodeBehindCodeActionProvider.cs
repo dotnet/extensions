@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -14,16 +13,16 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Newtonsoft.Json.Linq;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal class ExtractToCodeBehindCodeActionProvider : RazorCodeActionProvider
     {
-        private static readonly Task<CommandOrCodeActionContainer> EmptyResult = Task.FromResult<CommandOrCodeActionContainer>(null);
+        private static readonly string Title = "Extract block to code behind";
 
-        override public Task<CommandOrCodeActionContainer> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+        private static readonly Task<RazorCodeAction[]> EmptyResult = Task.FromResult<RazorCodeAction[]>(null);
+
+        public override Task<RazorCodeAction[]> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
             if (context is null)
             {
@@ -56,7 +55,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             // Make sure we've found a @code or @functions
-            if (directiveNode.DirectiveDescriptor != ComponentCodeDirective.Directive && directiveNode.DirectiveDescriptor != FunctionsDirective.Directive)
+            if (directiveNode.DirectiveDescriptor != ComponentCodeDirective.Directive &&
+                directiveNode.DirectiveDescriptor != FunctionsDirective.Directive)
             {
                 return EmptyResult;
             }
@@ -67,19 +67,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return EmptyResult;
             }
 
-            var cSharpCodeBlockNode = directiveNode.Body.DescendantNodes().FirstOrDefault(n => n is CSharpCodeBlockSyntax);
-            if (cSharpCodeBlockNode is null)
+            var csharpCodeBlockNode = directiveNode.Body.DescendantNodes().FirstOrDefault(n => n is CSharpCodeBlockSyntax);
+            if (csharpCodeBlockNode is null)
             {
                 return EmptyResult;
             }
 
-            if (HasUnsupportedChildren(cSharpCodeBlockNode))
+            if (HasUnsupportedChildren(csharpCodeBlockNode))
             {
                 return EmptyResult;
             }
 
             // Do not provide code action if the cursor is inside the code block
-            if (context.Location.AbsoluteIndex > cSharpCodeBlockNode.SpanStart)
+            if (context.Location.AbsoluteIndex > csharpCodeBlockNode.SpanStart)
             {
                 return EmptyResult;
             }
@@ -87,37 +87,33 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var actionParams = new ExtractToCodeBehindCodeActionParams()
             {
                 Uri = context.Request.TextDocument.Uri,
-                ExtractStart = cSharpCodeBlockNode.Span.Start,
-                ExtractEnd = cSharpCodeBlockNode.Span.End,
+                ExtractStart = csharpCodeBlockNode.Span.Start,
+                ExtractEnd = csharpCodeBlockNode.Span.End,
                 RemoveStart = directiveNode.Span.Start,
                 RemoveEnd = directiveNode.Span.End
             };
-            var data = JObject.FromObject(actionParams);
 
             var resolutionParams = new RazorCodeActionResolutionParams()
             {
                 Action = LanguageServerConstants.CodeActions.ExtractToCodeBehindAction,
-                Data = data,
+                Data = actionParams,
             };
-            var serializedParams = JToken.FromObject(resolutionParams);
-            var arguments = new JArray(serializedParams);
 
-            var container = new List<CommandOrCodeAction>
+            var codeAction = new RazorCodeAction()
             {
-                new Command()
-                {
-                    Title = "Extract block to code behind",
-                    Name = LanguageServerConstants.RazorCodeActionRunnerCommand,
-                    Arguments = arguments,
-                }
+                Title = Title,
+                Data = resolutionParams
             };
 
-            return Task.FromResult((CommandOrCodeActionContainer)container);
+            return Task.FromResult(new[] { codeAction });
         }
 
         private static bool HasUnsupportedChildren(Language.Syntax.SyntaxNode node)
         {
-            return node.DescendantNodes().Any(n => n is MarkupBlockSyntax || n is CSharpTransitionSyntax || n is RazorCommentBlockSyntax);
+            return node.DescendantNodes().Any(n =>
+                n is MarkupBlockSyntax ||
+                n is CSharpTransitionSyntax ||
+                n is RazorCommentBlockSyntax);
         }
     }
 }

@@ -15,27 +15,32 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
     public class CodeActionResolutionEndpointTest : LanguageServerTestBase
     {
         [Fact]
-        public async Task Handle_Resolve()
+        public async Task Handle_Valid_RazorCodeAction_Resolve()
         {
             // Arrange
             var codeActionEndpoint = new CodeActionResolutionEndpoint(new RazorCodeActionResolver[] {
                 new MockCodeActionResolver("Test"),
             }, LoggerFactory);
-            var request = new RazorCodeActionResolutionParams()
+            var requestParams = new RazorCodeActionResolutionParams()
             {
                 Action = "Test",
-                Data = null
+                Data = new AddUsingsCodeActionParams()
+            };
+            var request = new RazorCodeAction()
+            {
+                Title = "Valid request",
+                Data = JObject.FromObject(requestParams)
             };
 
             // Act
-            var workspaceEdit = await codeActionEndpoint.Handle(request, default);
+            var razorCodeAction = await codeActionEndpoint.Handle(request, default);
 
             // Assert
-            Assert.NotNull(workspaceEdit);
+            Assert.NotNull(razorCodeAction.Edit);
         }
 
         [Fact]
-        public async Task Handle_ResolveMultipleProviders_FirstMatches()
+        public async Task GetWorkspaceEditAsync_ResolveMultipleProviders_FirstMatches()
         {
             // Arrange
             var codeActionEndpoint = new CodeActionResolutionEndpoint(new RazorCodeActionResolver[] {
@@ -45,18 +50,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var request = new RazorCodeActionResolutionParams()
             {
                 Action = "A",
-                Data = null
+                Data = new AddUsingsCodeActionParams()
             };
 
             // Act
-            var workspaceEdit = await codeActionEndpoint.Handle(request, default);
+            var workspaceEdit = await codeActionEndpoint.GetWorkspaceEditAsync(request, default);
 
             // Assert
             Assert.NotNull(workspaceEdit);
         }
 
         [Fact]
-        public async Task Handle_ResolveMultipleProviders_SecondMatches()
+        public async Task GetWorkspaceEditAsync_ResolveMultipleProviders_SecondMatches()
         {
             // Arrange
             var codeActionEndpoint = new CodeActionResolutionEndpoint(new RazorCodeActionResolver[] {
@@ -66,11 +71,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var request = new RazorCodeActionResolutionParams()
             {
                 Action = "B",
-                Data = null
+                Data = new AddUsingsCodeActionParams()
             };
 
             // Act
-            var workspaceEdit = await codeActionEndpoint.Handle(request, default);
+            var workspaceEdit = await codeActionEndpoint.GetWorkspaceEditAsync(request, default);
 
             // Assert
             Assert.NotNull(workspaceEdit);

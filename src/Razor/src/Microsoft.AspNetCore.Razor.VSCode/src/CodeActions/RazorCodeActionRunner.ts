@@ -6,11 +6,13 @@
 import * as vscode from 'vscode';
 import { RazorLanguageServerClient } from '../RazorLanguageServerClient';
 import { RazorLogger } from '../RazorLogger';
-import { CodeActionResolutionRequest } from '../RPC/CodeActionResolutionRequest';
-import { CodeActionResolutionResponse } from '../RPC/CodeActionResolutionResponse';
+import { RazorCodeAction } from '../RPC/RazorCodeAction';
+import { RazorCodeActionResolutionParams } from '../RPC/RazorCodeActionResolutionParams';
 import { convertWorkspaceEditFromSerializable } from '../RPC/SerializableWorkspaceEdit';
 
 export class RazorCodeActionRunner {
+    private static readonly codeActionResolveEndpoint = 'textDocument/codeActionResolve';
+    private static readonly razorCodeActionRunnerCommand = 'razor/runCodeAction';
 
     constructor(
         private readonly serverClient: RazorLanguageServerClient,
@@ -18,20 +20,28 @@ export class RazorCodeActionRunner {
     ) {}
 
     public register(): vscode.Disposable {
-        return vscode.commands.registerCommand('razor/runCodeAction', (request: CodeActionResolutionRequest) => this.runCodeAction(request), this);
+        return vscode.commands.registerCommand(
+            RazorCodeActionRunner.razorCodeActionRunnerCommand,
+            (request: RazorCodeActionResolutionParams) => this.runCodeAction(request),
+            this);
     }
 
-    private async runCodeAction(request: CodeActionResolutionRequest): Promise<boolean> {
-        const response: CodeActionResolutionResponse = await this.serverClient.sendRequest('razor/resolveCodeAction', {Action: request.Action, Data: request.Data});
+    private async runCodeAction(request: RazorCodeActionResolutionParams): Promise<boolean> {
+        const response: RazorCodeAction = await this.serverClient.sendRequest(
+            RazorCodeActionRunner.codeActionResolveEndpoint,
+            { data: request, title: request.action });
+
         let changesWorkspaceEdit: vscode.WorkspaceEdit;
         let documentChangesWorkspaceEdit: vscode.WorkspaceEdit;
+
         try {
             changesWorkspaceEdit = convertWorkspaceEditFromSerializable({changes: response.edit.changes});
             documentChangesWorkspaceEdit = convertWorkspaceEditFromSerializable({documentChanges: response.edit.documentChanges});
         } catch (error) {
-            this.logger.logError(`Unexpected error deserializing code action for ${request.Action}`, error);
+            this.logger.logError(`Unexpected error deserializing code action for ${request.action}`, error);
             return Promise.resolve(false);
         }
+
         return vscode.workspace.applyEdit(documentChangesWorkspaceEdit).then(() => vscode.workspace.applyEdit(changesWorkspaceEdit));
     }
 }

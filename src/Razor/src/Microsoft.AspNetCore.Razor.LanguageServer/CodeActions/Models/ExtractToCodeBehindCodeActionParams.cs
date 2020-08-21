@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
+namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models
 {
     internal sealed class ExtractToCodeBehindCodeActionParams
     {

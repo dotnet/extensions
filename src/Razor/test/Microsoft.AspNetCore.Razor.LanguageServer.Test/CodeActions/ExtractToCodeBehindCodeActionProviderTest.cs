@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.AspNetCore.Razor.Language;
@@ -163,11 +162,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var commandOrCodeActionContainer = await provider.ProvideAsync(context, default);
 
             // Assert
-            Assert.Single(commandOrCodeActionContainer);
-            var actionParams = commandOrCodeActionContainer
-                .First().Command.Arguments[0]
-                .ToObject<RazorCodeActionResolutionParams>().Data
-                .ToObject<ExtractToCodeBehindCodeActionParams>();
+            var codeAction = Assert.Single(commandOrCodeActionContainer);
+            var razorCodeActionResolutionParams = codeAction.Data as RazorCodeActionResolutionParams;
+            var actionParams = razorCodeActionResolutionParams.Data as ExtractToCodeBehindCodeActionParams;
             Assert.Equal(14, actionParams.RemoveStart);
             Assert.Equal(19, actionParams.ExtractStart);
             Assert.Equal(42, actionParams.ExtractEnd);
@@ -195,11 +192,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var commandOrCodeActionContainer = await provider.ProvideAsync(context, default);
 
             // Assert
-            Assert.Single(commandOrCodeActionContainer);
-            var actionParams = commandOrCodeActionContainer
-                .First().Command.Arguments[0]
-                .ToObject<RazorCodeActionResolutionParams>().Data
-                .ToObject<ExtractToCodeBehindCodeActionParams>();
+            var codeAction = Assert.Single(commandOrCodeActionContainer);
+            var razorCodeActionResolutionParams = codeAction.Data as RazorCodeActionResolutionParams;
+            var actionParams = razorCodeActionResolutionParams.Data as ExtractToCodeBehindCodeActionParams;
             Assert.Equal(14, actionParams.RemoveStart);
             Assert.Equal(24, actionParams.ExtractStart);
             Assert.Equal(47, actionParams.ExtractEnd);

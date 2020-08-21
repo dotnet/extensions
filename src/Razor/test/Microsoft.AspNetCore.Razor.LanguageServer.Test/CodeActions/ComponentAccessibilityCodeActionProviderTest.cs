@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.AspNetCore.Razor.Language;
@@ -90,10 +89,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var commandOrCodeActionContainer = await provider.ProvideAsync(context, default);
 
             // Assert
-            Assert.Equal(3, commandOrCodeActionContainer.Count());
-            Assert.Equal("@using Fully.Qualified", commandOrCodeActionContainer.ElementAt(0).Command.Title);
-            Assert.Equal("Fully.Qualified.Component", commandOrCodeActionContainer.ElementAt(1).CodeAction.Title);
-            Assert.Equal("Create component from tag", commandOrCodeActionContainer.ElementAt(2).Command.Title) ;
+            Assert.Collection(commandOrCodeActionContainer,
+                e =>
+                {
+                    Assert.Equal("@using Fully.Qualified", e.Title);
+                    Assert.NotNull(e.Data);
+                    Assert.Null(e.Edit);
+                },
+                e =>
+                {
+                    Assert.Equal("Fully.Qualified.Component", e.Title);
+                    Assert.NotNull(e.Edit);
+                    Assert.Null(e.Data);
+                },
+                e =>
+                {
+                    Assert.Equal("Create component from tag", e.Title);
+                    Assert.NotNull(e.Data);
+                    Assert.Null(e.Edit);
+                });
         }
 
         [Fact]
@@ -117,8 +131,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var commandOrCodeActionContainer = await provider.ProvideAsync(context, default);
 
             // Assert
-            Assert.Single(commandOrCodeActionContainer);
-            Assert.Equal("Create component from tag", commandOrCodeActionContainer.ElementAt(0).Command.Title);
+            var command = Assert.Single(commandOrCodeActionContainer);
+            Assert.Equal("Create component from tag", command.Title);
+            Assert.NotNull(command.Data);
         }
 
         private static RazorCodeActionContext CreateRazorCodeActionContext(CodeActionParams request, SourceLocation location, string filePath, string text, SourceSpan componentSourceSpan)

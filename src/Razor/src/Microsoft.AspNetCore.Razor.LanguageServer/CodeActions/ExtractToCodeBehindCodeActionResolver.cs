@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis;
@@ -51,6 +52,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             var actionParams = data.ToObject<ExtractToCodeBehindCodeActionParams>();
+            if (actionParams is null)
+            {
+                return null;
+            }
+
             var path = _filePathNormalizer.Normalize(actionParams.Uri.GetAbsoluteOrUNCPath());
 
             var document = await Task.Factory.StartNew(() =>

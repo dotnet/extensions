@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
         public const string RazorSemanticTokensLegendEndpoint = "_ms_/textDocument/semanticTokensLegend";
 
+        public const string SemanticTokensProviderName = "semanticTokensProvider";
+
         public const string RazorRangeFormattingEndpoint = "razor/rangeFormatting";
 
         public const string RazorUpdateCSharpBufferEndpoint = "razor/updateCSharpBuffer";
@@ -29,11 +31,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
         public const string RazorMapToDocumentEditsEndpoint = "razor/mapToDocumentEdits";
 
-        public const string SemanticTokensProviderName = "semanticTokensProvider";
-
         public const string RazorCodeActionRunnerCommand = "razor/runCodeAction";
 
-        public const string RazorCodeActionResolutionEndpoint = "razor/resolveCodeAction";
+        public const string RazorCodeActionResolveEndpoint = "textDocument/codeActionResolve";
 
         public static class CodeActions
         {
