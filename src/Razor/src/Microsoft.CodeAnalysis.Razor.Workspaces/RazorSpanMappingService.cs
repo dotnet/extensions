@@ -54,9 +54,9 @@ namespace Microsoft.CodeAnalysis.Razor
             var results = ImmutableArray.CreateBuilder<RazorMappedSpanResult>();
             foreach (var span in spans)
             {
-                if (TryGetLinePositionSpan(span, source, output.GetCSharpDocument(), out var linePositionSpan))
+                if (TryGetMappedSpans(span, source, output.GetCSharpDocument(), out var linePositionSpan, out var mappedSpan))
                 {
-                    results.Add(new RazorMappedSpanResult(output.Source.FilePath, linePositionSpan, span));
+                    results.Add(new RazorMappedSpanResult(output.Source.FilePath, linePositionSpan, mappedSpan));
                 }
                 else
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         // Internal for testing.
-        internal static bool TryGetLinePositionSpan(TextSpan span, SourceText source, RazorCSharpDocument output, out LinePositionSpan linePositionSpan)
+        internal static bool TryGetMappedSpans(TextSpan span, SourceText source, RazorCSharpDocument output, out LinePositionSpan linePositionSpan, out TextSpan mappedSpan)
         {
             var mappings = output.SourceMappings;
             for (var i = 0; i < mappings.Count; i++)
@@ -89,12 +89,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 if (leftOffset >= 0 && rightOffset <= 0)
                 {
                     // This span mapping contains the span.
-                    var adjusted = new TextSpan(original.Start + leftOffset, (original.End + rightOffset) - (original.Start + leftOffset));
-                    linePositionSpan = source.Lines.GetLinePositionSpan(adjusted);
+                    mappedSpan = new TextSpan(original.Start + leftOffset, (original.End + rightOffset) - (original.Start + leftOffset));
+                    linePositionSpan = source.Lines.GetLinePositionSpan(mappedSpan);
                     return true;
                 }
             }
 
+            mappedSpan = default;
             linePositionSpan = default;
             return false;
         }
