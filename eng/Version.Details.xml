@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-rc.1.20421.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-rc.1.20424.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>10788117910477c26dc1436237260d05a66b50e5</Sha>
+      <Sha>c3547ec26311b3a6c717b43fc1646ff89968c7e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Internal.Transport" Version="5.0.0-rc.1.20421.3">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Internal.Transport" Version="5.0.0-rc.1.20424.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>10788117910477c26dc1436237260d05a66b50e5</Sha>
+      <Sha>c3547ec26311b3a6c717b43fc1646ff89968c7e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-rc.1.20421.3">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-rc.1.20424.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>10788117910477c26dc1436237260d05a66b50e5</Sha>
+      <Sha>c3547ec26311b3a6c717b43fc1646ff89968c7e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-rc.1.20421.3">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-rc.1.20424.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>10788117910477c26dc1436237260d05a66b50e5</Sha>
+      <Sha>c3547ec26311b3a6c717b43fc1646ff89968c7e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Version="5.0.0-rc.1.20421.3">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Version="5.0.0-rc.1.20424.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>10788117910477c26dc1436237260d05a66b50e5</Sha>
+      <Sha>c3547ec26311b3a6c717b43fc1646ff89968c7e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Version="5.0.0-rc.1.20421.3">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Version="5.0.0-rc.1.20424.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>10788117910477c26dc1436237260d05a66b50e5</Sha>
+      <Sha>c3547ec26311b3a6c717b43fc1646ff89968c7e6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="5.0.0-rc.1.20417.14" CoherentParentDependency="Microsoft.CodeAnalysis.Razor">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -33,9 +33,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>907f7da59b40c80941b02ac2a46650adf3f606bc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-rc.1.20421.3">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-rc.1.20424.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>10788117910477c26dc1436237260d05a66b50e5</Sha>
+      <Sha>c3547ec26311b3a6c717b43fc1646ff89968c7e6</Sha>
     </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="5.0.0-rc.1.20417.14" CoherentParentDependency="Microsoft.CodeAnalysis.Razor">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -76,13 +76,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>907f7da59b40c80941b02ac2a46650adf3f606bc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20417.6">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20419.21">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>83fda4b3f6d93e713749fd1b27c4a6d40b118b13</Sha>
+      <Sha>56a95cc477558c1ccdf16d7abe962849ea970ba4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.8.0-2.20414.4" CoherentParentDependency="Microsoft.CodeAnalysis.Razor">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.8.0-3.20416.3" CoherentParentDependency="Microsoft.CodeAnalysis.Razor">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>beada51586dedc46a7fe5ca381ffb10e2b177070</Sha>
+      <Sha>3b2b7420f63b903fd3b1d9c559ffdd766cdf2880</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
