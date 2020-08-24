@@ -6,8 +6,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
     internal abstract class FeedbackFileLoggerProviderFactory
     {
         /// <summary>
-        /// Returns a <see cref="FeedbackFileLoggerProvider"/>. This is an optimization to ensure we don't load an extra logging dll at MEF load time in Visual Studio.
+        /// Returns a <see cref="FeedbackFileLoggerProvider"/>. This ensures we don't load an extra logging dll at MEF load time in Visual Studio.
         /// </summary>
+        /// <remarks>When VS looks for MEF exports it has to load assembly types that correspond to a contracts signature. SO in our case we used to
+        /// return a <see cref="FeedbackFileLoggerProvider"/>; however, that resulted in MEF needing to load the ILoggerProvider (what it implements)
+        /// assembly which was Microsoft.Extensions.Logging.Abstractions. This wasn't great because it required MEF to then load that assembly in order
+        /// to understand this type. Returning <c>object</c> works around requiring the logging aseembly.</remarks>
         /// <returns>A created <see cref="FeedbackFileLoggerProvider"/>.</returns>
         public abstract object GetOrCreate();
     }
