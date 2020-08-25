@@ -98,6 +98,7 @@
     <VSIXSourceItem Include="$(OutputPath)MediatR.dll" />
     <VSIXSourceItem Include="$(OutputPath)MediatR.Extensions.Microsoft.DependencyInjection.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Options.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Primitives.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
     <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.Json.dll" />

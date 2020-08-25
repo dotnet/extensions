@@ -37,6 +37,7 @@
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="MediatR.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="MediatR.Extensions.Microsoft.DependencyInjection.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Options.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Primitives.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.DependencyInjection.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Configuration.Json.dll" />
