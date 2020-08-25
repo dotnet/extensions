@@ -111,7 +111,7 @@ export class ReportIssuePanel {
     <li>Press <button onclick="startIssue()">Start</button></li>
     <li>Perform the actions (or no action) that resulted in your Razor issue</li>
     <li>Click <button onclick="stopIssue()">Stop</button>. This will copy all relevant issue information.</li>
-    <li><a href="https://github.com/aspnet/Razor.VSCode/issues/new">Go to GitHub</a>, paste your issue contents as the body of the issue. Don't forget to fill out any details left unfilled.</li>
+    <li><a href="https://github.com/dotnet/aspnetcore/issues/new?template=bug_report.md&labels=area-razor.tooling%2C+feature-razor.vscode%2C+bug">Go to GitHub</a>, paste your issue contents as the body of the issue. Don't forget to fill out any details left unfilled.</li>
 </ol>
 
 <p><em>Privacy Alert! The contents copied to your clipboard may contain personal data. Prior to posting to
