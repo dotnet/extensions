@@ -5,6 +5,7 @@ using System;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Newtonsoft.Json.Linq;
 
@@ -53,9 +54,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return request;
             }
 
+            var serverContentType = resolveData.LanguageServerKind.ToContentType();
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionItem, CompletionItem>(
                 Methods.TextDocumentCompletionResolveName,
-                resolveData.LanguageServerKind,
+                serverContentType,
                 request,
                 cancellationToken).ConfigureAwait(false);
 

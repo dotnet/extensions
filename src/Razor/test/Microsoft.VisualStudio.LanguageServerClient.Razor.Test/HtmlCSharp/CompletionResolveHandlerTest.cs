@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Moq;
 using Xunit;
@@ -31,11 +32,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionItem, CompletionItem>(It.IsAny<string>(), LanguageServerKind.CSharp, It.IsAny<CompletionItem>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, CompletionItem, CancellationToken>((method, serverKind, completionItem, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionItem, CompletionItem>(It.IsAny<string>(), RazorLSPConstants.CSharpContentTypeName, It.IsAny<CompletionItem>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, CompletionItem, CancellationToken>((method, serverContentType, completionItem, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionResolveName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     Assert.Same(originalData, completionItem.Data);
                     called = true;
                 })

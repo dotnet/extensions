@@ -51,7 +51,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var languageResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(
                 LanguageServerConstants.RazorLanguageQueryEndpoint,
-                LanguageServerKind.Razor,
+                RazorLSPConstants.RazorLSPContentTypeName,
                 languageQueryParams,
                 cancellationToken).ConfigureAwait(false);
 

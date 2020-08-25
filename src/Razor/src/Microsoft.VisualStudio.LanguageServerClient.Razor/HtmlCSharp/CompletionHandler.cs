@@ -126,7 +126,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
                     Methods.TextDocumentCompletionName,
-                    serverKind,
+                    serverKind.ToContentType(),
                     completionParams,
                     cancellationToken).ConfigureAwait(false);
             }
@@ -189,7 +189,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
                 Methods.TextDocumentCompletionName,
-                LanguageServerKind.CSharp,
+                RazorLSPConstants.CSharpContentTypeName,
                 provisionalCompletionParams,
                 cancellationToken).ConfigureAwait(true);
 

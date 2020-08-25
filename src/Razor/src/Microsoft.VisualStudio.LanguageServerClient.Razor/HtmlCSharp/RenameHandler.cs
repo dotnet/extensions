@@ -78,7 +78,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serverKind = LanguageServerKind.CSharp;
             var renameParams = new RenameParams()
             {
                 Position = projectionResult.Position,
@@ -91,7 +90,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<RenameParams, WorkspaceEdit>(
                 Methods.TextDocumentRenameName,
-                serverKind,
+                RazorLSPConstants.CSharpContentTypeName,
                 renameParams,
                 cancellationToken).ConfigureAwait(false);
 

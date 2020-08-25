@@ -12,8 +12,8 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Client;
+using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
-using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -273,7 +273,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
                 await _requestInvoker.ReinvokeRequestOnServerAsync<MonitorProjectConfigurationFilePathParams, object>(
                     LanguageServerConstants.RazorMonitorProjectConfigurationFilePathEndpoint,
-                    LanguageServerKind.Razor,
+                    RazorLSPConstants.RazorLSPContentTypeName,
                     parameter,
                     CancellationToken.None);
             }

@@ -75,7 +75,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
+            var contentType = projectionResult.LanguageKind.ToContainedLanguageContentType();
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -90,7 +90,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Hover>(
                 Methods.TextDocumentHoverName,
-                serverKind,
+                contentType,
                 textDocumentPositionParams,
                 cancellationToken).ConfigureAwait(false);
 

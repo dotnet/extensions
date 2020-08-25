@@ -105,11 +105,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, SignatureHelp>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, definitionParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, SignatureHelp>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, definitionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentSignatureHelpName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
                 .Returns(Task.FromResult(expectedResult));
@@ -145,7 +145,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
             var requestInvoker = Mock.Of<LSPRequestInvoker>(i =>
-                    i.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, SignatureHelp>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()) == Task.FromResult<SignatureHelp>(null));
+                    i.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, SignatureHelp>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()) == Task.FromResult<SignatureHelp>(null));
 
             var projectionResult = new ProjectionResult()
             {

@@ -191,11 +191,11 @@ public string _foo;
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(m => m.Snapshot == snapshot));
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnTypeFormattingParams, TextEdit[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<DocumentOnTypeFormattingParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, DocumentOnTypeFormattingParams, CancellationToken>((method, serverKind, onTypeFormattingParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnTypeFormattingParams, TextEdit[]>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnTypeFormattingParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, DocumentOnTypeFormattingParams, CancellationToken>((method, serverContentType, onTypeFormattingParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentOnTypeFormattingName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
                 .Returns(Task.FromResult(new[] { expectedEdit }));
@@ -239,11 +239,11 @@ public string _foo;
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(m => m.Snapshot == snapshot));
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnTypeFormattingParams, TextEdit[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<DocumentOnTypeFormattingParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, DocumentOnTypeFormattingParams, CancellationToken>((method, serverKind, onTypeFormattingParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnTypeFormattingParams, TextEdit[]>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnTypeFormattingParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, DocumentOnTypeFormattingParams, CancellationToken>((method, serverContentType, onTypeFormattingParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentOnTypeFormattingName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     invokedCSharpServer = true;
                 })
                 .Returns(Task.FromResult(new[] { expectedEdit }));

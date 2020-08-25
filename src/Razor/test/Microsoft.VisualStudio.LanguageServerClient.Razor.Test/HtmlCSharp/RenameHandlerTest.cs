@@ -102,10 +102,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = GetRequestInvoker<RenameParams, WorkspaceEdit>(
                 new WorkspaceEdit(),
-                (method, serverKind, renameParams, ct) =>
+                (method, serverContentType, renameParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentRenameName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 });
 
@@ -138,11 +138,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return projectionProvider.Object;
         }
 
-        private LSPRequestInvoker GetRequestInvoker<TParams, TResult>(TResult expectedResponse, Action<string, LanguageServerKind, TParams, CancellationToken> callback)
+        private LSPRequestInvoker GetRequestInvoker<TParams, TResult>(TResult expectedResponse, Action<string, string, TParams, CancellationToken> callback)
         {
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<TParams, TResult>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<TParams, TResult>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TParams>(), It.IsAny<CancellationToken>()))
                 .Callback(callback)
                 .Returns(Task.FromResult(expectedResponse));
 

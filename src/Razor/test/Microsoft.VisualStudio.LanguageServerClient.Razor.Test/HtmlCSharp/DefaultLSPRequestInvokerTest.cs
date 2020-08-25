@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Xunit;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
@@ -24,7 +25,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, LanguageServerKind.Razor, new object(), CancellationToken.None).ConfigureAwait(false);
+            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.RazorLSPContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -45,7 +46,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, LanguageServerKind.Html, new object(), CancellationToken.None).ConfigureAwait(false);
+            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.HtmlLSPContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -66,7 +67,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, LanguageServerKind.CSharp, new object(), CancellationToken.None).ConfigureAwait(false);
+            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.CSharpContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -87,7 +88,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, LanguageServerKind.Razor, new object(), CancellationToken.None).ConfigureAwait(false);
+            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.RazorLSPContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -108,7 +109,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, LanguageServerKind.Html, new object(), CancellationToken.None).ConfigureAwait(false);
+            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.HtmlLSPContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);
@@ -129,7 +130,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new DefaultLSPRequestInvoker(broker);
 
             // Act
-            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, LanguageServerKind.CSharp, new object(), CancellationToken.None).ConfigureAwait(false);
+            await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.CSharpContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
             Assert.True(called);

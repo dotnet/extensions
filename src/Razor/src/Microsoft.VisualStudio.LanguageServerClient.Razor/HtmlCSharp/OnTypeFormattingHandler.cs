@@ -102,10 +102,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serverKind = triggerCharacterKind.Value == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
+            var contentType = triggerCharacterKind.Value.ToContainedLanguageContentType();
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentOnTypeFormattingParams, TextEdit[]>(
                 Methods.TextDocumentOnTypeFormattingName,
-                serverKind,
+                contentType,
                 formattingParams,
                 cancellationToken).ConfigureAwait(false);
 

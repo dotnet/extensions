@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json.Linq;
 
@@ -135,18 +134,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return response;
             }
 
-            var serverKind = default(LanguageServerKind);
+            var serverContentType = default(string);
             var projectedUri = default(Uri);
             if (request.Kind == RazorLanguageKind.CSharp &&
                 documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDocument))
             {
-                serverKind = LanguageServerKind.CSharp;
+                serverContentType = RazorLSPConstants.CSharpContentTypeName;
                 projectedUri = csharpDocument.Uri;
             }
             else if (request.Kind == RazorLanguageKind.Html &&
                 documentSnapshot.TryGetVirtualDocument<HtmlVirtualDocumentSnapshot>(out var htmlDocument))
             {
-                serverKind = LanguageServerKind.Html;
+                serverContentType = RazorLSPConstants.HtmlLSPContentTypeName;
                 projectedUri = htmlDocument.Uri;
             }
             else
@@ -164,7 +163,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             response.Edits = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentRangeFormattingParams, TextEdit[]>(
                 Methods.TextDocumentRangeFormattingName,
-                serverKind,
+                serverContentType,
                 formattingParams,
                 cancellationToken).ConfigureAwait(false);
 

@@ -111,11 +111,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var csharpLocation = GetLocation(100, 100, 100, 100, virtualCSharpUri);
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, implementationParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, implementationParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentImplementationName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     invokedLSPRequest = true;
                 })
                 .Returns(Task.FromResult(new[] { csharpLocation }));

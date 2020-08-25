@@ -160,7 +160,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             };
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentRangeFormattingParams, TextEdit[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<DocumentRangeFormattingParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentRangeFormattingParams, TextEdit[]>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentRangeFormattingParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new[] { expectedEdit }));
 
             var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object);

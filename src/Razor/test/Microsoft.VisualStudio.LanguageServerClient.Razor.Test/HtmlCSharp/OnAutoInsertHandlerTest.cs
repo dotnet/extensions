@@ -34,8 +34,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var invokedServer = false;
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, DocumentOnAutoInsertParams, CancellationToken>((method, serverKind, formattingParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
                 {
                     invokedServer = true;
                 })
@@ -73,8 +73,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var invokedServer = false;
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, DocumentOnAutoInsertParams, CancellationToken>((method, serverKind, formattingParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
                 {
                     invokedServer = true;
                 })
@@ -113,8 +113,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var invokedServer = false;
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, DocumentOnAutoInsertParams, CancellationToken>((method, serverKind, formattingParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
                 {
                     invokedServer = true;
                 })
@@ -159,8 +159,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var mappedTextEdits = false;
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(MSLSPMethods.OnAutoInsertName, It.IsAny<LanguageServerKind>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, DocumentOnAutoInsertParams, CancellationToken>((method, serverKind, formattingParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(MSLSPMethods.OnAutoInsertName, It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
                 {
                     invokedServer = true;
                 })

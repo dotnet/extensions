@@ -182,11 +182,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, VSReferenceItem[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, definitionParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, VSReferenceItem[]>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, definitionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentReferencesName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     lspFarEndpointCalled = true;
 
                     _ = lspProgressListener.ProcessProgressNotificationAsync(Methods.ProgressNotificationName, parameterToken);
@@ -680,11 +680,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, VSReferenceItem[]>(It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, definitionParams, ct) =>
+                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, VSReferenceItem[]>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, definitionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentReferencesName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     lspFarEndpointCalled = true;
 
                     for (var i = 0; i < NUM_BATCHES; ++i)
@@ -806,11 +806,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             requestInvoker.Setup(i => i.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, VSReferenceItem[]>(
-                It.IsAny<string>(), It.IsAny<LanguageServerKind>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, LanguageServerKind, TextDocumentPositionParams, CancellationToken>((method, serverKind, definitionParams, ct) =>
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, definitionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentReferencesName, method);
-                    Assert.Equal(LanguageServerKind.CSharp, serverKind);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
 
                     _ = lspProgressListener.ProcessProgressNotificationAsync(Methods.ProgressNotificationName, parameterToken);
                 })

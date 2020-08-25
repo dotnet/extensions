@@ -83,10 +83,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 TextDocument = new TextDocumentIdentifier() { Uri = projectionResult.Uri }
             };
 
-            var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
+            var contentType = projectionResult.LanguageKind.ToContainedLanguageContentType();
             var response = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(
                 MSLSPMethods.OnAutoInsertName,
-                serverKind,
+                contentType,
                 formattingParams,
                 cancellationToken).ConfigureAwait(false);
 

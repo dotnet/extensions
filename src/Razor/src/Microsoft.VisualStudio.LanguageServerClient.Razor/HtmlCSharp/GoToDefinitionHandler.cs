@@ -77,7 +77,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serverKind = LanguageServerKind.CSharp;
             var textDocumentPositionParams = new TextDocumentPositionParams()
             {
                 Position = projectionResult.Position,
@@ -89,7 +88,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(
                 Methods.TextDocumentDefinitionName,
-                serverKind,
+                RazorLSPConstants.CSharpContentTypeName,
                 textDocumentPositionParams,
                 cancellationToken).ConfigureAwait(false);
 

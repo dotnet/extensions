@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
@@ -10,7 +12,7 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
+namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 {
     [Shared]
     [Export(typeof(LSPRequestInvoker))]
@@ -40,26 +42,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             _serializer.Converters.Add(new VSExtensionConverter<CompletionList, VSCompletionList>());
         }
 
-        public override Task<TOut> ReinvokeRequestOnServerAsync<TIn, TOut>(string method, LanguageServerKind serverKind, TIn parameters, CancellationToken cancellationToken)
+        public override Task<TOut> ReinvokeRequestOnServerAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
         {
-            return RequestServerCoreAsync<TIn, TOut>(method, serverKind, parameters, cancellationToken);
+            return RequestServerCoreAsync<TIn, TOut>(method, contentType, parameters, cancellationToken);
         }
 
-        private async Task<TOut> RequestServerCoreAsync<TIn, TOut>(string method, LanguageServerKind serverKind, TIn parameters, CancellationToken cancellationToken)
+        public override Task<IEnumerable<TOut>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
+        {
+            return RequestMultipleServerCoreAsync<TIn, TOut>(method, contentType, parameters, cancellationToken);
+        }
+
+        private async Task<TOut> RequestServerCoreAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(method))
             {
                 throw new ArgumentException("message", nameof(method));
-            }
-
-            var contentType = RazorLSPConstants.RazorLSPContentTypeName;
-            if (serverKind == LanguageServerKind.CSharp)
-            {
-                contentType = RazorLSPConstants.CSharpContentTypeName;
-            }
-            else if (serverKind == LanguageServerKind.Html)
-            {
-                contentType = RazorLSPConstants.HtmlLSPContentTypeName;
             }
 
             var serializedParams = JToken.FromObject(parameters);
@@ -73,6 +70,28 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var result = resultToken != null ? resultToken.ToObject<TOut>(_serializer) : default;
             return result;
+        }
+
+        private async Task<IEnumerable<TOut>> RequestMultipleServerCoreAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(method))
+            {
+                throw new ArgumentException("message", nameof(method));
+            }
+
+            var serializedParams = JToken.FromObject(parameters);
+
+            var clientAndResultTokenPairs = await _languageServiceBroker.RequestMultipleAsync(
+                new[] { contentType },
+                token => true,
+                method,
+                serializedParams,
+                cancellationToken).ConfigureAwait(false);
+
+            // a little ugly - tuple deconstruction in lambda arguments doesn't work - https://github.com/dotnet/csharplang/issues/258
+            var results = clientAndResultTokenPairs.Select((clientAndResultToken) => clientAndResultToken.Item2 != null ? clientAndResultToken.Item2.ToObject<TOut>(_serializer) : default);
+
+            return results;
         }
     }
 }

@@ -129,7 +129,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<SerializableReferenceParams, VSReferenceItem[]>(
                 Methods.TextDocumentReferencesName,
-                LanguageServerKind.CSharp,
+                RazorLSPConstants.CSharpContentTypeName,
                 referenceParams,
                 cancellationToken).ConfigureAwait(false);
 
