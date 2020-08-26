@@ -100,28 +100,20 @@
     <MicrosoftServiceHubFrameworkPackageVersion>2.6.44</MicrosoftServiceHubFrameworkPackageVersion>
     <MicrosoftVisualStudioCoreUtilityPackageVersion>16.7.66</MicrosoftVisualStudioCoreUtilityPackageVersion>
     <MicrosoftVisualStudioComponentModelHostPackageVersion>16.0.467</MicrosoftVisualStudioComponentModelHostPackageVersion>
-    <MicrosoftVisualStudioImageCatalogPackageVersion>16.6.30107.105</MicrosoftVisualStudioImageCatalogPackageVersion>
+    <MicrosoftVisualStudioImageCatalogPackageVersion>16.7.30204.194-pre</MicrosoftVisualStudioImageCatalogPackageVersion>
     <MicrosoftVisualStudioEditorPackageVersion>16.4.280</MicrosoftVisualStudioEditorPackageVersion>
     <MicrosoftVisualStudioLanguagePackageVersion>16.6.255</MicrosoftVisualStudioLanguagePackageVersion>
     <MicrosoftVisualStudioLanguageIntellisensePackageVersion>16.6.255</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
-    <MicrosoftVisualStudioLanguageServerClientPackageVersion>16.7.65</MicrosoftVisualStudioLanguageServerClientPackageVersion>
-    <MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>16.7.33</MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>
-    <MicrosoftVisualStudioLanguageServerProtocolPackageVersion>$(MicrosoftVisualStudioLanguageServerClientPackageVersion)</MicrosoftVisualStudioLanguageServerProtocolPackageVersion>
-    <MicrosoftVisualStudioLanguageServerProtocolExtensionsPackageVersion>$(MicrosoftVisualStudioLanguageServerClientPackageVersion)</MicrosoftVisualStudioLanguageServerProtocolExtensionsPackageVersion>
-    <MicrosoftVisualStudioPackageLanguageService150PackageVersion>16.6.30107.105</MicrosoftVisualStudioPackageLanguageService150PackageVersion>
+    <MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>16.7.65</MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>
+    <MicrosoftVisualStudioPackageLanguageService150PackageVersion>16.7.30204.53-pre</MicrosoftVisualStudioPackageLanguageService150PackageVersion>
     <MicrosoftVisualStudioLiveSharePackageVersion>0.3.1074</MicrosoftVisualStudioLiveSharePackageVersion>
     <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6071</MicrosoftVisualStudioOLEInteropPackageVersion>
     <MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>3.0.0-beta1-63607-01</MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>
     <MicrosoftVisualStudioProjectSystemSDKPackageVersion>16.0.201-pre-g7d366164d0</MicrosoftVisualStudioProjectSystemSDKPackageVersion>
     <MicrosoftVisualStudioSDKAnalyzersVersion>16.3.14</MicrosoftVisualStudioSDKAnalyzersVersion>
     <MicrosoftVisualStudioShellInterop163DesignTimePackageVersion>16.3.29316.127</MicrosoftVisualStudioShellInterop163DesignTimePackageVersion>
-    <MicrosoftVisualStudioShell150PackageVersion>16.6.30107.105</MicrosoftVisualStudioShell150PackageVersion>
-    <MicrosoftVisualStudioShellInterop100PackageVersion>10.0.30320</MicrosoftVisualStudioShellInterop100PackageVersion>
-    <MicrosoftVisualStudioShellInterop110PackageVersion>11.0.61031</MicrosoftVisualStudioShellInterop110PackageVersion>
-    <MicrosoftVisualStudioShellInterop120PackageVersion>12.0.30111</MicrosoftVisualStudioShellInterop120PackageVersion>
-    <MicrosoftVisualStudioShellInterop80PackageVersion>8.0.50728</MicrosoftVisualStudioShellInterop80PackageVersion>
-    <MicrosoftVisualStudioShellInterop90PackageVersion>9.0.30730</MicrosoftVisualStudioShellInterop90PackageVersion>
-    <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6072</MicrosoftVisualStudioShellInteropPackageVersion>
+    <MicrosoftVisualStudioShell150PackageVersion>16.7.30204.53-pre</MicrosoftVisualStudioShell150PackageVersion>
+    <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6073</MicrosoftVisualStudioShellInteropPackageVersion>
     <MicrosoftVisualStudioTextDataPackageVersion>16.6.255</MicrosoftVisualStudioTextDataPackageVersion>
     <MicrosoftVisualStudioTextUIPackageVersion>16.6.255</MicrosoftVisualStudioTextUIPackageVersion>
     <MicrosoftVisualStudioThreadingPackageVersion>16.7.29-alpha</MicrosoftVisualStudioThreadingPackageVersion>
@@ -136,7 +128,7 @@
     <SystemCompositionPackageVersion>1.0.31.0</SystemCompositionPackageVersion>
     <VS_NewtonsoftJsonPackageVersion>12.0.2</VS_NewtonsoftJsonPackageVersion>
     <VSMAC_NewtonsoftJsonPackageVersion>12.0.2</VSMAC_NewtonsoftJsonPackageVersion>
-    <StreamJsonRpcPackageVersion>2.4.34</StreamJsonRpcPackageVersion>
+    <StreamJsonRpcPackageVersion>2.4.48</StreamJsonRpcPackageVersion>
     <Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.7.0-4.20351.7</Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion>3.0.0</Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion>
     <Tooling_MicrosoftCodeAnalysisExternalAccessRazorPackageVersion>3.7.0-4.20351.7</Tooling_MicrosoftCodeAnalysisExternalAccessRazorPackageVersion>

@@ -67,6 +67,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public IEnumerable<Lazy<ILanguageClient, IContentTypeMetadata>> LanguageClients => throw new NotImplementedException();
 
+        public IRequestBroker<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem> OnAutoInsertBroker => throw new NotImplementedException();
+
+        public IRequestBroker<CodeAction, CodeAction> CodeActionsResolveBroker => throw new NotImplementedException();
+
+        public IStreamingRequestBroker<SemanticTokensParams, SumType<ResolvedSemanticToken[], ResolvedSemanticTokenEdits>> SemanticTokensBroker => throw new NotImplementedException();
+
         public TestLanguageServiceBroker(Action<string, string> callback)
         {
             _callback = callback;
