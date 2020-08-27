@@ -50,14 +50,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 result.Value.Content.GetSubText(result.Value.MappedSpan).ToString(),
                 ignoreLineEndingDifferences: true);
 
-            Assert.Equal(@"    var foo = ""Hello, World!"";", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
+            Assert.Equal(@"var foo = ""Hello, World!"";", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
             Assert.Collection(
                 result.Value.ClassifiedSpans,
-                c =>
-                {
-                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
-                    Assert.Equal("    ", result.Value.Content.GetSubText(c.TextSpan).ToString());
-                },
                 c =>
                 {
                     Assert.Equal(ClassificationTypeNames.Keyword, c.ClassificationType);
@@ -139,7 +134,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 result.Value.Content.GetSubText(result.Value.MappedSpan).ToString(),
                 ignoreLineEndingDifferences: true);
 
-            Assert.Equal(@"  <body>@foo</body>", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
+            Assert.Equal(@"<body>@foo</body>", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -182,7 +177,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 ignoreLineEndingDifferences: true);
 
             // Verifies that the right part of the primary document will be highlighted.
-            Assert.Equal(@"  <div>@(3 + 4)</div><div>@(foo + foo)</div>", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
+            Assert.Equal(@"<div>@(3 + 4)</div><div>@(foo + foo)</div>", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]

@@ -35,18 +35,26 @@ namespace Microsoft.CodeAnalysis.Razor
             var startLine = text.Lines.GetLineFromPosition(span.Start);
             var endLine = text.Lines.GetLineFromPosition(span.End);
 
-            // If we're showing a single line then this will do. Otherwise expand the range by 3 in
-            // each direction (if possible).
             if (mode == ExcerptModeInternal.Tooltip)
             {
+                // Expand the range by 3 in each direction (if possible).
                 var startIndex = Math.Max(startLine.LineNumber - 3, 0);
                 startLine = text.Lines[startIndex];
 
                 var endIndex = Math.Min(endLine.LineNumber + 3, text.Lines.Count - 1);
                 endLine = text.Lines[endIndex];
+                return CreateTextSpan(startLine, endLine);
+            }
+            else
+            {
+                // Trim leading whitespace in a single line excerpt
+                var excerptSpan = CreateTextSpan(startLine, endLine);
+                var trimmedExcerptSpan = excerptSpan.TrimLeadingWhitespace(text);
+                return trimmedExcerptSpan;
             }
 
-            return new TextSpan(startLine.Start, endLine.End - startLine.Start);
+            static TextSpan CreateTextSpan(TextLine startLine, TextLine endLine) =>
+                new TextSpan(startLine.Start, endLine.End - startLine.Start);
         }
 
         protected SourceText GetTranslatedExcerptText(
