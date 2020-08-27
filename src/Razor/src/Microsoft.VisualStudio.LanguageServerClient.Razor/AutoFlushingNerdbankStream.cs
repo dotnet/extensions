@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,18 +43,44 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public override async Task FlushAsync(CancellationToken cancellationToken)
         {
-            await _inner.FlushAsync(cancellationToken).ConfigureAwait(false);
+            // Try-catching temporarily in order to prevent VS from crashing in unexpected scenarios. Will be removed once we are able to upgrade our O# dependency.
+
+            try
+            {
+                await _inner.FlushAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                return;
+            }
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return await _inner.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+            // Try-catching temporarily in order to prevent VS from crashing in unexpected scenarios. Will be removed once we are able to upgrade our O# dependency.
+
+            try
+            {
+                return await _inner.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            await _inner.WriteAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
-            await FlushAsync(cancellationToken).ConfigureAwait(false);
+            // Try-catching temporarily in order to prevent VS from crashing in unexpected scenarios. Will be removed once we are able to upgrade our O# dependency.
+
+            try
+            {
+                await _inner.WriteAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+                await FlushAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+            }
         }
 
         protected override void Dispose(bool disposing)
