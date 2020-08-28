@@ -7,7 +7,12 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
     {
         public abstract bool IsLSPEditorAvailable(string documentMoniker, object hierarchy);
 
+        /// <summary>
+        /// A remote client is a LiveShare guest or a Codespaces instance
+        /// </summary>
         public abstract bool IsRemoteClient();
+
+        public abstract bool IsLiveShareHost();
 
         public abstract bool IsLSPEditorFeatureEnabled();
     }

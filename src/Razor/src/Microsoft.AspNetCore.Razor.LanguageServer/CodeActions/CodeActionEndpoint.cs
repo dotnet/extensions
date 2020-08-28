@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly ILanguageServer _languageServer;
+        private readonly LanguageServerFeatureOptions _languageServerFeatureOptions;
 
         private CodeActionCapability _capability;
 
@@ -34,12 +36,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             IEnumerable<RazorCodeActionProvider> providers,
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
-            ILanguageServer languageServer)
+            ILanguageServer languageServer,
+            LanguageServerFeatureOptions languageServerFeatureOptions)
         {
             _providers = providers ?? throw new ArgumentNullException(nameof(providers));
             _foregroundDispatcher = foregroundDispatcher ?? throw new ArgumentNullException(nameof(foregroundDispatcher));
             _documentResolver = documentResolver ?? throw new ArgumentNullException(nameof(documentResolver));
             _languageServer = languageServer ?? throw new ArgumentNullException(nameof(languageServer));
+            _languageServerFeatureOptions = languageServerFeatureOptions ?? throw new ArgumentNullException(nameof(languageServerFeatureOptions));
         }
 
         public CodeActionRegistrationOptions GetRegistrationOptions()
@@ -115,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var hostDocumentIndex = sourceText.Lines.GetPosition(linePosition);
             var location = new SourceLocation(hostDocumentIndex, (int)request.Range.Start.Line, (int)request.Range.Start.Character);
 
-            var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location);
+            var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, _languageServerFeatureOptions.SupportsFileManipulation);
             var tasks = new List<Task<RazorCodeAction[]>>();
 
             if (cancellationToken.IsCancellationRequested)

@@ -81,14 +81,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return true;
         }
 
-        public override bool IsRemoteClient()
-        {
-            if (IsVSRemoteClient() || IsLiveShareGuest())
-            {
-                return true;
-            }
+        public override bool IsRemoteClient() => IsVSRemoteClient() || IsLiveShareGuest();
 
-            return false;
+        public override bool IsLiveShareHost()
+        {
+            var context = UIContext.FromUIContextGuid(LiveShareHostUIContextGuid);
+            return context.IsActive;
         }
 
         public override bool IsLSPEditorFeatureEnabled()
@@ -221,13 +219,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private protected virtual bool IsLiveShareGuest()
         {
             var context = UIContext.FromUIContextGuid(LiveShareGuestUIContextGuid);
-            return context.IsActive;
-        }
-
-        // Private protected virtual for testing
-        private protected virtual bool IsLiveShareHost()
-        {
-            var context = UIContext.FromUIContextGuid(LiveShareHostUIContextGuid);
             return context.IsActive;
         }
     }

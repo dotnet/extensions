@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         }
 
         [Fact]
-        public async Task Handle_ExistingComponent()
+        public async Task Handle_ExistingComponent_SupportsFileCreationTrue_ReturnsResults()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             };
 
             var location = new SourceLocation(1, -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(contents.IndexOf("Component", StringComparison.Ordinal), 9));
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(contents.IndexOf("Component", StringComparison.Ordinal), 9), supportsFileCreation: true);
 
             var provider = new ComponentAccessibilityCodeActionProvider(new DefaultTagHelperFactsService(), FilePathNormalizer);
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         }
 
         [Fact]
-        public async Task Handle_NewComponent()
+        public async Task Handle_NewComponent_SupportsFileCreationTrue_ReturnsResult()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             };
 
             var location = new SourceLocation(1, -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(contents.IndexOf("Component", StringComparison.Ordinal), 9));
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(contents.IndexOf("Component", StringComparison.Ordinal), 9), supportsFileCreation: true);
 
             var provider = new ComponentAccessibilityCodeActionProvider(new DefaultTagHelperFactsService(), FilePathNormalizer);
 
@@ -136,7 +136,68 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             Assert.NotNull(command.Data);
         }
 
-        private static RazorCodeActionContext CreateRazorCodeActionContext(CodeActionParams request, SourceLocation location, string filePath, string text, SourceSpan componentSourceSpan)
+        [Fact]
+        public async Task Handle_NewComponent_SupportsFileCreationFalse_ReturnsEmpty()
+        {
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "<NewComponent></NewComponent>";
+            var request = new CodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(new Position(0, 0), new Position(0, 0)),
+            };
+
+            var location = new SourceLocation(1, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(contents.IndexOf("Component", StringComparison.Ordinal), 9), supportsFileCreation: false);
+
+            var provider = new ComponentAccessibilityCodeActionProvider(new DefaultTagHelperFactsService(), FilePathNormalizer);
+
+            // Act
+            var commandOrCodeActionContainer = await provider.ProvideAsync(context, default);
+
+            // Assert
+            Assert.Empty(commandOrCodeActionContainer);
+        }
+
+
+        [Fact]
+        public async Task Handle_ExistingComponent_SupportsFileCreationFalse_ReturnsResults()
+        {
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "<Component></Component>";
+            var request = new CodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(new Position(0, 0), new Position(0, 0)),
+            };
+
+            var location = new SourceLocation(1, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(contents.IndexOf("Component", StringComparison.Ordinal), 9), supportsFileCreation: false);
+
+            var provider = new ComponentAccessibilityCodeActionProvider(new DefaultTagHelperFactsService(), FilePathNormalizer);
+
+            // Act
+            var commandOrCodeActionContainer = await provider.ProvideAsync(context, default);
+
+            // Assert
+            Assert.Collection(commandOrCodeActionContainer,
+                e =>
+                {
+                    Assert.Equal("@using Fully.Qualified", e.Title);
+                    Assert.NotNull(e.Data);
+                    Assert.Null(e.Edit);
+                },
+                e =>
+                {
+                    Assert.Equal("Fully.Qualified.Component", e.Title);
+                    Assert.NotNull(e.Edit);
+                    Assert.Null(e.Data);
+                });
+        }
+
+        private static RazorCodeActionContext CreateRazorCodeActionContext(CodeActionParams request, SourceLocation location, string filePath, string text, SourceSpan componentSourceSpan, bool supportsFileCreation = true)
         {
             var shortComponent = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "Fully.Qualified.Component", "TestAssembly");
             shortComponent.TagMatchingRule(rule => rule.TagName = "Component");
@@ -162,7 +223,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 document.GetTextAsync() == Task.FromResult(codeDocument.GetSourceText()) &&
                 document.Project.TagHelpers == tagHelpers);
 
-            return new RazorCodeActionContext(request, documentSnapshot, codeDocument, location);
+            return new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, supportsFileCreation);
         }
     }
 }

@@ -29,6 +29,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return EmptyResult;
             }
 
+            if (!context.SupportsFileCreation)
+            {
+                return EmptyResult;
+            }
+
             if (!FileKinds.IsComponent(context.CodeDocument.GetFileKind()))
             {
                 return EmptyResult;

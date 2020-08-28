@@ -71,6 +71,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         private void AddCreateComponentFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<RazorCodeAction> container)
         {
+            if (context is null)
+            {
+                return;
+            }
+
+            if (!context.SupportsFileCreation)
+            {
+                return;
+            }
+
             var path = context.Request.TextDocument.Uri.GetAbsoluteOrUNCPath();
             path = _filePathNormalizer.Normalize(path);
             var newComponentPath = Path.Combine(Path.GetDirectoryName(path), $"{startTag.Name.Content}.razor");

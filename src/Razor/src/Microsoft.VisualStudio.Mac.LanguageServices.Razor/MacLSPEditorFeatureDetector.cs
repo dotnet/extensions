@@ -14,6 +14,8 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 
         public override bool IsLSPEditorFeatureEnabled() => false;
 
+        public override bool IsLiveShareHost() => false;
+
         public override bool IsRemoteClient() => false;
     }
 }

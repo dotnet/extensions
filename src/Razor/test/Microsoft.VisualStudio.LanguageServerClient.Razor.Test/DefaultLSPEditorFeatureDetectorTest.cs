@@ -234,13 +234,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             public bool ProjectSupportsRazorLSPEditorValue { get; set; }
 
+            public override bool IsLiveShareHost() => IsLiveShareHostValue;
+
             private protected override bool EnvironmentFeatureEnabled() => EnvironmentFeatureEnabledValue;
 
             private protected override bool IsFeatureFlagEnabledCached() => IsFeatureFlagEnabledValue;
 
             private protected override bool IsLiveShareGuest() => IsLiveShareGuestValue;
-
-            private protected override bool IsLiveShareHost() => IsLiveShareHostValue;
 
             private protected override bool IsVSRemoteClient() => IsVSRemoteClientValue;
 

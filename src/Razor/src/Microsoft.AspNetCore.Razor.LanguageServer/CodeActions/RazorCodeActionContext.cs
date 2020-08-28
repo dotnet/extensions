@@ -10,17 +10,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal sealed class RazorCodeActionContext
     {
-        public RazorCodeActionContext(CodeActionParams request, DocumentSnapshot documentSnapshot, RazorCodeDocument codeDocument, SourceLocation location)
+        public RazorCodeActionContext(
+            CodeActionParams request,
+            DocumentSnapshot documentSnapshot,
+            RazorCodeDocument codeDocument,
+            SourceLocation location,
+            bool supportsFileCreation)
         {
             Request = request ?? throw new ArgumentNullException(nameof(request));
             DocumentSnapshot = documentSnapshot ?? throw new ArgumentNullException(nameof(documentSnapshot));
             CodeDocument = codeDocument ?? throw new ArgumentNullException(nameof(codeDocument));
             Location = location;
+            SupportsFileCreation = supportsFileCreation;
         }
 
         public CodeActionParams Request { get; }
         public DocumentSnapshot DocumentSnapshot { get; }
         public RazorCodeDocument CodeDocument { get; }
-        public SourceLocation Location { get;  }
+        public SourceLocation Location { get; }
+        public bool SupportsFileCreation { get; }
     }
 }

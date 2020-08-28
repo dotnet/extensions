@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         }
 
         [Fact]
-        public async Task Handle_InCodeDirectiveBlock()
+        public async Task Handle_InCodeDirectiveBlock_ReturnsNull()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         }
 
         [Fact]
-        public async Task Handle_InCodeDirectiveMalformed()
+        public async Task Handle_InCodeDirectiveMalformed_ReturnsNull()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         }
 
         [Fact]
-        public async Task Handle_InCodeDirectiveWithMarkup()
+        public async Task Handle_InCodeDirectiveWithMarkup_ReturnsNull()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         }
 
         [Fact]
-        public async Task Handle_InCodeDirective()
+        public async Task Handle_InCodeDirective_SupportsFileCreationTrue_ReturnsResult()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             };
 
             var location = new SourceLocation(contents.IndexOf("code", StringComparison.Ordinal), -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, supportsFileCreation: true);
 
             var provider = new ExtractToCodeBehindCodeActionProvider();
 
@@ -172,7 +172,31 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         }
 
         [Fact]
-        public async Task Handle_InFunctionsDirective()
+        public async Task Handle_InCodeDirective_SupportsFileCreationFalse_ReturnsNull()
+        {
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "@page \"/test\"\n@code { private var x = 1; }";
+            var request = new CodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(),
+            };
+
+            var location = new SourceLocation(contents.IndexOf("code", StringComparison.Ordinal), -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, supportsFileCreation: false);
+
+            var provider = new ExtractToCodeBehindCodeActionProvider();
+
+            // Act
+            var commandOrCodeActionContainer = await provider.ProvideAsync(context, default);
+
+            // Assert
+            Assert.Null(commandOrCodeActionContainer);
+        }
+
+        [Fact]
+        public async Task Handle_InFunctionsDirective_SupportsFileCreationTrue_ReturnsResult()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -201,7 +225,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             Assert.Equal(47, actionParams.RemoveEnd);
         }
 
-        private static RazorCodeActionContext CreateRazorCodeActionContext(CodeActionParams request, SourceLocation location, string filePath, string text)
+        private static RazorCodeActionContext CreateRazorCodeActionContext(CodeActionParams request, SourceLocation location, string filePath, string text, bool supportsFileCreation = true)
         {
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             codeDocument.SetFileKind(FileKinds.Component);
@@ -219,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
                 document.GetTextAsync() == Task.FromResult(codeDocument.GetSourceText()));
 
-            return new RazorCodeActionContext(request, documentSnapshot, codeDocument, location);
+            return new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, supportsFileCreation);
         }
     }
 }
