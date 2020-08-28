@@ -16,12 +16,14 @@ namespace Microsoft.CodeAnalysis.Razor
 
         protected IDictionary<TKey, CacheEntry> _dict;
 
+        private readonly object _compactLock;
         private readonly int _sizeLimit;
 
         public MemoryCache(int sizeLimit = DefaultSizeLimit)
         {
             _sizeLimit = sizeLimit;
             _dict = new ConcurrentDictionary<TKey, CacheEntry>(concurrencyLevel: 2, capacity: _sizeLimit);
+            _compactLock = new object();
         }
 
         public bool TryGetValue(TKey key, out TValue result)
@@ -43,9 +45,12 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public void Set(TKey key, TValue value)
         {
-            if (_dict.Count >= _sizeLimit)
+            lock (_compactLock)
             {
-                Compact();
+                if (_dict.Count >= _sizeLimit)
+                {
+                    Compact();
+                }
             }
 
             _dict[key] = new CacheEntry

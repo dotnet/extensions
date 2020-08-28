@@ -3,13 +3,37 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.Test
 {
     public class MemoryCacheTest
     {
+        [Fact]
+        public async Task ConcurrentSets_DoesNotThrow()
+        {
+            // Arrange
+            var cache = new TestMemoryCache();
+            var entries = Enumerable.Range(0, 500);
+            var repeatCount = 4;
+
+            // 1111 2222 3333 4444 ...
+            var repeatedEntries = entries.SelectMany(entry => Enumerable.Repeat(entry, repeatCount));
+            var tasks = repeatedEntries.Select(async entry =>
+            {
+                // 2 is an arbitrarily low number, we're just trying to emulate concurrency
+                await Task.Delay(2);
+                cache.Set(entry.ToString(CultureInfo.InvariantCulture), Array.Empty<uint>());
+            });
+
+            // Act & Assert
+            await Task.WhenAll(tasks);
+        }
+
         [Fact]
         public void LastAccessIsUpdated()
         {
