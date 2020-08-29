@@ -122,16 +122,12 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             token.ThrowIfCancellationRequested();
 
-<<<<<<< Updated upstream
-            await ConnectAsync(token).ConfigureAwait(false);
-
-=======
->>>>>>> Stashed changes
             var creationTime = DateTimeOffset.UtcNow;
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-            await (await  _getConnectionAsync(token)).GetDatabase().ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
+            var connection = await _getConnectionAsync(token).ConfigureAwait(false);
+            await connection.GetDatabase().ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -163,70 +159,6 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             await GetAndRefreshAsync(key, getData: false, token: token).ConfigureAwait(false);
         }
 
-<<<<<<< Updated upstream
-        private void Connect()
-        {
-            if (_cache != null)
-            {
-                return;
-            }
-
-            _connectionLock.Wait();
-            try
-            {
-                if (_cache == null)
-                {
-                    if (_options.ConfigurationOptions != null)
-                    {
-                        _connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
-                    }
-                    else
-                    {
-                        _connection = ConnectionMultiplexer.Connect(_options.Configuration);                        
-                    }
-                    _cache = _connection.GetDatabase();
-                }
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
-        }
-
-        private async Task ConnectAsync(CancellationToken token = default(CancellationToken))
-        {
-            token.ThrowIfCancellationRequested();
-
-            if (_cache != null)
-            {
-                return;
-            }
-
-            await _connectionLock.WaitAsync(token).ConfigureAwait(false);
-            try
-            {
-                if (_cache == null)
-                {
-                    if (_options.ConfigurationOptions != null)
-                    {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);                  
-                    }
-                    
-                    _cache = _connection.GetDatabase();
-                }
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
-        }
-
-=======
->>>>>>> Stashed changes
         private byte[] GetAndRefresh(string key, bool getData)
         {
             if (key == null)
@@ -269,30 +201,18 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             }
 
             token.ThrowIfCancellationRequested();
-<<<<<<< Updated upstream
 
-            await ConnectAsync(token).ConfigureAwait(false);
-
-=======
->>>>>>> Stashed changes
+            var connection = await _getConnectionAsync(token).ConfigureAwait(false);
             // This also resets the LRU status as desired.
             // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
             RedisValue[] results;
             if (getData)
             {
-<<<<<<< Updated upstream
-                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
+                results = await connection.GetDatabase().HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
             }
             else
             {
-                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
-=======
-                results = await (await  _getConnectionAsync(token)).GetDatabase().HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
-            }
-            else
-            {
-                results = await (await  _getConnectionAsync(token)).GetDatabase().HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
->>>>>>> Stashed changes
+                results = await connection.GetDatabase().HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
             }
 
             // TODO: Error handling
@@ -328,13 +248,8 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 throw new ArgumentNullException(nameof(key));
             }
 
-<<<<<<< Updated upstream
-            await ConnectAsync(token).ConfigureAwait(false);
-
-            await _cache.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
-=======
-            await  _getConnection().GetDatabase().KeyDeleteAsync(_instance + key);
->>>>>>> Stashed changes
+            var connection = await _getConnectionAsync(token).ConfigureAwait(false);
+            await connection.GetDatabase().KeyDeleteAsync(_instance + key).ConfigureAwait(false);
             // TODO: Error handling
         }
 
@@ -401,11 +316,9 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     expr = sldExpr;
                 }
-<<<<<<< Updated upstream
-                await _cache.KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
-=======
-                await  _getConnection().GetDatabase().KeyExpireAsync(_instance + key, expr);
->>>>>>> Stashed changes
+
+                var connection = await _getConnectionAsync(token).ConfigureAwait(false);
+                await connection.GetDatabase().KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
                 // TODO: Error handling
             }
         }

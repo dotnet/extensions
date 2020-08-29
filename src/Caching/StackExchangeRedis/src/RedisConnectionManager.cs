@@ -62,18 +62,18 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 return _connection;
             }
 
-            await _connectionLock.WaitAsync(token);
+            await _connectionLock.WaitAsync(token).ConfigureAwait(false);
             try
             {
                 if (_connection == null)
                 {
                     if (_options.ConfigurationOptions != null)
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions);
+                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
                     }
                     else
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration);
+                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
                     }
                 }
                 return _connection;
