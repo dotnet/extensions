@@ -8,7 +8,7 @@ namespace Microsoft.CodeAnalysis.Razor
     internal static class TagHelperDescriptorCache
     {
         private static readonly MemoryCache<int, TagHelperDescriptor> CachedTagHelperDescriptors =
-            new MemoryCache<int, TagHelperDescriptor>(1500);
+            new MemoryCache<int, TagHelperDescriptor>(4500);
 
         internal static bool TryGetDescriptor(int hashCode, out TagHelperDescriptor descriptor) =>
             CachedTagHelperDescriptors.TryGetValue(hashCode, out descriptor);
