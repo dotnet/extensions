@@ -36,6 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddOptions();
             services.Configure(setupAction);
             services.Add(ServiceDescriptor.Singleton<IDistributedCache, RedisCache>());
+            services.Add(ServiceDescriptor.Singleton<RedisConnectionManager, RedisConnectionManager>());
 
             return services;
         }

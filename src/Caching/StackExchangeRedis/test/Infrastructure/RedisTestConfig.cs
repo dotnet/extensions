@@ -24,11 +24,12 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         public static IDistributedCache CreateCacheInstance(string instanceName)
         {
-            return new RedisCache(new RedisCacheOptions()
+            var options = new RedisCacheOptions()
             {
                 Configuration = "localhost:" + RedisPort,
                 InstanceName = instanceName,
-            });
+            };
+            return new RedisCache(options, new RedisConnectionManager(options));
         }
 
         public static void GetOrStartServer()

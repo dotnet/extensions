@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
@@ -16,12 +19,15 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         /// The configuration used to connect to Redis.
         /// </summary>
         public string Configuration { get; set; }
-        
+
         /// <summary>
         /// The configuration used to connect to Redis.
         /// This is preferred over Configuration.
         /// </summary>
         public ConfigurationOptions ConfigurationOptions { get; set; }
+
+        public Func<CancellationToken, Task<ConnectionMultiplexer>> GetConnectionMultiplexerAsync { get; }
+        public Func<ConnectionMultiplexer> GetConnectionMultiplexer { get; }
 
         /// <summary>
         /// The Redis instance name.

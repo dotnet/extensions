@@ -11,7 +11,7 @@ using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
-    public class RedisCache : IDistributedCache, IDisposable
+    public class RedisCache : IDistributedCache
     {
         // KEYS[1] = = key
         // ARGV[1] = absolute-expiration - ticks as long (-1 for none)
@@ -30,25 +30,24 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         private const string DataKey = "data";
         private const long NotPresent = -1;
 
-        private volatile ConnectionMultiplexer _connection;
-        private IDatabase _cache;
-
-        private readonly RedisCacheOptions _options;
         private readonly string _instance;
 
-        private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+        private readonly Func<CancellationToken, Task<ConnectionMultiplexer>> _getConnectionAsync;
+        private readonly Func<ConnectionMultiplexer> _getConnection;
 
-        public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
+        public RedisCache(IOptions<RedisCacheOptions> optionsAccessor, RedisConnectionManager redisConnectionManager)
         {
             if (optionsAccessor == null)
             {
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
-
-            _options = optionsAccessor.Value;
+            var options = optionsAccessor.Value;
 
             // This allows partitioning a single backend cache for use with multiple apps/services.
-            _instance = _options.InstanceName ?? string.Empty;
+            _instance = options.InstanceName ?? string.Empty;
+
+            _getConnectionAsync = options.GetConnectionMultiplexerAsync ?? redisConnectionManager.ConnectAsync;
+            _getConnection = options.GetConnectionMultiplexer ?? redisConnectionManager.Connect;
         }
 
         public byte[] Get(string key)
@@ -90,13 +89,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 throw new ArgumentNullException(nameof(options));
             }
 
-            Connect();
-
             var creationTime = DateTimeOffset.UtcNow;
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-            var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
+            var result = _getConnection().GetDatabase().ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -125,13 +122,16 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             token.ThrowIfCancellationRequested();
 
+<<<<<<< Updated upstream
             await ConnectAsync(token).ConfigureAwait(false);
 
+=======
+>>>>>>> Stashed changes
             var creationTime = DateTimeOffset.UtcNow;
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-            await _cache.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
+            await (await  _getConnectionAsync(token)).GetDatabase().ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
                         absoluteExpiration?.Ticks ?? NotPresent,
@@ -163,6 +163,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             await GetAndRefreshAsync(key, getData: false, token: token).ConfigureAwait(false);
         }
 
+<<<<<<< Updated upstream
         private void Connect()
         {
             if (_cache != null)
@@ -224,6 +225,8 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             }
         }
 
+=======
+>>>>>>> Stashed changes
         private byte[] GetAndRefresh(string key, bool getData)
         {
             if (key == null)
@@ -231,18 +234,16 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            Connect();
-
             // This also resets the LRU status as desired.
             // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
             RedisValue[] results;
             if (getData)
             {
-                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
+                results =  _getConnection().GetDatabase().HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
             }
             else
             {
-                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
+                results =  _getConnection().GetDatabase().HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
             }
 
             // TODO: Error handling
@@ -268,19 +269,30 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             }
 
             token.ThrowIfCancellationRequested();
+<<<<<<< Updated upstream
 
             await ConnectAsync(token).ConfigureAwait(false);
 
+=======
+>>>>>>> Stashed changes
             // This also resets the LRU status as desired.
             // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
             RedisValue[] results;
             if (getData)
             {
+<<<<<<< Updated upstream
                 results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
             }
             else
             {
                 results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
+=======
+                results = await (await  _getConnectionAsync(token)).GetDatabase().HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
+            }
+            else
+            {
+                results = await (await  _getConnectionAsync(token)).GetDatabase().HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
+>>>>>>> Stashed changes
             }
 
             // TODO: Error handling
@@ -305,9 +317,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            Connect();
-
-            _cache.KeyDelete(_instance + key);
+            _getConnection().GetDatabase().KeyDelete(_instance + key);
             // TODO: Error handling
         }
 
@@ -318,9 +328,13 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 throw new ArgumentNullException(nameof(key));
             }
 
+<<<<<<< Updated upstream
             await ConnectAsync(token).ConfigureAwait(false);
 
             await _cache.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
+=======
+            await  _getConnection().GetDatabase().KeyDeleteAsync(_instance + key);
+>>>>>>> Stashed changes
             // TODO: Error handling
         }
 
@@ -360,7 +374,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     expr = sldExpr;
                 }
-                _cache.KeyExpire(_instance + key, expr);
+                _getConnection().GetDatabase().KeyExpire(_instance + key, expr);
                 // TODO: Error handling
             }
         }
@@ -387,7 +401,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 {
                     expr = sldExpr;
                 }
+<<<<<<< Updated upstream
                 await _cache.KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
+=======
+                await  _getConnection().GetDatabase().KeyExpireAsync(_instance + key, expr);
+>>>>>>> Stashed changes
                 // TODO: Error handling
             }
         }
@@ -427,14 +445,6 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             }
 
             return absoluteExpiration;
-        }
-
-        public void Dispose()
-        {
-            if (_connection != null)
-            {
-                _connection.Close();
-            }
         }
     }
 }
