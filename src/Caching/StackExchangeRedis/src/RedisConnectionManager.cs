@@ -6,7 +6,10 @@ using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
-    public sealed class RedisConnectionManager
+    /// <summary>
+    /// Implements the previous default behavior for RedisCache
+    /// </summary>
+    public sealed class RedisConnectionManager : IDisposable
     {
         private volatile ConnectionMultiplexer _connection;
         private readonly RedisCacheOptions _options;
@@ -82,6 +85,12 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             {
                 _connectionLock.Release();
             }
+        }
+
+        public void Dispose()
+        {
+            _connection?.Dispose();
+            _connectionLock?.Dispose();
         }
     }
 }

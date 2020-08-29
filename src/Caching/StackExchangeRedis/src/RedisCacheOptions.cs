@@ -26,7 +26,14 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         /// </summary>
         public ConfigurationOptions ConfigurationOptions { get; set; }
 
+        /// <summary>
+        /// Use with a custom Redis ConnectionMultiplexer pool.  This is called for each async operation.
+        /// </summary>
         public Func<CancellationToken, Task<ConnectionMultiplexer>> GetConnectionMultiplexerAsync { get; }
+
+        /// <summary>
+        /// Use with a custom Redis ConnectionMultiplexer pool.  This is called for each sync operation.
+        /// </summary>
         public Func<ConnectionMultiplexer> GetConnectionMultiplexer { get; }
 
         /// <summary>
