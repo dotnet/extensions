@@ -9,6 +9,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public Range[] Ranges { get; set; }
 
-        public long HostDocumentVersion { get; set; }
+        public int? HostDocumentVersion { get; set; }
     }
 }

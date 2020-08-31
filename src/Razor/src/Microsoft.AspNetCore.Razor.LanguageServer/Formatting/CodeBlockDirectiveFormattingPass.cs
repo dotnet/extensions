@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public CodeBlockDirectiveFormattingPass(
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
-            ILanguageServer server,
+            IClientLanguageServer server,
             ILoggerFactory loggerFactory)
             : base(documentMappingService, filePathNormalizer, server)
         {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         // We want this to run first because it uses the client C# formatter.
         public override int Order => DefaultOrder - 10;
 
-        public async override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result)
+        public async override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {
             if (context.IsFormatOnType)
             {
@@ -116,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var csharprangeToFormat = innerCodeBlockRange.Overlap(context.Range);
                 if (csharprangeToFormat != null)
                 {
-                    var codeEdits = await CSharpFormatter.FormatAsync(context.CodeDocument, csharprangeToFormat, context.Uri, context.Options);
+                    var codeEdits = await CSharpFormatter.FormatAsync(context.CodeDocument, csharprangeToFormat, context.Uri, context.Options, cancellationToken);
                     changedText = ApplyCSharpEdits(context, innerCodeBlockRange, codeEdits, minCSharpIndentLevel: 2);
                 }
 

@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
@@ -33,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             _logger = loggerFactory.CreateLogger<DefaultRazorFormattingService>();
         }
 
-        public override async Task<TextEdit[]> FormatAsync(Uri uri, DocumentSnapshot documentSnapshot, Range range, FormattingOptions options)
+        public override async Task<TextEdit[]> FormatAsync(DocumentUri uri, DocumentSnapshot documentSnapshot, Range range, FormattingOptions options, CancellationToken cancellationToken)
         {
             if (uri is null)
             {
@@ -61,13 +63,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var result = new FormattingResult(Array.Empty<TextEdit>());
             foreach (var pass in _formattingPasses)
             {
-                result = await pass.ExecuteAsync(context, result);
+                result = await pass.ExecuteAsync(context, result, cancellationToken);
             }
 
             return result.Edits;
         }
 
-        public override async Task<TextEdit[]> ApplyFormattedEditsAsync(Uri uri, DocumentSnapshot documentSnapshot, RazorLanguageKind kind, TextEdit[] formattedEdits, FormattingOptions options)
+        public override async Task<TextEdit[]> ApplyFormattedEditsAsync(DocumentUri uri, DocumentSnapshot documentSnapshot, RazorLanguageKind kind, TextEdit[] formattedEdits, FormattingOptions options, CancellationToken cancellationToken)
         {
             if (kind == RazorLanguageKind.Html)
             {
@@ -81,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             foreach (var pass in _formattingPasses)
             {
-                result = await pass.ExecuteAsync(context, result);
+                result = await pass.ExecuteAsync(context, result, cancellationToken);
             }
 
             return result.Edits;

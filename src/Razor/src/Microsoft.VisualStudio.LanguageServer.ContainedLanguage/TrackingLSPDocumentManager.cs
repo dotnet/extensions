@@ -13,9 +13,15 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public abstract void UntrackDocument(ITextBuffer buffer);
 
+        [Obsolete("Use the int override instead")]
         public abstract void UpdateVirtualDocument<TVirtualDocument>(
             Uri hostDocumentUri,
             IReadOnlyList<ITextChange> changes,
             long hostDocumentVersion) where TVirtualDocument : VirtualDocument;
+
+        public abstract void UpdateVirtualDocument<TVirtualDocument>(
+            Uri hostDocumentUri,
+            IReadOnlyList<ITextChange> changes,
+            int hostDocumentVersion) where TVirtualDocument : VirtualDocument;
     }
 }

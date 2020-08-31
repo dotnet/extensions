@@ -13,6 +13,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public Position Position { get; set; }
 
-        public long HostDocumentVersion { get; set; }
+        public int? HostDocumentVersion { get; set; }
     }
 }

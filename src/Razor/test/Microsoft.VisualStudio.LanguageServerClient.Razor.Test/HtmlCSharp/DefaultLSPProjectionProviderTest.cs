@@ -146,7 +146,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var response = new RazorLanguageQueryResponse()
             {
                 Kind = RazorLanguageKind.Html,
-                HostDocumentVersion = -1, // Undefined version
+                HostDocumentVersion = null,
                 Position = new Position(expectedPosition.Line, expectedPosition.Character)
             };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);

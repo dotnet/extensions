@@ -33,7 +33,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var registrationExtension = new TestRegistrationExtension("test1");
             var registrations = new IRegistrationExtension[] { registrationExtension };
             var baseCapability = new ServerCapabilities();
-            var extendableCapabilities = new ExtendableServerCapabilities(baseCapability, registrations);
+            var extendableCapabilities = new ExtendableServerCapabilities(baseCapability, registrations) {
+                TextDocumentSync = new TextDocumentSync(TextDocumentSyncKind.Full),
+            };
 
             // Act
             var serialized = JsonConvert.SerializeObject(extendableCapabilities);

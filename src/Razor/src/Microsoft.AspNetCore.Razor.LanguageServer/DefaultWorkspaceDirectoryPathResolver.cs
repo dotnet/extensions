@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using ILanguageServer = OmniSharp.Extensions.LanguageServer.Server.ILanguageServer;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultWorkspaceDirectoryPathResolver : WorkspaceDirectoryPathResolver
     {
-        private readonly ILanguageServer _languageServer;
+        private readonly IClientLanguageServer _languageServer;
 
-        public DefaultWorkspaceDirectoryPathResolver(ILanguageServer languageServer)
+        public DefaultWorkspaceDirectoryPathResolver(IClientLanguageServer languageServer)
         {
             if (languageServer is null)
             {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return _languageServer.ClientSettings.RootPath;
             }
 
-            return _languageServer.ClientSettings.RootUri.LocalPath;
+            return _languageServer.ClientSettings.RootUri.GetFileSystemPath();
         }
     }
 }

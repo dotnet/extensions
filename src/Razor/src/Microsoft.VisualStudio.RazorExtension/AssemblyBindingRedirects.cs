@@ -38,3 +38,10 @@ using Microsoft.VisualStudio.Shell;
     OldVersionLowerBound = "0.0.0.0",
     OldVersionUpperBound = "5.0.0.0",
     NewVersion = "5.0.0.0")]
+[assembly: ProvideBindingRedirection(
+    AssemblyName = "Microsoft.Extensions.DependencyInjection.Abstractions",
+    GenerateCodeBase = true,
+    PublicKeyToken = "adb9793829ddae60",
+    OldVersionLowerBound = "2.0.0.0",
+    OldVersionUpperBound = "2.0.0.0",
+    NewVersion = "3.1.0.0")]

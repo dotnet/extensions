@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, hostDocument, textLoader);
         }
 
-        public override void OpenDocument(string filePath, SourceText sourceText, long version)
+        public override void OpenDocument(string filePath, SourceText sourceText, int version)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor.Instance.DocumentRemoved(defaultProject.HostProject, document.State.HostDocument);
         }
 
-        public override void UpdateDocument(string filePath, SourceText sourceText, long version)
+        public override void UpdateDocument(string filePath, SourceText sourceText, int version)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -464,7 +464,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
         }
 
-        private void TrackDocumentVersion(string textDocumentPath, long version)
+        private void TrackDocumentVersion(string textDocumentPath, int version)
         {
             if (!_documentResolver.TryResolveDocument(textDocumentPath, out var documentSnapshot))
             {

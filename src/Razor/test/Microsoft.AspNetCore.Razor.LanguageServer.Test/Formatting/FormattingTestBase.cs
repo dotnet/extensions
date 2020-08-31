@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var formattingService = CreateFormattingService(codeDocument);
 
             // Act
-            var edits = await formattingService.FormatAsync(uri, documentSnapshot, range, options);
+            var edits = await formattingService.FormatAsync(uri, documentSnapshot, range, options, CancellationToken.None);
 
             // Assert
             var edited = ApplyEdits(source, edits);
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var (kind, projectedEdits) = GetFormattedEdits(codeDocument, expected, beforeTrigger);
 
             // Act
-            var edits = await formattingService.ApplyFormattedEditsAsync(uri, documentSnapshot, kind, projectedEdits, options);
+            var edits = await formattingService.ApplyFormattedEditsAsync(uri, documentSnapshot, kind, projectedEdits, options, CancellationToken.None);
 
             // Assert
             var edited = ApplyEdits(source, edits);
@@ -114,13 +115,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             var client = new FormattingLanguageServerClient();
             client.AddCodeDocument(codeDocument);
-            var languageServer = Mock.Of<ILanguageServer>(ls => ls.Client == client);
             var passes = new List<IFormattingPass>()
             {
-                new CodeBlockDirectiveFormattingPass(mappingService, FilePathNormalizer, languageServer, LoggerFactory),
-                new CSharpOnTypeFormattingPass(mappingService, FilePathNormalizer, languageServer, LoggerFactory),
-                new FormattingStructureValidationPass(mappingService, FilePathNormalizer, languageServer, LoggerFactory),
-                new FormattingContentValidationPass(mappingService, FilePathNormalizer, languageServer, LoggerFactory),
+                new CodeBlockDirectiveFormattingPass(mappingService, FilePathNormalizer, client, LoggerFactory),
+                new CSharpOnTypeFormattingPass(mappingService, FilePathNormalizer, client, LoggerFactory),
+                new FormattingStructureValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory),
+                new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory),
             };
 
             return new DefaultRazorFormattingService(passes, LoggerFactory);

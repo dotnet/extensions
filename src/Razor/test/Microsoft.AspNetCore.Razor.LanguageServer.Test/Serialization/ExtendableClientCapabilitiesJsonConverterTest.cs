@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
             Assert.Equal(MarkupKind.PlainText, capabilities.TextDocument.Hover.Value.ContentFormat.First());
             Assert.Equal(CompletionItemKind.Function, capabilities.TextDocument.Completion.Value.CompletionItemKind.ValueSet.First());
             Assert.Equal(MarkupKind.PlainText, capabilities.TextDocument.SignatureHelp.Value.SignatureInformation.DocumentationFormat.First());
-            Assert.Equal(CodeActionKind.RefactorExtract.Kind, capabilities.TextDocument.CodeAction.Value.CodeActionLiteralSupport.CodeActionKind.ValueSet.First().Kind);
+            Assert.Equal(CodeActionKind.RefactorExtract, capabilities.TextDocument.CodeAction.Value.CodeActionLiteralSupport.CodeActionKind.ValueSet.First());
         }
     }
 }

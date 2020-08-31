@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public FormattingPassBase(
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
-            ILanguageServer server)
+            IClientLanguageServer server)
         {
             if (documentMappingService is null)
             {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         protected HtmlFormatter HtmlFormatter { get; }
 
-        public virtual Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result)
+        public virtual Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {
             return Task.FromResult(Execute(context, result));
         }

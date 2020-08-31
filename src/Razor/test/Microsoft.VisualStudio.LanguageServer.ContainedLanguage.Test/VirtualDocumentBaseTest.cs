@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             // Assert
             Assert.NotSame(originalSnapshot, document.CurrentSnapshot);
-            Assert.Equal(1337, document.HostDocumentSyncVersion);
+            Assert.Equal(1337, document.HostDocumentVersion);
         }
 
         [Fact]

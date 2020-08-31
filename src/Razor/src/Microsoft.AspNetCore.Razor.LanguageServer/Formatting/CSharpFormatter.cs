@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.CodeAnalysis.Razor;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
@@ -17,11 +18,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         private readonly RazorDocumentMappingService _documentMappingService;
         private readonly FilePathNormalizer _filePathNormalizer;
-        private readonly ILanguageServer _server;
+        private readonly IClientLanguageServer _server;
 
         public CSharpFormatter(
             RazorDocumentMappingService documentMappingService,
-            ILanguageServer languageServer,
+            IClientLanguageServer languageServer,
             FilePathNormalizer filePathNormalizer)
         {
             if (documentMappingService is null)
@@ -47,8 +48,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public async Task<TextEdit[]> FormatAsync(
             RazorCodeDocument codeDocument,
             Range range,
-            Uri uri,
-            FormattingOptions options)
+            DocumentUri uri,
+            FormattingOptions options,
+            CancellationToken cancellationToken)
         {
             if (!_documentMappingService.TryMapToProjectedDocumentRange(codeDocument, range, out var projectedRange))
             {
@@ -63,8 +65,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 Options = options
             };
 
-            var result = await _server.Client.SendRequest<RazorDocumentRangeFormattingParams, RazorDocumentRangeFormattingResponse>(
-                LanguageServerConstants.RazorRangeFormattingEndpoint, @params);
+            var response = _server.SendRequest(LanguageServerConstants.RazorRangeFormattingEndpoint, @params);
+            var result = await response.Returning<RazorDocumentRangeFormattingResponse>(cancellationToken);
 
             var mappedEdits = MapEditsToHostDocument(codeDocument, result.Edits);
 

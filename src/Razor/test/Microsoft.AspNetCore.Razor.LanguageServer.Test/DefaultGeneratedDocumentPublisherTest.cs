@@ -4,15 +4,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
+using Moq;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Progress;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server.WorkDone;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -329,13 +335,41 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             public IReadOnlyList<UpdateBufferRequest> UpdateRequests { get; }
 
-            public ILanguageServerClient Client { get; }
+            public ITextDocumentLanguageServer TextDocument => throw new NotImplementedException();
 
-            public ILanguageServerDocument Document => throw new NotImplementedException();
+            public IGeneralLanguageServer General => throw new NotImplementedException();
 
-            public ILanguageServerWindow Window => throw new NotImplementedException();
+            public IServiceProvider Services => throw new NotImplementedException();
 
-            public ILanguageServerWorkspace Workspace => throw new NotImplementedException();
+            public IObservable<InitializeResult> Start => throw new NotImplementedException();
+
+            public IObservable<bool> Shutdown => throw new NotImplementedException();
+
+            public IObservable<int> Exit => throw new NotImplementedException();
+
+            public Task<InitializeResult> WasStarted => throw new NotImplementedException();
+
+            public Task WasShutDown => throw new NotImplementedException();
+
+            public Task WaitForExit => throw new NotImplementedException();
+
+            public IProgressManager ProgressManager => throw new NotImplementedException();
+
+            public IServerWorkDoneManager WorkDoneManager => throw new NotImplementedException();
+
+            public ILanguageServerConfiguration Configuration => throw new NotImplementedException();
+
+            public InitializeParams ClientSettings => throw new NotImplementedException();
+
+            public InitializeResult ServerSettings => throw new NotImplementedException();
+
+            public IClientLanguageServer Client { get; }
+
+            public ILanguageServerWorkspaceFolderManager WorkspaceFolderManager => throw new NotImplementedException();
+
+            public IWindowLanguageServer Window => throw new NotImplementedException();
+
+            public IWorkspaceLanguageServer Workspace => throw new NotImplementedException();
 
             public IDisposable AddHandler(string method, IJsonRpcHandler handler) => throw new NotImplementedException();
 
@@ -349,11 +383,36 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             public IDisposable AddTextDocumentIdentifier<T>() where T : ITextDocumentIdentifier => throw new NotImplementedException();
 
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+
             public TaskCompletionSource<JToken> GetRequest(long id) => throw new NotImplementedException();
+
+            public object GetService(Type serviceType)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task Initialize(CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IDisposable Register(Action<ILanguageServerRegistry> registryAction)
+            {
+                throw new NotImplementedException();
+            }
 
             public void SendNotification(string method) => throw new NotImplementedException();
 
             public void SendNotification<T>(string method, T @params) => throw new NotImplementedException();
+
+            public void SendNotification(IRequest request)
+            {
+                throw new NotImplementedException();
+            }
 
             public Task<TResponse> SendRequest<T, TResponse>(string method, T @params) => throw new NotImplementedException();
 
@@ -361,9 +420,39 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             public Task SendRequest<T>(string method, T @params) => throw new NotImplementedException();
 
-            private class TestClient : ILanguageServerClient
+            public IResponseRouterReturns SendRequest(string method)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            (string method, TaskCompletionSource<JToken> pendingTask) IResponseRouter.GetRequest(long id)
+            {
+                throw new NotImplementedException();
+            }
+
+            IResponseRouterReturns IResponseRouter.SendRequest<T>(string method, T @params)
+            {
+                throw new NotImplementedException();
+            }
+
+            private class TestClient : IClientLanguageServer
             {
                 private readonly List<UpdateBufferRequest> _updateRequests;
+
+                public IProgressManager ProgressManager => throw new NotImplementedException();
+
+                public IServerWorkDoneManager WorkDoneManager => throw new NotImplementedException();
+
+                public ILanguageServerConfiguration Configuration => throw new NotImplementedException();
+
+                public InitializeParams ClientSettings => throw new NotImplementedException();
+
+                public InitializeResult ServerSettings => throw new NotImplementedException();
 
                 public TestClient(List<UpdateBufferRequest> updateRequests)
                 {
@@ -375,24 +464,45 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     _updateRequests = updateRequests;
                 }
 
-                public Task SendRequest<T>(string method, T @params)
+                public void SendNotification(string method) => throw new NotImplementedException();
+
+                public void SendNotification<T>(string method, T @params) => throw new NotImplementedException();
+
+                public void SendNotification(IRequest request)
+                {
+                    throw new NotImplementedException();
+                }
+
+                IResponseRouterReturns IResponseRouter.SendRequest<T>(string method, T @params)
                 {
                     var updateRequest = @params as UpdateBufferRequest;
 
                     _updateRequests.Add(updateRequest);
 
-                    return Task.CompletedTask;
+                    var mock = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
+                    mock.Setup(r => r.ReturningVoid(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+                    return mock.Object;
                 }
 
-                public TaskCompletionSource<JToken> GetRequest(long id) => throw new NotImplementedException();
+                public IResponseRouterReturns SendRequest(string method)
+                {
+                    throw new NotImplementedException();
+                }
 
-                public void SendNotification(string method) => throw new NotImplementedException();
+                public Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken)
+                {
+                    throw new NotImplementedException();
+                }
 
-                public void SendNotification<T>(string method, T @params) => throw new NotImplementedException();
+                (string method, TaskCompletionSource<JToken> pendingTask) IResponseRouter.GetRequest(long id)
+                {
+                    throw new NotImplementedException();
+                }
 
-                public Task<TResponse> SendRequest<T, TResponse>(string method, T @params) => throw new NotImplementedException();
-
-                public Task<TResponse> SendRequest<TResponse>(string method) => throw new NotImplementedException();
+                public object GetService(Type serviceType)
+                {
+                    throw new NotImplementedException();
+                }
             }
         }
     }

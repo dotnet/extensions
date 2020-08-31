@@ -8,7 +8,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using OmniSharp.Extensions.LanguageServer.Protocol.Workspace;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             _logger.LogTrace("Settings changed. Updating the server.");
 
-            await _optionsMonitor.UpdateAsync();
+            await _optionsMonitor.UpdateAsync(cancellationToken);
 
             return new Unit();
         }

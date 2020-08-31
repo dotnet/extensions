@@ -16,8 +16,9 @@ using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
 {
@@ -209,7 +210,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             AddEditsForCodeDocument(documentChanges, originTagHelperBinding, newName, uri, codeDocument);
         }
 
-        public void AddEditsForCodeDocument(List<WorkspaceEditDocumentChange> documentChanges, TagHelperBinding originTagHelperBinding, string newName, Uri uri, RazorCodeDocument codeDocument)
+        public void AddEditsForCodeDocument(List<WorkspaceEditDocumentChange> documentChanges, TagHelperBinding originTagHelperBinding, string newName, DocumentUri uri, RazorCodeDocument codeDocument)
         {
             var documentIdentifier = new VersionedTextDocumentIdentifier { Uri = uri };
             var tagHelperElements = codeDocument.GetSyntaxTree().Root

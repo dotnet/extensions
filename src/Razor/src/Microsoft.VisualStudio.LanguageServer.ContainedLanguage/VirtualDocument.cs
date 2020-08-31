@@ -15,8 +15,14 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public abstract VirtualDocumentSnapshot CurrentSnapshot { get; }
 
+        public abstract int HostDocumentVersion { get; }
+
+        [Obsolete]
         public abstract long? HostDocumentSyncVersion { get; }
 
+        public abstract VirtualDocumentSnapshot Update(IReadOnlyList<ITextChange> changes, int hostDocumentVersion);
+
+        [Obsolete]
         public abstract VirtualDocumentSnapshot Update(IReadOnlyList<ITextChange> changes, long hostDocumentVersion);
 
         public abstract void Dispose();

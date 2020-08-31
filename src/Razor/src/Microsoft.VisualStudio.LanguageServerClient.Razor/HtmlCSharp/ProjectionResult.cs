@@ -16,6 +16,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public RazorLanguageKind LanguageKind { get; set; }
 
-        public long HostDocumentVersion { get; set; }
+        public int? HostDocumentVersion { get; set; }
     }
 }

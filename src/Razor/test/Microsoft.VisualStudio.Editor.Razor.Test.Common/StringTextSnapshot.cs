@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.Text
                 if (delimiterIndex == -1)
                 {
                     delimiterLength = 1;
-                    for (int i = start; i < Content.Length; i++)
+                    for (var i = start; i < Content.Length; i++)
                     {
                         if (ParserHelpers.IsNewLine(content[i]))
                         {

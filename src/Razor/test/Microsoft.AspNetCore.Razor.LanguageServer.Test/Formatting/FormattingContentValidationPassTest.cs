@@ -120,8 +120,7 @@ public class Foo { }
 
             var client = new FormattingLanguageServerClient();
             client.AddCodeDocument(codeDocument);
-            var languageServer = Mock.Of<ILanguageServer>(ls => ls.Client == client);
-            var pass = new FormattingContentValidationPass(mappingService, FilePathNormalizer, languageServer, LoggerFactory);
+            var pass = new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory);
             pass.DebugAssertsEnabled = false;
 
             return pass;

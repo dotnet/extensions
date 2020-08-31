@@ -15,7 +15,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [Export(typeof(LSPProjectionProvider))]
     internal class DefaultLSPProjectionProvider : LSPProjectionProvider
     {
-        private const int UndefinedDocumentVersion = -1;
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentSynchronizer _documentSynchronizer;
         private readonly RazorLogger _logger;
@@ -71,7 +70,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            if (languageResponse.HostDocumentVersion == UndefinedDocumentVersion)
+            if (languageResponse.HostDocumentVersion is null)
             {
                 // There should always be a document version attached to an open document.
                 // Log it and move on as if it was synchronized.

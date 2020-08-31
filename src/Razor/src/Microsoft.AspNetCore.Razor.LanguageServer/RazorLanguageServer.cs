@@ -26,7 +26,6 @@ using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Server;
-using ILanguageServer = OmniSharp.Extensions.LanguageServer.Server.ILanguageServer;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.LanguageServer.Refactoring;
 using Microsoft.AspNetCore.Razor.LanguageServer.Definition;
@@ -57,34 +56,47 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public Task WaitForExit => _innerServer.WaitForExit;
 
-        public Task InitializedAsync(CancellationToken token) => _innerServer.InitializedAsync(token);
+        public Task InitializedAsync(CancellationToken token) => _innerServer.Initialize(token);
 
         public static Task<RazorLanguageServer> CreateAsync(Stream input, Stream output, Trace trace, Action<RazorLanguageServerBuilder> configure = null)
         {
-            Serializer.Instance.Settings.Converters.Add(SemanticTokensOrSemanticTokensEditsConverter.Instance);
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
 
             // Custom ClientCapabilities deserializer to extract experimental capabilities
             Serializer.Instance.JsonSerializer.Converters.Add(ExtendableClientCapabilitiesJsonConverter.Instance);
 
             ILanguageServer server = null;
+            var logLevel = RazorLSPOptions.GetLogLevelForTrace(trace);
+
             server = OmniSharp.Extensions.LanguageServer.Server.LanguageServer.PreInit(options =>
                 options
                     .WithInput(input)
                     .WithOutput(output)
+                    // StreamJsonRpc has both Serial and Parallel requests. With WithContentModifiedSupport(true) (which is default) when a Serial
+                    // request is made any Parallel requests will be cancelled because the assumption is that Serial requests modify state, and that
+                    // therefore any Parallel request is now invalid and should just try again. A specific instance of this can be seen when you
+                    // hover over a TagHelper while the switch is set to true. Hover is parallel, and a lot of our endpoints like
+                    // textDocument/_ms_onAutoInsert, and razor/languageQuery are Serial. I BELIEVE that specifically what happened is the serial
+                    // languageQuery event gets fired by our semantic tokens endpoint (which fires constantly), cancelling the hover, which red-bars.
+                    // We can prevent that behavior entirely by doing WithContentModifiedSupport, at the possible expense of some delays due doing all requests in serial.
+                    // 
+                    // I recommend that we attempt to resolve this and switch back to WithContentModifiedSupport(true) in the future,
+                    // I think that would mean either having 0 Serial Handlers in the whole LS, or making VSLanguageServerClient handle this more gracefully.
+                    .WithContentModifiedSupport(false)
+                    .WithSerializer(Serializer.Instance)
                     .ConfigureLogging(builder => builder
-                        .AddLanguageServer(RazorLSPOptions.GetLogLevelForTrace(trace))
-                        .SetMinimumLevel(LogLevel.Trace)) // We set the minimum level here to "Trace" to ensure that other providers still get the opportunity to act on logs if they prefer.
-                    .OnInitialized(async (s, request, response) =>
+                        .SetMinimumLevel(logLevel)
+                        .AddLanguageProtocolLogging(logLevel))
+                    .OnInitialized(async (s, request, response, cancellationToken) =>
                     {
-                        var jsonRpcHandlers = s.Services.GetServices<IJsonRpcHandler>();
-                        var registrationExtensions = jsonRpcHandlers.OfType<IRegistrationExtension>();
+                        var handlersManager = s.GetRequiredService<IHandlersManager>();
+                        var jsonRpcHandlers = handlersManager.Descriptors.Select(d => d.Handler);
+                        var registrationExtensions = jsonRpcHandlers.OfType<IRegistrationExtension>().Distinct();
                         if (registrationExtensions.Any())
                         {
                             var capabilities = new ExtendableServerCapabilities(response.Capabilities, registrationExtensions);
                             response.Capabilities = capabilities;
                         }
-
                         var fileChangeDetectorManager = s.Services.GetRequiredService<RazorFileChangeDetectorManager>();
                         await fileChangeDetectorManager.InitializedAsync();
 
@@ -94,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         {
                             // Initialize our options for the first time.
                             var optionsMonitor = languageServer.Services.GetRequiredService<RazorLSPOptionsMonitor>();
-                            _ = Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(async (_) => await optionsMonitor.UpdateAsync());
+                            _ = Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(async (_) => await optionsMonitor.UpdateAsync(cancellationToken));
                         }
                     })
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
@@ -104,6 +116,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorConfigurationEndpoint>()
                     .WithHandler<RazorFormattingEndpoint>()
                     .WithHandler<RazorSemanticTokensEndpoint>()
+                    .AddHandlerLink(LanguageServerConstants.RazorSemanticTokensEditEndpoint, LanguageServerConstants.LegacyRazorSemanticTokensEditEndpoint)
+                    .AddHandlerLink(LanguageServerConstants.RazorSemanticTokensEndpoint , LanguageServerConstants.LegacyRazorSemanticTokensEndpoint)
                     .WithHandler<RazorSemanticTokensLegendEndpoint>()
                     .WithHandler<OnAutoInsertEndpoint>()
                     .WithHandler<CodeActionEndpoint>()

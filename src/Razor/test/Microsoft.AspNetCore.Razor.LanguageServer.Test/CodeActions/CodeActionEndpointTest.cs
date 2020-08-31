@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
     public class CodeActionEndpointTest : LanguageServerTestBase
     {
         private readonly DocumentResolver EmptyDocumentResolver = Mock.Of<DocumentResolver>();
-        private readonly ILanguageServer LanguageServer = Mock.Of<ILanguageServer>();
         private readonly LanguageServerFeatureOptions LanguageServerFeatureOptions = Mock.Of<LanguageServerFeatureOptions>(l => l.SupportsFileManipulation == true);
+        private readonly IClientLanguageServer LanguageServer = Mock.Of<IClientLanguageServer>();
 
         [Fact]
         public async Task Handle_NoDocument()
@@ -300,11 +300,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             public override Task<RazorCodeAction[]> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
                 // O# Code Actions don't have `Data`, but `Commands` do
-                return Task.FromResult(new[] { 
-                    new RazorCodeAction() { 
-                        Title = "SomeTitle", 
-                        Data = new AddUsingsCodeActionParams() 
-                    } 
+                return Task.FromResult(new[] {
+                    new RazorCodeAction() {
+                        Title = "SomeTitle",
+                        Data = new AddUsingsCodeActionParams()
+                    }
                 });
             }
         }

@@ -1,11 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Server;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             {
                                 Value = new CompletionCapability
                                 {
-                                    CompletionItem = new CompletionItemCapability
+                                    CompletionItem = new CompletionItemCapabilityOptions
                                     {
                                         SnippetSupport = true,
                                         DocumentationFormat = new Container<MarkupKind>(MarkupKind.Markdown)
@@ -471,7 +472,7 @@ World", cleanedSummary);
         public void TryCreateDescription_NoAssociatedTagHelperDescriptions_ReturnsFalse()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(new Lazy<ILanguageServer>(LanguageServer));
             var elementDescription = ElementDescriptionInfo.Default;
 
             // Act
@@ -486,7 +487,7 @@ World", cleanedSummary);
         public void TryCreateDescription_Element_SingleAssociatedTagHelper_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(new Lazy<ILanguageServer>(LanguageServer));
             var associatedTagHelperInfos = new[]
             {
                 new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
@@ -509,7 +510,7 @@ Uses `List<System.String>`s", markdown.Value);
             // Arrange
             var languageServer = LanguageServer;
             languageServer.ClientSettings.Capabilities.TextDocument.Completion.Value.CompletionItem.DocumentationFormat = new Container<MarkupKind>(MarkupKind.PlainText);
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory(languageServer);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(new Lazy<ILanguageServer>(languageServer));
             var associatedTagHelperInfos = new[]
             {
                 new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
@@ -533,7 +534,7 @@ Uses `List<System.String>`s", markdown.Value);
             // Arrange
             var languageServer = LanguageServer;
             languageServer.ClientSettings.Capabilities.TextDocument.Completion.Value.CompletionItem.DocumentationFormat = new Container<MarkupKind>(MarkupKind.PlainText);
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory(languageServer);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(new Lazy<ILanguageServer>(languageServer));
             var associatedAttributeDescriptions = new[]
             {
                 new TagHelperAttributeDescriptionInfo(
@@ -560,7 +561,7 @@ Uses `List<System.String>`s", markdown.Value);
             // Arrange
             var languageServer = LanguageServer;
             languageServer.ClientSettings.Capabilities.TextDocument.Completion.Value.CompletionItem.DocumentationFormat = new Container<MarkupKind>(MarkupKind.PlainText, MarkupKind.Markdown);
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory(languageServer);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(new Lazy<ILanguageServer>(languageServer));
             var associatedTagHelperInfos = new[]
             {
                 new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
@@ -582,7 +583,7 @@ Uses `List<System.String>`s", markdown.Value);
         public void TryCreateDescription_Element_MultipleAssociatedTagHelpers_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(new Lazy<ILanguageServer>(LanguageServer));
             var associatedTagHelperInfos = new[]
             {
                 new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>\nUses <see cref=\"T:System.Collections.List{System.String}\" />s\n</summary>"),
@@ -609,7 +610,7 @@ Also uses `List<System.String>`s", markdown.Value);
         public void TryCreateDescription_Attribute_SingleAssociatedAttribute_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(new Lazy<ILanguageServer>(LanguageServer));
             var associatedAttributeDescriptions = new[]
             {
                 new TagHelperAttributeDescriptionInfo(
@@ -635,7 +636,7 @@ Uses `List<System.String>`s", markdown.Value);
         public void TryCreateDescription_Attribute_MultipleAssociatedAttributes_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(new Lazy<ILanguageServer>(LanguageServer));
             var associatedAttributeDescriptions = new[]
             {
                 new TagHelperAttributeDescriptionInfo(

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
@@ -9,6 +10,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         int Order { get; }
 
-        Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result);
+        Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken);
     }
 }

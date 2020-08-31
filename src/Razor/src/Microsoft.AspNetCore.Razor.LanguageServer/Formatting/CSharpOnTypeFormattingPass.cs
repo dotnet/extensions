@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public CSharpOnTypeFormattingPass(
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
-            ILanguageServer server,
+            IClientLanguageServer server,
             ILoggerFactory loggerFactory)
             : base(documentMappingService, filePathNormalizer, server)
         {
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             _logger = loggerFactory.CreateLogger<CSharpOnTypeFormattingPass>();
         }
 
-        public async override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result)
+        public async override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {
             if (!context.IsFormatOnType || result.Kind != RazorLanguageKind.CSharp)
             {

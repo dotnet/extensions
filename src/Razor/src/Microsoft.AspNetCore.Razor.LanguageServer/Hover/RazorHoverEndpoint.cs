@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
-using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using HoverModel = OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
@@ -58,14 +57,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
             _logger = loggerFactory.CreateLogger<RazorHoverEndpoint>();
         }
 
-        public TextDocumentRegistrationOptions GetRegistrationOptions()
-        {
-            return new TextDocumentRegistrationOptions()
-            {
-                DocumentSelector = RazorDefaults.Selector
-            };
-        }
-
         public async Task<HoverModel> Handle(HoverParams request, CancellationToken cancellationToken)
         {
             if (request is null)
@@ -103,24 +94,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
             return hoverItem;
         }
 
-        public RegistrationExtensionResult GetRegistration()
-        {
-            var semanticTokensOptions = new SemanticTokensOptions
-            {
-                DocumentProvider = new SemanticTokensDocumentProviderOptions
-                {
-                    Edits = false,
-                },
-                Legend = SemanticTokensLegend.Instance,
-                RangeProvider = false,
-            };
-
-            return new RegistrationExtensionResult(LanguageServerConstants.SemanticTokensProviderName, semanticTokensOptions);
-        }
-
         public void SetCapability(HoverCapability capability)
         {
             _capability = capability;
+        }
+
+
+        public HoverRegistrationOptions GetRegistrationOptions()
+        {
+            return new HoverRegistrationOptions
+            {
+                DocumentSelector = RazorDefaults.Selector,
+            };
         }
     }
 }

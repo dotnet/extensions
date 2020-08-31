@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class UpdateBufferRequest
     {
-        public long HostDocumentVersion { get; set; }
+        public int? HostDocumentVersion { get; set; }
 
         public string HostDocumentFilePath { get; set; }
 

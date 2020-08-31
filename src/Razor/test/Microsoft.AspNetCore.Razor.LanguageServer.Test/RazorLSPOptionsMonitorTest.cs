@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false, autoClosingTags: true);
-            var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync() == Task.FromResult(expectedOptions));
+            var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync(CancellationToken.None) == Task.FromResult(expectedOptions));
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;
 
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 called = true;
                 Assert.Same(expectedOptions, options);
             });
-            await optionsMonitor.UpdateAsync();
+            await optionsMonitor.UpdateAsync(CancellationToken.None);
             Assert.True(called, "Registered callback was not called.");
         }
 
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false, autoClosingTags: true);
-            var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync() == Task.FromResult(expectedOptions));
+            var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync(CancellationToken.None) == Task.FromResult(expectedOptions));
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;
             var onChangeToken = optionsMonitor.OnChange(options =>
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             });
 
             // Act 1
-            await optionsMonitor.UpdateAsync();
+            await optionsMonitor.UpdateAsync(CancellationToken.None);
 
             // Assert 1
             Assert.True(called, "Registered callback was not called.");
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Act 2
             called = false;
             onChangeToken.Dispose();
-            await optionsMonitor.UpdateAsync();
+            await optionsMonitor.UpdateAsync(CancellationToken.None);
 
             // Assert 2
             Assert.False(called, "Registered callback called even after dispose.");
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             });
 
             // Act
-            await optionsMonitor.UpdateAsync();
+            await optionsMonitor.UpdateAsync(CancellationToken.None);
 
             // Assert
             Assert.False(called, "Registered callback called even when GetLatestOptionsAsync() returns null.");

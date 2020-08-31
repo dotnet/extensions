@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     internal class FormattingContext
     {
-        public Uri Uri { get; set; }
+        public DocumentUri Uri { get; set; }
 
         public DocumentSnapshot OriginalSnapshot { get; set; }
 
@@ -114,7 +115,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         public static FormattingContext Create(
-            Uri uri,
+            DocumentUri uri,
             DocumentSnapshot originalSnapshot,
             RazorCodeDocument codedocument,
             FormattingOptions options,

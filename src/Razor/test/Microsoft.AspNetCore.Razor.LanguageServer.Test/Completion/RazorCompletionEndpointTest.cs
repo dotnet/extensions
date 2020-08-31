@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         private readonly CompletionCapability DefaultCapability = new CompletionCapability
         {
-            CompletionItem = new CompletionItemCapability {
+            CompletionItem = new CompletionItemCapabilityOptions {
                 SnippetSupport = false
             }
         };
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
             var capability = new CompletionCapability
             {
-                CompletionItem = new CompletionItemCapability
+                CompletionItem = new CompletionItemCapabilityOptions
                 {
                     SnippetSupport = false
                 }
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var descriptionFactory = new Mock<TagHelperDescriptionFactory>();
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperCompletionService, descriptionFactory.Object, LoggerFactory);
             var capability = new CompletionCapability {
-                CompletionItem = new CompletionItemCapability {
+                CompletionItem = new CompletionItemCapabilityOptions {
                     SnippetSupport = true
                 }
             };
