@@ -16,9 +16,11 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Progress;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.WorkDone;
+using FormattingOptions = Microsoft.CodeAnalysis.Formatting.FormattingOptions;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
@@ -49,30 +51,37 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         private RazorDocumentRangeFormattingResponse Format(RazorDocumentRangeFormattingParams @params)
         {
-            if (@params.Kind != RazorLanguageKind.CSharp)
+            if (@params.Kind == RazorLanguageKind.Razor)
             {
-                throw new NotImplementedException($"{@params.Kind} formatting is not yet supported.");
+                throw new InvalidOperationException("We shouldn't be asked to format Razor language kind.");
             }
 
             var options = @params.Options;
-            var workspace = new AdhocWorkspace();
-            var cSharpOptions = workspace.Options
-                .WithChangedOption(FormattingOptions.TabSize, LanguageNames.CSharp, (int)options.TabSize)
-                .WithChangedOption(FormattingOptions.UseTabs, LanguageNames.CSharp, !options.InsertSpaces);
+            var response = new RazorDocumentRangeFormattingResponse();
 
-            var codeDocument = _documents[@params.HostDocumentFilePath];
-            var csharpDocument = codeDocument.GetCSharpDocument();
-            var syntaxTree = CSharpSyntaxTree.ParseText(csharpDocument.GeneratedCode);
-            var sourceText = SourceText.From(csharpDocument.GeneratedCode);
-            var root = syntaxTree.GetRoot();
-            var spanToFormat = @params.ProjectedRange.AsTextSpan(sourceText);
-
-            var changes = Formatter.GetFormattedTextChanges(root, spanToFormat, workspace, options: cSharpOptions);
-
-            var response = new RazorDocumentRangeFormattingResponse()
+            if (@params.Kind == RazorLanguageKind.CSharp)
             {
-                Edits = changes.Select(c => c.AsTextEdit(sourceText)).ToArray()
-            };
+                var workspace = new AdhocWorkspace();
+                var cSharpOptions = workspace.Options
+                    .WithChangedOption(FormattingOptions.TabSize, LanguageNames.CSharp, (int)options.TabSize)
+                    .WithChangedOption(FormattingOptions.UseTabs, LanguageNames.CSharp, !options.InsertSpaces);
+
+                var codeDocument = _documents[@params.HostDocumentFilePath];
+                var csharpDocument = codeDocument.GetCSharpDocument();
+                var syntaxTree = CSharpSyntaxTree.ParseText(csharpDocument.GeneratedCode);
+                var sourceText = SourceText.From(csharpDocument.GeneratedCode);
+                var root = syntaxTree.GetRoot();
+                var spanToFormat = @params.ProjectedRange.AsTextSpan(sourceText);
+
+                var changes = Formatter.GetFormattedTextChanges(root, spanToFormat, workspace, options: cSharpOptions);
+
+                response.Edits = changes.Select(c => c.AsTextEdit(sourceText)).ToArray();
+            }
+            else if (@params.Kind == RazorLanguageKind.Html)
+            {
+                // This will be replaced by test baseline infrastructure.
+                response.Edits = Array.Empty<TextEdit>();
+            }
 
             return response;
         }

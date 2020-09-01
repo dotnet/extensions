@@ -7,10 +7,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using TextSpan = Microsoft.CodeAnalysis.Text.TextSpan;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
@@ -23,7 +26,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public FormattingPassBase(
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
-            IClientLanguageServer server)
+            IClientLanguageServer server,
+            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor)
         {
             if (documentMappingService is null)
             {
@@ -40,8 +44,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(server));
             }
 
+            if (projectSnapshotManagerAccessor is null)
+            {
+                throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
+            }
+
             _documentMappingService = documentMappingService;
-            CSharpFormatter = new CSharpFormatter(documentMappingService, server, filePathNormalizer);
+            CSharpFormatter = new CSharpFormatter(documentMappingService, server, projectSnapshotManagerAccessor, filePathNormalizer);
             HtmlFormatter = new HtmlFormatter(server, filePathNormalizer);
         }
 
@@ -191,10 +200,181 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                         editsToApply.Add(new TextChange(span, effectiveDesiredIndentation));
                     }
                 }
-
             }
 
             return editsToApply;
+        }
+
+        protected static SourceText CleanupDocument(FormattingContext context, Range range = null)
+        {
+            //
+            // We look through every source mapping that intersects with the affected range and
+            // adjust the indentation of the first line,
+            //
+            // E.g,
+            //
+            // @{   public int x = 0;
+            // }
+            //
+            // becomes,
+            //
+            // @{
+            //    public int x  = 0;
+            // }
+            // 
+            var text = context.SourceText;
+            range ??= TextSpan.FromBounds(0, text.Length).AsRange(text);
+            var csharpDocument = context.CodeDocument.GetCSharpDocument();
+
+            var changes = new List<TextChange>();
+            foreach (var mapping in csharpDocument.SourceMappings)
+            {
+                var mappingSpan = new TextSpan(mapping.OriginalSpan.AbsoluteIndex, mapping.OriginalSpan.Length);
+                var mappingRange = mappingSpan.AsRange(text);
+                if (!range.LineOverlapsWith(mappingRange))
+                {
+                    // We don't care about this range. It didn't change.
+                    continue;
+                }
+
+                var mappingStartLineIndex = (int)mappingRange.Start.Line;
+                if (context.Indentations[mappingStartLineIndex].StartsInCSharpContext)
+                {
+                    // Doesn't need cleaning up.
+                    // For corner cases like (Range marked with |...|),
+                    // @{
+                    //     if (true} { <div></div>| }|
+                    // }
+                    // We want to leave it alone because tackling it here is really complicated.
+                    continue;
+                }
+
+                if (!ShouldCleanup(context, mappingRange.Start))
+                {
+                    // We don't want to run cleanup on this range.
+                    continue;
+                }
+
+                // @{
+                //     if (true)
+                //     {     
+                //         <div></div>|
+                // 
+                //              |}
+                // }
+                // We want to return the length of the range marked by |...|
+                //
+                var whitespaceLength = text.GetFirstNonWhitespaceOffset(mappingSpan);
+                if (whitespaceLength == null)
+                {
+                    // There was no content here. Skip.
+                    continue;
+                }
+
+                var spanToReplace = new TextSpan(mappingSpan.Start, whitespaceLength.Value);
+                if (!context.TryGetIndentationLevel(spanToReplace.End, out var contentIndentLevel))
+                {
+                    // Can't find the correct indentation for this content. Leave it alone.
+                    continue;
+                }
+
+                // At this point, `contentIndentLevel` should contain the correct indentation level for `}` in the above example.
+                var replacement = context.NewLineString + context.GetIndentationLevelString(contentIndentLevel);
+
+                // After the below change the above example should look like,
+                // @{
+                //     if (true)
+                //     {     
+                //         <div></div>
+                //     }
+                // }
+                var change = new TextChange(spanToReplace, replacement);
+                changes.Add(change);
+            }
+
+            var changedText = text.WithChanges(changes);
+            return changedText;
+        }
+
+        private static bool ShouldCleanup(FormattingContext context, Position position)
+        {
+            // We should be called with start positions of various C# SourceMappings.
+            if (position.Character == 0)
+            {
+                // The mapping starts at 0. It can't be anything special but pure C#. Let's format it.
+                return true;
+            }
+
+            var sourceText = context.SourceText;
+            var absoluteIndex = sourceText.Lines[(int)position.Line].Start + (int)position.Character;
+            if (IsImplicitStatement())
+            {
+                return false;
+            }
+
+            var syntaxTree = context.CodeDocument.GetSyntaxTree();
+            var change = new SourceChange(absoluteIndex, 0, string.Empty);
+            var owner = syntaxTree.Root.LocateOwner(change);
+            if (owner == null)
+            {
+                // Can't determine owner of this position. Optimistically allow formatting.
+                return true;
+            }
+
+            if (IsInHtmlTag() ||
+                IsInSingleLineDirective() ||
+                IsImplicitOrExplicitExpression())
+            {
+                return false;
+            }
+
+            return true;
+
+            bool IsImplicitStatement()
+            {
+                // We will return true if the position points to the start of the C# portion of an implicit statement.
+                // `@|for(...)` - true
+                // `@|if(...)` - true
+                // `@{|...` - false
+                // `@code {|...` - false
+                //
+
+                var previousCharIndex = absoluteIndex - 1;
+                var previousChar = sourceText[previousCharIndex];
+                return previousChar == '@';
+            }
+
+            bool IsInHtmlTag()
+            {
+                // E.g, (| is position)
+                //
+                // `<p csharpattr="|Variable">` - true
+                //
+                return owner.AncestorsAndSelf().Any(
+                    n => n is MarkupStartTagSyntax || n is MarkupTagHelperStartTagSyntax || n is MarkupEndTagSyntax || n is MarkupTagHelperEndTagSyntax);
+            }
+
+            bool IsInSingleLineDirective()
+            {
+                // E.g, (| is position)
+                //
+                // `@inject |SomeType SomeName` - true
+                //
+                // Note: @using directives don't have a descriptor associated with them, hence the extra null check.
+                //
+                return owner.AncestorsAndSelf().Any(
+                    n => n is RazorDirectiveSyntax directive && (directive.DirectiveDescriptor == null || directive.DirectiveDescriptor.Kind == DirectiveKind.SingleLine));
+            }
+
+            bool IsImplicitOrExplicitExpression()
+            {
+                // E.g, (| is position)
+                //
+                // `@|foo` - true
+                // `@(|foo)` - true
+                //
+                return owner.AncestorsAndSelf().Any(n => n is CSharpImplicitExpressionSyntax || n is CSharpExplicitExpressionSyntax);
+            }
         }
     }
 }

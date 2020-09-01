@@ -60,9 +60,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 node.Parent is CSharpImplicitExpressionBodySyntax ||
                 node.Parent is RazorDirectiveBodySyntax ||
                 (_currentBlockKind == FormattingBlockKind.Directive &&
-                node.Children.Count == 1 &&
-                node.Children[0] is CSharpStatementLiteralSyntax))
+                node.Parent?.Parent is RazorDirectiveBodySyntax))
             {
+                // If we get here, it means we don't want this code block to be considered significant.
+                // Without this, we would have double indentation in places where
+                // CSharpCodeBlock is used as a wrapper block in the syntax tree.
+
                 if (!(node.Parent is RazorDirectiveBodySyntax))
                 {
                     _currentIndentationLevel++;

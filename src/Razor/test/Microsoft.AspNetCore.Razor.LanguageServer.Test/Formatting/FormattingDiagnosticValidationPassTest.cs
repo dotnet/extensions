@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
@@ -10,15 +11,16 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Xunit;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    public class FormattingContentValidationPassTest : LanguageServerTestBase
+    public class FormattingDiagnosticValidationPassTest : LanguageServerTestBase
     {
         [Fact]
-        public void Execute_LanguageKindCSharp_Noops()
+        public async Task ExecuteAsync_LanguageKindCSharp_Noops()
         {
             // Arrange
             var source = SourceText.From(@"
@@ -27,18 +29,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 }
 ");
             var context = CreateFormattingContext(source);
-            var input = new FormattingResult(Array.Empty<TextEdit>(), RazorLanguageKind.CSharp);
+            var badEdit = new TextEdit()
+            {
+                NewText = "@ ",
+                Range = new Range(new Position(0, 0), new Position(0, 0))
+            };
+            var input = new FormattingResult(new[] { badEdit }, RazorLanguageKind.CSharp);
             var pass = GetPass(context.CodeDocument);
 
             // Act
-            var result = pass.Execute(context, input);
+            var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
 
             // Assert
             Assert.Equal(input, result);
         }
 
         [Fact]
-        public void Execute_LanguageKindHtml_Noops()
+        public async Task ExecuteAsync_LanguageKindHtml_Noops()
         {
             // Arrange
             var source = SourceText.From(@"
@@ -47,18 +54,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 }
 ");
             var context = CreateFormattingContext(source);
-            var input = new FormattingResult(Array.Empty<TextEdit>(), RazorLanguageKind.Html);
+            var badEdit = new TextEdit()
+            {
+                NewText = "@ ",
+                Range = new Range(new Position(0, 0), new Position(0, 0))
+            };
+            var input = new FormattingResult(new[] { badEdit }, RazorLanguageKind.Html);
             var pass = GetPass(context.CodeDocument);
 
             // Act
-            var result = pass.Execute(context, input);
+            var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
 
             // Assert
             Assert.Equal(input, result);
         }
 
         [Fact]
-        public void Execute_NonDestructiveEdit_Allowed()
+        public async Task ExecuteAsync_NonDestructiveEdit_Allowed()
         {
             // Arrange
             var source = SourceText.From(@"
@@ -79,14 +91,14 @@ public class Foo { }
             var pass = GetPass(context.CodeDocument);
 
             // Act
-            var result = pass.Execute(context, input);
+            var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
 
             // Assert
             Assert.Equal(input, result);
         }
 
         [Fact]
-        public void Execute_DestructiveEdit_Rejected()
+        public async Task ExecuteAsync_DestructiveEdit_Rejected()
         {
             // Arrange
             var source = SourceText.From(@"
@@ -95,32 +107,29 @@ public class Foo { }
 }
 ");
             var context = CreateFormattingContext(source);
-            var edits = new[]
+            var badEdit = new TextEdit()
             {
-                new TextEdit()
-                {
-                    NewText = "    ",
-                    Range = new Range(new Position(2, 0), new Position(3, 0)) // Nukes a line
-                }
+                NewText = "@ ", // Creates a diagnostic
+                Range = new Range(new Position(0, 0), new Position(0, 0))
             };
-            var input = new FormattingResult(edits, RazorLanguageKind.Razor);
+            var input = new FormattingResult(new[] { badEdit }, RazorLanguageKind.Razor);
             var pass = GetPass(context.CodeDocument);
 
             // Act
-            var result = pass.Execute(context, input);
+            var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
 
             // Assert
             Assert.Empty(result.Edits);
         }
 
-        private FormattingContentValidationPass GetPass(RazorCodeDocument codeDocument)
+        private FormattingDiagnosticValidationPass GetPass(RazorCodeDocument codeDocument)
         {
             var mappingService = new DefaultRazorDocumentMappingService();
 
             var client = new FormattingLanguageServerClient();
             client.AddCodeDocument(codeDocument);
             var projectSnapshotManagerAccessor = Mock.Of<ProjectSnapshotManagerAccessor>();
-            var pass = new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory);
+            var pass = new FormattingDiagnosticValidationPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory);
             pass.DebugAssertsEnabled = false;
 
             return pass;

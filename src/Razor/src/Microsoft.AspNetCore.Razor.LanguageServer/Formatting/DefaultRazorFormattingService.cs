@@ -63,10 +63,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var result = new FormattingResult(Array.Empty<TextEdit>());
             foreach (var pass in _formattingPasses)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 result = await pass.ExecuteAsync(context, result, cancellationToken);
             }
 
-            return result.Edits;
+            var filteredEdits = result.Edits.Where(e => range.LineOverlapsWith(e.Range)).ToArray();
+            return filteredEdits;
         }
 
         public override async Task<TextEdit[]> ApplyFormattedEditsAsync(DocumentUri uri, DocumentSnapshot documentSnapshot, RazorLanguageKind kind, TextEdit[] formattedEdits, FormattingOptions options, CancellationToken cancellationToken)
@@ -83,6 +85,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             foreach (var pass in _formattingPasses)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 result = await pass.ExecuteAsync(context, result, cancellationToken);
             }
 

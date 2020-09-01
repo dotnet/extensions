@@ -13,16 +13,17 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    internal class FormattingStructureValidationPass : FormattingPassBase
+    internal class OnTypeFormattingStructureValidationPass : FormattingPassBase
     {
         private readonly ILogger _logger;
 
-        public FormattingStructureValidationPass(
+        public OnTypeFormattingStructureValidationPass(
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
             IClientLanguageServer server,
+            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor,
             ILoggerFactory loggerFactory)
-            : base(documentMappingService, filePathNormalizer, server)
+            : base(documentMappingService, filePathNormalizer, server, projectSnapshotManagerAccessor)
         {
             if (loggerFactory is null)
             {

@@ -4,6 +4,9 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -11,11 +14,11 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    internal class FormattingContentValidationPass : FormattingPassBase
+    internal class FormattingDiagnosticValidationPass : FormattingPassBase
     {
         private readonly ILogger _logger;
 
-        public FormattingContentValidationPass(
+        public FormattingDiagnosticValidationPass(
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
             IClientLanguageServer server,
@@ -28,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _logger = loggerFactory.CreateLogger<FormattingContentValidationPass>();
+            _logger = loggerFactory.CreateLogger<FormattingDiagnosticValidationPass>();
         }
 
         // We want this to run at the very end.
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         // Internal for testing.
         internal bool DebugAssertsEnabled { get; set; } = true;
 
-        public override FormattingResult Execute(FormattingContext context, FormattingResult result)
+        public async override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {
             if (result.Kind != RazorLanguageKind.Razor)
             {
@@ -45,19 +48,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 return result;
             }
 
+            var originalDiagnostics = context.CodeDocument.GetSyntaxTree().Diagnostics;
+
             var text = context.SourceText;
             var edits = result.Edits;
             var changes = edits.Select(e => e.AsTextChange(text));
             var changedText = text.WithChanges(changes);
+            var changedContext = await context.WithTextAsync(changedText);
+            var changedDiagnostics = changedContext.CodeDocument.GetSyntaxTree().Diagnostics;
 
-            if (!text.NonWhitespaceContentEquals(changedText))
+            if (!originalDiagnostics.SequenceEqual(changedDiagnostics))
             {
                 // Looks like we removed some non-whitespace content as part of formatting. Oops.
                 // Discard this formatting result.
 
                 if (DebugAssertsEnabled)
                 {
-                    Debug.Fail("A formatting result was rejected because it was going to change non-whitespace content in the document.");
+                    Debug.Fail("A formatting result was rejected because the formatted text produced different diagnostics compared to the original text.");
                 }
 
                 return new FormattingResult(Array.Empty<TextEdit>());
