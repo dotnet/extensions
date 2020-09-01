@@ -9,6 +9,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
     {
         public abstract string FilePath { get; }
 
+        public abstract bool SupportsDiagnostics { get; set; }
+
         public abstract TextLoader GetTextLoader(string filePath);
 
         public abstract IRazorSpanMappingService GetMappingService();

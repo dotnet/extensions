@@ -30,6 +30,12 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public override string FilePath => _documentSnapshot.FilePath;
 
+        public override bool SupportsDiagnostics
+        {
+            get => false;
+            set { /* no-op */ }
+        }
+
         public override TextLoader GetTextLoader(string filePath) => new GeneratedDocumentTextLoader(_documentSnapshot, filePath);
 
         public override IRazorDocumentExcerptService GetExcerptService()

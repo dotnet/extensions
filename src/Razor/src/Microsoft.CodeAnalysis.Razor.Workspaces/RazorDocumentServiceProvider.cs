@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
 
         public bool CanApplyChange => false;
 
-        public bool SupportDiagnostics => false;
+        public bool SupportDiagnostics => _documentContainer?.SupportsDiagnostics ?? false;
 
         public TService GetService<TService>() where TService : class
         {

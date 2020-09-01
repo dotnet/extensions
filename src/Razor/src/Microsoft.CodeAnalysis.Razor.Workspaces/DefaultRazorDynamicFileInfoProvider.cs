@@ -58,6 +58,10 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 throw new ArgumentNullException(nameof(documentContainer));
             }
 
+            // This endpoint is only called in LSP cases when the file is open(ed)
+            // We report diagnostics are supported to Roslyn in this case
+            documentContainer.SupportsDiagnostics = true;
+
             var filePath = documentUri.GetAbsoluteOrUNCPath().Replace('/', '\\');
             KeyValuePair<Key, Entry>? associatedKvp = null;
             foreach (var entry in _entries)
@@ -97,6 +101,12 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             {
                 throw new ArgumentNullException(nameof(documentContainer));
             }
+
+            // This endpoint is called either when:
+            //  1. LSP: File is closed
+            //  2. Non-LSP: File is Supressed
+            // We report, diagnostics are not supported, to Roslyn in these cases
+            documentContainer.SupportsDiagnostics = false;
 
             // There's a possible race condition here where we're processing an update
             // and the project is getting unloaded. So if we don't find an entry we can
