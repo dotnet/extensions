@@ -19,6 +19,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
 {
@@ -28,19 +29,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
         private readonly DocumentResolver _documentResolver;
         private readonly ProjectSnapshotManager _projectSnapshotManager;
         private readonly RazorComponentSearchEngine _componentSearchEngine;
-
+        private readonly LanguageServerFeatureOptions _languageServerFeatureOptions;
         private RenameCapability _capability;
 
         public RazorComponentRenameEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             RazorComponentSearchEngine componentSearchEngine,
-            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor)
+            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor,
+            LanguageServerFeatureOptions languageServerFeatureOptions)
         {
             _foregroundDispatcher = foregroundDispatcher ?? throw new ArgumentNullException(nameof(foregroundDispatcher));
             _documentResolver = documentResolver ?? throw new ArgumentNullException(nameof(documentResolver));
             _componentSearchEngine = componentSearchEngine ?? throw new ArgumentNullException(nameof(componentSearchEngine));
             _projectSnapshotManager = projectSnapshotManagerAccessor?.Instance ?? throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
+            _languageServerFeatureOptions = languageServerFeatureOptions ?? throw new ArgumentNullException(nameof(languageServerFeatureOptions));
         }
 
         public RenameRegistrationOptions GetRegistrationOptions()
@@ -57,6 +60,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
+            }
+
+            if (!_languageServerFeatureOptions.SupportsFileManipulation)
+            {
+                // If we cannot rename a component file then return early indicating a failure to rename anything.
+                return null;
             }
 
             var requestDocumentSnapshot = await Task.Factory.StartNew(() =>

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -21,12 +22,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
 {
     public class RazorComponentRenameEndpointTest : LanguageServerTestBase
     {
-        private RazorProjectEngine _projectEngine;
-        private RazorComponentRenameEndpoint _endpoint;
+        private readonly RazorComponentRenameEndpoint _endpoint;
 
         public RazorComponentRenameEndpointTest()
         {
-            CreateEndpoint();
+            _endpoint = CreateEndpoint();
+        }
+
+        [Fact]
+        public async Task Handle_Rename_FileManipulationNotSupported_ReturnsNull()
+        {
+            // Arrange
+            var languageServerFeatureOptions = Mock.Of<LanguageServerFeatureOptions>(options => options.SupportsFileManipulation == false);
+            var endpoint = CreateEndpoint(languageServerFeatureOptions);
+            var request = new RenameParams
+            {
+                TextDocument = new TextDocumentIdentifier
+                {
+                    Uri = new Uri("file:///c:/First/Component1.razor")
+                },
+                Position = new Position(2, 1),
+                NewName = "Component5"
+            };
+
+            // Act
+            var result = await endpoint.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.Null(result);
         }
 
         [Fact]
@@ -176,9 +199,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
             };
         }
 
-        private DocumentSnapshot CreateRazorDocumentSnapshot(TestRazorProjectItem item, string rootNamespaceName)
+        private DocumentSnapshot CreateRazorDocumentSnapshot(RazorProjectEngine projectEngine, TestRazorProjectItem item, string rootNamespaceName)
         {
-            var codeDocument = _projectEngine.ProcessDesignTime(item);
+            var codeDocument = projectEngine.ProcessDesignTime(item);
 
             var namespaceNode = (NamespaceDeclarationIntermediateNode)codeDocument
                 .GetDocumentIntermediateNode()
@@ -195,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
             return documentSnapshot;
         }
 
-        private void CreateEndpoint()
+        private RazorComponentRenameEndpoint CreateEndpoint(LanguageServerFeatureOptions languageServerFeatureOptions = null)
         {
             var tag1 = CreateRazorComponentTagHelperDescriptor("First", "First.Components", "Component1");
             var tag2 = CreateRazorComponentTagHelperDescriptor("First", "Test", "Component2");
@@ -215,17 +238,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
 
             var fileSystem = new TestRazorProjectFileSystem(new[] { item1, item2, item3, item4, itemDirectory1, itemDirectory2 });
 
-            _projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder => {
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder => {
                 builder.AddDirective(NamespaceDirective.Directive);
                 builder.AddTagHelpers(tagHelperDescriptors);
             });
             
-            var component1 = CreateRazorDocumentSnapshot(item1, "First.Components");
-            var component2 = CreateRazorDocumentSnapshot(item2, "Test");
-            var component3 = CreateRazorDocumentSnapshot(item3, "Second.Components");
-            var component4 = CreateRazorDocumentSnapshot(item4, "Second.Components");
-            var directory1Component = CreateRazorDocumentSnapshot(itemDirectory1, "Test.Components");
-            var directory2Component = CreateRazorDocumentSnapshot(itemDirectory2, "Test.Components");
+            var component1 = CreateRazorDocumentSnapshot(projectEngine, item1, "First.Components");
+            var component2 = CreateRazorDocumentSnapshot(projectEngine, item2, "Test");
+            var component3 = CreateRazorDocumentSnapshot(projectEngine, item3, "Second.Components");
+            var component4 = CreateRazorDocumentSnapshot(projectEngine, item4, "Second.Components");
+            var directory1Component = CreateRazorDocumentSnapshot(projectEngine, itemDirectory1, "Test.Components");
+            var directory2Component = CreateRazorDocumentSnapshot(projectEngine, itemDirectory2, "Test.Components");
 
             var firstProject = Mock.Of<ProjectSnapshot>(p =>
                 p.FilePath == "c:/First/First.csproj" &&
@@ -253,7 +276,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
                 d.TryResolveDocument(itemDirectory2.FilePath, out directory2Component) == true);
 
             var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, projectSnapshotManagerAccessor);
-            _endpoint = new RazorComponentRenameEndpoint(Dispatcher, documentResolver, searchEngine, projectSnapshotManagerAccessor);
+            languageServerFeatureOptions = languageServerFeatureOptions ?? Mock.Of<LanguageServerFeatureOptions>(options => options.SupportsFileManipulation == true);
+            var endpoint = new RazorComponentRenameEndpoint(Dispatcher, documentResolver, searchEngine, projectSnapshotManagerAccessor, languageServerFeatureOptions);
+            return endpoint;
         }
 
         internal class TestProjectSnapshotManagerAccessor : ProjectSnapshotManagerAccessor
