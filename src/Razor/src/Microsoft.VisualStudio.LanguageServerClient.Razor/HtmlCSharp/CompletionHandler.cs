@@ -136,6 +136,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 result = SetResolveData(result.Value, serverKind);
                 if (serverKind == LanguageServerKind.CSharp && string.Equals(request.Context.TriggerCharacter, "@", StringComparison.Ordinal))
                 {
+                    result = DoNotPreselect(result.Value);
                     result = IncludeCSharpKeywords(result.Value, serverKind);
                 }
             }
@@ -198,6 +199,30 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(documentSnapshot.Uri, new[] { removeProvisionalDot }, previousCharacterProjection.HostDocumentVersion.Value);
 
             return (true, result);
+        }
+
+        // In cases like "@{" preselection can lead to unexpected behavior, so let's exclude it.
+        private SumType<CompletionItem[], CompletionList>? DoNotPreselect(SumType<CompletionItem[], CompletionList> completionResult)
+        {
+            var result = completionResult.Match<SumType<CompletionItem[], CompletionList>?>(
+                items => {
+                    foreach (var i in items)
+                    {
+                        i.Preselect = false;
+                    }
+
+                    return items;
+                },
+                list => {
+                    foreach (var i in list.Items)
+                    {
+                        i.Preselect = false;
+                    }
+
+                    return list;
+                });
+
+            return result;
         }
 
         // C# keywords were previously provided by snippets, but as of now C# LSP doesn't provide snippets. 
