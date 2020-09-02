@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
 {
     public class DefaultRazorHoverInfoServiceTest : DefaultTagHelperServiceTestBase
     {
-        protected ILanguageServer LanguageServer
+        protected IClientLanguageServer LanguageServer
         {
             get
             {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
                     }
                 };
 
-                var languageServer = new Mock<ILanguageServer>();
+                var languageServer = new Mock<IClientLanguageServer>();
                 languageServer.SetupGet(server => server.ClientSettings)
                     .Returns(initializeParams);
 
@@ -311,15 +311,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
             Assert.Null(hover);
         }
 
-        private DefaultRazorHoverInfoService GetDefaultRazorHoverInfoService(ILanguageServer languageServer = null)
+        private DefaultRazorHoverInfoService GetDefaultRazorHoverInfoService(IClientLanguageServer languageServer = null)
         {
             if (languageServer is null)
             {
                 languageServer = LanguageServer;
             }
 
-            var lazy = new Lazy<ILanguageServer>(languageServer);
-            var tagHelperDescriptionFactory = new DefaultTagHelperDescriptionFactory(lazy);
+            var tagHelperDescriptionFactory = new DefaultTagHelperDescriptionFactory(languageServer);
             return new DefaultRazorHoverInfoService(TagHelperFactsService, tagHelperDescriptionFactory, HtmlFactsService);
         }
     }
