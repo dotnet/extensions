@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,12 +18,32 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
+    [IntializeTestFile]
     public class FormattingTestBase : LanguageServerTestBase
     {
+        private static readonly AsyncLocal<string> _fileName = new AsyncLocal<string>();
+
+        public FormattingTestBase()
+        {
+            TestProjectPath = GetProjectDirectory();
+        }
+
+        public static string TestProjectPath { get; private set; }
+
+        // Used by the test framework to set the 'base' name for test files.
+        public static string FileName
+        {
+            get { return _fileName.Value; }
+            set { _fileName.Value = value; }
+        }
+
         protected async Task RunFormattingTestAsync(string input, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
         {
             // Arrange
             fileKind ??= FileKinds.Component;
+            input = input.TrimStart('\r', '\n');
+            expected = expected.TrimStart('\r', '\n');
+
             var start = input.IndexOf('|', StringComparison.Ordinal);
             var end = input.LastIndexOf('|');
             input = input.Replace("|", string.Empty, StringComparison.Ordinal);
@@ -48,13 +69,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // Assert
             var edited = ApplyEdits(source, edits);
             var actual = edited.ToString();
+
+#if GENERATE_BASELINES
+            Assert.False(true, "GENERATE_BASELINES is set to true.");
+#else
             Assert.Equal(expected, actual);
+#endif
         }
 
-        protected async Task RunOnTypeFormattingTestAsync(string input, string expected, string triggerCharacter, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
+    protected async Task RunOnTypeFormattingTestAsync(string input, string expected, string triggerCharacter, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
         {
             // Arrange
             fileKind ??= FileKinds.Component;
+            input = input.TrimStart('\r', '\n');
+            expected = expected.TrimStart('\r', '\n');
+
             var beforeTrigger = input.IndexOf('|', StringComparison.Ordinal);
             var afterTrigger = input.LastIndexOf('|') - 1;
             input = input.Replace("|", string.Empty, StringComparison.Ordinal);
@@ -79,7 +108,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // Assert
             var edited = ApplyEdits(source, edits);
             var actual = edited.ToString();
+
+#if GENERATE_BASELINES
+            Assert.False(true, "GENERATE_BASELINES is set to true.");
+#else
             Assert.Equal(expected, actual);
+#endif
         }
 
         private (RazorLanguageKind, TextEdit[]) GetFormattedEdits(RazorCodeDocument codeDocument, string expected, int positionBeforeTriggerChar)
@@ -112,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             var mappingService = new DefaultRazorDocumentMappingService();
 
-            var client = new FormattingLanguageServerClient();
+            var client = new FormattingLanguageServerClient(TestProjectPath, FileName);
             client.AddCodeDocument(codeDocument);
             var projectSnapshotManagerAccessor = Mock.Of<ProjectSnapshotManagerAccessor>(p => p.Instance.Workspace == new AdhocWorkspace());
             var passes = new List<IFormattingPass>()
@@ -150,6 +184,37 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             documentSnapshot.Setup(d => d.FileKind).Returns(fileKind);
 
             return (codeDocument, documentSnapshot.Object);
+        }
+
+        private static string GetProjectDirectory()
+        {
+            var repoRoot = SearchUp(AppContext.BaseDirectory, "global.json");
+            if (repoRoot == null)
+            {
+                repoRoot = AppContext.BaseDirectory;
+            }
+
+            var assemblyName = typeof(FormattingTestBase).Assembly.GetName().Name;
+            var projectDirectory = Path.Combine(repoRoot, "src", "Razor", "test", assemblyName);
+
+            return projectDirectory;
+        }
+
+        private static string SearchUp(string baseDirectory, string fileName)
+        {
+            var directoryInfo = new DirectoryInfo(baseDirectory);
+            do
+            {
+                var fileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, fileName));
+                if (fileInfo.Exists)
+                {
+                    return fileInfo.DirectoryName;
+                }
+                directoryInfo = directoryInfo.Parent;
+            }
+            while (directoryInfo.Parent != null);
+
+            return null;
         }
     }
 }

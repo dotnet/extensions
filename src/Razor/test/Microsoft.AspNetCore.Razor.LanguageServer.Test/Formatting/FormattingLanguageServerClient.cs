@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -21,6 +22,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Progress;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.WorkDone;
+using Xunit.Sdk;
 using FormattingOptions = Microsoft.CodeAnalysis.Formatting.FormattingOptions;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
@@ -29,6 +31,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         private readonly FilePathNormalizer _filePathNormalizer = new FilePathNormalizer();
         private readonly Dictionary<string, RazorCodeDocument> _documents = new Dictionary<string, RazorCodeDocument>();
+        private readonly string _projectPath;
+        private readonly string _baselineFileName;
+
+        public FormattingLanguageServerClient(string projectPath, string fileName)
+        {
+            _projectPath = projectPath;
+            _baselineFileName = fileName;
+        }
+
+#if GENERATE_BASELINES
+        protected bool GenerateBaselines { get; } = true;
+#else
+        protected bool GenerateBaselines { get; } = false;
+#endif
 
         public IProgressManager ProgressManager => throw new NotImplementedException();
 
@@ -36,9 +52,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public ILanguageServerConfiguration Configuration => throw new NotImplementedException();
 
-        public OmniSharp.Extensions.LanguageServer.Protocol.Models.InitializeParams ClientSettings => throw new NotImplementedException();
+        public InitializeParams ClientSettings => throw new NotImplementedException();
 
-        public OmniSharp.Extensions.LanguageServer.Protocol.Models.InitializeResult ServerSettings => throw new NotImplementedException();
+        public InitializeResult ServerSettings => throw new NotImplementedException();
 
         public void SendNotification(string method) => throw new NotImplementedException();
 
@@ -80,8 +96,62 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
             else if (@params.Kind == RazorLanguageKind.Html)
             {
-                // This will be replaced by test baseline infrastructure.
                 response.Edits = Array.Empty<TextEdit>();
+
+                var codeDocument = _documents[@params.HostDocumentFilePath];
+                var generatedHtml = codeDocument.GetHtmlDocument().GeneratedHtml;
+                var inputText = SourceText.From(generatedHtml);
+
+                // Get formatted baseline file
+                var baselineInputFileName = Path.ChangeExtension(_baselineFileName, ".input.html");
+                var baselineOutputFileName = Path.ChangeExtension(_baselineFileName, ".output.html");
+
+                var baselineInputFile = TestFile.Create(baselineInputFileName, GetType().GetTypeInfo().Assembly);
+                var baselineOutputFile = TestFile.Create(baselineOutputFileName, GetType().GetTypeInfo().Assembly);
+
+                if (GenerateBaselines)
+                {
+                    if (baselineInputFile.Exists())
+                    {
+                        // If it already exists, we only want to update if the input is different.
+                        var inputContent = baselineInputFile.ReadAllText();
+                        if (string.Equals(inputContent, generatedHtml, StringComparison.Ordinal))
+                        {
+                            return response;
+                        }
+                    }
+
+                    var baselineInputFilePath = Path.Combine(_projectPath, baselineInputFileName);
+                    File.WriteAllText(baselineInputFilePath, generatedHtml);
+
+                    var baselineOutputFilePath = Path.Combine(_projectPath, baselineOutputFileName);
+                    File.WriteAllText(baselineOutputFilePath, generatedHtml);
+
+                    return response;
+                }
+
+                if (!baselineInputFile.Exists())
+                {
+                    throw new XunitException($"The resource {baselineInputFileName} was not found.");
+                }
+
+                if (!baselineOutputFile.Exists())
+                {
+                    throw new XunitException($"The resource {baselineOutputFileName} was not found.");
+                }
+
+                var baselineInputHtml = baselineInputFile.ReadAllText();
+                if (!string.Equals(baselineInputHtml, generatedHtml, StringComparison.Ordinal))
+                {
+                    throw new XunitException($"The baseline for {_baselineFileName} is out of date.");
+                }
+
+                var baselineOutputHtml = baselineOutputFile.ReadAllText();
+                var baselineInputText = SourceText.From(baselineInputHtml);
+                var baselineOutputText = SourceText.From(baselineOutputHtml);
+                var changes = SourceTextDiffer.GetMinimalTextChanges(baselineInputText, baselineOutputText, lineDiffOnly: false);
+                var edits = changes.Select(c => c.AsTextEdit(baselineInputText)).ToArray();
+                response.Edits = edits;
             }
 
             return response;
@@ -110,15 +180,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private static IResponseRouterReturns Convert<T>(T instance)
         {
             return new ResponseRouterReturns(instance);
-        }
-
-        private static TResponse Convert<T, TResponse>(T instance)
-        {
-            var parameter = Expression.Parameter(typeof(T));
-            var convert = Expression.Convert(parameter, typeof(TResponse));
-            var lambda = Expression.Lambda<Func<T, TResponse>>(convert, parameter).Compile();
-
-            return lambda(instance);
         }
 
         public void SendNotification(IRequest request)

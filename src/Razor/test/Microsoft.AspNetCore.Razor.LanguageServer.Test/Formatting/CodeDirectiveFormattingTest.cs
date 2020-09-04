@@ -46,7 +46,7 @@ expected: @"
     var x = ""foo"";
 }
 <div>
-        </div>
+</div>
 ");
         }
 
@@ -245,8 +245,8 @@ fileKind: FileKinds.Legacy);
         public async Task MultipleCodeBlockDirectives2()
         {
             await RunFormattingTestAsync(
-input: @"|
-Hello World
+input: @"
+|Hello World
 @code {
 public class HelloWorld
 {

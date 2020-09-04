@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             CancellationToken cancellationToken)
         {
             var workspace = _projectSnapshotManagerAccessor.Instance.Workspace;
-            var cSharpOptions = workspace.Options
+            var csharpOptions = workspace.Options
                 .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.TabSize, LanguageNames.CSharp, (int)options.TabSize)
                 .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.UseTabs, LanguageNames.CSharp, !options.InsertSpaces);
 
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var root = await syntaxTree.GetRootAsync();
             var spanToFormat = projectedRange.AsTextSpan(sourceText);
 
-            var changes = CodeAnalysis.Formatting.Formatter.GetFormattedTextChanges(root, spanToFormat, workspace, options: cSharpOptions);
+            var changes = CodeAnalysis.Formatting.Formatter.GetFormattedTextChanges(root, spanToFormat, workspace, options: csharpOptions);
 
             var edits = changes.Select(c => c.AsTextEdit(sourceText)).ToArray();
             return edits;

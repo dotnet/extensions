@@ -9,7 +9,9 @@ using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Xunit;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
@@ -117,8 +119,7 @@ public class Foo { }
         {
             var mappingService = new DefaultRazorDocumentMappingService();
 
-            var client = new FormattingLanguageServerClient();
-            client.AddCodeDocument(codeDocument);
+            var client = Mock.Of<IClientLanguageServer>();
             var projectSnapshotManagerAccessor = Mock.Of<ProjectSnapshotManagerAccessor>();
             var pass = new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory);
             pass.DebugAssertsEnabled = false;
