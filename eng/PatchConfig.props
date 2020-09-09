@@ -11,7 +11,7 @@
       Microsoft.Extensions.Configuration.Binder;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.22' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.23' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
