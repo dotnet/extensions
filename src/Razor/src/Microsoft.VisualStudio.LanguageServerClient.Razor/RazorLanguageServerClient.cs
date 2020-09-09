@@ -125,8 +125,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var traceLevel = GetVerbosity();
             _server = await RazorLanguageServer.CreateAsync(serverStream, serverStream, traceLevel, ConfigureLanguageServer).ConfigureAwait(false);
 
-            // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize.
-            _server.InitializedAsync(token).FileAndForget("RazorLanguageServerClient_ActivateAsync");
+            // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize. We do a Task.Run to emulate initializing
+            // the language server on a separate thread; otherwise we'll initialize our language server on VS' main thread which will have many unintended consequences
+            // such as O# booting their input read loop on VS' main thread.
+            Task.Run(() => _server.InitializedAsync(token)).FileAndForget("RazorLanguageServerClient_ActivateAsync");
 
             var connection = new Connection(clientStream, clientStream);
             return connection;
