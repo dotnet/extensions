@@ -17,9 +17,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ExportLspMethod(Methods.TextDocumentCompletionName)]
     internal class CompletionHandler : IRequestHandler<CompletionParams, SumType<CompletionItem[], CompletionList>?>
     {
-        private static readonly IReadOnlyList<string> CSharpTriggerCharacters = new[] { ".", "@" };
-        private static readonly IReadOnlyList<string> HtmlTriggerCharacters = new[] { "<", "&", "\\", "/", "'", "\"", "=", ":", " " };
-        private static readonly IReadOnlyList<string> AllTriggerCharacters = CSharpTriggerCharacters.Concat(HtmlTriggerCharacters).ToArray();
+        private static readonly IReadOnlyList<string> RazorTriggerCharacters = new[] { "@" };
+        private static readonly IReadOnlyList<string> CSharpTriggerCharacters = new[] { " ", "(", "=", "#", ".", "<", "[", "{", "\"", "/", ":", ">", "~" };
+        private static readonly IReadOnlyList<string> HtmlTriggerCharacters = new[] { ":", "@", "#", ".", "!", "*", ",", "(", "[", "=", "_", "-", "<", "&", "\\", "/", "'", "\"", "=", ":", " " };
+
+        public static readonly IReadOnlyList<string> AllTriggerCharacters = new HashSet<string>(
+            CSharpTriggerCharacters
+                .Concat(HtmlTriggerCharacters)
+                .Concat(RazorTriggerCharacters))
+            .ToArray();
 
         private static readonly IReadOnlyCollection<string> Keywords = new string[] {
             "for", "foreach", "while", "switch", "lock",
@@ -112,10 +118,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
             else
             {
+                var completionContext = RewriteContext(request.Context, projectionResult.LanguageKind);
+
                 // This is a valid non-provisional completion request.
                 var completionParams = new CompletionParams()
                 {
-                    Context = request.Context,
+                    Context = completionContext,
                     Position = projectionResult.Position,
                     TextDocument = new TextDocumentIdentifier()
                     {
@@ -142,6 +150,35 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             return result;
+        }
+
+        private CompletionContext RewriteContext(CompletionContext context, RazorLanguageKind languageKind)
+        {
+            if (context.TriggerKind != CompletionTriggerKind.TriggerCharacter)
+            {
+                // Non-triggered based completion, the existing context is valid;
+                return context;
+            }
+
+            if (languageKind == RazorLanguageKind.CSharp && CSharpTriggerCharacters.Contains(context.TriggerCharacter))
+            {
+                // C# trigger character for C# content
+                return context;
+            }
+
+            if (languageKind == RazorLanguageKind.Html && HtmlTriggerCharacters.Contains(context.TriggerCharacter))
+            {
+                // HTML trigger character for HTML content
+                return context;
+            }
+
+            // Trigger character not associated with the current langauge. Transform the context into an invoked context.
+
+            var rewrittenContext = new CompletionContext()
+            {
+                TriggerKind = CompletionTriggerKind.Invoked
+            };
+            return rewrittenContext;
         }
 
         internal async Task<(bool, SumType<CompletionItem[], CompletionList>?)> TryGetProvisionalCompletionsAsync(CompletionParams request, LSPDocumentSnapshot documentSnapshot, ProjectionResult projection, CancellationToken cancellationToken)
@@ -328,7 +365,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         private static bool IsApplicableTriggerCharacter(string triggerCharacter, RazorLanguageKind languageKind)
         {
-            if (languageKind == RazorLanguageKind.CSharp)
+            if (RazorTriggerCharacters.Contains(triggerCharacter))
+            {
+                // Razor trigger characters always transition into either C# or HTML, always note as "applicable".
+                return true;
+            }
+            else if (languageKind == RazorLanguageKind.CSharp)
             {
                 return CSharpTriggerCharacters.Contains(triggerCharacter);
             }

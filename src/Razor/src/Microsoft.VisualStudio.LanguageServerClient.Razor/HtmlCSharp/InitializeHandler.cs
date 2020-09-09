@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -18,9 +19,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 CompletionProvider = new CompletionOptions()
                 {
-                    AllCommitCharacters = new[] { " ", ".", ";", ">", "=", "(", ")", "[", "]", "{", "}", "!" },
+                    AllCommitCharacters = new[] { " ", "{", "}", "[", "]", "(", ")", ".", ",", ":", ";", "+", "-", "*", "/", "%", "&", "|", "^", "!", "~", "=", "<", ">", "?", "@", "#", "'", "\"", "\\" },
                     ResolveProvider = true,
-                    TriggerCharacters = new[] { ".", "@", "<", "&", "\\", "/", "'", "\"", "=", ":", " " }
+                    TriggerCharacters = CompletionHandler.AllTriggerCharacters.ToArray()
                 },
                 OnAutoInsertProvider = new DocumentOnAutoInsertOptions()
                 {

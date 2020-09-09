@@ -416,7 +416,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var completionRequest = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Context = new CompletionContext() { TriggerKind = CompletionTriggerKind.TriggerCharacter, TriggerCharacter = "@" },
+                Context = new CompletionContext() { TriggerKind = CompletionTriggerKind.TriggerCharacter, TriggerCharacter = "~" },
                 Position = new Position(0, 1)
             };
 
@@ -448,7 +448,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var completionRequest = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Context = new CompletionContext() { TriggerKind = CompletionTriggerKind.TriggerCharacter, TriggerCharacter = "<" },
+                Context = new CompletionContext() { TriggerKind = CompletionTriggerKind.TriggerCharacter, TriggerCharacter = "&" },
                 Position = new Position(0, 1)
             };
 
@@ -496,6 +496,53 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
+                    called = true;
+                })
+                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.CSharp,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
+
+            var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object);
+
+            // Act
+            var result = await completionHandler.HandleRequestAsync(completionRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(called);
+            Assert.NotEmpty((CompletionItem[])result.Value);
+            var item = ((CompletionItem[])result.Value).First();
+            Assert.Equal(expectedItem.InsertText, item.InsertText);
+        }
+
+        [Fact]
+        public async Task HandleRequestAsync_CSharpProjection_TransitionTriggerCharacter_InvokesCSharpLanguageServerWithInvoke()
+        {
+            // Arrange
+            var called = false;
+            var expectedItem = new CompletionItem() { InsertText = "DateTime" };
+            var completionRequest = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Context = new CompletionContext() { TriggerKind = CompletionTriggerKind.TriggerCharacter, TriggerCharacter = "a" },
+                Position = new Position(0, 1)
+            };
+
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+
+            var requestInvoker = new Mock<LSPRequestInvoker>();
+            requestInvoker
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
+                {
+                    Assert.Equal(Methods.TextDocumentCompletionName, method);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
+                    Assert.Equal(CompletionTriggerKind.Invoked, completionParams.Context.TriggerKind);
                     called = true;
                 })
                 .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
@@ -891,9 +938,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         [InlineData("=", CompletionTriggerKind.TriggerCharacter, true)]
         [InlineData(":", CompletionTriggerKind.TriggerCharacter, true)]
         [InlineData("\"", CompletionTriggerKind.TriggerCharacter, true)]
-        [InlineData(".", CompletionTriggerKind.TriggerCharacter, false)]
+        [InlineData(".", CompletionTriggerKind.TriggerCharacter, true)]
         [InlineData(".", CompletionTriggerKind.Invoked, true)]
-        [InlineData("@", CompletionTriggerKind.TriggerCharacter, false)]
+        [InlineData("@", CompletionTriggerKind.TriggerCharacter, true)]
         [InlineData("@", CompletionTriggerKind.Invoked, true)]
         [InlineData("a", CompletionTriggerKind.TriggerCharacter, true)] // Auto-invoked from VS platform
         [InlineData("a", CompletionTriggerKind.Invoked, true)]
@@ -917,8 +964,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         [Theory]
         [InlineData(".", CompletionTriggerKind.TriggerCharacter, true)]
         [InlineData("@", CompletionTriggerKind.TriggerCharacter, true)]
-        [InlineData(" ", CompletionTriggerKind.TriggerCharacter, false)]
-        [InlineData("<", CompletionTriggerKind.TriggerCharacter, false)]
+        [InlineData(" ", CompletionTriggerKind.TriggerCharacter, true)]
+        [InlineData("&", CompletionTriggerKind.TriggerCharacter, false)]
         [InlineData("a", CompletionTriggerKind.TriggerCharacter, true)] // Auto-invoked from VS platform
         [InlineData("a", CompletionTriggerKind.Invoked, true)]
         public void TriggerAppliedToProjection_CSharp_ReturnsExpectedResult(string character, CompletionTriggerKind kind, bool expected)
