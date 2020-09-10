@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     internal class FormattingVisitor : SyntaxWalker
     {
+        private const string HtmlTagName = "html";
+
         private RazorSourceDocument _source;
         private List<FormattingSpan> _spans;
         private FormattingBlockKind _currentBlockKind;
@@ -132,12 +134,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public override void VisitMarkupElement(MarkupElementSyntax node)
         {
             Visit(node.StartTag);
-            _currentIndentationLevel++;
+
+            // Temporary fix to not break the default Html formatting behavior. Remove after https://github.com/dotnet/aspnetcore/issues/25475.
+            if (!string.Equals(node.StartTag?.Name?.Content, HtmlTagName, StringComparison.OrdinalIgnoreCase))
+            {
+                _currentIndentationLevel++;
+            }
+
             foreach (var child in node.Body)
             {
                 Visit(child);
             }
-            _currentIndentationLevel--;
+
+            // Temporary fix to not break the default Html formatting behavior. Remove after https://github.com/dotnet/aspnetcore/issues/25475.
+            if (!string.Equals(node.StartTag?.Name?.Content, HtmlTagName, StringComparison.OrdinalIgnoreCase))
+            {
+                _currentIndentationLevel--;
+            }
+
             Visit(node.EndTag);
         }
 

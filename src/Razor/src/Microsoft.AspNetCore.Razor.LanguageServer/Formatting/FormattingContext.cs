@@ -191,13 +191,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 }
                 else
                 {
-                    // Couldn't find a corresponding FormattingSpan.
+                    // Couldn't find a corresponding FormattingSpan. Happens if it is a 0 length line.
+                    // Let's create a 0 length span to represent this and default it to HTML.
+                    var placeholderSpan = new FormattingSpan(
+                        new Language.Syntax.TextSpan(total + nonWsChar, 0),
+                        new Language.Syntax.TextSpan(total + nonWsChar, 0),
+                        FormattingSpanKind.Markup,
+                        FormattingBlockKind.Markup,
+                        indentationLevel: 0,
+                        isInClassBody: false);
+
                     result.Indentations[i] = new IndentationContext
                     {
                         Line = i,
-                        IndentationLevel = -1,
+                        IndentationLevel = 0,
                         RelativeIndentationLevel = previousIndentationLevel,
                         ExistingIndentation = nonWsChar,
+                        FirstSpan = placeholderSpan,
                     };
                 }
 

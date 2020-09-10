@@ -50,16 +50,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var normalizedEdits = NormalizeTextEdits(originalText, htmlEdits);
             var mappedEdits = RemapTextEdits(context.CodeDocument, normalizedEdits, RazorLanguageKind.Html);
             var changes = mappedEdits.Select(e => e.AsTextChange(originalText));
-            var changedText = originalText.WithChanges(changes);
+            if (!changes.Any())
+            {
+                return result;
+            }
 
-            TrackEncompassingChange(originalText, changedText, out var spanBeforeChange, out var spanAfterChange);
-            var rangeBeforeEdit = spanBeforeChange.AsRange(originalText);
-            var rangeAfterEdit = spanAfterChange.AsRange(changedText);
+            var changedText = originalText.WithChanges(changes);
 
             // Create a new formatting context for the changed razor document.
             var changedContext = await context.WithTextAsync(changedText);
 
-            var indentationChanges = AdjustRazorIndentation(changedContext, (int)rangeAfterEdit.Start.Line, (int)rangeAfterEdit.End.Line);
+            var indentationChanges = AdjustRazorIndentation(changedContext);
             if (indentationChanges.Count > 0)
             {
                 // Apply the edits that adjust indentation.
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return new FormattingResult(finalEdits);
         }
 
-        private List<TextChange> AdjustRazorIndentation(FormattingContext context, int startLine, int endLine)
+        private List<TextChange> AdjustRazorIndentation(FormattingContext context)
         {
             // Assume HTML formatter has already run at this point and HTML is relatively indented correctly.
             // But HTML doesn't know about Razor blocks.
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var sourceText = context.SourceText;
             var editsToApply = new List<TextChange>();
 
-            for (var i = startLine; i <= endLine; i++)
+            for (var i = 0; i < sourceText.Lines.Count; i++)
             {
                 var line = sourceText.Lines[i];
                 if (line.Span.Length == 0)

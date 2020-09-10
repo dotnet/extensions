@@ -164,6 +164,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             for (var i = startLine; i <= endLine; i++)
             {
+                if (!context.Indentations[i].StartsInCSharpContext)
+                {
+                    // Not a CSharp line. Don't touch it.
+                    continue;
+                }
+
                 var line = sourceText.Lines[i];
                 if (line.Span.Length == 0)
                 {

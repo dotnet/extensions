@@ -14,12 +14,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Formatting
         {
             await RunFormattingTestAsync(
 input: @"
-|   <div>
-</div>|
+|   <html>
+<head>
+   <title>Hello</title></head>
+<body><div>
+</div>
+        </body>
+ </html>|
 ",
 expected: @"
-<div>
-</div>
+<html>
+<head>
+    <title>Hello</title>
+</head>
+<body>
+    <div>
+    </div>
+</body>
+</html>
 ");
         }
 
@@ -39,6 +51,15 @@ input: @"|@page ""/error""
 <p>
     <strong>The Development environment shouldn't be enabled for deployed applications.
 </strong>
+            <div>
+ <div>
+    <div>
+<div>
+        This is heavily nested
+</div>
+ </div>
+    </div>
+        </div>
 </p>
 |",
 expected: @"@page ""/error""
@@ -56,6 +77,15 @@ expected: @"@page ""/error""
     <strong>
         The Development environment shouldn't be enabled for deployed applications.
     </strong>
+    <div>
+        <div>
+            <div>
+                <div>
+                    This is heavily nested
+                </div>
+            </div>
+        </div>
+    </div>
 </p>
 ");
         }
@@ -75,6 +105,15 @@ if (true)
             }
         }
         </p>
+<div>
+ @{
+    <div>
+<div>
+        This is heavily nested
+</div>
+ </div>
+    }
+        </div>
 }
 |",
 expected: @"@page ""/test""
@@ -88,6 +127,15 @@ expected: @"@page ""/test""
             }
         }
     </p>
+    <div>
+        @{
+            <div>
+                <div>
+                    This is heavily nested
+                </div>
+            </div>
+        }
+    </div>
 }
 ");
         }

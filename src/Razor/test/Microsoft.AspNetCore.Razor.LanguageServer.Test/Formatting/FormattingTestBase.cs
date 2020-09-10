@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 #endif
         }
 
-    protected async Task RunOnTypeFormattingTestAsync(string input, string expected, string triggerCharacter, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
+        protected async Task RunOnTypeFormattingTestAsync(string input, string expected, string triggerCharacter, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
         {
             // Arrange
             fileKind ??= FileKinds.Component;
