@@ -48,12 +48,12 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-rc.2.20461.7</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>5.0.0-rc.2.20461.7</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-rc.2.20461.7</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-rc.2.20461.7</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>5.0.0-rc.2.20461.7</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>5.0.0-rc.2.20461.7</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-rc.2.20461.11</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>5.0.0-rc.2.20461.11</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-rc.2.20461.11</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-rc.2.20461.11</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>5.0.0-rc.2.20461.11</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>5.0.0-rc.2.20461.11</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0-alpha.1.20460.3</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>6.0.0-alpha.1.20460.3</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>6.0.0-alpha.1.20460.3</MicrosoftExtensionsLoggingPackageVersion>
@@ -61,7 +61,7 @@
     <MicrosoftNETCoreAppRefPackageVersion>6.0.0-alpha.1.20460.3</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>6.0.0-alpha.1.20460.3</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>6.0.0-alpha.1.20460.3</MicrosoftNETCorePlatformsPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>5.0.0-rc.2.20461.7</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>5.0.0-rc.2.20461.11</MicrosoftNETSdkRazorPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0-alpha.1.20460.3</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemResourcesExtensionsPackageVersion>6.0.0-alpha.1.20460.3</SystemResourcesExtensionsPackageVersion>
     <SystemTextEncodingsWebPackageVersion>6.0.0-alpha.1.20460.3</SystemTextEncodingsWebPackageVersion>
