@@ -128,16 +128,6 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 documentManager,
                 languageServiceClient,
                 logger);
-            const legend = await languageServiceClient.getSemanticTokenLegend();
-            const semanticTokenProvider = new RazorDocumentSemanticTokensProvider(
-              documentSynchronizer,
-              documentManager,
-              languageServiceClient,
-              logger);
-            if (legend) {
-                localRegistrations.push(vscodeType.languages.registerDocumentSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
-                localRegistrations.push(vscodeType.languages.registerDocumentRangeSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
-            }
 
             localRegistrations.push(
                 languageConfiguration.register(),
@@ -177,6 +167,17 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 documentSynchronizer.register(),
                 reportIssueCommand.register(),
                 listenToConfigurationChanges(languageServerClient));
+
+            const legend = await languageServiceClient.getSemanticTokenLegend();
+            const semanticTokenProvider = new RazorDocumentSemanticTokensProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger);
+            if (legend) {
+                localRegistrations.push(vscodeType.languages.registerDocumentSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
+                localRegistrations.push(vscodeType.languages.registerDocumentRangeSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
+            }
 
             if (enableProposedApis) {
                 const proposedApisFeature = new ProposedApisFeature();

@@ -10,5 +10,5 @@ export interface LanguageQueryResponse {
     kind: LanguageKind;
     position: vscode.Position;
     positionIndex: number;
-    hostDocumentVersion: number;
+    hostDocumentVersion: number | undefined;
 }

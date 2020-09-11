@@ -154,7 +154,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         return this.client.sendRequest<TResponseType>(method, param);
     }
 
-    public async onRequest<TResponse, TError>(method: string, handler: GenericRequestHandler<TResponse, TError>) {
+    public onRequest<TResponse, TError>(method: string, handler: GenericRequestHandler<TResponse, TError>) {
         if (!this.isStarted) {
             throw new Error('Tried to bind on request logic while server is not started.');
         }

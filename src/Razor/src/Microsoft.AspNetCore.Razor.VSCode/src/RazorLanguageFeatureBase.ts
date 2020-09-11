@@ -13,8 +13,6 @@ import { LanguageKind } from './RPC/LanguageKind';
 import { getUriPath } from './UriPaths';
 
 export class RazorLanguageFeatureBase {
-    private readonly undefinedDocumentVersion = -1;
-
     constructor(
         private readonly documentSynchronizer: RazorDocumentSynchronizer,
         protected readonly documentManager: RazorDocumentManager,
@@ -36,7 +34,7 @@ export class RazorLanguageFeatureBase {
                     ? razorDocument.csharpDocument
                     : razorDocument.htmlDocument;
 
-                if (languageResponse.hostDocumentVersion === this.undefinedDocumentVersion) {
+                if (languageResponse.hostDocumentVersion === undefined) {
                     // There should always be a document version attached to an open document.
                     // Log it and move on as if it was synchronized.
                     if (this.logger.verboseEnabled) {
