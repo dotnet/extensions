@@ -183,6 +183,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         [Fact]
+        public void GetCompletionItems_InbetweenSelfClosingEnd_ReturnsEmptyList()
+        {
+            // Arrange
+
+            var syntaxTree = GetSyntaxTree("<input /" + Environment.NewLine);
+            var location = new SourceSpan(8, 0);
+
+            // Act
+            var result = Provider.GetCompletionItems(syntaxTree, TagHelperDocumentContext, location);
+
+            // Assert
+            Assert.Empty(result);
+        }
+
+        [Fact]
         public void GetCompletionItems_AttributeAreaInComponentFile_ReturnsTransitionCompletionItem()
         {
             // Arrange

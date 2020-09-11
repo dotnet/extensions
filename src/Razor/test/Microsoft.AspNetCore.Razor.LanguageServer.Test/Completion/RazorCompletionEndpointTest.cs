@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             // Assert
             Assert.True(result);
-            Assert.True(converted.Preselect);
+            Assert.False(converted.Preselect);
             Assert.Equal(completionItem.DisplayText, converted.Label);
             Assert.Equal(completionItem.InsertText, converted.InsertText);
             Assert.Equal(completionItem.DisplayText, converted.FilterText);

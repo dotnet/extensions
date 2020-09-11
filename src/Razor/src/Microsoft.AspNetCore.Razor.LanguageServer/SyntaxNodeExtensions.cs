@@ -13,6 +13,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal static class SyntaxNodeExtensions
     {
+        public static bool ContainsOnlyWhitespace(this SyntaxNode node)
+        {
+            if (node is null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            var tokens = node.GetTokens();
+
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                var tokenKind = tokens[i].Kind;
+                if (tokenKind != SyntaxKind.Whitespace && tokenKind != SyntaxKind.NewLine)
+                {
+                    return false;
+                }
+            }
+
+            // All tokens were either whitespace or newlines.
+            return true;
+        }
+
         public static LinePositionSpan GetLinePositionSpan(this SyntaxNode node, RazorSourceDocument source)
         {
             if (node is null)

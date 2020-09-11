@@ -263,7 +263,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                         {
                             directiveCompletionItem.Command = RetriggerCompletionCommand;
                             directiveCompletionItem.Kind = CompletionItemKind.TypeParameter;
-                            directiveCompletionItem.Preselect = true;
                         }
 
                         directiveCompletionItem.SetRazorCompletionKind(razorCompletionItem.Kind);

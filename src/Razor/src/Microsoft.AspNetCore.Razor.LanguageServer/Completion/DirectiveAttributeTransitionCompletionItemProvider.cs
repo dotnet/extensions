@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             }
 
             var attribute = owner.Parent;
-            if (attribute is MarkupMiscAttributeContentSyntax)
+            if (attribute is MarkupMiscAttributeContentSyntax && attribute.ContainsOnlyWhitespace())
             {
                 // This represents a tag when there's no attribute content <InputText | />.
                 return Completions;
