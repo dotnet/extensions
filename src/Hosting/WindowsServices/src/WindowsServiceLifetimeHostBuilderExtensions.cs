@@ -1,5 +1,6 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Runtime.InteropServices;
@@ -27,6 +28,22 @@ namespace Microsoft.Extensions.Hosting
         /// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder)
         {
+            return UseWindowsService(hostBuilder, _ => { });
+        }
+
+        /// <summary>
+        /// Sets the host lifetime to WindowsServiceLifetime, sets the Content Root,
+        /// and enables logging to the event log with the application name as the default source name.
+        /// </summary>
+        /// <remarks>
+        /// This is context aware and will only activate if it detects the process is running
+        /// as a Windows Service.
+        /// </remarks>
+        /// <param name="hostBuilder">The <see cref="IHostBuilder"/> to operate on.</param>
+        /// <param name="configure"></param>
+        /// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
+        public static IHostBuilder UseWindowsService(this IHostBuilder hostBuilder, Action<WindowsServiceLifetimeOptions> configure)
+        {
             if (WindowsServiceHelpers.IsWindowsService())
             {
                 // Host.CreateDefaultBuilder uses CurrentDirectory for VS scenarios, but CurrentDirectory for services is c:\Windows\System32.
@@ -45,6 +62,7 @@ namespace Microsoft.Extensions.Hosting
                             settings.SourceName = hostContext.HostingEnvironment.ApplicationName;
                         }
                     });
+                    services.Configure(configure);
                 });
             }
 
