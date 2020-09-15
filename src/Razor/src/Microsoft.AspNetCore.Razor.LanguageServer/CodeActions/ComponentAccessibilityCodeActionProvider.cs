@@ -13,9 +13,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Editor.Razor;
-using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
@@ -196,30 +194,45 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         private static WorkspaceEdit CreateRenameTagEdit(RazorCodeActionContext context, MarkupStartTagSyntax startTag, string newTagName)
         {
-            var changes = new List<TextEdit>
+            var documentChanges = new List<WorkspaceEditDocumentChange>();
+            var codeDocumentIdentifier = new VersionedTextDocumentIdentifier() { Uri = context.Request.TextDocument.Uri };
+
+            var startTagTextEdit = new TextEdit
             {
-                new TextEdit
-                {
-                    Range = startTag.Name.GetRange(context.CodeDocument.Source),
-                    NewText = newTagName,
-                },
+                Range = startTag.Name.GetRange(context.CodeDocument.Source),
+                NewText = newTagName,
             };
+
+            var startTagWorkspaceEdit = new WorkspaceEditDocumentChange(new TextDocumentEdit()
+            {
+                TextDocument = codeDocumentIdentifier,
+                Edits = new[] { startTagTextEdit },
+            });
+
+            documentChanges.Add(startTagWorkspaceEdit);
+
 
             var endTag = (startTag.Parent as MarkupElementSyntax).EndTag;
             if (endTag != null)
             {
-                changes.Add(new TextEdit
+                var endTagTextEdit = new TextEdit
                 {
                     Range = endTag.Name.GetRange(context.CodeDocument.Source),
                     NewText = newTagName,
+                };
+
+                var endTagWorkspaceEdit = new WorkspaceEditDocumentChange(new TextDocumentEdit()
+                {
+                    TextDocument = codeDocumentIdentifier,
+                    Edits = new[] { endTagTextEdit },
                 });
+
+                documentChanges.Add(endTagWorkspaceEdit);
             }
 
             return new WorkspaceEdit
             {
-                Changes = new Dictionary<DocumentUri, IEnumerable<TextEdit>> {
-                    [context.Request.TextDocument.Uri] = changes,
-                }
+                DocumentChanges = documentChanges
             };
         }
 
