@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -20,9 +21,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
     {
         private static readonly string Title = "Extract block to code behind";
 
-        private static readonly Task<RazorCodeAction[]> EmptyResult = Task.FromResult<RazorCodeAction[]>(null);
+        private static readonly Task<IReadOnlyList<RazorCodeAction>> EmptyResult = Task.FromResult<IReadOnlyList<RazorCodeAction>>(null);
 
-        public override Task<RazorCodeAction[]> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+        public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
             if (context is null)
             {
@@ -110,7 +111,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 Data = resolutionParams
             };
 
-            return Task.FromResult(new[] { codeAction });
+            var codeActions = new List<RazorCodeAction> { codeAction };
+
+            return Task.FromResult(codeActions as IReadOnlyList<RazorCodeAction>);
         }
 
         private static bool HasUnsupportedChildren(Language.Syntax.SyntaxNode node)

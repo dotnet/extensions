@@ -49,8 +49,10 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Arrange
             var (lspDocument, virtualDocument) = CreateDocuments(lspDocumentVersion: 124, virtualDocumentSyncVersion: 123);
             var fileUriProvider = CreateUriProviderFor(VirtualDocumentTextBuffer, virtualDocument.Uri);
-            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider);
-            synchronizer._synchronizationTimeout = TimeSpan.FromMilliseconds(500);
+            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider)
+            {
+                _synchronizationTimeout = TimeSpan.FromMilliseconds(500)
+            };
             NotifyLSPDocumentAdded(lspDocument, synchronizer);
 
             // Act
@@ -71,8 +73,10 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Arrange
             var (lspDocument, virtualDocument) = CreateDocuments(lspDocumentVersion: 124, virtualDocumentSyncVersion: 123);
             var fileUriProvider = CreateUriProviderFor(VirtualDocumentTextBuffer, virtualDocument.Uri);
-            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider);
-            synchronizer._synchronizationTimeout = TimeSpan.FromMilliseconds(500);
+            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider)
+            {
+                _synchronizationTimeout = TimeSpan.FromMilliseconds(500)
+            };
             NotifyLSPDocumentAdded(lspDocument, synchronizer);
 
             // Act
@@ -96,8 +100,10 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Arrange
             var (originalLSPDocument, originalVirtualDocument) = CreateDocuments(lspDocumentVersion: 124, virtualDocumentSyncVersion: 123);
             var fileUriProvider = CreateUriProviderFor(VirtualDocumentTextBuffer, originalVirtualDocument.Uri);
-            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider);
-            synchronizer._synchronizationTimeout = TimeSpan.FromMilliseconds(500);
+            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider)
+            {
+                _synchronizationTimeout = TimeSpan.FromMilliseconds(500)
+            };
             NotifyLSPDocumentAdded(originalLSPDocument, synchronizer);
 
             // Act
@@ -126,8 +132,10 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Arrange
             var (lspDocument, virtualDocument) = CreateDocuments(lspDocumentVersion: 124, virtualDocumentSyncVersion: 123);
             var fileUriProvider = CreateUriProviderFor(VirtualDocumentTextBuffer, virtualDocument.Uri);
-            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider);
-            synchronizer._synchronizationTimeout = TimeSpan.FromMilliseconds(500);
+            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider)
+            {
+                _synchronizationTimeout = TimeSpan.FromMilliseconds(500)
+            };
             NotifyLSPDocumentAdded(lspDocument, synchronizer);
             using var cts = new CancellationTokenSource();
 
@@ -154,8 +162,10 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Arrange
             var (lspDocument, virtualDocument) = CreateDocuments(lspDocumentVersion: 123, virtualDocumentSyncVersion: 123);
             var fileUriProvider = CreateUriProviderFor(VirtualDocumentTextBuffer, virtualDocument.Uri);
-            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider);
-            synchronizer._synchronizationTimeout = TimeSpan.FromMilliseconds(10);
+            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider)
+            {
+                _synchronizationTimeout = TimeSpan.FromMilliseconds(10)
+            };
             NotifyLSPDocumentAdded(lspDocument, synchronizer);
 
             // We're not going to notify that the buffer version was updated so the synchronization will wait until a timeout occurs.

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
@@ -165,6 +166,34 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 cancellationToken).ConfigureAwait(false);
 
             return response;
+        }
+
+        public override async Task<VSCodeAction[]> ProvideCodeActionsAsync(CodeActionParams codeActionParams, CancellationToken cancellationToken)
+        {
+            if (codeActionParams is null)
+            {
+                throw new ArgumentNullException(nameof(codeActionParams));
+            }
+
+            if (!_documentManager.TryGetDocument(codeActionParams.TextDocument.Uri, out var documentSnapshot))
+            {
+                return default;
+            }
+
+            if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDoc))
+            {
+                return default;
+            }
+
+            codeActionParams.TextDocument.Uri = csharpDoc.Uri;
+
+            var results = await _requestInvoker.ReinvokeRequestOnServerAsync<CodeActionParams, VSCodeAction[]>(
+                Methods.TextDocumentCodeActionName,
+                LanguageServerKind.CSharp.ToContentType(),
+                codeActionParams,
+                cancellationToken).ConfigureAwait(false);
+
+            return results;
         }
     }
 }

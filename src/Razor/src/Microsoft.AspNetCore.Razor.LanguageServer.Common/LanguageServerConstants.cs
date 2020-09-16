@@ -22,12 +22,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
         public const string SemanticTokensProviderName = "semanticTokensProvider";
 
-        public const string RazorRangeFormattingEndpoint = "razor/rangeFormatting";
-
-        public const string RazorUpdateCSharpBufferEndpoint = "razor/updateCSharpBuffer";
-
-        public const string RazorUpdateHtmlBufferEndpoint = "razor/updateHtmlBuffer";
-
         public const string RazorLanguageQueryEndpoint = "razor/languageQuery";
 
         public const string RazorMonitorProjectConfigurationFilePathEndpoint = "razor/monitorProjectConfigurationFilePath";
@@ -39,6 +33,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         public const string RazorCodeActionRunnerCommand = "razor/runCodeAction";
 
         public const string RazorCodeActionResolveEndpoint = "textDocument/codeActionResolve";
+
+        // RZLS Custom Message Targets
+        public const string RazorUpdateCSharpBufferEndpoint = "razor/updateCSharpBuffer";
+
+        public const string RazorUpdateHtmlBufferEndpoint = "razor/updateHtmlBuffer";
+
+        public const string RazorRangeFormattingEndpoint = "razor/rangeFormatting";
+
+        public const string RazorProvideCodeActionsEndpoint = "razor/provideCodeActions";
+
 
         public static class CodeActions
         {

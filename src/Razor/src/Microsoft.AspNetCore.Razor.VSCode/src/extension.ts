@@ -7,10 +7,8 @@ import * as vscode from 'vscode';
 import * as vscodeapi from 'vscode';
 import { ExtensionContext } from 'vscode';
 import { BlazorDebugConfigurationProvider } from './BlazorDebug/BlazorDebugConfigurationProvider';
-import { CompositeCodeActionTranslator } from './CodeActions/CompositeRazorCodeActionTranslator';
-import { RazorCodeActionProvider } from './CodeActions/RazorCodeActionProvider';
+import { CodeActionsHandler } from './CodeActions/CodeActionsHandler';
 import { RazorCodeActionRunner } from './CodeActions/RazorCodeActionRunner';
-import { RazorFullyQualifiedCodeActionTranslator } from './CodeActions/RazorFullyQualifiedCodeActionTranslator';
 import { listenToConfigurationChanges } from './ConfigurationChangeListener';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { ReportIssueCommand } from './Diagnostics/ReportIssueCommand';
@@ -56,12 +54,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
         const languageServerClient = new RazorLanguageServerClient(vscodeType, languageServerDir, telemetryReporter, logger);
         const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
 
-        const codeActionTranslators = [
-            new RazorFullyQualifiedCodeActionTranslator(),
-        ];
-        const compositeCodeActionTranslator = new CompositeCodeActionTranslator(codeActionTranslators);
-
-        const razorLanguageMiddleware = new RazorCSharpLanguageMiddleware(languageServiceClient, logger, compositeCodeActionTranslator);
+        const razorLanguageMiddleware = new RazorCSharpLanguageMiddleware(languageServiceClient, logger);
 
         const documentManager = new RazorDocumentManager(languageServerClient, logger);
         reportTelemetryForDocuments(documentManager, telemetryReporter);
@@ -81,12 +74,10 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 csharpFeature.projectionProvider,
                 languageServiceClient,
                 logger);
-            const codeActionProvider = new RazorCodeActionProvider(
-                documentSynchronizer,
+            const codeActionHandler = new CodeActionsHandler(
                 documentManager,
-                languageServiceClient,
-                logger,
-                compositeCodeActionTranslator);
+                languageServerClient,
+                logger);
             const completionItemProvider = new RazorCompletionItemProvider(
                 documentSynchronizer,
                 documentManager,
@@ -132,9 +123,6 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
             localRegistrations.push(
                 languageConfiguration.register(),
                 provisionalCompletionOrchestrator.register(),
-                vscodeType.languages.registerCodeActionsProvider(
-                    RazorLanguage.id,
-                    codeActionProvider),
                 vscodeType.languages.registerCompletionItemProvider(
                     RazorLanguage.id,
                     completionItemProvider,
@@ -187,6 +175,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
 
             razorFormattingFeature.register();
             razorCodeActionRunner.register();
+            codeActionHandler.register();
         });
 
         const onStopRegistration = languageServerClient.onStop(() => {

@@ -70,11 +70,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             public override string FilePath => _documentSnapshot.Uri.LocalPath;
 
-            public override bool SupportsDiagnostics
-            {
-                get => true;
-                set { /* no-op */ }
-            }
+            public override bool SupportsDiagnostics => true;
 
             public CSharpVirtualDocumentContainer(LSPDocumentMappingProvider lspDocumentMappingProvider, LSPDocumentSnapshot documentSnapshot, ITextSnapshot textSnapshot)
             {

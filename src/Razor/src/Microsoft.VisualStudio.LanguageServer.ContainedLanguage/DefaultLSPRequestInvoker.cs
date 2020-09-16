@@ -40,6 +40,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             _serializer.Converters.Add(new VSExtensionConverter<ServerCapabilities, VSServerCapabilities>());
             _serializer.Converters.Add(new VSExtensionConverter<SymbolInformation, VSSymbolInformation>());
             _serializer.Converters.Add(new VSExtensionConverter<CompletionList, VSCompletionList>());
+            _serializer.Converters.Add(new VSExtensionConverter<CodeAction, VSCodeAction>());
         }
 
         public override Task<TOut> ReinvokeRequestOnServerAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)

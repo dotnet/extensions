@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     // textDocument/_ms_onAutoInsert, and razor/languageQuery are Serial. I BELIEVE that specifically what happened is the serial
                     // languageQuery event gets fired by our semantic tokens endpoint (which fires constantly), cancelling the hover, which red-bars.
                     // We can prevent that behavior entirely by doing WithContentModifiedSupport, at the possible expense of some delays due doing all requests in serial.
-                    // 
+                    //
                     // I recommend that we attempt to resolve this and switch back to WithContentModifiedSupport(true) in the future,
                     // I think that would mean either having 0 Serial Handlers in the whole LS, or making VSLanguageServerClient handle this more gracefully.
                     .WithContentModifiedSupport(false)
@@ -211,12 +211,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<IFormattingPass, FormattingDiagnosticValidationPass>();
                         services.AddSingleton<IFormattingPass, FormattingContentValidationPass>();
 
-                        // Code actions
+                        // Razor Code actions
                         services.AddSingleton<RazorCodeActionProvider, ExtractToCodeBehindCodeActionProvider>();
                         services.AddSingleton<RazorCodeActionResolver, ExtractToCodeBehindCodeActionResolver>();
                         services.AddSingleton<RazorCodeActionProvider, ComponentAccessibilityCodeActionProvider>();
                         services.AddSingleton<RazorCodeActionResolver, CreateComponentCodeActionResolver>();
                         services.AddSingleton<RazorCodeActionResolver, AddUsingsCodeActionResolver>();
+
+                        // CSharp Code actions
+                        services.AddSingleton<CSharpCodeActionProvider, TypeAccessibilityCodeActionProvider>();
 
                         // Other
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();

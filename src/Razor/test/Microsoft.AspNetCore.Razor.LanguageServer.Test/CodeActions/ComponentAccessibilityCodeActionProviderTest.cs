@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Editor.Razor;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -225,7 +226,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 document.GetTextAsync() == Task.FromResult(codeDocument.GetSourceText()) &&
                 document.Project.TagHelpers == tagHelpers);
 
-            return new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, supportsFileCreation);
+            var sourceText = SourceText.From("mock");
+
+            var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, sourceText, supportsFileCreation);
+
+            return context;
         }
     }
 }

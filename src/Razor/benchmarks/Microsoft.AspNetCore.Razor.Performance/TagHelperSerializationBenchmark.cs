@@ -35,11 +35,9 @@ namespace Microsoft.AspNetCore.Razor.Performance
         [Benchmark(Description = "Razor TagHelper Serialization")]
         public void TagHelper_Serialization()
         {
-            using (var stream = new MemoryStream())
-            using (var writer = new StreamWriter(stream, Encoding.UTF8, bufferSize: 4096))
-            {
-                DefaultSerializer.Serialize(writer, DefaultTagHelpers);
-            }
+            using var stream = new MemoryStream();
+            using var writer = new StreamWriter(stream, Encoding.UTF8, bufferSize: 4096);
+            DefaultSerializer.Serialize(writer, DefaultTagHelpers);
         }
 
         [Benchmark(Description = "Razor TagHelper Deserialization")]
@@ -47,11 +45,9 @@ namespace Microsoft.AspNetCore.Razor.Performance
         {
             // Deserialize from json file.
             IReadOnlyList<TagHelperDescriptor> tagHelpers;
-            using (var stream = new MemoryStream(_tagHelperBuffer))
-            using (var reader = new JsonTextReader(new StreamReader(stream)))
-            {
-                tagHelpers = DefaultSerializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
-            }
+            using var stream = new MemoryStream(_tagHelperBuffer);
+            using var reader = new JsonTextReader(new StreamReader(stream));
+            tagHelpers = DefaultSerializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
         }
 
         [Benchmark(Description = "TagHelpers GetHashCode")]

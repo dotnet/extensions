@@ -76,34 +76,38 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             var codeDocumentIdentifier = new VersionedTextDocumentIdentifier() { Uri = actionParams.Uri };
-            var documentChanges = new List<WorkspaceEditDocumentChange>();
+            return CreateAddUsingWorkspaceEdit(actionParams.Namespace, codeDocument, codeDocumentIdentifier);
+        }
 
+        internal static WorkspaceEdit CreateAddUsingWorkspaceEdit(string @namespace, RazorCodeDocument codeDocument, VersionedTextDocumentIdentifier codeDocumentIdentifier)
+        {
             /* The heuristic is as follows:
-             * 
-             * - If no @using, @namespace, or @page directives are present, insert the statements at the top of the 
+             *
+             * - If no @using, @namespace, or @page directives are present, insert the statements at the top of the
              *   file in alphabetical order.
              * - If a @namespace or @page are present, the statements are inserted after the last line-wise in
              *   alphabetical order.
              * - If @using directives are present and alphabetized with System directives at the top, the statements
              *   will be placed in the correct locations according to that ordering.
              * - Otherwise it's kinda undefined; it's only geared to insert based on alphabetization.
-             * 
+             *
              * This is generally sufficient for our current situation (inserting a single @using statement to include a
-             * component), however it has holes if we eventually use it for other purposes. If we want to deal with 
-             * that now I can come up with a more sophisticated heuristic (something along the lines of checking if 
+             * component), however it has holes if we eventually use it for other purposes. If we want to deal with
+             * that now I can come up with a more sophisticated heuristic (something along the lines of checking if
              * there's already an ordering, etc.).
              */
+            var documentChanges = new List<WorkspaceEditDocumentChange>();
             var usingDirectives = FindUsingDirectives(codeDocument);
             if (usingDirectives.Count > 0)
             {
                 // Interpolate based on existing @using statements
-                var edits = GenerateSingleUsingEditsInterpolated(codeDocument, codeDocumentIdentifier, actionParams.Namespace, usingDirectives);
+                var edits = GenerateSingleUsingEditsInterpolated(codeDocument, codeDocumentIdentifier, @namespace, usingDirectives);
                 documentChanges.Add(edits);
             }
             else
             {
                 // Just throw them at the top
-                var edits = GenerateSingleUsingEditsAtTop(codeDocument, codeDocumentIdentifier, actionParams.Namespace);
+                var edits = GenerateSingleUsingEditsAtTop(codeDocument, codeDocumentIdentifier, @namespace);
                 documentChanges.Add(edits);
             }
 
