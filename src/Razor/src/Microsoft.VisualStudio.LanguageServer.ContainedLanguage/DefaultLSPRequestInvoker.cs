@@ -45,15 +45,25 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public override Task<TOut> ReinvokeRequestOnServerAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
         {
-            return RequestServerCoreAsync<TIn, TOut>(method, contentType, parameters, cancellationToken);
+            return RequestServerCoreAsync<TIn, TOut>(method, contentType, token => true, parameters, cancellationToken);
+        }
+
+        public override Task<TOut> ReinvokeRequestOnServerAsync<TIn, TOut>(string method, string contentType, Func<JToken, bool> capabilitiesFilter, TIn parameters, CancellationToken cancellationToken)
+        {
+            return RequestServerCoreAsync<TIn, TOut>(method, contentType, capabilitiesFilter, parameters, cancellationToken);
         }
 
         public override Task<IEnumerable<TOut>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
         {
-            return RequestMultipleServerCoreAsync<TIn, TOut>(method, contentType, parameters, cancellationToken);
+            return RequestMultipleServerCoreAsync<TIn, TOut>(method, contentType, token => true, parameters, cancellationToken);
         }
 
-        private async Task<TOut> RequestServerCoreAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
+        public override Task<IEnumerable<TOut>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(string method, string contentType, Func<JToken, bool> capabilitiesFilter, TIn parameters, CancellationToken cancellationToken)
+        {
+            return RequestMultipleServerCoreAsync<TIn, TOut>(method, contentType, capabilitiesFilter, parameters, cancellationToken);
+        }
+
+        private async Task<TOut> RequestServerCoreAsync<TIn, TOut>(string method, string contentType, Func<JToken, bool> capabilitiesFilter, TIn parameters, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(method))
             {
@@ -64,7 +74,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             var (_, resultToken) = await _languageServiceBroker.RequestAsync(
                 new[] { contentType },
-                token => true,
+                capabilitiesFilter,
                 method,
                 serializedParams,
                 cancellationToken).ConfigureAwait(false);
@@ -73,7 +83,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             return result;
         }
 
-        private async Task<IEnumerable<TOut>> RequestMultipleServerCoreAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
+        private async Task<IEnumerable<TOut>> RequestMultipleServerCoreAsync<TIn, TOut>(string method, string contentType, Func<JToken, bool> capabilitiesFilter, TIn parameters, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(method))
             {
@@ -84,7 +94,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             var clientAndResultTokenPairs = await _languageServiceBroker.RequestMultipleAsync(
                 new[] { contentType },
-                token => true,
+                capabilitiesFilter,
                 method,
                 serializedParams,
                 cancellationToken).ConfigureAwait(false);
