@@ -73,6 +73,12 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         private void VirtualDocumentBuffer_PostChanged(object sender, EventArgs e)
         {
             var textBuffer = (ITextBuffer)sender;
+
+            UpdateDocumentContextVersionInternal(textBuffer);
+        }
+
+        private void UpdateDocumentContextVersionInternal(ITextBuffer textBuffer)
+        {
             if (!_fileUriProvider.TryGet(textBuffer, out var virtualDocumentUri))
             {
                 return;
@@ -130,6 +136,17 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                         var virtualDocumentTextBuffer = virtualDocument.Snapshot.TextBuffer;
                         virtualDocumentTextBuffer.PostChanged -= VirtualDocumentBuffer_PostChanged;
                         _virtualDocumentContexts.Remove(virtualDocument.Uri);
+                    }
+                }
+                else if (args.Kind == LSPDocumentChangeKind.VirtualDocumentChanged)
+                {
+                    if (args.VirtualOld.Snapshot.Version == args.VirtualNew.Snapshot.Version)
+                    {
+                        // UpdateDocumentContextVersionInternal is typically invoked through a buffer notification,
+                        //   however in the case where VirtualDocumentBase.Update is called with a zero change edit,
+                        //   there won't be such an edit to hook into. Instead, we'll detect that case here and
+                        //   update the document context version appropriately.
+                        UpdateDocumentContextVersionInternal(args.VirtualNew.Snapshot.TextBuffer);
                     }
                 }
             }

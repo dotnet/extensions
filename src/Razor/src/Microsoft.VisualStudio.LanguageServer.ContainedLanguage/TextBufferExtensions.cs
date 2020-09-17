@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 
 namespace Microsoft.VisualStudio.Text
 {
@@ -30,18 +29,6 @@ namespace Microsoft.VisualStudio.Text
             var result = textBuffer.Properties.TryGetProperty(HostDocumentVersionMarked, out hostDocumentVersion);
 
             return result;
-        }
-
-        public static void MakeEmptyEdit(this ITextBuffer textBuffer)
-        {
-            var bufferLength = textBuffer.CurrentSnapshot.Length;
-            using var edit = textBuffer.CreateEdit(EditOptions.None, reiteratedVersionNumber: null, InviolableEditTag.Instance);
-            edit.Insert(bufferLength, " ");
-            edit.Apply();
-
-            using var revertEdit = textBuffer.CreateEdit(EditOptions.None, reiteratedVersionNumber: null, InviolableEditTag.Instance);
-            revertEdit.Delete(bufferLength, 1);
-            revertEdit.Apply();
         }
     }
 }

@@ -99,7 +99,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         }
 
         [Fact]
-        public void Update_NoChanges_InvokesPostChangedEventTwice_NoEffectiveChanges()
+        public void Update_NoChanges_InvokesPostChangedEventZeroTimes_NoEffectiveChanges()
         {
             // Arrange
             var textBuffer = new TestTextBuffer(new StringTextSnapshot("Hello World"));
@@ -118,7 +118,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             document.Update(Array.Empty<ITextChange>(), hostDocumentVersion: 1);
 
             // Assert
-            Assert.Equal(2, called);
+            Assert.Equal(0, called);
             var text = textBuffer.CurrentSnapshot.GetText();
             Assert.Equal("Hello World", text);
         }

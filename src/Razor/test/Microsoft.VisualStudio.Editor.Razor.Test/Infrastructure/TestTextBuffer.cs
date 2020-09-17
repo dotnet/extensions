@@ -39,6 +39,11 @@ namespace Microsoft.VisualStudio.Test
 
         public void ApplyEdits(params TestEdit[] edits)
         {
+            if (edits.Length == 0)
+            {
+                return;
+            }
+
             var args = new TextContentChangedEventArgs(edits[0].OldSnapshot, edits[edits.Length - 1].NewSnapshot, new EditOptions(), null);
             foreach (var edit in edits)
             {
