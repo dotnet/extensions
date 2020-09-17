@@ -192,6 +192,13 @@ namespace Microsoft.Extensions.Caching.Memory
 
         public void Dispose()
         {
+            if (!ValueHasBeenSet)
+            {
+                // No-op if the CacheEntry Value was never set. We assume an exception occurred and the caller
+                // never set the Value successfully, so don't use this entry.
+                return;
+            }
+
             if (!_added)
             {
                 _added = true;
