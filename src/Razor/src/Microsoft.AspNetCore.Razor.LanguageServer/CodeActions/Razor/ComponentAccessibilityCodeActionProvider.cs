@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         private static WorkspaceEdit CreateRenameTagEdit(RazorCodeActionContext context, MarkupStartTagSyntax startTag, string newTagName)
         {
-            var documentChanges = new List<WorkspaceEditDocumentChange>();
+            var textEdits = new List<TextEdit>();
             var codeDocumentIdentifier = new VersionedTextDocumentIdentifier() { Uri = context.Request.TextDocument.Uri };
 
             var startTagTextEdit = new TextEdit
@@ -190,14 +190,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 NewText = newTagName,
             };
 
-            var startTagWorkspaceEdit = new WorkspaceEditDocumentChange(new TextDocumentEdit()
-            {
-                TextDocument = codeDocumentIdentifier,
-                Edits = new[] { startTagTextEdit },
-            });
-
-            documentChanges.Add(startTagWorkspaceEdit);
-
+            textEdits.Add(startTagTextEdit);
 
             var endTag = (startTag.Parent as MarkupElementSyntax).EndTag;
             if (endTag != null)
@@ -208,18 +201,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                     NewText = newTagName,
                 };
 
-                var endTagWorkspaceEdit = new WorkspaceEditDocumentChange(new TextDocumentEdit()
-                {
-                    TextDocument = codeDocumentIdentifier,
-                    Edits = new[] { endTagTextEdit },
-                });
-
-                documentChanges.Add(endTagWorkspaceEdit);
+                textEdits.Add(endTagTextEdit);
             }
 
             return new WorkspaceEdit
             {
-                DocumentChanges = documentChanges
+                DocumentChanges = new List<WorkspaceEditDocumentChange>()
+                {
+                    new WorkspaceEditDocumentChange(
+                        new TextDocumentEdit()
+                        {
+                            TextDocument = codeDocumentIdentifier,
+                            Edits = textEdits,
+                        }
+                    )
+                }
             };
         }
 

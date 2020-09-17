@@ -177,12 +177,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (!_documentManager.TryGetDocument(codeActionParams.TextDocument.Uri, out var documentSnapshot))
             {
-                return default;
+                return null;
             }
 
             if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDoc))
             {
-                return default;
+                return null;
             }
 
             codeActionParams.TextDocument.Uri = csharpDoc.Uri;
