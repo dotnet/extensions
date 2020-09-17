@@ -46,10 +46,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             {
                 _supportsCodeActionResolve = false
             };
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 1), new Position(0, 1)),
+                Context = new ExtendedCodeActionContext()
             };
 
             // Act
@@ -78,10 +79,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             {
                 _supportsCodeActionResolve = false
             };
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 1), new Position(0, 1)),
+                Context = new ExtendedCodeActionContext()
             };
 
             // Act
@@ -109,10 +111,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             {
                 _supportsCodeActionResolve = false
             };
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 1), new Position(0, 1)),
+                Context = new ExtendedCodeActionContext()
             };
 
             // Act
@@ -143,10 +146,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 _supportsCodeActionResolve = false
             };
 
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 1), new Position(0, 1)),
+                Context = new ExtendedCodeActionContext()
             };
 
             // Act
@@ -155,7 +159,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Assert
             Assert.Single(commandOrCodeActionContainer);
         }
-
 
         [Fact]
         public async Task Handle_MultipleProviders()
@@ -180,10 +183,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 _supportsCodeActionResolve = false
             };
 
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 1), new Position(0, 1)),
+                Context = new ExtendedCodeActionContext()
             };
 
             // Act
@@ -214,10 +218,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 _supportsCodeActionResolve = false
             };
 
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 1), new Position(0, 1)),
+                Context = new ExtendedCodeActionContext()
             };
 
             // Act
@@ -251,10 +256,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 _supportsCodeActionResolve = false
             };
 
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 1), new Position(0, 1)),
+                Context = new ExtendedCodeActionContext()
             };
 
             // Act
@@ -287,10 +293,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 _supportsCodeActionResolve = true
             };
 
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 1), new Position(0, 1)),
+                Context = new ExtendedCodeActionContext()
             };
 
             // Act
@@ -333,10 +340,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 _supportsCodeActionResolve = false
             };
 
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 1), new Position(0, 1)),
+                Context = new ExtendedCodeActionContext()
             };
 
             // Act
@@ -350,6 +358,87 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                     Assert.True(c.CodeAction is RazorCodeAction);
                 },
                 c => Assert.True(c.IsCommand));
+        }
+
+        [Fact]
+        public async Task GenerateRazorCodeActionContextAsync_WithSelectionRange()
+        {
+            // Arrange
+            var documentPath = "C:/path/to/Page.razor";
+            var codeDocument = CreateCodeDocument("@code {}");
+            var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
+            var codeActionEndpoint = new CodeActionEndpoint(
+                DocumentMappingService,
+                new RazorCodeActionProvider[] {
+                    new MockCodeActionProvider()
+                },
+                Array.Empty<CSharpCodeActionProvider>(),
+                Dispatcher,
+                documentResolver,
+                LanguageServer,
+                LanguageServerFeatureOptions)
+            {
+                _supportsCodeActionResolve = false
+            };
+
+            var initialRange = new Range(new Position(0, 1), new Position(0, 1));
+            var selectionRange = new Range(new Position(0, 5), new Position(0, 5));
+            var request = new RazorCodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = initialRange,
+                Context = new ExtendedCodeActionContext()
+                {
+                    SelectionRange = selectionRange,
+                }
+            };
+
+            // Act
+            var razorCodeActionContext = await codeActionEndpoint.GenerateRazorCodeActionContextAsync(request, default);
+
+            // Assert
+            Assert.NotNull(razorCodeActionContext);
+            Assert.Equal(selectionRange, razorCodeActionContext.Request.Range);
+        }
+
+        [Fact]
+        public async Task GenerateRazorCodeActionContextAsync_WithoutSelectionRange()
+        {
+            // Arrange
+            var documentPath = "C:/path/to/Page.razor";
+            var codeDocument = CreateCodeDocument("@code {}");
+            var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
+            var codeActionEndpoint = new CodeActionEndpoint(
+                DocumentMappingService,
+                new RazorCodeActionProvider[] {
+                    new MockCodeActionProvider()
+                },
+                Array.Empty<CSharpCodeActionProvider>(),
+                Dispatcher,
+                documentResolver,
+                LanguageServer,
+                LanguageServerFeatureOptions)
+            {
+                _supportsCodeActionResolve = false
+            };
+
+            var initialRange = new Range(new Position(0, 1), new Position(0, 1));
+            var request = new RazorCodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = initialRange,
+                Context = new ExtendedCodeActionContext()
+                {
+                    SelectionRange = null
+                }
+            };
+
+            // Act
+            var razorCodeActionContext = await codeActionEndpoint.GenerateRazorCodeActionContextAsync(request, default);
+
+            // Assert
+            Assert.NotNull(razorCodeActionContext);
+            Assert.Equal(initialRange, razorCodeActionContext.Request.Range);
         }
 
         private class MockCodeActionProvider : RazorCodeActionProvider

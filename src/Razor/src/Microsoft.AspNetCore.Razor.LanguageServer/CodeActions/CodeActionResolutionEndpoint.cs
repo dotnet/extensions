@@ -13,7 +13,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
-    internal class CodeActionResolutionEndpoint : ICodeActionResolveHandler
+    internal class CodeActionResolutionEndpoint : IRazorCodeActionResolveHandler
     {
         private static readonly string CodeActionsResolveProviderCapability = "codeActionsResolveProvider";
 

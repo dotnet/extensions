@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "@page \"/test\"\n@code {}";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(),
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "@page \"/test\"\n@code {}";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(),
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "@page \"/test\"\n@code {}";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(),
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "@page \"/test\"\n@code";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(),
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "@page \"/test\"\n@code { void Test() { <h1>Hello, world!</h1> } }";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(),
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "@page \"/test\"\n@code { private var x = 1; }";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(),
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "@page \"/test\"\n@code { private var x = 1; }";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(),
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "@page \"/test\"\n@functions { private var x = 1; }";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(),
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             Assert.Equal(47, actionParams.RemoveEnd);
         }
 
-        private static RazorCodeActionContext CreateRazorCodeActionContext(CodeActionParams request, SourceLocation location, string filePath, string text, bool supportsFileCreation = true)
+        private static RazorCodeActionContext CreateRazorCodeActionContext(RazorCodeActionParams request, SourceLocation location, string filePath, string text, bool supportsFileCreation = true)
         {
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             codeDocument.SetFileKind(FileKinds.Component);

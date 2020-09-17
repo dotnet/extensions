@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
+using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(),
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = " <Component></Component>";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 0), new Position(0, 0)),
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "<Component></Component>";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 0), new Position(0, 0)),
@@ -118,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "<NewComponent></NewComponent>";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 0), new Position(0, 0)),
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "<NewComponent></NewComponent>";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 0), new Position(0, 0)),
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             // Arrange
             var documentPath = "c:/Test.razor";
             var contents = "<Component></Component>";
-            var request = new CodeActionParams()
+            var request = new RazorCodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
                 Range = new Range(new Position(0, 0), new Position(0, 0)),
@@ -200,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 });
         }
 
-        private static RazorCodeActionContext CreateRazorCodeActionContext(CodeActionParams request, SourceLocation location, string filePath, string text, SourceSpan componentSourceSpan, bool supportsFileCreation = true)
+        private static RazorCodeActionContext CreateRazorCodeActionContext(RazorCodeActionParams request, SourceLocation location, string filePath, string text, SourceSpan componentSourceSpan, bool supportsFileCreation = true)
         {
             var shortComponent = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "Fully.Qualified.Component", "TestAssembly");
             shortComponent.TagMatchingRule(rule => rule.TagName = "Component");
