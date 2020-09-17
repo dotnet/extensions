@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.Caching.Memory
                 using (var entry = cache.CreateEntry(key))
                 {
                     result = factory(entry);
-                    entry.Value = result;
+                    entry.SetValue(result);
                 }
             }
 
