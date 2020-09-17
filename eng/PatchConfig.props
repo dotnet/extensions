@@ -13,6 +13,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.23' ">
     <PackagesInPatch>
+      Microsoft.Extensions.Caching.Abstractions;
       Microsoft.Extensions.Caching.Memory;
     </PackagesInPatch>
   </PropertyGroup>
