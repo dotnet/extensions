@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.Caching.Memory
                 using (ICacheEntry entry = cache.CreateEntry(key))
                 {
                     result = await factory(entry).ConfigureAwait(false);
-                    entry.SetValue(result);
+                    entry.Value = result;
                 }
             }
 
