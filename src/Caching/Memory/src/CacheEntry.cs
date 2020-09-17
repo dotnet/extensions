@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
         internal CacheEntry(
             object key,
-            Action<CacheEntry> notifyCacheEntryDisposed,
+            Action<CacheEntry> notifyCacheEntryCommit,
             Action<CacheEntry> notifyCacheOfExpiration)
         {
             if (key == null)
@@ -40,9 +40,9 @@ namespace Microsoft.Extensions.Caching.Memory
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (notifyCacheEntryDisposed == null)
+            if (notifyCacheEntryCommit == null)
             {
-                throw new ArgumentNullException(nameof(notifyCacheEntryDisposed));
+                throw new ArgumentNullException(nameof(notifyCacheEntryCommit));
             }
 
             if (notifyCacheOfExpiration == null)
@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Caching.Memory
             }
 
             Key = key;
-            _notifyCacheEntryCommit = notifyCacheEntryDisposed;
+            _notifyCacheEntryCommit = notifyCacheEntryCommit;
             _notifyCacheOfExpiration = notifyCacheOfExpiration;
 
             _scope = CacheEntryHelper.EnterScope(this);
