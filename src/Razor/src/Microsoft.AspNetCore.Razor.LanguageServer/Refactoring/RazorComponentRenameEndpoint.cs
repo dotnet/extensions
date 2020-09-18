@@ -20,6 +20,8 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
+using Microsoft.AspNetCore.Razor.Language.Components;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
 {
@@ -91,19 +93,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
                 return null;
             }
 
-            var originTagHelperBinding = await GetOriginTagHelperBindingAsync(requestDocumentSnapshot, codeDocument, request.Position).ConfigureAwait(false);
-            if (originTagHelperBinding is null)
+            var originTagHelpers = await GetOriginTagHelpersAsync(requestDocumentSnapshot, codeDocument, request.Position).ConfigureAwait(false);
+            if (originTagHelpers is null || originTagHelpers.Count == 0)
             {
                 return null;
             }
 
-            var originTagDescriptor = originTagHelperBinding.Descriptors.FirstOrDefault();
-            if (originTagDescriptor is null)
-            {
-                return null;
-            }
-
-            var originComponentDocumentSnapshot = await _componentSearchEngine.TryLocateComponentAsync(originTagDescriptor).ConfigureAwait(false);
+            var originComponentDocumentSnapshot = await _componentSearchEngine.TryLocateComponentAsync(originTagHelpers.First()).ConfigureAwait(false);
             if (originComponentDocumentSnapshot is null)
             {
                 return null;
@@ -117,12 +113,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
 
             var documentChanges = new List<WorkspaceEditDocumentChange>();
             AddFileRenameForComponent(documentChanges, originComponentDocumentSnapshot, newPath);
-            AddEditsForCodeDocument(documentChanges, originTagHelperBinding, request.NewName, request.TextDocument.Uri, codeDocument);
+            AddEditsForCodeDocument(documentChanges, originTagHelpers, request.NewName, request.TextDocument.Uri, codeDocument);
 
             var documentSnapshots = await GetAllDocumentSnapshots(requestDocumentSnapshot, cancellationToken).ConfigureAwait(false);
             foreach (var documentSnapshot in documentSnapshots)
             {
-                await AddEditsForCodeDocument(documentChanges, originTagHelperBinding, request.NewName, documentSnapshot, cancellationToken);
+                await AddEditsForCodeDocumentAsync(documentChanges, originTagHelpers, request.NewName, documentSnapshot, cancellationToken);
             }
 
             return new WorkspaceEdit
@@ -192,7 +188,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             return newPath;
         }
 
-        public async Task AddEditsForCodeDocument(List<WorkspaceEditDocumentChange> documentChanges, TagHelperBinding originTagHelperBinding, string newName, DocumentSnapshot documentSnapshot, CancellationToken cancellationToken)
+        public async Task AddEditsForCodeDocumentAsync(List<WorkspaceEditDocumentChange> documentChanges, IReadOnlyList<TagHelperDescriptor> originTagHelpers, string newName, DocumentSnapshot documentSnapshot, CancellationToken cancellationToken)
         {
             if (documentSnapshot is null)
             {
@@ -216,25 +212,45 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
                 Host = string.Empty,
                 Scheme = Uri.UriSchemeFile,
             }.Uri;
-            AddEditsForCodeDocument(documentChanges, originTagHelperBinding, newName, uri, codeDocument);
+            AddEditsForCodeDocument(documentChanges, originTagHelpers, newName, uri, codeDocument);
         }
 
-        public void AddEditsForCodeDocument(List<WorkspaceEditDocumentChange> documentChanges, TagHelperBinding originTagHelperBinding, string newName, DocumentUri uri, RazorCodeDocument codeDocument)
+        public void AddEditsForCodeDocument(List<WorkspaceEditDocumentChange> documentChanges, IReadOnlyList<TagHelperDescriptor> originTagHelpers, string newName, DocumentUri uri, RazorCodeDocument codeDocument)
         {
             var documentIdentifier = new VersionedTextDocumentIdentifier { Uri = uri };
             var tagHelperElements = codeDocument.GetSyntaxTree().Root
                 .DescendantNodes()
                 .Where(n => n.Kind == SyntaxKind.MarkupTagHelperElement)
                 .OfType<MarkupTagHelperElementSyntax>();
-            foreach (var node in tagHelperElements)
+
+            for (var i = 0; i < originTagHelpers.Count; i++)
             {
-                if (node is MarkupTagHelperElementSyntax tagHelperElement && BindingsMatch(originTagHelperBinding, tagHelperElement.TagHelperInfo.BindingResult))
+                var editedName = newName;
+                var originTagHelper = originTagHelpers[i];
+                if (originTagHelper?.IsComponentFullyQualifiedNameMatch() == true)
                 {
-                    documentChanges.Add(new WorkspaceEditDocumentChange(new TextDocumentEdit
+                    // Fully qualified binding, our "new name" needs to be fully qualified.
+                    if (!DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.TrySplitNamespaceAndType(originTagHelper.Name, out var namespaceSpan, out _))
                     {
-                        TextDocument = documentIdentifier,
-                        Edits = CreateEditsForMarkupTagHelperElement(tagHelperElement, codeDocument, newName)
-                    }));
+                        return;
+                    }
+
+                    var namespaceString = originTagHelper.Name.Substring(namespaceSpan.Start, namespaceSpan.Length);
+
+                    // The origin TagHelper was fully qualified so any fully qualified rename locations we find will need a fully qualified renamed edit.
+                    editedName = $"{namespaceString}.{newName}";
+                }
+
+                foreach (var node in tagHelperElements)
+                {
+                    if (node is MarkupTagHelperElementSyntax tagHelperElement && BindingContainsTagHelper(originTagHelper, tagHelperElement.TagHelperInfo.BindingResult))
+                    {
+                        documentChanges.Add(new WorkspaceEditDocumentChange(new TextDocumentEdit
+                        {
+                            TextDocument = documentIdentifier,
+                            Edits = CreateEditsForMarkupTagHelperElement(tagHelperElement, codeDocument, editedName)
+                        }));
+                    }
                 }
             }
         }
@@ -260,22 +276,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             return edits;
         }
 
-        private static bool BindingsMatch(TagHelperBinding left, TagHelperBinding right)
-        {
-            foreach (var leftDescriptor in left.Descriptors)
-            {
-                foreach (var rightDescriptor in right.Descriptors)
-                {
-                    if (leftDescriptor.Equals(rightDescriptor))
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
+        private static bool BindingContainsTagHelper(TagHelperDescriptor tagHelper, TagHelperBinding potentialBinding) => potentialBinding.Descriptors.Any(descriptor => descriptor.Equals(tagHelper));
 
-        private async Task<TagHelperBinding> GetOriginTagHelperBindingAsync(DocumentSnapshot documentSnapshot, RazorCodeDocument codeDocument, Position position)
+        private async Task<IReadOnlyList<TagHelperDescriptor>> GetOriginTagHelpersAsync(DocumentSnapshot documentSnapshot, RazorCodeDocument codeDocument, Position position)
         {
             var sourceText = await documentSnapshot.GetTextAsync().ConfigureAwait(false);
             var linePosition = new LinePosition((int)position.Line, (int)position.Character);
@@ -301,7 +304,56 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
                 return null;
             }
 
-            return tagHelperElement.TagHelperInfo.BindingResult;
+            // Can only have 1 component TagHelper belonging to an element at a time
+            var primaryTagHelper = tagHelperElement.TagHelperInfo.BindingResult.Descriptors.FirstOrDefault(descriptor => descriptor.IsComponentTagHelper());
+            if (primaryTagHelper == null)
+            {
+                return null;
+            }
+
+            var originTagHelpers = new List<TagHelperDescriptor>() { primaryTagHelper };
+            var associatedTagHelper = FindAssociatedTagHelper(primaryTagHelper, documentSnapshot.Project.TagHelpers);
+            if (associatedTagHelper == null)
+            {
+                Debug.Fail("Components should always have an associated TagHelper.");
+                return null;
+            }
+
+            originTagHelpers.Add(associatedTagHelper);
+
+            return originTagHelpers;
+        }
+
+        private static TagHelperDescriptor FindAssociatedTagHelper(TagHelperDescriptor tagHelper, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            var typeName = tagHelper.GetTypeName();
+            var assemblyName = tagHelper.AssemblyName;
+            for (var i = 0; i < tagHelpers.Count; i++)
+            {
+                var currentTagHelper = tagHelpers[i];
+
+                if (tagHelper == currentTagHelper)
+                {
+                    // Same as the primary, we're looking for our other pair.
+                    continue;
+                }
+
+                var currentTypeName = currentTagHelper.GetTypeName();
+                if (!string.Equals(typeName, currentTypeName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (!string.Equals(assemblyName, currentTagHelper.AssemblyName, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                // Found our associated TagHelper, there should only ever be 1 other associated TagHelper (fully qualified and non-fully qualified).
+                return currentTagHelper;
+            }
+
+            return null;
         }
 
         public void SetCapability(RenameCapability capability)
