@@ -92,6 +92,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                 return;
             }
 
+            // Given we're no longer tracking the document we don't want to pin the Uri to the current state of the buffer (could have been renamed to another Uri).
+            _fileUriProvider.Remove(buffer);
+
             if (_documents.TryRemove(uri, out _))
             {
                 var args = new LSPDocumentChangeEventArgs(lspDocument.CurrentSnapshot, @new: null, LSPDocumentChangeKind.Removed);

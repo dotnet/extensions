@@ -35,5 +35,11 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         /// <param name="textBuffer">A text buffer</param>
         /// <param name="uri">A <see cref="Uri"/> that can be used to locate the provided <paramref name="textBuffer"/>.</param>
         public abstract void AddOrUpdate(ITextBuffer textBuffer, Uri uri);
+
+        /// <summary>
+        /// Clears all <see cref="Uri"/> related state on the provided <paramref name="buffer"/>.
+        /// </summary>
+        /// <param name="buffer">A text buffer</param>
+        public abstract void Remove(ITextBuffer buffer);
     }
 }

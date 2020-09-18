@@ -82,5 +82,15 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             return false;
         }
+
+        public override void Remove(ITextBuffer textBuffer)
+        {
+            if (textBuffer is null)
+            {
+                throw new ArgumentNullException(nameof(textBuffer));
+            }
+
+            textBuffer.Properties.RemoveProperty(TextBufferUri);
+        }
     }
 }

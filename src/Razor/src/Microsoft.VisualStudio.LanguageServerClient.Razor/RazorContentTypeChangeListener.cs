@@ -110,6 +110,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (!_lspEditorFeatureDetector.IsRemoteClient())
             {
+                // Renames on open files don't dispose buffer state so we need to separately monitor the buffer for document renames to ensure
+                // we can tell the lsp document manager when state changes.
+                MonitorDocumentForRenames(textBuffer);
+
                 // Only need to track documents on a host because we don't do any extra work on remote clients.
                 _lspDocumentManager.TrackDocument(textBuffer);
             }
@@ -123,8 +127,55 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
+            StopMonitoringDocumentForRenames(textBuffer);
+
             // If we don't know about this document we'll no-op
             _lspDocumentManager.UntrackDocument(textBuffer);
+        }
+
+        // Internal for testing
+        internal void TextDocument_FileActionOccurred(object sender, TextDocumentFileActionEventArgs args)
+        {
+            if (args.FileActionType != FileActionTypes.DocumentRenamed)
+            {
+                // We're only interested in document rename events.
+                return;
+            }
+
+            var textDocument = sender as ITextDocument;
+            var textBuffer = textDocument?.TextBuffer;
+
+            if (textBuffer == null)
+            {
+                return;
+            }
+
+            // Document was renamed, translate that rename into an untrack -> track to refresh state.
+
+            _lspDocumentManager.UntrackDocument(textBuffer);
+            _lspDocumentManager.TrackDocument(textBuffer);
+        }
+
+        private void MonitorDocumentForRenames(ITextBuffer textBuffer)
+        {
+            if (!_textDocumentFactory.TryGetTextDocument(textBuffer, out var textDocument))
+            {
+                // Cannot monitor buffers that don't have an associated text document. In practice, this should never happen but being extra defensive here.
+                return;
+            }
+
+            textDocument.FileActionOccurred += TextDocument_FileActionOccurred;
+        }
+
+        private void StopMonitoringDocumentForRenames(ITextBuffer textBuffer)
+        {
+            if (!_textDocumentFactory.TryGetTextDocument(textBuffer, out var textDocument))
+            {
+                // Text document must have been torn down, no need to unsubscribe to something that's already been torn down.
+                return;
+            }
+
+            textDocument.FileActionOccurred -= TextDocument_FileActionOccurred;
         }
 
         private void InitializeOptions(ITextBuffer textBuffer)
