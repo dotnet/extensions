@@ -211,13 +211,6 @@ namespace Microsoft.Extensions.Caching.Memory
         [Fact]
         public void DisposingCacheEntryReleasesScope()
         {
-            object GetScope(ICacheEntry entry)
-            {
-                return entry.GetType()
-                    .GetField("_scope", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(entry);
-            }
-
             var cache = CreateCache();
 
             ICacheEntry entry = cache.CreateEntry("myKey");
@@ -649,6 +642,13 @@ namespace Microsoft.Extensions.Caching.Memory
         {
             var cache = CreateCache();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await cache.GetOrCreateAsync<object>(null, null));
+        }
+
+        private object GetScope(ICacheEntry entry)
+        {
+            return entry.GetType()
+                .GetField("_scope", BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetValue(entry);
         }
 
         private class TestKey
