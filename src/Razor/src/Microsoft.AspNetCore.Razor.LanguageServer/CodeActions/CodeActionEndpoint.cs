@@ -176,8 +176,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private async Task<IEnumerable<RazorCodeAction>> GetCSharpCodeActionsAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
             var csharpCodeActions = await GetCSharpCodeActionsFromLanguageServerAsync(context, cancellationToken);
-            var filteredCSharpCodeActions = await FilterCSharpCodeActionsAsync(context, csharpCodeActions, cancellationToken);
+            if (csharpCodeActions is null || !csharpCodeActions.Any())
+            {
+                return null;
+            }
 
+            var filteredCSharpCodeActions = await FilterCSharpCodeActionsAsync(context, csharpCodeActions, cancellationToken);
             return filteredCSharpCodeActions;
         }
 
@@ -199,7 +203,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return await ConsolidateCodeActionsFromProvidersAsync(tasks, cancellationToken);
         }
 
-        private async Task<IEnumerable<RazorCodeAction>> GetCSharpCodeActionsFromLanguageServerAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+        // Internal for testing
+        internal async Task<IEnumerable<RazorCodeAction>> GetCSharpCodeActionsFromLanguageServerAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
             Range projectedRange = null;
             if (context.Request.Range != null &&

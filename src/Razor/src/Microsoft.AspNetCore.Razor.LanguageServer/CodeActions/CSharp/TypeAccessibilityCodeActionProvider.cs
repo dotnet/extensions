@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/cs0103
             "CS0103"
         };
+        private static readonly Task<IReadOnlyList<RazorCodeAction>> EmptyResult = Task.FromResult(Array.Empty<RazorCodeAction>() as IReadOnlyList<RazorCodeAction>);
 
         public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
             RazorCodeActionContext context,
@@ -42,12 +43,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             if (context.Request?.Context?.Diagnostics is null)
             {
-                return null;
+                return EmptyResult;
             }
 
             if (codeActions is null || !codeActions.Any())
             {
-                return null;
+                return EmptyResult;
             }
 
             var diagnostics = context.Request.Context.Diagnostics.Where(diagnostic =>
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             if (diagnostics is null)
             {
-                return null;
+                return EmptyResult;
             }
 
             var results = new List<RazorCodeAction>();

@@ -17,7 +17,7 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
+namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     public class AddUsingsCodeActionResolverTest : LanguageServerTestBase
     {

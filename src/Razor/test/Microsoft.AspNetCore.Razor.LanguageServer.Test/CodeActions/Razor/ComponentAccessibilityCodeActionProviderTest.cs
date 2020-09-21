@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
     public class ComponentAccessibilityCodeActionProviderTest : LanguageServerTestBase
     {
         [Fact]
-        public async Task Handle_InvalidFileKind()
+        public async Task Handle_InvalidSyntaxTree_NoStartNode()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 document.GetTextAsync() == Task.FromResult(codeDocument.GetSourceText()) &&
                 document.Project.TagHelpers == tagHelpers);
 
-            var sourceText = SourceText.From("mock");
+            var sourceText = SourceText.From(text);
 
             var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, sourceText, supportsFileCreation);
 

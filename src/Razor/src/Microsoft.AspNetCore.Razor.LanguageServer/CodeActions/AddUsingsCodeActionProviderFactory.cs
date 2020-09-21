@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal static class AddUsingsCodeActionProviderFactory
     {
+        // Internal for testing
         internal static string GetNamespaceFromFQN(string fullyQualifiedName)
         {
             if (!DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.TrySplitNamespaceAndType(
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         internal static RazorCodeAction CreateAddUsingCodeAction(string fullyQualifiedName, DocumentUri uri)
         {
-            var @namespace = AddUsingsCodeActionProviderFactory.GetNamespaceFromFQN(fullyQualifiedName);
+            var @namespace = GetNamespaceFromFQN(fullyQualifiedName);
             if (string.IsNullOrEmpty(@namespace))
             {
                 return null;
