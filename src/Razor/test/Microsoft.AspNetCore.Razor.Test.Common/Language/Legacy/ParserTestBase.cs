@@ -143,14 +143,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else
             {
-                var classifiedSpanBaseline = new string[0];
+                var classifiedSpanBaseline = Array.Empty<string>();
                 classifiedSpanBaseline = classifiedSpanFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 ClassifiedSpanVerifier.Verify(syntaxTree, classifiedSpanBaseline);
             }
 
             // Verify tag helper spans
             var tagHelperSpanFile = TestFile.Create(baselineTagHelperSpansFileName, GetType().GetTypeInfo().Assembly);
-            var tagHelperSpanBaseline = new string[0];
+            var tagHelperSpanBaseline = Array.Empty<string>();
             if (tagHelperSpanFile.Exists())
             {
                 tagHelperSpanBaseline = tagHelperSpanFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);

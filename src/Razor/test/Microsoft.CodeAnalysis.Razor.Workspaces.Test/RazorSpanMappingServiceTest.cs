@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -28,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         [Fact]
-        public async Task TryGetLinePositionSpan_SpanMatchesSourceMapping_ReturnsTrue()
+        public async Task TryGetMappedSpans_SpanMatchesSourceMapping_ReturnsTrue()
         {
             // Arrange
             var sourceText = SourceText.From(@"
@@ -49,18 +50,19 @@ namespace Microsoft.CodeAnalysis.Razor
             var generated = output.GetCSharpDocument();
 
             var symbol = "SomeProperty";
-            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol), symbol.Length);
+            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, StringComparison.Ordinal), symbol.Length);
 
             // Act
-            var result = RazorSpanMappingService.TryGetLinePositionSpan(span, await document.GetTextAsync(), generated, out var mapped);
+            var result = RazorSpanMappingService.TryGetMappedSpans(span, await document.GetTextAsync(), generated, out var mappedLinePositionSpan, out var mappedSpan);
             
             // Assert
             Assert.True(result);
-            Assert.Equal(new LinePositionSpan(new LinePosition(1, 1), new LinePosition(1, 13)), mapped);
+            Assert.Equal(new LinePositionSpan(new LinePosition(1, 1), new LinePosition(1, 13)), mappedLinePositionSpan);
+            Assert.Equal(new TextSpan(Environment.NewLine.Length + 1, symbol.Length), mappedSpan);
         }
 
         [Fact]
-        public async Task TryGetLinePositionSpan_SpanMatchesSourceMappingAndPosition_ReturnsTrue()
+        public async Task TryGetMappedSpans_SpanMatchesSourceMappingAndPosition_ReturnsTrue()
         {
             // Arrange
             var sourceText = SourceText.From(@"
@@ -84,18 +86,19 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var symbol = "SomeProperty";
             // Second occurrence
-            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, generated.GeneratedCode.IndexOf(symbol) + symbol.Length), symbol.Length);
+            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, generated.GeneratedCode.IndexOf(symbol, StringComparison.Ordinal) + symbol.Length, StringComparison.Ordinal), symbol.Length);
 
             // Act
-            var result = RazorSpanMappingService.TryGetLinePositionSpan(span, await document.GetTextAsync(), generated, out var mapped);
+            var result = RazorSpanMappingService.TryGetMappedSpans(span, await document.GetTextAsync(), generated, out var mappedLinePositionSpan, out var mappedSpan);
 
             // Assert
             Assert.True(result);
-            Assert.Equal(new LinePositionSpan(new LinePosition(2, 1), new LinePosition(2, 13)), mapped);
+            Assert.Equal(new LinePositionSpan(new LinePosition(2, 1), new LinePosition(2, 13)), mappedLinePositionSpan);
+            Assert.Equal(new TextSpan(Environment.NewLine.Length + 1 + symbol.Length + Environment.NewLine.Length + 1, symbol.Length), mappedSpan);
         }
 
         [Fact]
-        public async Task TryGetLinePositionSpan_SpanWithinSourceMapping_ReturnsTrue()
+        public async Task TryGetMappedSpans_SpanWithinSourceMapping_ReturnsTrue()
         {
             // Arrange
             var sourceText = SourceText.From(@"
@@ -118,18 +121,19 @@ namespace Microsoft.CodeAnalysis.Razor
             var generated = output.GetCSharpDocument();
 
             var symbol = "SomeProperty";
-            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol), symbol.Length);
+            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, StringComparison.Ordinal), symbol.Length);
 
             // Act
-            var result = RazorSpanMappingService.TryGetLinePositionSpan(span, await document.GetTextAsync(), generated, out var mapped);
+            var result = RazorSpanMappingService.TryGetMappedSpans(span, await document.GetTextAsync(), generated, out var mappedLinePositionSpan, out var mappedSpan);
 
             // Assert
             Assert.True(result);
-            Assert.Equal(new LinePositionSpan(new LinePosition(2, 22), new LinePosition(2, 34)), mapped);
+            Assert.Equal(new LinePositionSpan(new LinePosition(2, 22), new LinePosition(2, 34)), mappedLinePositionSpan);
+            Assert.Equal(new TextSpan(Environment.NewLine.Length + 2 + Environment.NewLine.Length + "    var x = SomeClass.".Length, symbol.Length), mappedSpan);
         }
 
         [Fact]
-        public async Task TryGetLinePositionSpan_SpanOutsideSourceMapping_ReturnsFalse()
+        public async Task TryGetMappedSpans_SpanOutsideSourceMapping_ReturnsFalse()
         {
             // Arrange
             var sourceText = SourceText.From(@"
@@ -152,10 +156,10 @@ namespace Microsoft.CodeAnalysis.Razor
             var generated = output.GetCSharpDocument();
 
             var symbol = "ExecuteAsync";
-            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol), symbol.Length);
+            var span = new TextSpan(generated.GeneratedCode.IndexOf(symbol, StringComparison.Ordinal), symbol.Length);
 
             // Act
-            var result = RazorSpanMappingService.TryGetLinePositionSpan(span, await document.GetTextAsync(), generated, out var mapped);
+            var result = RazorSpanMappingService.TryGetMappedSpans(span, await document.GetTextAsync(), generated, out var mappedLinePositionSpan, out var mappedSpan);
 
             // Assert
             Assert.False(result);

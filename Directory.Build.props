@@ -34,7 +34,13 @@
 
     <!-- Working around https://github.com/microsoft/msbuild/pull/4764 -->
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
+    <CodeAnalysisRuleSet>$(RepoRoot)src/Razor/Microsoft.AspNetCore.Razor.Basic.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)" NoWarn="NU1608" />
+    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="$(Tooling_MicrosoftNetCoreAnalyzersPackageVersion)" NoWarn="NU1608" />
+  </ItemGroup>
 
   <PropertyGroup Label="Package and Assembly Metadata">
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -46,5 +52,9 @@
       Suppress warnings about assembly conflicts. This happens for assemblies that ship in VS so it's irrelevant.
     -->
     <NoWarn>$(NoWarn);MSB3277</NoWarn>
+    <!--
+      Ignore PackageIconUrl deprecation. Work to convert to embedded icons is tracked in https://github.com/dotnet/aspnetcore-Internal/issues/3146.
+    -->
+    <NoWarn>$(NoWarn);NU5048</NoWarn>
   </PropertyGroup>
 </Project>

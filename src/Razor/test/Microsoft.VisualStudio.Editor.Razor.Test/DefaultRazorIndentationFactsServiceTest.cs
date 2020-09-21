@@ -17,16 +17,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void GetPreviousLineEndIndex_ReturnsPreviousLine()
         {
             // Arrange
-            var textSnapshot = new StringTextSnapshot(@"@{
+            var txt = @"@{
     <p>Hello World</p>
-}");
+}";
+            var textSnapshot = new StringTextSnapshot(txt);
             var line = textSnapshot.GetLineFromLineNumber(2);
 
             // Act
             var previousLineEndIndex = DefaultRazorIndentationFactsService.GetPreviousLineEndIndex(textSnapshot, line);
 
             // Assert
-            Assert.Equal(24 + Environment.NewLine.Length, previousLineEndIndex);
+            Assert.Equal(txt.IndexOf("</p>", StringComparison.Ordinal) + 2 + Environment.NewLine.Length, previousLineEndIndex);
         }
 
         [Fact]

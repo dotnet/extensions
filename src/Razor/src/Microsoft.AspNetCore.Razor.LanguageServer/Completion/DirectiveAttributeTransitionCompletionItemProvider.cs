@@ -47,31 +47,62 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             }
 
             var attribute = owner.Parent;
-            if (attribute is MarkupMiscAttributeContentSyntax)
+            if (attribute is MarkupMiscAttributeContentSyntax && attribute.ContainsOnlyWhitespace())
             {
                 // This represents a tag when there's no attribute content <InputText | />.
                 return Completions;
             }
 
-            if (!TryGetAttributeInfo(attribute, out var name, out var nameLocation, out _, out _))
+            if (!TryGetAttributeInfo(owner, out var prefixLocation, out var attributeName, out var attributeNameLocation, out _, out _))
             {
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (name.StartsWith("@"))
+            if (attributeNameLocation.IntersectsWith(location.AbsoluteIndex) && attributeName.StartsWith("@", StringComparison.Ordinal))
             {
-                // The transition is already provided
+                // The transition is already provided for the attribute name
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (!nameLocation.IntersectsWith(location.AbsoluteIndex))
+            if (!IsValidCompletionPoint(location, prefixLocation, attributeNameLocation))
             {
-                // Not operating in the name section
+                // Not operating in the attribute name area
                 return Array.Empty<RazorCompletionItem>();
             }
 
             // This represents a tag when there's no attribute content <InputText | />.
             return Completions;
+        }
+
+        // Internal for testing
+        internal static bool IsValidCompletionPoint(SourceSpan location, TextSpan? prefixLocation, TextSpan attributeNameLocation)
+        {
+            if (location.AbsoluteIndex == (prefixLocation?.Start ?? -1))
+            {
+                // <input| class="test" />
+                // Starts of prefix locations belong to the previous SyntaxNode. It could be the end of an attribute value, the tag name, C# etc.
+                return false;
+            }
+
+            if (attributeNameLocation.Start == location.AbsoluteIndex)
+            {
+                // <input |class="test" />
+                return false;
+            }
+
+            if (prefixLocation?.IntersectsWith(location.AbsoluteIndex) ?? false)
+            {
+                // <input   |  class="test" />
+                return true;
+            }
+
+            if (attributeNameLocation.IntersectsWith(location.AbsoluteIndex))
+            {
+                // <input cla|ss="test" />
+                return false;
+            }
+
+            return false;
         }
     }
 }

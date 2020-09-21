@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _miscellaneousHostProject = new HostProject(miscellaneousProjectPath, RazorDefaults.Configuration, RazorDefaults.RootNamespace);
         }
 
-        public override bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshot projectSnapshot)
+        public override bool TryResolveProject(string documentFilePath, out ProjectSnapshot projectSnapshot, bool enforceDocumentInProject = true)
         {
             if (documentFilePath == null)
             {
@@ -59,22 +59,32 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var projects = _projectSnapshotManagerAccessor.Instance.Projects;
             for (var i = 0; i < projects.Count; i++)
             {
-                if (projects[i].FilePath == _miscellaneousHostProject.FilePath)
+                projectSnapshot = projects[i];
+
+                if (projectSnapshot.FilePath == _miscellaneousHostProject.FilePath)
                 {
-                    // We don't resolve documents to belonging to the miscellaneous project.
+                    if (enforceDocumentInProject &&
+                        IsDocumentInProject(projectSnapshot, documentFilePath))
+                    {
+                        return true;
+                    }
+
                     continue;
                 }
 
-                var projectDirectory = _filePathNormalizer.GetDirectory(projects[i].FilePath);
-                if (normalizedDocumentPath.StartsWith(projectDirectory))
+                var projectDirectory = _filePathNormalizer.GetDirectory(projectSnapshot.FilePath);
+                if (normalizedDocumentPath.StartsWith(projectDirectory, FilePathComparison.Instance) &&
+                    (!enforceDocumentInProject || IsDocumentInProject(projectSnapshot, documentFilePath)))
                 {
-                    projectSnapshot = projects[i];
                     return true;
                 }
             }
 
             projectSnapshot = null;
             return false;
+
+            static bool IsDocumentInProject(ProjectSnapshot projectSnapshot, string documentFilePath) =>
+                projectSnapshot.GetDocument(documentFilePath) != null;
         }
 
         public override ProjectSnapshot GetMiscellaneousProject()

@@ -9,13 +9,16 @@ import {
     GenericRequestHandler,
     LanguageClient,
     LanguageClientOptions,
+    RequestHandler,
+    RequestType,
     ServerOptions,
     State,
 } from 'vscode-languageclient/lib/main';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
+import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsResolver';
+import { resolveRazorLanguageServerTrace } from './RazorLanguageServerTraceResolver';
 import { RazorLogger } from './RazorLogger';
 import { TelemetryReporter } from './TelemetryReporter';
-import { Trace } from './Trace';
 
 const events = {
     ServerStart: 'ServerStart',
@@ -23,59 +26,32 @@ const events = {
 };
 
 export class RazorLanguageServerClient implements vscode.Disposable {
-    private clientOptions: LanguageClientOptions;
-    private serverOptions: ServerOptions;
-    private client: LanguageClient;
+    private clientOptions!: LanguageClientOptions;
+    private serverOptions!: ServerOptions;
+    private client!: LanguageClient;
     private startDisposable: vscode.Disposable | undefined;
     private onStartedListeners: Array<() => Promise<any>> = [];
     private eventBus: EventEmitter;
     private isStarted: boolean;
     private startHandle: Promise<void> | undefined;
+    private stopHandle: Promise<void> | undefined;
 
     constructor(
-        options: RazorLanguageServerOptions,
+        private readonly vscodeType: typeof vscode,
+        private readonly languageServerDir: string,
         private readonly telemetryReporter: TelemetryReporter,
         private readonly logger: RazorLogger) {
         this.isStarted = false;
-        this.clientOptions = {
-            outputChannel: options.outputChannel,
-        };
 
-        const args: string[] = [];
-        let command = options.serverPath;
-        if (options.serverPath.endsWith('.dll')) {
-            this.logger.logMessage('Razor Language Server path is an assembly. ' +
-                'Using \'dotnet\' from the current path to start the server.');
-
-            command = 'dotnet';
-            args.push(options.serverPath);
-        }
-
-        this.logger.logMessage(`Razor language server path: ${options.serverPath}`);
-
-        args.push('-lsp');
-        args.push('--logLevel');
-        const logLevelString = this.getLogLevelString(options.trace);
-        this.telemetryReporter.reportTraceLevel(options.trace);
-
-        args.push(logLevelString);
-
-        if (options.debug) {
-            this.telemetryReporter.reportDebugLanguageServer();
-
-            this.logger.logMessage('Debug flag set for Razor Language Server.');
-            args.push('--debug');
-        }
-
-        this.serverOptions = {
-            run: { command, args },
-            debug: { command, args },
-        };
-
-        this.client = new LanguageClient(
-            'razorLanguageServer', 'Razor Language Server', this.serverOptions, this.clientOptions);
+        this.setupLanguageServer();
 
         this.eventBus = new EventEmitter();
+    }
+
+    public updateTraceLevel() {
+        const languageServerTrace = resolveRazorLanguageServerTrace(this.vscodeType);
+        this.setupLanguageServer();
+        this.logger.setTraceLevel(languageServerTrace);
     }
 
     public onStarted(listener: () => Promise<any>) {
@@ -136,6 +112,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
             const startDisposable = this.client.start();
             this.startDisposable = vscode.Disposable.from(startDisposable, didChangeStateDisposable);
             this.logger.logMessage('Server started, waiting for client to be ready...');
+            // tslint:disable-next-line: no-floating-promises
             this.client.onReady().then(async () => {
                 if (currentState !== State.Running) {
                     // Unexpected scenario, if we fall into this scenario the above onDidChangeState
@@ -177,7 +154,15 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         return this.client.sendRequest<TResponseType>(method, param);
     }
 
-    public async onRequest<TRequest, TReturn>(method: string, handler: GenericRequestHandler<TRequest, TReturn>) {
+    public onRequest<TResponse, TError>(method: string, handler: GenericRequestHandler<TResponse, TError>) {
+        if (!this.isStarted) {
+            throw new Error('Tried to bind on request logic while server is not started.');
+        }
+
+        this.client.onRequest(method, handler);
+    }
+
+    public async onRequestWithParams<P, R, E, RO>(method: RequestType<P, R, E, RO>, handler: RequestHandler<P, R, E>) {
         if (!this.isStarted) {
             throw new Error('Tried to bind on request logic while server is not started.');
         }
@@ -186,7 +171,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     }
 
     public dispose() {
-        this.logger.logMessage('Stopping Razor Language Server.');
+        this.logger.logMessage('Disposing Razor Language Server.');
 
         if (this.startDisposable) {
             this.startDisposable.dispose();
@@ -197,16 +182,78 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this.eventBus.emit(events.ServerStop);
     }
 
-    private getLogLevelString(trace: Trace) {
-        switch (trace) {
-            case Trace.Off:
-                return 'None';
-            case Trace.Messages:
-                return 'Information';
-            case Trace.Verbose:
-                return 'Trace';
+    public async stop() {
+        let resolve: () => void = Function;
+        let reject: (reason: any) => void = Function;
+        this.stopHandle = new Promise<void>((resolver, rejecter) => {
+            resolve = resolver;
+            reject = rejecter;
+        });
+
+        if (!this.startHandle) {
+            reject(new Error('Cannot stop Razor Language Server as it is already stopped.'));
         }
 
-        throw new Error(`Unexpected trace value: '${Trace[trace]}'`);
+        this.logger.logMessage('Stopping Razor Language Server.');
+
+        try {
+            if (this.client) {
+                await this.client.stop();
+            }
+
+            this.dispose();
+
+            resolve();
+        } catch (error) {
+            vscode.window.showErrorMessage(
+                'Razor Language Server failed to stop correctly, ' +
+                'please check the \'Razor Log\' and report an issue.');
+
+            reject(error);
+        }
+
+        return this.stopHandle;
+    }
+
+    private setupLanguageServer() {
+        const languageServerTrace = resolveRazorLanguageServerTrace(this.vscodeType);
+        const options: RazorLanguageServerOptions = resolveRazorLanguageServerOptions(this.vscodeType, this.languageServerDir, languageServerTrace, this.logger);
+
+        this.clientOptions = {
+            outputChannel: options.outputChannel,
+        };
+
+        const args: string[] = [];
+        let command = options.serverPath;
+        if (options.serverPath.endsWith('.dll')) {
+            this.logger.logMessage('Razor Language Server path is an assembly. ' +
+                'Using \'dotnet\' from the current path to start the server.');
+
+            command = 'dotnet';
+            args.push(options.serverPath);
+        }
+
+        this.logger.logMessage(`Razor language server path: ${options.serverPath}`);
+
+        args.push('-lsp');
+        args.push('--trace');
+
+        this.telemetryReporter.reportTraceLevel(options.trace);
+
+        args.push(options.trace.toString());
+
+        if (options.debug) {
+            this.telemetryReporter.reportDebugLanguageServer();
+
+            this.logger.logMessage('Debug flag set for Razor Language Server.');
+            args.push('--debug');
+        }
+
+        this.serverOptions = {
+            run: { command, args },
+            debug: { command, args },
+        };
+
+        this.client = new LanguageClient('razorLanguageServer', 'Razor Language Server', this.serverOptions, this.clientOptions);
     }
 }

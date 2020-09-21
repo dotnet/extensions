@@ -1,12 +1,51 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using Moq;
+using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     public class DefaultTagHelperDescriptionFactoryTest
     {
+        protected IClientLanguageServer LanguageServer
+        {
+            get
+            {
+                var initializeParams = new InitializeParams
+                {
+                    Capabilities = new ClientCapabilities
+                    {
+                        TextDocument = new TextDocumentClientCapabilities
+                        {
+                            Completion = new Supports<CompletionCapability>
+                            {
+                                Value = new CompletionCapability
+                                {
+                                    CompletionItem = new CompletionItemCapabilityOptions
+                                    {
+                                        SnippetSupport = true,
+                                        DocumentationFormat = new Container<MarkupKind>(MarkupKind.Markdown)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                var languageServer = new Mock<IClientLanguageServer>();
+                languageServer.SetupGet(server => server.ClientSettings)
+                    .Returns(initializeParams);
+
+                return languageServer.Object;
+            }
+        }
+
         [Fact]
         public void ResolveTagHelperTypeName_ExtractsTypeName_SimpleReturnType()
         {
@@ -269,6 +308,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         [Fact]
+        public void TryExtractSummary_Null_ReturnsFalse()
+        {
+            // Arrange & Act
+            var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation: null, out var summary);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(summary);
+        }
+
+        [Fact]
         public void TryExtractSummary_ExtractsSummary_ReturnsTrue()
         {
             // Arrange
@@ -305,12 +355,17 @@ Suffixed invalid content";
             var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(summary);
+            Assert.True(result);
+            Assert.Equal(@"Prefixed invalid content
+
+
+</summary>
+
+Suffixed invalid content", summary);
         }
 
         [Fact]
-        public void TryExtractSummary_NoEndSummary_ReturnsFalse()
+        public void TryExtractSummary_NoEndSummary_ReturnsTrue()
         {
             // Arrange
             var documentation = @"
@@ -325,8 +380,46 @@ Suffixed invalid content";
             var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
 
             // Assert
+            Assert.True(result);
+            Assert.Equal(@"Prefixed invalid content
+
+
+<summary>
+
+Suffixed invalid content", summary);
+        }
+
+        [Fact]
+        public void TryExtractSummary_XMLButNoSummary_ReturnsFalse()
+        {
+            // Arrange
+            var documentation = @"
+<param type=""stuff"">param1</param>
+<return>Result</return>
+";
+
+            // Act
+            var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
+
+            // Assert
             Assert.False(result);
             Assert.Null(summary);
+        }
+
+        [Fact]
+        public void TryExtractSummary_NoXml_ReturnsTrue()
+        {
+            // Arrange
+            var documentation = @"
+There is no xml, but I got you this < and the >.
+";
+
+            // Act
+            var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("There is no xml, but I got you this < and the >.", summary);
         }
 
         [Fact]
@@ -363,24 +456,23 @@ Suffixed invalid content";
             Hello
 
     World
+
 ";
 
             // Act
             var cleanedSummary = DefaultTagHelperDescriptionFactory.CleanSummaryContent(summary);
 
             // Assert
-            Assert.Equal(@"
-Hello
+            Assert.Equal(@"Hello
 
-World
-", cleanedSummary);
+World", cleanedSummary);
         }
 
         [Fact]
         public void TryCreateDescription_NoAssociatedTagHelperDescriptions_ReturnsFalse()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
             var elementDescription = ElementDescriptionInfo.Default;
 
             // Act
@@ -395,7 +487,81 @@ World
         public void TryCreateDescription_Element_SingleAssociatedTagHelper_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
+            var associatedTagHelperInfos = new[]
+            {
+                new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+            };
+            var elementDescription = new ElementDescriptionInfo(associatedTagHelperInfos);
+            // Act
+            var result = descriptionFactory.TryCreateDescription(elementDescription, out var markdown);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(@"**SomeTagHelper**
+
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
+        }
+
+        [Fact]
+        public void TryCreateDescription_Element_PlainText_NoBold()
+        {
+            // Arrange
+            var languageServer = LanguageServer;
+            languageServer.ClientSettings.Capabilities.TextDocument.Completion.Value.CompletionItem.DocumentationFormat = new Container<MarkupKind>(MarkupKind.PlainText);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(languageServer);
+            var associatedTagHelperInfos = new[]
+            {
+                new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+            };
+            var elementDescription = new ElementDescriptionInfo(associatedTagHelperInfos);
+
+            // Act
+            var result = descriptionFactory.TryCreateDescription(elementDescription, out var markdown);
+
+            // Assert
+            Assert.True(result, "TryCreateDescription should have succeeded");
+            Assert.Equal(@"SomeTagHelper
+
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.PlainText, markdown.Kind);
+        }
+
+        [Fact]
+        public void TryCreateDescription_Attribute_PlainText_NoBold()
+        {
+            // Arrange
+            var languageServer = LanguageServer;
+            languageServer.ClientSettings.Capabilities.TextDocument.Completion.Value.CompletionItem.DocumentationFormat = new Container<MarkupKind>(MarkupKind.PlainText);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(languageServer);
+            var associatedAttributeDescriptions = new[]
+            {
+                new TagHelperAttributeDescriptionInfo(
+                    displayName: "string Microsoft.AspNetCore.SomeTagHelpers.SomeTypeName.SomeProperty",
+                    propertyName: "SomeProperty",
+                    returnTypeName: "System.String",
+                    documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>")
+            };
+            var attributeDescription = new AttributeDescriptionInfo(associatedAttributeDescriptions);
+
+            // Act
+            var result = descriptionFactory.TryCreateDescription(attributeDescription, out var markdown);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(@"string SomeTypeName.SomeProperty
+
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.PlainText, markdown.Kind);
+        }
+        [Fact]
+        public void TryCreateDescription_Element_BothPlainTextAndMarkdown_IsBold()
+        {
+            // Arrange
+            var languageServer = LanguageServer;
+            languageServer.ClientSettings.Capabilities.TextDocument.Completion.Value.CompletionItem.DocumentationFormat = new Container<MarkupKind>(MarkupKind.PlainText, MarkupKind.Markdown);
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(languageServer);
             var associatedTagHelperInfos = new[]
             {
                 new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
@@ -409,19 +575,19 @@ World
             Assert.True(result);
             Assert.Equal(@"**SomeTagHelper**
 
-Uses `List<System.String>`s
-", markdown);
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
         }
 
         [Fact]
         public void TryCreateDescription_Element_MultipleAssociatedTagHelpers_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
             var associatedTagHelperInfos = new[]
             {
-                new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
-                new TagHelperDescriptionInfo("Microsoft.AspNetCore.OtherTagHelper", "<summary>Also uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+                new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>\nUses <see cref=\"T:System.Collections.List{System.String}\" />s\n</summary>"),
+                new TagHelperDescriptionInfo("Microsoft.AspNetCore.OtherTagHelper", "<summary>\nAlso uses <see cref=\"T:System.Collections.List{System.String}\" />s\n\r\n\r\r</summary>"),
             };
             var elementDescription = new ElementDescriptionInfo(associatedTagHelperInfos);
 
@@ -433,19 +599,18 @@ Uses `List<System.String>`s
             Assert.Equal(@"**SomeTagHelper**
 
 Uses `List<System.String>`s
-
 ---
 **OtherTagHelper**
 
-Also uses `List<System.String>`s
-", markdown);
+Also uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
         }
 
         [Fact]
         public void TryCreateDescription_Attribute_SingleAssociatedAttribute_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
             var associatedAttributeDescriptions = new[]
             {
                 new TagHelperAttributeDescriptionInfo(
@@ -463,15 +628,15 @@ Also uses `List<System.String>`s
             Assert.True(result);
             Assert.Equal(@"**string** SomeTypeName.**SomeProperty**
 
-Uses `List<System.String>`s
-", markdown);
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
         }
 
         [Fact]
         public void TryCreateDescription_Attribute_MultipleAssociatedAttributes_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var descriptionFactory = new DefaultTagHelperDescriptionFactory(LanguageServer);
             var associatedAttributeDescriptions = new[]
             {
                 new TagHelperAttributeDescriptionInfo(
@@ -483,7 +648,7 @@ Uses `List<System.String>`s
                     displayName: "System.Boolean? Microsoft.AspNetCore.SomeTagHelpers.AnotherTypeName.AnotherProperty",
                     propertyName: "AnotherProperty",
                     returnTypeName: "System.Boolean?",
-                    documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+                    documentation: "<summary>\nUses <see cref=\"T:System.Collections.List{System.String}\" />s\n</summary>"),
             };
             var attributeDescription = new AttributeDescriptionInfo(associatedAttributeDescriptions);
 
@@ -495,12 +660,11 @@ Uses `List<System.String>`s
             Assert.Equal(@"**string** SomeTypeName.**SomeProperty**
 
 Uses `List<System.String>`s
-
 ---
 **Boolean?** AnotherTypeName.**AnotherProperty**
 
-Uses `List<System.String>`s
-", markdown);
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
         }
     }
 }

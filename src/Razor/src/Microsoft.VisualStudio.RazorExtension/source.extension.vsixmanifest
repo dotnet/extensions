@@ -7,6 +7,9 @@
     <Icon>WebConfiguration.png</Icon>
     <PreviewIcon>WebConfiguration.png</PreviewIcon>
     <PackageId>Microsoft.VisualStudio.RazorExtension</PackageId>
+
+    <!-- This is needed to mark this extension as cloud compliant. -->
+    <AllowClientRole>true</AllowClientRole>
   </Metadata>
   <Installation AllUsers="true" Experimental="true">
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0,)" />
@@ -20,13 +23,38 @@
   </Prerequisites>
   <Assets>
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="Microsoft.VisualStudio.RazorExtension.Custom" Path="Microsoft.VisualStudio.RazorExtension.Custom.pkgdef" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
     <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="razorLanguageService.servicehub.service.json" />
     <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="razorLanguageService64.servicehub.service.json" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.VisualStudio.LanguageServer.Protocol.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.VisualStudio.LanguageServer.Protocol.Extensions.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Razor.Language.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="MediatR.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="OmniSharp.Extensions.JsonRpc.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="OmniSharp.Extensions.LanguageProtocol.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="OmniSharp.Extensions.LanguageServer.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="OmniSharp.Extensions.LanguageServer.Shared.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Options.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Primitives.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.DependencyInjection.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Configuration.Json.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Configuration.FileExtensions.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Configuration.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Configuration.Abstractions.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Logging.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.Logging.Abstractions.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.FileSystemGlobbing.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.FileProviders.Abstractions.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.Extensions.FileProviders.Physical.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="System.IO.Pipelines.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="System.Reactive.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Razor.LanguageServer.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Razor.LanguageServer.Common.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.AspNetCore.Razor.Language.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.CodeAnalysis.Razor.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.CodeAnalysis.Razor.dll" />
@@ -40,5 +68,9 @@
     <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.Editor.Razor.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly"  Path="Microsoft.VisualStudio.LiveShare.Razor.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.LiveShare.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly"  Path="Microsoft.VisualStudio.LanguageServerClient.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.LanguageServerClient.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly"  Path="Microsoft.VisualStudio.LanguageServer.ContainedLanguage.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.LanguageServer.ContainedLanguage.dll" />
   </Assets>
 </PackageManifest>

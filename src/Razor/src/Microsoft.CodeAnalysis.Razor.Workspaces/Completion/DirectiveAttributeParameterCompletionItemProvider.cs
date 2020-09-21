@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (!TryGetAttributeInfo(owner, out var attributeName, out _, out var parameterName, out var parameterNameLocation))
+            if (!TryGetAttributeInfo(owner, out _, out var attributeName, out _, out var parameterName, out var parameterNameLocation))
             {
                 // Either we're not in an attribute or the attribute is so malformed that we can't provide proper completions.
                 return Array.Empty<RazorCompletionItem>();
