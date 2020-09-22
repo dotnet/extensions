@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         private volatile ConnectionMultiplexer _connection;
         private IDatabase _cache;
+        private bool _disposed;
 
         private readonly RedisCacheOptions _options;
         private readonly string _instance;
@@ -165,6 +166,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         private void Connect()
         {
+            CheckDisposed();
             if (_cache != null)
             {
                 return;
@@ -194,6 +196,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         private async Task ConnectAsync(CancellationToken token = default(CancellationToken))
         {
+            CheckDisposed();
             token.ThrowIfCancellationRequested();
 
             if (_cache != null)
@@ -431,10 +434,20 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         public void Dispose()
         {
-            if (_connection != null)
+            if (_disposed)
             {
-                _connection.Close();
-                _cache = null;
+                return;
+            }
+
+            _disposed = true;
+            _connection?.Close();
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
             }
         }
     }
