@@ -181,7 +181,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     }
                     else
                     {
-                        _connection = ConnectionMultiplexer.Connect(_options.Configuration);                        
+                        _connection = ConnectionMultiplexer.Connect(_options.Configuration);
                     }
                     _cache = _connection.GetDatabase();
                 }
@@ -212,9 +212,9 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                     }
                     else
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);                  
+                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
                     }
-                    
+
                     _cache = _connection.GetDatabase();
                 }
             }
@@ -434,6 +434,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             if (_connection != null)
             {
                 _connection.Close();
+                _cache = null;
             }
         }
     }
