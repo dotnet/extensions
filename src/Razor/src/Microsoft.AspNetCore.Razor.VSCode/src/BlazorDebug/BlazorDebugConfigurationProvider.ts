@@ -62,13 +62,14 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             env: {
                 ...configuration.env,
             },
+            logging: configuration.logging,
         };
 
         this.vscodeType.debug.startDebugging(folder, app).then((appStartFulfilled: boolean) => {
             this.logger.logVerbose('[DEBUGGER] Launching hosted Blazor WebAssembly app...');
             if (process.platform !== 'win32') {
                 const terminate = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
-                    await onDidTerminateDebugSession(event, this.logger, /*targetPid*/undefined, /*hosted*/app.program);
+                    await onDidTerminateDebugSession(event, this.logger, app.program);
                     terminate.dispose();
                 });
             }
@@ -92,7 +93,7 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
         });
 
         /**
-         * We need to terminate the Blazor dev server and its child processes.
+         * We need to terminate the Blazor dev server.
          */
         const terminate = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
             await onDidTerminateDebugSession(event, this.logger, await output.processId);

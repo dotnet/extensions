@@ -113,6 +113,54 @@
                   "env": {
                     "type": "object",
                     "description": "Environment variables passed to dotnet. Only valid for hosted apps."
+                  },
+                  "logging": {
+                    "description": "Optional flags to determine what types of messages should be logged to the output window. Applicable only for the app server of hosted Blazor WASM apps.",
+                    "type": "object",
+                    "required": [],
+                    "default": {},
+                    "properties": {
+                      "exceptions": {
+                        "type": "boolean",
+                        "description": "Optional flag to determine whether exception messages should be logged to the output window.",
+                        "default": true
+                      },
+                      "moduleLoad": {
+                        "type": "boolean",
+                        "description": "Optional flag to determine whether module load events should be logged to the output window.",
+                        "default": true
+                      },
+                      "programOutput": {
+                        "type": "boolean",
+                        "description": "Optional flag to determine whether program output should be logged to the output window when not using an external console.",
+                        "default": true
+                      },
+                      "engineLogging": {
+                        "type": "boolean",
+                        "description": "Optional flag to determine whether diagnostic engine logs should be logged to the output window.",
+                        "default": false
+                      },
+                      "browserStdOut": {
+                        "type": "boolean",
+                        "description": "Optional flag to determine if stdout text from the launching the web browser should be logged to the output window.",
+                        "default": true
+                      },
+                      "elapsedTiming": {
+                        "type": "boolean",
+                        "description": "If true, engine logging will include `adapterElapsedTime` and `engineElapsedTime` properties to indicate the amount of time, in microseconds, that a request took.",
+                        "default": false
+                      },
+                      "threadExit": {
+                        "type": "boolean",
+                        "description": "Controls if a message is logged when a thread in the target process exits. Default: `false`.",
+                        "default": false
+                      },
+                      "processExit": {
+                        "type": "boolean",
+                        "description": "Controls if a message is logged when the target process exits, or debugging is stopped. Default: `true`.",
+                        "default": true
+                      }
+                    }
                   }
                 }
               },
