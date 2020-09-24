@@ -21,9 +21,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
             IClientLanguageServer server,
-            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor,
             ILoggerFactory loggerFactory)
-            : base(documentMappingService, filePathNormalizer, server, projectSnapshotManagerAccessor)
+            : base(documentMappingService, filePathNormalizer, server)
         {
             if (loggerFactory is null)
             {
@@ -46,19 +45,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             var originalText = context.SourceText;
 
-            var htmlEdits = await HtmlFormatter.FormatAsync(context.CodeDocument, context.Range, context.Uri, context.Options, cancellationToken);
+            var htmlEdits = await HtmlFormatter.FormatAsync(context, context.Range, cancellationToken);
             var normalizedEdits = NormalizeTextEdits(originalText, htmlEdits);
             var mappedEdits = RemapTextEdits(context.CodeDocument, normalizedEdits, RazorLanguageKind.Html);
             var changes = mappedEdits.Select(e => e.AsTextChange(originalText));
-            if (!changes.Any())
+
+            var changedText = originalText;
+            var changedContext = context;
+            if (changes.Any())
             {
-                return result;
+                changedText = originalText.WithChanges(changes);
+                // Create a new formatting context for the changed razor document.
+                changedContext = await context.WithTextAsync(changedText);
             }
-
-            var changedText = originalText.WithChanges(changes);
-
-            // Create a new formatting context for the changed razor document.
-            var changedContext = await context.WithTextAsync(changedText);
 
             var indentationChanges = AdjustRazorIndentation(changedContext);
             if (indentationChanges.Count > 0)

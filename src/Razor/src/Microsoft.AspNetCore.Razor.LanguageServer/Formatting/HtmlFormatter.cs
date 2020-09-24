@@ -4,12 +4,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-using LSPFormattingOptions = OmniSharp.Extensions.LanguageServer.Protocol.Models.FormattingOptions;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
@@ -38,18 +35,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         public async Task<TextEdit[]> FormatAsync(
-            RazorCodeDocument codeDocument,
-            Range range,
-            DocumentUri uri,
-            LSPFormattingOptions options,
+            FormattingContext context,
+            Range rangeToFormat,
             CancellationToken cancellationToken)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (rangeToFormat is null)
+            {
+                throw new ArgumentNullException(nameof(rangeToFormat));
+            }
+
             var @params = new RazorDocumentRangeFormattingParams()
             {
                 Kind = RazorLanguageKind.Html,
-                ProjectedRange = range,
-                HostDocumentFilePath = _filePathNormalizer.Normalize(uri.GetAbsoluteOrUNCPath()),
-                Options = options
+                ProjectedRange = rangeToFormat,
+                HostDocumentFilePath = _filePathNormalizer.Normalize(context.Uri.GetAbsoluteOrUNCPath()),
+                Options = context.Options
             };
 
             var response = _server.SendRequest(LanguageServerConstants.RazorRangeFormattingEndpoint, @params);

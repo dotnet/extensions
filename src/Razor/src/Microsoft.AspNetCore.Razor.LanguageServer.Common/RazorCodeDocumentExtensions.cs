@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
     {
         private static readonly object UnsupportedKey = new object();
         private static readonly object SourceTextKey = new object();
+        private static readonly object CSharpSourceTextKey = new object();
+        private static readonly object HtmlSourceTextKey = new object();
 
         public static bool IsUnsupported(this RazorCodeDocument document)
         {
@@ -53,6 +55,46 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                 source.CopyTo(0, charBuffer, 0, source.Length);
                 var sourceText = SourceText.From(new string(charBuffer));
                 document.Items[SourceTextKey] = sourceText;
+
+                return sourceText;
+            }
+
+            return (SourceText)sourceTextObj;
+        }
+
+        public static SourceText GetCSharpSourceText(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            var sourceTextObj = document.Items[CSharpSourceTextKey];
+            if (sourceTextObj == null)
+            {
+                var csharpDocument = document.GetCSharpDocument();
+                var sourceText = SourceText.From(csharpDocument.GeneratedCode);
+                document.Items[CSharpSourceTextKey] = sourceText;
+
+                return sourceText;
+            }
+
+            return (SourceText)sourceTextObj;
+        }
+
+        public static SourceText GetHtmlSourceText(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            var sourceTextObj = document.Items[HtmlSourceTextKey];
+            if (sourceTextObj == null)
+            {
+                var htmlDocument = document.GetHtmlDocument();
+                var sourceText = SourceText.From(htmlDocument.GeneratedHtml);
+                document.Items[HtmlSourceTextKey] = sourceText;
 
                 return sourceText;
             }

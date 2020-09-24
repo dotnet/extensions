@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 #if GENERATE_BASELINES
             Assert.False(true, "GENERATE_BASELINES is set to true.");
 #else
-            Assert.Equal(expected, actual);
+            Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -148,15 +148,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             var client = new FormattingLanguageServerClient(TestProjectPath, FileName);
             client.AddCodeDocument(codeDocument);
-            var projectSnapshotManagerAccessor = Mock.Of<ProjectSnapshotManagerAccessor>(p => p.Instance.Workspace == new AdhocWorkspace());
             var passes = new List<IFormattingPass>()
             {
-                new HtmlFormattingPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory),
-                new CSharpFormattingPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory),
-                new CSharpOnTypeFormattingPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory),
-                new OnTypeFormattingStructureValidationPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory),
-                new FormattingDiagnosticValidationPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory),
-                new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory),
+                new HtmlFormattingPass(mappingService, FilePathNormalizer, client, LoggerFactory),
+                new CSharpFormattingPass(mappingService, FilePathNormalizer, client, LoggerFactory),
+                new CSharpOnTypeFormattingPass(mappingService, FilePathNormalizer, client, LoggerFactory),
+                new OnTypeFormattingStructureValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory),
+                new FormattingDiagnosticValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory),
+                new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory),
             };
 
             return new DefaultRazorFormattingService(passes, LoggerFactory);

@@ -21,13 +21,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         protected static readonly int DefaultOrder = 1000;
 
-        private readonly RazorDocumentMappingService _documentMappingService;
-
         public FormattingPassBase(
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
-            IClientLanguageServer server,
-            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor)
+            IClientLanguageServer server)
         {
             if (documentMappingService is null)
             {
@@ -44,17 +41,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(server));
             }
 
-            if (projectSnapshotManagerAccessor is null)
-            {
-                throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
-            }
-
-            _documentMappingService = documentMappingService;
-            CSharpFormatter = new CSharpFormatter(documentMappingService, server, projectSnapshotManagerAccessor, filePathNormalizer);
+            DocumentMappingService = documentMappingService;
+            CSharpFormatter = new CSharpFormatter(documentMappingService, server, filePathNormalizer);
             HtmlFormatter = new HtmlFormatter(server, filePathNormalizer);
         }
 
         public virtual int Order => DefaultOrder;
+
+        protected RazorDocumentMappingService DocumentMappingService { get; }
 
         protected CSharpFormatter CSharpFormatter { get; }
 
@@ -93,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 var projectedRange = projectedTextEdits[i].Range;
                 if (codeDocument.IsUnsupported() ||
-                    !_documentMappingService.TryMapFromProjectedDocumentRange(codeDocument, projectedRange, out var originalRange))
+                    !DocumentMappingService.TryMapFromProjectedDocumentRange(codeDocument, projectedRange, out var originalRange))
                 {
                     // Can't map range. Discard this edit.
                     continue;
@@ -243,7 +237,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     continue;
                 }
 
-                var mappingStartLineIndex = (int)mappingRange.Start.Line;
+                var mappingStartLineIndex = mappingRange.Start.Line;
                 if (context.Indentations[mappingStartLineIndex].StartsInCSharpContext)
                 {
                     // Doesn't need cleaning up.

@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using OmniSharp.Extensions.LanguageServer.Protocol;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Formatting;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -23,12 +22,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private readonly RazorDocumentMappingService _documentMappingService;
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly IClientLanguageServer _server;
-        private readonly ProjectSnapshotManagerAccessor _projectSnapshotManagerAccessor;
+        private readonly object _indentationService;
+        private readonly MethodInfo _getIndentationMethod;
 
         public CSharpFormatter(
             RazorDocumentMappingService documentMappingService,
             IClientLanguageServer languageServer,
-            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor,
             FilePathNormalizer filePathNormalizer)
         {
             if (documentMappingService is null)
@@ -41,11 +40,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 throw new ArgumentNullException(nameof(languageServer));
             }
 
-            if (projectSnapshotManagerAccessor is null)
-            {
-                throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
-            }
-
             if (filePathNormalizer is null)
             {
                 throw new ArgumentNullException(nameof(filePathNormalizer));
@@ -53,20 +47,41 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             _documentMappingService = documentMappingService;
             _server = languageServer;
-            _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
             _filePathNormalizer = filePathNormalizer;
+
+            try
+            {
+                var type = typeof(CSharpFormattingOptions).Assembly.GetType("Microsoft.CodeAnalysis.CSharp.Indentation.CSharpIndentationService", throwOnError: true);
+                _indentationService = Activator.CreateInstance(type);
+                var indentationService = type.GetInterface("IIndentationService");
+                _getIndentationMethod = indentationService.GetMethod("GetIndentation");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    "Error occured when creating an instance of Roslyn's IIndentationService. Roslyn may have changed in an unexpected way.",
+                    ex);
+            }
         }
 
         public async Task<TextEdit[]> FormatAsync(
-            RazorCodeDocument codeDocument,
-            Range range,
-            DocumentUri uri,
-            FormattingOptions options,
+            FormattingContext context,
+            Range rangeToFormat,
             CancellationToken cancellationToken,
             bool formatOnClient = false)
         {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (rangeToFormat is null)
+            {
+                throw new ArgumentNullException(nameof(rangeToFormat));
+            }
+
             Range projectedRange = null;
-            if (range != null && !_documentMappingService.TryMapToProjectedDocumentRange(codeDocument, range, out projectedRange))
+            if (rangeToFormat != null && !_documentMappingService.TryMapToProjectedDocumentRange(context.CodeDocument, rangeToFormat, out projectedRange))
             {
                 return Array.Empty<TextEdit>();
             }
@@ -74,15 +89,62 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             TextEdit[] edits;
             if (formatOnClient)
             {
-                edits = await FormatOnClientAsync(codeDocument, projectedRange, uri, options, cancellationToken);
+                edits = await FormatOnClientAsync(context, projectedRange, cancellationToken);
             }
             else
             {
-                edits = await FormatOnServerAsync(codeDocument, projectedRange, uri, options, cancellationToken);
+                edits = await FormatOnServerAsync(context, projectedRange, cancellationToken);
             }
 
-            var mappedEdits = MapEditsToHostDocument(codeDocument, edits);
+            var mappedEdits = MapEditsToHostDocument(context.CodeDocument, edits);
             return mappedEdits;
+        }
+
+        public int GetCSharpIndentation(FormattingContext context, int projectedDocumentIndex, CancellationToken cancellationToken)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            // Add a marker at the position where we need the indentation.
+            var changedText = context.CSharpSourceText;
+            var marker = $"{context.NewLineString}#line default{context.NewLineString}#line hidden{context.NewLineString}";
+            changedText = changedText.WithChanges(new TextChange(TextSpan.FromBounds(projectedDocumentIndex, projectedDocumentIndex), marker));
+            var changedDocument = context.CSharpWorkspaceDocument.WithText(changedText);
+
+            // Get the line number at the position after the marker
+            var line = changedText.Lines.GetLinePosition(projectedDocumentIndex + marker.Length).Line;
+
+            try
+            {
+                var result = _getIndentationMethod.Invoke(
+                    _indentationService,
+                    new object[] { changedDocument, line, CodeAnalysis.Formatting.FormattingOptions.IndentStyle.Smart, cancellationToken });
+
+                var baseProperty = result.GetType().GetProperty("BasePosition");
+                var basePosition = (int)baseProperty.GetValue(result);
+                var offsetProperty = result.GetType().GetProperty("Offset");
+                var offset = (int)offsetProperty.GetValue(result);
+
+                var resultLine = changedText.Lines.GetLinePosition(basePosition);
+                var indentation = resultLine.Character + offset;
+
+                // IIndentationService always returns offset as the number of spaces.
+                // So if the client uses tabs instead of spaces, we need to convert accordingly.
+                if (!context.Options.InsertSpaces)
+                {
+                    indentation /= (int)context.Options.TabSize;
+                }
+
+                return indentation;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    "Error occured when reflection invoking Roslyn's IIndentationService. Roslyn may have changed in an unexpected way.",
+                    ex);
+            }
         }
 
         private TextEdit[] MapEditsToHostDocument(RazorCodeDocument codeDocument, TextEdit[] csharpEdits)
@@ -104,18 +166,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         private async Task<TextEdit[]> FormatOnClientAsync(
-            RazorCodeDocument codeDocument,
+            FormattingContext context,
             Range projectedRange,
-            DocumentUri uri,
-            FormattingOptions options,
             CancellationToken cancellationToken)
         {
             var @params = new RazorDocumentRangeFormattingParams()
             {
                 Kind = RazorLanguageKind.CSharp,
                 ProjectedRange = projectedRange,
-                HostDocumentFilePath = _filePathNormalizer.Normalize(uri.GetAbsoluteOrUNCPath()),
-                Options = options
+                HostDocumentFilePath = _filePathNormalizer.Normalize(context.Uri.GetAbsoluteOrUNCPath()),
+                Options = context.Options
             };
 
             var response = _server.SendRequest(LanguageServerConstants.RazorRangeFormattingEndpoint, @params);
@@ -125,26 +185,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         private async Task<TextEdit[]> FormatOnServerAsync(
-            RazorCodeDocument codeDocument,
+            FormattingContext context,
             Range projectedRange,
-            DocumentUri uri,
-            FormattingOptions options,
             CancellationToken cancellationToken)
         {
-            var workspace = _projectSnapshotManagerAccessor.Instance.Workspace;
-            var csharpOptions = workspace.Options
-                .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.TabSize, LanguageNames.CSharp, (int)options.TabSize)
-                .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.UseTabs, LanguageNames.CSharp, !options.InsertSpaces);
+            var csharpSourceText = context.CodeDocument.GetCSharpSourceText();
+            var spanToFormat = projectedRange.AsTextSpan(csharpSourceText);
+            var root = await context.CSharpWorkspaceDocument.GetSyntaxRootAsync(cancellationToken);
+            var workspace = context.CSharpWorkspace;
 
-            var csharpDocument = codeDocument.GetCSharpDocument();
-            var syntaxTree = CSharpSyntaxTree.ParseText(csharpDocument.GeneratedCode);
-            var sourceText = SourceText.From(csharpDocument.GeneratedCode);
-            var root = await syntaxTree.GetRootAsync();
-            var spanToFormat = projectedRange.AsTextSpan(sourceText);
+            // Formatting options will already be set in the workspace.
+            var changes = CodeAnalysis.Formatting.Formatter.GetFormattedTextChanges(root, spanToFormat, workspace);
 
-            var changes = CodeAnalysis.Formatting.Formatter.GetFormattedTextChanges(root, spanToFormat, workspace, options: csharpOptions);
-
-            var edits = changes.Select(c => c.AsTextEdit(sourceText)).ToArray();
+            var edits = changes.Select(c => c.AsTextEdit(csharpSourceText)).ToArray();
             return edits;
         }
     }

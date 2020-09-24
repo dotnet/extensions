@@ -239,8 +239,7 @@ if (true) { }
             var mappingService = new DefaultRazorDocumentMappingService();
 
             var client = Mock.Of<IClientLanguageServer>();
-            var projectSnapshotManagerAccessor = Mock.Of<ProjectSnapshotManagerAccessor>();
-            var pass = new OnTypeFormattingStructureValidationPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory);
+            var pass = new OnTypeFormattingStructureValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory);
 
             return pass;
         }

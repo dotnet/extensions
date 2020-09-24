@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
-            var context = FormattingContext.Create(uri, documentSnapshot, codeDocument, options, range);
+            using var context = FormattingContext.Create(uri, documentSnapshot, codeDocument, options, range);
 
             var result = new FormattingResult(Array.Empty<TextEdit>());
             foreach (var pass in _formattingPasses)
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
-            var context = FormattingContext.Create(uri, documentSnapshot, codeDocument, options, isFormatOnType: true);
+            using var context = FormattingContext.Create(uri, documentSnapshot, codeDocument, options, isFormatOnType: true);
             var result = new FormattingResult(formattedEdits, kind);
 
             foreach (var pass in _formattingPasses)

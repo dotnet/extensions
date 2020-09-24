@@ -19,9 +19,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
             IClientLanguageServer server,
-            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor,
             ILoggerFactory loggerFactory)
-            : base(documentMappingService, filePathNormalizer, server, projectSnapshotManagerAccessor)
+            : base(documentMappingService, filePathNormalizer, server)
         {
             if (loggerFactory is null)
             {

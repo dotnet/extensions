@@ -133,8 +133,8 @@ expected: @"
 @functions {
     public class Foo
     {
-@* This is a Razor Comment *@
-void Method() { }
+        @* This is a Razor Comment *@
+        void Method() { }
     }
 }
 ");
@@ -155,7 +155,7 @@ expected: @"
 @functions {
     public class Foo
     {
-@* This is a Razor Comment *@
+        @* This is a Razor Comment *@
     }
 }
 ");
@@ -254,7 +254,7 @@ public class HelloWorld
 }
 
 @functions{
-    
+
  public class Bar {}
 }
 |",
@@ -323,7 +323,7 @@ expected: @"
 ");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/25475")]
+        [Fact]
         public async Task IndentsCodeBlockDirectiveStart()
         {
             await RunFormattingTestAsync(
@@ -340,7 +340,7 @@ Hello World
 ");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/25475")]
+        [Fact]
         public async Task IndentsCodeBlockDirectiveEnd()
         {
             await RunFormattingTestAsync(
@@ -371,6 +371,11 @@ input: @"
 ""One"", ""two"",
 ""three""
                     };
+                    var str = @""
+This should
+not
+be indented.
+"";
                 }
 public int MyProperty { get
 {
@@ -391,9 +396,14 @@ expected: @"
         public Foo()
         {
             var arr = new string[] {
-""One"", ""two"",
-""three""
-                };
+                ""One"", ""two"",
+                ""three""
+            };
+            var str = @""
+This should
+not
+be indented.
+"";
         }
         public int MyProperty
         {

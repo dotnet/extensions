@@ -48,7 +48,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     // We need to generate a formatting span at this position. So insert a marker in its place.
                     comment = (SyntaxToken)SyntaxFactory.Token(SyntaxKind.Marker, string.Empty).Green.CreateRed(razorCommentSyntax, razorCommentSyntax.StartCommentStar.EndPosition);
                 }
+
+                _currentIndentationLevel++;
                 WriteSpan(comment, FormattingSpanKind.Comment);
+                _currentIndentationLevel--;
 
                 WriteSpan(razorCommentSyntax.EndCommentStar, FormattingSpanKind.MetaCode);
                 WriteSpan(razorCommentSyntax.EndCommentTransition, FormattingSpanKind.Transition);

@@ -81,6 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var workspace = new AdhocWorkspace();
                 var cSharpOptions = workspace.Options
                     .WithChangedOption(FormattingOptions.TabSize, LanguageNames.CSharp, (int)options.TabSize)
+                    .WithChangedOption(FormattingOptions.IndentationSize, LanguageNames.CSharp, (int)options.TabSize)
                     .WithChangedOption(FormattingOptions.UseTabs, LanguageNames.CSharp, !options.InsertSpaces);
 
                 var codeDocument = _documents[@params.HostDocumentFilePath];
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
                 var codeDocument = _documents[@params.HostDocumentFilePath];
                 var generatedHtml = codeDocument.GetHtmlDocument().GeneratedHtml;
-                var inputText = SourceText.From(generatedHtml);
+                generatedHtml = generatedHtml.Replace("\r", "", StringComparison.Ordinal).Replace("\n", "\r\n", StringComparison.Ordinal);
 
                 // Get formatted baseline file
                 var baselineInputFileName = Path.ChangeExtension(_baselineFileName, ".input.html");

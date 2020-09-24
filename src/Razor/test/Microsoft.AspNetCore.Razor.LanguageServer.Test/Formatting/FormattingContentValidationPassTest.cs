@@ -120,8 +120,7 @@ public class Foo { }
             var mappingService = new DefaultRazorDocumentMappingService();
 
             var client = Mock.Of<IClientLanguageServer>();
-            var projectSnapshotManagerAccessor = Mock.Of<ProjectSnapshotManagerAccessor>();
-            var pass = new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, projectSnapshotManagerAccessor, LoggerFactory);
+            var pass = new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory);
             pass.DebugAssertsEnabled = false;
 
             return pass;
