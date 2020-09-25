@@ -18,7 +18,7 @@
     "version": "5.0.100-rc.1.20452.10"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20467.6",
+    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20474.4",
     "Yarn.MSBuild": "1.22.5"
   }
 }
