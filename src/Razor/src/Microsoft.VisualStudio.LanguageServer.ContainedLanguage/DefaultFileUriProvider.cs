@@ -3,6 +3,7 @@
 
 using System;
 using System.Composition;
+using System.IO;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
@@ -60,7 +61,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             else
             {
                 // TextBuffer doesn't have a file path, we need to fabricate one.
-                filePath = Uri.UriSchemeFile + Uri.SchemeDelimiter + Guid.NewGuid().ToString();
+                filePath = Path.GetTempFileName();
             }
 
             uri = new Uri(filePath, UriKind.Absolute);

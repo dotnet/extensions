@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -217,6 +218,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             context.Request.Range = projectedRange;
+
+            // Ensures the end of the range > start of the range
+            // Should never occur, but was encountering this edge case.
+            if ((context.Request.Range.End.Line < context.Request.Range.Start.Line) ||
+                (context.Request.Range.End.Line == context.Request.Range.Start.Line &&
+                 context.Request.Range.End.Character < context.Request.Range.Start.Character))
+            {
+                Debug.Fail($"CodeActionEndpoint: End of range less than start of range {context.Request.Range}");
+                return Array.Empty<RazorCodeAction>();
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
