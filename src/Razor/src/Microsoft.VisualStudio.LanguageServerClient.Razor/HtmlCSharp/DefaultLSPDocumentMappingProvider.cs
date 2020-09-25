@@ -181,10 +181,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public async override Task<WorkspaceEdit> RemapWorkspaceEditAsync(WorkspaceEdit workspaceEdit, CancellationToken cancellationToken)
         {
-            if (workspaceEdit?.DocumentChanges != null)
+            if (TryGetDocumentChanges(workspaceEdit, out var documentChanges))
             {
                 // The LSP spec says, we should prefer `DocumentChanges` property over `Changes` if available.
-                var remappedEdits = await RemapVersionedDocumentEditsAsync(workspaceEdit.DocumentChanges, cancellationToken).ConfigureAwait(false);
+                var remappedEdits = await RemapVersionedDocumentEditsAsync(documentChanges, cancellationToken).ConfigureAwait(false);
                 return new WorkspaceEdit()
                 {
                     DocumentChanges = remappedEdits
@@ -200,6 +200,37 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             return workspaceEdit;
+        }
+
+        private bool TryGetDocumentChanges(WorkspaceEdit workspaceEdit, out TextDocumentEdit[] documentChanges)
+        {
+            documentChanges = null;
+
+            if (workspaceEdit.DocumentChanges?.Value is TextDocumentEdit[] documentEdits)
+            {
+                documentChanges = documentEdits;
+                return true;
+            }
+
+            if (workspaceEdit.DocumentChanges?.Value is SumType<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>[] sumTypeArray)
+            {
+                var documentEditList = new List<TextDocumentEdit>();
+                foreach (var sumType in sumTypeArray)
+                {
+                    if (sumType.Value is TextDocumentEdit textDocumentEdit)
+                    {
+                        documentEditList.Add(textDocumentEdit);
+                    }
+                }
+
+                if (documentEditList.Count > 0)
+                {
+                    documentChanges = documentEditList.ToArray();
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private async Task<TextDocumentEdit[]> RemapVersionedDocumentEditsAsync(TextDocumentEdit[] documentEdits, CancellationToken cancellationToken)

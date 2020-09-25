@@ -93,7 +93,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var result = await mappingProvider.RemapWorkspaceEditAsync(workspaceEdit, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            var documentEdit = Assert.Single(result.DocumentChanges);
+            var documentEdit = Assert.Single(result.DocumentChanges?.Value as TextDocumentEdit[]);
             Assert.Equal(RazorFile, documentEdit.TextDocument.Uri);
             Assert.Equal(expectedVersion, documentEdit.TextDocument.Version);
 
@@ -160,7 +160,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var result = await mappingProvider.RemapWorkspaceEditAsync(workspaceEdit, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            var documentEdit = Assert.Single(result.DocumentChanges);
+            var documentEdit = Assert.Single(result.DocumentChanges?.Value as TextDocumentEdit[]);
             Assert.Equal(CSharpFile, documentEdit.TextDocument.Uri);
             Assert.Equal(expectedVersion, documentEdit.TextDocument.Version);
 
@@ -200,7 +200,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var result = await mappingProvider.RemapWorkspaceEditAsync(workspaceEdit, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            Assert.Collection(result.DocumentChanges,
+            Assert.Collection(result.DocumentChanges?.Value as TextDocumentEdit[],
                 d =>
                 {
                     Assert.Equal(RazorFile, d.TextDocument.Uri);
@@ -268,7 +268,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 Changes[uri.AbsoluteUri] = edits;
 
-                DocumentChanges = DocumentChanges?.Append(new TextDocumentEdit()
+                DocumentChanges = (DocumentChanges?.Value as TextDocumentEdit[])?.Append(new TextDocumentEdit()
                 {
                     Edits = edits,
                     TextDocument = new VersionedTextDocumentIdentifier()
