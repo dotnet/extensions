@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
-    <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
-
+    <PublishingVersion>3</PublishingVersion>
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishingBlobItems</PublishDependsOnTargets>
-
     <_UploadPathRoot>aspnetcore-tooling</_UploadPathRoot>
   </PropertyGroup>
 
-  <!-- $(InstallersOutputPath) and $(SymbolsOutputPath) are not defined. Root Directory.Build.props is not imported. -->
   <ItemGroup>
     <!-- Prepare for _PublishingBlobItems target. -->
-    <_ItemsToPublish Include="$(ArtifactsDir)\packages\**\*.tgz" />
-    <_ItemsToPublish Include="$(ArtifactsDir)\LanguageServer\**\*.zip" />
+    <_ItemsToPublish Include="$(ArtifactsPackagesDir)**\*.tgz" />
+    <_ItemsToPublish Include="$(ArtifactsDir)LanguageServer\**\*.zip" />
   </ItemGroup>
 
 <Target Name="_PublishingBlobItems">
