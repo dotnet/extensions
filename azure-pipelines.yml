@@ -55,10 +55,10 @@ stages:
           pool:
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
               name: NetCorePublic-Pool
-              queue: BuildPool.Server.Amd64.VS2019.Open
+              queue: buildpool.windows.10.amd64.vs2019.pre.open
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
               name: NetCoreInternal-Pool
-              queue: BuildPool.Server.Amd64.VS2019
+              queue: buildpool.windows.10.amd64.vs2019.pre
           steps:
           - task: NodeTool@0
             displayName: Install Node 10.x
