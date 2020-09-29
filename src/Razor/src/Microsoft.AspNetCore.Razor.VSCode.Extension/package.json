@@ -223,6 +223,42 @@
           {
             "id": "razorDirectiveColon",
             "description": "A colon between directive attribute parameters"
+          },
+          {
+            "id": "razorDirective",
+            "description": "A Razor directive such as 'code' or 'function'"
+          },
+          {
+            "id": "razorComment",
+            "description": "A Razor comment"
+          },
+          {
+            "id": "markupCommentPunctuation",
+            "description": "The '@' or '*' of a Razor comment."
+          },
+          {
+            "id": "markupTagDelimiter",
+            "description": "Markup delimiters like '<', '>', and '/'."
+          },
+          {
+            "id": "markupOperator",
+            "description": "Delimiter for Markup Attribute Key-Value pairs."
+          },
+          {
+            "id": "markupElement",
+            "description": "The name of a Markup element."
+          },
+          {
+            "id": "markupAttribute",
+            "description": "The name of a Markup attribute."
+          },
+          {
+            "id": "markupComment",
+            "description": "The contents of a Markup comment."
+          },
+          {
+            "id": "markupCommentPunctuation",
+            "description": "The begining or ending punctuation of a Markup comment."
           }
         ],
         "semanticTokenScopes": [
@@ -232,7 +268,18 @@
               "razorTagHelperAttribute": [ "entity.name.class.attribute.taghelper" ],
               "razorTransition": [ "keyword.control.razor.transition" ],
               "razorDirectiveAttribute": [ "keyword.control.razor.directive.attribute", "keyword.control.cshtml.directive.attribute" ],
-              "razorDirectiveColon": [ "keyword.control.razor.directive.colon", "keyword.control.cshtml.directive.colon" ]
+              "razorDirectiveColon": [ "keyword.control.razor.directive.colon", "keyword.control.cshtml.directive.colon" ],
+              "razorDirective": [ "keyword.control.razor.directive", "keyword.control.cshtml.directive" ],
+              "razorComment": [ "comment.block.razor"],
+              "razorCommentTransition": [ "meta.comment.razor", "keyword.control.cshtml.transition" ],
+              "razorCommentStar": [ "keyword.control.razor.comment.star", "meta.comment.razor" ],
+              "angleBracket": [ "punctuation.definition.tag" ],
+              "forwardSlash": [ "punctuation.definition.tag" ],
+              "equals": [ "punctuation.separator.key-value.html" ],
+              "markupElement": [ "entity.name.tag.html" ],
+              "markupAttribute": [ "entity.other.attribute-name.html" ],
+              "markupComment": [ "comment.block.html" ],
+              "markupCommentPunctuation": [ "punctuation.definition.comment.html", "comment.block.html" ]
             }
           }
         ],
