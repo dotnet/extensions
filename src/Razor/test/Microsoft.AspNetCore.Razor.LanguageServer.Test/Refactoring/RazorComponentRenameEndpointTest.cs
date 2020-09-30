@@ -102,6 +102,111 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
         }
 
         [Fact]
+        public async Task Handle_Rename_OnComponentParameter_ReturnsNull()
+        {
+            // Arrange
+            var request = new RenameParams
+            {
+                TextDocument = new TextDocumentIdentifier
+                {
+                    Uri = new Uri("file:///c:/Second/ComponentWithParam.razor")
+                },
+                Position = new Position(1, 14),
+                NewName = "Test2"
+            };
+
+            // Act
+            var result = await _endpoint.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task Handle_Rename_OnOpeningBrace_ReturnsNull()
+        {
+            // Arrange
+            var request = new RenameParams
+            {
+                TextDocument = new TextDocumentIdentifier
+                {
+                    Uri = new Uri("file:///c:/Second/ComponentWithParam.razor")
+                },
+                Position = new Position(1, 0),
+                NewName = "Test2"
+            };
+
+            // Act
+            var result = await _endpoint.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task Handle_Rename_OnComponentNameLeadingEdge_ReturnsResult()
+        {
+            // Arrange
+            var request = new RenameParams
+            {
+                TextDocument = new TextDocumentIdentifier
+                {
+                    Uri = new Uri("file:///c:/Second/ComponentWithParam.razor")
+                },
+                Position = new Position(1, 1),
+                NewName = "Test2"
+            };
+
+            // Act
+            var result = await _endpoint.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Handle_Rename_OnComponentName_ReturnsResult()
+        {
+            // Arrange
+            var request = new RenameParams
+            {
+                TextDocument = new TextDocumentIdentifier
+                {
+                    Uri = new Uri("file:///c:/Second/ComponentWithParam.razor")
+                },
+                Position = new Position(1, 3),
+                NewName = "Test2"
+            };
+
+            // Act
+            var result = await _endpoint.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Handle_Rename_OnComponentNameTrailingEdge_ReturnsResult()
+        {
+            // Arrange
+            var request = new RenameParams
+            {
+                TextDocument = new TextDocumentIdentifier
+                {
+                    Uri = new Uri("file:///c:/Second/ComponentWithParam.razor")
+                },
+                Position = new Position(1, 10),
+                NewName = "Test2"
+            };
+
+            // Act
+            var result = await _endpoint.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
         public async Task Handle_Rename_FullyQualifiedAndNot()
         {
             // Arrange
@@ -323,18 +428,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
             tagHelperDescriptors.AddRange(CreateRazorComponentTagHelperDescriptors("First", "Test", "Component1337"));
             tagHelperDescriptors.AddRange(CreateRazorComponentTagHelperDescriptors("First", "Test.Components", "Directory1"));
             tagHelperDescriptors.AddRange(CreateRazorComponentTagHelperDescriptors("First", "Test.Components", "Directory2"));
-                
+
             var item1 = CreateProjectItem("@namespace First.Components\n@using Test\n<Component2></Component2>", "c:/First/Component1.razor");
             var item2 = CreateProjectItem("@namespace Test", "c:/First/Component2.razor");
             var item3 = CreateProjectItem("@namespace Second.Components\n<Component3></Component3>", "c:/Second/Component3.razor");
             var item4 = CreateProjectItem("@namespace Second.Components\n<Component3></Component3>\n<Component3></Component3>", "c:/Second/Component4.razor");
+            var itemComponentParam = CreateProjectItem("@namespace Second.Components\n<Component3 Title=\"Something\"></Component3>", "c:/Second/Component5.razor");
             var item1337 = CreateProjectItem(string.Empty, "c:/First/Component1337.razor");
             var indexItem = CreateProjectItem("@namespace First.Components\n@using Test\n<Component1337></Component1337>\n<Test.Component1337></Test.Component1337>", "c:/First/Index.razor");
 
             var itemDirectory1 = CreateProjectItem("@namespace Test.Components\n<Directory2></Directory2>", "c:/Dir1/Directory1.razor");
             var itemDirectory2 = CreateProjectItem("@namespace Test.Components\n<Directory1></Directory1>", "c:/Dir2/Directory2.razor");
 
-            var fileSystem = new TestRazorProjectFileSystem(new[] { item1, item2, item3, item4, indexItem, itemDirectory1, itemDirectory2 });
+            var fileSystem = new TestRazorProjectFileSystem(new[] { item1, item2, item3, item4, itemComponentParam, indexItem, itemDirectory1, itemDirectory2 });
 
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder => {
                 builder.AddDirective(NamespaceDirective.Directive);
@@ -345,6 +451,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
             var component2 = CreateRazorDocumentSnapshot(projectEngine, item2, "Test", tagHelperDescriptors);
             var component3 = CreateRazorDocumentSnapshot(projectEngine, item3, "Second.Components", tagHelperDescriptors);
             var component4 = CreateRazorDocumentSnapshot(projectEngine, item4, "Second.Components", tagHelperDescriptors);
+            var componentWithParam = CreateRazorDocumentSnapshot(projectEngine, itemComponentParam, "Second.Components", tagHelperDescriptors);
             var component1337 = CreateRazorDocumentSnapshot(projectEngine, item1337, "Test", tagHelperDescriptors);
             var index = CreateRazorDocumentSnapshot(projectEngine, indexItem, "First.Components", tagHelperDescriptors);
             var directory1Component = CreateRazorDocumentSnapshot(projectEngine, itemDirectory1, "Test.Components", tagHelperDescriptors);
@@ -364,6 +471,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
                 p.DocumentFilePaths == new[] { "c:/Second/Component3.razor", "c:/Second/Component4.razor", index.FilePath } &&
                 p.GetDocument("c:/Second/Component3.razor") == component3 &&
                 p.GetDocument("c:/Second/Component4.razor") == component4 &&
+                p.GetDocument("c:/Second/ComponentWithParam.razor") == componentWithParam &&
                 p.GetDocument(index.FilePath) == index);
 
             var projectSnapshotManager = Mock.Of<ProjectSnapshotManagerBase>(p => p.Projects == new[] { firstProject, secondProject });
@@ -374,6 +482,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
                 d.TryResolveDocument("c:/First/Component2.razor", out component2) == true &&
                 d.TryResolveDocument("c:/Second/Component3.razor", out component3) == true &&
                 d.TryResolveDocument("c:/Second/Component4.razor", out component4) == true &&
+                d.TryResolveDocument("c:/Second/ComponentWithParam.razor", out componentWithParam) == true &&
                 d.TryResolveDocument(index.FilePath, out index) == true &&
                 d.TryResolveDocument(component1337.FilePath, out component1337) == true &&
                 d.TryResolveDocument(itemDirectory1.FilePath, out directory1Component) == true &&

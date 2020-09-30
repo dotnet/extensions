@@ -293,8 +293,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             }
 
             var owner = syntaxTree.Root.LocateOwner(change);
+            if (owner == null)
+            {
+                Debug.Fail("Owner should never be null.");
+                return null;
+            }
+
             var node = owner.Ancestors().FirstOrDefault(n => n.Kind == SyntaxKind.MarkupTagHelperStartTag);
             if (node == null || !(node is MarkupTagHelperStartTagSyntax tagHelperStartTag))
+            {
+                return null;
+            }
+
+            // Ensure the rename action was invoked on the component name
+            // instead of a component parameter. This serves as an issue 
+            // mitigation till `textDocument/prepareRename` is supported 
+            // and we can ensure renames aren't triggered in unsupported
+            // contexts. (https://github.com/dotnet/aspnetcore/issues/26407)
+            if (!tagHelperStartTag.Name.FullSpan.IntersectsWith(hostDocumentIndex))
             {
                 return null;
             }
