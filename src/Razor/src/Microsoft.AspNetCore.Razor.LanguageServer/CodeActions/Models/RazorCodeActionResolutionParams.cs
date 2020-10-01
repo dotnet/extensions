@@ -11,6 +11,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models
         [JsonProperty(PropertyName = "action", Required = Required.Always)]
         public string Action { get; set; }
 
+        [JsonProperty(PropertyName = "language", Required = Required.Always)]
+        public string Language { get; set; }
+
         [JsonProperty(PropertyName = "data", Required = Required.Always)]
         public object Data { get; set; }
     }

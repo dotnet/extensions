@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
@@ -28,10 +27,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         {
             // Arrange
             var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), EmptyDocumentResolver);
-            var data = JObject.FromObject(new CreateComponentCodeActionParams()
+            var data = JObject.FromObject(new AddUsingsCodeActionParams()
             {
                 Uri = new Uri("c:/Test.razor"),
-                Path = "c:/Another.razor",
+                Namespace = "System"
             });
 
             // Act
@@ -51,33 +50,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             codeDocument.SetUnsupported();
 
             var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument));
-            var data = JObject.FromObject(new CreateComponentCodeActionParams()
+            var data = JObject.FromObject(new AddUsingsCodeActionParams()
             {
                 Uri = new Uri(documentPath),
-                Path = "c:/Another.razor",
-            });
-
-            // Act
-            var workspaceEdit = await resolver.ResolveAsync(data, default);
-
-            // Assert
-            Assert.Null(workspaceEdit);
-        }
-
-        [Fact]
-        public async Task Handle_InvalidFileKind()
-        {
-            // Arrange
-            var documentPath = "c:/Test.razor";
-            var contents = "@page \"/test\"";
-            var codeDocument = CreateCodeDocument(contents);
-            codeDocument.SetFileKind(FileKinds.Legacy);
-
-            var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument));
-            var data = JObject.FromObject(new CreateComponentCodeActionParams()
-            {
-                Uri = new Uri(documentPath),
-                Path = "c:/Another.razor",
+                Namespace = "System"
             });
 
             // Act

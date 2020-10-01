@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             RazorLanguageKind kind,
             TextEdit[] formattedEdits,
             FormattingOptions options,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken,
+            bool bypassValidationPasses = false);
     }
 }

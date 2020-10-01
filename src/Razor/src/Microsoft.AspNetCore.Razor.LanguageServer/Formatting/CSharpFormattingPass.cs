@@ -41,6 +41,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         // Run after the HTML formatter pass.
         public override int Order => DefaultOrder - 5;
 
+        public override bool IsValidationPass => false;
+
         public async override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {
             if (context.IsFormatOnType || result.Kind != RazorLanguageKind.Razor)

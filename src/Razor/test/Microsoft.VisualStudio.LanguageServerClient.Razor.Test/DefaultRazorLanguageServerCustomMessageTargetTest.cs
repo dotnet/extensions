@@ -137,7 +137,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var expectedEdit = new TextEdit()
             {
                 NewText = "SomeEdit",
-                Range = new LanguageServer.Protocol.Range() { Start = new Position(), End = new Position() }
+                Range = new Range() { Start = new Position(), End = new Position() }
             };
             var requestInvoker = new Mock<LSPRequestInvoker>();
             requestInvoker
@@ -259,6 +259,38 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Assert
             Assert.Equal(expectedResults, result);
+        }
+
+        [Fact]
+        public async void ResolveCodeActionsAsync_ReturnsCodeActions()
+        {
+            // Arrange
+            var testCSharpDocUri = new Uri("C:/path/to/file.razor.g.cs");
+
+            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var documentManager = new Mock<TrackingLSPDocumentManager>();
+            var expectedResponse = new VSCodeAction()
+            {
+                Title = "Something",
+                Data = new object()
+            };
+            requestInvoker.Setup(invoker => invoker.ReinvokeRequestOnServerAsync<VSCodeAction, VSCodeAction>(
+                MSLSPMethods.TextDocumentCodeActionResolveName,
+                LanguageServerKind.CSharp.ToContentType(),
+                It.IsAny<VSCodeAction>(),
+                It.IsAny<CancellationToken>()
+            )).Returns(Task.FromResult(expectedResponse));
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object);
+            var request = new VSCodeAction()
+            {
+                Title = "Something",
+            };
+
+            // Act
+            var result = await target.ResolveCodeActionsAsync(request, CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.Equal(expectedResponse, result);
         }
     }
 }

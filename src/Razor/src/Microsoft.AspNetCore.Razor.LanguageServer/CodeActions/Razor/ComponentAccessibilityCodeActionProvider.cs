@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -98,6 +97,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var resolutionParams = new RazorCodeActionResolutionParams
             {
                 Action = LanguageServerConstants.CodeActions.CreateComponentFromTag,
+                Language = LanguageServerConstants.CodeActions.Languages.Razor,
                 Data = actionParams,
             };
 
@@ -123,7 +123,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 var fullyQualifiedName = tagHelperPair.Short.Name;
 
                 // Insert @using
-                var addUsingCodeAction = AddUsingsCodeActionProviderFactory.CreateAddUsingCodeAction(fullyQualifiedName, context.Request.TextDocument.Uri);
+                var addUsingCodeAction = AddUsingsCodeActionProviderFactory.CreateAddUsingCodeAction(
+                    fullyQualifiedName,
+                    context.Request.TextDocument.Uri);
                 if (addUsingCodeAction != null)
                 {
                     container.Add(addUsingCodeAction);

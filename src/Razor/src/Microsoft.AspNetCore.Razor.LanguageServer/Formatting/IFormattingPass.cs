@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         int Order { get; }
 
+        bool IsValidationPass { get; }
+
         Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken);
     }
 }

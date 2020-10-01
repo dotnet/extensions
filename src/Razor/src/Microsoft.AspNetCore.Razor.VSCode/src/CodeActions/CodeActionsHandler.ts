@@ -14,8 +14,8 @@ import { convertRangeFromSerializable } from '../RPC/SerializableRange';
 
 export class CodeActionsHandler {
 
-    private static readonly getCodeActionsEndpoint = 'razor/provideCodeActions';
-    private codeActionRequestType: RequestType<SerializableCodeActionParams, RazorCodeAction[], any, any> = new RequestType(CodeActionsHandler.getCodeActionsEndpoint);
+    private static readonly provideCodeActionsEndpoint = 'razor/provideCodeActions';
+    private codeActionRequestType: RequestType<SerializableCodeActionParams, RazorCodeAction[], any, any> = new RequestType(CodeActionsHandler.provideCodeActionsEndpoint);
     private emptyCodeActionResponse: RazorCodeAction[] = [];
 
     constructor(
@@ -28,10 +28,10 @@ export class CodeActionsHandler {
         // tslint:disable-next-line: no-floating-promises
         this.serverClient.onRequestWithParams<SerializableCodeActionParams, RazorCodeAction[], any, any>(
             this.codeActionRequestType,
-            async (request, token) => this.getCodeActions(request, token));
+            async (request, token) => this.provideCodeActions(request, token));
     }
 
-    private async getCodeActions(
+    private async provideCodeActions(
         codeActionParams: SerializableCodeActionParams,
         cancellationToken: vscode.CancellationToken) {
         try {
@@ -56,7 +56,7 @@ export class CodeActionsHandler {
 
             return commands.map(c => this.commandAsCodeAction(c));
         } catch (error) {
-            this.logger.logWarning(`${CodeActionsHandler.getCodeActionsEndpoint} failed with ${error}`);
+            this.logger.logWarning(`${CodeActionsHandler.provideCodeActionsEndpoint} failed with ${error}`);
         }
 
         return this.emptyCodeActionResponse;

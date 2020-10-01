@@ -43,6 +43,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
         public const string RazorProvideCodeActionsEndpoint = "razor/provideCodeActions";
 
+        public const string RazorResolveCodeActionsEndpoint = "razor/resolveCodeActions";
+
 
         public static class CodeActions
         {
@@ -51,6 +53,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             public const string CreateComponentFromTag = "CreateComponentFromTag";
 
             public const string AddUsing = "AddUsing";
+
+            public const string Default = "Default";
+
+            public static class Languages
+            {
+                public const string CSharp = "CSharp";
+
+                public const string Razor = "Razor";
+            }
         }
     }
 }

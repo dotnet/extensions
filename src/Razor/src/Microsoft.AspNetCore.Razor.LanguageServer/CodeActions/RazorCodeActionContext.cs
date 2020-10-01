@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             RazorCodeDocument codeDocument,
             SourceLocation location,
             SourceText sourceText,
-            bool supportsFileCreation)
+            bool supportsFileCreation,
+            bool supportsCodeActionResolve)
         {
             Request = request ?? throw new ArgumentNullException(nameof(request));
             DocumentSnapshot = documentSnapshot ?? throw new ArgumentNullException(nameof(documentSnapshot));
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             Location = location;
             SourceText = sourceText ?? throw new ArgumentNullException(nameof(sourceText));
             SupportsFileCreation = supportsFileCreation;
+            SupportsCodeActionResolve = supportsCodeActionResolve;
         }
 
         public CodeActionParams Request { get; }
@@ -33,5 +35,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         public SourceLocation Location { get; }
         public SourceText SourceText { get; }
         public bool SupportsFileCreation { get; }
+        public bool SupportsCodeActionResolve { get; }
     }
 }

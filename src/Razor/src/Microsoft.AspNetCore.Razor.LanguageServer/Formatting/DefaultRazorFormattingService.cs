@@ -35,7 +35,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             _logger = loggerFactory.CreateLogger<DefaultRazorFormattingService>();
         }
 
-        public override async Task<TextEdit[]> FormatAsync(DocumentUri uri, DocumentSnapshot documentSnapshot, Range range, FormattingOptions options, CancellationToken cancellationToken)
+        public override async Task<TextEdit[]> FormatAsync(
+            DocumentUri uri,
+            DocumentSnapshot documentSnapshot,
+            Range range,
+            FormattingOptions options,
+            CancellationToken cancellationToken)
         {
             if (uri is null)
             {
@@ -71,7 +76,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return filteredEdits;
         }
 
-        public override async Task<TextEdit[]> ApplyFormattedEditsAsync(DocumentUri uri, DocumentSnapshot documentSnapshot, RazorLanguageKind kind, TextEdit[] formattedEdits, FormattingOptions options, CancellationToken cancellationToken)
+        public override async Task<TextEdit[]> ApplyFormattedEditsAsync(
+            DocumentUri uri,
+            DocumentSnapshot documentSnapshot,
+            RazorLanguageKind kind,
+            TextEdit[] formattedEdits,
+            FormattingOptions options,
+            CancellationToken cancellationToken,
+            bool bypassValidationPasses = false)
         {
             if (kind == RazorLanguageKind.Html)
             {
@@ -85,6 +97,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             foreach (var pass in _formattingPasses)
             {
+                if (pass.IsValidationPass && bypassValidationPasses)
+                {
+                    continue;
+                }
+
                 cancellationToken.ThrowIfCancellationRequested();
                 result = await pass.ExecuteAsync(context, result, cancellationToken);
             }

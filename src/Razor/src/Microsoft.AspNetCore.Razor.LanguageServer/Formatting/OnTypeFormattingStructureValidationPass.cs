@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         // We want this to run at the very end.
         public override int Order => DefaultOrder + 1000;
 
+        public override bool IsValidationPass => true;
+
         public override FormattingResult Execute(FormattingContext context, FormattingResult result)
         {
             Debug.Assert(result.Kind == RazorLanguageKind.Razor, "This method shouldn't be called for projected document edits.");

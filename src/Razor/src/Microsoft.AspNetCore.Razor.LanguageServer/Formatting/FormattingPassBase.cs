@@ -46,6 +46,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             HtmlFormatter = new HtmlFormatter(server, filePathNormalizer);
         }
 
+        public abstract bool IsValidationPass { get; }
+
         public virtual int Order => DefaultOrder;
 
         protected RazorDocumentMappingService DocumentMappingService { get; }

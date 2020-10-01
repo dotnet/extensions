@@ -36,6 +36,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         // We want this to run at the very end.
         public override int Order => DefaultOrder + 1000;
 
+        public override bool IsValidationPass => true;
+
         // Internal for testing.
         internal bool DebugAssertsEnabled { get; set; } = true;
 

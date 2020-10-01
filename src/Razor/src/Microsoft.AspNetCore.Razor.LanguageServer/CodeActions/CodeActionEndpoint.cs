@@ -169,7 +169,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 codeDocument,
                 location,
                 sourceText,
-                _languageServerFeatureOptions.SupportsFileManipulation);
+                _languageServerFeatureOptions.SupportsFileManipulation,
+                _supportsCodeActionResolve);
 
             return context;
         }

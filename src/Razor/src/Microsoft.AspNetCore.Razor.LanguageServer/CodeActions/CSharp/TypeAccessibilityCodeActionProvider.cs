@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/cs0103
             "CS0103"
         };
-        private static readonly Task<IReadOnlyList<RazorCodeAction>> EmptyResult = Task.FromResult(Array.Empty<RazorCodeAction>() as IReadOnlyList<RazorCodeAction>);
 
         public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
             RazorCodeActionContext context,

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -18,7 +17,7 @@ using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
-    public class TypeAccessibilityCodeActionProviderTest : LanguageServerTestBase
+    public class ImplementInterfaceAbstractClassCodeActionProviderTest : LanguageServerTestBase
     {
         [Fact]
         public async Task Handle_MissingDiagnostics_ReturnsEmpty()
@@ -40,11 +39,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(0, 0));
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
-            var provider = new TypeAccessibilityCodeActionProvider();
+            var provider = new ImplementInterfaceAbstractClassCodeActionProvider();
             var csharpCodeActions = new[] {
                 new RazorCodeAction()
                 {
-                    Title = "System.Net.Dns"
+                    Title = "Implement abstract class"
                 }
             };
 
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                         {
                             // Invalid as Error is expected
                             Severity = DiagnosticSeverity.Warning,
-                            Code = new DiagnosticCode("CS0246")
+                            Code = new DiagnosticCode("CS0534")
                         },
                         new Diagnostic()
                         {
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                         },
                         new Diagnostic()
                         {
-                            // Invalid as CS0246 or CS0103 is expected
+                            // Invalid as CS0534 or CS0535 is expected
                             Severity = DiagnosticSeverity.Error,
                             Code = new DiagnosticCode("CS0183")
                         }
@@ -94,11 +93,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(0, 0));
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
-            var provider = new TypeAccessibilityCodeActionProvider();
+            var provider = new ImplementInterfaceAbstractClassCodeActionProvider();
             var csharpCodeActions = new[] {
                 new RazorCodeAction()
                 {
-                    Title = "System.Net.Dns"
+                    Title = "Implement abstract class"
                 }
             };
 
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                         new Diagnostic()
                         {
                             Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0246")
+                            Code = new DiagnosticCode("CS0534")
                         }
                     )
                 }
@@ -135,7 +134,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(0, 0));
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
-            var provider = new TypeAccessibilityCodeActionProvider();
+            var provider = new ImplementInterfaceAbstractClassCodeActionProvider();
             var csharpCodeActions = Array.Empty<RazorCodeAction>();
 
             // Act
@@ -166,7 +165,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                         new Diagnostic()
                         {
                             Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0246"),
+                            Code = new DiagnosticCode("CS0534"),
+                            Range = new Range(
+                                new Position(0, 8),
+                                new Position(0, 12)
+                            )
+                        },
+                        new Diagnostic()
+                        {
+                            Severity = DiagnosticSeverity.Error,
+                            Code = new DiagnosticCode("CS0535"),
                             Range = new Range(
                                 new Position(0, 8),
                                 new Position(0, 12)
@@ -185,18 +193,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
-            var provider = new TypeAccessibilityCodeActionProvider();
+            var provider = new ImplementInterfaceAbstractClassCodeActionProvider();
 
             // A valid code actions is expected to end with `Path` as that's the `associatedText`
             // indicated in the `Diagnostic.Range` for `CS0246` above.
             var csharpCodeActions = new[] {
                 new RazorCodeAction()
                 {
-                    Title = "System.IO.OneThing"
+                    Title = "Implement non-abstract class"
                 },
                 new RazorCodeAction()
                 {
-                    Title = "System.IO.SomethingElse"
+                    Title = "Implement interface that doesn't exist"
                 }
             };
 
@@ -228,7 +236,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                         new Diagnostic()
                         {
                             Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0246"),
+                            Code = new DiagnosticCode("CS0534"),
+                            Range = new Range(
+                                new Position(0, 8),
+                                new Position(0, 12)
+                            )
+                        },
+                        new Diagnostic()
+                        {
+                            Severity = DiagnosticSeverity.Error,
+                            Code = new DiagnosticCode("CS0535"),
                             Range = new Range(
                                 new Position(0, 8),
                                 new Position(0, 12)
@@ -247,15 +264,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
-            var provider = new TypeAccessibilityCodeActionProvider();
+            var provider = new ImplementInterfaceAbstractClassCodeActionProvider();
             var csharpCodeActions = new[] {
                 new RazorCodeAction()
                 {
-                    Title = "System.IO.Path"
+                    Title = "Implement abstract class"
                 },
                 new RazorCodeAction()
                 {
-                    Title = "System.IO.SomethingElse"
+                    Title = "Implement interface"
                 }
             };
 
@@ -265,22 +282,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             // Assert
             Assert.Collection(results,
                 r => {
-                    Assert.Equal("@using System.IO", r.Title);
+                    Assert.Equal("Implement abstract class", r.Title);
                     Assert.Null(r.Edit);
                     Assert.NotNull(r.Data);
                     var resolutionParams = Assert.IsType<RazorCodeActionResolutionParams>(r.Data);
-                    Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
+                    Assert.Equal(LanguageServerConstants.CodeActions.Languages.CSharp, resolutionParams.Language);
+                    Assert.Equal(LanguageServerConstants.CodeActions.Default, resolutionParams.Action);
+                    Assert.IsType<CSharpCodeActionParams>(resolutionParams.Data);
                 },
                 r => {
-                    Assert.Equal("System.IO.Path", r.Title);
-                    Assert.NotNull(r.Edit);
-                    Assert.Null(r.Data);
+                    Assert.Equal("Implement interface", r.Title);
+                    Assert.Null(r.Edit);
+                    Assert.NotNull(r.Data);
+                    var resolutionParams = Assert.IsType<RazorCodeActionResolutionParams>(r.Data);
+                    Assert.Equal(LanguageServerConstants.CodeActions.Languages.CSharp, resolutionParams.Language);
+                    Assert.Equal(LanguageServerConstants.CodeActions.Default, resolutionParams.Action);
+                    Assert.IsType<CSharpCodeActionParams>(resolutionParams.Data);
                 }
             );
         }
 
         [Fact]
-        public async Task Handle_ValidDiagnostic_MultipleValidCodeActions_ReturnsMultipleCodeActions()
+        public async Task Handle_SupportsCodeActionResolveFalse_ValidDiagnostic_ValidCodeAction_ReturnsEmpty()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -300,7 +323,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                         new Diagnostic()
                         {
                             Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0246"),
+                            Code = new DiagnosticCode("CS0534"),
+                            Range = new Range(
+                                new Position(0, 8),
+                                new Position(0, 12)
+                            )
+                        },
+                        new Diagnostic()
+                        {
+                            Severity = DiagnosticSeverity.Error,
+                            Code = new DiagnosticCode("CS0535"),
                             Range = new Range(
                                 new Position(0, 8),
                                 new Position(0, 12)
@@ -316,18 +348,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             };
 
             var location = new SourceLocation(0, -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4), supportsCodeActionResolve: false);
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
-            var provider = new TypeAccessibilityCodeActionProvider();
+            var provider = new ImplementInterfaceAbstractClassCodeActionProvider();
             var csharpCodeActions = new[] {
                 new RazorCodeAction()
                 {
-                    Title = "Fully qualify 'Path' -> System.IO.Path"
+                    Title = "Implement abstract class"
                 },
                 new RazorCodeAction()
                 {
-                    Title = "Fully qualify 'Path' -> SuperSpecialNamespace.Path"
+                    Title = "Implement interface"
                 }
             };
 
@@ -335,35 +367,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var results = await provider.ProvideAsync(context, csharpCodeActions, default);
 
             // Assert
-            Assert.Collection(results,
-                r => {
-                    Assert.Equal("@using SuperSpecialNamespace", r.Title);
-                    Assert.Null(r.Edit);
-                    Assert.NotNull(r.Data);
-                    var resolutionParams = Assert.IsType<RazorCodeActionResolutionParams>(r.Data);
-                    Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
-                },
-                r => {
-                    Assert.Equal("@using System.IO", r.Title);
-                    Assert.Null(r.Edit);
-                    Assert.NotNull(r.Data);
-                    var resolutionParams = Assert.IsType<RazorCodeActionResolutionParams>(r.Data);
-                    Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
-                },
-                r => {
-                    Assert.Equal("Fully qualify 'Path' -> SuperSpecialNamespace.Path", r.Title);
-                    Assert.NotNull(r.Edit);
-                    Assert.Null(r.Data);
-                },
-                r => {
-                    Assert.Equal("Fully qualify 'Path' -> System.IO.Path", r.Title);
-                    Assert.NotNull(r.Edit);
-                    Assert.Null(r.Data);
-                }
-            );
+            Assert.Empty(results);
         }
 
-        private static RazorCodeActionContext CreateRazorCodeActionContext(CodeActionParams request, SourceLocation location, string filePath, string text, SourceSpan componentSourceSpan, bool supportsFileCreation = true)
+        private static RazorCodeActionContext CreateRazorCodeActionContext(
+            CodeActionParams request,
+            SourceLocation location,
+            string filePath,
+            string text,
+            SourceSpan componentSourceSpan,
+            bool supportsFileCreation = true,
+            bool supportsCodeActionResolve = true)
         {
             var shortComponent = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "Fully.Qualified.Component", "TestAssembly");
             shortComponent.TagMatchingRule(rule => rule.TagName = "Component");
@@ -391,7 +405,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var sourceText = SourceText.From(text);
 
-            var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, sourceText, supportsFileCreation, supportsCodeActionResolve: true);
+            var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, sourceText, supportsFileCreation, supportsCodeActionResolve);
 
             return context;
         }

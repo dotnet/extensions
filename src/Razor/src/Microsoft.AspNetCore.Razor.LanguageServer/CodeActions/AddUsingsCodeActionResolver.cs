@@ -70,11 +70,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return null;
             }
 
-            if (!FileKinds.IsComponent(codeDocument.GetFileKind()))
-            {
-                return null;
-            }
-
             var codeDocumentIdentifier = new VersionedTextDocumentIdentifier() { Uri = actionParams.Uri };
             return CreateAddUsingWorkspaceEdit(actionParams.Namespace, codeDocument, codeDocumentIdentifier);
         }
