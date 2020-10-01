@@ -7,7 +7,9 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
+using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -219,6 +221,84 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(2, hostDocumentPosition.Line);
             Assert.Equal(9, hostDocumentPosition.Character);
             Assert.Equal(35, hostDocumentIndex);
+        }
+
+        [Fact]
+        public void TryMapToProjectedDocumentRange_CSharp()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                razorSource: "Line 1\nLine 2 @{ var abc;\nvar def; }",
+                projectedCSharpSource: "\n// Prefix\n var abc;\nvar def; \n// Suffix",
+                new[] {
+                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
+                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
+                });
+            var range = new Range(new Position(1, 10), new Position(1, 13));
+
+            // Act
+            var result = service.TryMapToProjectedDocumentRange(
+                codeDoc,
+                range, // |var| abc
+                out var projectedRange);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(2, projectedRange.Start.Line);
+            Assert.Equal(1, projectedRange.Start.Character);
+            Assert.Equal(2, projectedRange.End.Line);
+            Assert.Equal(4, projectedRange.End.Character);
+        }
+
+        [Fact]
+        public void TryMapToProjectedDocumentRange_CSharp_MissingSourceMappings()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                razorSource: "Line 1\nLine 2 @{ var abc;\nvar def; }",
+                projectedCSharpSource: "\n// Prefix\n var abc;\nvar def; \n// Suffix",
+                new[] {
+                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
+                });
+            var range = new Range(new Position(1, 10), new Position(1, 13));
+
+            // Act
+            var result = service.TryMapToProjectedDocumentRange(
+                codeDoc,
+                range, // |var| abc
+                out var projectedRange);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(default, projectedRange);
+        }
+
+        [Fact]
+        public void TryMapToProjectedDocumentRange_CSharp_End_LessThan_Start()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                razorSource: "Line 1\nLine 2 @{ var abc;\nvar def; }",
+                projectedCSharpSource: "\n// Prefix\n var abc;\nvar def; \n// Suffix",
+                new[] {
+                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
+                    new SourceMapping(new SourceSpan(16, 3), new SourceSpan(11, 3)),
+                    new SourceMapping(new SourceSpan(19, 10), new SourceSpan(5, 10))
+                });
+            var range = new Range(new Position(1, 10), new Position(1, 13));
+
+            // Act
+            var result = service.TryMapToProjectedDocumentRange(
+                codeDoc,
+                range, // |var| abc
+                out var projectedRange);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(default, projectedRange);
         }
 
         [Fact]

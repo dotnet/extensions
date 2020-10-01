@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -62,6 +63,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             projectedRange = default;
+
+            if ((originalRange.End.Line < originalRange.Start.Line) ||
+                (originalRange.End.Line == originalRange.Start.Line &&
+                 originalRange.End.Character < originalRange.Start.Character))
+            {
+                Debug.Fail($"DefaultRazorDocumentMappingService:TryMapToProjectedDocumentRange original range end < start '{originalRange}'");
+                return false;
+            }
+
             var sourceText = codeDocument.GetSourceText();
             var range = originalRange;
 
@@ -73,6 +83,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var endIndex = range.End.GetAbsoluteIndex(sourceText);
             if (!TryMapToProjectedDocumentPosition(codeDocument, endIndex, out var projectedEnd, out var _))
+            {
+                return false;
+            }
+
+            // Ensures a valid range is returned.
+            // As we're doing two seperate TryMapToProjectedDocumentPosition calls,
+            // it's possible the projectedStart and projectedEnd positions are in completely
+            // different places in the document, including the possibility that the
+            // projectedEnd position occurs before the projectedStart position.
+            // We explicitly disallow such ranges where the end < start.
+            if ((projectedEnd.Line < projectedStart.Line) ||
+                (projectedEnd.Line == projectedStart.Line &&
+                 projectedEnd.Character < projectedStart.Character))
             {
                 return false;
             }
