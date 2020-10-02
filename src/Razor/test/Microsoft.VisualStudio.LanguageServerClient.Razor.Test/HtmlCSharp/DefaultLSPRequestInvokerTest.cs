@@ -10,6 +10,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
     public class DefaultLSPRequestInvokerTest
     {
+        private FallbackCapabilitiesFilterResolver CapabilitiesResolver => new DefaultFallbackCapabilitiesFilterResolver();
+
         [Fact]
         public async Task ReinvokeRequestOnServerAsync_InvokesRazorLanguageClient()
         {
@@ -22,7 +24,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Assert.Equal(RazorLSPConstants.RazorLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
-            var requestInvoker = new DefaultLSPRequestInvoker(broker);
+            var requestInvoker = new DefaultLSPRequestInvoker(broker, CapabilitiesResolver);
 
             // Act
             await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.RazorLSPContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
@@ -43,7 +45,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Assert.Equal(RazorLSPConstants.HtmlLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
-            var requestInvoker = new DefaultLSPRequestInvoker(broker);
+            var requestInvoker = new DefaultLSPRequestInvoker(broker, CapabilitiesResolver);
 
             // Act
             await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.HtmlLSPContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
@@ -64,7 +66,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Assert.Equal(RazorLSPConstants.CSharpContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
-            var requestInvoker = new DefaultLSPRequestInvoker(broker);
+            var requestInvoker = new DefaultLSPRequestInvoker(broker, CapabilitiesResolver);
 
             // Act
             await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.CSharpContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
@@ -85,7 +87,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Assert.Equal(RazorLSPConstants.RazorLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
-            var requestInvoker = new DefaultLSPRequestInvoker(broker);
+            var requestInvoker = new DefaultLSPRequestInvoker(broker, CapabilitiesResolver);
 
             // Act
             await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.RazorLSPContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
@@ -106,7 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Assert.Equal(RazorLSPConstants.HtmlLSPContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
-            var requestInvoker = new DefaultLSPRequestInvoker(broker);
+            var requestInvoker = new DefaultLSPRequestInvoker(broker, CapabilitiesResolver);
 
             // Act
             await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.HtmlLSPContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);
@@ -127,7 +129,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Assert.Equal(RazorLSPConstants.CSharpContentTypeName, contentType);
                 Assert.Equal(expectedMethod, method);
             });
-            var requestInvoker = new DefaultLSPRequestInvoker(broker);
+            var requestInvoker = new DefaultLSPRequestInvoker(broker, CapabilitiesResolver);
 
             // Act
             await requestInvoker.ReinvokeRequestOnServerAsync<object, object>(expectedMethod, RazorLSPConstants.CSharpContentTypeName, new object(), CancellationToken.None).ConfigureAwait(false);

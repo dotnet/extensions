@@ -19,17 +19,26 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
     internal class DefaultLSPRequestInvoker : LSPRequestInvoker
     {
         private readonly ILanguageServiceBroker2 _languageServiceBroker;
+        private readonly FallbackCapabilitiesFilterResolver _fallbackCapabilitiesFilterResolver;
         private readonly JsonSerializer _serializer;
 
         [ImportingConstructor]
-        public DefaultLSPRequestInvoker(ILanguageServiceBroker2 languageServiceBroker)
+        public DefaultLSPRequestInvoker(
+            ILanguageServiceBroker2 languageServiceBroker,
+            FallbackCapabilitiesFilterResolver fallbackCapabilitiesFilterResolver)
         {
             if (languageServiceBroker is null)
             {
                 throw new ArgumentNullException(nameof(languageServiceBroker));
             }
 
+            if (fallbackCapabilitiesFilterResolver is null)
+            {
+                throw new ArgumentNullException(nameof(fallbackCapabilitiesFilterResolver));
+            }
+
             _languageServiceBroker = languageServiceBroker;
+            _fallbackCapabilitiesFilterResolver = fallbackCapabilitiesFilterResolver;
 
             // We need these converters so we don't lose information as part of the deserialization.
             _serializer = new JsonSerializer();
@@ -45,7 +54,8 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public override Task<TOut> ReinvokeRequestOnServerAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
         {
-            return RequestServerCoreAsync<TIn, TOut>(method, contentType, token => true, parameters, cancellationToken);
+            var capabilitiesFilter = _fallbackCapabilitiesFilterResolver.Resolve(method);
+            return RequestServerCoreAsync<TIn, TOut>(method, contentType, capabilitiesFilter, parameters, cancellationToken);
         }
 
         public override Task<TOut> ReinvokeRequestOnServerAsync<TIn, TOut>(string method, string contentType, Func<JToken, bool> capabilitiesFilter, TIn parameters, CancellationToken cancellationToken)
@@ -55,7 +65,8 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public override Task<IEnumerable<TOut>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(string method, string contentType, TIn parameters, CancellationToken cancellationToken)
         {
-            return RequestMultipleServerCoreAsync<TIn, TOut>(method, contentType, token => true, parameters, cancellationToken);
+            var capabilitiesFilter = _fallbackCapabilitiesFilterResolver.Resolve(method);
+            return RequestMultipleServerCoreAsync<TIn, TOut>(method, contentType, capabilitiesFilter, parameters, cancellationToken);
         }
 
         public override Task<IEnumerable<TOut>> ReinvokeRequestOnMultipleServersAsync<TIn, TOut>(string method, string contentType, Func<JToken, bool> capabilitiesFilter, TIn parameters, CancellationToken cancellationToken)
