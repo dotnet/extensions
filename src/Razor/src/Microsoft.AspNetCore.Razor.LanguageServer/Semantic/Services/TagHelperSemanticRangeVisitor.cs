@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
         public override void VisitMarkupMinimizedAttributeBlock(MarkupMinimizedAttributeBlockSyntax node)
         {
-            AddSemanticRange(node.Name);
+            AddSemanticRange(node.Name, SyntaxKind.MarkupAttributeBlock);
             base.VisitMarkupMinimizedAttributeBlock(node);
         }
         #endregion HTML
@@ -111,7 +111,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
         public override void VisitRazorDirectiveBody(RazorDirectiveBodySyntax node)
         {
-            AddSemanticRange(node.Keyword, SyntaxKind.RazorDirective);
+            // We can't provide colors for CSharp because if we both provided them then they would overlap, which violates the LSP spec.
+            if (node.Keyword.Kind != SyntaxKind.CSharpStatementLiteral)
+            {
+                AddSemanticRange(node.Keyword, SyntaxKind.RazorDirective);
+            }
             base.VisitRazorDirectiveBody(node);
         }
 
