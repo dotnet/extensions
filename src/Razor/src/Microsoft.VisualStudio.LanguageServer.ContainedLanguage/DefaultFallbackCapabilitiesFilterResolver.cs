@@ -57,6 +57,8 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                     return CheckDefinitionCapabilities;
                 case Methods.TextDocumentDocumentHighlightName:
                     return CheckHighlightCapabilities;
+                case "textDocument/semanticTokens":
+                    return CheckSemanticTokensCapabilities;
 
                 // VS LSP Expansion capabilities
                 case MSLSPMethods.DocumentReferencesName:
@@ -74,6 +76,15 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                 default:
                     return FallbackCheckCapabilties;
             }
+        }
+
+        private static bool CheckSemanticTokensCapabilities(JToken token)
+        {
+            var serverCapabilities = token.ToObject<VSServerCapabilities>();
+
+            return serverCapabilities?.SemanticTokensOptions?.DocumentProvider?.Match(
+                boolValue => boolValue,
+                options => options != null) ?? false;
         }
 
         private static bool CheckImplementationCapabilities(JToken token)

@@ -47,8 +47,83 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
         public static int MarkupCommentPunctuation => TokenTypesLegend[MarkupCommentPunctuationString];
         public static int MarkupComment => TokenTypesLegend[MarkupCommentString];
 
+        public static int CSharpKeyword => TokenTypesLegend["keyword"];
+        public static int CSharpVariable => TokenTypesLegend["variable"];
+        public static int CSharpOperator => TokenTypesLegend["operator"];
+
         private static readonly IReadOnlyCollection<string> _tokenTypes = new string[] {
-            RazorTagHelperElementString,
+            // C# token types
+            "namespace", // 0
+            "type",
+            "class",
+            "enum",
+            "interface",
+            "struct",
+            "typeParameter",
+            "parameter",
+            "variable",
+            "property",
+            "enumMember", // 10
+            "event",
+            "function",
+            "member",
+            "macro",
+            "keyword",
+            "modifier",
+            "comment",
+            "string",
+            "number",
+            "regexp", // 20
+            "operator",
+            "constant name",
+            "keyword - control",
+            "delegate name",
+            "excluded code",
+            "extension method name",
+            "field name",
+            "label name",
+            "local name",
+            "method name", // 30
+            "module name",
+            "operator - overloaded",
+            "preprocessor keyword",
+            "preprocessor text",
+            "punctuation",
+            "regex - alternation",
+            "regex - anchor",
+            "regex - character class",
+            "regex - comment",
+            "regex - grouping", // 40
+            "regex - other escape",
+            "regex - quantifier",
+            "regex - self escaped character",
+            "regex - text",
+            "string - escape character",
+            "text",
+            "string - verbatim",
+            "whitespace",
+            "xml doc comment - attribute name",
+            "xml doc comment - attribute quotes", // 50
+            "xml doc comment - attribute value",
+            "xml doc comment - cdata section",
+            "xml doc comment - comment",
+            "xml doc comment - delimiter",
+            "xml doc comment - entity reference",
+            "xml doc comment - name",
+            "xml doc comment - processing instruction",
+            "xml doc comment - text",
+            "xml literal - attribute name",
+            "xml literal - attribute quotes", // 60
+            "xml literal - attribute value",
+            "xml literal - cdata section",
+            "xml literal - comment",
+            "xml literal - delimiter",
+            "xml literal - embedded expression",
+            "xml literal - entity reference",
+            "xml literal - name",
+            "xml literal - processing instruction",
+            "xml literal - text",
+            RazorTagHelperElementString, // 70 Razor token types
             RazorTagHelperAttributeString,
             RazorTransitionString,
             RazorDirectiveColonString,
@@ -58,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
             RazorCommentTransitionString,
             RazorCommentStarString,
             MarkupTagDelimiterString,
-            MarkupElementString,
+            MarkupElementString, // 80
             MarkupOperatorString,
             MarkupAttributeString,
             MarkupAttributeQuoteString,
@@ -68,24 +143,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
         };
 
         private static readonly string[] _tokenModifiers = new string[] {
-            "None"
+            // Razor
+            "None",
+            // C# Modifiers
+            "static",
         };
 
         public static readonly IReadOnlyDictionary<string, int> TokenTypesLegend = GetMap(_tokenTypes);
-
-        private RazorSemanticTokensLegend()
-        {
-        }
 
         public static readonly SemanticTokensLegend Instance = new SemanticTokensLegend
         {
             TokenModifiers = new Container<string>(_tokenModifiers),
             TokenTypes = new Container<string>(_tokenTypes),
         };
-
-        public Container<string> TokenTypes { get; private set; }
-
-        public Container<string> TokenModifiers { get; private set; }
 
         private static IReadOnlyDictionary<string, int> GetMap(IReadOnlyCollection<string> tokens)
         {

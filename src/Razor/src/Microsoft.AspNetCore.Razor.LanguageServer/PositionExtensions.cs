@@ -21,7 +21,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(sourceText));
             }
 
-            var linePosition = new LinePosition((int)position.Line, (int)position.Character);
+            var linePosition = new LinePosition(position.Line, position.Character);
+            if (linePosition.Line >= sourceText.Lines.Count)
+            {
+                throw new ArgumentOutOfRangeException($"Line '{position.Line}' outside of the {nameof(sourceText)} range of '{sourceText.Lines.Count}' was queried. The document may not be up to date.");
+            }
             var index = sourceText.Lines.GetPosition(linePosition);
             return index;
         }

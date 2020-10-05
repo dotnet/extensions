@@ -7,11 +7,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Threading;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
@@ -211,6 +211,34 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 cancellationToken).ConfigureAwait(false);
 
             return result;
+        }
+
+        public override async Task<SemanticTokens> ProvideSemanticTokensAsync(SemanticTokensParams semanticTokensParams, CancellationToken cancellationToken)
+        {
+            if (semanticTokensParams is null)
+            {
+                throw new ArgumentNullException(nameof(semanticTokensParams));
+            }
+
+            if (!_documentManager.TryGetDocument(semanticTokensParams.TextDocument.Uri, out var documentSnapshot))
+            {
+                return null;
+            }
+
+            if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDoc))
+            {
+                return null;
+            }
+
+            semanticTokensParams.TextDocument.Uri = csharpDoc.Uri;
+
+            var results = await _requestInvoker.ReinvokeRequestOnServerAsync<SemanticTokensParams, SemanticTokens>(
+                LanguageServerConstants.LegacyRazorSemanticTokensEndpoint,
+                LanguageServerKind.CSharp.ToContentType(),
+                semanticTokensParams,
+                cancellationToken).ConfigureAwait(false);
+
+            return results;
         }
     }
 }

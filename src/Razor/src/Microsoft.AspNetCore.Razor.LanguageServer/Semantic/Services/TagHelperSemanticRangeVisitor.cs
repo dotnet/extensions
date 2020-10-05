@@ -46,13 +46,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
         {
             AddSemanticRange(node.OpenAngle);
-            if(node.Bang != null)
+            if (node.Bang != null)
             {
                 AddSemanticRange(node.Bang);
             }
             AddSemanticRange(node.Name, SyntaxKind.MarkupElement);
             base.VisitMarkupStartTag(node);
-            if(node.ForwardSlash != null)
+            if (node.ForwardSlash != null)
             {
                 AddSemanticRange(node.ForwardSlash);
             }
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             var source = _razorCodeDocument.Source;
             var range = node.GetRange(source);
 
-            var semanticRange = new SemanticRange(semanticKind, range);
+            var semanticRange = new SemanticRange(semanticKind, range, modifier: 0);
 
             if (_range is null || semanticRange.Range.OverlapsWith(_range))
             {
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
         private void AddSemanticRange(SyntaxNode node, SyntaxKind? kind = null)
         {
-            if(node is null)
+            if (node is null)
             {
                 throw new ArgumentNullException(nameof(node));
             }
