@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,35 +60,40 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // Find the lines that were affected by these edits.
             var originalText = codeDocument.GetSourceText();
             var changes = filteredEdits.Select(e => e.AsTextChange(originalText));
-            var changedText = originalText.WithChanges(changes);
-            TrackEncompassingChange(originalText, changedText, out var spanBeforeChange, out var spanAfterChange);
-            var rangeBeforeEdit = spanBeforeChange.AsRange(originalText);
-            var rangeAfterEdit = spanAfterChange.AsRange(changedText);
 
-            // Create a new formatting context for the changed razor document.
-            var changedContext = await context.WithTextAsync(changedText);
+            // Apply the format on type edits sent over by the client.
+            var formattedText = originalText.WithChanges(changes);
+            var changedContext = await context.WithTextAsync(formattedText);
+            TrackEncompassingChange(originalText, changes, out _, out var spanAfterFormatting);
+            var rangeAfterFormatting = spanAfterFormatting.AsRange(formattedText);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Now, for each affected line in the edited version of the document, remove x amount of spaces
-            // at the front to account for extra indentation applied by the C# formatter.
-            // This should be based on context.
-            // For instance, lines inside @code/@functions block should be reduced one level
-            // and lines inside @{} should be reduced by two levels.
-            var indentationChanges = AdjustCSharpIndentation(changedContext, (int)rangeAfterEdit.Start.Line, (int)rangeAfterEdit.End.Line);
+            // We make an optimistic attempt at fixing corner cases.
+            var cleanupChanges = CleanupDocument(changedContext, rangeAfterFormatting);
+            var cleanedText = formattedText.WithChanges(cleanupChanges);
+            changedContext = await changedContext.WithTextAsync(cleanedText);
 
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // At this point we should have applied all edits that adds/removes newlines.
+            // Let's now ensure the indentation of each of those lines is correct.
+
+            // We only want to adjust the range that was affected.
+            // We need to take into account the lines affected by formatting as well as cleanup.
+            var cleanupLineDelta = LineDelta(formattedText, cleanupChanges);
+            var rangeToAdjust = new Range(rangeAfterFormatting.Start, new Position(rangeAfterFormatting.End.Line + cleanupLineDelta, 0));
+            Debug.Assert(rangeToAdjust.End.IsValid(cleanedText), "Invalid range. This is unexpected.");
+
+            var indentationChanges = AdjustIndentation(changedContext, cancellationToken, rangeToAdjust);
             if (indentationChanges.Count > 0)
             {
                 // Apply the edits that modify indentation.
-                changedText = changedText.WithChanges(indentationChanges);
-                changedContext = await changedContext.WithTextAsync(changedText);
+                cleanedText = cleanedText.WithChanges(indentationChanges);
             }
 
-            // We make an optimistic attempt at fixing corner cases.
-            changedText = CleanupDocument(changedContext, rangeAfterEdit);
-
             // Now that we have made all the necessary changes to the document. Let's diff the original vs final version and return the diff.
-            var finalChanges = SourceTextDiffer.GetMinimalTextChanges(originalText, changedText, lineDiffOnly: false);
+            var finalChanges = SourceTextDiffer.GetMinimalTextChanges(originalText, cleanedText, lineDiffOnly: false);
             var finalEdits = finalChanges.Select(f => f.AsTextEdit(originalText)).ToArray();
 
             return new FormattingResult(finalEdits);
@@ -94,24 +101,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         private TextEdit[] FilterCSharpTextEdits(FormattingContext context, TextEdit[] edits)
         {
-            var filteredEdits = edits.Where(e => !AffectsWhitespaceInNonCSharpLine(e)).ToArray();
+            var filteredEdits = edits.Where(e => ShouldFormat(context, e.Range.Start, allowImplicitStatements: false)).ToArray();
             return filteredEdits;
+        }
 
-            bool AffectsWhitespaceInNonCSharpLine(TextEdit edit)
+        private static int LineDelta(SourceText text, IEnumerable<TextChange> changes)
+        {
+            // Let's compute the number of newlines added/removed by the incoming changes.
+            var delta = 0;
+
+            foreach (var change in changes)
             {
-                //
-                // Example:
-                //     @{
-                //       var x = "asdf";
-                // |  |}
-                // ^  ^ - C# formatter wants to remove this whitespace because it doesn't know about the '}'.
-                // But we can't let it happen.
-                //
-                return
-                    edit.Range.Start.Character == 0 &&
-                    edit.Range.Start.Line == edit.Range.End.Line &&
-                    !context.Indentations[(int)edit.Range.Start.Line].StartsInCSharpContext;
+                var newLineCount = change.NewText.Split('\n').Length - 1;
+
+                var range = change.Span.AsRange(text);
+                Debug.Assert(range.Start.Line <= range.End.Line, "Invalid range.");
+
+                // The number of lines added/removed will be,
+                // the number of lines added by the change  - the number of lines the change span represents
+                delta +=  newLineCount - (range.End.Line - range.Start.Line);
             }
+
+            return delta;
         }
     }
 }

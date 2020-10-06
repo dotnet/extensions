@@ -207,7 +207,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<IFormattingPass, HtmlFormattingPass>();
                         services.AddSingleton<IFormattingPass, CSharpFormattingPass>();
                         services.AddSingleton<IFormattingPass, CSharpOnTypeFormattingPass>();
-                        services.AddSingleton<IFormattingPass, OnTypeFormattingStructureValidationPass>();
                         services.AddSingleton<IFormattingPass, FormattingDiagnosticValidationPass>();
                         services.AddSingleton<IFormattingPass, FormattingContentValidationPass>();
 

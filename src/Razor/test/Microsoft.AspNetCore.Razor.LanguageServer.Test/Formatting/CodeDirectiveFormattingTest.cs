@@ -66,7 +66,9 @@ expected: @"
     public class Foo
     {
         void Method()
-        { <div></div> }
+        { 
+            <div></div>
+        }
     }
 }
 ");
@@ -88,7 +90,8 @@ expected: @"
     public class Foo
     {
         void Method()
-        { @DateTime.Now }
+        { 
+            @DateTime.Now }
     }
 }
 ");
@@ -110,7 +113,9 @@ expected: @"
     public class Foo
     {
         void Method()
-        { @(DateTime.Now) }
+        { 
+            @(DateTime.Now)
+        }
     }
 }
 ",
@@ -290,7 +295,7 @@ expected: @"
 ");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/25475")]
+        [Fact]
         public async Task CodeOnTheSameLineAsCodeBlockDirectiveEnd()
         {
             await RunFormattingTestAsync(

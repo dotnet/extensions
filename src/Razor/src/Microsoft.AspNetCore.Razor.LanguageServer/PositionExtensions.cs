@@ -45,5 +45,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var result = position.Line.CompareTo(other.Line);
             return (result != 0) ? result : position.Character.CompareTo(other.Character);
         }
+
+        public static bool IsValid(this Position position, SourceText sourceText)
+        {
+            if (position is null)
+            {
+                throw new ArgumentNullException(nameof(position));
+            }
+
+            if (sourceText is null)
+            {
+                throw new ArgumentNullException(nameof(sourceText));
+            }
+
+            return position.Line >= 0 &&
+                position.Character >= 0 &&
+                position.Line < sourceText.Lines.Count &&
+                sourceText.Lines[position.Line].Start + position.Character <= sourceText.Length;
+        }
     }
 }

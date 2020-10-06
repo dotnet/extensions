@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -127,103 +128,155 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         // Returns the minimal TextSpan that encompasses all the differences between the old and the new text.
-        protected static void TrackEncompassingChange(SourceText oldText, SourceText newText, out TextSpan spanBeforeChange, out TextSpan spanAfterChange)
+        protected static void TrackEncompassingChange(SourceText oldText, IEnumerable<TextChange> changes, out TextSpan spanBeforeChange, out TextSpan spanAfterChange)
         {
             if (oldText is null)
             {
                 throw new ArgumentNullException(nameof(oldText));
             }
 
-            if (newText is null)
+            if (changes is null)
             {
-                throw new ArgumentNullException(nameof(newText));
+                throw new ArgumentNullException(nameof(changes));
             }
 
+            var newText = oldText.WithChanges(changes);
             var affectedRange = newText.GetEncompassingTextChangeRange(oldText);
 
             spanBeforeChange = affectedRange.Span;
             spanAfterChange = new TextSpan(spanBeforeChange.Start, affectedRange.NewLength);
         }
 
-        // This method handles adjusting of indentation of Razor blocks after C# formatter has finished formatting the document.
-        // For instance, lines inside @code/@functions block should be reduced one level
-        // and lines inside @{} should be reduced by two levels.
-        protected static List<TextChange> AdjustCSharpIndentation(FormattingContext context, int startLine, int endLine)
+        protected List<TextChange> AdjustIndentation(FormattingContext context, CancellationToken cancellationToken, Range range = null)
         {
-            if (context is null)
+            // In this method, the goal is to make final adjustments to the indentation of each line.
+            // We will take into account the following,
+            // 1. The indentation due to nested C# structures
+            // 2. The indentation due to Razor and HTML constructs
+
+            var text = context.SourceText;
+            range ??= TextSpan.FromBounds(0, text.Length).AsRange(text);
+
+            // First, let's build an understanding of the desired C# indentation at the beginning and end of each source mapping.
+            var sourceMappingIndentations = new SortedDictionary<int, int>();
+            foreach (var mapping in context.CodeDocument.GetCSharpDocument().SourceMappings)
             {
-                throw new ArgumentNullException(nameof(context));
+                var mappingSpan = new TextSpan(mapping.OriginalSpan.AbsoluteIndex, mapping.OriginalSpan.Length);
+                var mappingRange = mappingSpan.AsRange(context.SourceText);
+                if (!ShouldFormat(context, mappingRange.Start, allowImplicitStatements: true))
+                {
+                    // We don't care about this range as this can potentially lead to incorrect scopes.
+                    continue;
+                }
+
+                var startIndentation = CSharpFormatter.GetCSharpIndentation(context, mapping.GeneratedSpan.AbsoluteIndex, cancellationToken);
+                sourceMappingIndentations[mapping.OriginalSpan.AbsoluteIndex] = startIndentation;
+
+                var endIndentation = CSharpFormatter.GetCSharpIndentation(context, mapping.GeneratedSpan.AbsoluteIndex + mapping.GeneratedSpan.Length + 1, cancellationToken);
+                sourceMappingIndentations[mapping.OriginalSpan.AbsoluteIndex + mapping.OriginalSpan.Length + 1] = endIndentation;
             }
 
-            var sourceText = context.SourceText;
-            var editsToApply = new List<TextChange>();
+            var sourceMappingIndentationScopes = sourceMappingIndentations.Keys.ToArray();
 
-            for (var i = startLine; i <= endLine; i++)
+            // Now, let's combine the C# desired indentation with the Razor and HTML indentation for each line.
+            var newIndentations = new Dictionary<int, int>();
+            for (var i = range.Start.Line; i <= range.End.Line; i++)
             {
-                if (!context.Indentations[i].StartsInCSharpContext)
+                if (context.Indentations[i].EmptyOrWhitespaceLine)
                 {
-                    // Not a CSharp line. Don't touch it.
+                    // We should remove whitespace on empty lines.
+                    newIndentations[i] = 0;
                     continue;
                 }
 
-                var line = sourceText.Lines[i];
-                if (line.Span.Length == 0)
+                var line = context.SourceText.Lines[i];
+                var lineStart = line.Start;
+                int csharpDesiredIndentation;
+                if (DocumentMappingService.TryMapToProjectedDocumentPosition(context.CodeDocument, lineStart, out _, out var projectedLineStart))
                 {
-                    // Empty line. C# formatter didn't remove it so we won't either.
-                    continue;
-                }
-
-                var leadingWhitespace = line.GetLeadingWhitespace();
-                var minCSharpIndentLevel = context.Indentations[i].MinCSharpIndentLevel;
-                var minCSharpIndentLength = context.GetIndentationLevelString(minCSharpIndentLevel).Length;
-                var desiredIndentationLevel = context.Indentations[i].IndentationLevel;
-                if (leadingWhitespace.Length < minCSharpIndentLength)
-                {
-                    // For whatever reason, the C# formatter decided to not indent this. Leave it as is.
-                    continue;
+                    // We were able to map this line to C# directly.
+                    csharpDesiredIndentation = CSharpFormatter.GetCSharpIndentation(context, projectedLineStart, cancellationToken);
                 }
                 else
                 {
-                    // At this point we assume the C# formatter has relatively indented this line to the correct level.
-                    // All we want to do at this point is to indent/unindent this line based on the absolute indentation of the block
-                    // and the minimum C# indent level. We don't need to worry about the actual existing indentation here because it doesn't matter.
-                    var effectiveDesiredIndentationLevel = desiredIndentationLevel - minCSharpIndentLevel;
-                    var effectiveDesiredIndentation = context.GetIndentationLevelString(Math.Abs(effectiveDesiredIndentationLevel));
-                    if (effectiveDesiredIndentationLevel < 0)
+                    // Couldn't remap. This is probably a non-C# location.
+                    // Use SourceMapping indentations to locate the C# scope of this line.
+                    // E.g,
+                    //
+                    // @if (true) {
+                    //   <div>
+                    //  |</div>
+                    // }
+                    //
+                    // We can't find a direct mapping at |, but we can infer its base indentation from the
+                    // indentation of the latest source mapping prior to this line.
+                    // We use binary search to find that spot.
+
+                    var index = Array.BinarySearch(sourceMappingIndentationScopes, lineStart);
+                    if (index < 0)
                     {
-                        // This means that we need to unindent.
-                        var span = new TextSpan(line.Start, effectiveDesiredIndentation.Length);
-                        editsToApply.Add(new TextChange(span, string.Empty));
+                        // Couldn't find the exact value. Find the index of the element to the left of the searched value.
+                        index = (~index) - 1;
                     }
-                    else if (effectiveDesiredIndentationLevel > 0)
+
+                    // This will now be set to the same value as the end of the closest source mapping.
+                    csharpDesiredIndentation = index < 0 ? 0 : sourceMappingIndentations[sourceMappingIndentationScopes[index]];
+                }
+
+                // Now let's use that information to figure out the effective C# indentation.
+                // This should be based on context.
+                // For instance, lines inside @code/@functions block should be reduced one level
+                // and lines inside @{} should be reduced by two levels.
+
+                var minCSharpIndentation = context.GetIndentationOffsetForLevel(context.Indentations[i].MinCSharpIndentLevel);
+                if (csharpDesiredIndentation < minCSharpIndentation)
+                {
+                    // CSharp formatter doesn't want to indent this. Let's not touch it.
+                    continue;
+                }
+
+                var effectiveCSharpDesiredIndentation = csharpDesiredIndentation - minCSharpIndentation;
+                var razorDesiredIndentation = context.GetIndentationOffsetForLevel(context.Indentations[i].IndentationLevel);
+                if (!context.Indentations[i].StartsInCSharpContext)
+                {
+                    // This is a non-C# line.
+                    if (context.IsFormatOnType)
                     {
-                        // This means that we need to indent.
-                        var span = new TextSpan(line.Start, 0);
-                        editsToApply.Add(new TextChange(span, effectiveDesiredIndentation));
+                        // HTML formatter doesn't run in the case of format on type.
+                        // Let's stick with our syntax understanding of HTML to figure out the desired indentation.
+                    }
+                    else
+                    {
+                        // Given that the HTML formatter ran before this, we can assume
+                        // HTML is already correctly formatted. So we can use the existing indentation as is.
+                        razorDesiredIndentation = context.Indentations[i].ExistingIndentation;
                     }
                 }
+                var effectiveDesiredIndentation = razorDesiredIndentation + effectiveCSharpDesiredIndentation;
+
+                // This will now contain the indentation we ultimately want to apply to this line.
+                newIndentations[i] = effectiveDesiredIndentation;
             }
 
-            return editsToApply;
+            // Now that we have collected all the indentations for each line, let's convert them to text edits.
+            var changes = new List<TextChange>();
+            foreach (var item in newIndentations)
+            {
+                var line = item.Key;
+                var indentation = item.Value;
+                Debug.Assert(indentation >= 0, "Negative indentation. This is unexpected.");
+
+                var existingIndentationLength = context.Indentations[line].ExistingIndentation;
+                var spanToReplace = new TextSpan(context.SourceText.Lines[line].Start, existingIndentationLength);
+                var effectiveDesiredIndentation = context.GetIndentationString(indentation);
+                changes.Add(new TextChange(spanToReplace, effectiveDesiredIndentation));
+            }
+
+            return changes;
         }
 
-        protected static SourceText CleanupDocument(FormattingContext context, Range range = null)
+        protected List<TextChange> CleanupDocument(FormattingContext context, Range range = null)
         {
-            //
-            // We look through every source mapping that intersects with the affected range and
-            // adjust the indentation of the first line,
-            //
-            // E.g,
-            //
-            // @{   public int x = 0;
-            // }
-            //
-            // becomes,
-            //
-            // @{
-            //    public int x  = 0;
-            // }
-            // 
             var text = context.SourceText;
             range ??= TextSpan.FromBounds(0, text.Length).AsRange(text);
             var csharpDocument = context.CodeDocument.GetCSharpDocument();
@@ -239,66 +292,153 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     continue;
                 }
 
-                var mappingStartLineIndex = mappingRange.Start.Line;
-                if (context.Indentations[mappingStartLineIndex].StartsInCSharpContext)
-                {
-                    // Doesn't need cleaning up.
-                    // For corner cases like (Range marked with |...|),
-                    // @{
-                    //     if (true} { <div></div>| }|
-                    // }
-                    // We want to leave it alone because tackling it here is really complicated.
-                    continue;
-                }
+                CleanupSourceMappingStart(context, mappingRange, changes);
 
-                if (!ShouldCleanup(context, mappingRange.Start))
-                {
-                    // We don't want to run cleanup on this range.
-                    continue;
-                }
-
-                // @{
-                //     if (true)
-                //     {     
-                //         <div></div>|
-                // 
-                //              |}
-                // }
-                // We want to return the length of the range marked by |...|
-                //
-                var whitespaceLength = text.GetFirstNonWhitespaceOffset(mappingSpan);
-                if (whitespaceLength == null)
-                {
-                    // There was no content here. Skip.
-                    continue;
-                }
-
-                var spanToReplace = new TextSpan(mappingSpan.Start, whitespaceLength.Value);
-                if (!context.TryGetIndentationLevel(spanToReplace.End, out var contentIndentLevel))
-                {
-                    // Can't find the correct indentation for this content. Leave it alone.
-                    continue;
-                }
-
-                // At this point, `contentIndentLevel` should contain the correct indentation level for `}` in the above example.
-                var replacement = context.NewLineString + context.GetIndentationLevelString(contentIndentLevel);
-
-                // After the below change the above example should look like,
-                // @{
-                //     if (true)
-                //     {     
-                //         <div></div>
-                //     }
-                // }
-                var change = new TextChange(spanToReplace, replacement);
-                changes.Add(change);
+                CleanupSourceMappingEnd(context, mappingRange, changes);
             }
 
-            var changedText = text.WithChanges(changes);
-            return changedText;
+            return changes;
         }
 
-        private static bool ShouldCleanup(FormattingContext context, Position position)
+        private void CleanupSourceMappingStart(FormattingContext context, Range sourceMappingRange, List<TextChange> changes)
+        {
+            //
+            // We look through every source mapping that intersects with the affected range and
+            // bring the first line to its own line and adjust its indentation,
+            //
+            // E.g,
+            //
+            // @{   public int x = 0;
+            // }
+            //
+            // becomes,
+            //
+            // @{
+            //    public int x  = 0;
+            // }
+            // 
+
+            if (!ShouldFormat(context, sourceMappingRange.Start, allowImplicitStatements: false))
+            {
+                // We don't want to run cleanup on this range.
+                return;
+            }
+
+            // @{
+            //     if (true)
+            //     {
+            //         <div></div>|
+            //
+            //              |}
+            // }
+            // We want to return the length of the range marked by |...|
+            //
+            var text = context.SourceText;
+            var sourceMappingSpan = sourceMappingRange.AsTextSpan(text);
+            var whitespaceLength = text.GetFirstNonWhitespaceOffset(sourceMappingSpan);
+            if (whitespaceLength == null)
+            {
+                // There was no content here. Skip.
+                return;
+            }
+
+            var spanToReplace = new TextSpan(sourceMappingSpan.Start, whitespaceLength.Value);
+            if (!context.TryGetIndentationLevel(spanToReplace.End, out var contentIndentLevel))
+            {
+                // Can't find the correct indentation for this content. Leave it alone.
+                return;
+            }
+
+            // At this point, `contentIndentLevel` should contain the correct indentation level for `}` in the above example.
+            var replacement = context.NewLineString + context.GetIndentationLevelString(contentIndentLevel);
+
+            // After the below change the above example should look like,
+            // @{
+            //     if (true)
+            //     {
+            //         <div></div>
+            //     }
+            // }
+            var change = new TextChange(spanToReplace, replacement);
+            changes.Add(change);
+        }
+
+        private void CleanupSourceMappingEnd(FormattingContext context, Range sourceMappingRange, List<TextChange> changes)
+        {
+            //
+            // We look through every source mapping that intersects with the affected range and
+            // bring the content after the last line to its own line and adjust its indentation,
+            //
+            // E.g,
+            //
+            // @{
+            //     if (true)
+            //     {  <div></div>
+            //     }
+            // }
+            //
+            // becomes,
+            //
+            // @{
+            //    if (true)
+            //    {
+            //        </div></div>
+            //    }
+            // }
+            //
+
+            var text = context.SourceText;
+            var sourceMappingSpan = sourceMappingRange.AsTextSpan(text);
+            var mappingEndLineIndex = sourceMappingRange.End.Line;
+            if (!context.Indentations[mappingEndLineIndex].StartsInCSharpContext)
+            {
+                // For corner cases like (Position marked with |),
+                // It is already in a separate line. It doesn't need cleaning up.
+                // @{
+                //     if (true}
+                //     {
+                //         |<div></div>
+                //     }
+                // }
+                //
+                return;
+            }
+
+            if (!ShouldFormat(context, sourceMappingRange.End, allowImplicitStatements: false))
+            {
+                // We don't want to run cleanup on this range.
+                return;
+            }
+
+            var contentStartOffset = text.Lines[mappingEndLineIndex].GetFirstNonWhitespaceOffset(sourceMappingRange.End.Character);
+            if (contentStartOffset == null)
+            {
+                // There is no content after the end of this source mapping. No need to clean up.
+                return;
+            }
+
+            var spanToReplace = new TextSpan(sourceMappingSpan.End, 0);
+            if (!context.TryGetIndentationLevel(spanToReplace.End, out var contentIndentLevel))
+            {
+                // Can't find the correct indentation for this content. Leave it alone.
+                return;
+            }
+
+            // At this point, `contentIndentLevel` should contain the correct indentation level for `}` in the above example.
+            var replacement = context.NewLineString + context.GetIndentationLevelString(contentIndentLevel);
+
+            // After the below change the above example should look like,
+            // @{
+            //     if (true)
+            //     {
+            //         <div></div>
+            //     }
+            // }
+            var change = new TextChange(spanToReplace, replacement);
+            changes.Add(change);
+        }
+
+        protected bool ShouldFormat(FormattingContext context, Position position, bool allowImplicitStatements)
         {
             // We should be called with start positions of various C# SourceMappings.
             if (position.Character == 0)
@@ -309,7 +449,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             var sourceText = context.SourceText;
             var absoluteIndex = sourceText.Lines[(int)position.Line].Start + (int)position.Character;
-            if (IsImplicitStatement())
+            if (IsImplicitStatementStart() && !allowImplicitStatements)
             {
                 return false;
             }
@@ -332,7 +472,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             return true;
 
-            bool IsImplicitStatement()
+            bool IsImplicitStatementStart()
             {
                 // We will return true if the position points to the start of the C# portion of an implicit statement.
                 // `@|for(...)` - true
@@ -343,7 +483,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
                 var previousCharIndex = absoluteIndex - 1;
                 var previousChar = sourceText[previousCharIndex];
-                return previousChar == '@';
+                if (previousChar != '@')
+                {
+                    // Not an implicit statement.
+                    return false;
+                }
+
+                // This is an implicit statement if the previous '@' is not C# (meaning it shouldn't have a projected mapping).
+                return !DocumentMappingService.TryMapToProjectedDocumentPosition(context.CodeDocument, previousCharIndex, out _, out _);
             }
 
             bool IsInHtmlTag()

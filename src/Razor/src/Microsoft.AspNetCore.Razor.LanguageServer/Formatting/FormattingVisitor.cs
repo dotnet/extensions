@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private List<FormattingSpan> _spans;
         private FormattingBlockKind _currentBlockKind;
         private SyntaxNode _currentBlock;
-        private int _currentIndentationLevel = 0;
+        private int _currentHtmlIndentationLevel = 0;
+        private int _currentRazorIndentationLevel = 0;
         private bool _isInClassBody = false;
 
         public FormattingVisitor(RazorSourceDocument source)
@@ -49,9 +50,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     comment = (SyntaxToken)SyntaxFactory.Token(SyntaxKind.Marker, string.Empty).Green.CreateRed(razorCommentSyntax, razorCommentSyntax.StartCommentStar.EndPosition);
                 }
 
-                _currentIndentationLevel++;
+                _currentRazorIndentationLevel++;
                 WriteSpan(comment, FormattingSpanKind.Comment);
-                _currentIndentationLevel--;
+                _currentRazorIndentationLevel--;
 
                 WriteSpan(razorCommentSyntax.EndCommentStar, FormattingSpanKind.MetaCode);
                 WriteSpan(razorCommentSyntax.EndCommentTransition, FormattingSpanKind.Transition);
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
                 if (!(node.Parent is RazorDirectiveBodySyntax))
                 {
-                    _currentIndentationLevel++;
+                    _currentRazorIndentationLevel++;
                 }
 
                 var isInCodeBlockDirective =
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
                 if (!(node.Parent is RazorDirectiveBodySyntax))
                 {
-                    _currentIndentationLevel--;
+                    _currentRazorIndentationLevel--;
                 }
                 return;
             }
@@ -141,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // Temporary fix to not break the default Html formatting behavior. Remove after https://github.com/dotnet/aspnetcore/issues/25475.
             if (!string.Equals(node.StartTag?.Name?.Content, HtmlTagName, StringComparison.OrdinalIgnoreCase))
             {
-                _currentIndentationLevel++;
+                _currentHtmlIndentationLevel++;
             }
 
             foreach (var child in node.Body)
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // Temporary fix to not break the default Html formatting behavior. Remove after https://github.com/dotnet/aspnetcore/issues/25475.
             if (!string.Equals(node.StartTag?.Name?.Content, HtmlTagName, StringComparison.OrdinalIgnoreCase))
             {
-                _currentIndentationLevel--;
+                _currentHtmlIndentationLevel--;
             }
 
             Visit(node.EndTag);
@@ -185,12 +186,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
         {
             Visit(node.StartTag);
-            _currentIndentationLevel++;
+            _currentHtmlIndentationLevel++;
             foreach (var child in node.Body)
             {
                 Visit(child);
             }
-            _currentIndentationLevel--;
+            _currentHtmlIndentationLevel--;
             Visit(node.EndTag);
         }
 
@@ -360,7 +361,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var spanSource = new TextSpan(node.Position, node.FullWidth);
             var blockSource = new TextSpan(_currentBlock.Position, _currentBlock.FullWidth);
 
-            var span = new FormattingSpan(spanSource, blockSource, kind, _currentBlockKind, _currentIndentationLevel, _isInClassBody);
+            var span = new FormattingSpan(spanSource, blockSource, kind, _currentBlockKind, _currentRazorIndentationLevel, _currentHtmlIndentationLevel, _isInClassBody);
             _spans.Add(span);
         }
 

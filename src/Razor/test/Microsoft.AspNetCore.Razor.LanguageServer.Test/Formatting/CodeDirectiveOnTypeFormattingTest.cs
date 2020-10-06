@@ -99,7 +99,7 @@ expected: @"
 triggerCharacter: "}");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/24751")]
+        [Fact]
         public async Task CloseCurly_Property_MultiLine()
         {
             await RunOnTypeFormattingTestAsync(
@@ -153,7 +153,7 @@ expected: @"
 triggerCharacter: ";");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/24751")]
+        [Fact]
         public async Task Semicolon_ClassField_MultiLine()
         {
             await RunOnTypeFormattingTestAsync(
@@ -172,7 +172,7 @@ expected: @"
 triggerCharacter: ";");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/24751")]
+        [Fact]
         public async Task Semicolon_MethodVariable()
         {
             await RunOnTypeFormattingTestAsync(

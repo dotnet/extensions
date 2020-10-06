@@ -7,13 +7,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         public int Line { get; set; }
 
-        public int IndentationLevel { get; set; }
+        public int RazorIndentationLevel { get; set; }
+
+        public int HtmlIndentationLevel { get; set; }
+
+        public int IndentationLevel => RazorIndentationLevel + HtmlIndentationLevel;
 
         public int RelativeIndentationLevel { get; set; }
 
         public int ExistingIndentation { get; set; }
 
         public FormattingSpan FirstSpan { get; set; }
+
+        public bool EmptyOrWhitespaceLine { get; set; }
 
         public bool StartsInHtmlContext => FirstSpan.Kind == FormattingSpanKind.Markup;
 

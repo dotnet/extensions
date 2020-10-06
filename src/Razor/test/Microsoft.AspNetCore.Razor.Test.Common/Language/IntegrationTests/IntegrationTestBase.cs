@@ -20,7 +20,13 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
+    // Sets the FileName static variable.
+    // Finds the test method name using reflection, and uses
+    // that to find the expected input/output test files in the file system.
     [IntializeTestFile]
+
+    // These tests must be run serially due to the test specific FileName static var.
+    [Collection("IntegrationTestSerialRuns")]
     public abstract class IntegrationTestBase
     {
         private static readonly AsyncLocal<string> _fileName = new AsyncLocal<string>();
@@ -85,13 +91,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         protected virtual bool DesignTime { get; } = false;
 
         /// <summary>
-        /// Gets the 
+        /// Gets the
         /// </summary>
         internal VirtualRazorProjectFileSystem FileSystem { get; } = new VirtualRazorProjectFileSystem();
 
         /// <summary>
-        /// Used to force a specific style of line-endings for testing. This matters for the baseline tests that exercise line mappings. 
-        /// Even though we normalize newlines for testing, the difference between platforms affects the data through the *count* of 
+        /// Used to force a specific style of line-endings for testing. This matters for the baseline tests that exercise line mappings.
+        /// Even though we normalize newlines for testing, the difference between platforms affects the data through the *count* of
         /// characters written.
         /// </summary>
         protected virtual string LineEnding { get; } = "\r\n";
@@ -160,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 Content = text,
             };
-            
+
             return projectItem;
         }
 
@@ -206,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 Content = fileContent,
             };
-            
+
             return projectItem;
         }
 

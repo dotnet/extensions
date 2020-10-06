@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             span ??= new TextSpan(0, source.Length);
 
-            for (var i = span.Value.Start; i <= span.Value.End; i++)
+            for (var i = span.Value.Start; i < span.Value.End; i++)
             {
                 if (!char.IsWhiteSpace(source[i]))
                 {

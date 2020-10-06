@@ -125,17 +125,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var baseProperty = result.GetType().GetProperty("BasePosition");
                 var basePosition = (int)baseProperty.GetValue(result);
                 var offsetProperty = result.GetType().GetProperty("Offset");
+
+                // IIndentationService always returns offset as the number of spaces.
                 var offset = (int)offsetProperty.GetValue(result);
 
                 var resultLine = changedText.Lines.GetLinePosition(basePosition);
                 var indentation = resultLine.Character + offset;
-
-                // IIndentationService always returns offset as the number of spaces.
-                // So if the client uses tabs instead of spaces, we need to convert accordingly.
-                if (!context.Options.InsertSpaces)
-                {
-                    indentation /= (int)context.Options.TabSize;
-                }
 
                 return indentation;
             }

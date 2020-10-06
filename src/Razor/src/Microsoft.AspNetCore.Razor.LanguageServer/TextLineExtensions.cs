@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public static int? GetFirstNonWhitespaceOffset(this TextLine line, int startOffset = 0)
         {
-            if (startOffset >= line.SpanIncludingLineBreak.Length)
+            if (startOffset > line.SpanIncludingLineBreak.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(startOffset), "Invalid offset.");
             }
