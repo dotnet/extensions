@@ -18,18 +18,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             // Supports generating the empty constructor `ClassName()`, as well as constructor with args `ClassName(int)`
             new Regex(@"^Generate constructor '.+\(.*\)'$", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1)),
 
-            // Temporarily disable till we can support multi-part edit formatting
-            // new Regex("^Create and assign (property|field) '.+'$", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1))
+            new Regex("^Create and assign (property|field) '.+'$", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1))
         };
 
         private static readonly HashSet<string> StringMatchCodeActions = new HashSet<string>()
         {
             "Generate Equals and GetHashCode",
             "Add null check",
-            "Add null checks for all parameters"
-
-            // Temporarily disable till we can support multi-part edit formatting
-            // "Add 'DebuggerDisplay' attribute"
+            "Add null checks for all parameters",
+            "Add 'DebuggerDisplay' attribute"
         };
 
         public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(

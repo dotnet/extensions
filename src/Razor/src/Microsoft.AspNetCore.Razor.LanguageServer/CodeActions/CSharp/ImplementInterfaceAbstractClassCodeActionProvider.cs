@@ -27,9 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private static readonly IEnumerable<string> ImplementInterfaceCodeActionTitle = new HashSet<string>()
         {
             "Implement interface",
-
-            // Temporarily disable till we can support multi-part edit formatting
-            // "Implement interface with Dispose pattern"
+            "Implement interface with Dispose pattern"
         };
 
         public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(

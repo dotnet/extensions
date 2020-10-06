@@ -22,7 +22,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             // `The name 'identifier' does not exist in the current context`
             // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/cs0103
-            "CS0103"
+            "CS0103",
+
+            // `The name 'identifier' does not exist in the current context`
+            "IDE1007"
         };
 
         public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
@@ -55,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 diagnostic.Code?.IsString == true &&
                 SupportedDiagnostics.Any(d => diagnostic.Code.Value.String.Equals(d, StringComparison.OrdinalIgnoreCase)));
 
-            if (diagnostics is null)
+            if (diagnostics is null || !diagnostics.Any())
             {
                 return EmptyResult;
             }

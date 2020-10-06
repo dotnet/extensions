@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -207,8 +206,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             Assert.Empty(results);
         }
 
-        [Fact]
-        public async Task Handle_ValidDiagnostic_ValidCodeAction_ReturnsCodeActions()
+        [Theory]
+        [InlineData("CS0246")]
+        [InlineData("CS0103")]
+        [InlineData("IDE1007")]
+        public async Task Handle_ValidDiagnostic_ValidCodeAction_ReturnsCodeActions(string errorCode)
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -228,7 +230,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                         new Diagnostic()
                         {
                             Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0246"),
+                            Code = new DiagnosticCode(errorCode),
                             Range = new Range(
                                 new Position(0, 8),
                                 new Position(0, 12)
