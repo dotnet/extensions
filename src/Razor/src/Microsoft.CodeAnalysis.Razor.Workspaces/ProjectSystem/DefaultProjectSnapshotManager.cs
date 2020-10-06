@@ -80,7 +80,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 _foregroundDispatcher.AssertForegroundThread();
 
-
                 var i = 0;
                 var projects = new ProjectSnapshot[_projects.Count];
                 foreach (var entry in _projects)
@@ -89,6 +88,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
 
                 return projects;
+            }
+        }
+
+        public override IReadOnlyCollection<string> OpenDocuments
+        {
+            get
+            {
+                _foregroundDispatcher.AssertForegroundThread();
+
+                return _openDocuments;
             }
         }
 

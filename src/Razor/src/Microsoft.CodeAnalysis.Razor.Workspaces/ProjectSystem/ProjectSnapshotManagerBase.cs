@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -9,6 +10,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     internal abstract class ProjectSnapshotManagerBase : ProjectSnapshotManager
     {
         public abstract Workspace Workspace { get; }
+
+        public abstract IReadOnlyCollection<string> OpenDocuments { get; }
 
         public abstract void DocumentAdded(HostProject hostProject, HostDocument hostDocument, TextLoader textLoader);
 

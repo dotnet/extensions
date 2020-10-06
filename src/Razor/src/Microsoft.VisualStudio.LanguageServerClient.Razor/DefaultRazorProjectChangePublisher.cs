@@ -26,6 +26,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     internal class DefaultRazorProjectChangePublisher : ProjectSnapshotChangeTrigger
     {
         internal readonly Dictionary<string, Task> _deferredPublishTasks;
+
+        // Internal for testing
+        internal bool _active;
+
         private const string TempFileExt = ".temp";
         private readonly RazorLogger _logger;
         private readonly LSPEditorFeatureDetector _lspEditorFeatureDetector;
@@ -35,7 +39,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly object _publishLock;
 
         private readonly JsonSerializer _serializer = new JsonSerializer();
-
         private ProjectSnapshotManagerBase _projectSnapshotManager;
 
         [ImportingConstructor]
@@ -111,6 +114,34 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             if (!_lspEditorFeatureDetector.IsLSPEditorAvailable(args.ProjectFilePath, hierarchy: null))
             {
                 return;
+            }
+
+            // Prior to doing any sort of project state serialization/publishing we avoid any excess work as long as there aren't any "open" Razor files.
+            // However, once a Razor file is opened we turn the firehose on and start doing work.
+            // By taking this lazy approach we ensure that we don't do any excess Razor work (serialization is expensive) in non-Razor scenarios.
+
+            if (!_active)
+            {
+                // Not currently active, we need to decide if we should become active or if we should no-op.
+
+                if (_projectSnapshotManager.OpenDocuments.Count > 0)
+                {
+                    // A Razor document was just opened, we should become "active" which means we'll constantly be monitoring project state.
+                    _active = true;
+
+                    if (args.Newer?.ProjectWorkspaceState != null)
+                    {
+                        // Typically document open events don't result in us re-processing project state; however, given this is the first time a user opened a Razor document we should.
+                        // Don't enqueue, just publish to get the most immediate result.
+                        Publish(args.Newer);
+                        return;
+                    }
+                }
+                else
+                {
+                    // No open documents and not active. No-op.
+                    return;
+                }
             }
 
             // All the below Publish's (except ProjectRemoved) wait until our project has been initialized (ProjectWorkspaceState != null)
