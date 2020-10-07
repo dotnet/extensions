@@ -4,11 +4,15 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.Win32;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
 {
+#if !NET472
+    [SupportedOSPlatform("windows")]
+#endif
     public class MinimumOSVersionTest
     {
         [ConditionalFact]
