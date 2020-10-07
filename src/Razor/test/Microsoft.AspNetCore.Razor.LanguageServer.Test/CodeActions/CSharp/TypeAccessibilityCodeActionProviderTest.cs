@@ -282,6 +282,96 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         [Fact]
+        public async Task Handle_InvalidDiagnostic_EndOutOfRange_ValidCodeAction_ReturnsCodeActions()
+        {
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "@code { Path; }";
+            var request = new CodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(),
+                Context = new CodeActionContext()
+                {
+                    Diagnostics = new Container<Diagnostic>(
+                        new Diagnostic()
+                        {
+                            Severity = DiagnosticSeverity.Error,
+                            Code = new DiagnosticCode("CS0246"),
+                            Range = new Range(
+                                new Position(0, 8),
+                                new Position(0, 16)
+                            )
+                        }
+                    )
+                }
+            };
+
+            var location = new SourceLocation(0, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
+            context.CodeDocument.SetFileKind(FileKinds.Legacy);
+
+            var provider = new TypeAccessibilityCodeActionProvider();
+            var csharpCodeActions = new[] {
+                new RazorCodeAction()
+                {
+                    Title = "System.IO.Path"
+                }
+            };
+
+            // Act
+            var results = await provider.ProvideAsync(context, csharpCodeActions, default);
+
+            // Assert
+            Assert.Empty(results);
+        }
+
+        [Fact]
+        public async Task Handle_InvalidDiagnostic_StartOutOfRange_ValidCodeAction_ReturnsCodeActions()
+        {
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "@code { \nPath; }";
+            var request = new CodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(),
+                Context = new CodeActionContext()
+                {
+                    Diagnostics = new Container<Diagnostic>(
+                        new Diagnostic()
+                        {
+                            Severity = DiagnosticSeverity.Error,
+                            Code = new DiagnosticCode("CS0246"),
+                            Range = new Range(
+                                new Position(0, 9),
+                                new Position(1, 12)
+                            )
+                        }
+                    )
+                }
+            };
+
+            var location = new SourceLocation(0, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
+            context.CodeDocument.SetFileKind(FileKinds.Legacy);
+
+            var provider = new TypeAccessibilityCodeActionProvider();
+            var csharpCodeActions = new[] {
+                new RazorCodeAction()
+                {
+                    Title = "System.IO.Path"
+                }
+            };
+
+            // Act
+            var results = await provider.ProvideAsync(context, csharpCodeActions, default);
+
+            // Assert
+            Assert.Empty(results);
+        }
+
+        [Fact]
         public async Task Handle_ValidDiagnostic_MultipleValidCodeActions_ReturnsMultipleCodeActions()
         {
             // Arrange

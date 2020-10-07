@@ -76,6 +76,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 }
 
                 var diagnosticSpan = diagnostic.Range.AsTextSpan(context.SourceText);
+
+                // Based on how we compute `Range.AsTextSpan` it's possible to have a span
+                // which goes beyond the end of the source text. Something likely changed
+                // between the capturing of the diagnostic (by the platform) and the retrieval of the 
+                // document snapshot / source text. In such a case, we skip processing of the diagnostic.
+                if (diagnosticSpan.End > context.SourceText.Length)
+                {
+                    continue;
+                }
+
                 var associatedValue = context.SourceText.GetSubTextString(diagnosticSpan);
 
                 foreach (var codeAction in codeActions)
