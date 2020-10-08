@@ -84,9 +84,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     // I think that would mean either having 0 Serial Handlers in the whole LS, or making VSLanguageServerClient handle this more gracefully.
                     .WithContentModifiedSupport(false)
                     .WithSerializer(Serializer.Instance)
-                    .ConfigureLogging(builder => builder
-                        .SetMinimumLevel(logLevel)
-                        .AddLanguageProtocolLogging(logLevel))
                     .OnInitialized(async (s, request, response, cancellationToken) =>
                     {
                         var handlersManager = s.GetRequiredService<IHandlersManager>();
@@ -132,6 +129,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                             var builder = new RazorLanguageServerBuilder(services);
                             configure(builder);
                         }
+
+                        services.AddLogging(builder => builder
+                            .SetMinimumLevel(logLevel)
+                            .AddLanguageProtocolLogging(logLevel));
 
                         var filePathNormalizer = new FilePathNormalizer();
                         services.AddSingleton<FilePathNormalizer>(filePathNormalizer);

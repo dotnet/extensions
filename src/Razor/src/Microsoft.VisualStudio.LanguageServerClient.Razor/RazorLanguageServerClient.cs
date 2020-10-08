@@ -140,8 +140,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             var services = builder.Services;
-            var loggerProvider = (FeedbackFileLoggerProvider)_feedbackFileLoggerProviderFactory.GetOrCreate();
-            services.AddSingleton<ILoggerProvider>(loggerProvider);
+            services.AddLogging(logging =>
+            {
+                logging.AddFilter<FeedbackFileLoggerProvider>(level => true);
+                var loggerProvider = (FeedbackFileLoggerProvider)_feedbackFileLoggerProviderFactory.GetOrCreate();
+                logging.AddProvider(loggerProvider);
+            });
             services.AddSingleton<LanguageServerFeatureOptions>(_vsLanguageServerFeatureOptions);
         }
 
