@@ -194,7 +194,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         return WorkParcel.Empty;
                     }
 
-                    _hasParcel.Reset();
+                    try
+                    {
+                        _hasParcel.Reset();
+                    }
+                    catch (Exception)
+                    {
+                        // Swallow any exceptions caused by resetting the parcel switch to avoid crashing VS.
+                    }
 
                     lock (_stateLock)
                     {
