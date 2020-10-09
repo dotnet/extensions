@@ -7877,3 +7877,55 @@ exports[`Grammar tests else [if ( ... )] { ... } Unspaced else if part 1`] = `
  - token from 0 to 64 (elseif (true) { /* The elseif should not be control scoped */ }) with scopes text.aspnetcorerazor
 "
 `;
+
+exports[`Grammar tests style block colors css colors declaration 1`] = `
+"Line: <style>
+ - token from 0 to 1 (<) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.start.html, punctuation.definition.tag.begin.html
+ - token from 1 to 6 (style) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.start.html, entity.name.tag.html
+ - token from 6 to 7 (>) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.start.html, punctuation.definition.tag.end.html
+
+Line:     hello {
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css
+ - token from 4 to 9 (hello) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.selector.css
+ - token from 9 to 10 ( ) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css
+ - token from 10 to 11 ({) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css, punctuation.section.property-list.begin.bracket.curly.css
+
+Line:         there: \\"friend\\"
+ - token from 0 to 8 (        ) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css
+ - token from 8 to 13 (there) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css, meta.property-name.css
+ - token from 13 to 14 (:) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css, punctuation.separator.key-value.css
+ - token from 14 to 15 ( ) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css
+ - token from 15 to 16 (\\") with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css, meta.property-value.css, string.quoted.double.css, punctuation.definition.string.begin.css
+ - token from 16 to 22 (friend) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css, meta.property-value.css, string.quoted.double.css
+ - token from 22 to 23 (\\") with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css, meta.property-value.css, string.quoted.double.css, punctuation.definition.string.end.css
+
+Line:     }
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css
+ - token from 4 to 5 (}) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.property-list.css, punctuation.section.property-list.end.bracket.curly.css
+
+Line: </style>
+ - token from 0 to 1 (<) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.end.html, punctuation.definition.tag.begin.html, source.css
+ - token from 1 to 2 (/) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.end.html, punctuation.definition.tag.begin.html
+ - token from 2 to 7 (style) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.end.html, entity.name.tag.html
+ - token from 7 to 8 (>) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.end.html, punctuation.definition.tag.end.html
+"
+`;
+
+exports[`Grammar tests style block colors css style block var plain 1`] = `
+"Line: <style>
+ - token from 0 to 1 (<) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.start.html, punctuation.definition.tag.begin.html
+ - token from 1 to 6 (style) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.start.html, entity.name.tag.html
+ - token from 6 to 7 (>) with scopes text.aspnetcorerazor, meta.embedded.block.html, meta.tag.metadata.style.start.html, punctuation.definition.tag.end.html
+
+Line:     var x = \\"test\\";
+ - token from 0 to 4 (    ) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css
+ - token from 4 to 7 (var) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.selector.css, entity.name.tag.css
+ - token from 7 to 20 ( x = \\"test\\";) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.selector.css
+
+Line: </style>
+ - token from 0 to 1 (<) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.selector.css
+ - token from 1 to 2 (/) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css
+ - token from 2 to 7 (style) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.selector.css, entity.name.tag.css
+ - token from 7 to 8 (>) with scopes text.aspnetcorerazor, meta.embedded.block.html, source.css, meta.selector.css, keyword.operator.combinator.css
+"
+`;

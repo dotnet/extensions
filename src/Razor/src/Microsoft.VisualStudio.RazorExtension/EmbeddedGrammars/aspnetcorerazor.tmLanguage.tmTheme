@@ -205,13 +205,27 @@
         </dict>
       </dict>
 
+      <dict>
+        <key>scope</key>
+        <string>entity.name.variable.parameter</string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>User Members - Parameters</string>
+        </dict>
+      </dict>
+
       <!-- End C# specific colorization -->
 
       <!-- Begin CSS specific colorization -->
 
       <dict>
         <key>scope</key>
-        <string>entity.name.tag.css</string>
+        <string>
+          meta.selector.custom.css,
+          meta.selector.asterisk.css,
+          meta.selector.css
+        </string>
         <key>settings</key>
         <dict>
           <key>vsclassificationtype</key>
@@ -221,7 +235,11 @@
 
       <dict>
         <key>scope</key>
-        <string>support.type.property-name.css</string>
+        <string>
+          source.css meta.property-name,
+          support.type.property-name.css,
+          support.type.vendored.property-name.css
+        </string>
         <key>settings</key>
         <dict>
           <key>vsclassificationtype</key>
@@ -231,7 +249,7 @@
 
       <dict>
         <key>scope</key>
-        <string>support.constant.color.w3c-standard-color-name.css</string>
+        <string>meta.property-value.css</string>
         <key>settings</key>
         <dict>
           <key>vsclassificationtype</key>
@@ -246,6 +264,30 @@
         <dict>
           <key>vsclassificationtype</key>
           <string>CSS Comment</string>
+        </dict>
+      </dict>
+
+      <dict>
+        <key>scope</key>
+        <string>
+          meta.at-rule.charset.css,
+          meta.at-rule.import.css,
+          meta.at-rule.font-face.css,
+          meta.at-rule.page.css,
+          meta.at-rule.media.header.css,
+          meta.at-rule.counter-style.header.css,
+          meta.at-rule.document.header.css,
+          meta.at-rule.keyframes.header.css,
+          meta.at-rule.supports.header.css,
+          meta.at-rule.viewport.css,
+          meta.at-rule.font-features.css,
+          meta.at-rule.namespace.css,
+          meta.at-rule.header.css
+        </string>
+        <key>settings</key>
+        <dict>
+          <key>vsclassificationtype</key>
+          <string>CSS Keyword</string>
         </dict>
       </dict>
 
