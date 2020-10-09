@@ -84,6 +84,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
         }
 
         [Fact]
+        public void GetHoverInfo_TagHelper_AttributeTrailingEdge()
+        {
+            // Arrange
+            var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val minimized></test1>";
+            var codeDocument = CreateCodeDocument(txt, DefaultTagHelpers);
+            var service = GetDefaultRazorHoverInfoService();
+            var edgeLocation = txt.IndexOf("bool-val", StringComparison.Ordinal) + "bool-val".Length;
+            var location = new SourceLocation(edgeLocation, 0, edgeLocation);
+
+            // Act
+            var hover = service.GetHoverInfo(codeDocument, location);
+
+            // Assert
+            Assert.Contains("**BoolVal**", hover.Contents.MarkupContent.Value, StringComparison.Ordinal);
+            Assert.DoesNotContain("**IntVal**", hover.Contents.MarkupContent.Value, StringComparison.Ordinal);
+            var expectedRange = new RangeModel(new Position(1, 7), new Position(1, 15));
+            Assert.Equal(expectedRange, hover.Range);
+        }
+
+        [Fact]
         public void GetHoverInfo_TagHelper_AttributeValue_ReturnsNull()
         {
             // Arrange

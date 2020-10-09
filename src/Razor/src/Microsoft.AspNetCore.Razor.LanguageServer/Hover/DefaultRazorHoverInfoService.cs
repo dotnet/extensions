@@ -125,7 +125,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                     Debug.Assert(binding.Descriptors.Any());
                     var tagHelperAttributes = _tagHelperFactsService.GetBoundTagHelperAttributes(tagHelperDocumentContext, selectedAttributeName, binding);
 
-                    var attribute = attributes.Single(a => a.Span.IntersectsWith(location.AbsoluteIndex));
+                    // Grab the first attribute that we find that intersects with this location. That way if there are multiple attributes side-by-side aka hovering over:
+                    //      <input checked| minimized />
+                    // Then we take the left most attribute (attributes are returned in source order).
+                    var attribute = attributes.First(a => a.Span.IntersectsWith(location.AbsoluteIndex));
                     if (attribute is MarkupTagHelperAttributeSyntax thAttributeSyntax)
                     {
                         attribute = thAttributeSyntax.Name;
