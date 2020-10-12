@@ -1,6 +1,6 @@
-﻿<Baseline Version="2.1.22">
-  <Package Id="Microsoft.Extensions.Caching.Abstractions" Version="2.1.2" />
-  <Package Id="Microsoft.Extensions.Caching.Memory" Version="2.1.2" />
+﻿<Baseline Version="2.1.23">
+  <Package Id="Microsoft.Extensions.Caching.Abstractions" Version="2.1.23" />
+  <Package Id="Microsoft.Extensions.Caching.Memory" Version="2.1.23" />
   <Package Id="Microsoft.Extensions.Caching.Redis" Version="2.1.2" />
   <Package Id="Microsoft.Extensions.Caching.SqlServer" Version="2.1.2" />
   <Package Id="Microsoft.Extensions.Configuration.Abstractions" Version="2.1.1" />
