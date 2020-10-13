@@ -2,275 +2,203 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Moq;
 using Microsoft.AspNetCore.Razor.Test.Common;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
-using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-using OmniSharp.Extensions.JsonRpc;
-using System.Threading;
-using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
-using Newtonsoft.Json.Linq;
-using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
-using System.Linq;
+using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
-    public class DefaultCSharpCodeActionResolverTest : LanguageServerTestBase
+    public class DefaultCSharpCodeActionProviderTest : LanguageServerTestBase
     {
-        private static readonly RazorCodeAction DefaultResolvedCodeAction = new RazorCodeAction()
+        private static readonly RazorCodeAction[] SupportedCodeActions = new RazorCodeAction[]
         {
-            Title = "ResolvedCodeAction",
-            Data = new object(),
-            Edit = new WorkspaceEdit()
+            new RazorCodeAction()
             {
-                DocumentChanges = new Container<WorkspaceEditDocumentChange>(
-                    new WorkspaceEditDocumentChange(
-                        new TextDocumentEdit()
-                        {
-                            Edits = new TextEditContainer(
-                                new TextEdit()
-                                {
-                                    NewText = "Generated C# Based Edit"
-                                }
-                            )
-                        }
-                    ))
+                Title = "Generate Equals and GetHashCode"
+            },
+            new RazorCodeAction()
+            {
+                Title = "Add null check"
+            },
+            new RazorCodeAction()
+            {
+                Title = "Add null checks for all parameters"
+            },
+            new RazorCodeAction()
+            {
+                Title = "Add null checks for all parameters"
+            },
+            new RazorCodeAction()
+            {
+                Title = "Generate constructor 'Counter(int)'"
             }
         };
 
-        private static readonly TextEdit[] DefaultFormattedEdits = new TextEdit[]
-        {
-            new TextEdit()
-            {
-                NewText = "Remapped & Formatted Edit"
-            }
-        };
-
-        private static readonly RazorCodeAction DefaultUnresolvedCodeAction = new RazorCodeAction()
-        {
-            Title = "Unresolved Code Action"
-        };
-
         [Fact]
-        public async Task ResolveAsync_ReturnsResolvedCodeAction()
+        public async Task ProvideAsync_ValidCodeActions_ReturnsProvidedCodeAction()
         {
             // Arrange
-            CreateCodeActionResolver(out var codeActionParams, out var csharpCodeActionResolver);
-
-            // Act
-            var returnedCodeAction = await csharpCodeActionResolver.ResolveAsync(codeActionParams, DefaultUnresolvedCodeAction, default);
-
-            // Assert
-            Assert.Equal(DefaultResolvedCodeAction.Title, returnedCodeAction.Title);
-            Assert.Equal(DefaultResolvedCodeAction.Data, returnedCodeAction.Data);
-            var returnedEdits = Assert.Single(returnedCodeAction.Edit.DocumentChanges);
-            Assert.True(returnedEdits.IsTextDocumentEdit);
-            var returnedTextDocumentEdit = Assert.Single(returnedEdits.TextDocumentEdit.Edits);
-            Assert.Equal(DefaultFormattedEdits.First(), returnedTextDocumentEdit);
-        }
-
-        [Fact]
-        public async Task ResolveAsync_NoDocumentChanges_ReturnsOriginalCodeAction()
-        {
-            // Arrange
-            var resolvedCodeAction = new RazorCodeAction()
-            {
-                Title = "ResolvedCodeAction",
-                Data = new object(),
-                Edit = new WorkspaceEdit()
-                {
-                    DocumentChanges = null
-                }
-            };
-
-            var languageServer = CreateLanguageServer(resolvedCodeAction);
-
-            CreateCodeActionResolver(out var codeActionParams, out var csharpCodeActionResolver, languageServer: languageServer);
-
-            // Act
-            var returnedCodeAction = await csharpCodeActionResolver.ResolveAsync(codeActionParams, DefaultUnresolvedCodeAction, default);
-
-            // Assert
-            Assert.Equal(DefaultUnresolvedCodeAction.Title, returnedCodeAction.Title);
-        }
-
-        [Fact]
-        public async Task ResolveAsync_MultipleDocumentChanges_ReturnsOriginalCodeAction()
-        {
-            // Arrange
-            var resolvedCodeAction = new RazorCodeAction()
-            {
-                Title = "ResolvedCodeAction",
-                Data = new object(),
-                Edit = new WorkspaceEdit()
-                {
-                    DocumentChanges = new Container<WorkspaceEditDocumentChange>(
-                        new WorkspaceEditDocumentChange(
-                            new TextDocumentEdit()
-                            {
-                                Edits = new TextEditContainer(
-                                    new TextEdit()
-                                    {
-                                        NewText = "1. Generated C# Based Edit"
-                                    }
-                                )
-                            }
-                        ),
-                        new WorkspaceEditDocumentChange(
-                            new TextDocumentEdit()
-                            {
-                                Edits = new TextEditContainer(
-                                    new TextEdit()
-                                    {
-                                        NewText = "2. Generated C# Based Edit"
-                                    }
-                                )
-                            }
-                        ))
-                }
-            };
-
-            var languageServer = CreateLanguageServer(resolvedCodeAction);
-
-            CreateCodeActionResolver(out var codeActionParams, out var csharpCodeActionResolver, languageServer: languageServer);
-
-            // Act
-            var returnedCodeAction = await csharpCodeActionResolver.ResolveAsync(codeActionParams, DefaultUnresolvedCodeAction, default);
-
-            // Assert
-            Assert.Equal(DefaultUnresolvedCodeAction.Title, returnedCodeAction.Title);
-        }
-
-        [Fact]
-        public async Task ResolveAsync_NonTextDocumentEdit_ReturnsOriginalCodeAction()
-        {
-            // Arrange
-            var resolvedCodeAction = new RazorCodeAction()
-            {
-                Title = "ResolvedCodeAction",
-                Data = new object(),
-                Edit = new WorkspaceEdit()
-                {
-                    DocumentChanges = new Container<WorkspaceEditDocumentChange>(
-                        new WorkspaceEditDocumentChange(
-                            new CreateFile()
-                            {
-                                Uri = new Uri("c:/some/uri.razor")
-                            }
-                        ))
-                }
-            };
-
-            var languageServer = CreateLanguageServer(resolvedCodeAction);
-
-            CreateCodeActionResolver(out var codeActionParams, out var csharpCodeActionResolver, languageServer: languageServer);
-
-            // Act
-            var returnedCodeAction = await csharpCodeActionResolver.ResolveAsync(codeActionParams, DefaultUnresolvedCodeAction, default);
-
-            // Assert
-            Assert.Equal(DefaultUnresolvedCodeAction.Title, returnedCodeAction.Title);
-        }
-
-        private void CreateCodeActionResolver(
-            out CSharpCodeActionParams codeActionParams,
-            out DefaultCSharpCodeActionResolver csharpCodeActionResolver,
-            IClientLanguageServer languageServer = null,
-            DocumentVersionCache documentVersionCache = null,
-            RazorFormattingService razorFormattingService = null)
-        {
             var documentPath = "c:/Test.razor";
-            var documentUri = new Uri(documentPath);
-            var contents = string.Empty;
-            var codeDocument = CreateCodeDocument(contents, documentPath);
-
-            codeActionParams = new CSharpCodeActionParams()
+            var contents = "@code { Path; }";
+            var request = new CodeActionParams()
             {
-                Data = new JObject(),
-                RazorFileUri = documentUri
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(),
+                Context = new CodeActionContext()
             };
 
-            languageServer ??= CreateLanguageServer();
-            documentVersionCache ??= CreateDocumentVersionCache();
-            razorFormattingService ??= CreateRazorFormattingService(documentUri);
+            var location = new SourceLocation(8, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
+            context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
-            csharpCodeActionResolver = new DefaultCSharpCodeActionResolver(
-                new DefaultForegroundDispatcher(),
-                CreateDocumentResolver(documentPath, codeDocument),
-                languageServer,
-                razorFormattingService,
-                documentVersionCache);
+            var provider = new DefaultCSharpCodeActionProvider();
+
+            // Act
+            var providedCodeActions = await provider.ProvideAsync(context, SupportedCodeActions, default);
+
+            // Assert
+            Assert.Equal(SupportedCodeActions.Length, providedCodeActions.Count);
+
+            for (var i = 0; i < SupportedCodeActions.Length; i++)
+            {
+                Assert.Equal(SupportedCodeActions[i].Title, providedCodeActions.ElementAt(i).Title);
+            }
         }
 
-        private static RazorFormattingService CreateRazorFormattingService(Uri documentUri)
+        [Fact]
+        public async Task ProvideAsync_SupportsCodeActionResolveFalse_ValidCodeActions_ReturnsEmpty()
         {
-            var razorFormattingService = Mock.Of<RazorFormattingService>(
-                            rfs => rfs.ApplyFormattedEditsAsync(
-                                documentUri,
-                                It.IsAny<DocumentSnapshot>(),
-                                RazorLanguageKind.CSharp,
-                                It.IsAny<TextEdit[]>(),
-                                It.IsAny<FormattingOptions>(),
-                                It.IsAny<CancellationToken>(),
-                                /*bypassValidationPasses:*/ true) == Task.FromResult(DefaultFormattedEdits));
-            return razorFormattingService;
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "@code { Path; }";
+            var request = new CodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(),
+                Context = new CodeActionContext()
+            };
+
+            var location = new SourceLocation(8, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4), supportsCodeActionResolve: false);
+            context.CodeDocument.SetFileKind(FileKinds.Legacy);
+
+            var provider = new DefaultCSharpCodeActionProvider();
+
+            // Act
+            var providedCodeActions = await provider.ProvideAsync(context, SupportedCodeActions, default);
+
+            // Assert
+            Assert.Empty(providedCodeActions);
         }
 
-        private static DocumentVersionCache CreateDocumentVersionCache()
+        [Fact]
+        public async Task ProvideAsync_FunctionsBlock_ValidCodeActions_ReturnsEmpty()
         {
-            int? documentVersion = 2;
-            var documentVersionCache = Mock.Of<DocumentVersionCache>(dvc => dvc.TryGetDocumentVersion(It.IsAny<DocumentSnapshot>(), out documentVersion) == true);
-            return documentVersionCache;
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "@functions { Path; }";
+            var request = new CodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(),
+                Context = new CodeActionContext()
+            };
+
+            var location = new SourceLocation(13, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(13, 4));
+            context.CodeDocument.SetFileKind(FileKinds.Legacy);
+
+            var provider = new DefaultCSharpCodeActionProvider();
+
+            // Act
+            var providedCodeActions = await provider.ProvideAsync(context, SupportedCodeActions, default);
+
+            // Assert
+            Assert.Empty(providedCodeActions);
         }
 
-        private IClientLanguageServer CreateLanguageServer(RazorCodeAction resolvedCodeAction = null)
+        [Fact]
+        public async Task ProvideAsync_InvalidCodeActions_ReturnsNoCodeActions()
         {
-            var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
-            responseRouterReturns
-                .Setup(l => l.Returning<RazorCodeAction>(It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(resolvedCodeAction ?? DefaultResolvedCodeAction));
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "@code { Path; }";
+            var request = new CodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(),
+                Context = new CodeActionContext()
+            };
 
-            var languageServer = new Mock<IClientLanguageServer>(MockBehavior.Strict);
-            languageServer
-                .Setup(l => l.SendRequest(LanguageServerConstants.RazorResolveCodeActionsEndpoint, It.IsAny<RazorCodeAction>()))
-                .Returns(responseRouterReturns.Object);
+            var location = new SourceLocation(8, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
+            context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
-            return languageServer.Object;
+            var provider = new DefaultCSharpCodeActionProvider();
+
+            var codeActions = new RazorCodeAction[]
+            {
+                new RazorCodeAction()
+                {
+                    Title = "Do something not really supported in razor"
+                },
+                new RazorCodeAction()
+                {
+                    // Invalid regex pattern shouldn't match
+                    Title = "Generate constructor 'Counter(int)' xyz"
+                }
+            };
+
+            // Act
+            var providedCodeActions = await provider.ProvideAsync(context, codeActions, default);
+
+            // Assert
+            Assert.Empty(providedCodeActions);
         }
 
-        private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)
+
+
+        private static RazorCodeActionContext CreateRazorCodeActionContext(
+            CodeActionParams request,
+            SourceLocation location,
+            string filePath,
+            string text,
+            SourceSpan componentSourceSpan,
+            bool supportsFileCreation = true,
+            bool supportsCodeActionResolve = true)
         {
-            var sourceTextChars = new char[codeDocument.Source.Length];
-            codeDocument.Source.CopyTo(0, sourceTextChars, 0, codeDocument.Source.Length);
-            var sourceText = SourceText.From(new string(sourceTextChars));
+            var tagHelpers = Array.Empty<TagHelperDescriptor>();
+            var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
+            var projectEngine = RazorProjectEngine.Create(builder => {
+                builder.AddTagHelpers(tagHelpers);
+            });
+            var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), tagHelpers);
+
+            var cSharpDocument = codeDocument.GetCSharpDocument();
+            var diagnosticDescriptor = new RazorDiagnosticDescriptor("RZ10012", () => "", RazorDiagnosticSeverity.Error);
+            var diagnostic = RazorDiagnostic.Create(diagnosticDescriptor, componentSourceSpan);
+            var cSharpDocumentWithDiagnostic = RazorCSharpDocument.Create(cSharpDocument.GeneratedCode, cSharpDocument.Options, new[] { diagnostic });
+            codeDocument.SetCSharpDocument(cSharpDocumentWithDiagnostic);
+
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
-                document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
-            documentResolver
-                .Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
-                .Returns(true);
-            return documentResolver.Object;
-        }
+                document.GetTextAsync() == Task.FromResult(codeDocument.GetSourceText()) &&
+                document.Project.TagHelpers == tagHelpers);
 
-        private static RazorCodeDocument CreateCodeDocument(string text, string documentPath)
-        {
-            var projectItem = new TestRazorProjectItem(documentPath) { Content = text };
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) =>
-            {
-                PageDirective.Register(builder);
-            });
-            var codeDocument = projectEngine.Process(projectItem);
-            codeDocument.SetFileKind(FileKinds.Component);
-            return codeDocument;
+            var sourceText = SourceText.From(text);
+
+            var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, sourceText, supportsFileCreation, supportsCodeActionResolve);
+
+            return context;
         }
     }
 }
