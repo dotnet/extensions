@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
 using Moq;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
 
@@ -238,11 +239,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out testDocument))
                 .Returns(true);
 
-            var expectedResults = new[] { new VSCodeAction() };
+            var languageServer1Response = new[] { new VSCodeAction() { Title = "Response 1" } };
+            var languageServer2Response = new[] { new VSCodeAction() { Title = "Response 2" } };
+            IEnumerable<VSCodeAction[]> expectedResults = new List<VSCodeAction[]>() { languageServer1Response, languageServer2Response };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
-            requestInvoker.Setup(invoker => invoker.ReinvokeRequestOnServerAsync<CodeActionParams, VSCodeAction[]>(
+            requestInvoker.Setup(invoker => invoker.ReinvokeRequestOnMultipleServersAsync<CodeActionParams, VSCodeAction[]>(
                 Methods.TextDocumentCodeActionName,
                 LanguageServerKind.CSharp.ToContentType(),
+                It.IsAny<Func<JToken, bool>>(),
                 It.IsAny<CodeActionParams>(),
                 It.IsAny<CancellationToken>()
             )).Returns(Task.FromResult(expectedResults));
@@ -259,28 +263,37 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var result = await target.ProvideCodeActionsAsync(request, CancellationToken.None);
 
             // Assert
-            Assert.Equal(expectedResults, result);
+            Assert.Collection(result,
+                r => Assert.Equal(languageServer1Response[0].Title, r.Title),
+                r => Assert.Equal(languageServer2Response[0].Title, r.Title));
         }
 
         [Fact]
-        public async void ResolveCodeActionsAsync_ReturnsCodeActions()
+        public async void ResolveCodeActionsAsync_ReturnsSingleCodeAction()
         {
             // Arrange
             var testCSharpDocUri = new Uri("C:/path/to/file.razor.g.cs");
 
             var requestInvoker = new Mock<LSPRequestInvoker>();
             var documentManager = new Mock<TrackingLSPDocumentManager>();
-            var expectedResponse = new VSCodeAction()
+            var expectedCodeAction = new VSCodeAction()
             {
                 Title = "Something",
                 Data = new object()
             };
-            requestInvoker.Setup(invoker => invoker.ReinvokeRequestOnServerAsync<VSCodeAction, VSCodeAction>(
+            var unexpectedCodeAction = new VSCodeAction()
+            {
+                Title = "Something Else",
+                Data = new object()
+            };
+            IEnumerable<VSCodeAction> expectedResponses = new List<VSCodeAction>() { expectedCodeAction, unexpectedCodeAction };
+            requestInvoker.Setup(invoker => invoker.ReinvokeRequestOnMultipleServersAsync<VSCodeAction, VSCodeAction>(
                 MSLSPMethods.TextDocumentCodeActionResolveName,
                 LanguageServerKind.CSharp.ToContentType(),
+                It.IsAny<Func<JToken, bool>>(),
                 It.IsAny<VSCodeAction>(),
                 It.IsAny<CancellationToken>()
-            )).Returns(Task.FromResult(expectedResponse));
+            )).Returns(Task.FromResult(expectedResponses));
             var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object);
             var request = new VSCodeAction()
             {
@@ -291,8 +304,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var result = await target.ResolveCodeActionsAsync(request, CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            Assert.Equal(expectedResponse, result);
+            Assert.Equal(expectedCodeAction.Title, result.Title);
         }
+
         [Fact]
         public async Task ProvideSemanticTokensAsync_CannotLookupDocument_ReturnsNullAsync()
         {
