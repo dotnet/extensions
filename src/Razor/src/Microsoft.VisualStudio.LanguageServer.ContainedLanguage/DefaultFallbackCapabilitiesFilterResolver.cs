@@ -91,7 +91,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.ImplementationProvider.Match(
+            return serverCapabilities?.ImplementationProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -100,7 +100,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.TypeDefinitionProvider.Match(
+            return serverCapabilities?.TypeDefinitionProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -109,7 +109,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.ReferencesProvider.Match(
+            return serverCapabilities?.ReferencesProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -118,7 +118,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.RenameProvider.Match(
+            return serverCapabilities?.RenameProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -148,7 +148,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.DocumentRangeFormattingProvider.Match(
+            return serverCapabilities?.DocumentRangeFormattingProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -157,7 +157,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.WorkspaceSymbolProvider.Match(
+            return serverCapabilities?.WorkspaceSymbolProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -173,7 +173,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.DocumentFormattingProvider.Match(
+            return serverCapabilities?.DocumentFormattingProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -182,7 +182,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.HoverProvider.Match(
+            return serverCapabilities?.HoverProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -191,7 +191,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.CodeActionProvider.Match(
+            return serverCapabilities?.CodeActionProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -221,7 +221,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.DefinitionProvider.Match(
+            return serverCapabilities?.DefinitionProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }
@@ -230,7 +230,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             var serverCapabilities = token.ToObject<ServerCapabilities>();
 
-            return serverCapabilities?.DocumentHighlightProvider.Match(
+            return serverCapabilities?.DocumentHighlightProvider?.Match(
                 boolValue => boolValue,
                 options => options != null) ?? false;
         }

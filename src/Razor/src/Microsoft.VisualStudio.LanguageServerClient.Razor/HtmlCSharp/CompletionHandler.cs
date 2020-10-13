@@ -302,7 +302,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                         {
                             Items = newItems,
                             IsIncomplete = vsList.IsIncomplete,
-                            SuggesstionMode = vsList.SuggesstionMode,
+                            SuggestionMode = vsList.SuggestionMode,
                             ContinueCharacters = vsList.ContinueCharacters
                         };
                     }
