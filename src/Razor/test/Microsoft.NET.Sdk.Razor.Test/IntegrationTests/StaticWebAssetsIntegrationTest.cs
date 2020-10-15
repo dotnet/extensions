@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(build);
 
-            var publish = await DotnetMSBuild("Publish", "/p:BuildProjectReferences=false");
+            var publish = await DotnetMSBuild("Publish", "/p:BuildProjectReferences=false;PublishIISAssets=true");
 
             Assert.BuildPassed(publish);
 
