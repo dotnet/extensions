@@ -22,12 +22,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly TrackingLSPDocumentManager _documentManager;
         private readonly JoinableTaskFactory _joinableTaskFactory;
         private readonly LSPRequestInvoker _requestInvoker;
+        private readonly RazorUIContextManager _uIContextManager;
 
         [ImportingConstructor]
         public DefaultRazorLanguageServerCustomMessageTarget(
             LSPDocumentManager documentManager,
             JoinableTaskContext joinableTaskContext,
-            LSPRequestInvoker requestInvoker)
+            LSPRequestInvoker requestInvoker,
+            RazorUIContextManager uIContextManager)
         {
             if (documentManager is null)
             {
@@ -44,6 +46,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(requestInvoker));
             }
 
+            if (uIContextManager is null)
+            {
+                throw new ArgumentNullException(nameof(uIContextManager));
+            }
+
             _documentManager = documentManager as TrackingLSPDocumentManager;
 
             if (_documentManager is null)
@@ -55,6 +62,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             _joinableTaskFactory = joinableTaskContext.Factory;
             _requestInvoker = requestInvoker;
+            _uIContextManager = uIContextManager;
         }
 
         // Testing constructor
@@ -242,6 +250,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 cancellationToken).ConfigureAwait(false);
 
             return results;
+        }
+
+        public override async Task RazorServerReadyAsync(CancellationToken cancellationToken)
+        {
+            await _uIContextManager.SetUIContextAsync(RazorLSPConstants.RazorActiveUIContextGuid, isActive: true, cancellationToken);
         }
 
         private static bool SupportsCSharpCodeActions(JToken token)

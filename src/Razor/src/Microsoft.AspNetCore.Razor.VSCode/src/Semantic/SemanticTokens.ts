@@ -3,9 +3,6 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-export class SemanticTokensResponse {
-    constructor(
-        public readonly data: Array<number>,
-        public readonly resultId?: string) {
-    }
+export interface SemanticTokens {
+    data: number[];
 }

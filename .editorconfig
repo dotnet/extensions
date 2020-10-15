@@ -34,6 +34,7 @@ indent_size = 2
 [*.cs]
 # Sort using and Import directives with System.* appearing first
 dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
 
 # Don't use this. qualifier
 dotnet_style_qualification_for_field = false:suggestion
@@ -69,3 +70,9 @@ dotnet_diagnostic.CS0219.severity = warning
 
 # IDE0005: Using directive is unnecessary.
 dotnet_diagnostic.IDE0005.severity = warning
+
+# IDE0058
+csharp_style_unused_value_expression_statement_preference = discard_variable:none
+
+# IDE0065
+csharp_using_directive_placement = outside_namespace

@@ -74,7 +74,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Arrange
             var documentManager = Mock.Of<TrackingLSPDocumentManager>();
             var requestInvoker = new Mock<LSPRequestInvoker>();
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager, JoinableTaskContext, requestInvoker.Object);
+            var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
+
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object);
 
             var request = new RazorDocumentRangeFormattingParams()
             {
@@ -102,7 +104,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Arrange
             var documentManager = Mock.Of<TrackingLSPDocumentManager>();
             var requestInvoker = new Mock<LSPRequestInvoker>();
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager, JoinableTaskContext, requestInvoker.Object);
+            var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
+
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object);
 
             var request = new RazorDocumentRangeFormattingParams()
             {
@@ -146,7 +150,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentRangeFormattingParams, TextEdit[]>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentRangeFormattingParams>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new[] { expectedEdit }));
 
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object);
+            var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
+  
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object);
 
             var request = new RazorDocumentRangeFormattingParams()
             {
@@ -250,7 +256,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 It.IsAny<CodeActionParams>(),
                 It.IsAny<CancellationToken>()
             )).Returns(Task.FromResult(expectedResults));
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object);
+
+            var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
+
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object);
             var request = new CodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier()
@@ -294,7 +303,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 It.IsAny<VSCodeAction>(),
                 It.IsAny<CancellationToken>()
             )).Returns(Task.FromResult(expectedResponses));
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object);
+
+            var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
+
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object);
             var request = new VSCodeAction()
             {
                 Title = "Something",
@@ -381,7 +393,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 It.IsAny<SemanticTokensParams>(),
                 It.IsAny<CancellationToken>()
             )).Returns(Task.FromResult(expectedResults));
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object);
+
+            var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
+
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object);
             var request = new SemanticTokensParams()
             {
                 TextDocument = new TextDocumentIdentifier()
@@ -395,6 +410,45 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Assert
             Assert.Equal(expectedResults, result);
+        }
+
+        [Fact]
+        public async Task RazorServerReadyAsync_SetsUIContext()
+        {
+            // Arrange
+            var testDocUri = new Uri("C:/path/to/file.razor");
+            var testVirtualDocUri = new Uri("C:/path/to/file2.razor.g");
+            var testCSharpDocUri = new Uri("C:/path/to/file.razor.g.cs");
+
+            var testVirtualDocument = new TestVirtualDocumentSnapshot(testVirtualDocUri, 0);
+            var csharpVirtualDocument = new CSharpVirtualDocumentSnapshot(testCSharpDocUri, Mock.Of<ITextSnapshot>(), 0);
+            LSPDocumentSnapshot testDocument = new TestLSPDocumentSnapshot(testDocUri, 0, testVirtualDocument, csharpVirtualDocument);
+
+            var documentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
+            documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out testDocument))
+                .Returns(true);
+
+            var expectedResults = new SemanticTokens { };
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
+            requestInvoker.Setup(invoker => invoker.ReinvokeRequestOnServerAsync<SemanticTokensParams, SemanticTokens>(
+                LanguageServerConstants.LegacyRazorSemanticTokensEndpoint,
+                LanguageServerKind.CSharp.ToContentType(),
+                It.IsAny<SemanticTokensParams>(),
+                It.IsAny<CancellationToken>()
+            )).Returns(Task.FromResult(expectedResults));
+
+            var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
+            uIContextManager.Setup(m => m.SetUIContextAsync(RazorLSPConstants.RazorActiveUIContextGuid, true, It.IsAny<CancellationToken>()))
+                .Returns(() => Task.CompletedTask)
+                .Verifiable();
+
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object);
+
+            // Act
+            await target.RazorServerReadyAsync(CancellationToken.None);
+
+            // Assert
+            uIContextManager.Verify();
         }
     }
 }

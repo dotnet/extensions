@@ -4,22 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { SemanticTokens } from 'vscode';
 import { RequestType } from 'vscode-languageclient';
 import { RazorLanguageServerClient } from '../RazorLanguageServerClient';
 import { SerializableSemanticTokensParams } from '../RPC/SerializableSemanticTokensParams';
+import { SemanticTokensResponse } from './SemanticTokensResponse';
 
 export class SemanticTokensHandler {
     private static readonly getSemanticTokensEndpoint = 'razor/provideSemanticTokens';
-    private semanticTokensRequestType: RequestType<SerializableSemanticTokensParams, vscode.SemanticTokens, any, any> = new RequestType(SemanticTokensHandler.getSemanticTokensEndpoint);
-    private emptySemanticTokensResponse: SemanticTokens = new vscode.SemanticTokens(new Uint32Array());
+    private semanticTokensRequestType: RequestType<SerializableSemanticTokensParams, SemanticTokensResponse, any, any> = new RequestType(SemanticTokensHandler.getSemanticTokensEndpoint);
+    private emptySemanticTokensResponse: SemanticTokensResponse = new SemanticTokensResponse(new Array<number>(), '');
 
     constructor(private readonly serverClient: RazorLanguageServerClient) {
     }
 
     public register() {
         // tslint:disable-next-line: no-floating-promises
-        this.serverClient.onRequestWithParams<SerializableSemanticTokensParams, vscode.SemanticTokens, any, any>(
+        this.serverClient.onRequestWithParams<SerializableSemanticTokensParams, SemanticTokensResponse, any, any>(
             this.semanticTokensRequestType,
             async (request, token) => this.getSemanticTokens(request, token));
     }

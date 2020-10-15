@@ -35,6 +35,7 @@ import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorLogger } from './RazorLogger';
 import { RazorReferenceProvider } from './RazorReferenceProvider';
 import { RazorRenameProvider } from './RazorRenameProvider';
+import { RazorServerReadyHandler } from './RazorServerReadyHandler';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
 import { RazorDocumentSemanticTokensProvider } from './Semantic/RazorDocumentSemanticTokensProvider';
 import { SemanticTokensHandler } from './Semantic/SemanticTokensHandler';
@@ -80,6 +81,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 languageServerClient,
                 logger);
             const semanticTokenHandler = new SemanticTokensHandler(languageServerClient);
+            const razorServerReadyHandler = new RazorServerReadyHandler(languageServerClient);
             const completionItemProvider = new RazorCompletionItemProvider(
                 documentSynchronizer,
                 documentManager,
@@ -121,6 +123,8 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 documentManager,
                 languageServiceClient,
                 logger);
+
+            razorServerReadyHandler.register();
 
             localRegistrations.push(
                 languageConfiguration.register(),
