@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
     {
         private volatile ConnectionMultiplexer _connection;
         private readonly RedisCacheOptions _options;
+        private bool _disposed;
 
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
@@ -29,6 +30,8 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         public ConnectionMultiplexer Connect()
         {
+            CheckDisposed();
+
             if (_connection != null)
             {
                 return _connection;
@@ -59,6 +62,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         public async Task<ConnectionMultiplexer> ConnectAsync(CancellationToken token = default(CancellationToken))
         {
             token.ThrowIfCancellationRequested();
+            CheckDisposed();
 
             if (_connection != null)
             {
@@ -89,8 +93,22 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
         public void Dispose()
         {
-            _connection?.Dispose();
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _connection?.Close();
             _connectionLock?.Dispose();
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().FullName);
+            }
         }
     }
 }
