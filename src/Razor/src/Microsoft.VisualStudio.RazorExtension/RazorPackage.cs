@@ -5,7 +5,9 @@ using System;
 using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServerClient.Razor;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Task = System.Threading.Tasks.Task;
@@ -28,7 +30,12 @@ namespace Microsoft.VisualStudio.RazorExtension
             cancellationToken.ThrowIfCancellationRequested();
 
             var container = this as IServiceContainer;
-            container.AddService(typeof(RazorLanguageService), new RazorLanguageService(), promote: true);
+            container.AddService(typeof(RazorLanguageService), (container, type) =>
+            {
+                var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
+                var waitDialogFactory = componentModel.GetService<WaitDialogFactory>();
+                return new RazorLanguageService(waitDialogFactory);
+            }, promote: true);
         }
     }
 }
