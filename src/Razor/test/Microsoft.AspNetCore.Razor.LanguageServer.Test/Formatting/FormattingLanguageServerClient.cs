@@ -23,7 +23,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Progress;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.WorkDone;
 using Xunit.Sdk;
-using FormattingOptions = Microsoft.CodeAnalysis.Formatting.FormattingOptions;
+using FormattingOptions = OmniSharp.Extensions.LanguageServer.Protocol.Models.FormattingOptions;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
@@ -78,22 +78,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             if (@params.Kind == RazorLanguageKind.CSharp)
             {
-                var workspace = new AdhocWorkspace();
-                var cSharpOptions = workspace.Options
-                    .WithChangedOption(FormattingOptions.TabSize, LanguageNames.CSharp, (int)options.TabSize)
-                    .WithChangedOption(FormattingOptions.IndentationSize, LanguageNames.CSharp, (int)options.TabSize)
-                    .WithChangedOption(FormattingOptions.UseTabs, LanguageNames.CSharp, !options.InsertSpaces);
-
                 var codeDocument = _documents[@params.HostDocumentFilePath];
-                var csharpDocument = codeDocument.GetCSharpDocument();
-                var syntaxTree = CSharpSyntaxTree.ParseText(csharpDocument.GeneratedCode);
-                var sourceText = SourceText.From(csharpDocument.GeneratedCode);
-                var root = syntaxTree.GetRoot();
-                var spanToFormat = @params.ProjectedRange.AsTextSpan(sourceText);
+                var csharpSourceText = codeDocument.GetCSharpSourceText();
+                var csharpDocument = GetCSharpDocument(codeDocument, @params.Options);
+                if (!csharpDocument.TryGetSyntaxRoot(out var root))
+                {
+                    throw new InvalidOperationException("Couldn't get syntax root.");
+                }
+                var spanToFormat = @params.ProjectedRange.AsTextSpan(csharpSourceText);
 
-                var changes = Formatter.GetFormattedTextChanges(root, spanToFormat, workspace, options: cSharpOptions);
+                var changes = Formatter.GetFormattedTextChanges(root, spanToFormat, csharpDocument.Project.Solution.Workspace);
 
-                response.Edits = changes.Select(c => c.AsTextEdit(sourceText)).ToArray();
+                response.Edits = changes.Select(c => c.AsTextEdit(csharpSourceText)).ToArray();
             }
             else if (@params.Kind == RazorLanguageKind.Html)
             {
@@ -156,6 +152,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             return response;
+        }
+
+        private static Document GetCSharpDocument(RazorCodeDocument codeDocument, FormattingOptions options)
+        {
+            var adhocWorkspace = new AdhocWorkspace();
+            var csharpOptions = adhocWorkspace.Options
+                .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.TabSize, LanguageNames.CSharp, (int)options.TabSize)
+                .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.IndentationSize, LanguageNames.CSharp, (int)options.TabSize)
+                .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.UseTabs, LanguageNames.CSharp, !options.InsertSpaces);
+            adhocWorkspace.TryApplyChanges(adhocWorkspace.CurrentSolution.WithOptions(csharpOptions));
+
+            var project = adhocWorkspace.AddProject("TestProject", LanguageNames.CSharp);
+            var csharpSourceText = codeDocument.GetCSharpSourceText();
+            var csharpDocument = adhocWorkspace.AddDocument(project.Id, "TestDocument", csharpSourceText);
+            return csharpDocument;
         }
 
         private class ResponseRouterReturns : IResponseRouterReturns

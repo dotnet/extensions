@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     internal class FormattingContext : IDisposable
     {
         private Document _csharpWorkspaceDocument;
+        private AdhocWorkspace _csharpWorkspace;
 
         public DocumentUri Uri { get; private set; }
 
@@ -36,23 +37,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 if (_csharpWorkspaceDocument == null)
                 {
-                    var adhocWorkspace = new AdhocWorkspace();
-                    var csharpOptions = adhocWorkspace.Options
-                        .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.TabSize, LanguageNames.CSharp, (int)Options.TabSize)
-                        .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.IndentationSize, LanguageNames.CSharp, (int)Options.TabSize)
-                        .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.UseTabs, LanguageNames.CSharp, !Options.InsertSpaces);
-                    adhocWorkspace.TryApplyChanges(adhocWorkspace.CurrentSolution.WithOptions(csharpOptions));
-
-                    var project = adhocWorkspace.AddProject("TestProject", LanguageNames.CSharp);
+                    var workspace = CSharpWorkspace;
+                    var project = workspace.AddProject("TestProject", LanguageNames.CSharp);
                     var csharpSourceText = CodeDocument.GetCSharpSourceText();
-                    _csharpWorkspaceDocument = adhocWorkspace.AddDocument(project.Id, "TestDocument", csharpSourceText);
+                    _csharpWorkspaceDocument = workspace.AddDocument(project.Id, "TestDocument", csharpSourceText);
                 }
 
                 return _csharpWorkspaceDocument;
             }
         }
 
-        public Workspace CSharpWorkspace => CSharpWorkspaceDocument.Project.Solution.Workspace;
+        public AdhocWorkspace CSharpWorkspace
+        {
+            get
+            {
+                if (_csharpWorkspace == null)
+                {
+                    var adhocWorkspace = new AdhocWorkspace();
+                    var csharpOptions = adhocWorkspace.Options
+                        .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.TabSize, LanguageNames.CSharp, (int)Options.TabSize)
+                        .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.IndentationSize, LanguageNames.CSharp, (int)Options.TabSize)
+                        .WithChangedOption(CodeAnalysis.Formatting.FormattingOptions.UseTabs, LanguageNames.CSharp, !Options.InsertSpaces);
+                    adhocWorkspace.TryApplyChanges(adhocWorkspace.CurrentSolution.WithOptions(csharpOptions));
+                    _csharpWorkspace = adhocWorkspace;
+                }
+
+                return _csharpWorkspace;
+            }
+        }
 
         public FormattingOptions Options { get; private set; }
 
@@ -141,9 +153,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public void Dispose()
         {
+            _csharpWorkspace?.Dispose();
             if (_csharpWorkspaceDocument != null)
             {
-                CSharpWorkspace.Dispose();
                 _csharpWorkspaceDocument = null;
             }
         }

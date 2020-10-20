@@ -178,5 +178,89 @@ expected: @"@page ""/test""
 }
 ");
         }
+
+        [Fact]
+        public async Task FormatsComplexBlock()
+        {
+            await RunFormattingTestAsync(
+input: @"|@page ""/""
+
+<h1>Hello, world!</h1>
+
+        Welcome to your new app.
+
+<SurveyPrompt Title=""How is Blazor working for you?"" />
+
+<div class=""FF""
+     id=""ERT"">
+     asdf
+    <div class=""3""
+         id=""3"">
+             @if(true){<p></p>}
+         </div>
+</div>
+
+@{
+<div class=""FF""
+    id=""ERT"">
+    asdf
+    <div class=""3""
+        id=""3"">
+            @if(true){<p></p>}
+        </div>
+</div>
+}
+
+@functions {
+        public class Foo
+    {
+        @* This is a Razor Comment *@
+        void Method() { }
+    }
+}
+|",
+expected: @"@page ""/""
+
+<h1>Hello, world!</h1>
+
+        Welcome to your new app.
+
+<SurveyPrompt Title=""How is Blazor working for you?"" />
+
+<div class=""FF""
+     id=""ERT"">
+    asdf
+    <div class=""3""
+         id=""3"">
+        @if (true)
+        {
+            <p></p>
+        }
+    </div>
+</div>
+
+@{
+    <div class=""FF""
+         id=""ERT"">
+        asdf
+        <div class=""3""
+             id=""3"">
+            @if (true)
+            {
+                <p></p>
+            }
+        </div>
+    </div>
+}
+
+@functions {
+    public class Foo
+    {
+        @* This is a Razor Comment *@
+        void Method() { }
+    }
+}
+");
+        }
     }
 }

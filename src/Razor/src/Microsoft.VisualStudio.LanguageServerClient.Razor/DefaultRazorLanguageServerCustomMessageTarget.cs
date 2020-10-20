@@ -169,11 +169,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 Options = request.Options
             };
 
-            response.Edits = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentRangeFormattingParams, TextEdit[]>(
+            var edits = await _requestInvoker.ReinvokeRequestOnServerAsync<DocumentRangeFormattingParams, TextEdit[]>(
                 Methods.TextDocumentRangeFormattingName,
                 serverContentType,
                 formattingParams,
                 cancellationToken).ConfigureAwait(false);
+
+            response.Edits = edits ?? Array.Empty<TextEdit>();
 
             return response;
         }

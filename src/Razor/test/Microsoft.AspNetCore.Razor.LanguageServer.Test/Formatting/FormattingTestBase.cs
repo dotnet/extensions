@@ -182,6 +182,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var documentSnapshot = new Mock<DocumentSnapshot>();
             documentSnapshot.Setup(d => d.GetGeneratedOutputAsync()).Returns(Task.FromResult(codeDocument));
             documentSnapshot.Setup(d => d.Project.GetProjectEngine()).Returns(projectEngine);
+            documentSnapshot.Setup(d => d.FilePath).Returns(path);
             documentSnapshot.Setup(d => d.TargetPath).Returns(path);
             documentSnapshot.Setup(d => d.Project.TagHelpers).Returns(tagHelpers);
             documentSnapshot.Setup(d => d.FileKind).Returns(fileKind);
