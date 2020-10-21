@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Text;
@@ -23,16 +24,25 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     internal class RazorLSPTextViewConnectionListener : ITextViewConnectionListener
     {
         private readonly IVsEditorAdaptersFactoryService _editorAdaptersFactory;
+        private readonly LSPEditorFeatureDetector _editorFeatureDetector;
 
         [ImportingConstructor]
-        public RazorLSPTextViewConnectionListener(IVsEditorAdaptersFactoryService editorAdaptersFactory)
+        public RazorLSPTextViewConnectionListener(
+            IVsEditorAdaptersFactoryService editorAdaptersFactory,
+            LSPEditorFeatureDetector editorFeatureDetector)
         {
             if (editorAdaptersFactory is null)
             {
                 throw new ArgumentNullException(nameof(editorAdaptersFactory));
             }
 
+            if (editorFeatureDetector is null)
+            {
+                throw new ArgumentNullException(nameof(editorFeatureDetector));
+            }
+
             _editorAdaptersFactory = editorAdaptersFactory;
+            _editorFeatureDetector = editorFeatureDetector;
         }
 
         public void SubjectBuffersConnected(ITextView textView, ConnectionReason reason, IReadOnlyCollection<ITextBuffer> subjectBuffers)
@@ -43,6 +53,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             var vsTextView = _editorAdaptersFactory.GetViewAdapter(textView);
+
+            // In remote client scenarios there's a custom language service applied to buffers in order to enable delegation of interactions.
+            // Because of this we don't want to break that experience so we ensure not to "set" a langauge service for remote clients.
+            if (!_editorFeatureDetector.IsRemoteClient())
+            {
+                vsTextView.GetBuffer(out var vsBuffer);
+                vsBuffer.SetLanguageServiceID(RazorLSPConstants.RazorLanguageServiceGuid);
+            }
 
             RazorLSPTextViewFilter.CreateAndRegister(vsTextView);
         }
