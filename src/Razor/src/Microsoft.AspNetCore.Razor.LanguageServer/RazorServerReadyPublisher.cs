@@ -47,7 +47,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _projectManager.Changed += ProjectSnapshotManager_Changed;
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void ProjectSnapshotManager_Changed(object sender, ProjectChangeEventArgs args)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             _foregroundDispatcher.AssertForegroundThread();
 

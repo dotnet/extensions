@@ -110,7 +110,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void DocumentClosedTimer_Tick(object state)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             await Task.Factory.StartNew(
                 ClearClosedDocuments,
@@ -190,7 +192,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void WorkTimer_Tick(object state)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             DocumentSnapshot[] documents;
             lock (_work)

@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             AddFileRenameForComponent(documentChanges, originComponentDocumentSnapshot, newPath);
             AddEditsForCodeDocument(documentChanges, originTagHelpers, request.NewName, request.TextDocument.Uri, codeDocument);
 
-            var documentSnapshots = await GetAllDocumentSnapshots(requestDocumentSnapshot, cancellationToken).ConfigureAwait(false);
+            var documentSnapshots = await GetAllDocumentSnapshotsAsync(requestDocumentSnapshot, cancellationToken).ConfigureAwait(false);
             foreach (var documentSnapshot in documentSnapshots)
             {
                 await AddEditsForCodeDocumentAsync(documentChanges, originTagHelpers, request.NewName, documentSnapshot, cancellationToken);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             };
         }
 
-        private async Task<List<DocumentSnapshot>> GetAllDocumentSnapshots(DocumentSnapshot skipDocumentSnapshot, CancellationToken cancellationToken)
+        private async Task<List<DocumentSnapshot>> GetAllDocumentSnapshotsAsync(DocumentSnapshot skipDocumentSnapshot, CancellationToken cancellationToken)
         {
             return await Task.Factory.StartNew(() =>
             {

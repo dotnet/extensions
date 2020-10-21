@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return disposable;
         }
 
-        public virtual async Task UpdateAsync(CancellationToken cancellationToken)
+        public virtual async Task UpdateAsync(CancellationToken cancellationToken = default)
         {
             var latestOptions = await _configurationService.GetLatestOptionsAsync(cancellationToken);
             if (latestOptions != null)

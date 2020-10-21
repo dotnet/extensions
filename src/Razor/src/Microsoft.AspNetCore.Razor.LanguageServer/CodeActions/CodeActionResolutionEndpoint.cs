@@ -70,12 +70,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             switch (resolutionParams.Language)
             {
                 case LanguageServerConstants.CodeActions.Languages.Razor:
-                    return await ResolveRazorCodeAction(
+                    return await ResolveRazorCodeActionAsync(
                         request,
                         resolutionParams,
                         cancellationToken).ConfigureAwait(false);
                 case LanguageServerConstants.CodeActions.Languages.CSharp:
-                    return await ResolveCSharpCodeAction(
+                    return await ResolveCSharpCodeActionAsync(
                         request,
                         resolutionParams,
                         cancellationToken);
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         // Internal for testing
-        internal async Task<RazorCodeAction> ResolveRazorCodeAction(
+        internal async Task<RazorCodeAction> ResolveRazorCodeActionAsync(
             RazorCodeAction codeAction,
             RazorCodeActionResolutionParams resolutionParams,
             CancellationToken cancellationToken)
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         // Internal for testing
-        internal async Task<RazorCodeAction> ResolveCSharpCodeAction(
+        internal async Task<RazorCodeAction> ResolveCSharpCodeActionAsync(
             RazorCodeAction codeAction,
             RazorCodeActionResolutionParams resolutionParams,
             CancellationToken cancellationToken)

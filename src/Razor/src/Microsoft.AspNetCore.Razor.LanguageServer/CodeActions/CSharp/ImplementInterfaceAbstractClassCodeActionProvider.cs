@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             if (diagnostics is null)
             {
-                return null;
+                return EmptyResult;
             }
 
             var results = new List<RazorCodeAction>();

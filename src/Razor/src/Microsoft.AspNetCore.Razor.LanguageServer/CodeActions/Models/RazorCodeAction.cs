@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models
         public new Command Command { get; set; }
 
         [JsonProperty(PropertyName = "data", NullValueHandling = NullValueHandling.Ignore)]
-        public object Data { get; set; }
+        public new object Data { get; set; }
 
         [JsonProperty(PropertyName = "children")]
         public RazorCodeAction[] Children { get; set; } = Array.Empty<RazorCodeAction>();

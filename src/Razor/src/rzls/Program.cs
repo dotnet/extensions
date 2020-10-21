@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public static void Main(string[] args)
         {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
             MainAsync(args).Wait();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
         }
 
         public static async Task MainAsync(string[] args)

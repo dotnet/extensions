@@ -737,7 +737,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         {
             public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
-                return null;
+                return Task.FromResult<IReadOnlyList<RazorCodeAction>>(null);
             }
         }
     }

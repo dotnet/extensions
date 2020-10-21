@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             Range range,
             CancellationToken cancellationToken)
         {
-            var codeDocument = await GetRazorCodeDocument(documentSnapshot);
+            var codeDocument = await GetRazorCodeDocumentAsync(documentSnapshot);
             if (codeDocument is null)
             {
                 throw new ArgumentNullException(nameof(codeDocument));
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             string previousResultId,
             CancellationToken cancellationToken)
         {
-            var codeDocument = await GetRazorCodeDocument(documentSnapshot);
+            var codeDocument = await GetRazorCodeDocumentAsync(documentSnapshot);
             if (codeDocument is null)
             {
                 throw new ArgumentNullException(nameof(codeDocument));
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             }
         }
 
-        private async Task<RazorCodeDocument> GetRazorCodeDocument(DocumentSnapshot documentSnapshot)
+        private async Task<RazorCodeDocument> GetRazorCodeDocumentAsync(DocumentSnapshot documentSnapshot)
         {
             var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
             if (codeDocument.IsUnsupported())

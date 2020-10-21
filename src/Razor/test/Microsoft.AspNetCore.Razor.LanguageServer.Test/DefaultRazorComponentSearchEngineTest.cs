@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         private static ProjectSnapshotManagerAccessor _projectSnapshotManager = CreateProjectSnapshotManagerAccessor();
 
         [Fact]
-        public async void Handle_SearchFound()
+        public async Task Handle_SearchFound()
         {
             // Arrange
             var tagHelperDescriptor1 = CreateRazorComponentTagHelperDescriptor("First", "First.Components", "Component1");
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         }
 
         [Fact]
-        public async void Handle_SearchFound_SetNamespace()
+        public async Task Handle_SearchFound_SetNamespace()
         {
             // Arrange
             var tagHelperDescriptor = CreateRazorComponentTagHelperDescriptor("First", "Test", "Component2");
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         }
 
         [Fact]
-        public async void Handle_SearchMissing_IncorrectAssembly()
+        public async Task Handle_SearchMissing_IncorrectAssembly()
         {
             // Arrange
             var tagHelperDescriptor = CreateRazorComponentTagHelperDescriptor("Third", "First.Components", "Component3");
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         }
 
         [Fact]
-        public async void Handle_SearchMissing_IncorrectNamespace()
+        public async Task Handle_SearchMissing_IncorrectNamespace()
         {
             // Arrange
             var tagHelperDescriptor = CreateRazorComponentTagHelperDescriptor("First", "First.Components", "Component2");
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         }
 
         [Fact]
-        public async void Handle_SearchMissing_IncorrectComponent()
+        public async Task Handle_SearchMissing_IncorrectComponent()
         {
             // Arrange
             var tagHelperDescriptor = CreateRazorComponentTagHelperDescriptor("First", "First.Components", "Component3");

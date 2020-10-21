@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 var latestDocument = generatedDocumentContainer.LatestDocument;
 
-                Task.Factory.StartNew(() =>
+                _ = Task.Factory.StartNew(() =>
                 {
                     if (!_projectSnapshotManager.IsDocumentOpen(filePath))
                     {
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 var latestDocument = generatedDocumentContainer.LatestDocument;
 
-                Task.Factory.StartNew(() =>
+                _ = Task.Factory.StartNew(() =>
                 {
                     if (!_projectSnapshotManager.IsDocumentOpen(filePath))
                     {

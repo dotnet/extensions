@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 };
 
                 var response = _server.SendRequest("workspace/configuration", request);
-                var result = await response.Returning<object[]>(cancellationToken);
+                var result = await response.Returning<JObject[]>(cancellationToken);
                 if (result == null || result.Length < 2 || result[0] == null)
                 {
                     _logger.LogWarning("Client failed to provide the expected configuration.");
@@ -63,13 +64,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 var builder = new ConfigurationBuilder();
 
-                var razorJsonString = result[0].ToString();
-                using var razorStream = new MemoryStream(Encoding.UTF8.GetBytes(razorJsonString));
-                builder.AddJsonStream(razorStream);
-
-                var htmlJsonString = result[1].ToString();
-                using var htmlStream = new MemoryStream(Encoding.UTF8.GetBytes(htmlJsonString));
-                builder.AddJsonStream(htmlStream);
+                var configObject = new JObject
+                {
+                    { "razor", result[0] },
+                    { "html", result[1] }
+                };
+                var configJsonString = configObject.ToString();
+                using var configStream = new MemoryStream(Encoding.UTF8.GetBytes(configJsonString));
+                builder.AddJsonStream(configStream);
 
                 var config = builder.Build();
 
@@ -87,16 +89,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             var instance = RazorLSPOptions.Default;
 
-            Enum.TryParse(config["trace"], out Trace trace);
+            Enum.TryParse(config["razor:trace"], out Trace trace);
 
             var enableFormatting = instance.EnableFormatting;
-            if (bool.TryParse(config["format:enable"], out var parsedEnableFormatting))
+            if (bool.TryParse(config["razor:format:enable"], out var parsedEnableFormatting))
             {
                 enableFormatting = parsedEnableFormatting;
             }
 
             var autoClosingTags = instance.AutoClosingTags;
-            if (bool.TryParse(config["autoClosingTags"], out var parsedAutoClosingTags))
+            if (bool.TryParse(config["html:autoClosingTags"], out var parsedAutoClosingTags))
             {
                 autoClosingTags = parsedAutoClosingTags;
             }

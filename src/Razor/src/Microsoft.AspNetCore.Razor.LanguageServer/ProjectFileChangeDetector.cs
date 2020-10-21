@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private void FileSystemWatcher_ProjectFileEvent_Background(string physicalFilePath, RazorFileChangeKind kind)
         {
-            Task.Factory.StartNew(
+            _ = Task.Factory.StartNew(
                 () => FileSystemWatcher_ProjectFileEvent(physicalFilePath, kind),
                 CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
         }

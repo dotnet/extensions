@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 var sharedContainer = _generatedDocumentContainerStore.Get(filePath);
                 var container = (GeneratedDocumentContainer)sender;
                 var latestDocument = (DefaultDocumentSnapshot)container.LatestDocument;
-                Task.Factory.StartNew(async () =>
+                _ = Task.Factory.StartNew(async () =>
                 {
                     var codeDocument = await latestDocument.GetGeneratedOutputAsync();
 

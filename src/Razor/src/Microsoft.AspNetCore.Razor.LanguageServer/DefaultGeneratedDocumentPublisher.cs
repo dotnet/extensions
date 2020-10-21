@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var result = _server.Value.Client.SendRequest(LanguageServerConstants.RazorUpdateCSharpBufferEndpoint, request);
             // This is the call that actually makes the request, any SendRequest without a .Returning* after it will do nothing.
-            result.ReturningVoid(CancellationToken.None);
+            _ = result.ReturningVoid(CancellationToken.None);
         }
 
         public override void PublishHtml(string filePath, SourceText sourceText, int hostDocumentVersion)
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             };
 
             var result = _server.Value.Client.SendRequest(LanguageServerConstants.RazorUpdateHtmlBufferEndpoint, request);
-            result.ReturningVoid(CancellationToken.None);
+            _ = result.ReturningVoid(CancellationToken.None);
         }
 
         private void ProjectSnapshotManager_Changed(object sender, ProjectChangeEventArgs args)

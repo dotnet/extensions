@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Moq;
+using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -30,10 +31,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 ".Trim();
             var htmlJsonString = @"
 {
+  ""format"": ""true"",
   ""autoClosingTags"": ""false""
 }
 ".Trim();
-            var result = new object[] { razorJsonString, htmlJsonString };
+            var result = new JObject[] { JObject.Parse(razorJsonString), JObject.Parse(htmlJsonString) };
             var languageServer = GetLanguageServer(new ResponseRouterReturns(result));
             var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
 

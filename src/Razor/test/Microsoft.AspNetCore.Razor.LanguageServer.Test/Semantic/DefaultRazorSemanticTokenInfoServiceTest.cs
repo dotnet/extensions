@@ -1157,7 +1157,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
                 Assert.Equal(x.DeleteCount, y.DeleteCount);
                 Assert.Equal(x.Start, y.Start);
-                Assert.Equal(x.Data, y.Data, ImmutableArrayIntComparer.Instance);
+                Assert.Equal(x.Data.Value, y.Data.Value, ImmutableArrayIntComparer.Instance);
 
                 return x.DeleteCount == y.DeleteCount &&
                     x.Start == y.Start;

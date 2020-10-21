@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 throw new ArgumentNullException(nameof(request));
             }
 
-            return await Handle(request.TextDocument.Uri.GetAbsolutePath(), cancellationToken, range: null);
+            return await HandleAsync(request.TextDocument.Uri.GetAbsolutePath(), cancellationToken, range: null);
         }
 
         public async Task<SemanticTokens> Handle(SemanticTokensRangeParams request, CancellationToken cancellationToken)
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 throw new ArgumentNullException(nameof(request));
             }
 
-            return await Handle(request.TextDocument, cancellationToken, request.Range);
+            return await HandleAsync(request.TextDocument, cancellationToken, request.Range);
         }
 
         public async Task<SemanticTokensFullOrDelta?> Handle(SemanticTokensDeltaParams request, CancellationToken cancellationToken)
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             });
         }
 
-        private async Task<SemanticTokens> Handle(TextDocumentIdentifier textDocument, CancellationToken cancellationToken, Range range = null)
+        private async Task<SemanticTokens> HandleAsync(TextDocumentIdentifier textDocument, CancellationToken cancellationToken, Range range = null)
         {
             var absolutePath = textDocument.Uri.GetAbsolutePath();
             var documentSnapshot = await TryGetCodeDocumentAsync(absolutePath, cancellationToken);
