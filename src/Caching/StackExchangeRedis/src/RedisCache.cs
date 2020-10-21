@@ -11,7 +11,7 @@ using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
-    public class RedisCache : IDistributedCache
+    public class RedisCache : IDistributedCache, IDisposable
     {
         // KEYS[1] = = key
         // ARGV[1] = absolute-expiration - ticks as long (-1 for none)
@@ -358,6 +358,10 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             }
 
             return absoluteExpiration;
+        }
+
+        public void Dispose()
+        {
         }
     }
 }
