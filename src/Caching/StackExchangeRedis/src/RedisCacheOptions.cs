@@ -31,7 +31,8 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         public string InstanceName { get; set; }
 
         /// <summary>
-        /// Redis connection multiplexer.
+        /// Redis connection multiplexer that is used to connect to Redis.
+        /// This is preferred over ConfigurationOptions and Configuration.
         /// </summary>
         public IConnectionMultiplexer ConnectionMultiplexer { get; set; }
 
