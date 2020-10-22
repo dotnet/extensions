@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using StackExchange.Redis;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis
@@ -22,7 +23,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             var services = new ServiceCollection();
 
             // Act
-            services.AddStackExchangeRedisCache(options => { });
+            services.AddStackExchangeRedisCache(options => { options.ConnectionMultiplexer = new Mock<IConnectionMultiplexer>().Object; });
 
             // Assert
             var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
@@ -39,7 +40,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             services.AddScoped(typeof(IDistributedCache), sp => Mock.Of<IDistributedCache>());
 
             // Act
-            services.AddStackExchangeRedisCache(options => { });
+            services.AddStackExchangeRedisCache(options => { options.ConnectionMultiplexer = new Mock<IConnectionMultiplexer>().Object; });
 
             // Assert
             var serviceProvider = services.BuildServiceProvider();
@@ -56,7 +57,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         {
             var services = new ServiceCollection();
 
-            Assert.Same(services, services.AddStackExchangeRedisCache(_ => { }));
+            Assert.Same(services, services.AddStackExchangeRedisCache(options => { options.ConnectionMultiplexer = new Mock<IConnectionMultiplexer>().Object; }));
         }
     }
 }

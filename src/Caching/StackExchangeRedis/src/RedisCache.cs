@@ -30,15 +30,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         private const string DataKey = "data";
         private const long NotPresent = -1;
 
-        private volatile IConnectionMultiplexer _connection;
-        private IDatabase _cache;
+        private readonly IConnectionMultiplexer _connection;
+        private readonly IDatabase _cache;
         private bool _disposed;
 
-        private readonly Func<Task<IConnectionMultiplexer>> _asyncConnectionFactory;
-        private readonly Func<IConnectionMultiplexer> _connectionFactory;
         private readonly string _instance;
-
-        private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
         public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
         {
@@ -48,36 +44,24 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             }
 
             RedisCacheOptions options = optionsAccessor.Value;
- 
+
              // This allows partitioning a single backend cache for use with multiple apps/services.
             _instance = options.InstanceName ?? string.Empty;
 
-            if (options.ConnectionFactory != null)
+            _connection = options.ConnectionMultiplexer;
+            if (_connection == null)
             {
-                _asyncConnectionFactory = options.ConnectionFactory;
-                _connectionFactory = () => _asyncConnectionFactory().Result;
-            }
-            else
-            {
-                _asyncConnectionFactory = async () =>
+                if (options.ConfigurationOptions != null)
                 {
-                    if (options.ConfigurationOptions != null)
-                    {
-                        return await ConnectionMultiplexer.ConnectAsync(options.ConfigurationOptions).ConfigureAwait(false);
-                    }
-
-                    return await ConnectionMultiplexer.ConnectAsync(options.Configuration).ConfigureAwait(false);
-                };
-                _connectionFactory = () =>
+                    _connection = ConnectionMultiplexer.Connect(options.ConfigurationOptions);
+                }
+                else
                 {
-                    if (options.ConfigurationOptions != null)
-                    {
-                        return ConnectionMultiplexer.Connect(options.ConfigurationOptions);
-                    }
-
-                    return ConnectionMultiplexer.Connect(options.Configuration);
-                };
+                    _connection = ConnectionMultiplexer.Connect(options.Configuration);
+                }
             }
+
+            _cache = _connection.GetDatabase();
         }
 
         public byte[] Get(string key)
@@ -119,8 +103,6 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 throw new ArgumentNullException(nameof(options));
             }
 
-            Connect();
-
             var creationTime = DateTimeOffset.UtcNow;
 
             var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
@@ -153,8 +135,6 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             }
 
             token.ThrowIfCancellationRequested();
-
-            await ConnectAsync(token).ConfigureAwait(false);
 
             var creationTime = DateTimeOffset.UtcNow;
 
@@ -192,77 +172,12 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             await GetAndRefreshAsync(key, getData: false, token: token).ConfigureAwait(false);
         }
 
-        private void Connect()
-        {
-            CheckDisposed();
-            if (_cache != null)
-            {
-                return;
-            }
-
-            _connectionLock.Wait();
-            try
-            {
-                if (_cache == null)
-                {
-                    if (_options.ConfigurationOptions != null)
-                    {
-                        _connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
-                    }
-                    else
-                    {
-                        _connection = ConnectionMultiplexer.Connect(_options.Configuration);
-                    }
-                    _cache = _connection.GetDatabase();
-                }
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
-        }
-
-        private async Task ConnectAsync(CancellationToken token = default(CancellationToken))
-        {
-            CheckDisposed();
-            token.ThrowIfCancellationRequested();
-
-            if (_cache != null)
-            {
-                return;
-            }
-
-            await _connectionLock.WaitAsync(token).ConfigureAwait(false);
-            try
-            {
-                if (_cache == null)
-                {
-                    if (_options.ConfigurationOptions != null)
-                    {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
-                    }
-
-                    _cache = _connection.GetDatabase();
-                }
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
-        }
-
         private byte[] GetAndRefresh(string key, bool getData)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
-
-            Connect();
 
             // This also resets the LRU status as desired.
             // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
@@ -300,8 +215,6 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
 
             token.ThrowIfCancellationRequested();
 
-            await ConnectAsync(token).ConfigureAwait(false);
-
             // This also resets the LRU status as desired.
             // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
             RedisValue[] results;
@@ -336,8 +249,6 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            Connect();
-
             _cache.KeyDelete(_instance + key);
             // TODO: Error handling
         }
@@ -348,8 +259,6 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             {
                 throw new ArgumentNullException(nameof(key));
             }
-
-            await ConnectAsync(token).ConfigureAwait(false);
 
             await _cache.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
             // TODO: Error handling
@@ -468,7 +377,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
             }
 
             _disposed = true;
-            _connection?.Close();
+            _connection.Close();
         }
 
         private void CheckDisposed()

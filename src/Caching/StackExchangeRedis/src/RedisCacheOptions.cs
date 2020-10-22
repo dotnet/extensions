@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         /// The configuration used to connect to Redis.
         /// </summary>
         public string Configuration { get; set; }
-        
+
         /// <summary>
         /// The configuration used to connect to Redis.
         /// This is preferred over Configuration.
@@ -31,9 +31,9 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis
         public string InstanceName { get; set; }
 
         /// <summary>
-        /// The redis connection factory.
+        /// Redis connection multiplexer.
         /// </summary>
-        public Func<Task<IConnectionMultiplexer>> ConnectionFactory;
+        public IConnectionMultiplexer ConnectionMultiplexer { get; set; }
 
         RedisCacheOptions IOptions<RedisCacheOptions>.Value
         {
