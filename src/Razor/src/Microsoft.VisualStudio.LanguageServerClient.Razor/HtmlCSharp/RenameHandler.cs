@@ -70,7 +70,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
-            if (projectionResult == null || projectionResult.LanguageKind != RazorLanguageKind.CSharp)
+            if (projectionResult == null)
             {
                 // We only support C# renames for now.
                 return null;
@@ -90,9 +90,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<RenameParams, WorkspaceEdit>(
                 Methods.TextDocumentRenameName,
-                RazorLSPConstants.CSharpContentTypeName,
+                projectionResult.LanguageKind.ToContainedLanguageContentType(),
                 renameParams,
                 cancellationToken).ConfigureAwait(false);
+
+            if (result == null)
+            {
+                return null;
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 

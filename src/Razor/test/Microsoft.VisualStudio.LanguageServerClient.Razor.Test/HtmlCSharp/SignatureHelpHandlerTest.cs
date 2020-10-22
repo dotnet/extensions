@@ -65,32 +65,46 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
-        public async Task HandleRequestAsync_HtmlProjection_ReturnsNull()
+        public async Task HandleRequestAsync_HtmlProjection_InvokesHtmlLanguageServer_ReturnsItem()
         {
             // Arrange
+            var called = false;
+            var expectedResult = new SignatureHelp();
             var documentManager = new TestDocumentManager();
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
+
+            var virtualHtmlUri = new Uri("C:/path/to/file.razor__virtual.html");
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
+            requestInvoker
+                .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, SignatureHelp>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, definitionParams, ct) =>
+                {
+                    Assert.Equal(Methods.TextDocumentSignatureHelpName, method);
+                    Assert.Equal(RazorLSPConstants.HtmlLSPContentTypeName, serverContentType);
+                    called = true;
+                })
+                .Returns(Task.FromResult(expectedResult));
 
             var projectionResult = new ProjectionResult()
             {
                 LanguageKind = RazorLanguageKind.Html,
             };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker, documentManager, projectionProvider.Object);
+            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker.Object, documentManager, projectionProvider.Object);
             var signatureHelpRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Position = new Position(0, 1)
+                Position = new Position(10, 5)
             };
 
             // Act
             var result = await signatureHelpHandler.HandleRequestAsync(signatureHelpRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            Assert.Null(result);
+            Assert.True(called);
+            Assert.Equal(expectedResult, result);
         }
 
         [Fact]

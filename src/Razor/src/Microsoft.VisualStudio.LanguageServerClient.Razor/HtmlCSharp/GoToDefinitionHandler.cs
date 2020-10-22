@@ -70,7 +70,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
-            if (projectionResult == null || projectionResult.LanguageKind != RazorLanguageKind.CSharp)
+            if (projectionResult == null)
             {
                 return null;
             }
@@ -88,7 +88,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(
                 Methods.TextDocumentDefinitionName,
-                RazorLSPConstants.CSharpContentTypeName,
+                projectionResult.LanguageKind.ToContainedLanguageContentType(),
                 textDocumentPositionParams,
                 cancellationToken).ConfigureAwait(false);
 
@@ -96,6 +96,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 return result;
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             var remappedLocations = await _documentMappingProvider.RemapLocationsAsync(result, cancellationToken).ConfigureAwait(false);
             return remappedLocations;

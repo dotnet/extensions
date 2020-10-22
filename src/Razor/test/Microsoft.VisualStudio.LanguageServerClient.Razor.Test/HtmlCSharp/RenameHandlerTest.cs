@@ -68,14 +68,26 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
-        public async Task HandleRequestAsync_HtmlProjection_ReturnsNull()
+        public async Task HandleRequestAsync_HtmlProjection_RemapsWorkspaceEdit()
         {
             // Arrange
+            var called = false;
+            var expectedEdit = new WorkspaceEdit();
             var documentManager = new TestDocumentManager();
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
+
+            var requestInvoker = GetRequestInvoker<RenameParams, WorkspaceEdit>(
+                new WorkspaceEdit(),
+                (method, serverContentType, renameParams, ct) =>
+                {
+                    Assert.Equal(Methods.TextDocumentRenameName, method);
+                    Assert.Equal(RazorLSPConstants.HtmlLSPContentTypeName, serverContentType);
+                    called = true;
+                });
+
             var projectionProvider = GetProjectionProvider(new ProjectionResult() { LanguageKind = RazorLanguageKind.Html });
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var documentMappingProvider = GetDocumentMappingProvider(expectedEdit);
+
             var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var renameRequest = new RenameParams()
             {
@@ -88,7 +100,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var result = await renameHandler.HandleRequestAsync(renameRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
 
             // Assert
-            Assert.Null(result);
+            Assert.True(called);
+            Assert.Equal(expectedEdit, result);
+
+            // Actual remapping behavior is tested in LSPDocumentMappingProvider tests.
         }
 
         [Fact]

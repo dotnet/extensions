@@ -62,7 +62,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
-            if (projectionResult == null || projectionResult.LanguageKind != RazorLanguageKind.CSharp)
+            if (projectionResult == null)
             {
                 return null;
             }
@@ -80,7 +80,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var signatureHelp = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, SignatureHelp>(
                 Methods.TextDocumentSignatureHelpName,
-                RazorLSPConstants.CSharpContentTypeName,
+                projectionResult.LanguageKind.ToContainedLanguageContentType(),
                 textDocumentPositionParams,
                 cancellationToken).ConfigureAwait(false);
 
