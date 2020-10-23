@@ -14,5 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public Uri RazorDocumentUri { get; set; }
 
         public Range[] ProjectedRanges { get; set; }
+
+        public MappingBehavior MappingBehavior { get; set; }
     }
 }

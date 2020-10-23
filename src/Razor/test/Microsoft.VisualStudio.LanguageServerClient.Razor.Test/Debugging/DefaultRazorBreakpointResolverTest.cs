@@ -271,10 +271,14 @@ $@"public class SomeRazorFile
                 _mappings = mappings;
             }
 
+            public override Task<RazorMapToDocumentRangesResponse> MapToDocumentRangesAsync(RazorLanguageKind languageKind, Uri razorDocumentUri, Range[] projectedRanges, CancellationToken cancellationToken)
+                => MapToDocumentRangesAsync(languageKind, razorDocumentUri, projectedRanges, LanguageServerMappingBehavior.Strict, cancellationToken);
+
             public override Task<RazorMapToDocumentRangesResponse> MapToDocumentRangesAsync(
                 RazorLanguageKind languageKind,
                 Uri razorDocumentUri,
                 Range[] projectedRanges,
+                LanguageServerMappingBehavior mappingBehavior,
                 CancellationToken cancellationToken)
             {
                 _mappings.TryGetValue(projectedRanges[0], out var response);

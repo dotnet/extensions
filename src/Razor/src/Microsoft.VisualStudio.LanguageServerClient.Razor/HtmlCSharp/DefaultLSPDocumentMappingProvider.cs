@@ -43,7 +43,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             _lazyDocumentManager = lazyDocumentManager;
         }
 
-        public async override Task<RazorMapToDocumentRangesResponse> MapToDocumentRangesAsync(RazorLanguageKind languageKind, Uri razorDocumentUri, Range[] projectedRanges, CancellationToken cancellationToken)
+        public override Task<RazorMapToDocumentRangesResponse> MapToDocumentRangesAsync(RazorLanguageKind languageKind, Uri razorDocumentUri, Range[] projectedRanges, CancellationToken cancellationToken)
+            => MapToDocumentRangesAsync(languageKind, razorDocumentUri, projectedRanges, LanguageServerMappingBehavior.Strict, cancellationToken);
+
+        public async override Task<RazorMapToDocumentRangesResponse> MapToDocumentRangesAsync(
+            RazorLanguageKind languageKind, 
+            Uri razorDocumentUri, 
+            Range[] projectedRanges, 
+            LanguageServerMappingBehavior mappingBehavior, 
+            CancellationToken cancellationToken)
         {
             if (razorDocumentUri is null)
             {
@@ -59,7 +67,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 Kind = languageKind,
                 RazorDocumentUri = razorDocumentUri,
-                ProjectedRanges = projectedRanges
+                ProjectedRanges = projectedRanges,
+                MappingBehavior = mappingBehavior,
             };
 
             var documentMappingResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(

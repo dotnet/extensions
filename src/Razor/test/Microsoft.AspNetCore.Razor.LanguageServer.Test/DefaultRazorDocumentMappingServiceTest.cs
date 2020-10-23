@@ -16,6 +16,313 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DefaultRazorDocumentMappingServiceTest
     {
         [Fact]
+        public void TryMapFromProjectedDocumentRange_Strict_StartOnlyMaps_ReturnsFalse()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[] { new SourceMapping(new SourceSpan(4, 12), new SourceSpan(6, 12)) });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 10),
+                End = new Position(0, 19),
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Strict,
+                out var originalRange);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(default, originalRange);
+        }
+
+        [Fact]
+        public void TryMapFromProjectedDocumentRange_Strict_EndOnlyMaps_ReturnsFalse()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[] { new SourceMapping(new SourceSpan(4, 12), new SourceSpan(6, 12)) });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 0),
+                End = new Position(0, 12),
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Strict,
+                out var originalRange);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(default, originalRange);
+        }
+
+        [Fact]
+        public void TryMapFromProjectedDocumentRange_Strict_StartAndEndMap_ReturnsTrue()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[] { new SourceMapping(new SourceSpan(4, 12), new SourceSpan(6, 12)) });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 6),
+                End = new Position(0, 18),
+            };
+            var expectedOriginalRange = new Range()
+            {
+                Start = new Position(0, 4),
+                End = new Position(0, 16)
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Strict,
+                out var originalRange);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedOriginalRange, originalRange);
+        }
+
+        [Fact]
+        public void TryMapFromProjectedDocumentRange_Inclusive_DirectlyMaps_ReturnsTrue()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[] { new SourceMapping(new SourceSpan(4, 12), new SourceSpan(6, 12)) });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 6),
+                End = new Position(0, 18),
+            };
+            var expectedOriginalRange = new Range()
+            {
+                Start = new Position(0, 4),
+                End = new Position(0, 16)
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Inclusive,
+                out var originalRange);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedOriginalRange, originalRange);
+        }
+
+        [Fact]
+        public void TryMapFromProjectedDocumentRange_Inclusive_StartSinglyIntersects_ReturnsTrue()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[] { new SourceMapping(new SourceSpan(4, 12), new SourceSpan(6, 12)) });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 10),
+                End = new Position(0, 19),
+            };
+            var expectedOriginalRange = new Range()
+            {
+                Start = new Position(0, 4),
+                End = new Position(0, 16)
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Inclusive,
+                out var originalRange);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedOriginalRange, originalRange);
+        }
+
+        [Fact]
+        public void TryMapFromProjectedDocumentRange_Inclusive_EndSinglyIntersects_ReturnsTrue()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[] { new SourceMapping(new SourceSpan(4, 12), new SourceSpan(6, 12)) });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 0),
+                End = new Position(0, 10),
+            };
+            var expectedOriginalRange = new Range()
+            {
+                Start = new Position(0, 4),
+                End = new Position(0, 16)
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Inclusive,
+                out var originalRange);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedOriginalRange, originalRange);
+        }
+
+        [Fact]
+        public void TryMapFromProjectedDocumentRange_Inclusive_StartDoublyIntersects_ReturnsFalse()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[]
+                {
+                    new SourceMapping(new SourceSpan(4, 8), new SourceSpan(6, 8)), // DateTime
+                    new SourceMapping(new SourceSpan(12, 4), new SourceSpan(14, 4)) // .Now
+                });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 14),
+                End = new Position(0, 19),
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Inclusive,
+                out var originalRange);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(default, originalRange);
+        }
+
+        [Fact]
+        public void TryMapFromProjectedDocumentRange_Inclusive_EndDoublyIntersects_ReturnsFalse()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[]
+                {
+                    new SourceMapping(new SourceSpan(4, 8), new SourceSpan(6, 8)), // DateTime
+                    new SourceMapping(new SourceSpan(12, 4), new SourceSpan(14, 4)) // .Now
+                });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 0),
+                End = new Position(0, 14),
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Inclusive,
+                out var originalRange);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(default, originalRange);
+        }
+
+        [Fact]
+        public void TryMapFromProjectedDocumentRange_Inclusive_OverlapsSingleMapping_ReturnsTrue()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[] { new SourceMapping(new SourceSpan(4, 12), new SourceSpan(6, 12)) });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 0),
+                End = new Position(0, 19),
+            };
+            var expectedOriginalRange = new Range()
+            {
+                Start = new Position(0, 4),
+                End = new Position(0, 16)
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Inclusive,
+                out var originalRange);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedOriginalRange, originalRange);
+        }
+
+        [Fact]
+        public void TryMapFromProjectedDocumentRange_Inclusive_OverlapsTwoMappings_ReturnsFalse()
+        {
+            // Arrange
+            var service = new DefaultRazorDocumentMappingService();
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "<p>@DateTime.Now</p>",
+                "__o = DateTime.Now;",
+                new[]
+                {
+                    new SourceMapping(new SourceSpan(4, 8), new SourceSpan(6, 8)), // DateTime
+                    new SourceMapping(new SourceSpan(12, 4), new SourceSpan(14, 4)) // .Now
+                });
+            var projectedRange = new Range()
+            {
+                Start = new Position(0, 0),
+                End = new Position(0, 19),
+            };
+
+            // Act
+            var result = service.TryMapFromProjectedDocumentRange(
+                codeDoc,
+                projectedRange,
+                MappingBehavior.Inclusive,
+                out var originalRange);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(default, originalRange);
+        }
+
+        [Fact]
         public void TryMapToProjectedDocumentPosition_NotMatchingAnyMapping()
         {
             // Arrange

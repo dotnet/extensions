@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -15,7 +16,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultRazorDocumentMappingService : RazorDocumentMappingService
     {
-        public override bool TryMapFromProjectedDocumentRange(RazorCodeDocument codeDocument, Range projectedRange, out Range originalRange)
+        public override bool TryMapFromProjectedDocumentRange(RazorCodeDocument codeDocument, Range projectedRange, out Range originalRange) => TryMapFromProjectedDocumentRange(codeDocument, projectedRange, MappingBehavior.Strict, out originalRange);
+
+        public override bool TryMapFromProjectedDocumentRange(RazorCodeDocument codeDocument, Range projectedRange, MappingBehavior mappingBehavior, out Range originalRange)
         {
             if (codeDocument is null)
             {
@@ -27,27 +30,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(projectedRange));
             }
 
-            originalRange = default;
-
-            var csharpSourceText = SourceText.From(codeDocument.GetCSharpDocument().GeneratedCode);
-            var range = projectedRange;
-            var startIndex = range.Start.GetAbsoluteIndex(csharpSourceText);
-            if (!TryMapFromProjectedDocumentPosition(codeDocument, startIndex, out var hostDocumentStart, out var _))
+            if (mappingBehavior == MappingBehavior.Strict)
             {
-                return false;
+                return TryMapFromProjectedDocumentRangeStrict(codeDocument, projectedRange, out originalRange);
             }
-
-            var endIndex = range.End.GetAbsoluteIndex(csharpSourceText);
-            if (!TryMapFromProjectedDocumentPosition(codeDocument, endIndex, out var hostDocumentEnd, out var _))
+            else if (mappingBehavior == MappingBehavior.Inclusive)
             {
-                return false;
+                return TryMapFromProjectedDocumentRangeInclusive(codeDocument, projectedRange, out originalRange);
             }
-
-            originalRange = new Range(
-                hostDocumentStart,
-                hostDocumentEnd);
-
-            return true;
+            else
+            {
+                throw new InvalidOperationException("Unknown mapping behavior");
+            }
         }
 
         public override bool TryMapToProjectedDocumentRange(RazorCodeDocument codeDocument, Range originalRange, out Range projectedRange)
@@ -257,6 +251,107 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Default to Razor
             return RazorLanguageKind.Razor;
+        }
+
+        private bool TryMapFromProjectedDocumentRangeStrict(RazorCodeDocument codeDocument, Range projectedRange, out Range originalRange)
+        {
+            originalRange = default;
+
+            var csharpSourceText = SourceText.From(codeDocument.GetCSharpDocument().GeneratedCode);
+            var range = projectedRange;
+            var startIndex = range.Start.GetAbsoluteIndex(csharpSourceText);
+            if (!TryMapFromProjectedDocumentPosition(codeDocument, startIndex, out var hostDocumentStart, out _))
+            {
+                return false;
+            }
+
+            var endIndex = range.End.GetAbsoluteIndex(csharpSourceText);
+            if (!TryMapFromProjectedDocumentPosition(codeDocument, endIndex, out var hostDocumentEnd, out _))
+            {
+                return false;
+            }
+
+            originalRange = new Range(
+                hostDocumentStart,
+                hostDocumentEnd);
+
+            return true;
+        }
+
+        private bool TryMapFromProjectedDocumentRangeInclusive(RazorCodeDocument codeDocument, Range projectedRange, out Range originalRange)
+        {
+            originalRange = default;
+
+            var csharpDoc = codeDocument.GetCSharpDocument();
+            var csharpSourceText = SourceText.From(csharpDoc.GeneratedCode);
+            var projectedRangeAsSpan = projectedRange.AsTextSpan(csharpSourceText);
+            var range = projectedRange;
+            var startIndex = projectedRangeAsSpan.Start;
+            var startMappedDirectly = TryMapFromProjectedDocumentPosition(codeDocument, startIndex, out var hostDocumentStart, out _);
+
+            var endIndex = projectedRangeAsSpan.End;
+            var endMappedDirectly = TryMapFromProjectedDocumentPosition(codeDocument, endIndex, out var hostDocumentEnd, out _);
+
+            if (startMappedDirectly && endMappedDirectly)
+            {
+                // We strictly mapped the start/end of the projected range.
+                originalRange = new Range(hostDocumentStart, hostDocumentEnd);
+                return true;
+            }
+
+            List<SourceMapping> candidateMappings;
+            if (startMappedDirectly)
+            {
+                // Start of projected range intersects with a mapping
+                candidateMappings = csharpDoc.SourceMappings.Where(mapping => IntersectsWith(startIndex, mapping.GeneratedSpan)).ToList();
+            }
+            else if (endMappedDirectly)
+            {
+                // End of projected range intersects with a mapping
+                candidateMappings = csharpDoc.SourceMappings.Where(mapping => IntersectsWith(endIndex, mapping.GeneratedSpan)).ToList();
+            }
+            else
+            {
+                // Our range does not intersect with any mapping; we should see if it overlaps generated locations
+                candidateMappings = csharpDoc.SourceMappings.Where(mapping => Overlaps(projectedRangeAsSpan, mapping.GeneratedSpan)).ToList();
+            }
+
+            if (candidateMappings.Count == 1)
+            {
+                // We're intersecting or overlapping a single mapping, lets choose that.
+
+                var mapping = candidateMappings[0];
+                originalRange = ConvertMapping(codeDocument.Source, mapping);
+                return true;
+            }
+            else
+            {
+                // More then 1 or exactly 0 intersecting/overlapping mappings
+                return false;
+            }
+
+            bool Overlaps(TextSpan projectedRangeAsSpan, SourceSpan span)
+            {
+                var overlapStart = Math.Max(projectedRangeAsSpan.Start, span.AbsoluteIndex);
+                var overlapEnd = Math.Min(projectedRangeAsSpan.End, span.AbsoluteIndex + span.Length);
+
+                return overlapStart < overlapEnd;
+            }
+
+            bool IntersectsWith(int position, SourceSpan span)
+            {
+                return unchecked((uint)(position - span.AbsoluteIndex) <= (uint)span.Length);
+            }
+
+            static Range ConvertMapping(RazorSourceDocument sourceDocument, SourceMapping mapping)
+            {
+                var startLocation = sourceDocument.Lines.GetLocation(mapping.OriginalSpan.AbsoluteIndex);
+                var endLocation = sourceDocument.Lines.GetLocation(mapping.OriginalSpan.AbsoluteIndex + mapping.OriginalSpan.Length);
+                var convertedRange = new Range(
+                    new Position(startLocation.LineIndex, startLocation.CharacterIndex),
+                    new Position(endLocation.LineIndex, endLocation.CharacterIndex));
+                return convertedRange;
+            }
         }
     }
 }

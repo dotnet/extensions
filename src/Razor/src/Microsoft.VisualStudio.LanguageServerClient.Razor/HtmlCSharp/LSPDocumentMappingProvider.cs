@@ -12,6 +12,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     {
         public abstract Task<RazorMapToDocumentRangesResponse> MapToDocumentRangesAsync(RazorLanguageKind languageKind, Uri razorDocumentUri, Range[] projectedRanges, CancellationToken cancellationToken);
 
+        public abstract Task<RazorMapToDocumentRangesResponse> MapToDocumentRangesAsync(RazorLanguageKind languageKind, Uri razorDocumentUri, Range[] projectedRanges, LanguageServerMappingBehavior mappingBehavior, CancellationToken cancellationToken);
+
         public abstract Task<Location[]> RemapLocationsAsync(Location[] locations, CancellationToken cancellationToken);
 
         public abstract Task<TextEdit[]> RemapTextEditsAsync(Uri uri, TextEdit[] edits, CancellationToken cancellationToken);

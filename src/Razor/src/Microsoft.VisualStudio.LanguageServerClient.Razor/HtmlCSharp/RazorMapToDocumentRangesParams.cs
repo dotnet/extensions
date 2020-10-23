@@ -16,12 +16,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public Range[] ProjectedRanges { get; set; }
 
+        public LanguageServerMappingBehavior MappingBehavior { get; set; }
+
         public bool Equals(RazorMapToDocumentRangesParams other)
         {
             return
                 other != null &&
                 Kind == other.Kind &&
                 RazorDocumentUri == other.RazorDocumentUri &&
+                MappingBehavior == other.MappingBehavior &&
                 Enumerable.SequenceEqual(ProjectedRanges, other.ProjectedRanges);
         }
 
@@ -36,6 +39,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             hash.Add(Kind);
             hash.Add(RazorDocumentUri);
             hash.Add(ProjectedRanges);
+            hash.Add(MappingBehavior);
             return hash;
         }
     }
