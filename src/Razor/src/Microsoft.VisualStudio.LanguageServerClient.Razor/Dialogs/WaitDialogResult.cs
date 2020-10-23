@@ -11,8 +11,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs
             Cancelled = cancelled;
         }
 
-        public bool Cancelled { get; }
-
         public TResult Result { get; }
+
+        public bool Cancelled { get; }
     }
 }

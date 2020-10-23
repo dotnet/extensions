@@ -38,7 +38,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs
             JoinableTaskContext joinableTaskContext,
             IVsThreadedWaitDialogFactory waitDialogFactory)
         {
-
             _waitDialogFactory = waitDialogFactory;
             _joinableTaskFactory = joinableTaskContext.Factory;
         }
@@ -48,7 +47,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs
             Debug.Assert(_joinableTaskFactory.Context.IsOnMainThread);
 
             var result = _waitDialogFactory.CreateInstance(out var dialog2);
-
             if (result != VSConstants.S_OK)
             {
                 return null;

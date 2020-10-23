@@ -6,7 +6,9 @@ using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.LanguageServerClient.Razor;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -33,8 +35,10 @@ namespace Microsoft.VisualStudio.RazorExtension
             container.AddService(typeof(RazorLanguageService), (container, type) =>
             {
                 var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
+                var breakpointResolver = componentModel.GetService<RazorBreakpointResolver>();
                 var waitDialogFactory = componentModel.GetService<WaitDialogFactory>();
-                return new RazorLanguageService(waitDialogFactory);
+                var editorAdaptersFactory = componentModel.GetService<IVsEditorAdaptersFactoryService>();
+                return new RazorLanguageService(breakpointResolver, waitDialogFactory, editorAdaptersFactory);
             }, promote: true);
         }
     }
