@@ -30,9 +30,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             "Implement interface with Dispose pattern"
         };
 
-        public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
+        public override Task<IReadOnlyList<CodeAction>> ProvideAsync(
             RazorCodeActionContext context,
-            IEnumerable<RazorCodeAction> codeActions,
+            IEnumerable<CodeAction> codeActions,
             CancellationToken cancellationToken)
         {
             if (context is null)
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return EmptyResult;
             }
 
-            var results = new List<RazorCodeAction>();
+            var results = new List<CodeAction>();
 
             if (diagnostics.Contains(ImplementAbstractClassDiagnostic))
             {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             var wrappedResults = results.Select(c => c.WrapResolvableCSharpCodeAction(context)).ToList();
-            return Task.FromResult(wrappedResults as IReadOnlyList<RazorCodeAction>);
+            return Task.FromResult(wrappedResults as IReadOnlyList<CodeAction>);
         }
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         // Register VS LSP code action resolution server capability
         public RegistrationExtensionResult GetRegistration() => new RegistrationExtensionResult(CodeActionsResolveProviderCapability, true);
 
-        public async Task<RazorCodeAction> Handle(RazorCodeAction request, CancellationToken cancellationToken)
+        public async Task<CodeAction> Handle(CodeAction request, CancellationToken cancellationToken)
         {
             if (request is null)
             {
@@ -66,6 +67,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var resolutionParams = paramsObj.ToObject<RazorCodeActionResolutionParams>();
 
             _logger.LogInformation($"Resolving workspace edit for action {GetCodeActionId(resolutionParams)}.");
+
+            // If it's a special "edit based code action" then the edit has been pre-computed and we
+            // can extract the edit details and return to the client. This is only required for VSCode
+            // as it does not support Command.Edit based code actions anymore.
+            if (resolutionParams.Action == LanguageServerConstants.CodeActions.EditBasedCodeActionCommand)
+            {
+                request.Edit = (resolutionParams.Data as JObject)?.ToObject<WorkspaceEdit>();
+                return request;
+            }
 
             switch (resolutionParams.Language)
             {
@@ -86,8 +96,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         // Internal for testing
-        internal async Task<RazorCodeAction> ResolveRazorCodeActionAsync(
-            RazorCodeAction codeAction,
+        internal async Task<CodeAction> ResolveRazorCodeActionAsync(
+            CodeAction codeAction,
             RazorCodeActionResolutionParams resolutionParams,
             CancellationToken cancellationToken)
         {
@@ -102,8 +112,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         // Internal for testing
-        internal async Task<RazorCodeAction> ResolveCSharpCodeActionAsync(
-            RazorCodeAction codeAction,
+        internal async Task<CodeAction> ResolveCSharpCodeActionAsync(
+            CodeAction codeAction,
             RazorCodeActionResolutionParams resolutionParams,
             CancellationToken cancellationToken)
         {
@@ -114,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             var csharpParams = csharpParamsObj.ToObject<CSharpCodeActionParams>();
-            codeAction.Data = csharpParams.Data;
+            codeAction.Data = csharpParams.Data as JToken;
 
             if (!_csharpCodeActionResolvers.TryGetValue(resolutionParams.Action, out var resolver))
             {
@@ -134,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             {
                 if (resolverMap.ContainsKey(resolver.Action))
                 {
-                    Debug.Fail($"Duplicate resolver action for {resolver.Action} of type {typeof(T).ToString()}.");
+                    Debug.Fail($"Duplicate resolver action for {resolver.Action} of type {typeof(T)}.");
                 }
                 resolverMap[resolver.Action] = resolver;
             }

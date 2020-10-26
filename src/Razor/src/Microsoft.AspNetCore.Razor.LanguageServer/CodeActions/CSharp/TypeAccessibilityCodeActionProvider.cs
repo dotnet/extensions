@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
@@ -28,9 +27,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             "IDE1007"
         };
 
-        public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
+        public override Task<IReadOnlyList<CodeAction>> ProvideAsync(
             RazorCodeActionContext context,
-            IEnumerable<RazorCodeAction> codeActions,
+            IEnumerable<CodeAction> codeActions,
             CancellationToken cancellationToken)
         {
             if (context is null)
@@ -63,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return EmptyResult;
             }
 
-            var results = new List<RazorCodeAction>();
+            var results = new List<CodeAction>();
 
             foreach (var diagnostic in diagnostics)
             {
@@ -103,15 +102,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             results.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.Ordinal));
-            return Task.FromResult(results as IReadOnlyList<RazorCodeAction>);
+            return Task.FromResult(results as IReadOnlyList<CodeAction>);
         }
 
         private static bool TryProcessCodeAction(
             RazorCodeActionContext context,
-            RazorCodeAction codeAction,
+            CodeAction codeAction,
             Diagnostic diagnostic,
             string associatedValue,
-            out ICollection<RazorCodeAction> typeAccessibilityCodeActions)
+            out ICollection<CodeAction> typeAccessibilityCodeActions)
         {
             var fqn = string.Empty;
 
@@ -139,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return false;
             }
 
-            typeAccessibilityCodeActions = new List<RazorCodeAction>();
+            typeAccessibilityCodeActions = new List<CodeAction>();
 
             var fqnCodeAction = CreateFQNCodeAction(context, diagnostic, codeAction, fqn);
             typeAccessibilityCodeActions.Add(fqnCodeAction);
@@ -153,10 +152,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return true;
         }
 
-        private static RazorCodeAction CreateFQNCodeAction(
+        private static CodeAction CreateFQNCodeAction(
             RazorCodeActionContext context,
             Diagnostic fqnDiagnostic,
-            RazorCodeAction codeAction,
+            CodeAction codeAction,
             string fullyQualifiedName)
         {
             var codeDocumentIdentifier = new VersionedTextDocumentIdentifier() { Uri = context.Request.TextDocument.Uri };
@@ -178,14 +177,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 DocumentChanges = new[] { fqnWorkspaceEditDocumentChange }
             };
 
-            return new RazorCodeAction()
+            return new CodeAction()
             {
                 Title = codeAction.Title,
                 Edit = fqnWorkspaceEdit
             };
         }
 
-        private static RazorCodeAction CreateAddUsingCodeAction(
+        private static CodeAction CreateAddUsingCodeAction(
             RazorCodeActionContext context,
             string fullyQualifiedName)
         {

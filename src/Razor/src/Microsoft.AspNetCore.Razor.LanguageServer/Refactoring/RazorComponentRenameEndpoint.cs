@@ -188,7 +188,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             return newPath;
         }
 
-        public async Task AddEditsForCodeDocumentAsync(List<WorkspaceEditDocumentChange> documentChanges, IReadOnlyList<TagHelperDescriptor> originTagHelpers, string newName, DocumentSnapshot documentSnapshot, CancellationToken cancellationToken)
+        public async Task AddEditsForCodeDocumentAsync(
+            List<WorkspaceEditDocumentChange> documentChanges,
+            IReadOnlyList<TagHelperDescriptor> originTagHelpers,
+            string newName,
+            DocumentSnapshot documentSnapshot,
+            CancellationToken cancellationToken)
         {
             if (documentSnapshot is null)
             {
@@ -212,10 +217,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
                 Host = string.Empty,
                 Scheme = Uri.UriSchemeFile,
             }.Uri;
+
             AddEditsForCodeDocument(documentChanges, originTagHelpers, newName, uri, codeDocument);
         }
 
-        public void AddEditsForCodeDocument(List<WorkspaceEditDocumentChange> documentChanges, IReadOnlyList<TagHelperDescriptor> originTagHelpers, string newName, DocumentUri uri, RazorCodeDocument codeDocument)
+        public void AddEditsForCodeDocument(
+            List<WorkspaceEditDocumentChange> documentChanges,
+            IReadOnlyList<TagHelperDescriptor> originTagHelpers,
+            string newName,
+            DocumentUri uri,
+            RazorCodeDocument codeDocument)
         {
             var documentIdentifier = new VersionedTextDocumentIdentifier { Uri = uri };
             var tagHelperElements = codeDocument.GetSyntaxTree().Root
@@ -276,7 +287,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring
             return edits;
         }
 
-        private static bool BindingContainsTagHelper(TagHelperDescriptor tagHelper, TagHelperBinding potentialBinding) => potentialBinding.Descriptors.Any(descriptor => descriptor.Equals(tagHelper));
+        private static bool BindingContainsTagHelper(TagHelperDescriptor tagHelper, TagHelperBinding potentialBinding) =>
+            potentialBinding.Descriptors.Any(descriptor => descriptor.Equals(tagHelper));
 
         private async Task<IReadOnlyList<TagHelperDescriptor>> GetOriginTagHelpersAsync(DocumentSnapshot documentSnapshot, RazorCodeDocument codeDocument, Position position)
         {

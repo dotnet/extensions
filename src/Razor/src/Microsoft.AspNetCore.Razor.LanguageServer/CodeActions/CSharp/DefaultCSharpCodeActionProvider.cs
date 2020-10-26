@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
@@ -29,9 +30,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             "Add 'DebuggerDisplay' attribute"
         };
 
-        public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
+        public override Task<IReadOnlyList<CodeAction>> ProvideAsync(
             RazorCodeActionContext context,
-            IEnumerable<RazorCodeAction> codeActions,
+            IEnumerable<CodeAction> codeActions,
             CancellationToken cancellationToken)
         {
             if (context is null)
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             );
 
             var wrappedResults = results.Select(c => c.WrapResolvableCSharpCodeAction(context)).ToList();
-            return Task.FromResult(wrappedResults as IReadOnlyList<RazorCodeAction>);
+            return Task.FromResult(wrappedResults as IReadOnlyList<CodeAction>);
         }
     }
 }

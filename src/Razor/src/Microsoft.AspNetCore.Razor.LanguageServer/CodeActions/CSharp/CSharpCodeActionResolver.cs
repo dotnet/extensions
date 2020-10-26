@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
@@ -24,15 +25,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             _languageServer = languageServer;
         }
 
-        public abstract Task<RazorCodeAction> ResolveAsync(
+        public abstract Task<CodeAction> ResolveAsync(
             CSharpCodeActionParams csharpParams,
-            RazorCodeAction codeAction,
+            CodeAction codeAction,
             CancellationToken cancellationToken);
 
-        protected async Task<RazorCodeAction> ResolveCodeActionWithServerAsync(RazorCodeAction codeAction, CancellationToken cancellationToken)
+        protected async Task<CodeAction> ResolveCodeActionWithServerAsync(CodeAction codeAction, CancellationToken cancellationToken)
         {
             var response = _languageServer.SendRequest(LanguageServerConstants.RazorResolveCodeActionsEndpoint, codeAction);
-            var resolvedCodeAction = await response.Returning<RazorCodeAction>(cancellationToken);
+            var resolvedCodeAction = await response.Returning<CodeAction>(cancellationToken);
 
             return resolvedCodeAction;
         }

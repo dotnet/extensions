@@ -34,10 +34,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Language = LanguageServerConstants.CodeActions.Languages.Razor,
                 Data = new AddUsingsCodeActionParams()
             };
-            var request = new RazorCodeAction()
+            var request = new CodeAction()
             {
                 Title = "Valid request",
-                Data = JObject.FromObject(requestParams)
+                Data = JToken.FromObject(requestParams)
             };
 
             // Act
@@ -63,10 +63,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Language = LanguageServerConstants.CodeActions.Languages.CSharp,
                 Data = JObject.FromObject(new CSharpCodeActionParams())
             };
-            var request = new RazorCodeAction()
+            var request = new CodeAction()
             {
                 Title = "Valid request",
-                Data = JObject.FromObject(requestParams)
+                Data = JToken.FromObject(requestParams)
             };
 
             // Act
@@ -94,10 +94,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Language = LanguageServerConstants.CodeActions.Languages.CSharp,
                 Data = JObject.FromObject(new CSharpCodeActionParams())
             };
-            var request = new RazorCodeAction()
+            var request = new CodeAction()
             {
                 Title = "Valid request",
-                Data = JObject.FromObject(requestParams)
+                Data = JToken.FromObject(requestParams)
             };
 
             // Act
@@ -121,10 +121,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Language = LanguageServerConstants.CodeActions.Languages.Razor,
                 Data = new AddUsingsCodeActionParams()
             };
-            var request = new RazorCodeAction()
+            var request = new CodeAction()
             {
                 Title = "Valid request",
-                Data = JObject.FromObject(requestParams)
+                Data = JToken.FromObject(requestParams)
             };
 
 #if DEBUG
@@ -153,10 +153,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Language = LanguageServerConstants.CodeActions.Languages.CSharp,
                 Data = JObject.FromObject(new CSharpCodeActionParams())
             };
-            var request = new RazorCodeAction()
+            var request = new CodeAction()
             {
                 Title = "Valid request",
-                Data = JObject.FromObject(requestParams)
+                Data = JToken.FromObject(requestParams)
             };
 
 #if DEBUG
@@ -187,10 +187,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Language = LanguageServerConstants.CodeActions.Languages.Razor,
                 Data = new AddUsingsCodeActionParams()
             };
-            var request = new RazorCodeAction()
+            var request = new CodeAction()
             {
                 Title = "Valid request",
-                Data = JObject.FromObject(requestParams)
+                Data = JToken.FromObject(requestParams)
             };
 
 #if DEBUG
@@ -221,10 +221,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Language = LanguageServerConstants.CodeActions.Languages.CSharp,
                 Data = JObject.FromObject(new CSharpCodeActionParams())
             };
-            var request = new RazorCodeAction()
+            var request = new CodeAction()
             {
                 Title = "Valid request",
-                Data = JObject.FromObject(requestParams)
+                Data = JToken.FromObject(requestParams)
             };
 
 #if DEBUG
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 },
                 Array.Empty<CSharpCodeActionResolver>(),
                 LoggerFactory);
-            var codeAction = new RazorCodeAction();
+            var codeAction = new CodeAction();
             var request = new RazorCodeActionResolutionParams()
             {
                 Action = "A",
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 },
                 Array.Empty<CSharpCodeActionResolver>(),
                 LoggerFactory);
-            var codeAction = new RazorCodeAction();
+            var codeAction = new CodeAction();
             var request = new RazorCodeActionResolutionParams()
             {
                 Action = "B",
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                     new MockCSharpNullCodeActionResolver("B"),
                 },
                 LoggerFactory);
-            var codeAction = new RazorCodeAction();
+            var codeAction = new CodeAction();
             var request = new RazorCodeActionResolutionParams()
             {
                 Action = "A",
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                     new MockCSharpCodeActionResolver("B"),
                 },
                 LoggerFactory);
-            var codeAction = new RazorCodeAction();
+            var codeAction = new CodeAction();
             var request = new RazorCodeActionResolutionParams()
             {
                 Action = "B",
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                     new MockCSharpCodeActionResolver("D"),
                 },
                 LoggerFactory);
-            var codeAction = new RazorCodeAction();
+            var codeAction = new CodeAction();
             var request = new RazorCodeActionResolutionParams()
             {
                 Action = "D",
@@ -370,6 +370,37 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
             // Assert
             Assert.NotNull(resolvedCodeAction.Edit);
+        }
+
+
+        [Fact]
+        public async Task Handle_ResolveEditBasedCodeActionCommand()
+        {
+            // Arrange
+            var codeActionEndpoint = new CodeActionResolutionEndpoint(
+                Array.Empty<RazorCodeActionResolver>(),
+                new CSharpCodeActionResolver[] {
+                    new MockCSharpCodeActionResolver("Test"),
+                },
+                LoggerFactory);
+            var requestParams = new RazorCodeActionResolutionParams()
+            {
+                Action = LanguageServerConstants.CodeActions.EditBasedCodeActionCommand,
+                Language = LanguageServerConstants.CodeActions.Languages.Razor,
+                Data = JToken.FromObject(new WorkspaceEdit())
+            };
+
+            var request = new CodeAction()
+            {
+                Title = "Valid request",
+                Data = JToken.FromObject(requestParams)
+            };
+
+            // Act
+            var razorCodeAction = await codeActionEndpoint.Handle(request, default);
+
+            // Assert
+            Assert.NotNull(razorCodeAction.Edit);
         }
 
         private class MockRazorCodeActionResolver : RazorCodeActionResolver
@@ -412,7 +443,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Action = action;
             }
 
-            public override Task<RazorCodeAction> ResolveAsync(CSharpCodeActionParams csharpParams, RazorCodeAction codeAction, CancellationToken cancellationToken)
+            public override Task<CodeAction> ResolveAsync(CSharpCodeActionParams csharpParams, CodeAction codeAction, CancellationToken cancellationToken)
             {
                 codeAction.Edit = new WorkspaceEdit();
                 return Task.FromResult(codeAction);
@@ -429,9 +460,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 Action = action;
             }
 
-            public override Task<RazorCodeAction> ResolveAsync(CSharpCodeActionParams csharpParams, RazorCodeAction codeAction, CancellationToken cancellationToken)
+            public override Task<CodeAction> ResolveAsync(CSharpCodeActionParams csharpParams, CodeAction codeAction, CancellationToken cancellationToken)
             {
-                return Task.FromResult<RazorCodeAction>(null);
+                return Task.FromResult<CodeAction>(null);
             }
         }
     }

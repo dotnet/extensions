@@ -9,18 +9,19 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
+using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Moq;
-using Xunit;
+using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.JsonRpc;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 {
@@ -433,12 +434,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 c =>
                 {
                     Assert.True(c.IsCodeAction);
-                    Assert.True(c.CodeAction is RazorCodeAction);
+                    Assert.True(c.CodeAction is CodeAction);
                 },
                 c =>
                 {
                     Assert.True(c.IsCodeAction);
-                    Assert.True(c.CodeAction is RazorCodeAction);
+                    Assert.True(c.CodeAction is CodeAction);
                 });
         }
 
@@ -479,8 +480,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             Assert.Collection(commandOrCodeActionContainer,
                 c =>
                 {
-                    Assert.True(c.IsCodeAction);
-                    Assert.True(c.CodeAction is RazorCodeAction);
+                    Assert.True(c.IsCommand);
+                    var command = Assert.IsType<Command>(c.Command);
+                    var codeActionParams = command.Arguments.First().ToObject<RazorCodeActionResolutionParams>();
+                    Assert.Equal(LanguageServerConstants.CodeActions.EditBasedCodeActionCommand, codeActionParams.Action);
                 },
                 c => Assert.True(c.IsCommand));
         }
@@ -651,7 +654,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             Assert.Equal(projectedRange, context.Request.Range);
         }
 
-        private DefaultRazorDocumentMappingService CreateDocumentMappingService(Range projectedRange = null)
+        private static DefaultRazorDocumentMappingService CreateDocumentMappingService(Range projectedRange = null)
         {
             projectedRange ??= new Range(new Position(5, 2), new Position(5, 2));
             var documentMappingService = Mock.Of<DefaultRazorDocumentMappingService>(
@@ -660,10 +663,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             return documentMappingService;
         }
 
-        private IClientLanguageServer CreateLanguageServer()
+        private static IClientLanguageServer CreateLanguageServer()
         {
             var response = Mock.Of<IResponseRouterReturns>(
-                r => r.Returning<RazorCodeAction[]>(It.IsAny<CancellationToken>()) == Task.FromResult(new[] { new RazorCodeAction() })
+                r => r.Returning<CodeAction[]>(It.IsAny<CancellationToken>()) == Task.FromResult(new[] { new CodeAction() })
             );
             var languageServer = Mock.Of<IClientLanguageServer>(
                 l => l.SendRequest(LanguageServerConstants.RazorProvideCodeActionsEndpoint, It.IsAny<CodeActionParams>()) == response
@@ -697,47 +700,47 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
         private class MockRazorCodeActionProvider : RazorCodeActionProvider
         {
-            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
-                return Task.FromResult(new List<RazorCodeAction>() { new RazorCodeAction() } as IReadOnlyList<RazorCodeAction>);
+                return Task.FromResult(new List<CodeAction>() { new CodeAction() } as IReadOnlyList<CodeAction>);
             }
         }
 
         private class MockMultipleRazorCodeActionProvider : RazorCodeActionProvider
         {
-            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
-                return Task.FromResult(new List<RazorCodeAction>() { new RazorCodeAction(), new RazorCodeAction() } as IReadOnlyList<RazorCodeAction>);
+                return Task.FromResult(new List<CodeAction>() { new CodeAction(), new CodeAction() } as IReadOnlyList<CodeAction>);
             }
         }
 
         private class MockCSharpCodeActionProvider : CSharpCodeActionProvider
         {
-            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, IEnumerable<RazorCodeAction> codeActions, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, IEnumerable<CodeAction> codeActions, CancellationToken cancellationToken)
             {
-                return Task.FromResult(new List<RazorCodeAction>() { new RazorCodeAction() } as IReadOnlyList<RazorCodeAction>);
+                return Task.FromResult(new List<CodeAction>() { new CodeAction() } as IReadOnlyList<CodeAction>);
             }
         }
 
         private class MockRazorCommandProvider : RazorCodeActionProvider
         {
-            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
                 // O# Code Actions don't have `Data`, but `Commands` do
-                return Task.FromResult(new List<RazorCodeAction>() {
-                    new RazorCodeAction() {
+                return Task.FromResult(new List<CodeAction>() {
+                    new CodeAction() {
                         Title = "SomeTitle",
-                        Data = new AddUsingsCodeActionParams()
+                        Data = JToken.FromObject(new AddUsingsCodeActionParams())
                     }
-                } as IReadOnlyList<RazorCodeAction>);
+                } as IReadOnlyList<CodeAction>);
             }
         }
 
         private class MockNullRazorCodeActionProvider : RazorCodeActionProvider
         {
-            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
-                return Task.FromResult<IReadOnlyList<RazorCodeAction>>(null);
+                return Task.FromResult<IReadOnlyList<CodeAction>>(null);
             }
         }
     }

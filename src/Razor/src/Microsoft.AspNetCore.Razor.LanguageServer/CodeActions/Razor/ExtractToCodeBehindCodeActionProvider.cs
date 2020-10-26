@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
@@ -21,9 +23,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
     {
         private static readonly string Title = "Extract block to code behind";
 
-        private static readonly Task<IReadOnlyList<RazorCodeAction>> EmptyResult = Task.FromResult<IReadOnlyList<RazorCodeAction>>(null);
+        private static readonly Task<IReadOnlyList<CodeAction>> EmptyResult = Task.FromResult<IReadOnlyList<CodeAction>>(null);
 
-        public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+        public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
             if (context is null)
             {
@@ -106,15 +108,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 Data = actionParams,
             };
 
-            var codeAction = new RazorCodeAction()
+            var codeAction = new CodeAction()
             {
                 Title = Title,
-                Data = resolutionParams
+                Data = JToken.FromObject(resolutionParams)
             };
 
-            var codeActions = new List<RazorCodeAction> { codeAction };
+            var codeActions = new List<CodeAction> { codeAction };
 
-            return Task.FromResult(codeActions as IReadOnlyList<RazorCodeAction>);
+            return Task.FromResult(codeActions as IReadOnlyList<CodeAction>);
         }
 
         private static bool HasUnsupportedChildren(Language.Syntax.SyntaxNode node)

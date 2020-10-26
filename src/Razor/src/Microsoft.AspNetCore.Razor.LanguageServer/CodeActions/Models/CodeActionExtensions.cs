@@ -3,20 +3,31 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models
 {
-    internal static class RazorCodeActionExtensions
+    internal static class CodeActionExtensions
     {
-        public static CommandOrCodeAction AsVSCodeCommandOrCodeAction(this RazorCodeAction razorCodeAction)
+        public static CommandOrCodeAction AsVSCodeCommandOrCodeAction(this CodeAction razorCodeAction)
         {
             if (razorCodeAction.Data is null)
             {
-                // No command data
-                return new CommandOrCodeAction(razorCodeAction);
+                // Only code action edit, we must convert this to a resolvable command
+
+                var resolutionParams = new RazorCodeActionResolutionParams
+                {
+                    Action = LanguageServerConstants.CodeActions.EditBasedCodeActionCommand,
+                    Language = LanguageServerConstants.CodeActions.Languages.Razor,
+                    Data = razorCodeAction.Edit ?? new WorkspaceEdit()
+                };
+
+                razorCodeAction = new CodeAction()
+                {
+                    Title = razorCodeAction.Title,
+                    Data = JToken.FromObject(resolutionParams)
+                };
             }
 
             var serializedParams = JToken.FromObject(razorCodeAction.Data);
@@ -30,8 +41,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models
             });
         }
 
-        public static RazorCodeAction WrapResolvableCSharpCodeAction(
-            this RazorCodeAction razorCodeAction,
+        public static CodeAction WrapResolvableCSharpCodeAction(
+            this CodeAction razorCodeAction,
             RazorCodeActionContext context,
             string action = LanguageServerConstants.CodeActions.Default)
         {
@@ -51,12 +62,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models
                 RazorFileUri = context.Request.TextDocument.Uri
             };
 
-            razorCodeAction.Data = new RazorCodeActionResolutionParams()
+            var resolutionParams = new RazorCodeActionResolutionParams()
             {
                 Action = action,
                 Language = LanguageServerConstants.CodeActions.Languages.CSharp,
                 Data = csharpParams
             };
+            razorCodeAction.Data = JToken.FromObject(resolutionParams);
 
             return razorCodeAction;
         }

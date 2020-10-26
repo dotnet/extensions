@@ -11,18 +11,18 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal abstract class CSharpCodeActionProvider
     {
-        protected static readonly Task<IReadOnlyList<RazorCodeAction>> EmptyResult =
-            Task.FromResult(Array.Empty<RazorCodeAction>() as IReadOnlyList<RazorCodeAction>);
+        protected static readonly Task<IReadOnlyList<CodeAction>> EmptyResult =
+            Task.FromResult(Array.Empty<CodeAction>() as IReadOnlyList<CodeAction>);
 
-        public abstract Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
+        public abstract Task<IReadOnlyList<CodeAction>> ProvideAsync(
             RazorCodeActionContext context,
-            IEnumerable<RazorCodeAction> codeActions,
+            IEnumerable<CodeAction> codeActions,
             CancellationToken cancellationToken);
 
         protected bool InFunctionsBlock(RazorCodeActionContext context)

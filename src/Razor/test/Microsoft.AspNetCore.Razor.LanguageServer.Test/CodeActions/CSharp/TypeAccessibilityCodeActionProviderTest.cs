@@ -14,6 +14,7 @@ using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "System.Net.Dns"
                 }
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "System.Net.Dns"
                 }
@@ -135,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
             var provider = new TypeAccessibilityCodeActionProvider();
-            var csharpCodeActions = Array.Empty<RazorCodeAction>();
+            var csharpCodeActions = Array.Empty<CodeAction>();
 
             // Act
             var results = await provider.ProvideAsync(context, csharpCodeActions, default);
@@ -189,11 +190,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             // A valid code actions is expected to end with `Path` as that's the `associatedText`
             // indicated in the `Diagnostic.Range` for `CS0246` above.
             var csharpCodeActions = new[] {
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "System.IO.OneThing"
                 },
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "System.IO.SomethingElse"
                 }
@@ -251,11 +252,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "System.IO.Path"
                 },
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "System.IO.SomethingElse"
                 }
@@ -270,7 +271,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                     Assert.Equal("@using System.IO", r.Title);
                     Assert.Null(r.Edit);
                     Assert.NotNull(r.Data);
-                    var resolutionParams = Assert.IsType<RazorCodeActionResolutionParams>(r.Data);
+                    var resolutionParams = (r.Data as JObject).ToObject<RazorCodeActionResolutionParams>();
                     Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
                 },
                 r => {
@@ -313,7 +314,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "System.IO.Path"
                 }
@@ -358,7 +359,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "System.IO.Path"
                 }
@@ -413,11 +414,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "Fully qualify 'Path' -> System.IO.Path"
                 },
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "Fully qualify 'Path' -> SuperSpecialNamespace.Path"
                 }
@@ -432,14 +433,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                     Assert.Equal("@using SuperSpecialNamespace", r.Title);
                     Assert.Null(r.Edit);
                     Assert.NotNull(r.Data);
-                    var resolutionParams = Assert.IsType<RazorCodeActionResolutionParams>(r.Data);
+                    var resolutionParams = (r.Data as JObject).ToObject<RazorCodeActionResolutionParams>();
                     Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
                 },
                 r => {
                     Assert.Equal("@using System.IO", r.Title);
                     Assert.Null(r.Edit);
                     Assert.NotNull(r.Data);
-                    var resolutionParams = Assert.IsType<RazorCodeActionResolutionParams>(r.Data);
+                    var resolutionParams = (r.Data as JObject).ToObject<RazorCodeActionResolutionParams>();
                     Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
                 },
                 r => {

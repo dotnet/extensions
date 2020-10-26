@@ -25,10 +25,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     public class DefaultCSharpCodeActionResolverTest : LanguageServerTestBase
     {
-        private static readonly RazorCodeAction DefaultResolvedCodeAction = new RazorCodeAction()
+        private static readonly CodeAction DefaultResolvedCodeAction = new CodeAction()
         {
             Title = "ResolvedCodeAction",
-            Data = new object(),
+            Data = JToken.FromObject(new object()),
             Edit = new WorkspaceEdit()
             {
                 DocumentChanges = new Container<WorkspaceEditDocumentChange>(
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
         };
 
-        private static readonly RazorCodeAction DefaultUnresolvedCodeAction = new RazorCodeAction()
+        private static readonly CodeAction DefaultUnresolvedCodeAction = new CodeAction()
         {
             Title = "Unresolved Code Action"
         };
@@ -81,10 +81,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         public async Task ResolveAsync_NoDocumentChanges_ReturnsOriginalCodeAction()
         {
             // Arrange
-            var resolvedCodeAction = new RazorCodeAction()
+            var resolvedCodeAction = new CodeAction()
             {
                 Title = "ResolvedCodeAction",
-                Data = new object(),
+                Data = JToken.FromObject(new object()),
                 Edit = new WorkspaceEdit()
                 {
                     DocumentChanges = null
@@ -106,10 +106,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         public async Task ResolveAsync_MultipleDocumentChanges_ReturnsOriginalCodeAction()
         {
             // Arrange
-            var resolvedCodeAction = new RazorCodeAction()
+            var resolvedCodeAction = new CodeAction()
             {
                 Title = "ResolvedCodeAction",
-                Data = new object(),
+                Data = JToken.FromObject(new object()),
                 Edit = new WorkspaceEdit()
                 {
                     DocumentChanges = new Container<WorkspaceEditDocumentChange>(
@@ -153,10 +153,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         public async Task ResolveAsync_NonTextDocumentEdit_ReturnsOriginalCodeAction()
         {
             // Arrange
-            var resolvedCodeAction = new RazorCodeAction()
+            var resolvedCodeAction = new CodeAction()
             {
                 Title = "ResolvedCodeAction",
-                Data = new object(),
+                Data = JToken.FromObject(new object()),
                 Edit = new WorkspaceEdit()
                 {
                     DocumentChanges = new Container<WorkspaceEditDocumentChange>(
@@ -231,16 +231,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return documentVersionCache;
         }
 
-        private IClientLanguageServer CreateLanguageServer(RazorCodeAction resolvedCodeAction = null)
+        private IClientLanguageServer CreateLanguageServer(CodeAction resolvedCodeAction = null)
         {
             var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
             responseRouterReturns
-                .Setup(l => l.Returning<RazorCodeAction>(It.IsAny<CancellationToken>()))
+                .Setup(l => l.Returning<CodeAction>(It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(resolvedCodeAction ?? DefaultResolvedCodeAction));
 
             var languageServer = new Mock<IClientLanguageServer>(MockBehavior.Strict);
             languageServer
-                .Setup(l => l.SendRequest(LanguageServerConstants.RazorResolveCodeActionsEndpoint, It.IsAny<RazorCodeAction>()))
+                .Setup(l => l.SendRequest(LanguageServerConstants.RazorResolveCodeActionsEndpoint, It.IsAny<CodeAction>()))
                 .Returns(responseRouterReturns.Object);
 
             return languageServer.Object;

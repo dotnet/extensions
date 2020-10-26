@@ -4,13 +4,13 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal abstract class RazorCodeActionProvider
     {
-        public abstract Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
+        public abstract Task<IReadOnlyList<CodeAction>> ProvideAsync(
             RazorCodeActionContext context,
             CancellationToken cancellationToken);
     }

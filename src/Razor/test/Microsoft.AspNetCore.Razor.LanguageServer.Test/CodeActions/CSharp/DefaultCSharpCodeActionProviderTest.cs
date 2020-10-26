@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using Microsoft.AspNetCore.Razor.Test.Common;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -19,25 +18,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     public class DefaultCSharpCodeActionProviderTest : LanguageServerTestBase
     {
-        private static readonly RazorCodeAction[] SupportedCodeActions = new RazorCodeAction[]
+        private static readonly CodeAction[] SupportedCodeActions = new CodeAction[]
         {
-            new RazorCodeAction()
+            new CodeAction()
             {
                 Title = "Generate Equals and GetHashCode"
             },
-            new RazorCodeAction()
+            new CodeAction()
             {
                 Title = "Add null check"
             },
-            new RazorCodeAction()
+            new CodeAction()
             {
                 Title = "Add null checks for all parameters"
             },
-            new RazorCodeAction()
+            new CodeAction()
             {
                 Title = "Add null checks for all parameters"
             },
-            new RazorCodeAction()
+            new CodeAction()
             {
                 Title = "Generate constructor 'Counter(int)'"
             }
@@ -145,13 +144,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new DefaultCSharpCodeActionProvider();
 
-            var codeActions = new RazorCodeAction[]
+            var codeActions = new CodeAction[]
             {
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     Title = "Do something not really supported in razor"
                 },
-                new RazorCodeAction()
+                new CodeAction()
                 {
                     // Invalid regex pattern shouldn't match
                     Title = "Generate constructor 'Counter(int)' xyz"
@@ -164,8 +163,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             // Assert
             Assert.Empty(providedCodeActions);
         }
-
-
 
         private static RazorCodeActionContext CreateRazorCodeActionContext(
             CodeActionParams request,

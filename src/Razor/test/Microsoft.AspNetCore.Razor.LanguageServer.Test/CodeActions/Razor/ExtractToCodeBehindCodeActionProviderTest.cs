@@ -16,6 +16,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 using Microsoft.CodeAnalysis.Text;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 {
@@ -164,8 +165,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
             // Assert
             var codeAction = Assert.Single(commandOrCodeActionContainer);
-            var razorCodeActionResolutionParams = codeAction.Data as RazorCodeActionResolutionParams;
-            var actionParams = razorCodeActionResolutionParams.Data as ExtractToCodeBehindCodeActionParams;
+            var razorCodeActionResolutionParams = codeAction.Data.ToObject<RazorCodeActionResolutionParams>();
+            var actionParams = (razorCodeActionResolutionParams.Data as JObject).ToObject<ExtractToCodeBehindCodeActionParams>();
             Assert.Equal(14, actionParams.RemoveStart);
             Assert.Equal(19, actionParams.ExtractStart);
             Assert.Equal(42, actionParams.ExtractEnd);
@@ -218,8 +219,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
             // Assert
             var codeAction = Assert.Single(commandOrCodeActionContainer);
-            var razorCodeActionResolutionParams = codeAction.Data as RazorCodeActionResolutionParams;
-            var actionParams = razorCodeActionResolutionParams.Data as ExtractToCodeBehindCodeActionParams;
+            var razorCodeActionResolutionParams = codeAction.Data.ToObject<RazorCodeActionResolutionParams>();
+            var actionParams = (razorCodeActionResolutionParams.Data as JObject).ToObject<ExtractToCodeBehindCodeActionParams>();
             Assert.Equal(14, actionParams.RemoveStart);
             Assert.Equal(24, actionParams.ExtractStart);
             Assert.Equal(47, actionParams.ExtractEnd);
