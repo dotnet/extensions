@@ -38,6 +38,9 @@
     <Compile Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\DiffEdit.cs">
       <Link>LanguageServer\%(FileName)%(Extension)</Link>
     </Compile>
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+
     <None Include="MSN.cshtml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="taghelpers.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="ProjectSystem\project.razor.json" CopyToOutputDirectory="PreserveNewest" />
@@ -46,7 +49,6 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
   </ItemGroup>
 
