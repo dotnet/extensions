@@ -733,7 +733,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                         DeleteCount = 1,
                         Data = new List<int>
                         {
-                            80, 0, 0, 2, 1, 72
+                            RazorSemanticTokensLegend.MarkupElement, 0, 0, 2, 1, RazorSemanticTokensLegend.RazorTransition
                         }.ToImmutableArray()
                     },
                     new SemanticTokensEdit
@@ -742,7 +742,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                         DeleteCount = 2,
                         Data = new List<int>
                         {
-                            9, 74
+                            9, RazorSemanticTokensLegend.RazorDirectiveAttribute
                         }.ToImmutableArray()
                     },
                     new SemanticTokensEdit

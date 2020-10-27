@@ -86,14 +86,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
             "method name", // 30
             "module name",
             "operator - overloaded",
+            "record name",
             "preprocessor keyword",
             "preprocessor text",
             "punctuation",
             "regex - alternation",
             "regex - anchor",
             "regex - character class",
-            "regex - comment",
-            "regex - grouping", // 40
+            "regex - comment", // 40
+            "regex - grouping",
             "regex - other escape",
             "regex - quantifier",
             "regex - self escaped character",
@@ -102,8 +103,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
             "text",
             "string - verbatim",
             "whitespace",
-            "xml doc comment - attribute name",
-            "xml doc comment - attribute quotes", // 50
+            "xml doc comment - attribute name", // 50
+            "xml doc comment - attribute quotes",
             "xml doc comment - attribute value",
             "xml doc comment - cdata section",
             "xml doc comment - comment",
@@ -112,8 +113,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
             "xml doc comment - name",
             "xml doc comment - processing instruction",
             "xml doc comment - text",
-            "xml literal - attribute name",
-            "xml literal - attribute quotes", // 60
+            "xml literal - attribute name", // 60
+            "xml literal - attribute quotes",
             "xml literal - attribute value",
             "xml literal - cdata section",
             "xml literal - comment",
@@ -122,8 +123,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
             "xml literal - entity reference",
             "xml literal - name",
             "xml literal - processing instruction",
-            "xml literal - text",
-            RazorTagHelperElementString, // 70 Razor token types
+            "xml literal - text", // 70
+            RazorTagHelperElementString, //
             RazorTagHelperAttributeString,
             RazorTransitionString,
             RazorDirectiveColonString,
@@ -132,8 +133,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
             RazorCommentString,
             RazorCommentTransitionString,
             RazorCommentStarString,
-            MarkupTagDelimiterString,
-            MarkupElementString, // 80
+            MarkupTagDelimiterString, // 80
+            MarkupElementString,
             MarkupOperatorString,
             MarkupAttributeString,
             MarkupAttributeQuoteString,
