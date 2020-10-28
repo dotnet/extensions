@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
         protected string ConnectionString { get; }
 
-        protected string UseAccessToken { get; }
+        protected bool UseAccessToken { get; }
 
         protected string KeyVaultConnectionStringProvider { get; }
 
