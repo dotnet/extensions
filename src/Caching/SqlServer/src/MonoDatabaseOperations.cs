@@ -15,8 +15,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
     internal class MonoDatabaseOperations : DatabaseOperations
     {
         public MonoDatabaseOperations(
-            string connectionString, string schemaName, string tableName, ISystemClock systemClock)
-            : base(connectionString, schemaName, tableName, systemClock)
+            string connectionString, bool useAccessToken, string keyVaultConnectionStringProvider, string schemaName, string tableName, ISystemClock systemClock)
+            : base(connectionString, useAccessToken, keyVaultConnectionStringProvider, schemaName, tableName, systemClock)
         {
         }
 

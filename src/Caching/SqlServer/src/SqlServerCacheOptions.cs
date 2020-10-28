@@ -29,6 +29,16 @@ namespace Microsoft.Extensions.Caching.SqlServer
         public string ConnectionString { get; set; }
 
         /// <summary>
+        /// Determines whether you should use the access key for a connnection or not.
+        /// </summary>
+        public bool UseAccessToken { get; set; }
+
+        /// <summary>
+        /// The connection string used to get the access token from the vey vault. Used mostly when wanting to connect using MSI.
+        /// </summary>
+        public string KeyVaultProviderConnectionString { get; set; }
+
+        /// <summary>
         /// The schema name of the table.
         /// </summary>
         public string SchemaName { get; set; }

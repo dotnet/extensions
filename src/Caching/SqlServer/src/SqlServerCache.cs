@@ -73,6 +73,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             {
                 _dbOperations = new MonoDatabaseOperations(
                     cacheOptions.ConnectionString,
+                    cacheOptions.UseAccessToken,
+                    cacheOptions.KeyVaultProviderConnectionString,
                     cacheOptions.SchemaName,
                     cacheOptions.TableName,
                     _systemClock);
@@ -81,6 +83,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             {
                 _dbOperations = new DatabaseOperations(
                     cacheOptions.ConnectionString,
+                    cacheOptions.UseAccessToken,
+                    cacheOptions.KeyVaultProviderConnectionString,
                     cacheOptions.SchemaName,
                     cacheOptions.TableName,
                     _systemClock);
