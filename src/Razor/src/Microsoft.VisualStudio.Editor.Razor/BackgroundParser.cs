@@ -185,7 +185,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     }
                 }
 
-                _hasParcel?.Wait(_cancelSource.Token);
+                try
+                {
+                    _hasParcel?.Wait(_cancelSource.Token);
+                }
+                catch (Exception)
+                {
+                    // Swallow any exceptions caused by waiting on the parcel to avoid crashing VS.
+                }
 
                 lock (_disposeLock)
                 {
