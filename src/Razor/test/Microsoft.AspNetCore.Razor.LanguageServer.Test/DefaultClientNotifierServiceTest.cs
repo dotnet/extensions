@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using OmniSharp.Extensions.JsonRpc;
@@ -19,15 +20,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             var method = "anystring";
             var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
 
-            var taskCompletionSource = new TaskCompletionSource<bool>();
             var languageServer = new Mock<IClientLanguageServer>(MockBehavior.Strict);
             languageServer.Setup(l => l.SendRequest(method))
                 .Returns(responseRouterReturns.Object);
 
-            var notifierServer = new DefaultClientNotifierService(languageServer.Object, taskCompletionSource);
+            var notifierServer = new DefaultClientNotifierService(languageServer.Object);
 
             // Act
-            taskCompletionSource.SetResult(true);
+            await notifierServer.OnStarted(server:null, CancellationToken.None);
             var result = await notifierServer.SendRequestAsync(method);
 
             // Assert
@@ -36,20 +36,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         }
 
         [Fact]
-        public async Task SendRequestAsync_TaskDoesNotComplete_LanguageServerNeverHit()
+        public void SendRequestAsync_TaskDoesNotComplete_LanguageServerNeverHit()
         {
             // Arrange
             var method = "anystring";
-            var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
 
-            var taskCompletionSource = new TaskCompletionSource<bool>();
             var languageServer = new Mock<IClientLanguageServer>(MockBehavior.Strict);
 
-            var notifierServer = new DefaultClientNotifierService(languageServer.Object, taskCompletionSource);
+            var notifierServer = new DefaultClientNotifierService(languageServer.Object);
 
             // Act & Assert
-            taskCompletionSource.SetException(new ArgumentNullException());
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await notifierServer.SendRequestAsync(method));
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+            Assert.False(notifierServer.SendRequestAsync(method).Wait(TimeSpan.FromSeconds(2)));
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
             languageServer.VerifyAll();
         }

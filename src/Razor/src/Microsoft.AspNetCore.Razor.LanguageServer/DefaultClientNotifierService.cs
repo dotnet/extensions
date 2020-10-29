@@ -19,20 +19,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private TaskCompletionSource<bool> _initializedCompletionSource;
         private IClientLanguageServer _languageServer;
 
-        public DefaultClientNotifierService(IClientLanguageServer languageServer, TaskCompletionSource<bool> initializedCompletionSource)
+        public DefaultClientNotifierService(IClientLanguageServer languageServer)
         {
             if (languageServer is null)
             {
                 throw new ArgumentNullException(nameof(languageServer));
             }
 
-            if (initializedCompletionSource is null)
-            {
-                throw new ArgumentNullException(nameof(initializedCompletionSource));
-            }
-
             _languageServer = languageServer;
-            _initializedCompletionSource = initializedCompletionSource;
+            _initializedCompletionSource = new TaskCompletionSource<bool>();
         }
 
         public override async Task<IResponseRouterReturns> SendRequestAsync(string method)
