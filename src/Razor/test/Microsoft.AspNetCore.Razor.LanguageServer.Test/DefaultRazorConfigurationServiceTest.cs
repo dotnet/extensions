@@ -74,9 +74,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Null(options);
         }
 
-        private IClientLanguageServer GetLanguageServer(IResponseRouterReturns result, bool shouldThrow = false)
+        private ClientNotifierServiceBase GetLanguageServer(IResponseRouterReturns result, bool shouldThrow = false)
         {
-            var languageServer = new Mock<IClientLanguageServer>(MockBehavior.Strict);
+            var languageServer = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
 
             if (shouldThrow)
             {
@@ -84,8 +84,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             else
             {
                 languageServer
-                    .Setup(l => l.SendRequest("workspace/configuration", It.IsAny<ConfigurationParams>()))
-                    .Returns(result);
+                    .Setup(l => l.SendRequestAsync("workspace/configuration", It.IsAny<ConfigurationParams>()))
+                    .Returns(Task.FromResult(result));
             }
             return languageServer.Object;
         }

@@ -438,7 +438,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             public override string Action { get; }
 
             internal MockCSharpCodeActionResolver(string action)
-                : base(Mock.Of<IClientLanguageServer>())
+                : base(Mock.Of<ClientNotifierServiceBase>())
             {
                 Action = action;
             }
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             public override string Action { get; }
 
             internal MockCSharpNullCodeActionResolver(string action)
-                : base(Mock.Of<IClientLanguageServer>())
+                : base(Mock.Of<ClientNotifierServiceBase>())
             {
                 Action = action;
             }

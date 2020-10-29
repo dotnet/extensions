@@ -21,7 +21,6 @@ import { RazorLogger } from './RazorLogger';
 import { TelemetryReporter } from './TelemetryReporter';
 
 const events = {
-    ServerStart: 'ServerStart',
     ServerStop: 'ServerStop',
 };
 
@@ -30,6 +29,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     private serverOptions!: ServerOptions;
     private client!: LanguageClient;
     private startDisposable: vscode.Disposable | undefined;
+    private onStartListeners: Array<() => Promise<any>> = [];
     private onStartedListeners: Array<() => Promise<any>> = [];
     private eventBus: EventEmitter;
     private isStarted: boolean;
@@ -58,12 +58,8 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this.onStartedListeners.push(listener);
     }
 
-    public onStart(listener: () => any) {
-        this.eventBus.addListener(events.ServerStart, listener);
-
-        const disposable = new vscode.Disposable(() =>
-            this.eventBus.removeListener(events.ServerStart, listener));
-        return disposable;
+    public onStart(listener: () => Promise<any>) {
+        this.onStartListeners.push(listener);
     }
 
     public onStop(listener: () => any) {
@@ -120,9 +116,15 @@ export class RazorLanguageServerClient implements vscode.Disposable {
                     return;
                 }
                 this.isStarted = true;
-                this.logger.logMessage('Server started and ready!');
-                this.eventBus.emit(events.ServerStart);
+                this.logger.logMessage('Server starting!');
+                for (const listener of this.onStartListeners) {
+                    await listener();
+                }
 
+                // Succesfully started, notify listeners.
+                resolve();
+
+                this.logger.logMessage('Server ready!');
                 for (const listener of this.onStartedListeners) {
                     await listener();
                 }
@@ -130,9 +132,6 @@ export class RazorLanguageServerClient implements vscode.Disposable {
                 // We don't want to track restart management after the server has been initially started,
                 // the langauge client will handle that.
                 didChangeStateDisposable.dispose();
-
-                // Succesfully started, notify listeners.
-                resolve();
             });
         } catch (error) {
             vscode.window.showErrorMessage(

@@ -15,7 +15,6 @@ using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly LanguageServerFeatureOptions _languageServerFeatureOptions;
-        private readonly IClientLanguageServer _languageServer;
+        private readonly ClientNotifierServiceBase _languageServer;
 
         private CodeActionCapability _capability;
 
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             IEnumerable<CSharpCodeActionProvider> csharpCodeActionProviders,
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
-            IClientLanguageServer languageServer,
+            ClientNotifierServiceBase languageServer,
             LanguageServerFeatureOptions languageServerFeatureOptions)
         {
             _documentMappingService = documentMappingService ?? throw new ArgumentNullException(nameof(documentMappingService));
@@ -221,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var response = _languageServer.SendRequest(LanguageServerConstants.RazorProvideCodeActionsEndpoint, context.Request);
+            var response = await _languageServer.SendRequestAsync(LanguageServerConstants.RazorProvideCodeActionsEndpoint, context.Request);
             return await response.Returning<CodeAction[]>(cancellationToken);
         }
 

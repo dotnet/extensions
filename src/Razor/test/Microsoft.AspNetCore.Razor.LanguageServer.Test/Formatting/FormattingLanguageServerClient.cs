@@ -27,7 +27,7 @@ using FormattingOptions = OmniSharp.Extensions.LanguageServer.Protocol.Models.Fo
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    public class FormattingLanguageServerClient : IClientLanguageServer
+    internal class FormattingLanguageServerClient : ClientNotifierServiceBase
     {
         private readonly FilePathNormalizer _filePathNormalizer = new FilePathNormalizer();
         private readonly Dictionary<string, RazorCodeDocument> _documents = new Dictionary<string, RazorCodeDocument>();
@@ -52,7 +52,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public ILanguageServerConfiguration Configuration => throw new NotImplementedException();
 
-        public InitializeParams ClientSettings => throw new NotImplementedException();
+        public override InitializeParams ClientSettings
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         public InitializeResult ServerSettings => throw new NotImplementedException();
 
@@ -199,7 +205,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             throw new NotImplementedException();
         }
 
-        public IResponseRouterReturns SendRequest<T>(string method, T @params)
+        public override Task<IResponseRouterReturns> SendRequestAsync<T>(string method, T @params)
         {
             if (!(@params is RazorDocumentRangeFormattingParams formattingParams) ||
                 !string.Equals(method, "razor/rangeFormatting", StringComparison.Ordinal))
@@ -209,10 +215,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             var response = Format(formattingParams);
 
-            return Convert<RazorDocumentRangeFormattingResponse>(response);
+            return Task.FromResult(Convert<RazorDocumentRangeFormattingResponse>(response));
         }
 
-        public IResponseRouterReturns SendRequest(string method)
+        public override Task<IResponseRouterReturns> SendRequestAsync(string method)
         {
             throw new NotImplementedException();
         }
@@ -228,6 +234,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         public bool TryGetRequest(long id, [NotNullWhen(true)] out string method, [NotNullWhen(true)] out TaskCompletionSource<JToken> pendingTask)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task OnStarted(ILanguageServer server, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

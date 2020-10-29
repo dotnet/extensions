@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private void CreateCodeActionResolver(
             out CSharpCodeActionParams codeActionParams,
             out DefaultCSharpCodeActionResolver csharpCodeActionResolver,
-            IClientLanguageServer languageServer = null,
+            ClientNotifierServiceBase languageServer = null,
             DocumentVersionCache documentVersionCache = null,
             RazorFormattingService razorFormattingService = null)
         {
@@ -231,17 +231,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return documentVersionCache;
         }
 
-        private IClientLanguageServer CreateLanguageServer(CodeAction resolvedCodeAction = null)
+        private ClientNotifierServiceBase CreateLanguageServer(CodeAction resolvedCodeAction = null)
         {
             var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
             responseRouterReturns
                 .Setup(l => l.Returning<CodeAction>(It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(resolvedCodeAction ?? DefaultResolvedCodeAction));
 
-            var languageServer = new Mock<IClientLanguageServer>(MockBehavior.Strict);
+            var languageServer = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
             languageServer
-                .Setup(l => l.SendRequest(LanguageServerConstants.RazorResolveCodeActionsEndpoint, It.IsAny<CodeAction>()))
-                .Returns(responseRouterReturns.Object);
+                .Setup(l => l.SendRequestAsync(LanguageServerConstants.RazorResolveCodeActionsEndpoint, It.IsAny<CodeAction>()))
+                .Returns(Task.FromResult(responseRouterReturns.Object));
 
             return languageServer.Object;
         }

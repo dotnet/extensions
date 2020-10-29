@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             ILanguageServer server = null;
             var logLevel = RazorLSPOptions.GetLogLevelForTrace(trace);
+            var initializedCompletionSource = new TaskCompletionSource<bool>();
 
             server = OmniSharp.Extensions.LanguageServer.Server.LanguageServer.PreInit(options =>
                 options
@@ -166,6 +167,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<RazorFileChangeDetectorManager>();
 
                         services.AddSingleton<ProjectSnapshotChangeTrigger, RazorServerReadyPublisher>();
+
+                        services.AddSingleton<ClientNotifierServiceBase>((serviceProvider) => {
+                            var languageServer = serviceProvider.GetRequiredService<IClientLanguageServer>();
+                            var clientNotifierService = new DefaultClientNotifierService(languageServer, initializedCompletionSource);
+
+                            return clientNotifierService;
+                        });
 
                         // Options
                         services.AddSingleton<RazorConfigurationService, DefaultRazorConfigurationService>();

@@ -6,7 +6,6 @@ using System.Threading;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -14,25 +13,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private ProjectSnapshotManagerBase _projectManager;
-        private readonly IClientLanguageServer _languageServer;
+        private readonly ClientNotifierServiceBase _clientNotifierService;
         private bool _hasNotified = false;
 
         public RazorServerReadyPublisher(
             ForegroundDispatcher foregroundDispatcher,
-            IClientLanguageServer languageServer)
+            ClientNotifierServiceBase clientNotifierService)
         {
             if (foregroundDispatcher is null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
-            if (languageServer is null)
+            if (clientNotifierService is null)
             {
-                throw new ArgumentNullException(nameof(languageServer));
+                throw new ArgumentNullException(nameof(clientNotifierService));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
-            _languageServer = languageServer;
+            _clientNotifierService = clientNotifierService;
         }
 
         public override void Initialize(ProjectSnapshotManagerBase projectManager)
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 // Un-register this method, we only need to send this once.
                 _projectManager.Changed -= ProjectSnapshotManager_Changed;
 
-                var response = _languageServer.SendRequest(LanguageServerConstants.RazorServerReadyEndpoint);
+                var response = await _clientNotifierService.SendRequestAsync(LanguageServerConstants.RazorServerReadyEndpoint);
                 await response.ReturningVoid(CancellationToken.None);
 
                 _hasNotified = true;

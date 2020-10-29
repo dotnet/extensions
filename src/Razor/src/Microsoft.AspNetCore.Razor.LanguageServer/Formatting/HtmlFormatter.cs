@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
@@ -14,10 +13,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     internal class HtmlFormatter
     {
         private readonly FilePathNormalizer _filePathNormalizer;
-        private readonly IClientLanguageServer _server;
+        private readonly ClientNotifierServiceBase _server;
 
         public HtmlFormatter(
-            IClientLanguageServer languageServer,
+            ClientNotifierServiceBase languageServer,
             FilePathNormalizer filePathNormalizer)
         {
             if (languageServer is null)
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 Options = context.Options
             };
 
-            var response = _server.SendRequest(LanguageServerConstants.RazorRangeFormattingEndpoint, @params);
+            var response = await _server.SendRequestAsync(LanguageServerConstants.RazorRangeFormattingEndpoint, @params);
             var result = await response.Returning<RazorDocumentRangeFormattingResponse>(cancellationToken);
 
             return result.Edits;

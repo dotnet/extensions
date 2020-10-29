@@ -10,16 +10,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultRazorConfigurationService : RazorConfigurationService
     {
-        private readonly IClientLanguageServer _server;
+        private readonly ClientNotifierServiceBase _server;
         private readonly ILogger _logger;
 
-        public DefaultRazorConfigurationService(IClientLanguageServer languageServer, ILoggerFactory loggerFactory)
+        public DefaultRazorConfigurationService(ClientNotifierServiceBase languageServer, ILoggerFactory loggerFactory)
         {
             if (languageServer is null)
             {
@@ -54,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     }
                 };
 
-                var response = _server.SendRequest("workspace/configuration", request);
+                var response = await _server.SendRequestAsync("workspace/configuration", request);
                 var result = await response.Returning<JObject[]>(cancellationToken);
                 if (result == null || result.Length < 2 || result[0] == null)
                 {

@@ -68,9 +68,10 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
         const razorFormattingFeature = new RazorFormattingFeature(languageServerClient, documentManager, logger);
         const razorCodeActionRunner = new RazorCodeActionRunner(languageServerClient, logger);
 
-        const onStartRegistration = languageServerClient.onStart(async () => {
+        let documentSynchronizer: RazorDocumentSynchronizer;
+        languageServerClient.onStart(async () => {
             vscodeType.commands.executeCommand<void>('omnisharp.registerLanguageMiddleware', razorLanguageMiddleware);
-            const documentSynchronizer = new RazorDocumentSynchronizer(documentManager, logger);
+            documentSynchronizer = new RazorDocumentSynchronizer(documentManager, logger);
             const provisionalCompletionOrchestrator = new ProvisionalCompletionOrchestrator(
                 documentManager,
                 csharpFeature.projectionProvider,
@@ -82,6 +83,7 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 logger);
             const semanticTokenHandler = new SemanticTokensHandler(languageServerClient);
             const razorServerReadyHandler = new RazorServerReadyHandler(languageServerClient);
+
             const completionItemProvider = new RazorCompletionItemProvider(
                 documentSynchronizer,
                 documentManager,
@@ -162,17 +164,6 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
                 reportIssueCommand.register(),
                 listenToConfigurationChanges(languageServerClient));
 
-            const legend = await languageServiceClient.getSemanticTokenLegend();
-            const semanticTokenProvider = new RazorDocumentSemanticTokensProvider(
-                documentSynchronizer,
-                documentManager,
-                languageServiceClient,
-                logger);
-            if (legend) {
-                localRegistrations.push(vscodeType.languages.registerDocumentSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
-                localRegistrations.push(vscodeType.languages.registerDocumentRangeSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
-            }
-
             if (enableProposedApis) {
                 const proposedApisFeature = new ProposedApisFeature();
 
@@ -194,12 +185,23 @@ export async function activate(vscodeType: typeof vscodeapi, context: ExtensionC
         context.subscriptions.push(vscodeType.debug.registerDebugConfigurationProvider('blazorwasm', provider));
 
         languageServerClient.onStarted(async () => {
+            const legend = await languageServiceClient.getSemanticTokenLegend();
+            const semanticTokenProvider = new RazorDocumentSemanticTokensProvider(
+                documentSynchronizer,
+                documentManager,
+                languageServiceClient,
+                logger);
+            if (legend) {
+                localRegistrations.push(vscodeType.languages.registerDocumentSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
+                localRegistrations.push(vscodeType.languages.registerDocumentRangeSemanticTokensProvider(RazorLanguage.id, semanticTokenProvider, legend));
+            }
+
             await documentManager.initialize();
         });
 
         await startLanguageServer(vscodeType, languageServerClient, logger, context);
 
-        context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration, logger);
+        context.subscriptions.push(languageServerClient, onStopRegistration, logger);
     } catch (error) {
         logger.logError('Failed when activating Razor VSCode.', error);
         telemetryReporter.reportErrorOnActivation(error);

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     public class DefaultTagHelperDescriptionFactoryTest
     {
-        protected IClientLanguageServer LanguageServer
+        internal ClientNotifierServiceBase LanguageServer
         {
             get
             {
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     }
                 };
 
-                var languageServer = new Mock<IClientLanguageServer>();
+                var languageServer = new Mock<ClientNotifierServiceBase>();
                 languageServer.SetupGet(server => server.ClientSettings)
                     .Returns(initializeParams);
 

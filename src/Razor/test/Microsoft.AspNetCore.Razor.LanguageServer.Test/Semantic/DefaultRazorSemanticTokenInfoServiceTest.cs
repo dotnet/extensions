@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             });
 
             await AssertSemanticTokenEdits(txt, expectedDelta, isRazor, previousResultId: previousResultId, document, service: service);
-            mockClient.Verify(l => l.SendRequest(LanguageServerConstants.RazorProvideSemanticTokensEndpoint, It.IsAny<SemanticTokensParams>()), Times.Once());
+            mockClient.Verify(l => l.SendRequestAsync(LanguageServerConstants.RazorProvideSemanticTokensEndpoint, It.IsAny<SemanticTokensParams>()), Times.Once());
         }
         #endregion
 
@@ -1024,7 +1024,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             Assert.NotEqual(previousResultId, newResultId);
         }
 
-        private async Task<(string, RazorSemanticTokensInfoService, Mock<IClientLanguageServer>, DocumentSnapshot)> AssertSemanticTokens(
+        private async Task<(string, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>, DocumentSnapshot)> AssertSemanticTokens(
             string txt,
             IEnumerable<int> expectedData,
             bool isRazor,
@@ -1034,7 +1034,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             (OmniSharpRange, OmniSharpRange)[] documentMappings = null)
         {
             // Arrange
-            Mock<IClientLanguageServer> serviceMock = null;
+            Mock<ClientNotifierServiceBase> serviceMock = null;
             if (service is null)
             {
                 (service, serviceMock) = GetDefaultRazorSemanticTokenInfoService(cSharpTokens, documentMappings);
@@ -1070,10 +1070,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             return true;
         }
 
-        private async Task<(string, RazorSemanticTokensInfoService, Mock<IClientLanguageServer>)> AssertSemanticTokenEdits(string txt, SemanticTokensFullOrDelta expectedEdits, bool isRazor, string previousResultId, DocumentSnapshot documentSnapshot = null, RazorSemanticTokensInfoService service = null)
+        private async Task<(string, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>)> AssertSemanticTokenEdits(string txt, SemanticTokensFullOrDelta expectedEdits, bool isRazor, string previousResultId, DocumentSnapshot documentSnapshot = null, RazorSemanticTokensInfoService service = null)
         {
             // Arrange
-            Mock<IClientLanguageServer> clientMock = null;
+            Mock<ClientNotifierServiceBase> clientMock = null;
             if (service is null)
             {
                 (service, clientMock) = GetDefaultRazorSemanticTokenInfoService();
@@ -1113,17 +1113,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             }
         }
 
-        private static (RazorSemanticTokensInfoService, Mock<IClientLanguageServer>) GetDefaultRazorSemanticTokenInfoService(SemanticTokens cSharpTokens = null, (OmniSharpRange, OmniSharpRange)[] documentMappings = null)
+        private static (RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>) GetDefaultRazorSemanticTokenInfoService(SemanticTokens cSharpTokens = null, (OmniSharpRange, OmniSharpRange)[] documentMappings = null)
         {
             var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
             responseRouterReturns
                 .Setup(l => l.Returning<SemanticTokens>(It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(cSharpTokens));
 
-            var languageServer = new Mock<IClientLanguageServer>(MockBehavior.Strict);
+            var languageServer = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
             languageServer
-                .Setup(l => l.SendRequest(LanguageServerConstants.RazorProvideSemanticTokensEndpoint, It.IsAny<SemanticTokensParams>()))
-                .Returns(responseRouterReturns.Object);
+                .Setup(l => l.SendRequestAsync(LanguageServerConstants.RazorProvideSemanticTokensEndpoint, It.IsAny<SemanticTokensParams>()))
+                .Returns(Task.FromResult(responseRouterReturns.Object));
             var documentMappingService = new Mock<RazorDocumentMappingService>(MockBehavior.Strict);
             if (documentMappings != null)
             {

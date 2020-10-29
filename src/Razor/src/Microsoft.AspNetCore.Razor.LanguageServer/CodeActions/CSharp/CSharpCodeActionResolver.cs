@@ -7,15 +7,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal abstract class CSharpCodeActionResolver : BaseCodeActionResolver
     {
-        protected readonly IClientLanguageServer _languageServer;
+        protected readonly ClientNotifierServiceBase _languageServer;
 
-        public CSharpCodeActionResolver(IClientLanguageServer languageServer)
+        public CSharpCodeActionResolver(ClientNotifierServiceBase languageServer)
         {
             if (languageServer is null)
             {
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         protected async Task<CodeAction> ResolveCodeActionWithServerAsync(CodeAction codeAction, CancellationToken cancellationToken)
         {
-            var response = _languageServer.SendRequest(LanguageServerConstants.RazorResolveCodeActionsEndpoint, codeAction);
+            var response = await _languageServer.SendRequestAsync(LanguageServerConstants.RazorResolveCodeActionsEndpoint, codeAction);
             var resolvedCodeAction = await response.Returning<CodeAction>(cancellationToken);
 
             return resolvedCodeAction;

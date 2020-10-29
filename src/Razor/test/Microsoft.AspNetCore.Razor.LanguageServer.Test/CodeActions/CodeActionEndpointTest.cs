@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         private readonly RazorDocumentMappingService DocumentMappingService = Mock.Of<RazorDocumentMappingService>();
         private readonly DocumentResolver EmptyDocumentResolver = Mock.Of<DocumentResolver>();
         private readonly LanguageServerFeatureOptions LanguageServerFeatureOptions = Mock.Of<LanguageServerFeatureOptions>(l => l.SupportsFileManipulation == true);
-        private readonly IClientLanguageServer LanguageServer = Mock.Of<IClientLanguageServer>();
+        private readonly ClientNotifierServiceBase LanguageServer = Mock.Of<ClientNotifierServiceBase>();
 
         [Fact]
         public async Task Handle_NoDocument()
@@ -663,13 +663,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             return documentMappingService;
         }
 
-        private static IClientLanguageServer CreateLanguageServer()
+        private static ClientNotifierServiceBase CreateLanguageServer()
         {
             var response = Mock.Of<IResponseRouterReturns>(
                 r => r.Returning<CodeAction[]>(It.IsAny<CancellationToken>()) == Task.FromResult(new[] { new CodeAction() })
             );
-            var languageServer = Mock.Of<IClientLanguageServer>(
-                l => l.SendRequest(LanguageServerConstants.RazorProvideCodeActionsEndpoint, It.IsAny<CodeActionParams>()) == response
+            var languageServer = Mock.Of<ClientNotifierServiceBase>(
+                l => l.SendRequestAsync(LanguageServerConstants.RazorProvideCodeActionsEndpoint, It.IsAny<CodeActionParams>()) == Task.FromResult(response)
             );
             return languageServer;
         }

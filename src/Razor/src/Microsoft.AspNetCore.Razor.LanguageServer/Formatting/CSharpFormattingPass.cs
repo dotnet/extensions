@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using TextSpan = Microsoft.CodeAnalysis.Text.TextSpan;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public CSharpFormattingPass(
             RazorDocumentMappingService documentMappingService,
             FilePathNormalizer filePathNormalizer,
-            IClientLanguageServer server,
+            ClientNotifierServiceBase server,
             ILoggerFactory loggerFactory)
             : base(documentMappingService, filePathNormalizer, server)
         {
