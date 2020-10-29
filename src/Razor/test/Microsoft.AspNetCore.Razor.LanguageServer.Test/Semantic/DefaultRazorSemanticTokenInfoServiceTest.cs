@@ -211,6 +211,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             await AssertSemanticTokens(txt, expectedData, isRazor: true);
         }
+
+        [Fact]
+        public async Task GetSemanticTokens_HTMLIncludesBang()
+        {
+            var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<!input/>";
+            var expectedData = new List<int>
+            {
+                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
+                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
+                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
+                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
+                0, 1, 5, RazorSemanticTokensLegend.MarkupElement, 0,
+                0, 5, 1,  RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
+                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
+            };
+
+            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+        }
         #endregion
 
         #region TagHelpers

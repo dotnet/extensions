@@ -151,11 +151,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 return documentSnapshot;
             }, cancellationToken, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
 
-            if (document is null)
-            {
-                return null;
-            }
-
             return document;
         }
     }
