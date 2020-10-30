@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Distributed cache implementation of Microsoft.Extensions.Caching.Distributed.IDistributedCache using Microsoft SQL Server.</Description>
@@ -19,6 +19,7 @@
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Data.SqlClient" />
     <Reference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />
+    <Reference Include="Microsoft.Azure.Services.AppAuthentication" />
   </ItemGroup>
 
 </Project>

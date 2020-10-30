@@ -58,6 +58,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.NewtonsoftJson.Tests", "src\Configuration\Config.NewtonsoftJson\test\Microsoft.Extensions.Configuration.NewtonsoftJson.Tests.csproj", "{2FEE9416-E709-4EA7-82A3-4A34816F75FD}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Shared\src\CommandLineUtils\Microsoft.Extensions.CommandLineUtils.Sources.projitems*{de47cb52-3e6f-4a6a-910e-ae118a00ce1a}*SharedItemsImports = 5
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
