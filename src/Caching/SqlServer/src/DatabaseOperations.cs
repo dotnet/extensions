@@ -7,6 +7,7 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
@@ -334,7 +335,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             if (UseAccessToken)
             {
-                var provider = new AzureServiceTokenProvider(KeyVaultProviderConnectionString);
+                var provider = new AzureServiceTokenProvider(KeyVaultConnectionStringProvider);
                 return new SqlConnection(ConnectionString)
                 {
                     AccessToken = provider.GetAccessTokenAsync("https://database.windows.net/").GetAwaiter().GetResult()
