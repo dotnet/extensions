@@ -231,6 +231,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var utcNow = _systemClock.UtcNow;
             lock(_mutex)
             {
+                var utcNow = _systemClock.UtcNow;
                 if ((utcNow - _lastExpirationScan) > _expiredItemsDeletionInterval)
                 {
                     _lastExpirationScan = utcNow;
