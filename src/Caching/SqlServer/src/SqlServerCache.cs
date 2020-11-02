@@ -228,7 +228,6 @@ namespace Microsoft.Extensions.Caching.SqlServer
         // If sufficient time has elapsed then a scan is initiated on a background task.
         private void ScanForExpiredItemsIfRequired()
         {
-            var utcNow = _systemClock.UtcNow;
             lock(_mutex)
             {
                 var utcNow = _systemClock.UtcNow;
