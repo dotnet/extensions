@@ -69,6 +69,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public IRequestBroker<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem> OnAutoInsertBroker => throw new NotImplementedException();
 
+        public IRequestBroker<DocumentOnTypeRenameParams, DocumentOnTypeRenameResponseItem> OnTypeRenameBroker => throw new NotImplementedException();
+
         public IRequestBroker<CodeAction, CodeAction> CodeActionsResolveBroker => throw new NotImplementedException();
 
         public IStreamingRequestBroker<DocumentDiagnosticsParams, DiagnosticReport[]> DocumentDiagnosticsBroker => throw new NotImplementedException();
