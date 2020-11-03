@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         protected async Task<CodeAction> ResolveCodeActionWithServerAsync(CodeAction codeAction, CancellationToken cancellationToken)
         {
-            var response = await _languageServer.SendRequestAsync(LanguageServerConstants.RazorResolveCodeActionsEndpoint, codeAction);
-            var resolvedCodeAction = await response.Returning<CodeAction>(cancellationToken);
+            var response = await _languageServer.SendRequestAsync(LanguageServerConstants.RazorResolveCodeActionsEndpoint, codeAction).ConfigureAwait(false);
+            var resolvedCodeAction = await response.Returning<CodeAction>(cancellationToken).ConfigureAwait(false);
 
             return resolvedCodeAction;
         }

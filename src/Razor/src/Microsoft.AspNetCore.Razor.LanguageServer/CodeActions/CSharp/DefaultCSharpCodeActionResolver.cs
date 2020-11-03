@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 throw new ArgumentNullException(nameof(codeAction));
             }
 
-            var resolvedCodeAction = await ResolveCodeActionWithServerAsync(codeAction, cancellationToken);
+            var resolvedCodeAction = await ResolveCodeActionWithServerAsync(codeAction, cancellationToken).ConfigureAwait(false);
             if (resolvedCodeAction.Edit?.DocumentChanges is null)
             {
                 // Unable to resolve code action with server, return original code action

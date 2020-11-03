@@ -48,23 +48,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var path = actionParams.Uri.GetAbsoluteOrUNCPath();
 
-            var document = await Task.Factory.StartNew(() =>
+            var documentSnapshot = await Task.Factory.StartNew(() =>
             {
                 _documentResolver.TryResolveDocument(path, out var documentSnapshot);
                 return documentSnapshot;
             }, cancellationToken, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
-            if (document is null)
+            if (documentSnapshot is null)
             {
                 return null;
             }
 
-            var text = await document.GetTextAsync().ConfigureAwait(false);
+            var text = await documentSnapshot.GetTextAsync().ConfigureAwait(false);
             if (text is null)
             {
                 return null;
             }
 
-            var codeDocument = await document.GetGeneratedOutputAsync().ConfigureAwait(false);
+            var codeDocument = await documentSnapshot.GetGeneratedOutputAsync().ConfigureAwait(false);
             if (codeDocument.IsUnsupported())
             {
                 return null;

@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         [InlineData("CS0246")]
         [InlineData("CS0103")]
         [InlineData("IDE1007")]
-        public async Task Handle_ValidDiagnostic_ValidCodeAction_ReturnsCodeActions(string errorCode)
+        public async Task Handle_ValidDiagnostic_ValidCodeAction_VSCode_ReturnsCodeActions(string errorCode)
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             };
 
             var location = new SourceLocation(0, -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4), supportsCodeActionResolve: false);
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
             var provider = new TypeAccessibilityCodeActionProvider();
@@ -282,8 +282,87 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             );
         }
 
+        [Theory]
+        [InlineData("CS0246")]
+        [InlineData("CS0103")]
+        [InlineData("IDE1007")]
+        public async Task Handle_ValidDiagnostic_ValidCodeAction_VS_ReturnsCodeActions(string errorCode)
+        {
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "@code { Path; }";
+            var request = new CodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(),
+                Context = new CodeActionContext()
+                {
+                    Diagnostics = new Container<Diagnostic>(
+                        new Diagnostic()
+                        {
+                            Severity = DiagnosticSeverity.Error,
+                            Code = new DiagnosticCode("CS0132")
+                        },
+                        new Diagnostic()
+                        {
+                            Severity = DiagnosticSeverity.Error,
+                            Code = new DiagnosticCode(errorCode),
+                            Range = new Range(
+                                new Position(0, 8),
+                                new Position(0, 12)
+                            )
+                        },
+                        new Diagnostic()
+                        {
+                            Severity = DiagnosticSeverity.Error,
+                            Code = new DiagnosticCode("CS0183")
+                        }
+                    )
+                }
+            };
+
+            var location = new SourceLocation(0, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4), supportsCodeActionResolve: true);
+            context.CodeDocument.SetFileKind(FileKinds.Legacy);
+
+            var provider = new TypeAccessibilityCodeActionProvider();
+            var csharpCodeActions = new[] {
+                new CodeAction()
+                {
+                    Title = "System.IO.Path"
+                },
+                new CodeAction()
+                {
+                    Title = "using System.IO;"
+                },
+                new CodeAction()
+                {
+                    Title = "System.IO.SomethingElse"
+                }
+            };
+
+            // Act
+            var results = await provider.ProvideAsync(context, csharpCodeActions, default);
+
+            // Assert
+            Assert.Collection(results,
+                r => {
+                    Assert.Equal("@using System.IO", r.Title);
+                    Assert.Null(r.Edit);
+                    Assert.NotNull(r.Data);
+                    var resolutionParams = (r.Data as JObject).ToObject<RazorCodeActionResolutionParams>();
+                    Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
+                },
+                r => {
+                    Assert.Equal("System.IO.Path", r.Title);
+                    Assert.NotNull(r.Edit);
+                    Assert.Null(r.Data);
+                }
+            );
+        }
+
         [Fact]
-        public async Task Handle_InvalidDiagnostic_EndOutOfRange_ValidCodeAction_ReturnsCodeActions()
+        public async Task Handle_InvalidDiagnostic_EndOutOfRange_ValidCodeAction_ReturnsEmpty()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -328,7 +407,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         [Fact]
-        public async Task Handle_InvalidDiagnostic_StartOutOfRange_ValidCodeAction_ReturnsCodeActions()
+        public async Task Handle_InvalidDiagnostic_StartOutOfRange_ValidCodeAction_ReturnsEmpty()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -373,7 +452,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         [Fact]
-        public async Task Handle_ValidDiagnostic_MultipleValidCodeActions_ReturnsMultipleCodeActions()
+        public async Task Handle_ValidDiagnostic_MultipleValidCodeActions_VSCode_ReturnsMultipleCodeActions()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -409,7 +488,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             };
 
             var location = new SourceLocation(0, -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4), supportsCodeActionResolve: false);
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
             var provider = new TypeAccessibilityCodeActionProvider();
@@ -456,7 +535,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             );
         }
 
-        private static RazorCodeActionContext CreateRazorCodeActionContext(CodeActionParams request, SourceLocation location, string filePath, string text, SourceSpan componentSourceSpan, bool supportsFileCreation = true)
+        private static RazorCodeActionContext CreateRazorCodeActionContext(
+            CodeActionParams request,
+            SourceLocation location,
+            string filePath,
+            string text,
+            SourceSpan componentSourceSpan,
+            bool supportsFileCreation = true,
+            bool supportsCodeActionResolve = true)
         {
             var shortComponent = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "Fully.Qualified.Component", "TestAssembly");
             shortComponent.TagMatchingRule(rule => rule.TagName = "Component");
@@ -484,7 +570,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var sourceText = SourceText.From(text);
 
-            var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, sourceText, supportsFileCreation, supportsCodeActionResolve: true);
+            var context = new RazorCodeActionContext(request, documentSnapshot, codeDocument, location, sourceText, supportsFileCreation, supportsCodeActionResolve: supportsCodeActionResolve);
 
             return context;
         }
