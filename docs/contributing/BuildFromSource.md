@@ -23,6 +23,7 @@ Building ASP.NET Core Tooling on Windows requires:
 * Git. <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>.
 * Install yarn globally (`npm install -g yarn`)
+* Python (3.\*) ([available via the Microsoft store](https://www.microsoft.com/en-us/p/python-38/9mssztt1n39l?activetab=pivot:overviewtab) or from <https://www.python.org/downloads/>).
 
 ### macOS/Linux
 
@@ -34,6 +35,7 @@ Building ASP.NET Core on macOS or Linux requires:
 * curl <https://curl.haxx.se> or Wget <https://www.gnu.org/software/wget>
 * Git <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
+* Python (3.\*) <https://www.python.org/downloads/>
 
 **NOTE** some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>
 
@@ -58,6 +60,8 @@ Before opening the `src/Razor/Razor.sln` file in Visual Studio or VS Code, you n
 
 2. Use the `startvs.cmd src/Razor/Razor.sln` script to open Visual Studio with the Razor solution. This script first sets the required
 environment variables.
+
+3. Set `Microsoft.VisualStudio.RazorExtension` as the startup project.
 
 ### Common error: Unable to locate the .NET Core SDK
 
