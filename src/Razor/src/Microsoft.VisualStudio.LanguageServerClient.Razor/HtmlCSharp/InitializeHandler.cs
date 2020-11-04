@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 },
                 OnAutoInsertProvider = new DocumentOnAutoInsertOptions()
                 {
-                    TriggerCharacters = new[] { ">", "=", "-" }
+                    TriggerCharacters = new[] { ">", "=", "-", "'", "/", "\n" }
                 },
                 DocumentOnTypeFormattingProvider = new DocumentOnTypeFormattingOptions()
                 {

@@ -16,7 +16,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ExportLspMethod(MSLSPMethods.OnAutoInsertName)]
     internal class OnAutoInsertHandler : IRequestHandler<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>
     {
-        private static readonly IReadOnlyList<string> AllowedTriggerCharacters = new[] { ">", "=", "-" };
+        private static readonly HashSet<string> HTMLAllowedTriggerCharacters = new HashSet<string> { ">", "=", "-" };
+        private static readonly HashSet<string> CSharpAllowedTriggerCharacters = new HashSet<string> { "'", "/", "\n" };
+        private static readonly HashSet<string> AllAllowedTriggerCharacters = HTMLAllowedTriggerCharacters
+            .Concat(CSharpAllowedTriggerCharacters)
+            .ToHashSet();
 
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPRequestInvoker _requestInvoker;
@@ -58,7 +62,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public async Task<DocumentOnAutoInsertResponseItem> HandleRequestAsync(DocumentOnAutoInsertParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
         {
-            if (!AllowedTriggerCharacters.Contains(request.Character, StringComparer.Ordinal))
+            if (!AllAllowedTriggerCharacters.Contains(request.Character, StringComparer.Ordinal))
             {
                 // We haven't built support for this character yet.
                 return null;
@@ -70,7 +74,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
-            if (projectionResult == null || projectionResult.LanguageKind != RazorLanguageKind.Html)
+            if (projectionResult == null || projectionResult.LanguageKind == RazorLanguageKind.Razor)
+            {
+                return null;
+            }
+            else if (projectionResult.LanguageKind == RazorLanguageKind.Html &&
+                !HTMLAllowedTriggerCharacters.Contains(request.Character, StringComparer.Ordinal))
+            {
+                return null;
+            }
+            else if (projectionResult.LanguageKind == RazorLanguageKind.CSharp &&
+                !CSharpAllowedTriggerCharacters.Contains(request.Character, StringComparer.Ordinal))
             {
                 return null;
             }
@@ -95,7 +109,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            var remappedEdit = await _documentMappingProvider.RemapTextEditsAsync(projectionResult.Uri, new[] { response.TextEdit }, cancellationToken).ConfigureAwait(false);
+            var remappedEdit = await _documentMappingProvider.RemapTextEditsAsync(
+                projectionResult.Uri,
+                new[] { response.TextEdit },
+                cancellationToken).ConfigureAwait(false);
 
             if (!remappedEdit.Any())
             {

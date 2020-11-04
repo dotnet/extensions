@@ -104,7 +104,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
-        public async Task HandleRequestAsync_NonHtmlProjection_DoesNotInvokeServer()
+        public async Task HandleRequestAsync_RazorProjection_DoesNotInvokeServer()
         {
             // Arrange
             var documentManager = new TestDocumentManager();
@@ -122,7 +122,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var projectionResult = new ProjectionResult()
             {
-                LanguageKind = RazorLanguageKind.CSharp,
+                LanguageKind = RazorLanguageKind.Razor,
             };
             var projectionProvider = new Mock<LSPProjectionProvider>();
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
@@ -149,7 +149,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
-        public async Task HandleRequestAsync_InvokesServer_RemapsEdits()
+        public async Task HandleRequestAsync_InvokesHTMLServer_RemapsEdits()
         {
             // Arrange
             var documentManager = new TestDocumentManager();
@@ -185,6 +185,59 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var request = new DocumentOnAutoInsertParams()
             {
                 Character = "=",
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Options = new FormattingOptions()
+                {
+                    OtherOptions = new Dictionary<string, object>()
+                },
+                Position = new Position(1, 4)
+            };
+
+            // Act
+            var response = await handler.HandleRequestAsync(request, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(invokedServer);
+            Assert.True(mappedTextEdits);
+            Assert.NotNull(response);
+        }
+        [Fact]
+        public async Task HandleRequestAsync_InvokesCSharpServer_RemapsEdits()
+        {
+            // Arrange
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(s => s.Uri == Uri && s.Snapshot == Mock.Of<ITextSnapshot>()));
+
+            var invokedServer = false;
+            var mappedTextEdits = false;
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
+            requestInvoker
+                .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(MSLSPMethods.OnAutoInsertName, It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
+                {
+                    invokedServer = true;
+                })
+                .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() { Range = new Range(), NewText = "sometext" } }));
+
+            var projectionUri = new Uri(Uri.AbsoluteUri + "__virtual.html");
+            var projectionResult = new ProjectionResult()
+            {
+                Uri = projectionUri,
+                LanguageKind = RazorLanguageKind.CSharp,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
+
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
+            documentMappingProvider
+                .Setup(d => d.RemapTextEditsAsync(projectionUri, It.IsAny<TextEdit[]>(), It.IsAny<CancellationToken>()))
+                .Callback(() => { mappedTextEdits = true; })
+                .Returns(Task.FromResult(new[] { new TextEdit() }));
+
+            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object);
+            var request = new DocumentOnAutoInsertParams()
+            {
+                Character = "/",
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
                 Options = new FormattingOptions()
                 {
