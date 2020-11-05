@@ -8,14 +8,14 @@ import { IEventEmitterFactory } from '../IEventEmitterFactory';
 import { RazorDocumentManager } from '../RazorDocumentManager';
 import { RazorLanguageServiceClient } from '../RazorLanguageServiceClient';
 import { RazorLogger } from '../RazorLogger';
-import { HtmlPreviewDocumentContentProvider } from './HtmlPreviewDocumentContentProvider';
+import { HtmlPreviewPanel } from './HtmlPreviewPanel';
 import { HtmlProjectedDocumentContentProvider } from './HtmlProjectedDocumentContentProvider';
 import { HtmlTagCompletionProvider } from './HtmlTagCompletionProvider';
 
 export class RazorHtmlFeature {
     public readonly projectionProvider: HtmlProjectedDocumentContentProvider;
-    public readonly previewProvider: HtmlPreviewDocumentContentProvider;
     private readonly htmlTagCompletionProvider: HtmlTagCompletionProvider;
+    private readonly htmlPreviewPanel: HtmlPreviewPanel;
 
     constructor(
         documentManager: RazorDocumentManager,
@@ -23,20 +23,26 @@ export class RazorHtmlFeature {
         eventEmitterFactory: IEventEmitterFactory,
         logger: RazorLogger) {
         this.projectionProvider = new HtmlProjectedDocumentContentProvider(documentManager, eventEmitterFactory, logger);
-        this.previewProvider = new HtmlPreviewDocumentContentProvider(documentManager);
-        this.htmlTagCompletionProvider = new HtmlTagCompletionProvider(serviceClient);
+        this.htmlTagCompletionProvider = new HtmlTagCompletionProvider(documentManager, serviceClient);
+        this.htmlPreviewPanel = new HtmlPreviewPanel(documentManager);
     }
 
     public register() {
         const registrations = [
             vscode.workspace.registerTextDocumentContentProvider(
                 HtmlProjectedDocumentContentProvider.scheme, this.projectionProvider),
-            vscode.workspace.registerTextDocumentContentProvider(
-                HtmlPreviewDocumentContentProvider.scheme, this.previewProvider),
             vscode.commands.registerCommand(
-                'extension.showRazorHtmlWindow', () => this.previewProvider.showRazorHtmlWindow()),
+                'extension.showRazorHtmlWindow', () => this.htmlPreviewPanel.show()),
             this.htmlTagCompletionProvider.register(),
         ];
+
+        if (vscode.window.registerWebviewPanelSerializer) {
+            registrations.push(vscode.window.registerWebviewPanelSerializer(HtmlPreviewPanel.viewType, {
+                deserializeWebviewPanel: async (panel: vscode.WebviewPanel) => {
+                    await this.htmlPreviewPanel.revive(panel);
+                },
+            }));
+        }
 
         return vscode.Disposable.from(...registrations);
     }

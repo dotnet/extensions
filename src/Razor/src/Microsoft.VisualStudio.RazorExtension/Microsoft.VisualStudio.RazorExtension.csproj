@@ -21,16 +21,18 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <IsPackable>false</IsPackable>
+
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
 
-    <!-- Include Razor SDK design time assets in the VSIX -->
+  <!-- Include Razor SDK design time assets in the VSIX -->
   <ItemGroup>
-    <Content Include="..\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Microsoft.NET.Sdk.Razor.DesignTime.targets">
+    <Content Include="$(PkgMicrosoft_NET_Sdk_Razor)\build\netstandard2.0\Microsoft.NET.Sdk.Razor.DesignTime.targets">
       <IncludeInVsix>true</IncludeInVsix>
       <InstallRoot>MSBuild</InstallRoot>
       <VSIXSubPath>Microsoft\VisualStudio\Razor\</VSIXSubPath>
     </Content>
-    <Content Include="..\\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Rules\*.xaml">
+    <Content Include="$(PkgMicrosoft_NET_Sdk_Razor)\build\netstandard2.0\Rules\*.xaml">
       <IncludeInVsix>true</IncludeInVsix>
       <InstallRoot>MSBuild</InstallRoot>
       <VSIXSubPath>Microsoft\VisualStudio\Razor\Rules\</VSIXSubPath>
@@ -39,6 +41,10 @@
 
   <!-- Misc other content -->
   <ItemGroup>
+    <Content Include="NOTICE.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="razorLanguageService.servicehub.service.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -55,9 +61,59 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="Microsoft.VisualStudio.RazorExtension.Custom.pkgdef">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+
+    <!-- Embedded grammars -->
+
+    <Content Include="EmbeddedGrammars\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>Grammars\</VSIXSubPath>
+    </Content>
+
+    <!-- Language configurations -->
+
+    <Content Include="language-configuration.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+    ***************************************************************************************************************************************
+      NOTE: Adding OSS components to this list must be reviewed against our component governance standards. For now this is a curated list. You can read more about the CG process at https://aka.ms/component-governance
+    ***************************************************************************************************************************************
+    -->
+    <VSIXSourceItem Include="$(OutputPath)MediatR.dll" />
+    <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.JsonRpc.dll" />
+    <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageProtocol.dll" />
+    <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageServer.dll" />
+    <VSIXSourceItem Include="$(OutputPath)OmniSharp.Extensions.LanguageServer.Shared.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Options.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Primitives.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.Json.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.FileExtensions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Configuration.Abstractions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Logging.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.Logging.Abstractions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.FileSystemGlobbing.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.FileProviders.Abstractions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.Extensions.FileProviders.Physical.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.VisualStudio.LanguageServer.Protocol.dll" />
+    <VSIXSourceItem Include="$(OutputPath)Microsoft.VisualStudio.LanguageServer.Protocol.Extensions.dll" />
+    <VSIXSourceItem Include="$(OutputPath)System.IO.Pipelines.dll" />
+    <VSIXSourceItem Include="$(OutputPath)System.Reactive.dll" />
   </ItemGroup>
 
   <!-- Resources are a little bit special in a VSIX -->
@@ -65,6 +121,10 @@
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <GenerateSource>true</GenerateSource>
+      <Generator>MSBuild:_GenerateResxSource</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
@@ -85,36 +145,76 @@
 
   <ItemGroup>
     <!-- Don't trim this list. It is used to feed into the binding redirects -->
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj" />
-    <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor\Microsoft.CodeAnalysis.Razor.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj" />
     <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
     <ProjectReference Include="..\Microsoft.CodeAnalysis.Remote.Razor\Microsoft.CodeAnalysis.Remote.Razor.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.Editor.Razor\Microsoft.VisualStudio.Editor.Razor.csproj" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServer.ContainedLanguage\Microsoft.VisualStudio.LanguageServer.ContainedLanguage.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Microsoft.VisualStudio.LanguageServices.Razor.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.LiveShare.Razor\Microsoft.VisualStudio.LiveShare.Razor.csproj" />
+    <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServerClient.Razor\Microsoft.VisualStudio.LanguageServerClient.Razor.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer.Common\Microsoft.AspNetCore.Razor.LanguageServer.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(VSIX_MicrosoftCodeAnalysisAnalyzersPackageVersion)" NoWarn="NU1608" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(MicrosoftVisualStudioComponentModelHostPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.SDK.Analyzers" Version="$(MicrosoftVisualStudioSDKAnalyzersVersion)" PrivateAssets="all" />
+    <PackageReference Include="System.Resources.Extensions" Version="$(SystemResourcesExtensionsPackageVersion)" />
+  </ItemGroup>
+
+  <!-- Include our Razor package dependency dlls in our extension -->
+  <ItemGroup>
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.AspNetCore.Razor.Language.dll" />
+    <RazorNgendVSIXSourceItem Include="$(OutputPath)Microsoft.CodeAnalysis.Razor.dll" />
+
+    <VSIXSourceItem Include="@(RazorNgendVSIXSourceItem)">
+      <Ngen>$(Ngen)</Ngen>
+      <NgenApplication>$(NgenApplication)</NgenApplication>
+      <NgenArchitecture>$(NgenArchitecture)</NgenArchitecture>
+      <NgenPriority>$(NgenPriority)</NgenPriority>
+    </VSIXSourceItem>
   </ItemGroup>
 
   <PropertyGroup>
     <_GeneratedVSIXBindingRedirectFile>$(IntermediateOutputPath)$(MSBuildProjectName).BindingRedirects.cs</_GeneratedVSIXBindingRedirectFile>
   </PropertyGroup>
 
+  <Target Name="_BuildRazorGrammar">
+    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.VSCode.Extension\Microsoft.AspNetCore.Razor.VSCode.Extension.npmproj" Targets="Build" />
+  </Target>
+
+  <Target Name="_IncludeRazorGrammar" DependsOnTargets="PrepareForBuild;_BuildRazorGrammar" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Content Include="..\Microsoft.AspNetCore.Razor.VSCode.Extension\syntaxes\aspnetcorerazor.tmLanguage.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <IncludeInVSIX>true</IncludeInVSIX>
+        <VSIXSubPath>Grammars\</VSIXSubPath>
+      </Content>
+    </ItemGroup>
+  </Target>
+
   <Target Name="_GenerateVSIXBindingRedirects" DependsOnTargets="PrepareForBuild;GetAssemblyVersion" BeforeTargets="CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(_GeneratedVSIXBindingRedirectFile)">
+    <ItemGroup>
+      <BindingRedirectAssemblies Include="@(ProjectReference)" AssemblyName="%(Filename)" />
+      <BindingRedirectAssemblies Include="$(AssemblyName)" AssemblyName="$(AssemblyName)" />
+    </ItemGroup>
     <PropertyGroup>
       <_GeneratedVSIXBindingRedirectContent><![CDATA[
 // <auto-generated />
 using Microsoft.VisualStudio.Shell;
 
-@(ProjectReference->'[assembly: ProvideBindingRedirection(AssemblyName = "%(Filename)", GenerateCodeBase = true, PublicKeyToken = "adb9793829ddae60", OldVersionLowerBound = "0.0.0.0", OldVersionUpperBound = "$(AssemblyVersion)", NewVersion = "$(AssemblyVersion)")]', '%0A')
+@(BindingRedirectAssemblies->'[assembly: ProvideBindingRedirection(AssemblyName = "%(AssemblyName)", GenerateCodeBase = true, PublicKeyToken = "adb9793829ddae60", OldVersionLowerBound = "0.0.0.0", OldVersionUpperBound = "$(AssemblyVersion)", NewVersion = "$(AssemblyVersion)")]', '%0A')
 ]]></_GeneratedVSIXBindingRedirectContent>
     </PropertyGroup>
     <WriteLinesToFile Lines="$([MSBuild]::Escape($(_GeneratedVSIXBindingRedirectContent)))" File="$(_GeneratedVSIXBindingRedirectFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />

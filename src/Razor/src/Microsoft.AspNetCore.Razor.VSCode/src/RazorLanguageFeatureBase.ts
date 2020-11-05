@@ -8,13 +8,16 @@ import { ProjectionResult } from './ProjectionResult';
 import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
+import { RazorLogger } from './RazorLogger';
 import { LanguageKind } from './RPC/LanguageKind';
+import { getUriPath } from './UriPaths';
 
 export class RazorLanguageFeatureBase {
     constructor(
         private readonly documentSynchronizer: RazorDocumentSynchronizer,
         protected readonly documentManager: RazorDocumentManager,
-        protected readonly serviceClient: RazorLanguageServiceClient) {
+        protected readonly serviceClient: RazorLanguageServiceClient,
+        protected readonly logger: RazorLogger) {
     }
 
     protected async getProjection(
@@ -31,14 +34,23 @@ export class RazorLanguageFeatureBase {
                     ? razorDocument.csharpDocument
                     : razorDocument.htmlDocument;
 
-                const synchronized = await this.documentSynchronizer.trySynchronizeProjectedDocument(
-                    document,
-                    projectedDocument,
-                    languageResponse.hostDocumentVersion,
-                    token);
-                if (!synchronized) {
-                    // Could not synchronize
-                    return null;
+                if (languageResponse.hostDocumentVersion === undefined) {
+                    // There should always be a document version attached to an open document.
+                    // Log it and move on as if it was synchronized.
+                    if (this.logger.verboseEnabled) {
+                        this.logger.logVerbose(
+                            `Could not find a document version associated with the document '${getUriPath(document.uri)}'.`);
+                    }
+                } else {
+                    const synchronized = await this.documentSynchronizer.trySynchronizeProjectedDocument(
+                        document,
+                        projectedDocument,
+                        languageResponse.hostDocumentVersion,
+                        token);
+                    if (!synchronized) {
+                        // Could not synchronize
+                        return null;
+                    }
                 }
 
                 const projectedUri = projectedDocument.uri;

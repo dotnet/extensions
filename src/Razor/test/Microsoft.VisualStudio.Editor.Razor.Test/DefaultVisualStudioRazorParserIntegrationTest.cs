@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -223,7 +222,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        [ForegroundFact(Skip = "https://github.com/aspnet/AspNetCore/issues/17234")]
+        [ForegroundFact(Skip = "https://github.com/dotnet/aspnetcore/issues/17234")]
         public async Task ImpExprProvisionallyAcceptsDCIAfterIdentifiers_CompletesSyntaxTreeRequest()
         {
             var original = new StringTextSnapshot("foo @DateTime baz", versionNumber: 0);
@@ -523,7 +522,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 // Verify if the syntax tree represents the expected input.
                 var syntaxTreeContent = manager.PartialParsingSyntaxTreeRoot.ToFullString();
-                Assert.Contains(expectedCode, syntaxTreeContent);
+                Assert.Contains(expectedCode, syntaxTreeContent, StringComparison.Ordinal);
             }
 
             var sourceDocument = TestRazorSourceDocument.Create(content);
@@ -745,6 +744,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             public void Dispose()
             {
                 _parser.Dispose();
+                _parserComplete.Dispose();
+                _reparseComplete.Dispose();
             }
         }
 

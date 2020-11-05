@@ -15,6 +15,8 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
     [Export(typeof(RazorCompletionItemProvider))]
     internal class DirectiveAttributeCompletionItemProvider : DirectiveAttributeCompletionItemProviderBase
     {
+        private static readonly RazorCompletionItem[] NoDirectiveAttributeCompletionItems = Array.Empty<RazorCompletionItem>();
+
         private readonly TagHelperFactsService _tagHelperFactsService;
 
         [ImportingConstructor]
@@ -43,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             if (!FileKinds.IsComponent(syntaxTree.Options.FileKind))
             {
                 // Directive attributes are only supported in components
-                return Array.Empty<RazorCompletionItem>();
+                return NoDirectiveAttributeCompletionItems;
             }
 
             var change = new SourceChange(location, string.Empty);
@@ -51,32 +53,40 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
             if (owner == null)
             {
-                return Array.Empty<RazorCompletionItem>();
+                return NoDirectiveAttributeCompletionItems;
             }
 
-            if (!TryGetAttributeInfo(owner, out var attributeName, out var attributeNameLocation, out _, out _))
+            if (!TryGetAttributeInfo(owner, out _, out var attributeName, out var attributeNameLocation, out _, out _))
             {
                 // Either we're not in an attribute or the attribute is so malformed that we can't provide proper completions.
-                return Array.Empty<RazorCompletionItem>();
+                return NoDirectiveAttributeCompletionItems;
             }
 
             if (!attributeNameLocation.IntersectsWith(location.AbsoluteIndex))
             {
                 // We're trying to retrieve completions on a portion of the name that is not supported (such as a parameter).
-                return Array.Empty<RazorCompletionItem>();
+                return NoDirectiveAttributeCompletionItems;
             }
 
             if (!TryGetElementInfo(owner.Parent.Parent, out var containingTagName, out var attributes))
             {
                 // This should never be the case, it means that we're operating on an attribute that doesn't have a tag.
-                return Array.Empty<RazorCompletionItem>();
+                return NoDirectiveAttributeCompletionItems;
             }
 
             // At this point we've determined that completions have been requested for the name portion of the selected attribute.
 
             var completionItems = GetAttributeCompletions(attributeName, containingTagName, attributes, tagHelperDocumentContext);
 
-            return completionItems;
+            // We don't provide Directive Attribute completions when we're in the middle of
+            // another unrelated (doesn't start with @) partially completed attribute.
+            // <svg xml:| ></svg> (attributeName = "xml:") should not get any directive attribute completions.
+            if (string.IsNullOrWhiteSpace(attributeName) || attributeName.StartsWith("@", StringComparison.Ordinal))
+            {
+                return completionItems;
+            }
+
+            return NoDirectiveAttributeCompletionItems;
         }
 
         // Internal for testing
@@ -94,7 +104,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             }
 
             // Attributes are case sensitive when matching
-            var attributeCompletions = new Dictionary<string, HashSet<AttributeDescriptionInfo>>(StringComparer.Ordinal);
+            var attributeCompletions = new Dictionary<string, (HashSet<AttributeDescriptionInfo>, HashSet<string>)>(StringComparer.Ordinal);
             for (var i = 0; i < descriptorsForTag.Count; i++)
             {
                 var descriptor = descriptorsForTag[i];
@@ -135,13 +145,13 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             foreach (var completion in attributeCompletions)
             {
                 var insertText = completion.Key;
-                if (insertText.EndsWith("..."))
+                if (insertText.EndsWith("...", StringComparison.Ordinal))
                 {
                     // Indexer attribute, we don't want to insert with the triple dot.
                     insertText = insertText.Substring(0, insertText.Length - 3);
                 }
 
-                if (insertText.StartsWith("@"))
+                if (insertText.StartsWith("@", StringComparison.Ordinal))
                 {
                     // Strip off the @ from the insertion text. This change is here to align the insertion text with the
                     // completion hooks into VS and VSCode. Basically, completion triggers when `@` is typed so we don't
@@ -149,11 +159,14 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     insertText = insertText.Substring(1);
                 }
 
+                var (attributeDescriptionInfos, commitCharacters) = completion.Value;
+
                 var razorCompletionItem = new RazorCompletionItem(
                     completion.Key,
                     insertText,
-                    RazorCompletionItemKind.DirectiveAttribute);
-                var completionDescription = new AttributeCompletionDescription(completion.Value.ToArray());
+                    RazorCompletionItemKind.DirectiveAttribute,
+                    commitCharacters);
+                var completionDescription = new AttributeCompletionDescription(attributeDescriptionInfos.ToArray());
                 razorCompletionItem.SetAttributeCompletionDescription(completionDescription);
 
                 completionItems.Add(razorCompletionItem);
@@ -177,11 +190,13 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
             void AddCompletion(string attributeName, BoundAttributeDescriptor boundAttributeDescriptor, TagHelperDescriptor tagHelperDescriptor)
             {
-                if (!attributeCompletions.TryGetValue(attributeName, out var attributeDescriptionInfos))
+                if (!attributeCompletions.TryGetValue(attributeName, out var attributeDetails))
                 {
-                    attributeDescriptionInfos = new HashSet<AttributeDescriptionInfo>();
-                    attributeCompletions[attributeName] = attributeDescriptionInfos;
+                    attributeDetails = (new HashSet<AttributeDescriptionInfo>(), new HashSet<string>());
+                    attributeCompletions[attributeName] = attributeDetails;
                 }
+
+                (var attributeDescriptionInfos, var commitCharacters) = attributeDetails;
 
                 var descriptionInfo = new AttributeDescriptionInfo(
                     boundAttributeDescriptor.TypeName,
@@ -189,6 +204,24 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     boundAttributeDescriptor.GetPropertyName(),
                     boundAttributeDescriptor.Documentation);
                 attributeDescriptionInfos.Add(descriptionInfo);
+
+                if (attributeName.EndsWith("...", StringComparison.Ordinal))
+                {
+                    // Indexer attribute, we don't want to commit with standard chars
+                    return;
+                }
+
+                commitCharacters.Add("=");
+
+                if (tagHelperDescriptor.BoundAttributes.Any(b => b.IsBooleanProperty))
+                {
+                    commitCharacters.Add(" ");
+                }
+
+                if (tagHelperDescriptor.BoundAttributes.Any(b => b.BoundAttributeParameters.Count > 0))
+                {
+                    commitCharacters.Add(":");
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 {
@@ -36,7 +37,9 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 throw new ArgumentNullException(nameof(sessionContext));
             }
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+#pragma warning restore CA2000 // Dispose objects before losing scope
             _viewImportsCopyTask = EnsureViewImportsCopiedAsync(sessionContext, cts.Token);
 
             _sessionAccessor.SetSession(sessionContext);
@@ -88,7 +91,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             foreach (var fileUri in fileUris)
             {
-                if (fileUri.AbsolutePath.EndsWith(ViewImportsFileName))
+                if (fileUri.GetAbsoluteOrUNCPath().EndsWith(ViewImportsFileName, StringComparison.Ordinal))
                 {
                     var copyTask = sessionContext.DownloadFileAsync(fileUri, cancellationToken);
                     copyTasks.Add(copyTask);

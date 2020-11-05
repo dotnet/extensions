@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
@@ -29,12 +27,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
                 initializer.Initialize(b);
                 configure?.Invoke(b);
-
-                var componentDocumentClassifier = b.Features.OfType<ComponentDocumentClassifierPass>().FirstOrDefault();
-                if (componentDocumentClassifier != null)
-                {
-                    componentDocumentClassifier.MangleClassNames = true;
-                }
             });
         }
     }

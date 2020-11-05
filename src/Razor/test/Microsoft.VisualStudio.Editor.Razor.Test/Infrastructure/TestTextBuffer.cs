@@ -39,6 +39,11 @@ namespace Microsoft.VisualStudio.Test
 
         public void ApplyEdits(params TestEdit[] edits)
         {
+            if (edits.Length == 0)
+            {
+                return;
+            }
+
             var args = new TextContentChangedEventArgs(edits[0].OldSnapshot, edits[edits.Length - 1].NewSnapshot, new EditOptions(), null);
             foreach (var edit in edits)
             {
@@ -56,13 +61,13 @@ namespace Microsoft.VisualStudio.Test
                 changedEvent.Invoke(this, args);
             }
 
-            PostChanged?.Invoke(null, null);
+            PostChanged?.Invoke(this, null);
 
-            ReadOnlyRegionsChanged?.Invoke(null, null);
-            ChangedLowPriority?.Invoke(null, null);
-            ChangedHighPriority?.Invoke(null, null);
-            Changing?.Invoke(null, null);
-            ContentTypeChanged?.Invoke(null, null);
+            ReadOnlyRegionsChanged?.Invoke(this, null);
+            ChangedLowPriority?.Invoke(this, null);
+            ChangedHighPriority?.Invoke(this, null);
+            Changing?.Invoke(this, null);
+            ContentTypeChanged?.Invoke(this, null);
         }
 
         public IReadOnlyList<EventHandler<TextContentChangedEventArgs>> AttachedChangedEvents => _attachedChangedEvents;
@@ -84,7 +89,7 @@ namespace Microsoft.VisualStudio.Test
                 _attachedChangedEvents.Remove(value);
             }
         }
-            
+
 
         public event EventHandler<TextContentChangedEventArgs> ChangedLowPriority;
         public event EventHandler<TextContentChangedEventArgs> ChangedHighPriority;
@@ -98,11 +103,12 @@ namespace Microsoft.VisualStudio.Test
 
         public ITextEdit CreateEdit() => new BufferEdit(this);
 
-        public void ChangeContentType(IContentType newContentType, object editTag) => throw new NotImplementedException();
+        public void ChangeContentType(IContentType newContentType, object editTag){
+        }
 
         public bool CheckEditAccess() => throw new NotImplementedException();
 
-        public ITextEdit CreateEdit(EditOptions options, int? reiteratedVersionNumber, object editTag) => throw new NotImplementedException();
+        public ITextEdit CreateEdit(EditOptions options, int? reiteratedVersionNumber, object editTag) => new BufferEdit(this);
 
         public IReadOnlyRegionEdit CreateReadOnlyRegionEdit() => throw new NotImplementedException();
 
@@ -128,10 +134,12 @@ namespace Microsoft.VisualStudio.Test
         {
             private readonly TestTextBuffer _textBuffer;
             private readonly List<TestEdit> _edits;
+            private StringTextSnapshot _editSnapshot;
 
             public BufferEdit(TestTextBuffer textBuffer)
             {
                 _textBuffer = textBuffer;
+                _editSnapshot = new StringTextSnapshot(_textBuffer.CurrentSnapshot.GetText());
                 _edits = new List<TestEdit>();
             }
 
@@ -153,28 +161,45 @@ namespace Microsoft.VisualStudio.Test
 
             public bool Insert(int position, string text)
             {
-                var initialSnapshot = (StringTextSnapshot)_textBuffer.CurrentSnapshot;
+                var initialSnapshot = _editSnapshot;
                 var newText = initialSnapshot.Content.Insert(position, text);
                 var changedSnapshot = new StringTextSnapshot(newText);
                 var edit = new TestEdit(position, 0, initialSnapshot, text.Length, changedSnapshot, text);
                 _edits.Add(edit);
+
+                _editSnapshot = changedSnapshot;
 
                 return true;
             }
 
             public void Cancel() => throw new NotImplementedException();
 
-            public bool Delete(Span deleteSpan) => throw new NotImplementedException();
+            public bool Delete(Span deleteSpan) => Delete(deleteSpan.Start, deleteSpan.Length);
 
-            public bool Delete(int startPosition, int charsToDelete) => throw new NotImplementedException();
+            public bool Delete(int startPosition, int charsToDelete) => Replace(startPosition, charsToDelete, replaceWith: string.Empty);
 
-            public void Dispose() => throw new NotImplementedException();
+            public void Dispose()
+            {
+            }
 
             public bool Insert(int position, char[] characterBuffer, int startIndex, int length) => throw new NotImplementedException();
 
-            public bool Replace(Span replaceSpan, string replaceWith) => throw new NotImplementedException();
+            public bool Replace(Span replaceSpan, string replaceWith) => Replace(replaceSpan.Start, replaceSpan.Length, replaceWith);
 
-            public bool Replace(int startPosition, int charsToReplace, string replaceWith) => throw new NotImplementedException();
+            public bool Replace(int startPosition, int charsToReplace, string replaceWith)
+            {
+                var initialSnapshot = _editSnapshot;
+                var preText = initialSnapshot.Content.Substring(0, startPosition);
+                var postText = initialSnapshot.Content.Substring(startPosition + charsToReplace);
+                var newText = preText + replaceWith + postText;
+                var changedSnapshot = new StringTextSnapshot(newText);
+                var edit = new TestEdit(startPosition, charsToReplace, initialSnapshot, replaceWith.Length, changedSnapshot, replaceWith);
+                _edits.Add(edit);
+
+                _editSnapshot = changedSnapshot;
+
+                return true;
+            }
         }
     }
 }

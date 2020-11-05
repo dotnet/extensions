@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.Editor.Razor
@@ -17,7 +15,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
         {
             // Rewrite the assembly name into a full name just like this one, but with the name of the MVC design time assembly.
-            var assemblyName = new AssemblyName(typeof(LegacyProjectEngineFactory_3_0).Assembly.FullName);
+            var assemblyName = new AssemblyName(typeof(RazorProjectEngine).Assembly.FullName);
             assemblyName.Name = AssemblyName;
 
             var extension = new AssemblyExtension(configuration.ConfigurationName, Assembly.Load(assemblyName));

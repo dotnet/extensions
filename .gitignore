@@ -15,7 +15,6 @@ syntax: glob
 launchSettings.json
 
 # Build results
-
 artifacts/
 [Dd]ebug/
 [Rr]elease/
@@ -40,9 +39,12 @@ msbuild.ProjectImports.zip
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
-#NUNIT
+# NUNIT
 *.VisualState.xml
 TestResult.xml
+
+# Visual Studio Diagnostic Sessions
+*.diagsession
 
 # ReSharper is a .NET coding add-in
 _ReSharper*/
@@ -138,3 +140,13 @@ node_modules/
 # VSCode extension outputs
 dist/
 out/
+
+# Test generated
+src/Razor/test/OutOfWorkspaceFile.razor
+
+# Benchmark generated
+src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Performance/BenchmarkDotNet.Artifacts/results/*
+src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Performance/BenchmarkDotNet.Artifacts/*Benchmark.log
+
+# Yarn Logs
+yarn-*.log

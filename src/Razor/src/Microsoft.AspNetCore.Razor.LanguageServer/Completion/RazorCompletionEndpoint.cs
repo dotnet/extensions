@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -14,14 +15,17 @@ using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal class RazorCompletionEndpoint : ICompletionHandler, ICompletionResolveHandler
     {
-        private static readonly Container<string> DirectiveAttributeCommitCharacters = new Container<string>(" ");
+        private const int XMLAttributeId = 3564;
+        private const string ImageCatalogGuidString = "{ae27a6b0-e345-4288-96df-5eaf394ee369}";
+        private static Guid ImageCatalogGuid = new Guid(ImageCatalogGuidString);
+
         private CompletionCapability _capability;
         private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
@@ -92,10 +96,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             var document = await Task.Factory.StartNew(() =>
             {
-                _documentResolver.TryResolveDocument(request.TextDocument.Uri.AbsolutePath, out var documentSnapshot);
+                _documentResolver.TryResolveDocument(request.TextDocument.Uri.GetAbsoluteOrUNCPath(), out var documentSnapshot);
 
                 return documentSnapshot;
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+
+            if (document is null || cancellationToken.IsCancellationRequested)
+            {
+                return new CompletionList(isIncomplete: false);
+            }
 
             var codeDocument = await document.GetGeneratedOutputAsync();
             if (codeDocument.IsUnsupported())
@@ -140,7 +149,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 completionItems.AddRange(tagHelperCompletionItems);
             }
 
-            var completionList = new CompletionList(completionItems, isIncomplete: false);
+            // Temporary: We want to set custom icons in VS. Ideally this should be done on the client.
+            // This is a workaround until we have support for it in the middle layer.
+            var completionItemsWithIcon = completionItems.Select(c => SetIcon(c));
+
+            var completionList = new CompletionList(completionItemsWithIcon, isIncomplete: false);
 
             return completionList;
         }
@@ -152,6 +165,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 DocumentSelector = RazorDefaults.Selector,
                 ResolveProvider = true,
                 TriggerCharacters = new Container<string>("@", "<", ":"),
+
+                // NOTE: This property is *NOT* processed in O# versions < 0.16
+                // https://github.com/OmniSharp/csharp-language-server-protocol/blame/bdec4c73240be52fbb25a81f6ad7d409f77b5215/src/Protocol/Server/Capabilities/CompletionOptions.cs#L35-L44
+                AllCommitCharacters = new Container<string>(":", ">", " ", "=" ),
             };
         }
 
@@ -180,7 +197,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         public Task<CompletionItem> Handle(CompletionItem completionItem, CancellationToken cancellationToken)
         {
-            string markdown = null;
+            MarkupContent tagHelperDescription = null;
+
             if (completionItem.TryGetRazorCompletionKind(out var completionItemKind))
             {
                 switch (completionItemKind)
@@ -188,7 +206,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     case RazorCompletionItemKind.DirectiveAttribute:
                     case RazorCompletionItemKind.DirectiveAttributeParameter:
                         var descriptionInfo = completionItem.GetAttributeDescriptionInfo();
-                        _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
+                        _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out tagHelperDescription);
                         break;
                 }
             }
@@ -197,25 +215,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 if (completionItem.IsTagHelperElementCompletion())
                 {
                     var descriptionInfo = completionItem.GetElementDescriptionInfo();
-                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
+                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out tagHelperDescription);
                 }
 
                 if (completionItem.IsTagHelperAttributeCompletion())
                 {
                     var descriptionInfo = completionItem.GetTagHelperAttributeDescriptionInfo();
-                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
+                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out tagHelperDescription);
                 }
             }
 
-
-            if (markdown != null)
+            if (tagHelperDescription != null)
             {
-                var documentation = new StringOrMarkupContent(
-                    new MarkupContent()
-                    {
-                        Kind = MarkupKind.Markdown,
-                        Value = markdown,
-                    });
+                var documentation = new StringOrMarkupContent(tagHelperDescription);
                 completionItem.Documentation = documentation;
             }
 
@@ -223,13 +235,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         // Internal for testing
-        internal static bool TryConvert(RazorCompletionItem razorCompletionItem, out CompletionItem completionItem)
+        internal bool TryConvert(RazorCompletionItem razorCompletionItem, out CompletionItem completionItem)
         {
             switch (razorCompletionItem.Kind)
             {
                 case RazorCompletionItemKind.Directive:
                     {
-                        // There's not a lot of calculation needed for Directives, go ahead and store the documentation/detail
+                        // There's not a lot of calculation needed for Directives, go ahead and store the documentation
                         // on the completion item.
                         var descriptionInfo = razorCompletionItem.GetDirectiveCompletionDescription();
                         var directiveCompletionItem = new CompletionItem()
@@ -238,16 +250,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             InsertText = razorCompletionItem.InsertText,
                             FilterText = razorCompletionItem.DisplayText,
                             SortText = razorCompletionItem.DisplayText,
-                            Detail = descriptionInfo.Description,
                             Documentation = descriptionInfo.Description,
                             Kind = CompletionItemKind.Struct,
                         };
+
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
+                        {
+                            directiveCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
+                        }
 
                         if (razorCompletionItem == DirectiveAttributeTransitionCompletionItemProvider.TransitionCompletionItem)
                         {
                             directiveCompletionItem.Command = RetriggerCompletionCommand;
                             directiveCompletionItem.Kind = CompletionItemKind.TypeParameter;
-                            directiveCompletionItem.Preselect = true;
                         }
 
                         directiveCompletionItem.SetRazorCompletionKind(razorCompletionItem.Kind);
@@ -267,11 +282,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             Kind = CompletionItemKind.TypeParameter,
                         };
 
-                        var indexerCompletion = razorCompletionItem.DisplayText.EndsWith("...");
-                        if (TryResolveDirectiveAttributeInsertionSnippet(razorCompletionItem.InsertText, indexerCompletion, descriptionInfo, out var snippetText))
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
                         {
-                            directiveAttributeCompletionItem.InsertText = snippetText;
-                            directiveAttributeCompletionItem.InsertTextFormat = InsertTextFormat.Snippet;
+                            directiveAttributeCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
                         }
 
                         directiveAttributeCompletionItem.SetDescriptionInfo(descriptionInfo);
@@ -296,39 +309,108 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                         completionItem = parameterCompletionItem;
                         return true;
                     }
+                case RazorCompletionItemKind.MarkupTransition:
+                    {
+                        var descriptionInfo = razorCompletionItem.GetMarkupTransitionCompletionDescription();
+                        var markupTransitionCompletionItem = new CompletionItem()
+                        {
+                            Label = razorCompletionItem.DisplayText,
+                            InsertText = razorCompletionItem.InsertText,
+                            FilterText = razorCompletionItem.DisplayText,
+                            SortText = razorCompletionItem.DisplayText,
+                            Documentation = descriptionInfo.Description,
+                            Kind = CompletionItemKind.TypeParameter,
+                        };
+
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
+                        {
+                            markupTransitionCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
+                        }
+
+                        completionItem = markupTransitionCompletionItem;
+                        return true;
+                    }
             }
 
             completionItem = null;
             return false;
         }
 
-        private static bool TryResolveDirectiveAttributeInsertionSnippet(
-            string insertText,
-            bool indexerCompletion,
-            AttributeCompletionDescription attributeCompletionDescription,
-            out string snippetText)
+        private CompletionItem SetIcon(CompletionItem item)
         {
-            const string BoolTypeName = "System.Boolean";
-            var attributeInfos = attributeCompletionDescription.DescriptionInfos;
-
-            // Boolean returning bound attribute, auto-complete to just the attribute name.
-            if (attributeInfos.All(info => info.ReturnTypeName == BoolTypeName))
+            PascalCasedSerializableImageElement? icon = null;
+            if (item.IsTagHelperElementCompletion() || item.IsTagHelperAttributeCompletion())
             {
-                snippetText = null;
-                return false;
+                icon = new PascalCasedSerializableImageElement(new PascalCasedSerializableImageId(ImageCatalogGuid, XMLAttributeId), automationName: null);
+            }
+            else if (item.TryGetRazorCompletionKind(out var kind) &&
+                (kind == RazorCompletionItemKind.DirectiveAttribute ||
+                kind == RazorCompletionItemKind.DirectiveAttributeParameter ||
+                kind == RazorCompletionItemKind.MarkupTransition))
+            {
+                icon = new PascalCasedSerializableImageElement(new PascalCasedSerializableImageId(ImageCatalogGuid, XMLAttributeId), automationName: null);
             }
 
-            if (indexerCompletion)
+            if (!icon.HasValue)
             {
-                // Indexer completion
-                snippetText = string.Concat(insertText, "$1=\"$2\"$0");
-            }
-            else
-            {
-                snippetText = string.Concat(insertText, "=\"$1\"$0");
+                return item;
             }
 
-            return true;
+            return new VSLspCompletionItem()
+            {
+                Label = item.Label,
+                Kind = item.Kind,
+                Detail = item.Detail,
+                Documentation = item.Documentation,
+                Preselect = item.Preselect,
+                SortText = item.SortText,
+                FilterText = item.FilterText,
+                InsertText = item.InsertText,
+                InsertTextFormat = item.InsertTextFormat,
+                TextEdit = item.TextEdit,
+                AdditionalTextEdits = item.AdditionalTextEdits,
+                CommitCharacters = item.CommitCharacters,
+                Command = item.Command,
+                Data = item.Data,
+                Icon = icon
+            };
+        }
+
+        private class VSLspCompletionItem : CompletionItem
+        {
+            public PascalCasedSerializableImageElement? Icon { get; set; }
+        }
+
+        [DataContract]
+        private struct PascalCasedSerializableImageElement
+        {
+            public PascalCasedSerializableImageElement(PascalCasedSerializableImageId imageId, string automationName)
+            {
+                ImageId = imageId;
+                AutomationName = automationName;
+            }
+
+            [DataMember(Name = "ImageId")]
+            public PascalCasedSerializableImageId ImageId { get; set; }
+
+            [DataMember(Name = "AutomationName")]
+            public string AutomationName { get; set; }
+        }
+
+        [DataContract]
+        private struct PascalCasedSerializableImageId
+        {
+            public PascalCasedSerializableImageId(Guid guid, int id)
+            {
+                Guid = guid;
+                Id = id;
+            }
+
+            [DataMember(Name = "Guid")]
+            public Guid Guid { get; set; }
+
+            [DataMember(Name = "Id")]
+            public int Id { get; set; }
         }
     }
 }

@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             private void AssertNodeEquals(IntermediateNode node, IEnumerable<IntermediateNode> ancestors, string expected, string actual)
             {
-                if (string.Equals(expected, actual))
+                if (string.Equals(expected, actual, StringComparison.Ordinal))
                 {
                     // YAY!!! everything is great.
                     return;
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 var expectedName = GetName(expected, charsVerified);
                 var actualName = GetName(actual, charsVerified);
 
-                if (!string.Equals(expectedName, actualName))
+                if (!string.Equals(expectedName, actualName, StringComparison.Ordinal))
                 {
                     var message = $"Node names are not equal.";
                     throw new IntermediateNodeBaselineException(node, ancestors.ToArray(), expected, actual, message);
@@ -155,13 +155,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     return;
                 }
 
-                var expectedDelimiter = expected.IndexOf(" - ", charsVerified);
+                var expectedDelimiter = expected.IndexOf(" - ", charsVerified, StringComparison.Ordinal);
                 if (expectedDelimiter != charsVerified && expectedDelimiter != -1)
                 {
                     throw new InvalidOperationException($"Baseline text is not well-formed: '{actual}'.");
                 }
 
-                var actualDelimiter = actual.IndexOf(" - ", charsVerified);
+                var actualDelimiter = actual.IndexOf(" - ", charsVerified, StringComparison.Ordinal);
                 if (actualDelimiter != charsVerified && actualDelimiter != -1)
                 {
                     throw new InvalidOperationException($"Baseline text is not well-formed: '{actual}'.");
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 var expectedLocation = GetLocation(expected, charsVerified);
                 var actualLocation = GetLocation(actual, charsVerified);
 
-                if (!string.Equals(expectedLocation, actualLocation))
+                if (!string.Equals(expectedLocation, actualLocation, StringComparison.Ordinal))
                 {
                     var message = $"Locations are not equal.";
                     throw new IntermediateNodeBaselineException(node, ancestors.ToArray(), expected, actual, message);
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 var expectedContent = GetContent(expected, charsVerified);
                 var actualContent = GetContent(actual, charsVerified);
 
-                if (!string.Equals(expectedContent, actualContent))
+                if (!string.Equals(expectedContent, actualContent, StringComparison.Ordinal))
                 {
                     var message = $"Contents are not equal.";
                     throw new IntermediateNodeBaselineException(node, ancestors.ToArray(), expected, actual, message);
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             private string GetName(string text, int start)
             {
-                var delimiter = text.IndexOf(" - ", start);
+                var delimiter = text.IndexOf(" - ", start, StringComparison.Ordinal);
                 if (delimiter == -1)
                 {
                     throw new InvalidOperationException($"Baseline text is not well-formed: '{text}'.");
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             private string GetLocation(string text, int start)
             {
-                var delimiter = text.IndexOf(" - ", start);
+                var delimiter = text.IndexOf(" - ", start, StringComparison.Ordinal);
                 return delimiter == -1 ? text.Substring(start) : text.Substring(start, delimiter - start);
             }
 

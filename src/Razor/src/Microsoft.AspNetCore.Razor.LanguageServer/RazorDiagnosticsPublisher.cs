@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
@@ -19,21 +20,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     internal class RazorDiagnosticsPublisher : DocumentProcessedListener
     {
         // Internal for testing
+        internal TimeSpan _publishDelay = TimeSpan.FromSeconds(2);
         internal readonly Dictionary<string, IReadOnlyList<RazorDiagnostic>> _publishedDiagnostics;
         internal Timer _workTimer;
         internal Timer _documentClosedTimer;
 
-        private static readonly TimeSpan PublishDelay = TimeSpan.FromSeconds(2);
         private static readonly TimeSpan CheckForDocumentClosedDelay = TimeSpan.FromSeconds(5);
         private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly ILanguageServer _languageServer;
+        private readonly ITextDocumentLanguageServer _languageServer;
         private readonly Dictionary<string, DocumentSnapshot> _work;
         private readonly ILogger<RazorDiagnosticsPublisher> _logger;
         private ProjectSnapshotManager _projectManager;
 
         public RazorDiagnosticsPublisher(
             ForegroundDispatcher foregroundDispatcher,
-            ILanguageServer languageServer,
+            ITextDocumentLanguageServer languageServer,
             ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
@@ -57,6 +58,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _work = new Dictionary<string, DocumentSnapshot>(FilePathComparer.Instance);
             _logger = loggerFactory.CreateLogger<RazorDiagnosticsPublisher>();
         }
+
+        // Used in tests to ensure we can control when background work completes.
+        public ManualResetEventSlim BlockBackgroundWorkCompleting { get; set; }
+
+        // Used in tests to ensure we can control when background work completes.
+        public ManualResetEventSlim NotifyBackgroundWorkCompleting { get; set; }
 
         public override void Initialize(ProjectSnapshotManager projectManager)
         {
@@ -87,27 +94,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private void StartWorkTimer()
         {
-            _foregroundDispatcher.AssertForegroundThread();
-
             // Access to the timer is protected by the lock in Synchronize and in Timer_Tick
             if (_workTimer == null)
             {
                 // Timer will fire after a fixed delay, but only once.
-                _workTimer = new Timer(WorkTimer_Tick, null, PublishDelay, Timeout.InfiniteTimeSpan);
+                _workTimer = new Timer(WorkTimer_Tick, null, _publishDelay, Timeout.InfiniteTimeSpan);
             }
         }
 
         private void StartDocumentClosedCheckTimer()
         {
-            _foregroundDispatcher.AssertForegroundThread();
-
             if (_documentClosedTimer == null)
             {
                 _documentClosedTimer = new Timer(DocumentClosedTimer_Tick, null, CheckForDocumentClosedDelay, Timeout.InfiniteTimeSpan);
             }
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void DocumentClosedTimer_Tick(object state)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             await Task.Factory.StartNew(
                 ClearClosedDocuments,
@@ -143,9 +148,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 if (_publishedDiagnostics.Count > 0)
                 {
-                    // There's no way for us to know when a document is closed at this layer. Therefore, we need to poll every X seconds
-                    // and check if the currently tracked documents are closed. In practice this work is super minimal.
-                    StartDocumentClosedCheckTimer();
+                    lock (_work)
+                    {
+                        // There's no way for us to know when a document is closed at this layer. Therefore, we need to poll every X seconds
+                        // and check if the currently tracked documents are closed. In practice this work is super minimal.
+                        StartDocumentClosedCheckTimer();
+                    }
                 }
             }
         }
@@ -184,7 +192,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void WorkTimer_Tick(object state)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             DocumentSnapshot[] documents;
             lock (_work)
@@ -198,6 +208,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 var document = documents[i];
                 await PublishDiagnosticsAsync(document);
             }
+
+            OnCompletingBackgroundWork();
 
             lock (_work)
             {
@@ -213,6 +225,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
+        private void OnCompletingBackgroundWork()
+        {
+            if (NotifyBackgroundWorkCompleting != null)
+            {
+                NotifyBackgroundWorkCompleting.Set();
+            }
+
+            if (BlockBackgroundWorkCompleting != null)
+            {
+                BlockBackgroundWorkCompleting.Wait();
+                BlockBackgroundWorkCompleting.Reset();
+            }
+        }
+
         private void PublishDiagnosticsForFilePath(string filePath, IEnumerable<Diagnostic> diagnostics)
         {
             var uriBuilder = new UriBuilder()
@@ -221,7 +247,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 Path = filePath,
                 Host = string.Empty,
             };
-            _languageServer.Document.PublishDiagnostics(new PublishDiagnosticsParams()
+
+            _languageServer.PublishDiagnostics(new PublishDiagnosticsParams()
             {
                 Uri = uriBuilder.Uri,
                 Diagnostics = new Container<Diagnostic>(diagnostics),
