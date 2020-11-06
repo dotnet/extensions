@@ -13,6 +13,10 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>74632f3bb870dc5e793c6ef38f8dbb253177a5f5</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="6.0.0-alpha.1.20555.9">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>74632f3bb870dc5e793c6ef38f8dbb253177a5f5</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="6.0.0-alpha.1.20555.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>74632f3bb870dc5e793c6ef38f8dbb253177a5f5</Sha>
