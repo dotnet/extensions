@@ -83,6 +83,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
             _foregroundDispatcher.AssertForegroundThread();
 
             _projectSnapshotManager.Changed -= ProjectSnapshotManager_Changed;
+            _latestStateSemaphore.Dispose();
             _disposed = true;
         }
 
@@ -116,6 +117,11 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
 
         private ProjectSnapshotHandleProxy ConvertToProxy(ProjectSnapshot project)
         {
+            if (project == null)
+            {
+                return null;
+            }
+
             var projectWorkspaceState = new ProjectWorkspaceState(project.TagHelpers, project.CSharpLanguageVersion);
             var projectFilePath = _session.ConvertLocalPathToSharedUri(project.FilePath);
             var projectHandleProxy = new ProjectSnapshotHandleProxy(projectFilePath, project.Configuration, project.RootNamespace, projectWorkspaceState);

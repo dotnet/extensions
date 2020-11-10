@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
@@ -97,8 +96,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceText = SourceText.From("<p>");
             var documentResolver = CreateDocumentResolver(documentPath, sourceText);
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
-            projectService.Setup(service => service.UpdateDocument(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<long>()))
-                .Callback<string, SourceText, long>((path, text, version) =>
+            projectService.Setup(service => service.UpdateDocument(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<int>()))
+                .Callback<string, SourceText, int>((path, text, version) =>
                 {
                     var resultString = GetString(text);
                     Assert.Equal("<p></p>", resultString);
@@ -136,8 +135,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
-            projectService.Setup(service => service.OpenDocument(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<long>()))
-                .Callback<string, SourceText, long>((path, text, version) =>
+            projectService.Setup(service => service.OpenDocument(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<int>()))
+                .Callback<string, SourceText, int>((path, text, version) =>
                 {
                     var resultString = GetString(text);
                     Assert.Equal("hello", resultString);

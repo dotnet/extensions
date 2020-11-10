@@ -58,13 +58,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override async Task<RazorCodeDocument> GetGeneratedOutputAsync()
         {
-            var (output, _, _) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
+            var (output, _, _, _) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
             return output;
         }
 
-        public override async Task<VersionStamp> GetGeneratedOutputVersionAsync()
+        public override async Task<VersionStamp> GetGeneratedCSharpOutputVersionAsync()
         {
-            var (_, _, version) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
+            var (_, _, version, _) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
+            return version;
+        }
+
+        public override async Task<VersionStamp> GetGeneratedHtmlOutputVersionAsync()
+        {
+            var (_, _, _, version) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
             return version;
         }
 
@@ -90,15 +96,27 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return false;
         }
 
-        public override bool TryGetGeneratedOutputVersionAsync(out VersionStamp result)
+        public override bool TryGetGeneratedCSharpOutputVersionAsync(out VersionStamp result)
         {
             if (State.IsGeneratedOutputResultAvailable)
             {
-                result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputVersion;
+                result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputCSharpVersion;
                 return true;
             }
 
-            result = default(VersionStamp);
+            result = default;
+            return false;
+        }
+
+        public override bool TryGetGeneratedHtmlOutputVersionAsync(out VersionStamp result)
+        {
+            if (State.IsGeneratedOutputResultAvailable)
+            {
+                result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputHtmlVersion;
+                return true;
+            }
+
+            result = default;
             return false;
         }
     }

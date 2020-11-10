@@ -20,7 +20,13 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
+    // Sets the FileName static variable.
+    // Finds the test method name using reflection, and uses
+    // that to find the expected input/output test files in the file system.
     [IntializeTestFile]
+
+    // These tests must be run serially due to the test specific FileName static var.
+    [Collection("IntegrationTestSerialRuns")]
     public abstract class IntegrationTestBase
     {
         private static readonly AsyncLocal<string> _fileName = new AsyncLocal<string>();
@@ -85,13 +91,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         protected virtual bool DesignTime { get; } = false;
 
         /// <summary>
-        /// Gets the 
+        /// Gets the
         /// </summary>
         internal VirtualRazorProjectFileSystem FileSystem { get; } = new VirtualRazorProjectFileSystem();
 
         /// <summary>
-        /// Used to force a specific style of line-endings for testing. This matters for the baseline tests that exercise line mappings. 
-        /// Even though we normalize newlines for testing, the difference between platforms affects the data through the *count* of 
+        /// Used to force a specific style of line-endings for testing. This matters for the baseline tests that exercise line mappings.
+        /// Even though we normalize newlines for testing, the difference between platforms affects the data through the *count* of
         /// characters written.
         /// </summary>
         protected virtual string LineEnding { get; } = "\r\n";
@@ -145,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
             filePath = physicalPath.Replace('\\', '/');
-            if (!filePath.StartsWith("/"))
+            if (!filePath.StartsWith("/", StringComparison.OrdinalIgnoreCase))
             {
                 filePath = '/' + filePath;
             }
@@ -160,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 Content = text,
             };
-            
+
             return projectItem;
         }
 
@@ -172,7 +178,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 throw new InvalidOperationException(message);
             }
 
-            var suffixIndex = FileName.LastIndexOf("_");
+            var suffixIndex = FileName.LastIndexOf("_", StringComparison.Ordinal);
             var normalizedFileName = suffixIndex == -1 ? FileName : FileName.Substring(0, suffixIndex);
             var sourceFileName = Path.ChangeExtension(normalizedFileName, FileExtension);
             var testFile = TestFile.Create(sourceFileName, GetType().GetTypeInfo().Assembly);
@@ -191,8 +197,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             sourceFileName = sourceFileName.Replace('\\', '/');
 
             // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
-            filePath = filePath ?? sourceFileName;
-            if (!filePath.StartsWith("/"))
+            filePath ??= sourceFileName;
+            if (!filePath.StartsWith("/", StringComparison.Ordinal))
             {
                 filePath = '/' + filePath;
             }
@@ -206,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 Content = fileContent,
             };
-            
+
             return projectItem;
         }
 
@@ -361,6 +367,36 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             IntermediateNodeVerifier.Verify(document, baseline);
         }
 
+        internal void AssertHtmlDocumentMatchesBaseline(RazorHtmlDocument htmlDocument)
+        {
+            if (FileName == null)
+            {
+                var message = $"{nameof(AssertHtmlDocumentMatchesBaseline)} should only be called from an integration test ({nameof(FileName)} is null).";
+                throw new InvalidOperationException(message);
+            }
+
+            var baselineFileName = Path.ChangeExtension(FileName, ".codegen.html");
+
+            if (GenerateBaselines)
+            {
+                var baselineFullPath = Path.Combine(TestProjectRoot, baselineFileName);
+                File.WriteAllText(baselineFullPath, htmlDocument.GeneratedHtml);
+                return;
+            }
+
+            var htmlFile = TestFile.Create(baselineFileName, GetType().GetTypeInfo().Assembly);
+            if (!htmlFile.Exists())
+            {
+                throw new XunitException($"The resource {baselineFileName} was not found.");
+            }
+
+            var baseline = htmlFile.ReadAllText();
+
+            // Normalize newlines to match those in the baseline.
+            var actual = htmlDocument.GeneratedHtml.Replace("\r", "").Replace("\n", "\r\n");
+            Assert.Equal(baseline, actual);
+        }
+
         protected void AssertCSharpDocumentMatchesBaseline(RazorCSharpDocument cSharpDocument)
         {
             if (FileName == null)
@@ -481,7 +517,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 }
 
                 // See #2594
-                if (string.Equals("@", expectedSpan))
+                if (string.Equals("@", expectedSpan, StringComparison.Ordinal))
                 {
                     // For now we don't verify an escaped transition. In some cases one of the @ tokens in @@foo
                     // will be mapped as C# but will not be present in the output buffer because it's not actually C#.

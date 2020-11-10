@@ -9,10 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Execution;
 using Microsoft.Extensions.Logging;
-using OmniSharp;
 using OmniSharp.MSBuild.Notification;
 
 namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         // Internal for testing
         internal const string IntermediateOutputPathPropertyName = "IntermediateOutputPath";
         internal const string MSBuildProjectDirectoryPropertyName = "MSBuildProjectDirectory";
-        internal const string RazorConfigurationFileName = "project.razor.json";
         internal const string ProjectCapabilityItemType = "ProjectCapability";
 
         private const string MSBuildProjectFullPathPropertyName = "MSBuildProjectFullPath";
@@ -311,7 +310,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             intermediateOutputPath = intermediateOutputPath
                 .Replace('\\', Path.DirectorySeparatorChar)
                 .Replace('/', Path.DirectorySeparatorChar);
-            path = Path.Combine(intermediateOutputPath, RazorConfigurationFileName);
+            path = Path.Combine(intermediateOutputPath, LanguageServerConstants.ProjectConfigurationFile);
             return true;
         }
     }

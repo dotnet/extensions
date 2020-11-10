@@ -3,7 +3,7 @@
   <!--
     The `Condition` in this Import was added because publishing pipelines rely
     on importing this file but it doesn't import MPack.props.
-    The condition can be removed once this issue is fixed: 
+    The condition can be removed once this issue is fixed:
     https://github.com/dotnet/arcade/issues/2371
   -->
   <Import Project="MPack.props" Condition="Exists('MPack.props')" />
@@ -14,6 +14,11 @@
   -->
   <ItemGroup>
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="MediatR.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OmniSharp.Extensions.JsonRpc.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OmniSharp.Extensions.LanguageProtocol.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OmniSharp.Extensions.LanguageServer.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OmniSharp.Extensions.LanguageServer.Shared.dll" CertificateName="3PartySHA2" />
   </ItemGroup>
 
   <ItemGroup>

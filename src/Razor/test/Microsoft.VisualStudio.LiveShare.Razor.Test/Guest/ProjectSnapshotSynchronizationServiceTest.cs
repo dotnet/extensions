@@ -15,12 +15,12 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 {
-    public class ProjectSnapshotSynchronizationServiceTest : WorkspaceTestBase
+    public class ProjectSnapshotSynchronizationServiceTest : WorkspaceTestBase, IDisposable
     {
         public ProjectSnapshotSynchronizationServiceTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskFactory = new JoinableTaskFactory(joinableTaskContext.Context);
+            JoinableTaskContext = new JoinableTaskContext();
+            JoinableTaskFactory = new JoinableTaskFactory(JoinableTaskContext);
 
             SessionContext = new TestCollaborationSession(isHost: false);
 
@@ -33,6 +33,8 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         }
 
         private JoinableTaskFactory JoinableTaskFactory { get; }
+
+        private JoinableTaskContext JoinableTaskContext { get; }
 
         private CollaborationSession SessionContext { get; }
 
@@ -187,6 +189,11 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             Assert.Equal("/guest/path/project.csproj", project.FilePath);
             Assert.Same(RazorConfiguration.Default, project.Configuration);
             Assert.Same(newProjectWorkspaceState.TagHelpers, project.TagHelpers);
+        }
+
+        public void Dispose()
+        {
+            JoinableTaskContext.Dispose();
         }
     }
 }

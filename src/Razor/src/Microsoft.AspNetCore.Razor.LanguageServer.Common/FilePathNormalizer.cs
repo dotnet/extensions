@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
         {
             var normalized = Normalize(directoryFilePath);
 
-            if (!normalized.EndsWith("/"))
+            if (!normalized.EndsWith("/", StringComparison.Ordinal))
             {
                 normalized += '/';
             }
@@ -31,9 +32,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             var decodedPath = WebUtility.UrlDecode(filePath);
             var normalized = decodedPath.Replace('\\', '/');
 
-            if (normalized[0] != '/')
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                normalized[0] == '/' &&
+                !normalized.StartsWith("//", StringComparison.OrdinalIgnoreCase))
             {
-                normalized = '/' + normalized;
+                // We've been provided a path that probably looks something like /C:/path/to
+                normalized = normalized.Substring(1);
+            }
+            else
+            {
+                // Already a valid path like C:/path or //path
             }
 
             return normalized;

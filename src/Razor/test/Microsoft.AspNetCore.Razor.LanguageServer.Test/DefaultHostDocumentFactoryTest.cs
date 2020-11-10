@@ -1,12 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Moq;
-using OmniSharp.Extensions.LanguageServer.Server;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -15,10 +12,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public DefaultHostDocumentFactoryTest()
         {
-            var store = new DefaultGeneratedCodeContainerStore(
+            var store = new DefaultGeneratedDocumentContainerStore(
                 Dispatcher,
                 Mock.Of<DocumentVersionCache>(),
-                new Lazy<ILanguageServer>(() => null));
+                Mock.Of<GeneratedDocumentPublisher>());
             Factory = new DefaultHostDocumentFactory(Dispatcher, store);
         }
 

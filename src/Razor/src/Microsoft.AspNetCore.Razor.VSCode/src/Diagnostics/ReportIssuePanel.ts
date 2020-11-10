@@ -16,6 +16,7 @@ export class ReportIssuePanel {
     private panel: vscode.WebviewPanel | undefined;
     private dataCollector: ReportIssueDataCollector | undefined;
     private issueContent: string | undefined;
+    private traceLevelChange: vscode.Disposable | undefined;
 
     constructor(
         private readonly dataCollectorFactory: ReportIssueDataCollectorFactory,
@@ -32,7 +33,7 @@ export class ReportIssuePanel {
                 'Report Razor Issue',
                 vscode.ViewColumn.Two, {
                     enableScripts: true,
-                    // Dissallow any remote sources
+                    // Disallow any remote sources
                     localResourceRoots: [],
                 });
             this.attachToCurrentPanel();
@@ -76,7 +77,7 @@ export class ReportIssuePanel {
                     }
                     this.issueContent = undefined;
                     this.dataCollector = this.dataCollectorFactory.create();
-                    vscode.window.showInformationMessage('Razor issue data colletion started. Reproduce the issue then press "Stop"');
+                    vscode.window.showInformationMessage('Razor issue data collection started. Reproduce the issue then press "Stop"');
                     return;
                 case 'stopIssue':
                     if (!this.dataCollector) {
@@ -84,11 +85,19 @@ export class ReportIssuePanel {
                         return;
                     }
                     this.dataCollector.stop();
-                    vscode.window.showInformationMessage('Razor issue data colletion stopped. Copying issue content...');
+                    vscode.window.showInformationMessage('Razor issue data collection stopped. Copying issue content...');
                     return;
             }
         });
-        this.panel.onDidDispose(() => this.panel = undefined);
+
+        this.traceLevelChange = this.logger.onTraceLevelChange(async () => this.update());
+
+        this.panel.onDidDispose(() => {
+            if (this.traceLevelChange) {
+                this.traceLevelChange.dispose();
+            }
+            this.panel = undefined;
+        });
     }
 
     private async update() {
@@ -102,7 +111,7 @@ export class ReportIssuePanel {
     <li>Press <button onclick="startIssue()">Start</button></li>
     <li>Perform the actions (or no action) that resulted in your Razor issue</li>
     <li>Click <button onclick="stopIssue()">Stop</button>. This will copy all relevant issue information.</li>
-    <li><a href="https://github.com/aspnet/Razor.VSCode/issues/new">Go to GitHub</a>, paste your issue contents as the body of the issue. Don't forget to fill out any details left unfilled.</li>
+    <li><a href="https://github.com/dotnet/aspnetcore/issues/new?template=bug_report.md&labels=area-razor.tooling%2C+feature-razor.vscode%2C+bug">Go to GitHub</a>, paste your issue contents as the body of the issue. Don't forget to fill out any details left unfilled.</li>
 </ol>
 
 <p><em>Privacy Alert! The contents copied to your clipboard may contain personal data. Prior to posting to

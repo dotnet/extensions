@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.VisualStudio.LanguageServices.Razor.Serialization;
+using Microsoft.CodeAnalysis.Razor.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -14,6 +16,48 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     public class TagHelperDescriptorSerializationTest
     {
+        [Fact]
+        public void TagHelperDescriptor_DefaultBlazorServerProject_RoundTrips()
+        {
+            // Arrange
+            var testFileName = "test.taghelpers.json";
+            var current = new DirectoryInfo(AppContext.BaseDirectory);
+            while (current != null && !File.Exists(Path.Combine(current.FullName, testFileName)))
+            {
+                current = current.Parent;
+            }
+            var tagHelperFilePath = Path.Combine(current.FullName, testFileName);
+            var buffer = File.ReadAllBytes(tagHelperFilePath);
+            var serializer = new JsonSerializer();
+            serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
+            IReadOnlyList<TagHelperDescriptor> deserializedTagHelpers;
+
+            // Act
+            using (var stream = new MemoryStream(buffer))
+            using (var reader = new JsonTextReader(new StreamReader(stream)))
+            {
+                deserializedTagHelpers = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
+            }
+
+            MemoryStream serializedStream;
+            using (serializedStream = new MemoryStream())
+            using (var writer = new StreamWriter(serializedStream, Encoding.UTF8, bufferSize: 4096))
+            {
+                serializer.Serialize(writer, deserializedTagHelpers);
+            }
+
+            IReadOnlyList<TagHelperDescriptor> reDeserializedTagHelpers;
+            var reserializedStream = new MemoryStream(serializedStream.GetBuffer());
+            using (reserializedStream)
+            using (var reader = new JsonTextReader(new StreamReader(reserializedStream)))
+            {
+                reDeserializedTagHelpers = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
+            }
+
+            // Assert
+            Assert.Equal(deserializedTagHelpers, reDeserializedTagHelpers);
+        }
+        
         [Fact]
         public void TagHelperDescriptor_CanReadCamelCasedData()
         {
@@ -60,7 +104,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     TagHelperDescriptorJsonConverter.Instance,
                     RazorDiagnosticJsonConverter.Instance,
                 },
-                //NullValueHandling = NullValueHandling.Ignore,
             };
             var serializedDescriptor = JsonConvert.SerializeObject(expectedDescriptor, serializerSettings);
 
