@@ -25,13 +25,23 @@
       <!-- Only update the targeting pack version for preview builds. -->
       <TargetingPackVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRefPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
-  </ItemGroup>
 
-  <ItemGroup>
     <!-- Track compiler separately from Arcade.-->
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
         Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
   </ItemGroup>
+
+  <Target Name="GetCustomAssemblyAttributes"
+          BeforeTargets="GetAssemblyAttributes"
+          Condition=" '$(MSBuildProjectExtension)' == '.csproj' "
+          DependsOnTargets="InitializeSourceControlInformation">
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Serviceable)' == 'true'">
+        <_Parameter1>Serviceable</_Parameter1>
+        <_Parameter2>True</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
 </Project>
