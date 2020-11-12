@@ -75,6 +75,8 @@ In most cases, this is because the option _Use previews of the .NET Core SDK_ in
 
 ## Building with Visual Studio Code
 
+Note, the [Visual Studio Code C# Extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp) is required.
+
 Using Visual Studio Code with this repo requires setting environment variables on command line first.
 Use these command to launch VS Code with the right settings.
 
