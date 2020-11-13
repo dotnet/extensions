@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
@@ -17,20 +16,23 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [Shared]
     [ExportLspMethod(MSLSPMethods.DocumentPullDiagnosticName)]
     internal class DocumentPullDiagnosticsHandler :
-        LSPProgressListenerHandlerBase<DocumentDiagnosticsParams, DiagnosticReport[]>,
         IRequestHandler<DocumentDiagnosticsParams, DiagnosticReport[]>
     {
+        private static readonly HashSet<string> DiagnosticsToIgnore = new HashSet<string>()
+        {
+            "RemoveUnnecessaryImportsFixable",
+            "IDE0005_gen", // Using directive is unnecessary
+        };
+
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
-        private readonly LSPProgressListener _lspProgressListener;
 
         [ImportingConstructor]
         public DocumentPullDiagnosticsHandler(
             LSPRequestInvoker requestInvoker,
             LSPDocumentManager documentManager,
-            LSPDocumentMappingProvider documentMappingProvider,
-            LSPProgressListener lspProgressListener)
+            LSPDocumentMappingProvider documentMappingProvider)
         {
             if (requestInvoker is null)
             {
@@ -47,19 +49,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(documentMappingProvider));
             }
 
-            if (lspProgressListener is null)
-            {
-                throw new ArgumentNullException(nameof(lspProgressListener));
-            }
-
             _requestInvoker = requestInvoker;
             _documentManager = documentManager;
             _documentMappingProvider = documentMappingProvider;
-            _lspProgressListener = lspProgressListener;
         }
 
         // Internal for testing
-        internal async override Task<DiagnosticReport[]> HandleRequestAsync(DocumentDiagnosticsParams request, ClientCapabilities clientCapabilities, string token, CancellationToken cancellationToken)
+        public async Task<DiagnosticReport[]> HandleRequestAsync(DocumentDiagnosticsParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
         {
             if (request is null)
             {
@@ -81,60 +77,30 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            var referenceParams = new SerializableDocumentDiagnosticsParams()
+            var referenceParams = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier()
                 {
                     Uri = csharpDoc.Uri
                 },
-                PreviousResultId = request.PreviousResultId,
-                PartialResultToken = token
+                PreviousResultId = request.PreviousResultId
             };
 
-            if (!_lspProgressListener.TryListenForProgress(
-                token,
-                onProgressNotifyAsync: (value, ct) => ProcessDocumentDiagnosticsAsync(value, request.PartialResultToken, request.TextDocument.Uri, documentSnapshot, ct),
-                WaitForProgressNotificationTimeout,
-                cancellationToken,
-                out var onCompleted))
-            {
-                return null;
-            }
-
-            var result = await _requestInvoker.ReinvokeRequestOnServerAsync<SerializableDocumentDiagnosticsParams, DiagnosticReport[]>(
+            var resultsFromAllLanguageServers = await _requestInvoker.ReinvokeRequestOnMultipleServersAsync<DocumentDiagnosticsParams, DiagnosticReport[]>(
                 MSLSPMethods.DocumentPullDiagnosticName,
                 RazorLSPConstants.CSharpContentTypeName,
                 referenceParams,
                 cancellationToken).ConfigureAwait(false);
 
-            // We must not return till we have received the progress notifications
-            // and reported the results via the PartialResultToken
-            await onCompleted.ConfigureAwait(false);
+            var result = resultsFromAllLanguageServers.SelectMany(l => l).ToArray();
 
-            return null;
-        }
-
-        private async Task ProcessDocumentDiagnosticsAsync(
-            JToken value,
-            IProgress<DiagnosticReport[]> progress,
-            Uri razorDocumentUri,
-            LSPDocumentSnapshot documentSnapshot,
-            CancellationToken cancellationToken)
-        {
-            var result = value.ToObject<DiagnosticReport[]>();
-
-            if (result == null || result.Length == 0)
-            {
-                return;
-            }
-
-            var remappedResults = await RemapDocumentDiagnosticsAsync(
+            var processedResults = await RemapDocumentDiagnosticsAsync(
                 result,
-                razorDocumentUri,
+                request.TextDocument.Uri,
                 documentSnapshot,
                 cancellationToken).ConfigureAwait(false);
 
-            progress.Report(remappedResults);
+            return processedResults;
         }
 
         private async Task<DiagnosticReport[]> RemapDocumentDiagnosticsAsync(
@@ -152,16 +118,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             foreach (var diagnosticReport in unmappedDiagnosticReports)
             {
-                if (diagnosticReport?.Diagnostics?.Length == 0)
+                // Check if there are any diagnostics in this report
+                if (diagnosticReport?.Diagnostics?.Any() != true)
                 {
                     mappedDiagnosticReports.Add(diagnosticReport);
                     continue;
                 }
 
                 var unmappedDiagnostics = diagnosticReport.Diagnostics;
-                var mappedDiagnostics = new List<Diagnostic>(unmappedDiagnostics.Length);
+                var filteredDiagnostics = unmappedDiagnostics.Where(d => !DiagnosticsToIgnore.Contains(d.Code));
+                var mappedDiagnostics = new List<Diagnostic>(filteredDiagnostics.Count());
 
-                var rangesToMap = unmappedDiagnostics.Select(r => r.Range).ToArray();
+                var rangesToMap = filteredDiagnostics.Select(r => r.Range).ToArray();
                 var mappingResult = await _documentMappingProvider.MapToDocumentRangesAsync(
                     RazorLanguageKind.CSharp,
                     razorDocumentUri,
@@ -175,9 +143,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     return Array.Empty<DiagnosticReport>();
                 }
 
-                for (var i = 0; i < unmappedDiagnostics.Length; i++)
+                for (var i = 0; i < filteredDiagnostics.Count(); i++)
                 {
-                    var diagnostic = unmappedDiagnostics[i];
+                    var diagnostic = filteredDiagnostics.ElementAt(i);
                     var range = mappingResult.Ranges[i];
                     if (range.IsUndefined())
                     {
@@ -194,13 +162,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             return mappedDiagnosticReports.ToArray();
-        }
-
-        [DataContract]
-        private class SerializableDocumentDiagnosticsParams : DiagnosticParams
-        {
-            [DataMember(Name = "partialResultToken")]
-            public string PartialResultToken { get; set; }
         }
     }
 }
