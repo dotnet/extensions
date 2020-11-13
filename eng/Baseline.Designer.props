@@ -9,9 +9,9 @@
     <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Data.SqlClient" Version="[1.0.19239.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Data.SqlClient" Version="[1.0.19239.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Caching.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' ">
@@ -27,8 +27,8 @@
     <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.NewtonsoftJson' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[5.0.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Hosting.Systemd-->
