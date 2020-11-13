@@ -1,7 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Azure KeyVault configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
+    <Description>Azure KeyVault configuration provider implementation for Microsoft.Extensions.Configuration.
+    
+    This library has been replaced by the following new Azure SDK.
+
+    https://www.nuget.org/packages/Azure.Extensions.AspNetCore.Configuration.Secrets
+
+    It is recommended that you move to the new package.
+    </Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);azure;keyvault</PackageTags>
     <IsPackable>true</IsPackable>
