@@ -68,10 +68,6 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[5.0.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.Extensions.Configuration.AzureKeyVault-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.AzureKeyVault' ">
-    <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
-  </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.AzureKeyVault' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[5.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[5.0.0, )" />
