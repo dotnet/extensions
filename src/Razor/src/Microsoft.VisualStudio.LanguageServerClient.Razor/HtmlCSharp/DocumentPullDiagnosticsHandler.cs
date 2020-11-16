@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
@@ -18,7 +17,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     internal class DocumentPullDiagnosticsHandler :
         IRequestHandler<DocumentDiagnosticsParams, DiagnosticReport[]>
     {
-        private static readonly HashSet<string> DiagnosticsToIgnore = new HashSet<string>()
+        private static readonly IReadOnlyCollection<string> DiagnosticsToIgnore = new HashSet<string>()
         {
             "RemoveUnnecessaryImportsFixable",
             "IDE0005_gen", // Using directive is unnecessary
@@ -109,7 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             LSPDocumentSnapshot documentSnapshot,
             CancellationToken cancellationToken)
         {
-            if (unmappedDiagnosticReports?.Length == 0)
+            if (unmappedDiagnosticReports?.Any() != true)
             {
                 return unmappedDiagnosticReports;
             }
@@ -149,7 +148,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     var range = mappingResult.Ranges[i];
                     if (range.IsUndefined())
                     {
-                        // Couldn't remap the range correctly. Discard this range.
+                        // Couldn't remap the range correctly. Discard this range & diagnostic.
                         continue;
                     }
 
