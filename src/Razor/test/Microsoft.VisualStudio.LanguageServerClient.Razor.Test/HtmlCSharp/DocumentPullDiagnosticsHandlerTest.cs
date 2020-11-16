@@ -165,6 +165,78 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
+        public async Task HandleRequestAsync_RemapFailsButErrorDiagnosticIsShown()
+        {
+            // Arrange
+            var called = false;
+            var documentManager = CreateDocumentManager();
+
+            var unmappableDiagnostic_errorSeverity = new Diagnostic()
+            {
+                Range = new Range()
+                {
+                    Start = new Position(149, 19),
+                    End = new Position(149, 23)
+                },
+                Code = "CS0103",
+                Severity = DiagnosticSeverity.Error
+            };
+
+            var unmappableDiagnostic_warningSeverity = new Diagnostic()
+            {
+                Range = new Range()
+                {
+                    Start = new Position(159, 19),
+                    End = new Position(159, 23)
+                },
+                Code = "IDE003",
+                Severity = DiagnosticSeverity.Warning
+            };
+
+            var diagnosticReport = new DiagnosticReport()
+            {
+                ResultId = "6",
+                Diagnostics = new Diagnostic[]
+                {
+                    unmappableDiagnostic_errorSeverity,
+                    unmappableDiagnostic_warningSeverity
+                }
+            };
+
+            var requestInvoker = GetRequestInvoker<DocumentDiagnosticsParams, DiagnosticReport[]>(
+                new[] { diagnosticReport },
+                (method, serverContentType, diagnosticParams, ct) =>
+                {
+                    Assert.Equal(MSLSPMethods.DocumentPullDiagnosticName, method);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
+                    called = true;
+                });
+
+            var undefinedRange = new Range() { Start = new Position(-1, -1), End = new Position(-1, -1) };
+            var documentMappingProvider = GetDocumentMappingProvider(undefinedRange, undefinedRange);
+
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider);
+            var diagnosticRequest = new DocumentDiagnosticsParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                PreviousResultId = "4"
+            };
+
+            // Act
+            var result = await documentDiagnosticsHandler.HandleRequestAsync(diagnosticRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(called);
+
+            var diagnosticReportResult = Assert.Single(result);
+            Assert.Equal(diagnosticReport.ResultId, diagnosticReportResult.ResultId);
+
+            var returnedDiagnostic = Assert.Single(diagnosticReportResult.Diagnostics);
+            Assert.Equal(unmappableDiagnostic_errorSeverity.Code, returnedDiagnostic.Code);
+            Assert.True(returnedDiagnostic.Range.IsUndefined());
+        }
+
+        [Fact]
         public async Task HandleRequestAsync_VersionMismatch_DiscardsLocation()
         {
             // Arrange

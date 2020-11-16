@@ -125,7 +125,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
 
                 var unmappedDiagnostics = diagnosticReport.Diagnostics;
-                var filteredDiagnostics = unmappedDiagnostics.Where(d => !DiagnosticsToIgnore.Contains(d.Code));
+                var filteredDiagnostics = unmappedDiagnostics.Where(d => !CanDiagnosticBeFiltered(d));
                 var mappedDiagnostics = new List<Diagnostic>(filteredDiagnostics.Count());
 
                 var rangesToMap = filteredDiagnostics.Select(r => r.Range).ToArray();
@@ -146,10 +146,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 {
                     var diagnostic = filteredDiagnostics.ElementAt(i);
                     var range = mappingResult.Ranges[i];
+
                     if (range.IsUndefined())
                     {
-                        // Couldn't remap the range correctly. Discard this range & diagnostic.
-                        continue;
+                        // Couldn't remap the range correctly.
+                        // If this isn't an `Error` Severity Diagnostic we can discard it.
+                        if (diagnostic.Severity != DiagnosticSeverity.Error)
+                        {
+                            continue;
+                        }
+
+                        // For `Error` Severity diagnostics we still show the diagnostics to
+                        // the user, however we set the range to an undefined range to ensure
+                        // clicking on the diagnostic doesn't cause errors.
                     }
 
                     diagnostic.Range = range;
@@ -161,6 +170,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             return mappedDiagnosticReports.ToArray();
+
+            static bool CanDiagnosticBeFiltered(Diagnostic d)
+            {
+                return DiagnosticsToIgnore.Contains(d.Code) && d.Severity != DiagnosticSeverity.Error;
+            }
         }
     }
 }
