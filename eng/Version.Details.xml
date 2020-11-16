@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="6.0.0-alpha.1.20563.17">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="6.0.0-alpha.1.20564.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>9135ea5ac06ddcece8dcab56884d74cdcab2768b</Sha>
+      <Sha>940dcb0aba247da054ee435380d533e04944093c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Internal.Transport" Version="6.0.0-alpha.1.20563.17">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Internal.Transport" Version="6.0.0-alpha.1.20564.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>9135ea5ac06ddcece8dcab56884d74cdcab2768b</Sha>
+      <Sha>940dcb0aba247da054ee435380d533e04944093c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="6.0.0-alpha.1.20563.17">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="6.0.0-alpha.1.20564.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>9135ea5ac06ddcece8dcab56884d74cdcab2768b</Sha>
+      <Sha>940dcb0aba247da054ee435380d533e04944093c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="6.0.0-alpha.1.20563.17">
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="6.0.0-alpha.1.20564.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>9135ea5ac06ddcece8dcab56884d74cdcab2768b</Sha>
+      <Sha>940dcb0aba247da054ee435380d533e04944093c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="6.0.0-alpha.1.20563.17">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="6.0.0-alpha.1.20564.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>9135ea5ac06ddcece8dcab56884d74cdcab2768b</Sha>
+      <Sha>940dcb0aba247da054ee435380d533e04944093c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Version="6.0.0-alpha.1.20563.17">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Version="6.0.0-alpha.1.20564.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>9135ea5ac06ddcece8dcab56884d74cdcab2768b</Sha>
+      <Sha>940dcb0aba247da054ee435380d533e04944093c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Version="6.0.0-alpha.1.20563.17">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Version="6.0.0-alpha.1.20564.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>9135ea5ac06ddcece8dcab56884d74cdcab2768b</Sha>
+      <Sha>940dcb0aba247da054ee435380d533e04944093c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="6.0.0-alpha.1.20560.10" CoherentParentDependency="Microsoft.CodeAnalysis.Razor">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -37,9 +37,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>72b7d236ad634c2280c73499ebfc2b594995ec06</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="6.0.0-alpha.1.20563.17">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="6.0.0-alpha.1.20564.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>9135ea5ac06ddcece8dcab56884d74cdcab2768b</Sha>
+      <Sha>940dcb0aba247da054ee435380d533e04944093c</Sha>
     </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="6.0.0-alpha.1.20560.10" CoherentParentDependency="Microsoft.CodeAnalysis.Razor">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -80,9 +80,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>72b7d236ad634c2280c73499ebfc2b594995ec06</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.20552.5">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.20561.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>72b28b7e023d4c3fffa0a0b9748a7d4e8cc799be</Sha>
+      <Sha>e65d307045c183af6e48b087571f6b7a05e39f01</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
