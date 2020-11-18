@@ -268,7 +268,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Assert
             Assert.True(called);
-            Assert.Empty(result);
+            var returnedReport = Assert.Single(result);
+            Assert.Equal(RoslynDiagnosticResponse.First().ResultId, returnedReport.ResultId);
+            Assert.Null(returnedReport.Diagnostics);
         }
 
         [Fact]
@@ -301,7 +303,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // Assert
             Assert.True(called);
-            Assert.Empty(result);
+            var returnedReport = Assert.Single(result);
+            Assert.Equal(RoslynDiagnosticResponse.First().ResultId, returnedReport.ResultId);
+            Assert.Null(returnedReport.Diagnostics);
         }
 
         private LSPRequestInvoker GetRequestInvoker<TParams, TResult>(TResult expectedResponse, Action<string, string, TParams, CancellationToken> callback)

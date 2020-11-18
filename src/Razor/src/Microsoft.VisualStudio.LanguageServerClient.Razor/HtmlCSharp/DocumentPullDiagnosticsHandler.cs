@@ -99,6 +99,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 documentSnapshot,
                 cancellationToken).ConfigureAwait(false);
 
+
+            // | ---------------------------------------------------------------------------------- |
+            // |                       LSP Platform Expected Response Semantics                     |
+            // | ---------------------------------------------------------------------------------- |
+            // | DiagnosticReport.Diagnostics     | DiagnosticReport.ResultId | Meaning             |
+            // | -------------------------------- | ------------------------- | ------------------- |
+            // | `null`                           | `null`                    | document gone       |
+            // | `null`                           | valid                     | nothing changed     |
+            // | valid (non-null including empty) | valid                     | diagnostics changed |
+            // | ---------------------------------------------------------------------------------- |
             return processedResults;
         }
 
@@ -138,8 +148,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 if (mappingResult == null || mappingResult.HostDocumentVersion != documentSnapshot.Version)
                 {
-                    // Couldn't remap the range or the document changed in the meantime. Discard this highlight.
-                    return Array.Empty<DiagnosticReport>();
+                    // Couldn't remap the range or the document changed in the meantime.
+                    // Discard the diagnostics from this DiagnosticReport, and report that nothings changed.
+                    diagnosticReport.Diagnostics = null;
+                    mappedDiagnosticReports.Add(diagnosticReport);
+                    continue;
                 }
 
                 for (var i = 0; i < filteredDiagnostics.Count(); i++)
@@ -171,10 +184,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             return mappedDiagnosticReports.ToArray();
 
-            static bool CanDiagnosticBeFiltered(Diagnostic d)
-            {
-                return DiagnosticsToIgnore.Contains(d.Code) && d.Severity != DiagnosticSeverity.Error;
-            }
+            static bool CanDiagnosticBeFiltered(Diagnostic d) =>
+                DiagnosticsToIgnore.Contains(d.Code) && d.Severity != DiagnosticSeverity.Error;
         }
     }
 }
