@@ -105,7 +105,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentManager = new TestDocumentManager();
             var requestInvoker = Mock.Of<LSPRequestInvoker>();
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider);
+            var documentSynchronizer = Mock.Of<LSPDocumentSynchronizer>();
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider, documentSynchronizer);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -136,8 +137,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 });
 
             var documentMappingProvider = GetDocumentMappingProvider(ValidDiagnostic_UnknownName_MappedRange, ValidDiagnostic_InvalidExpression_MappedRange);
+            var documentSynchronizer = CreateDocumentSynchronizer();
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider, documentSynchronizer);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -162,6 +164,46 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(ValidDiagnostic_InvalidExpression.Code, d.Code);
                     Assert.Equal(ValidDiagnostic_InvalidExpression_MappedRange, d.Range);
                 });
+        }
+
+        [Fact]
+        public async Task HandleRequestAsync_DocumentSynchronizationFails_ReturnsNullDiagnostic()
+        {
+            // Arrange
+            var called = false;
+            var documentManager = CreateDocumentManager();
+
+            var requestInvoker = GetRequestInvoker<DocumentDiagnosticsParams, DiagnosticReport[]>(
+                RoslynDiagnosticResponse,
+                (method, serverContentType, diagnosticParams, ct) =>
+                {
+                    Assert.Equal(MSLSPMethods.DocumentPullDiagnosticName, method);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
+                    called = true;
+                });
+
+            var documentMappingProvider = GetDocumentMappingProvider(ValidDiagnostic_UnknownName_MappedRange, ValidDiagnostic_InvalidExpression_MappedRange);
+
+            var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
+            documentSynchronizer
+                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(It.IsAny<int>(), It.IsAny<CSharpVirtualDocumentSnapshot>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(false));
+
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider, documentSynchronizer.Object);
+            var diagnosticRequest = new DocumentDiagnosticsParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                PreviousResultId = "4"
+            };
+
+            // Act
+            var result = await documentDiagnosticsHandler.HandleRequestAsync(diagnosticRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.False(called);
+            var diagnosticReport = Assert.Single(result);
+            Assert.Equal(diagnosticRequest.PreviousResultId, diagnosticReport.ResultId);
+            Assert.Null(diagnosticReport.Diagnostics);
         }
 
         [Fact]
@@ -215,7 +257,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var undefinedRange = new Range() { Start = new Position(-1, -1), End = new Position(-1, -1) };
             var documentMappingProvider = GetDocumentMappingProvider(undefinedRange, undefinedRange);
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider);
+            var documentSynchronizer = CreateDocumentSynchronizer();
+
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider, documentSynchronizer);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -237,6 +281,68 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
+        public async Task HandleRequestAsync_NoDiagnosticsAfterFiltering_ReturnsNullDiagnostic()
+        {
+            // Arrange
+            var called = false;
+            var documentManager = CreateDocumentManager();
+
+            var filteredDiagnostic = new Diagnostic()
+            {
+                Range = new Range()
+                {
+                    Start = new Position(159, 19),
+                    End = new Position(159, 23)
+                },
+                Code = "RemoveUnnecessaryImportsFixable",
+                Severity = DiagnosticSeverity.Warning
+            };
+
+            var filteredDiagnostic_mappedRange = new Range()
+            {
+                Start = new Position(49, 19),
+                End = new Position(49, 23)
+            };
+
+            var diagnosticReport = new DiagnosticReport()
+            {
+                ResultId = "6",
+                Diagnostics = new Diagnostic[]
+                {
+                    filteredDiagnostic
+                }
+            };
+
+            var requestInvoker = GetRequestInvoker<DocumentDiagnosticsParams, DiagnosticReport[]>(
+                new[] { diagnosticReport },
+                (method, serverContentType, diagnosticParams, ct) =>
+                {
+                    Assert.Equal(MSLSPMethods.DocumentPullDiagnosticName, method);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
+                    called = true;
+                });
+
+            var documentMappingProvider = GetDocumentMappingProvider(filteredDiagnostic_mappedRange);
+            var documentSynchronizer = CreateDocumentSynchronizer();
+
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider, documentSynchronizer);
+            var diagnosticRequest = new DocumentDiagnosticsParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                PreviousResultId = "4"
+            };
+
+            // Act
+            var result = await documentDiagnosticsHandler.HandleRequestAsync(diagnosticRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(called);
+            var returnedReport = Assert.Single(result);
+            Assert.Equal(diagnosticReport.ResultId, returnedReport.ResultId);
+            Assert.Empty(returnedReport.Diagnostics);
+        }
+
+        [Fact]
         public async Task HandleRequestAsync_VersionMismatch_DiscardsLocation()
         {
             // Arrange
@@ -255,8 +361,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Note the HostDocumentVersion provided by the DocumentMappingProvider = 0,
             // which is different from document version (1) from the DocumentManager
             var documentMappingProvider = GetDocumentMappingProvider(ValidDiagnostic_UnknownName_MappedRange, ValidDiagnostic_InvalidExpression_MappedRange);
+            var documentSynchronizer = CreateDocumentSynchronizer();
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider, documentSynchronizer);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -290,8 +397,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 });
 
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var documentSynchronizer = CreateDocumentSynchronizer();
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentMappingProvider, documentSynchronizer);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -343,6 +451,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Returns(Task.FromResult(remappingResult));
 
             return documentMappingProvider.Object;
+        }
+
+        private static LSPDocumentSynchronizer CreateDocumentSynchronizer()
+        {
+            var documentSynchronizer = new Mock<LSPDocumentSynchronizer>(MockBehavior.Strict);
+            documentSynchronizer
+                .Setup(d => d.TrySynchronizeVirtualDocumentAsync(It.IsAny<int>(), It.IsAny<CSharpVirtualDocumentSnapshot>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(true));
+            return documentSynchronizer.Object;
         }
     }
 }

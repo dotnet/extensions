@@ -26,12 +26,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
+        private readonly LSPDocumentSynchronizer _documentSynchronizer;
 
         [ImportingConstructor]
         public DocumentPullDiagnosticsHandler(
             LSPRequestInvoker requestInvoker,
             LSPDocumentManager documentManager,
-            LSPDocumentMappingProvider documentMappingProvider)
+            LSPDocumentMappingProvider documentMappingProvider,
+            LSPDocumentSynchronizer documentSynchronizer)
         {
             if (requestInvoker is null)
             {
@@ -48,9 +50,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(documentMappingProvider));
             }
 
+            if (documentSynchronizer is null)
+            {
+                throw new ArgumentNullException(nameof(documentSynchronizer));
+            }
+
             _requestInvoker = requestInvoker;
             _documentManager = documentManager;
             _documentMappingProvider = documentMappingProvider;
+            _documentSynchronizer = documentSynchronizer;
         }
 
         // Internal for testing
@@ -76,6 +84,23 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
+            var synchronized = await _documentSynchronizer.TrySynchronizeVirtualDocumentAsync(
+                documentSnapshot.Version,
+                csharpDoc,
+                cancellationToken).ConfigureAwait(false);
+            if (!synchronized)
+            {
+                // Could not synchronize, report nothing changed
+                return new DiagnosticReport[]
+                {
+                    new DiagnosticReport()
+                    {
+                        ResultId = request.PreviousResultId,
+                        Diagnostics = null
+                    }
+                };
+            }
+
             var referenceParams = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier()
@@ -85,6 +110,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 PreviousResultId = request.PreviousResultId
             };
 
+            // End goal is to transition this from ReinvokeRequestOnMultipleServersAsync -> ReinvokeRequestOnServerAsync
+            // We can't do this right now as we don't have the ability to specify the language client name we'd like to make the call out to
+            // https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1246135
             var resultsFromAllLanguageServers = await _requestInvoker.ReinvokeRequestOnMultipleServersAsync<DocumentDiagnosticsParams, DiagnosticReport[]>(
                 MSLSPMethods.DocumentPullDiagnosticName,
                 RazorLSPConstants.CSharpContentTypeName,
@@ -98,7 +126,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 request.TextDocument.Uri,
                 documentSnapshot,
                 cancellationToken).ConfigureAwait(false);
-
 
             // | ---------------------------------------------------------------------------------- |
             // |                       LSP Platform Expected Response Semantics                     |
@@ -136,6 +163,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 var unmappedDiagnostics = diagnosticReport.Diagnostics;
                 var filteredDiagnostics = unmappedDiagnostics.Where(d => !CanDiagnosticBeFiltered(d));
+                if (!filteredDiagnostics.Any())
+                {
+                    // No diagnostics left after filtering.
+                    // Discard the diagnostics from this DiagnosticReport,
+                    // and report there aren't any document diagnostics.
+                    diagnosticReport.Diagnostics = Array.Empty<Diagnostic>();
+                    mappedDiagnosticReports.Add(diagnosticReport);
+                    continue;
+                }
+
                 var mappedDiagnostics = new List<Diagnostic>(filteredDiagnostics.Count());
 
                 var rangesToMap = filteredDiagnostics.Select(r => r.Range).ToArray();
@@ -178,6 +215,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     mappedDiagnostics.Add(diagnostic);
                 }
 
+                // Note; it's possible all ranges were undefined, and thus we
+                // have an empty `mappedDiagnostics`. By returning an empty Diagnostics array
+                // we're indicating to the platform there are no diagnostics for this document.
                 diagnosticReport.Diagnostics = mappedDiagnostics.ToArray();
                 mappedDiagnosticReports.Add(diagnosticReport);
             }
