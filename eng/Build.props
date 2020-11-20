@@ -12,8 +12,8 @@
     <!-- Exclude VSIX projects on non-Windows -->
     <ProjectToBuild Condition="'$(OS)'!='WINDOWS_NT' and '$(SdkTaskProjects)'==''" Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Slim.sln" />
 
-    <NodeJsProjects Include="$(RepoRoot)src\Razor\src\**\*.npmproj" RestoreInParallel="false"/>
-    <NodeJsProjects Include="$(RepoRoot)src\Razor\test\**\*.npmproj" RestoreInParallel="false" />
+    <NodeJsProjects Include="$(RepoRoot)src\Razor\src\**\*.npmproj" Exclude="$(RepoRoot)src\**\node_modules\**" RestoreInParallel="false"/>
+    <NodeJsProjects Include="$(RepoRoot)src\Razor\test\**\*.npmproj" Exclude="$(RepoRoot)src\**\node_modules\**" RestoreInParallel="false" />
 
     <ProjectToBuild Include="@(NodeJsProjects)" Condition="'$(BuildNodeJs)' == 'true'" />
   </ItemGroup>

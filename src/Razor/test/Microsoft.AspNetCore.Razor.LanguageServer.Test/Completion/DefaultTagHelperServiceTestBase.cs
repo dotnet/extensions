@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Test.Common;
@@ -148,22 +150,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return CreateCodeDocument(text, CSHtmlFile, tagHelpers);
         }
 
-        internal static (DocumentSnapshot, TextDocumentIdentifier) CreateDocumentSnapshot(string text, bool isRazor, params TagHelperDescriptor[] tagHelpers)
+        protected TextDocumentIdentifier GetIdentifier(bool isRazor)
         {
             var file = isRazor ? RazorFile : CSHtmlFile;
+            return new TextDocumentIdentifier(new Uri($"c:\\${file}"));
+        }
 
-            var document = CreateCodeDocument(text, file, tagHelpers);
-            var identifier = new TextDocumentIdentifier(new Uri($"c:\\${file}"));
+        internal (Queue<DocumentSnapshot>, Queue<TextDocumentIdentifier>) CreateDocumentSnapshot(string[] textArray, bool[] isRazorArray, params TagHelperDescriptor[] tagHelpers)
+        {
+            var documentSnapshots = new Queue<DocumentSnapshot>();
+            var identifiers = new Queue<TextDocumentIdentifier>();
+            foreach (var (text, isRazor) in textArray.Zip(isRazorArray, (t, r) => (t, r)))
+            {
+                var file = isRazor ? RazorFile : CSHtmlFile;
+                var document = CreateCodeDocument(text, file, tagHelpers);
+                var documentSnapshot = new Mock<DocumentSnapshot>(MockBehavior.Strict);
+                documentSnapshot.Setup(d => d.GetGeneratedOutputAsync())
+                    .ReturnsAsync(document);
 
-            var documentSnapshot = new Mock<DocumentSnapshot>(MockBehavior.Strict);
-            documentSnapshot.Setup(d => d.GetGeneratedOutputAsync())
-                .ReturnsAsync(document);
+                var version = VersionStamp.Create();
+                documentSnapshot.Setup(d => d.GetTextVersionAsync())
+                    .ReturnsAsync(version);
 
-            var version = VersionStamp.Create();
-            documentSnapshot.Setup(d => d.GetTextVersionAsync())
-                .ReturnsAsync(version);
+                documentSnapshots.Enqueue(documentSnapshot.Object);
+                var identifier = GetIdentifier(isRazor);
+                identifiers.Enqueue(identifier);
+            }
 
-            return (documentSnapshot.Object, identifier);
+            return (documentSnapshots, identifiers);
         }
 
         internal static RazorCodeDocument CreateCodeDocument(string text, string filePath, params TagHelperDescriptor[] tagHelpers)

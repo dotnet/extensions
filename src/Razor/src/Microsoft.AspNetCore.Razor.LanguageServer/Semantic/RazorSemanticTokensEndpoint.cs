@@ -5,15 +5,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document.Proposals;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models.Proposals;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 {
@@ -22,26 +19,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         private SemanticTokensCapability _capability;
 
         private readonly ILogger _logger;
-        private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly DocumentResolver _documentResolver;
         private readonly RazorSemanticTokensInfoService _semanticTokensInfoService;
 
         public RazorSemanticTokensEndpoint(
-            ForegroundDispatcher foregroundDispatcher,
-            DocumentResolver documentResolver,
             RazorSemanticTokensInfoService semanticTokensInfoService,
             ILoggerFactory loggerFactory)
         {
-            if (foregroundDispatcher is null)
-            {
-                throw new ArgumentNullException(nameof(foregroundDispatcher));
-            }
-
-            if (documentResolver is null)
-            {
-                throw new ArgumentNullException(nameof(documentResolver));
-            }
-
             if (semanticTokensInfoService is null)
             {
                 throw new ArgumentNullException(nameof(semanticTokensInfoService));
@@ -52,8 +35,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _foregroundDispatcher = foregroundDispatcher;
-            _documentResolver = documentResolver;
             _semanticTokensInfoService = semanticTokensInfoService;
             _logger = loggerFactory.CreateLogger<RazorSemanticTokensEndpoint>();
         }
@@ -75,7 +56,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 throw new ArgumentNullException(nameof(request));
             }
 
-            return await HandleAsync(request.TextDocument, cancellationToken, request.Range);
+            var semanticTokens = await HandleAsync(request.TextDocument, cancellationToken, request.Range);
+            _logger.LogInformation($"Returned {semanticTokens.Data.Length / 5} semantic tokens for range {request.Range} in {request.TextDocument.Uri}.");
+
+            return semanticTokens;
         }
 
         public async Task<SemanticTokensFullOrDelta?> Handle(SemanticTokensDeltaParams request, CancellationToken cancellationToken)
@@ -85,13 +69,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var documentSnapshot = await TryGetCodeDocumentAsync(request.TextDocument.Uri.GetAbsolutePath(), cancellationToken);
-            if (documentSnapshot is null)
-            {
-                return null;
-            }
-
-            var edits = await _semanticTokensInfoService.GetSemanticTokensEditsAsync(documentSnapshot, request.TextDocument, request.PreviousResultId, cancellationToken);
+            var edits = await _semanticTokensInfoService.GetSemanticTokensEditsAsync(request.TextDocument, request.PreviousResultId, cancellationToken);
 
             return edits;
         }
@@ -130,28 +108,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
         private async Task<SemanticTokens> HandleAsync(TextDocumentIdentifier textDocument, CancellationToken cancellationToken, Range range = null)
         {
-            var absolutePath = textDocument.Uri.GetAbsolutePath();
-            var documentSnapshot = await TryGetCodeDocumentAsync(absolutePath, cancellationToken);
-            if (documentSnapshot is null)
-            {
-                return null;
-            }
-
-            var tokens = await _semanticTokensInfoService.GetSemanticTokensAsync(documentSnapshot, textDocument, range, cancellationToken);
+            var tokens = await _semanticTokensInfoService.GetSemanticTokensAsync(textDocument, range, cancellationToken);
 
             return tokens;
-        }
-
-        private async Task<DocumentSnapshot> TryGetCodeDocumentAsync(string absolutePath, CancellationToken cancellationToken)
-        {
-            var document = await Task.Factory.StartNew(() =>
-            {
-                _documentResolver.TryResolveDocument(absolutePath, out var documentSnapshot);
-
-                return documentSnapshot;
-            }, cancellationToken, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
-
-            return document;
         }
     }
 }
