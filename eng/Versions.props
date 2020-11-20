@@ -48,13 +48,13 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftCodeAnalysisRazorPackageVersion>6.0.0-alpha.1.20569.11</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>6.0.0-alpha.1.20569.11</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>6.0.0-alpha.1.20569.11</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>6.0.0-alpha.1.20569.11</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>6.0.0-alpha.1.20569.11</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>6.0.0-alpha.1.20569.11</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>6.0.0-alpha.1.20569.11</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>6.0.0-alpha.1.20570.2</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>6.0.0-alpha.1.20570.2</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>6.0.0-alpha.1.20570.2</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>6.0.0-alpha.1.20570.2</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>6.0.0-alpha.1.20570.2</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>6.0.0-alpha.1.20570.2</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>6.0.0-alpha.1.20570.2</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftExtensionsLoggingPackageVersion>
@@ -62,7 +62,7 @@
     <MicrosoftNETCoreAppRefPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>6.0.0-alpha.1.20560.10</MicrosoftNETCorePlatformsPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>6.0.0-alpha.1.20569.11</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>6.0.0-alpha.1.20570.2</MicrosoftNETSdkRazorPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0-alpha.1.20560.10</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemResourcesExtensionsPackageVersion>6.0.0-alpha.1.20560.10</SystemResourcesExtensionsPackageVersion>
     <SystemTextEncodingsWebPackageVersion>6.0.0-alpha.1.20560.10</SystemTextEncodingsWebPackageVersion>
