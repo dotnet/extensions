@@ -7,7 +7,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     internal class FormattingSpan
     {
-        public FormattingSpan(TextSpan span, TextSpan blockSpan, FormattingSpanKind spanKind, FormattingBlockKind blockKind, int razorIndentationLevel, int htmlIndentationLevel, bool isInClassBody = false)
+        public FormattingSpan(
+            TextSpan span,
+            TextSpan blockSpan,
+            FormattingSpanKind spanKind,
+            FormattingBlockKind blockKind,
+            int razorIndentationLevel,
+            int htmlIndentationLevel,
+            bool isInClassBody = false,
+            int componentLambdaNestingLevel = 0)
         {
             Span = span;
             BlockSpan = blockSpan;
@@ -16,6 +24,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             RazorIndentationLevel = razorIndentationLevel;
             HtmlIndentationLevel = htmlIndentationLevel;
             IsInClassBody = isInClassBody;
+            ComponentLambdaNestingLevel = componentLambdaNestingLevel;
         }
 
         public TextSpan Span { get; }
@@ -33,5 +42,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public int IndentationLevel => RazorIndentationLevel + HtmlIndentationLevel;
 
         public bool IsInClassBody { get; }
+
+        public int ComponentLambdaNestingLevel { get; }
+
+        public int MinCSharpIndentLevel
+        {
+            get
+            {
+                if (IsInClassBody)
+                {
+                    return 2;
+                }
+                else
+                {
+                    return 3 + ComponentLambdaNestingLevel;
+                }
+            }
+        }
     }
 }

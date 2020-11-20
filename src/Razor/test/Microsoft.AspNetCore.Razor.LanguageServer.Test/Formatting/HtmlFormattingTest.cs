@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Xunit;
 
@@ -9,6 +11,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Formatting
 {
     public class HtmlFormattingTest : FormattingTestBase
     {
+        internal override bool UseTwoPhaseCompilation => true;
+
+        internal override bool DesignTime => true;
+
         [Fact]
         public async Task FormatsSimpleHtmlTag()
         {
@@ -261,6 +267,86 @@ expected: @"@page ""/""
     }
 }
 ");
+        }
+
+        [Fact]
+        public async Task FormatsComponentTags()
+        {
+            var tagHelpers = GetComponents();
+            await RunFormattingTestAsync(
+input: @"
+|   <Counter>
+    @if(true){
+        <p>@DateTime.Now</p>
+}
+</Counter>
+
+    <GridTable>
+    @foreach (var row in rows){
+        <GridRow @onclick=""SelectRow(row)"">
+        @foreach (var cell in row){
+    <GridCell>@cell</GridCell>}</GridRow>
+    }
+</GridTable>|
+",
+expected: @"
+<Counter>
+    @if (true)
+    {
+        <p>@DateTime.Now</p>
+    }
+</Counter>
+
+<GridTable>
+    @foreach (var row in rows)
+    {
+        <GridRow @onclick=""SelectRow(row)"">
+            @foreach (var cell in row)
+            {
+                <GridCell>@cell</GridCell>
+            }
+        </GridRow>
+    }
+</GridTable>
+",
+tagHelpers: tagHelpers);
+        }
+
+        private IReadOnlyList<TagHelperDescriptor> GetComponents()
+        {
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+namespace Test
+{
+    public class Counter : ComponentBase
+    {
+        [Parameter]
+        public int IncrementAmount { get; set; }
+    }
+
+    public class GridTable : ComponentBase
+    {
+        [Parameter]
+        public RenderFragment ChildContent { get; set; }
+    }
+
+    public class GridRow : ComponentBase
+    {
+        [Parameter]
+        public RenderFragment ChildContent { get; set; }
+    }
+
+    public class GridCell : ComponentBase
+    {
+        [Parameter]
+        public RenderFragment ChildContent { get; set; }
+    }
+}
+"));
+
+            var generated = CompileToCSharp("Test.razor", string.Empty, throwOnFailure: false, fileKind: FileKinds.Component);
+            var tagHelpers = generated.CodeDocument.GetTagHelperContext().TagHelpers;
+            return tagHelpers;
         }
     }
 }

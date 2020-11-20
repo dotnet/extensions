@@ -91,7 +91,8 @@ expected: @"
     {
         void Method()
         { 
-            @DateTime.Now }
+            @DateTime.Now
+        }
     }
 }
 ");
@@ -401,9 +402,9 @@ expected: @"
         public Foo()
         {
             var arr = new string[] {
-                ""One"", ""two"",
-                ""three""
-            };
+""One"", ""two"",
+""three""
+                    };
             var str = @""
 This should
 not

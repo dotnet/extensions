@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private int _currentHtmlIndentationLevel = 0;
         private int _currentRazorIndentationLevel = 0;
         private bool _isInClassBody = false;
+        private Stack<MarkupTagHelperElementSyntax> _componentTracker;
 
         public FormattingVisitor(RazorSourceDocument source)
         {
@@ -31,6 +33,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             _source = source;
             _spans = new List<FormattingSpan>();
+            _componentTracker = new Stack<MarkupTagHelperElementSyntax>();
             _currentBlockKind = FormattingBlockKind.Markup;
         }
 
@@ -185,14 +188,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
         {
+            var isComponent = IsComponentTagHelperNode(node);
+
             Visit(node.StartTag);
+
             _currentHtmlIndentationLevel++;
+            if (isComponent)
+            {
+                _componentTracker.Push(node);
+            }
+
             foreach (var child in node.Body)
             {
                 Visit(child);
             }
+
+            if (isComponent)
+            {
+                Debug.Assert(_componentTracker.Any(), "Component tracker should not be empty.");
+                _componentTracker.Pop();
+            }
             _currentHtmlIndentationLevel--;
+
             Visit(node.EndTag);
+
+            bool IsComponentTagHelperNode(MarkupTagHelperElementSyntax node)
+            {
+                return node.TagHelperInfo?.BindingResult?.Descriptors?.Any(
+                    d => d.IsComponentOrChildContentTagHelper()) ?? false;
+            }
         }
 
         public override void VisitMarkupTagHelperStartTag(MarkupTagHelperStartTagSyntax node)
@@ -361,7 +385,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var spanSource = new TextSpan(node.Position, node.FullWidth);
             var blockSource = new TextSpan(_currentBlock.Position, _currentBlock.FullWidth);
 
-            var span = new FormattingSpan(spanSource, blockSource, kind, _currentBlockKind, _currentRazorIndentationLevel, _currentHtmlIndentationLevel, _isInClassBody);
+            var componentLambdaNestingLevel = _componentTracker.Count;
+
+            var span = new FormattingSpan(
+                spanSource,
+                blockSource,
+                kind,
+                _currentBlockKind,
+                _currentRazorIndentationLevel,
+                _currentHtmlIndentationLevel,
+                _isInClassBody,
+                componentLambdaNestingLevel);
+
             _spans.Add(span);
         }
 

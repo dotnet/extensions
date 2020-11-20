@@ -75,7 +75,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             changedText = changedText.WithChanges(cleanupChanges);
             changedContext = await changedContext.WithTextAsync(changedText);
 
-            var indentationChanges = AdjustIndentation(changedContext, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var indentationChanges = await AdjustIndentationAsync(changedContext, cancellationToken);
             if (indentationChanges.Count > 0)
             {
                 // Apply the edits that modify indentation.
@@ -95,14 +97,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             foreach (var mapping in context.CodeDocument.GetCSharpDocument().SourceMappings)
             {
                 var span = new TextSpan(mapping.OriginalSpan.AbsoluteIndex, mapping.OriginalSpan.Length);
-                var range = span.AsRange(sourceText);
-                if (!ShouldFormat(context, range.Start, allowImplicitStatements: true))
+                if (!ShouldFormat(context, span, allowImplicitStatements: true))
                 {
                     // We don't want to format this range.
                     continue;
                 }
 
                 // These should already be remapped.
+                var range = span.AsRange(sourceText);
                 var edits = await CSharpFormatter.FormatAsync(context, range, cancellationToken);
                 csharpEdits.AddRange(edits.Where(e => range.Contains(e.Range)));
             }

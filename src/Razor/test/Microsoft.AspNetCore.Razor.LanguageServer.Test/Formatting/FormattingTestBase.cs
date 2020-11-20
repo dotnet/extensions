@@ -8,9 +8,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Test.Common;
+using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
@@ -24,16 +26,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
     // These tests must be run serially due to the test specific FileName static var.
     [Collection("FormattingTestSerialRuns")]
-    public class FormattingTestBase : LanguageServerTestBase
+    public class FormattingTestBase : RazorIntegrationTestBase
     {
         private static readonly AsyncLocal<string> _fileName = new AsyncLocal<string>();
 
         public FormattingTestBase()
         {
             TestProjectPath = GetProjectDirectory();
+            FilePathNormalizer = new FilePathNormalizer();
+            LoggerFactory = Mock.Of<ILoggerFactory>(factory => factory.CreateLogger(It.IsAny<string>()) == Mock.Of<ILogger>());
         }
 
         public static string TestProjectPath { get; private set; }
+
+        protected FilePathNormalizer FilePathNormalizer { get; }
+
+        protected ILoggerFactory LoggerFactory { get; }
 
         // Used by the test framework to set the 'base' name for test files.
         public static string FileName
@@ -42,7 +50,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             set { _fileName.Value = value; }
         }
 
-        protected async Task RunFormattingTestAsync(string input, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
+        protected async Task RunFormattingTestAsync(
+            string input,
+            string expected,
+            int tabSize = 4,
+            bool insertSpaces = true,
+            string fileKind = null,
+            IReadOnlyList<TagHelperDescriptor> tagHelpers = null)
         {
             // Arrange
             fileKind ??= FileKinds.Component;
@@ -59,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             var path = "file:///path/to/document.razor";
             var uri = new Uri(path);
-            var (codeDocument, documentSnapshot) = CreateCodeDocumentAndSnapshot(source, uri.AbsolutePath, fileKind: fileKind);
+            var (codeDocument, documentSnapshot) = CreateCodeDocumentAndSnapshot(source, uri.AbsolutePath, tagHelpers, fileKind);
             var options = new FormattingOptions()
             {
                 TabSize = tabSize,

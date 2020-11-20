@@ -21,8 +21,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         private readonly RazorDocumentMappingService _documentMappingService;
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly ClientNotifierServiceBase _server;
-        private readonly object _indentationService;
-        private readonly MethodInfo _getIndentationMethod;
 
         public CSharpFormatter(
             RazorDocumentMappingService documentMappingService,
@@ -47,20 +45,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             _documentMappingService = documentMappingService;
             _server = languageServer;
             _filePathNormalizer = filePathNormalizer;
-
-            try
-            {
-                var type = typeof(CSharpFormattingOptions).Assembly.GetType("Microsoft.CodeAnalysis.CSharp.Indentation.CSharpIndentationService", throwOnError: true);
-                _indentationService = Activator.CreateInstance(type);
-                var indentationService = type.GetInterface("IIndentationService");
-                _getIndentationMethod = indentationService.GetMethod("GetIndentation");
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    "Error occured when creating an instance of Roslyn's IIndentationService. Roslyn may have changed in an unexpected way.",
-                    ex);
-            }
         }
 
         public async Task<TextEdit[]> FormatAsync(
@@ -99,46 +83,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return mappedEdits;
         }
 
-        public int GetCSharpIndentation(FormattingContext context, int projectedDocumentIndex, CancellationToken cancellationToken)
+        public async Task<int> GetCSharpIndentationAsync(FormattingContext context, int projectedDocumentIndex, CancellationToken cancellationToken)
         {
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            // Add a marker at the position where we need the indentation.
             var changedText = context.CSharpSourceText;
-            var marker = $"{context.NewLineString}#line default{context.NewLineString}#line hidden{context.NewLineString}";
-            changedText = changedText.WithChanges(new TextChange(TextSpan.FromBounds(projectedDocumentIndex, projectedDocumentIndex), marker));
+            var marker = "/*__marker__*/";
+            var markerString = $"{context.NewLineString}{marker}{context.NewLineString}";
+            changedText = changedText.WithChanges(new TextChange(new TextSpan(projectedDocumentIndex, 0), markerString));
             var changedDocument = context.CSharpWorkspaceDocument.WithText(changedText);
 
+            var formattedDocument = await CodeAnalysis.Formatting.Formatter.FormatAsync(changedDocument, cancellationToken: cancellationToken);
+            var formattedText = await formattedDocument.GetTextAsync(cancellationToken);
+            var text = formattedText.ToString();
+            var absIndex = text.IndexOf(marker, StringComparison.Ordinal);
+
             // Get the line number at the position after the marker
-            var line = changedText.Lines.GetLinePosition(projectedDocumentIndex + marker.Length).Line;
-
-            try
+            var line = formattedText.Lines.GetLinePosition(absIndex).Line;
+            if (!char.IsWhiteSpace(context.CSharpSourceText[projectedDocumentIndex]))
             {
-                var result = _getIndentationMethod.Invoke(
-                    _indentationService,
-                    new object[] { changedDocument, line, CodeAnalysis.Formatting.FormattingOptions.IndentStyle.Smart, cancellationToken });
-
-                var baseProperty = result.GetType().GetProperty("BasePosition");
-                var basePosition = (int)baseProperty.GetValue(result);
-                var offsetProperty = result.GetType().GetProperty("Offset");
-
-                // IIndentationService always returns offset as the number of spaces.
-                var offset = (int)offsetProperty.GetValue(result);
-
-                var resultLine = changedText.Lines.GetLinePosition(basePosition);
-                var indentation = resultLine.Character + offset;
-
-                return indentation;
+                // If we're asked for indentation at a non-whitespace location, we want the indentation
+                // of the next line after the marker.
+                line += 1;
             }
-            catch (Exception ex)
+
+            var offset = formattedText.Lines[line].GetFirstNonWhitespaceOffset() ?? 0;
+            if (!context.Options.InsertSpaces)
             {
-                throw new InvalidOperationException(
-                    "Error occured when reflection invoking Roslyn's IIndentationService. Roslyn may have changed in an unexpected way.",
-                    ex);
+                offset *= (int)context.Options.TabSize;
             }
+
+            return offset;
         }
 
         private TextEdit[] MapEditsToHostDocument(RazorCodeDocument codeDocument, TextEdit[] csharpEdits)

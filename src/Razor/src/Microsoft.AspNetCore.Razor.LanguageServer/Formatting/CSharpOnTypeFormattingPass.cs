@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var rangeToAdjust = new Range(rangeAfterFormatting.Start, new Position(rangeAfterFormatting.End.Line + cleanupLineDelta, 0));
             Debug.Assert(rangeToAdjust.End.IsValid(cleanedText), "Invalid range. This is unexpected.");
 
-            var indentationChanges = AdjustIndentation(changedContext, cancellationToken, rangeToAdjust);
+            var indentationChanges = await AdjustIndentationAsync(changedContext, cancellationToken, rangeToAdjust);
             if (indentationChanges.Count > 0)
             {
                 // Apply the edits that modify indentation.
@@ -100,7 +100,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         private TextEdit[] FilterCSharpTextEdits(FormattingContext context, TextEdit[] edits)
         {
-            var filteredEdits = edits.Where(e => ShouldFormat(context, e.Range.Start, allowImplicitStatements: false)).ToArray();
+            var filteredEdits = edits.Where(e =>
+            {
+                var span = e.Range.AsTextSpan(context.SourceText);
+                return ShouldFormat(context, span, allowImplicitStatements: false);
+            }).ToArray();
+
             return filteredEdits;
         }
 

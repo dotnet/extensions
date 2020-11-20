@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public bool StartsInRazorContext => !StartsInHtmlContext && !StartsInCSharpContext;
 
-        public int MinCSharpIndentLevel => FirstSpan.IsInClassBody ? 2 : 3;
+        public int MinCSharpIndentLevel => FirstSpan.MinCSharpIndentLevel;
 
         public override string ToString()
         {

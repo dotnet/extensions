@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -76,6 +75,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public IReadOnlyDictionary<int, IndentationContext> Indentations { get; private set; }
 
+        public IReadOnlyList<FormattingSpan> FormattingSpans { get; private set; }
+
         /// <summary>
         /// Generates a string of indentation based on a specific indentation level. For instance, inside of a C# method represents 1 indentation level. A method within a class would have indentaiton level of 2 by default etc.
         /// </summary>
@@ -139,15 +140,38 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public bool TryGetIndentationLevel(int position, out int indentationLevel)
         {
-            var syntaxTree = CodeDocument.GetSyntaxTree();
-            var formattingSpans = syntaxTree.GetFormattingSpans();
-            if (TryGetFormattingSpan(position, formattingSpans, out var span))
+            if (TryGetFormattingSpan(position, out var span))
             {
                 indentationLevel = span.IndentationLevel;
                 return true;
             }
 
             indentationLevel = 0;
+            return false;
+        }
+
+        public bool TryGetFormattingSpan(int absoluteIndex, out FormattingSpan result)
+        {
+            result = null;
+            for (var i = 0; i < FormattingSpans.Count; i++)
+            {
+                var formattingspan = FormattingSpans[i];
+                var span = formattingspan.Span;
+
+                if (span.Start <= absoluteIndex && span.End >= absoluteIndex)
+                {
+                    if (span.End == absoluteIndex && span.Length > 0)
+                    {
+                        // We're at an edge.
+                        // Non-marker spans (spans.length == 0) do not own the edges after it
+                        continue;
+                    }
+
+                    result = formattingspan;
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -220,6 +244,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var text = codeDocument.GetSourceText();
             range ??= TextSpan.FromBounds(0, text.Length).AsRange(text);
 
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var formattingSpans = syntaxTree.GetFormattingSpans();
+
             var result = new FormattingContext()
             {
                 Uri = uri,
@@ -227,12 +254,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 CodeDocument = codeDocument,
                 Range = range,
                 Options = options,
-                IsFormatOnType = isFormatOnType
+                IsFormatOnType = isFormatOnType,
+                FormattingSpans = formattingSpans
             };
 
             var sourceText = codeDocument.GetSourceText();
-            var syntaxTree = codeDocument.GetSyntaxTree();
-            var formattingSpans = syntaxTree.GetFormattingSpans();
             var indentations = new Dictionary<int, IndentationContext>();
 
             var previousIndentationLevel = 0;
@@ -249,7 +275,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 }
 
                 // position now contains the first non-whitespace character or 0. Get the corresponding FormattingSpan.
-                if (TryGetFormattingSpan(nonWsPos.Value, formattingSpans, out var span))
+                if (result.TryGetFormattingSpan(nonWsPos.Value, out var span))
                 {
                     indentations[i] = new IndentationContext
                     {
@@ -274,7 +300,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                         FormattingBlockKind.Markup,
                         razorIndentationLevel: 0,
                         htmlIndentationLevel: 0,
-                        isInClassBody: false);
+                        isInClassBody: false,
+                        componentLambdaNestingLevel: 0);
 
                     indentations[i] = new IndentationContext
                     {
@@ -292,34 +319,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             result.Indentations = indentations;
 
             return result;
-        }
-
-        private static bool TryGetFormattingSpan(int absoluteIndex, IReadOnlyList<FormattingSpan> formattingspans, out FormattingSpan result)
-        {
-            result = null;
-            for (var i = 0; i < formattingspans.Count; i++)
-            {
-                var formattingspan = formattingspans[i];
-                var span = formattingspan.Span;
-
-                if (span.Start <= absoluteIndex)
-                {
-                    if (span.End >= absoluteIndex)
-                    {
-                        if (span.End == absoluteIndex && span.Length > 0)
-                        {
-                            // We're at an edge.
-                            // Non-marker spans (spans.length == 0) do not own the edges after it
-                            continue;
-                        }
-
-                        result = formattingspan;
-                        return true;
-                    }
-                }
-            }
-
-            return false;
         }
     }
 }

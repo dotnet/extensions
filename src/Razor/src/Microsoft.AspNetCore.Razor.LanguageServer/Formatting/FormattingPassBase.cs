@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             spanAfterChange = new TextSpan(spanBeforeChange.Start, affectedRange.NewLength);
         }
 
-        protected List<TextChange> AdjustIndentation(FormattingContext context, CancellationToken cancellationToken, Range range = null)
+        protected async Task<List<TextChange>> AdjustIndentationAsync(FormattingContext context, CancellationToken cancellationToken, Range range = null)
         {
             // In this method, the goal is to make final adjustments to the indentation of each line.
             // We will take into account the following,
@@ -162,16 +162,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 var mappingSpan = new TextSpan(mapping.OriginalSpan.AbsoluteIndex, mapping.OriginalSpan.Length);
                 var mappingRange = mappingSpan.AsRange(context.SourceText);
-                if (!ShouldFormat(context, mappingRange.Start, allowImplicitStatements: true))
+                if (!ShouldFormat(context, mappingSpan, allowImplicitStatements: true))
                 {
                     // We don't care about this range as this can potentially lead to incorrect scopes.
                     continue;
                 }
 
-                var startIndentation = CSharpFormatter.GetCSharpIndentation(context, mapping.GeneratedSpan.AbsoluteIndex, cancellationToken);
+                var startIndentation = await CSharpFormatter.GetCSharpIndentationAsync(context, mapping.GeneratedSpan.AbsoluteIndex, cancellationToken);
                 sourceMappingIndentations[mapping.OriginalSpan.AbsoluteIndex] = startIndentation;
 
-                var endIndentation = CSharpFormatter.GetCSharpIndentation(context, mapping.GeneratedSpan.AbsoluteIndex + mapping.GeneratedSpan.Length + 1, cancellationToken);
+                var endIndentation = await CSharpFormatter.GetCSharpIndentationAsync(context, mapping.GeneratedSpan.AbsoluteIndex + mapping.GeneratedSpan.Length + 1, cancellationToken);
                 sourceMappingIndentations[mapping.OriginalSpan.AbsoluteIndex + mapping.OriginalSpan.Length + 1] = endIndentation;
             }
 
@@ -188,13 +188,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     continue;
                 }
 
+                var minCSharpIndentation = context.GetIndentationOffsetForLevel(context.Indentations[i].MinCSharpIndentLevel);
                 var line = context.SourceText.Lines[i];
-                var lineStart = line.Start;
+                var lineStart = line.GetFirstNonWhitespacePosition() ?? line.Start;
                 int csharpDesiredIndentation;
                 if (DocumentMappingService.TryMapToProjectedDocumentPosition(context.CodeDocument, lineStart, out _, out var projectedLineStart))
                 {
                     // We were able to map this line to C# directly.
-                    csharpDesiredIndentation = CSharpFormatter.GetCSharpIndentation(context, projectedLineStart, cancellationToken);
+                    csharpDesiredIndentation = await CSharpFormatter.GetCSharpIndentationAsync(context, projectedLineStart, cancellationToken);
                 }
                 else
                 {
@@ -219,7 +220,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     }
 
                     // This will now be set to the same value as the end of the closest source mapping.
-                    csharpDesiredIndentation = index < 0 ? 0 : sourceMappingIndentations[sourceMappingIndentationScopes[index]];
+                    if (index < 0)
+                    {
+                        csharpDesiredIndentation = 0;
+                    }
+                    else
+                    {
+                        var absoluteIndex = sourceMappingIndentationScopes[index];
+                        csharpDesiredIndentation = sourceMappingIndentations[absoluteIndex];
+
+                        // This means we didn't find an exact match and so we used the indentation of the end of a previous mapping.
+                        // So let's use the MinCSharpIndentation of that same location if possible.
+                        if (context.TryGetFormattingSpan(absoluteIndex, out var span))
+                        {
+                            minCSharpIndentation = context.GetIndentationOffsetForLevel(span.MinCSharpIndentLevel);
+                        }
+                    }
                 }
 
                 // Now let's use that information to figure out the effective C# indentation.
@@ -227,7 +243,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 // For instance, lines inside @code/@functions block should be reduced one level
                 // and lines inside @{} should be reduced by two levels.
 
-                var minCSharpIndentation = context.GetIndentationOffsetForLevel(context.Indentations[i].MinCSharpIndentLevel);
                 if (csharpDesiredIndentation < minCSharpIndentation)
                 {
                     // CSharp formatter doesn't want to indent this. Let's not touch it.
@@ -317,7 +332,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // }
             // 
 
-            if (!ShouldFormat(context, sourceMappingRange.Start, allowImplicitStatements: false))
+            var text = context.SourceText;
+            var sourceMappingSpan = sourceMappingRange.AsTextSpan(text);
+            if (!ShouldFormat(context, sourceMappingSpan, allowImplicitStatements: false))
             {
                 // We don't want to run cleanup on this range.
                 return;
@@ -332,8 +349,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // }
             // We want to return the length of the range marked by |...|
             //
-            var text = context.SourceText;
-            var sourceMappingSpan = sourceMappingRange.AsTextSpan(text);
             var whitespaceLength = text.GetFirstNonWhitespaceOffset(sourceMappingSpan);
             if (whitespaceLength == null)
             {
@@ -403,7 +418,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 return;
             }
 
-            if (!ShouldFormat(context, sourceMappingRange.End, allowImplicitStatements: false))
+            var endSpan = TextSpan.FromBounds(sourceMappingSpan.End, sourceMappingSpan.End);
+            if (!ShouldFormat(context, endSpan, allowImplicitStatements: false))
             {
                 // We don't want to run cleanup on this range.
                 return;
@@ -437,24 +453,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             changes.Add(change);
         }
 
-        protected bool ShouldFormat(FormattingContext context, Position position, bool allowImplicitStatements)
+        protected bool ShouldFormat(FormattingContext context, TextSpan span, bool allowImplicitStatements)
         {
-            // We should be called with start positions of various C# SourceMappings.
-            if (position.Character == 0)
+            // We should be called with the range of various C# SourceMappings.
+
+            if (span.Start == 0)
             {
                 // The mapping starts at 0. It can't be anything special but pure C#. Let's format it.
                 return true;
             }
 
             var sourceText = context.SourceText;
-            var absoluteIndex = sourceText.Lines[(int)position.Line].Start + (int)position.Character;
+            var absoluteIndex = span.Start;
             if (IsImplicitStatementStart() && !allowImplicitStatements)
             {
                 return false;
             }
 
-            var syntaxTree = context.CodeDocument.GetSyntaxTree();
+            if (span.Length > 0)
+            {
+                // Slightly ugly hack to get around the behavior of LocateOwner.
+                // In some cases, using the start of a mapping doesn't work well
+                // because LocateOwner returns the previous node due to it owning the edge.
+                // So, if we can try to find the owner using a position that fully belongs to the current mapping.
+                absoluteIndex = span.Start + 1;
+            }
+
             var change = new SourceChange(absoluteIndex, 0, string.Empty);
+            var syntaxTree = context.CodeDocument.GetSyntaxTree();
             var owner = syntaxTree.Root.LocateOwner(change);
             if (owner == null)
             {
