@@ -116,7 +116,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var remappedEdits = await _documentMappingProvider.RemapFormattedTextEditsAsync(projectionResult.Uri, response, request.Options, cancellationToken).ConfigureAwait(false);
+            var remappedEdits = await _documentMappingProvider.RemapFormattedTextEditsAsync(projectionResult.Uri, response, request.Options, containsSnippet: false, cancellationToken).ConfigureAwait(false);
             return remappedEdits;
         }
 

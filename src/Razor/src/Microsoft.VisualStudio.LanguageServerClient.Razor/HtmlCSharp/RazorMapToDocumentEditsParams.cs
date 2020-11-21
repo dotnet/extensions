@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
+    // Note: This type should be kept in sync with the one in Razor.LanguageServer assembly.
     internal class RazorMapToDocumentEditsParams : IEquatable<RazorMapToDocumentEditsParams>
     {
         public RazorLanguageKind Kind { get; set; }
@@ -16,7 +17,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public TextEdit[] ProjectedTextEdits { get; set; }
 
-        public bool ShouldFormat { get; set; }
+        public TextEditKind TextEditKind { get; set; }
 
         public FormattingOptions FormattingOptions { get; set; }
 
@@ -34,7 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 RazorDocumentUri == other.RazorDocumentUri &&
                 Enumerable.SequenceEqual(ProjectedTextEdits?.Select(p => p.NewText), other.ProjectedTextEdits?.Select(p => p.NewText)) &&
                 Enumerable.SequenceEqual(ProjectedTextEdits?.Select(p => p.Range), other.ProjectedTextEdits?.Select(p => p.Range)) &&
-                ShouldFormat == other.ShouldFormat &&
+                TextEditKind == other.TextEditKind &&
                 IsEqual(other.FormattingOptions);
         }
 

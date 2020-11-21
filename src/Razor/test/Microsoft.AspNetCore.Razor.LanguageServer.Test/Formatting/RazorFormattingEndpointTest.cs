@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             public bool Called { get; private set; }
 
-            public override Task<TextEdit[]> ApplyFormattedEditsAsync(DocumentUri uri, DocumentSnapshot documentSnapshot, RazorLanguageKind kind, TextEdit[] formattedEdits, FormattingOptions options, CancellationToken cancellationToken, bool bypassValidationPasses = false)
+            public override Task<TextEdit[]> ApplyFormattedEditsAsync(DocumentUri uri, DocumentSnapshot documentSnapshot, RazorLanguageKind kind, TextEdit[] formattedEdits, FormattingOptions options, CancellationToken cancellationToken, bool bypassValidationPasses = false, bool collapseEdits = false)
             {
                 throw new NotImplementedException();
             }

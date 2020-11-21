@@ -223,10 +223,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 };
             }
 
-            if (request.ShouldFormat)
+            if (request.TextEditKind == TextEditKind.FormatOnType)
             {
                 var mappedEdits = await _razorFormattingService.ApplyFormattedEditsAsync(
                     request.RazorDocumentUri, documentSnapshot, request.Kind, request.ProjectedTextEdits, request.FormattingOptions, cancellationToken);
+
+                return new RazorMapToDocumentEditsResponse()
+                {
+                    TextEdits = mappedEdits,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+            else if (request.TextEditKind == TextEditKind.Snippet)
+            {
+                var mappedEdits = await _razorFormattingService.ApplyFormattedEditsAsync(
+                    request.RazorDocumentUri,
+                    documentSnapshot,
+                    request.Kind,
+                    request.ProjectedTextEdits,
+                    request.FormattingOptions,
+                    cancellationToken,
+                    bypassValidationPasses: true,
+                    collapseEdits: true);
 
                 return new RazorMapToDocumentEditsResponse()
                 {

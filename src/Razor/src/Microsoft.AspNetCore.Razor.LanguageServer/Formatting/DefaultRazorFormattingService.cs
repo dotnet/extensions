@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -83,7 +84,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             TextEdit[] formattedEdits,
             FormattingOptions options,
             CancellationToken cancellationToken,
-            bool bypassValidationPasses = false)
+            bool bypassValidationPasses = false,
+            bool collapseEdits = false)
         {
             if (kind == RazorLanguageKind.Html)
             {
@@ -106,7 +108,40 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 result = await pass.ExecuteAsync(context, result, cancellationToken);
             }
 
-            return result.Edits;
+            var edits = result.Edits;
+            if (collapseEdits)
+            {
+                var collapsedEdit = MergeEdits(result.Edits, context.SourceText);
+                edits = new[] { collapsedEdit };
+            }
+
+            return edits;
+        }
+
+        // Internal for testing
+        internal static TextEdit MergeEdits(TextEdit[] edits, SourceText sourceText)
+        {
+            if (edits.Length == 1)
+            {
+                return edits[0];
+            }
+
+            var textChanges = new List<TextChange>();
+            foreach (var edit in edits)
+            {
+                var change = new TextChange(edit.Range.AsTextSpan(sourceText), edit.NewText);
+                textChanges.Add(change);
+            }
+
+            var changedText = sourceText.WithChanges(textChanges);
+            var affectedRange = changedText.GetEncompassingTextChangeRange(sourceText);
+            var spanBeforeChange = affectedRange.Span;
+            var spanAfterChange = new TextSpan(spanBeforeChange.Start, affectedRange.NewLength);
+            var newText = changedText.GetSubTextString(spanAfterChange);
+
+            var encompassingChange = new TextChange(spanBeforeChange, newText);
+
+            return encompassingChange.AsTextEdit(sourceText);
         }
     }
 }

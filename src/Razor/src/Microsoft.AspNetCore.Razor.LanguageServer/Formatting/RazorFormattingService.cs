@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             TextEdit[] formattedEdits,
             FormattingOptions options,
             CancellationToken cancellationToken,
-            bool bypassValidationPasses = false);
+            bool bypassValidationPasses = false,
+            bool collapseEdits = false);
     }
 }

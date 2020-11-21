@@ -109,15 +109,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            var remappedEdit = await _documentMappingProvider.RemapTextEditsAsync(
+            var remappedEdit = await _documentMappingProvider.RemapFormattedTextEditsAsync(
                 projectionResult.Uri,
                 new[] { response.TextEdit },
+                request.Options,
+                containsSnippet: true,
                 cancellationToken).ConfigureAwait(false);
 
             if (!remappedEdit.Any())
             {
                 return null;
             }
+
             var remappedResponse = new DocumentOnAutoInsertResponseItem()
             {
                 TextEdit = remappedEdit.Single(),

@@ -285,7 +285,7 @@ $@"public class SomeRazorFile
                 return Task.FromResult(response);
             }
 
-            public override Task<TextEdit[]> RemapFormattedTextEditsAsync(Uri uri, TextEdit[] edits, FormattingOptions options, CancellationToken cancellationToken) => throw new NotImplementedException();
+            public override Task<TextEdit[]> RemapFormattedTextEditsAsync(Uri uri, TextEdit[] edits, FormattingOptions options, bool containsSnippet, CancellationToken cancellationToken) => throw new NotImplementedException();
 
             public override Task<Location[]> RemapLocationsAsync(Location[] locations, CancellationToken cancellationToken) => throw new NotImplementedException();
 

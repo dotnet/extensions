@@ -162,11 +162,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return edits;
             }
 
-            var (_, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, cancellationToken).ConfigureAwait(false);
+            var (_, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, TextEditKind.Default, cancellationToken).ConfigureAwait(false);
             return remappedEdits;
         }
 
-        public async override Task<TextEdit[]> RemapFormattedTextEditsAsync(Uri uri, TextEdit[] edits, FormattingOptions options, CancellationToken cancellationToken)
+        public async override Task<TextEdit[]> RemapFormattedTextEditsAsync(Uri uri, TextEdit[] edits, FormattingOptions options, bool containsSnippet, CancellationToken cancellationToken)
         {
             if (uri is null)
             {
@@ -184,7 +184,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return edits;
             }
 
-            var (_, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, cancellationToken, shouldFormat: true, formattingOptions: options).ConfigureAwait(false);
+            var textEditKind = containsSnippet ? TextEditKind.Snippet : TextEditKind.FormatOnType;
+            var (_, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, textEditKind, cancellationToken, formattingOptions: options).ConfigureAwait(false);
             return remappedEdits;
         }
 
@@ -257,7 +258,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
 
                 var edits = entry.Edits;
-                var (documentSnapshot, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, cancellationToken).ConfigureAwait(false);
+                var (documentSnapshot, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, TextEditKind.Default, cancellationToken).ConfigureAwait(false);
                 if (remappedEdits == null || remappedEdits.Length == 0)
                 {
                     // Nothing to do.
@@ -294,7 +295,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     continue;
                 }
 
-                var (_, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, cancellationToken).ConfigureAwait(false);
+                var (_, remappedEdits) = await RemapTextEditsCoreAsync(uri, edits, TextEditKind.Default, cancellationToken).ConfigureAwait(false);
                 if (remappedEdits == null || remappedEdits.Length == 0)
                 {
                     // Nothing to do.
@@ -311,8 +312,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private async Task<(LSPDocumentSnapshot, TextEdit[])> RemapTextEditsCoreAsync(
             Uri uri,
             TextEdit[] edits,
+            TextEditKind textEditKind,
             CancellationToken cancellationToken,
-            bool shouldFormat = false,
             FormattingOptions formattingOptions = null)
         {
             var languageKind = RazorLanguageKind.Razor;
@@ -336,7 +337,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Kind = languageKind,
                 RazorDocumentUri = razorDocumentUri,
                 ProjectedTextEdits = edits,
-                ShouldFormat = shouldFormat,
+                TextEditKind = textEditKind,
                 FormattingOptions = formattingOptions
             };
 

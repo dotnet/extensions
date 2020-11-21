@@ -177,7 +177,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider
-                .Setup(d => d.RemapTextEditsAsync(projectionUri, It.IsAny<TextEdit[]>(), It.IsAny<CancellationToken>()))
+                .Setup(d => d.RemapFormattedTextEditsAsync(projectionUri, It.IsAny<TextEdit[]>(), It.IsAny<FormattingOptions>(), /*containsSnippet*/ true, It.IsAny<CancellationToken>()))
                 .Callback(() => { mappedTextEdits = true; })
                 .Returns(Task.FromResult(new[] { new TextEdit() }));
 
@@ -230,7 +230,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider
-                .Setup(d => d.RemapTextEditsAsync(projectionUri, It.IsAny<TextEdit[]>(), It.IsAny<CancellationToken>()))
+                .Setup(d => d.RemapFormattedTextEditsAsync(projectionUri, It.IsAny<TextEdit[]>(), It.IsAny<FormattingOptions>(), /*containsSnippet*/ true, It.IsAny<CancellationToken>()))
                 .Callback(() => { mappedTextEdits = true; })
                 .Returns(Task.FromResult(new[] { new TextEdit() }));
 

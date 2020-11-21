@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public TextEdit[] ProjectedTextEdits { get; set; }
 
-        public bool ShouldFormat { get; set; }
+        public TextEditKind TextEditKind { get; set; }
 
         public FormattingOptions FormattingOptions { get; set; }
     }

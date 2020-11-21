@@ -220,7 +220,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                                 It.IsAny<TextEdit[]>(),
                                 It.IsAny<FormattingOptions>(),
                                 It.IsAny<CancellationToken>(),
-                                /*bypassValidationPasses:*/ true) == Task.FromResult(DefaultFormattedEdits));
+                                /*bypassValidationPasses:*/ true,
+                                It.IsAny<bool>()) == Task.FromResult(DefaultFormattedEdits));
             return razorFormattingService;
         }
 
