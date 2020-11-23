@@ -9,6 +9,8 @@ variables:
     value: true
   - name: _PublishUsingPipelines
     value: true
+  - name: PostBuildSign
+    value: true
   - name: _DotNetArtifactsCategory
     value: ASPNETEXTENSIONS
   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
