@@ -109,25 +109,66 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
-            var remappedEdit = await _documentMappingProvider.RemapFormattedTextEditsAsync(
+            var containsSnippet = response.TextEditFormat == InsertTextFormat.Snippet;
+
+            var edit = response.TextEdit;
+            if (containsSnippet && projectionResult.LanguageKind == RazorLanguageKind.CSharp)
+            {
+                edit = WrapSnippet(edit);
+            }
+
+            var remappedEdits = await _documentMappingProvider.RemapFormattedTextEditsAsync(
                 projectionResult.Uri,
-                new[] { response.TextEdit },
+                new[] { edit },
                 request.Options,
-                containsSnippet: true,
+                containsSnippet,
                 cancellationToken).ConfigureAwait(false);
 
-            if (!remappedEdit.Any())
+            if (!remappedEdits.Any())
             {
                 return null;
             }
 
+            var remappedEdit = remappedEdits.Single();
+            if (containsSnippet && projectionResult.LanguageKind == RazorLanguageKind.CSharp)
+            {
+                remappedEdit = UnwrapSnippet(remappedEdit);
+            }
+
             var remappedResponse = new DocumentOnAutoInsertResponseItem()
             {
-                TextEdit = remappedEdit.Single(),
+                TextEdit = remappedEdit,
                 TextEditFormat = response.TextEditFormat,
             };
 
             return remappedResponse;
+        }
+
+        private TextEdit WrapSnippet(TextEdit snippetEdit)
+        {
+            // Formatting doesn't work with syntax errors caused by the cursor marker ($0).
+            // So, let's avoid the error by wrapping the cursor marker in a comment.
+            var newText = snippetEdit.NewText?.Replace("$0", "/*$0*/");
+            var edit = new TextEdit()
+            {
+                NewText = newText,
+                Range = snippetEdit.Range
+            };
+
+            return edit;
+        }
+
+        private TextEdit UnwrapSnippet(TextEdit snippetEdit)
+        {
+            // Unwrap the cursor marker.
+            var newText = snippetEdit.NewText?.Replace("/*$0*/", "$0");
+            var edit = new TextEdit()
+            {
+                NewText = newText,
+                Range = snippetEdit.Range
+            };
+
+            return edit;
         }
     }
 }

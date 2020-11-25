@@ -93,6 +93,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 return formattedEdits;
             }
 
+            // If we only received a single edit, let's always return a single edit back.
+            // Otherwise, merge only if explicitly asked.
+            collapseEdits |= formattedEdits.Length == 1;
+
             var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
             using var context = FormattingContext.Create(uri, documentSnapshot, codeDocument, options, isFormatOnType: true);
             var result = new FormattingResult(formattedEdits, kind);

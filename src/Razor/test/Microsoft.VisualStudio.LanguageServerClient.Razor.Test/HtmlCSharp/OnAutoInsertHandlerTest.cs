@@ -164,7 +164,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 {
                     invokedServer = true;
                 })
-                .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() { Range = new Range(), NewText = "sometext" } }));
+                .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() { Range = new Range(), NewText = "sometext" }, TextEditFormat = InsertTextFormat.Snippet }));
 
             var projectionUri = new Uri(Uri.AbsoluteUri + "__virtual.html");
             var projectionResult = new ProjectionResult()
@@ -217,7 +217,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 {
                     invokedServer = true;
                 })
-                .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() { Range = new Range(), NewText = "sometext" } }));
+                .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() { Range = new Range(), NewText = "sometext" }, TextEditFormat = InsertTextFormat.Snippet }));
 
             var projectionUri = new Uri(Uri.AbsoluteUri + "__virtual.html");
             var projectionResult = new ProjectionResult()
@@ -232,7 +232,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider
                 .Setup(d => d.RemapFormattedTextEditsAsync(projectionUri, It.IsAny<TextEdit[]>(), It.IsAny<FormattingOptions>(), /*containsSnippet*/ true, It.IsAny<CancellationToken>()))
                 .Callback(() => { mappedTextEdits = true; })
-                .Returns(Task.FromResult(new[] { new TextEdit() }));
+                .Returns(Task.FromResult(new[] { new TextEdit() { NewText = "mapped-sometext" } }));
 
             var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object);
             var request = new DocumentOnAutoInsertParams()
