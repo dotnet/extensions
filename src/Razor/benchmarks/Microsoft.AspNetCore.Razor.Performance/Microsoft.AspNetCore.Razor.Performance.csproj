@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,15 +32,6 @@
     </Compile>
     <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestWorkspaceServices.cs">
       <Link>TestServices\%(FileName)%(Extension)</Link>
-    </Compile>
-    <Compile Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\SourceTextDiffer.cs">
-      <Link>LanguageServer\%(FileName)%(Extension)</Link>
-    </Compile>
-    <Compile Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\TextDiffer.cs">
-      <Link>LanguageServer\%(FileName)%(Extension)</Link>
-    </Compile>
-    <Compile Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\DiffEdit.cs">
-      <Link>LanguageServer\%(FileName)%(Extension)</Link>
     </Compile>
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />

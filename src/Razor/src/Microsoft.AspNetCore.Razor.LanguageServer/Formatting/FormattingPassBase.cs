@@ -156,8 +156,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var text = context.SourceText;
             range ??= TextSpan.FromBounds(0, text.Length).AsRange(text);
 
-            // First, let's build an understanding of the desired C# indentation at the beginning and end of each source mapping.
-            var sourceMappingIndentations = new SortedDictionary<int, int>();
+            // To help with figuring out the correct indentation,first we will need the indentation
+            // that the C# formatter wants to apply in the following locations,
+            // 1. The start and end of each of our source mappings
+            // 2. The start of every line that starts in C# context
+
+            // Due to perf concerns, we only want to invoke the real C# formatter once.
+            // So, let's collect all the significant locations that we want to obtain the CSharpDesiredIndentations for.
+
+            var significantLocations = new List<int>();
+
+            // First, collect all the locations at the beginning and end of each source mapping.
+            var sourceMappingMap = new Dictionary<int, int>();
             foreach (var mapping in context.CodeDocument.GetCSharpDocument().SourceMappings)
             {
                 var mappingSpan = new TextSpan(mapping.OriginalSpan.AbsoluteIndex, mapping.OriginalSpan.Length);
@@ -168,14 +178,65 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     continue;
                 }
 
-                var startIndentation = await CSharpFormatter.GetCSharpIndentationAsync(context, mapping.GeneratedSpan.AbsoluteIndex, cancellationToken);
-                sourceMappingIndentations[mapping.OriginalSpan.AbsoluteIndex] = startIndentation;
+                var startLocation = mapping.GeneratedSpan.AbsoluteIndex;
+                sourceMappingMap[mapping.OriginalSpan.AbsoluteIndex] = startLocation;
+                significantLocations.Add(startLocation);
 
-                var endIndentation = await CSharpFormatter.GetCSharpIndentationAsync(context, mapping.GeneratedSpan.AbsoluteIndex + mapping.GeneratedSpan.Length + 1, cancellationToken);
-                sourceMappingIndentations[mapping.OriginalSpan.AbsoluteIndex + mapping.OriginalSpan.Length + 1] = endIndentation;
+                var endLocation = mapping.GeneratedSpan.AbsoluteIndex + mapping.GeneratedSpan.Length + 1;
+                sourceMappingMap[mapping.OriginalSpan.AbsoluteIndex + mapping.OriginalSpan.Length + 1] = endLocation;
+                significantLocations.Add(endLocation);
             }
 
+            // Next, collect all the line starts that start in C# context
+            var lineStartMap = new Dictionary<int, int>();
+            for (var i = range.Start.Line; i <= range.End.Line; i++)
+            {
+                if (context.Indentations[i].EmptyOrWhitespaceLine)
+                {
+                    // We should remove whitespace on empty lines.
+                    continue;
+                }
+
+                var line = context.SourceText.Lines[i];
+                var lineStart = line.GetFirstNonWhitespacePosition() ?? line.Start;
+                if (DocumentMappingService.TryMapToProjectedDocumentPosition(context.CodeDocument, lineStart, out _, out var projectedLineStart))
+                {
+                    lineStartMap[lineStart] = projectedLineStart;
+                    significantLocations.Add(projectedLineStart);
+                }
+            }
+
+            // Now, invoke the C# formatter to obtain the CSharpDesiredIndentation for all significant locations.
+            var significantLocationIndentation = await CSharpFormatter.GetCSharpIndentationAsync(context, significantLocations, cancellationToken);
+
+            // Build source mapping indentation scopes.
+            var sourceMappingIndentations = new SortedDictionary<int, int>();
+            foreach (var originalLocation in sourceMappingMap.Keys)
+            {
+                var significantLocation = sourceMappingMap[originalLocation];
+                if (!significantLocationIndentation.TryGetValue(significantLocation, out var indentation))
+                {
+                    // C# formatter didn't return an indentation for this. Skip.
+                    continue;
+                }
+
+                sourceMappingIndentations[originalLocation] = indentation;
+            }
             var sourceMappingIndentationScopes = sourceMappingIndentations.Keys.ToArray();
+
+            // Build lineStart indentation map.
+            var lineStartIndentations = new Dictionary<int, int>();
+            foreach (var originalLocation in lineStartMap.Keys)
+            {
+                var significantLocation = lineStartMap[originalLocation];
+                if (!significantLocationIndentation.TryGetValue(significantLocation, out var indentation))
+                {
+                    // C# formatter didn't return an indentation for this. Skip.
+                    continue;
+                }
+
+                lineStartIndentations[originalLocation] = indentation;
+            }
 
             // Now, let's combine the C# desired indentation with the Razor and HTML indentation for each line.
             var newIndentations = new Dictionary<int, int>();
@@ -191,13 +252,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var minCSharpIndentation = context.GetIndentationOffsetForLevel(context.Indentations[i].MinCSharpIndentLevel);
                 var line = context.SourceText.Lines[i];
                 var lineStart = line.GetFirstNonWhitespacePosition() ?? line.Start;
-                int csharpDesiredIndentation;
-                if (DocumentMappingService.TryMapToProjectedDocumentPosition(context.CodeDocument, lineStart, out _, out var projectedLineStart))
-                {
-                    // We were able to map this line to C# directly.
-                    csharpDesiredIndentation = await CSharpFormatter.GetCSharpIndentationAsync(context, projectedLineStart, cancellationToken);
-                }
-                else
+                if (!lineStartIndentations.TryGetValue(lineStart, out var csharpDesiredIndentation))
                 {
                     // Couldn't remap. This is probably a non-C# location.
                     // Use SourceMapping indentations to locate the C# scope of this line.

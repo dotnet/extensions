@@ -404,7 +404,7 @@ expected: @"
             var arr = new string[] {
 ""One"", ""two"",
 ""three""
-                    };
+                };
             var str = @""
 This should
 not

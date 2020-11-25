@@ -128,12 +128,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorDefinitionEndpoint>()
                     .WithServices(services =>
                     {
-                        if (configure != null)
-                        {
-                            var builder = new RazorLanguageServerBuilder(services);
-                            configure(builder);
-                        }
-
                         services.AddLogging(builder => builder
                             .SetMinimumLevel(logLevel)
                             .AddLanguageProtocolLogging(logLevel));
@@ -243,6 +237,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<WorkspaceDirectoryPathResolver, DefaultWorkspaceDirectoryPathResolver>();
                         services.AddSingleton<RazorComponentSearchEngine, DefaultRazorComponentSearchEngine>();
 
+                        if (configure != null)
+                        {
+                            var builder = new RazorLanguageServerBuilder(services);
+                            configure(builder);
+                        }
+
                         // Defaults: For when the caller hasn't provided them through the `configure` action.
                         services.TryAddSingleton<LanguageServerFeatureOptions, DefaultLanguageServerFeatureOptions>();
                     }));
@@ -292,6 +292,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 var disposableServices = _innerServer.Services as IDisposable;
                 disposableServices?.Dispose();
             }
+        }
+
+        // For testing purposes only.
+        internal ILanguageServer GetInnerLanguageServerForTesting()
+        {
+            return _innerServer;
         }
     }
 }

@@ -93,7 +93,7 @@
     <MicrosoftInternalVisualStudioShellEmbeddablePackageVersion>16.4.29305.180</MicrosoftInternalVisualStudioShellEmbeddablePackageVersion>
     <MicrosoftNETCoreApp50PackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreApp50PackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>3.8.0-3.20454.4</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.9.0-2.20573.10</MicrosoftNetCompilersToolsetPackageVersion>
     <MicrosoftNetRoslynDiagnosticsPackageVersion>2.6.3</MicrosoftNetRoslynDiagnosticsPackageVersion>
     <MicrosoftServiceHubFrameworkPackageVersion>2.7.313-preview</MicrosoftServiceHubFrameworkPackageVersion>
     <MicrosoftVisualStudioCoreUtilityPackageVersion>16.8.272</MicrosoftVisualStudioCoreUtilityPackageVersion>
@@ -115,7 +115,7 @@
     <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6073</MicrosoftVisualStudioShellInteropPackageVersion>
     <MicrosoftVisualStudioTextDataPackageVersion>16.8.272</MicrosoftVisualStudioTextDataPackageVersion>
     <MicrosoftVisualStudioTextUIPackageVersion>16.8.272</MicrosoftVisualStudioTextUIPackageVersion>
-    <MicrosoftVisualStudioThreadingPackageVersion>16.7.56</MicrosoftVisualStudioThreadingPackageVersion>
+    <MicrosoftVisualStudioThreadingPackageVersion>16.8.55</MicrosoftVisualStudioThreadingPackageVersion>
     <MonoAddinsPackageVersion>1.3.8</MonoAddinsPackageVersion>
     <MonoDevelopSdkPackageVersion>1.0.15</MonoDevelopSdkPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
