@@ -202,7 +202,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e08358f5a2450430fd871a955e1d2c380a08c093</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="6.0.0-alpha.1.20557.2">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="6.0.0-alpha.1.20575.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>6cfef20c1524b8d4c1495a652dfe9e898c5a486b</Sha>
     </Dependency>
