@@ -29,6 +29,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
     {
         #region CSharp
         [Fact]
+        public async Task GetSemanticTokens_CSharp_VSCodeWorks()
+        {
+            var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}@{{ var d = }}";
+            var expectedData = new List<int> {
+                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
+                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
+            };
+
+            var cSharpTokens = new SemanticTokens {
+                Data = ImmutableArray<int>.Empty,
+                ResultId = null,
+            };
+
+            var cSharpResponse = new ProvideSemanticTokensResponse(cSharpTokens, hostDocumentSyncVersion: null);
+
+            var mappings = Array.Empty<(OmniSharpRange, OmniSharpRange)>();
+
+            await AssertSemanticTokens(txt, expectedData, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings, documentVersion: 1);
+        }
+
+        [Fact]
         public async Task GetSemanticTokens_CSharp_VersionMismatch()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}@{{ var d = }}";

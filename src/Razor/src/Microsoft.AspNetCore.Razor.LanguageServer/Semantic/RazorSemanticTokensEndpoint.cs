@@ -57,7 +57,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             }
 
             var semanticTokens = await HandleAsync(request.TextDocument, cancellationToken, request.Range);
-            _logger.LogInformation($"Returned {semanticTokens.Data.Length / 5} semantic tokens for range {request.Range} in {request.TextDocument.Uri}.");
+            var amount = semanticTokens is null ? "no" : (semanticTokens.Data.Length / 5).ToString(Thread.CurrentThread.CurrentCulture);
+
+            _logger.LogInformation($"Returned {amount} semantic tokens for range {request.Range} in {request.TextDocument.Uri}.");
 
             return semanticTokens;
         }

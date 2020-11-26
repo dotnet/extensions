@@ -286,7 +286,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             var request = await _languageServer.SendRequestAsync(LanguageServerConstants.RazorProvideSemanticTokensEndpoint, parameter);
             var csharpResponse = await request.Returning<ProvideSemanticTokensResponse>(cancellationToken);
 
-            if (csharpResponse is null || csharpResponse.HostDocumentSyncVersion != documentVersion)
+            if (csharpResponse is null ||
+                (csharpResponse.HostDocumentSyncVersion != null && csharpResponse.HostDocumentSyncVersion != documentVersion))
             {
                 // No C# response or C# is out of sync with us. Unrecoverable, return null to indicate no change. It will retry in a bit.
                 return null;
