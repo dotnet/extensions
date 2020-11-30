@@ -3,5 +3,5 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-export const HOSTED_APP_NAME = '.NET Core Launch (Blazor Hosted)';
+export const SERVER_APP_NAME = '.NET Application Server';
 export const JS_DEBUG_NAME = 'Debug Blazor Web Assembly in Browser';

@@ -8,10 +8,10 @@ import { DebugSession } from 'vscode';
 
 import { RazorLogger } from '../RazorLogger';
 
-import { HOSTED_APP_NAME, JS_DEBUG_NAME } from './Constants';
+import { JS_DEBUG_NAME, SERVER_APP_NAME } from './Constants';
 
 const isValidEvent = (name: string) => {
-  const VALID_EVENT_NAMES = [HOSTED_APP_NAME, JS_DEBUG_NAME];
+  const VALID_EVENT_NAMES = [SERVER_APP_NAME, JS_DEBUG_NAME];
   if (!VALID_EVENT_NAMES.includes(name)) {
     return false;
   }
@@ -80,7 +80,7 @@ async function terminateByProcessName(
   }
 
   const devserver = processes.find(
-    (process: psList.ProcessDescriptor) => !!(process && process.cmd && process.cmd.includes(targetProcess)));
+    (process: psList.ProcessDescriptor) => !!(process && process.cmd && process.cmd.match(targetProcess)));
   targetPid = devserver ? devserver.pid : undefined;
 
   killProcess(targetPid, logger);

@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 
 import { RazorLogger } from '../RazorLogger';
-import { HOSTED_APP_NAME, JS_DEBUG_NAME } from './Constants';
+import { JS_DEBUG_NAME, SERVER_APP_NAME } from './Constants';
 import { onDidTerminateDebugSession } from './TerminateDebugHandler';
 
 export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
@@ -20,90 +20,65 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
          * only launch the browser.
          */
         if (configuration.request === 'launch') {
-            /**
-             * If the user is debugging a hosted Blazor WebAssembly application,
-             * then the application server needs to be launched via VS Code's debug
-             * workflow to allow debugging on the server-side logic. If the app is
-             * not hosted, then it can be spun as a standalone process to avoid additional overhead.
-             */
-            if (configuration.hosted) {
-                this.launchHostedApp(folder, configuration);
-            } else {
-                this.launchStandaloneApp(folder, configuration);
-            }
+            await this.launchApp(folder, configuration);
         }
 
-        await this.launchBrowser(folder, configuration);
+        this.vscodeType.debug.onDidStartDebugSession(async event => {
+            if (event.name === SERVER_APP_NAME) {
+                await this.launchBrowser(folder, configuration, event);
+            }
+        });
 
         /**
          * If `resolveDebugConfiguration` returns undefined, then the debugger
          * launch is canceled. Here, we opt to manually launch the browser
-         * configruation using `startDebugging` above instead of returning
+         * configuration using `startDebugging` above instead of returning
          * the configuration to avoid a bug where VS Code is unable to resolve
          * the debug adapter for the browser debugger.
          */
         return undefined;
     }
 
-    private launchHostedApp(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration) {
-        if (!configuration.program && !configuration.cwd) {
-            const message = `Must provide 'program' and 'cwd' properties in launch configuration for hosted Blazor WebAssembly apps.`;
-            this.vscodeType.window.showErrorMessage(message);
-        }
+    private async launchApp(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration) {
+        const program = configuration.hosted ? configuration.program : 'dotnet';
+        const cwd = configuration.cwd || '${workspaceFolder}';
+        const args = configuration.hosted ? [] : ['run'];
 
         const app = {
-            name: HOSTED_APP_NAME,
+            name: SERVER_APP_NAME,
             type: 'coreclr',
             request: 'launch',
-            preLaunchTask: 'build',
-            program: configuration.program,
-            args: [],
-            cwd: configuration.cwd,
+            prelaunchTask: 'build',
+            program,
+            args,
+            cwd,
             env: {
+                ASPNETCORE_ENVIRONMENT: 'Development',
                 ...configuration.env,
             },
-            logging: configuration.logging,
+            launchBrowser: {
+                enabled: false,
+            },
+            ...configuration.dotNetConfig,
         };
 
-        this.vscodeType.debug.startDebugging(folder, app).then((appStartFulfilled: boolean) => {
-            this.logger.logVerbose('[DEBUGGER] Launching hosted Blazor WebAssembly app...');
+        try {
+            await this.vscodeType.debug.startDebugging(folder, app);
             if (process.platform !== 'win32') {
                 const terminate = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
-                    await onDidTerminateDebugSession(event, this.logger, app.program);
+                    const blazorDevServer = 'blazor-devserver.dll';
+                    const dir = folder && folder.uri && folder.uri.fsPath;
+                    const launchedApp = configuration.hosted ? app.program : `${dir}.*${blazorDevServer}|${blazorDevServer}.*${dir}`;
+                    await onDidTerminateDebugSession(event, this.logger, launchedApp);
                     terminate.dispose();
                 });
             }
-        }, (error: Error) => {
+        } catch (error) {
             this.logger.logError('[DEBUGGER] Error when launching application: ', error);
-        });
+        }
     }
 
-    private launchStandaloneApp(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration) {
-        const shellPath = process.platform === 'win32' ? 'cmd.exe' : 'dotnet';
-        const shellArgs = process.platform === 'win32' ? ['/c', 'chcp 65001 >NUL & dotnet run'] : ['run'];
-        const spawnOptions = {
-            cwd: configuration.cwd || (folder && folder.uri && folder.uri.fsPath),
-        };
-
-        const output = this.vscodeType.window.createTerminal({
-            name: 'Blazor WebAssembly App',
-            shellPath,
-            shellArgs,
-            ...spawnOptions,
-        });
-
-        /**
-         * We need to terminate the Blazor dev server.
-         */
-        const terminate = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
-            await onDidTerminateDebugSession(event, this.logger, await output.processId);
-            terminate.dispose();
-        });
-
-        output.show(/*preserveFocus*/true);
-    }
-
-    private async launchBrowser(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration) {
+    private async launchBrowser(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration, parentSession?: vscode.DebugSession) {
         const browser = {
             name: JS_DEBUG_NAME,
             type: configuration.browser === 'edge' ? 'pwa-msedge' : 'pwa-chrome',
@@ -114,6 +89,7 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             inspectUri: '{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}',
             trace: configuration.trace || false,
             noDebug: configuration.noDebug || false,
+            ...configuration.browserConfig,
         };
 
         try {
@@ -126,8 +102,7 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
              * We do this to provide immediate visual feedback to the user
              * that their debugger session has started.
              */
-            await this.vscodeType.debug.startDebugging(folder, browser);
-            this.logger.logVerbose('[DEBUGGER] Launching browser debugger...');
+            await this.vscodeType.debug.startDebugging(folder, browser, parentSession);
         } catch (error) {
             this.logger.logError(
                 '[DEBUGGER] Error when launching browser debugger: ',
