@@ -6,7 +6,7 @@
     "dotnet": "5.0.100",
     "runtimes": {
       "dotnet": [
-        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+        "$(MicrosoftExtensionsInternalTransportPackageVersion)"
       ]
     }
   },
