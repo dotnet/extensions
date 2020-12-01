@@ -49,7 +49,7 @@
     <!-- Packages from dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>6.0.0-alpha.1.20601.3</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>6.0.0-alpha.1.20601.3</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>6.0.0-alpha.1.20580.2</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftExtensionsInternalTransportPackageVersion>6.0.0-alpha.1.20601.3</MicrosoftExtensionsInternalTransportPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>6.0.0-alpha.1.20601.3</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>6.0.0-alpha.1.20601.3</MicrosoftExtensionsCachingAbstractionsPackageVersion>
