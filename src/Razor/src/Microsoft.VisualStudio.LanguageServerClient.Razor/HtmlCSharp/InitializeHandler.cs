@@ -51,7 +51,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     TriggerCharacters = new[] { "(", "," }
                 },
                 ImplementationProvider = true,
-                SupportsDiagnosticRequests = true
+                SupportsDiagnosticRequests = true,
+                OnTypeRenameProvider = new DocumentOnTypeRenameOptions()
             }
         };
 

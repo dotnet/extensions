@@ -69,6 +69,8 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                     return CheckCodeActionResolveCapabilities;
                 case MSLSPMethods.OnAutoInsertName:
                     return CheckOnAutoInsertCapabilities;
+                case MSLSPMethods.OnTypeRenameName:
+                    return CheckOnTypeRenameCapabilities;
                 case MSLSPMethods.DocumentPullDiagnosticName:
                 case MSLSPMethods.WorkspacePullDiagnosticName:
                     return CheckPullDiagnosticCapabilities;
@@ -261,6 +263,13 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             var serverCapabilities = token.ToObject<VSServerCapabilities>();
 
             return serverCapabilities?.OnAutoInsertProvider != null;
+        }
+
+        private static bool CheckOnTypeRenameCapabilities(JToken token)
+        {
+            var serverCapabilities = token.ToObject<VSServerCapabilities>();
+
+            return serverCapabilities?.OnTypeRenameProvider != null;
         }
 
         private static bool CheckPullDiagnosticCapabilities(JToken token)

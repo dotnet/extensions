@@ -62,6 +62,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public async Task<DocumentOnAutoInsertResponseItem> HandleRequestAsync(DocumentOnAutoInsertParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
         {
+            if (request is null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             if (!AllAllowedTriggerCharacters.Contains(request.Character, StringComparer.Ordinal))
             {
                 // We haven't built support for this character yet.

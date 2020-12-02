@@ -136,6 +136,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return ExecuteRequestAsync<DocumentOnTypeFormattingParams, TextEdit[]>(Methods.TextDocumentOnTypeFormattingName, request, _clientCapabilities, cancellationToken);
         }
 
+        [JsonRpcMethod(MSLSPMethods.OnTypeRenameName, UseSingleObjectParameterDeserialization = true)]
+        public Task<DocumentOnTypeRenameResponseItem> OnTypeRenameAsync(DocumentOnTypeRenameParams request, CancellationToken cancellationToken)
+        {
+            if (request is null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return ExecuteRequestAsync<DocumentOnTypeRenameParams, DocumentOnTypeRenameResponseItem>(MSLSPMethods.OnTypeRenameName, request, _clientCapabilities, cancellationToken);
+        }
+
         [JsonRpcMethod(Methods.TextDocumentDefinitionName, UseSingleObjectParameterDeserialization = true)]
         public Task<Location[]> GoToDefinitionAsync(TextDocumentPositionParams positionParams, CancellationToken cancellationToken)
         {
