@@ -4,6 +4,5 @@
 /eng/common/                            @dotnet-maestro-bot
 /eng/Versions.props                     @dotnet-maestro-bot
 /eng/Version.Details.xml                @dotnet-maestro-bot
-/src/Caching/                           @tratcher
 /src/Configuration/                     @tratcher
 /src/Hosting/                           @tratcher
