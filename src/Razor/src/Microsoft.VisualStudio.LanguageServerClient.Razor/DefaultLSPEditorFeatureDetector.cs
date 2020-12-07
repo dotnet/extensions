@@ -3,7 +3,6 @@
 
 using System;
 using System.Composition;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -24,8 +23,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly ProjectHierarchyInspector _projectHierarchyInspector;
         private readonly Lazy<IVsUIShellOpenDocument> _vsUIShellOpenDocument;
         private readonly IVsFeatureFlags _featureFlags;
-
-        private readonly MemoryCache<string, bool> _projectSupportsRazorLSPCache;
 
         private bool? _featureFlagEnabled;
         private bool? _environmentFeatureEnabled;
@@ -48,8 +45,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
                 return shellOpenDocument;
             });
-
-            _projectSupportsRazorLSPCache = new MemoryCache<string, bool>();
         }
 
         // Test constructor
@@ -131,35 +126,24 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         // Private protected virtual for testing
         private protected virtual bool ProjectSupportsRazorLSPEditor(string documentMoniker, IVsHierarchy hierarchy)
         {
-            if (_projectSupportsRazorLSPCache.TryGetValue(documentMoniker, out var isSupported))
-            {
-                return isSupported;
-            }
-
             if (hierarchy == null)
             {
                 var hr = _vsUIShellOpenDocument.Value.IsDocumentInAProject(documentMoniker, out var uiHierarchy, out _, out _, out _);
                 hierarchy = uiHierarchy;
                 if (!ErrorHandler.Succeeded(hr) || hierarchy == null)
                 {
-                    return CacheProjectRazorLSPEditorSupport(documentMoniker, false);
+                    return false;
                 }
             }
 
             if (_projectHierarchyInspector.HasCapability(documentMoniker, hierarchy, DotNetCoreCSharpCapability))
             {
                 // .NET Core project that supports C#
-                return CacheProjectRazorLSPEditorSupport(documentMoniker, true);
+                return true;
             }
 
             // Not a C# .NET Core project. This typically happens for legacy Razor scenarios
-            return CacheProjectRazorLSPEditorSupport(documentMoniker, false);
-        }
-
-        private bool CacheProjectRazorLSPEditorSupport(string documentMoniker, bool isSupported)
-        {
-            _projectSupportsRazorLSPCache.Set(documentMoniker, isSupported);
-            return isSupported;
+            return false;
         }
 
         // Private protected virtual for testing
