@@ -4,6 +4,7 @@
     <TargetFrameworks>net472</TargetFrameworks>
     <SignAssembly>false</SignAssembly>
     <PublicSign>false</PublicSign>
+    <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
