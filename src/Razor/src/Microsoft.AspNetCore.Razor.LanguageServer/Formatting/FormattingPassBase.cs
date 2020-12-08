@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var text = context.SourceText;
             range ??= TextSpan.FromBounds(0, text.Length).AsRange(text);
 
-            // To help with figuring out the correct indentation,first we will need the indentation
+            // To help with figuring out the correct indentation, first we will need the indentation
             // that the C# formatter wants to apply in the following locations,
             // 1. The start and end of each of our source mappings
             // 2. The start of every line that starts in C# context
@@ -178,13 +178,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     continue;
                 }
 
-                var startLocation = mapping.GeneratedSpan.AbsoluteIndex;
-                sourceMappingMap[mapping.OriginalSpan.AbsoluteIndex] = startLocation;
-                significantLocations.Add(startLocation);
+                var originalStartLocation = mapping.OriginalSpan.AbsoluteIndex;
+                var projectedStartLocation = mapping.GeneratedSpan.AbsoluteIndex;
+                sourceMappingMap[originalStartLocation] = projectedStartLocation;
+                significantLocations.Add(projectedStartLocation);
 
-                var endLocation = mapping.GeneratedSpan.AbsoluteIndex + mapping.GeneratedSpan.Length + 1;
-                sourceMappingMap[mapping.OriginalSpan.AbsoluteIndex + mapping.OriginalSpan.Length + 1] = endLocation;
-                significantLocations.Add(endLocation);
+                var originalEndLocation = mapping.OriginalSpan.AbsoluteIndex + mapping.OriginalSpan.Length + 1;
+                var projectedEndLocation = mapping.GeneratedSpan.AbsoluteIndex + mapping.GeneratedSpan.Length + 1;
+                sourceMappingMap[originalEndLocation] = projectedEndLocation;
+                significantLocations.Add(projectedEndLocation);
             }
 
             // Next, collect all the line starts that start in C# context

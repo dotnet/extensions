@@ -55,8 +55,9 @@ namespace Microsoft.AspNetCore.Razor.Performance.LanguageServer
             var edits = await RazorFormattingService.FormatAsync(DocumentUri, DocumentSnapshot, range, options, CancellationToken.None);
 
 #if DEBUG
+            // For debugging purposes only.
             var changedText = DocumentText.WithChanges(edits.Select(e => e.AsTextChange(DocumentText)));
-            File.WriteAllText("output.txt", changedText.ToString());
+            _ = changedText.ToString();
 #endif
         }
 

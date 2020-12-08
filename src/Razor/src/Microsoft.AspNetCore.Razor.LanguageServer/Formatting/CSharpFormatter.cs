@@ -85,7 +85,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return mappedEdits;
         }
 
-        public async Task<Dictionary<int, int>> GetCSharpIndentationAsync(FormattingContext context, IEnumerable<int> projectedDocumentLocations, CancellationToken cancellationToken)
+        public async Task<IReadOnlyDictionary<int, int>> GetCSharpIndentationAsync(
+            FormattingContext context,
+            IReadOnlyList<int> projectedDocumentLocations,
+            CancellationToken cancellationToken)
         {
             if (context is null)
             {
@@ -98,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             // Sorting ensures we count the marker offsets correctly.
-            projectedDocumentLocations = projectedDocumentLocations.OrderBy(l => l);
+            projectedDocumentLocations = projectedDocumentLocations.OrderBy(l => l).ToList();
 
             var indentations = await GetCSharpIndentationCoreAsync(context, projectedDocumentLocations, cancellationToken);
             return indentations;
@@ -189,6 +192,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     var annotation = trivia.GetAnnotations(MarkerId).Single();
                     if (!int.TryParse(annotation.Data, out var projectedIndex))
                     {
+                        // This shouldn't happen realistically unless someone messed with the annotations we added.
+                        // Let's ignore this annotation.
                         continue;
                     }
 
@@ -211,6 +216,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     {
                         if (!int.TryParse(annotation.Data, out var projectedIndex))
                         {
+                            // This shouldn't happen realistically unless someone messed with the annotations we added.
+                            // Let's ignore this annotation.
                             continue;
                         }
 
@@ -301,7 +308,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     root = root.ReplaceToken(trackingToken, annotatedToken);
 
                     // Since a token can span multiple lines, we need to keep track of the offset within the token span.
-                    // We will use this later when determining the exact line within a token.
+                    // We will use this later when determining the exact line within a token in cases like a multiline string literal.
                     indentationMapData.CharacterOffset = indentationMapData.AnnotationAttachIndex - trackingToken.SpanStart;
                 }
             }

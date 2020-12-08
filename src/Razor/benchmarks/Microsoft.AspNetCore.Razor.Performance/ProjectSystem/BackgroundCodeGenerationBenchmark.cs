@@ -31,9 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
         private DefaultProjectSnapshotManager SnapshotManager { get; set; }
 
         [Benchmark(Description = "Generates the code for 100 files", OperationsPerInvoke = 100)]
-#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
         public async Task BackgroundCodeGeneration_Generate100Files()
-#pragma warning restore VSTHRD200 // Use "Async" suffix for async methods
         {
             for (var i = 0; i < Documents.Length; i++)
             {
