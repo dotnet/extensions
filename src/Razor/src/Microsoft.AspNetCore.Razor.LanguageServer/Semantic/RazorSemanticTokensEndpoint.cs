@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #pragma warning disable CS0618
+#nullable enable
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 {
     internal class RazorSemanticTokensEndpoint : ISemanticTokensHandler, ISemanticTokensRangeHandler, ISemanticTokensDeltaHandler, IRegistrationExtension
     {
-        private SemanticTokensCapability _capability;
+        private SemanticTokensCapability? _capability;
 
         private readonly ILogger _logger;
         private readonly RazorSemanticTokensInfoService _semanticTokensInfoService;
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             _logger = loggerFactory.CreateLogger<RazorSemanticTokensEndpoint>();
         }
 
-        public async Task<SemanticTokens> Handle(SemanticTokensParams request, CancellationToken cancellationToken)
+        public async Task<SemanticTokens?> Handle(SemanticTokensParams request, CancellationToken cancellationToken)
         {
             if (request is null)
             {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return await HandleAsync(request.TextDocument.Uri.GetAbsolutePath(), cancellationToken, range: null);
         }
 
-        public async Task<SemanticTokens> Handle(SemanticTokensRangeParams request, CancellationToken cancellationToken)
+        public async Task<SemanticTokens?> Handle(SemanticTokensRangeParams request, CancellationToken cancellationToken)
         {
             if (request is null)
             {
@@ -108,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             });
         }
 
-        private async Task<SemanticTokens> HandleAsync(TextDocumentIdentifier textDocument, CancellationToken cancellationToken, Range range = null)
+        private async Task<SemanticTokens?> HandleAsync(TextDocumentIdentifier textDocument, CancellationToken cancellationToken, Range? range = null)
         {
             var tokens = await _semanticTokensInfoService.GetSemanticTokensAsync(textDocument, range, cancellationToken);
 

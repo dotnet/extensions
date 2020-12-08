@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #pragma warning disable CS0618
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -59,16 +60,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             _logger = loggerFactory.CreateLogger<DefaultRazorSemanticTokensInfoService>();
         }
 
-        public override Task<SemanticTokens> GetSemanticTokensAsync(
+        public override Task<SemanticTokens?> GetSemanticTokensAsync(
             TextDocumentIdentifier textDocumentIdentifier,
             CancellationToken cancellationToken)
         {
             return GetSemanticTokensAsync(textDocumentIdentifier, range: null, cancellationToken);
         }
 
-        public override async Task<SemanticTokens> GetSemanticTokensAsync(
+        public override async Task<SemanticTokens?> GetSemanticTokensAsync(
             TextDocumentIdentifier textDocumentIdentifier,
-            Range range,
+            Range? range,
             CancellationToken cancellationToken)
         {
             var documentPath = textDocumentIdentifier.Uri.GetAbsolutePath();
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
             cancellationToken.ThrowIfCancellationRequested();
             var razorSemanticRanges = TagHelperSemanticRangeVisitor.VisitAllNodes(codeDocument, range);
-            IReadOnlyList<SemanticRange> csharpSemanticRanges = null;
+            IReadOnlyList<SemanticRange>? csharpSemanticRanges = null;
 
             try
             {
@@ -116,14 +117,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
             var documentVersionStamp = await documentSnapshot.GetTextVersionAsync();
             var razorSemanticTokens = ConvertSemanticRangesToSemanticTokens(combinedSemanticRanges, codeDocument);
-            _semanticTokensCache.Set(razorSemanticTokens.ResultId, (documentVersionStamp, razorSemanticTokens.Data));
+            _semanticTokensCache.Set(razorSemanticTokens.ResultId!, (documentVersionStamp, razorSemanticTokens.Data));
 
             return razorSemanticTokens;
         }
 
         public override async Task<SemanticTokensFullOrDelta?> GetSemanticTokensEditsAsync(
             TextDocumentIdentifier textDocumentIdentifier,
-            string previousResultId,
+            string? previousResultId,
             CancellationToken cancellationToken)
         {
             var documentPath = textDocumentIdentifier.Uri.GetAbsolutePath();
@@ -149,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             cancellationToken.ThrowIfCancellationRequested();
 
             VersionStamp? cachedVersionStamp = null;
-            IReadOnlyList<int> previousResults = null;
+            IReadOnlyList<int>? previousResults = null;
             if (previousResultId != null)
             {
                 _semanticTokensCache.TryGetValue(previousResultId, out var tuple);
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 }
 
                 var newTokens = ConvertSemanticRangesToSemanticTokens(combinedSemanticRanges, codeDocument);
-                _semanticTokensCache.Set(newTokens.ResultId, (documentVersionStamp, newTokens.Data));
+                _semanticTokensCache.Set(newTokens.ResultId!, (documentVersionStamp, newTokens.Data));
 
                 if (previousResults is null)
                 {
@@ -197,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             }
         }
 
-        private async Task<RazorCodeDocument> GetRazorCodeDocumentAsync(DocumentSnapshot documentSnapshot)
+        private async Task<RazorCodeDocument?> GetRazorCodeDocumentAsync(DocumentSnapshot documentSnapshot)
         {
             var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
             if (codeDocument.IsUnsupported())
@@ -208,7 +209,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return codeDocument;
         }
 
-        private IReadOnlyList<SemanticRange> CombineSemanticRanges(params IReadOnlyList<SemanticRange>[] rangesArray)
+        private IReadOnlyList<SemanticRange>? CombineSemanticRanges(params IReadOnlyList<SemanticRange>?[] rangesArray)
         {
             if (rangesArray.Any(a => a is null))
             {
@@ -233,10 +234,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return newList;
         }
 
-        private async Task<IReadOnlyList<SemanticRange>> GetCSharpSemanticRangesAsync(
+        private async Task<IReadOnlyList<SemanticRange>?> GetCSharpSemanticRangesAsync(
             RazorCodeDocument codeDocument,
             TextDocumentIdentifier textDocumentIdentifier,
-            Range range,
+            Range? range,
             long? documentVersion,
             CancellationToken cancellationToken)
         {
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 return null;
             }
 
-            SemanticRange previousSemanticRange = null;
+            SemanticRange? previousSemanticRange = null;
             var razorRanges = new List<SemanticRange>();
             for (var i = 0; i < csharpResponses.Data.Length; i += 5)
             {
@@ -261,7 +262,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 if (_documentMappingService.TryMapFromProjectedDocumentRange(codeDocument, semanticRange.Range, out var originalRange))
                 {
                     var razorRange = new SemanticRange(semanticRange.Kind, originalRange, tokenModifiers);
-                    if (range == null || range.OverlapsWith(razorRange.Range))
+                    if (range is null || range.OverlapsWith(razorRange.Range))
                     {
                         razorRanges.Add(razorRange);
                     }
@@ -274,7 +275,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return result;
         }
 
-        private async Task<SemanticTokens> GetMatchingCSharpResponseAsync(
+        private async Task<SemanticTokens?> GetMatchingCSharpResponseAsync(
             TextDocumentIdentifier textDocumentIdentifier,
             long? documentVersion,
             CancellationToken cancellationToken)
@@ -296,7 +297,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return csharpResponse.Result;
         }
 
-        private SemanticRange DataToSemanticRange(int lineDelta, int charDelta, int length, int tokenType, int tokenModifiers, SemanticRange previousSemanticRange = null)
+        private SemanticRange DataToSemanticRange(int lineDelta, int charDelta, int length, int tokenType, int tokenModifiers, SemanticRange? previousSemanticRange = null)
         {
             if (previousSemanticRange is null)
             {
@@ -322,12 +323,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             IReadOnlyList<SemanticRange> semanticRanges,
             RazorCodeDocument razorCodeDocument)
         {
-            if (semanticRanges is null)
-            {
-                return null;
-            }
-
-            SemanticRange previousResult = null;
+            SemanticRange? previousResult = null;
 
             var data = new List<int>();
             foreach (var result in semanticRanges)
@@ -359,14 +355,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         **/
         private static IEnumerable<int> GetData(
             SemanticRange currentRange,
-            SemanticRange previousRange,
+            SemanticRange? previousRange,
             RazorCodeDocument razorCodeDocument)
         {
             // var previousRange = previousRange?.Range;
             // var currentRange = currentRange.Range;
 
             // deltaLine
-            var previousLineIndex = previousRange?.Range == null ? 0 : previousRange.Range.Start.Line;
+            var previousLineIndex = previousRange?.Range is null ? 0 : previousRange.Range.Start.Line;
             yield return currentRange.Range.Start.Line - previousLineIndex;
 
             // deltaStart

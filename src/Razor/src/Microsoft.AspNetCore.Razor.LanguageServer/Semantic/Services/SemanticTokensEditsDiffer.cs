@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #pragma warning disable CS0618
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -80,14 +81,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Services
                             current.Data.Value.Any() &&
                             current.Start == diff.Position)
                         {
-                            current.Data = current.Data.Append(NewArray[diff.NewTextPosition.Value]).ToImmutableArray();
+                            current.Data = current.Data.Append(NewArray[diff.NewTextPosition!.Value]).ToImmutableArray();
                         }
                         else
                         {
                             var semanticTokensEdit = new SemanticTokensEdit
                             {
                                 Start = diff.Position,
-                                Data = ImmutableArray.Create(NewArray[diff.NewTextPosition.Value]),
+                                Data = ImmutableArray.Create(NewArray[diff.NewTextPosition!.Value]),
                                 DeleteCount = 0,
                             };
                             results.Add(semanticTokensEdit);

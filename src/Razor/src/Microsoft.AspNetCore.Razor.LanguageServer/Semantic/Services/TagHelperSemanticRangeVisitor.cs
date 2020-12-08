@@ -1,5 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -17,16 +18,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
     {
         private readonly List<SemanticRange> _semanticRanges;
         private readonly RazorCodeDocument _razorCodeDocument;
-        private readonly Range _range;
+        private readonly Range? _range;
 
-        private TagHelperSemanticRangeVisitor(RazorCodeDocument razorCodeDocument, Range range)
+        private TagHelperSemanticRangeVisitor(RazorCodeDocument razorCodeDocument, Range? range)
         {
             _semanticRanges = new List<SemanticRange>();
             _razorCodeDocument = razorCodeDocument;
             _range = range;
         }
 
-        public static IReadOnlyList<SemanticRange> VisitAllNodes(RazorCodeDocument razorCodeDocument, Range range = null)
+        public static IReadOnlyList<SemanticRange> VisitAllNodes(RazorCodeDocument razorCodeDocument, Range? range = null)
         {
             var visitor = new TagHelperSemanticRangeVisitor(razorCodeDocument, range);
 

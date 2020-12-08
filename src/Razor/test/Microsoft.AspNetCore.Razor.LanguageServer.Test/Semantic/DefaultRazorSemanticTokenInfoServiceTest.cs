@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #pragma warning disable CS0618
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             var cSharpResponse = new ProvideSemanticTokensResponse(cSharpTokens, hostDocumentSyncVersion: null);
 
-            var mappings = Array.Empty<(OmniSharpRange, OmniSharpRange)>();
+            var mappings = Array.Empty<(OmniSharpRange, OmniSharpRange?)>();
 
             await AssertSemanticTokens(txt, expectedData, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings, documentVersion: 1);
         }
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             var cSharpResponse = new ProvideSemanticTokensResponse(cSharpTokens, hostDocumentSyncVersion: 42);
 
-            var mappings = new (OmniSharpRange, OmniSharpRange)[] {
+            var mappings = new (OmniSharpRange, OmniSharpRange?)[] {
                (new OmniSharpRange(new Position(14, 12), new Position(14, 15)), new OmniSharpRange(new Position(1, 3), new Position(1, 6))),
                (new OmniSharpRange(new Position(27, 15), new Position(27, 16)), new OmniSharpRange(new Position(1, 7), new Position(1, 8))),
                (new OmniSharpRange(new Position(39, 25), new Position(39, 26)), new OmniSharpRange(new Position(1, 9), new Position(1, 10))),
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             var cSharpResponse = new ProvideSemanticTokensResponse(cSharpTokens, hostDocumentSyncVersion: 0);
 
-            var mappings = new (OmniSharpRange, OmniSharpRange)[] {
+            var mappings = new (OmniSharpRange, OmniSharpRange?)[] {
                (new OmniSharpRange(new Position(14, 12), new Position(14, 15)), new OmniSharpRange(new Position(1, 3), new Position(1, 6))),
                (new OmniSharpRange(new Position(27, 15), new Position(27, 16)), new OmniSharpRange(new Position(1, 7), new Position(1, 8))),
                (new OmniSharpRange(new Position(39, 25), new Position(39, 26)), new OmniSharpRange(new Position(1, 9), new Position(1, 10))),
@@ -137,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             var cSharpResponse = new ProvideSemanticTokensResponse(cSharpTokens, hostDocumentSyncVersion: 0);
 
-            var mappings = new (OmniSharpRange, OmniSharpRange)[] {
+            var mappings = new (OmniSharpRange, OmniSharpRange?)[] {
                (new OmniSharpRange(new Position(14, 12), new Position(14, 15)), new OmniSharpRange(new Position(1, 3), new Position(1, 6))),
                (new OmniSharpRange(new Position(27, 15), new Position(27, 16)), new OmniSharpRange(new Position(1, 7), new Position(1, 8))),
                (new OmniSharpRange(new Position(39, 25), new Position(39, 26)), new OmniSharpRange(new Position(1, 9), new Position(1, 10))),
@@ -172,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             var cSharpResponse = new ProvideSemanticTokensResponse(cSharpTokens, hostDocumentSyncVersion: 0);
 
-            var mappings = new (OmniSharpRange, OmniSharpRange)[] {
+            var mappings = new (OmniSharpRange, OmniSharpRange?)[] {
                (new OmniSharpRange(new Position(14, 12), new Position(14, 15)), new OmniSharpRange(new Position(1, 3), new Position(1, 6))),
                (new OmniSharpRange(new Position(27, 15), new Position(27, 16)), new OmniSharpRange(new Position(1, 7), new Position(1, 8))),
                (new OmniSharpRange(new Position(39, 25), new Position(39, 26)), new OmniSharpRange(new Position(1, 9), new Position(1, 10))),
@@ -1099,27 +1100,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             Assert.NotEqual(previousResultId, newResultId);
         }
 
-        private Task<(string, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>, Queue<DocumentSnapshot>)> AssertSemanticTokens(
+        private Task<(string?, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>, Queue<DocumentSnapshot>)> AssertSemanticTokens(
             string txt,
-            IEnumerable<int> expectedData,
+            IEnumerable<int>? expectedData,
             bool isRazor,
-            RazorSemanticTokensInfoService service = null,
-            OmniSharpRange location = null,
-            ProvideSemanticTokensResponse csharpTokens = null,
-            (OmniSharpRange, OmniSharpRange)[] documentMappings = null,
+            RazorSemanticTokensInfoService? service = null,
+            OmniSharpRange? location = null,
+            ProvideSemanticTokensResponse? csharpTokens = null,
+            (OmniSharpRange, OmniSharpRange?)[]? documentMappings = null,
             int? documentVersion = 0)
         {
             return AssertSemanticTokens(new string[] { txt }, expectedData, new bool[] { isRazor }, service, location, csharpTokens, documentMappings, documentVersion);
         }
 
-        private async Task<(string, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>, Queue<DocumentSnapshot>)> AssertSemanticTokens(
+        private async Task<(string?, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>, Queue<DocumentSnapshot>)> AssertSemanticTokens(
             string[] txtArray,
-            IEnumerable<int> expectedData,
+            IEnumerable<int>? expectedData,
             bool[] isRazorArray,
-            RazorSemanticTokensInfoService service = null,
-            OmniSharpRange location = null,
-            ProvideSemanticTokensResponse csharpTokens = null,
-            (OmniSharpRange, OmniSharpRange)[] documentMappings = null,
+            RazorSemanticTokensInfoService? service = null,
+            OmniSharpRange? location = null,
+            ProvideSemanticTokensResponse? csharpTokens = null,
+            (OmniSharpRange, OmniSharpRange?)[]? documentMappings = null,
             int? documentVersion = 0)
         {
             // Arrange
@@ -1134,7 +1135,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 csharpTokens = new ProvideSemanticTokensResponse(semanticTokens, documentVersion);
             }
 
-            Mock<ClientNotifierServiceBase> serviceMock = null;
+            Mock<ClientNotifierServiceBase>? serviceMock = null;
             var (documentSnapshots, textDocumentIdentifiers) = CreateDocumentSnapshot(txtArray, isRazorArray, DefaultTagHelpers);
 
             if (service is null)
@@ -1151,14 +1152,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             // Assert
             Assert.True(ArrayEqual(expectedData, tokens?.Data));
 
-            return (tokens?.ResultId, outService, serviceMock, documentSnapshots);
+            return (tokens?.ResultId, outService, serviceMock!, documentSnapshots);
         }
 
-        private static bool ArrayEqual(IEnumerable<int> expectedData, IEnumerable<int> actualData)
+        private static bool ArrayEqual(IEnumerable<int>? expectedData, IEnumerable<int>? actualData)
         {
             if (expectedData is null && actualData is null)
             {
                 return true;
+            }
+
+            if (expectedData is null || actualData is null)
+            {
+                return false;
             }
 
             var expectedArray = expectedData.ToArray();
@@ -1177,24 +1183,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             return true;
         }
 
-        private async Task<(string, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>)> AssertSemanticTokenEdits(
-            string txt,
+        private async Task<(string?, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>)> AssertSemanticTokenEdits(
+            string? txt,
             SemanticTokensFullOrDelta expectedEdits,
             bool isRazor,
-            string previousResultId,
-            RazorSemanticTokensInfoService service = null,
+            string? previousResultId,
+            RazorSemanticTokensInfoService? service = null,
             long? documentVersion = 0)
         {
             // Arrange
             var semanticTokens = new SemanticTokens { };
             var cSharpTokens = new ProvideSemanticTokensResponse(semanticTokens, documentVersion);
 
-            var outService = service;
-
-            Mock<ClientNotifierServiceBase> clientMock = null;
+            Mock<ClientNotifierServiceBase>? clientMock = null;
             if (service is null)
             {
-                var (documentSnapshots, _) = CreateDocumentSnapshot(new string[] { txt }, new bool[] { isRazor }, DefaultTagHelpers);
+                var (documentSnapshots, _) = CreateDocumentSnapshot(new string?[] { txt }, new bool[] { isRazor }, DefaultTagHelpers);
                 (service, clientMock) = GetDefaultRazorSemanticTokenInfoService(documentSnapshots, cSharpTokens);
             }
 
@@ -1206,31 +1210,31 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             // Assert
             if (expectedEdits.IsDelta)
             {
-                for (var i = 0; i < Math.Min(expectedEdits.Delta.Edits.Count(), edits.Delta.Edits.Count()); i++)
+                for (var i = 0; i < Math.Min(expectedEdits.Delta!.Edits.Count(), edits.Delta!.Edits.Count()); i++)
                 {
                     Assert.Equal(expectedEdits.Delta.Edits.ElementAt(i), edits.Delta.Edits.ElementAt(i), SemanticEditComparer.Instance);
                 }
                 Assert.Equal(expectedEdits.Delta.Edits.Count(), edits.Delta.Edits.Count());
 
-                return (edits.Delta.ResultId, outService, clientMock);
+                return (edits.Delta.ResultId, service, clientMock!);
             }
             else
             {
-                Assert.Equal(expectedEdits.Full.Data, edits.Full.Data, ImmutableArrayIntComparer.Instance);
+                Assert.Equal(expectedEdits.Full!.Data, edits.Full!.Data, ImmutableArrayIntComparer.Instance);
 
-                return (edits.Full.ResultId, outService, clientMock);
+                return (edits.Full.ResultId, service, clientMock!);
             }
         }
 
         private static (RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>) GetDefaultRazorSemanticTokenInfoService(
             Queue<DocumentSnapshot> documentSnapshots,
-            ProvideSemanticTokensResponse cSharpTokens = null,
-            (OmniSharpRange, OmniSharpRange)[] documentMappings = null,
+            ProvideSemanticTokensResponse? cSharpTokens = null,
+            (OmniSharpRange, OmniSharpRange?)[]? documentMappings = null,
             int? documentVersion = 0)
         {
             var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
             responseRouterReturns
-                .Setup(l => l.Returning<ProvideSemanticTokensResponse>(It.IsAny<CancellationToken>()))
+                .Setup(l => l.Returning<ProvideSemanticTokensResponse?>(It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(cSharpTokens));
 
             var languageServer = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
@@ -1245,7 +1249,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                     var passingRange = razorRange;
                     documentMappingService
                         .Setup(s => s.TryMapFromProjectedDocumentRange(It.IsAny<RazorCodeDocument>(), cSharpRange, out passingRange))
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
                         .Returns(razorRange != null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+#pragma warning restore CS8604 // Possible null reference argument.
                 }
             }
             var loggingFactory = new Mock<LoggerFactory>();
@@ -1302,7 +1310,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
                 Assert.Equal(x.DeleteCount, y.DeleteCount);
                 Assert.Equal(x.Start, y.Start);
-                Assert.Equal(x.Data.Value, y.Data.Value, ImmutableArrayIntComparer.Instance);
+                Assert.Equal(x.Data!.Value, y.Data!.Value, ImmutableArrayIntComparer.Instance);
 
                 return x.DeleteCount == y.DeleteCount &&
                     x.Start == y.Start;
