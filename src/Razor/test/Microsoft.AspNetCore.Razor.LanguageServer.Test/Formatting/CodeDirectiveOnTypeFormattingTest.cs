@@ -194,5 +194,26 @@ expected: @"
 ",
 triggerCharacter: ";");
         }
+
+        [Fact]
+        public async Task Newline_BraceIndent()
+        {
+            await RunOnTypeFormattingTestAsync(
+input: @"
+@code {
+    public class Foo {|
+|}
+}
+",
+expected: @"
+@code {
+    public class Foo
+    {
+    }
+}
+",
+triggerCharacter: @"
+"); // Newline
+        }
     }
 }
