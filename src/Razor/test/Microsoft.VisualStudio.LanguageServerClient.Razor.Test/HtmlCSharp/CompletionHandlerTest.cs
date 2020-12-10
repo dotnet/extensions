@@ -79,7 +79,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var completionRequest = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Context = new CompletionContext() { TriggerKind = CompletionTriggerKind.TriggerCharacter, TriggerCharacter = "<" },
+                Context = new VSCompletionContext() { TriggerKind = CompletionTriggerKind.TriggerCharacter, TriggerCharacter = "<", InvokeKind = VSCompletionInvokeKind.Typing },
                 Position = new Position(0, 1)
             };
 
@@ -93,6 +93,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.HtmlLSPContentTypeName, serverContentType);
+                    var vsCompletionContext = Assert.IsType<VSCompletionContext>(completionParams.Context);
+                    Assert.Equal(VSCompletionInvokeKind.Typing, vsCompletionContext.InvokeKind);
                     called = true;
                 })
                 .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
@@ -124,7 +126,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var completionRequest = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
-                Context = new CompletionContext() { TriggerKind = CompletionTriggerKind.Invoked },
+                Context = new VSCompletionContext() { TriggerKind = CompletionTriggerKind.Invoked, InvokeKind = VSCompletionInvokeKind.Explicit },
                 Position = new Position(0, 1)
             };
 
@@ -138,6 +140,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
+                    var vsCompletionContext = Assert.IsType<VSCompletionContext>(completionParams.Context);
+                    Assert.Equal(VSCompletionInvokeKind.Explicit, vsCompletionContext.InvokeKind);
                     called = true;
                 })
                 .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));

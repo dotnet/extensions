@@ -173,11 +173,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             // Trigger character not associated with the current langauge. Transform the context into an invoked context.
-
-            var rewrittenContext = new CompletionContext()
+            var rewrittenContext = new VSCompletionContext()
             {
-                TriggerKind = CompletionTriggerKind.Invoked
+                TriggerKind = CompletionTriggerKind.Invoked,
             };
+
+            var invokeKind = (context as VSCompletionContext)?.InvokeKind;
+            if (invokeKind.HasValue)
+            {
+                rewrittenContext.InvokeKind = invokeKind.Value;
+            }
+
             return rewrittenContext;
         }
 

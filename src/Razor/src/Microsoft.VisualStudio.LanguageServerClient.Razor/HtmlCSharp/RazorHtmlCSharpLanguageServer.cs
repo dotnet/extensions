@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StreamJsonRpc;
 
@@ -34,7 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(outputStream));
             }
 
-            _jsonRpc = new JsonRpc(outputStream, inputStream, this);
+            _jsonRpc = CreateJsonRpc(outputStream, inputStream, target: this);
             _jsonRpc.StartListening();
         }
 
@@ -249,6 +250,42 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             return handler.HandleRequestAsync(request, clientCapabilities, cancellationToken);
+        }
+
+        private static JsonRpc CreateJsonRpc(Stream outputStream, Stream inputStream, object target)
+        {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var messageFormatter = new JsonMessageFormatter();
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            var serializer = messageFormatter.JsonSerializer;
+            AddVSExtensionConverters(serializer);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var messageHandler = new HeaderDelimitedMessageHandler(outputStream, inputStream, messageFormatter);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            // The JsonRpc object owns disposing the message handler which disposes the formatter.
+            var jsonRpc = new JsonRpc(messageHandler, target);
+            return jsonRpc;
+
+            // Can be removed for serializer.AddVSExtensionConverters() once we are able to update to a newer LSP protocol Extensions version.
+            void AddVSExtensionConverters(JsonSerializer serializer)
+            {
+                serializer.Converters.Add(new VSExtensionConverter<ClientCapabilities, VSClientCapabilities>());
+                serializer.Converters.Add(new VSExtensionConverter<CodeAction, VSCodeAction>());
+                serializer.Converters.Add(new VSExtensionConverter<CodeActionContext, VSCodeActionContext>());
+                serializer.Converters.Add(new VSExtensionConverter<CompletionContext, VSCompletionContext>());
+                serializer.Converters.Add(new VSExtensionConverter<CompletionItem, VSCompletionItem>());
+                serializer.Converters.Add(new VSExtensionConverter<CompletionList, VSCompletionList>());
+                serializer.Converters.Add(new VSExtensionConverter<Diagnostic, VSDiagnostic>());
+                serializer.Converters.Add(new VSExtensionConverter<Hover, VSHover>());
+                serializer.Converters.Add(new VSExtensionConverter<ServerCapabilities, VSServerCapabilities>());
+                serializer.Converters.Add(new VSExtensionConverter<SignatureInformation, VSSignatureInformation>());
+                serializer.Converters.Add(new VSExtensionConverter<SymbolInformation, VSSymbolInformation>());
+                serializer.Converters.Add(new VSExtensionConverter<TextDocumentClientCapabilities, VSTextDocumentClientCapabilities>());
+                serializer.Converters.Add(new VSExtensionConverter<TextDocumentIdentifier, VSTextDocumentIdentifier>());
+            }
         }
 
         private static ImmutableDictionary<string, Lazy<IRequestHandler, IRequestHandlerMetadata>> CreateMethodToHandlerMap(IEnumerable<Lazy<IRequestHandler, IRequestHandlerMetadata>> requestHandlers)
