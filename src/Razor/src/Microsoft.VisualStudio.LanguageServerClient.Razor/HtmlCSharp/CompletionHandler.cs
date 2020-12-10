@@ -4,11 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
@@ -46,13 +49,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
+        private readonly ITextStructureNavigatorSelectorService _textStructureNavigator;
 
         [ImportingConstructor]
         public CompletionHandler(
             JoinableTaskContext joinableTaskContext,
             LSPRequestInvoker requestInvoker,
             LSPDocumentManager documentManager,
-            LSPProjectionProvider projectionProvider)
+            LSPProjectionProvider projectionProvider,
+            ITextStructureNavigatorSelectorService textStructureNavigator)
         {
             if (joinableTaskContext is null)
             {
@@ -74,10 +79,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(projectionProvider));
             }
 
+            if (textStructureNavigator is null)
+            {
+                throw new ArgumentNullException(nameof(textStructureNavigator));
+            }
+
             _joinableTaskFactory = joinableTaskContext.Factory;
             _requestInvoker = requestInvoker;
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
+            _textStructureNavigator = textStructureNavigator;
         }
 
         public async Task<SumType<CompletionItem[], CompletionList>?> HandleRequestAsync(CompletionParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
@@ -142,7 +153,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 // Set some context on the CompletionItem so the CompletionResolveHandler can handle it accordingly.
                 result = SetResolveData(result.Value, serverKind);
-                if (serverKind == LanguageServerKind.CSharp && string.Equals(request.Context.TriggerCharacter, "@", StringComparison.Ordinal))
+                if (IsSimpleImplicitExpression(documentSnapshot, request, serverKind))
                 {
                     result = DoNotPreselect(result.Value);
                     result = IncludeCSharpKeywords(result.Value, serverKind);
@@ -150,6 +161,58 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             return result;
+        }
+
+        private bool IsSimpleImplicitExpression(LSPDocumentSnapshot documentSnapshot, CompletionParams request, LanguageServerKind serverKind)
+        {
+            if (serverKind != LanguageServerKind.CSharp)
+            {
+                return false;
+            }
+
+            if (string.Equals(request.Context.TriggerCharacter, "@", StringComparison.Ordinal))
+            {
+                // Completion was triggered with `@` this is always a simple implicit expression
+                return true;
+            }
+
+            var snapshot = documentSnapshot.Snapshot;
+            var navigator = _textStructureNavigator.GetTextStructureNavigator(snapshot.TextBuffer);
+            var line = snapshot.GetLineFromLineNumber(request.Position.Line);
+            var absoluteIndex = line.Start + request.Position.Character;
+            if (absoluteIndex >= snapshot.Length)
+            {
+                Debug.Fail("This should never happen when resolving C# polyfills given we're operating on snapshots.");
+                return false;
+            }
+
+            // Lets walk backwards to the character that caused completion (if one triggered it) to ensure that the "GetExtentOfWord" returns
+            // the word we care about and not whitespace following it. For instance:
+            //
+            //      @Date|\r\n
+            //
+            // Will return the \r\n as the "word" which is incorrect; however, this is actually fixed in newer VS CoreEditor builds but is behind
+            // the "Use word pattern in LSP completion" preview feature. Once this preview feature flag is the default we can remove this -1.
+            var completionCharacterIndex = Math.Max(0, absoluteIndex - 1);
+            var completionSnapshotPoint = new SnapshotPoint(documentSnapshot.Snapshot, completionCharacterIndex);
+            var wordExtent = navigator.GetExtentOfWord(completionSnapshotPoint);
+
+            if (!wordExtent.IsSignificant)
+            {
+                // Word is only whitespace, definitely not an implicit expresison
+                return false;
+            }
+
+            // We need to look at the item before the word because `@` at the beginning of a word is not encapsulated in that word.
+            var leadingWordCharacterIndex = Math.Max(0, wordExtent.Span.Start.Position - 1);
+            var leadingWordCharacter = snapshot[leadingWordCharacterIndex];
+            if (leadingWordCharacter == '@')
+            {
+                // This means that completion was requested at something like @for|e and the word was "fore" with the previous character index being "@"
+                return true;
+            }
+
+            return false;
         }
 
         private CompletionContext RewriteContext(CompletionContext context, RazorLanguageKind languageKind)
@@ -248,7 +311,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private SumType<CompletionItem[], CompletionList>? DoNotPreselect(SumType<CompletionItem[], CompletionList> completionResult)
         {
             var result = completionResult.Match<SumType<CompletionItem[], CompletionList>?>(
-                items => {
+                items =>
+                {
                     foreach (var i in items)
                     {
                         i.Preselect = false;
@@ -256,7 +320,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                     return items;
                 },
-                list => {
+                list =>
+                {
                     foreach (var i in list.Items)
                     {
                         i.Preselect = false;
