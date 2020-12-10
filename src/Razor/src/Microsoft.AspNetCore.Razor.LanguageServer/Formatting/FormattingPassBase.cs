@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // Due to perf concerns, we only want to invoke the real C# formatter once.
             // So, let's collect all the significant locations that we want to obtain the CSharpDesiredIndentations for.
 
-            var significantLocations = new List<int>();
+            var significantLocations = new HashSet<int>();
 
             // First, collect all the locations at the beginning and end of each source mapping.
             var sourceMappingMap = new Dictionary<int, int>();
@@ -397,6 +397,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 return;
             }
 
+            if (sourceMappingRange.Start.Character == 0)
+            {
+                // It already starts on a fresh new line which doesn't need cleanup.
+                // E.g, (The mapping starts at | in the below case)
+                // @{
+                //     @: Some html
+                // |   var x = 123;
+                // }
+                //
+
+                return;
+            }
+
             // @{
             //     if (true)
             //     {
@@ -409,7 +422,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var whitespaceLength = text.GetFirstNonWhitespaceOffset(sourceMappingSpan);
             if (whitespaceLength == null)
             {
-                // There was no content here. Skip.
+                // There was no content after the start of this mapping. Meaning it already is clean.
+                // E.g,
+                // @{|
+                //    ...
+                // }
+
                 return;
             }
 

@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public async Task<IReadOnlyDictionary<int, int>> GetCSharpIndentationAsync(
             FormattingContext context,
-            IReadOnlyList<int> projectedDocumentLocations,
+            IReadOnlyCollection<int> projectedDocumentLocations,
             CancellationToken cancellationToken)
         {
             if (context is null)
@@ -101,9 +101,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             // Sorting ensures we count the marker offsets correctly.
-            projectedDocumentLocations = projectedDocumentLocations.OrderBy(l => l).ToList();
+            // We also want to ensure there are no duplicates to avoid duplicate markers.
+            var filteredLocations = projectedDocumentLocations.Distinct().OrderBy(l => l).ToList();
 
-            var indentations = await GetCSharpIndentationCoreAsync(context, projectedDocumentLocations, cancellationToken);
+            var indentations = await GetCSharpIndentationCoreAsync(context, filteredLocations, cancellationToken);
             return indentations;
         }
 
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return edits;
         }
 
-        private async Task<Dictionary<int, int>> GetCSharpIndentationCoreAsync(FormattingContext context, IEnumerable<int> projectedDocumentLocations, CancellationToken cancellationToken)
+        private async Task<Dictionary<int, int>> GetCSharpIndentationCoreAsync(FormattingContext context, List<int> projectedDocumentLocations, CancellationToken cancellationToken)
         {
             var (indentationMap, syntaxTree) = InitializeIndentationData(context, projectedDocumentLocations, cancellationToken);
 

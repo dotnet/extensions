@@ -155,6 +155,8 @@ input: @"|@page ""/test""
 <div class=@className>Some Text</div>
 
 @{
+@: Hi!
+var x = 123;
 <p>
         @if (true) {
                 var t = 1;
@@ -171,6 +173,8 @@ expected: @"@page ""/test""
 <div class=@className>Some Text</div>
 
 @{
+    @: Hi!
+    var x = 123;
     <p>
         @if (true)
         {
