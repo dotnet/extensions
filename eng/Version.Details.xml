@@ -56,7 +56,7 @@
     </Dependency>
     <Dependency Name="System.Text.Json" Version="5.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>4f8dd29906afcaf3b3e3ba66cd639b7641be503c</Sha>
+      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -200,11 +200,11 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>4f8dd29906afcaf3b3e3ba66cd639b7641be503c</Sha>
+      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.2-servicing.20610.15">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.2-servicing.20611.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>4f8dd29906afcaf3b3e3ba66cd639b7641be503c</Sha>
+      <Sha>728fdef7b4af7ea3be1913271d04be959dae4f0a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0" Pinned="true">
       <Uri>https://github.com/dotnet/corefx</Uri>
