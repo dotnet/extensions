@@ -10,6 +10,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     {
         public Range[] Ranges { get; set; }
 
-        public long HostDocumentVersion { get; set; }
+        public int? HostDocumentVersion { get; set; }
     }
 }

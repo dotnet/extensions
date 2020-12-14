@@ -92,11 +92,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 var uri = location.Uri;
                 RazorLanguageKind languageKind;
-                if (RazorLSPConventions.IsRazorCSharpFile(uri))
+                if (RazorLSPConventions.IsVirtualCSharpFile(uri))
                 {
                     languageKind = RazorLanguageKind.CSharp;
                 }
-                else if (RazorLSPConventions.IsRazorHtmlFile(uri))
+                else if (RazorLSPConventions.IsVirtualHtmlFile(uri))
                 {
                     languageKind = RazorLanguageKind.Html;
                 }
@@ -156,7 +156,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(edits));
             }
 
-            if (!RazorLSPConventions.IsRazorCSharpFile(uri) && !RazorLSPConventions.IsRazorHtmlFile(uri))
+            if (!RazorLSPConventions.IsVirtualCSharpFile(uri) && !RazorLSPConventions.IsVirtualHtmlFile(uri))
             {
                 // This is not a virtual razor file. No need to remap.
                 return edits;
@@ -178,7 +178,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(edits));
             }
 
-            if (!RazorLSPConventions.IsRazorCSharpFile(uri) && !RazorLSPConventions.IsRazorHtmlFile(uri))
+            if (!RazorLSPConventions.IsVirtualCSharpFile(uri) && !RazorLSPConventions.IsVirtualHtmlFile(uri))
             {
                 // This is not a virtual razor file. No need to remap.
                 return edits;
@@ -317,11 +317,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             FormattingOptions formattingOptions = null)
         {
             var languageKind = RazorLanguageKind.Razor;
-            if (RazorLSPConventions.IsRazorCSharpFile(uri))
+            if (RazorLSPConventions.IsVirtualCSharpFile(uri))
             {
                 languageKind = RazorLanguageKind.CSharp;
             }
-            else if (RazorLSPConventions.IsRazorHtmlFile(uri))
+            else if (RazorLSPConventions.IsVirtualHtmlFile(uri))
             {
                 languageKind = RazorLanguageKind.Html;
             }
@@ -360,7 +360,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         private static bool CanRemap(Uri uri)
         {
-            return RazorLSPConventions.IsRazorCSharpFile(uri) || RazorLSPConventions.IsRazorHtmlFile(uri);
+            return RazorLSPConventions.IsVirtualCSharpFile(uri) || RazorLSPConventions.IsVirtualHtmlFile(uri);
         }
     }
 }

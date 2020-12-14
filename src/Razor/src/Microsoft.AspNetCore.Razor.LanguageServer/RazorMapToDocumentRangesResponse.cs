@@ -5,6 +5,8 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
+    // NOTE: Changes here MUST be copied over to
+    // Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp.RazorMapToDocumentRangesResponse
     internal class RazorMapToDocumentRangesResponse
     {
         public Range[] Ranges { get; set; }

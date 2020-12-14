@@ -8,25 +8,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     internal static class RazorLSPConventions
     {
-        public static bool IsRazorCSharpFile(Uri uri)
-        {
-            if (uri is null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
+        public static bool IsVirtualCSharpFile(Uri uri) => CheckIfFileUriAndExtensionMatch(uri, RazorLSPConstants.VirtualCSharpFileNameSuffix);
 
-            return uri.GetAbsoluteOrUNCPath()?.EndsWith(RazorLSPConstants.VirtualCSharpFileNameSuffix, StringComparison.Ordinal) ?? false;
-        }
+        public static bool IsVirtualHtmlFile(Uri uri) => CheckIfFileUriAndExtensionMatch(uri, RazorLSPConstants.VirtualHtmlFileNameSuffix);
 
-        public static bool IsRazorHtmlFile(Uri uri)
-        {
-            if (uri is null)
-            {
-                throw new ArgumentNullException(nameof(uri));
-            }
+        public static bool IsRazorFile(Uri uri) => CheckIfFileUriAndExtensionMatch(uri, RazorLSPConstants.RazorFileExtension);
 
-            return uri.GetAbsoluteOrUNCPath()?.EndsWith(RazorLSPConstants.VirtualHtmlFileNameSuffix, StringComparison.Ordinal) ?? false;
-        }
+        public static bool IsCSHTMLFile(Uri uri) => CheckIfFileUriAndExtensionMatch(uri, RazorLSPConstants.CSHTMLFileExtension);
 
         public static Uri GetRazorDocumentUri(Uri virtualDocumentUri)
         {
@@ -41,6 +29,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var uri = new Uri(path, UriKind.Absolute);
             return uri;
+        }
+
+        private static bool CheckIfFileUriAndExtensionMatch(Uri uri, string extension)
+        {
+            if (uri is null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
+            if (string.IsNullOrEmpty(extension))
+            {
+                throw new ArgumentNullException(nameof(extension));
+            }
+
+            return uri.GetAbsoluteOrUNCPath()?.EndsWith(extension, StringComparison.Ordinal) ?? false;
         }
     }
 }

@@ -259,7 +259,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             var remappingResult = new RazorMapToDocumentRangesResponse()
             {
-                Ranges = new[] { expectedRange }
+                Ranges = new[] { expectedRange },
+                HostDocumentVersion = expectedVersion
             };
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(languageKind, Uri, It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).

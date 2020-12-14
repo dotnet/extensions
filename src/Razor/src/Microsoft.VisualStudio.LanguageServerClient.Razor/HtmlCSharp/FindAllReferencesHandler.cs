@@ -171,8 +171,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 referenceItem.DefinitionText = FilterReferenceDisplayText(referenceItem.DefinitionText);
                 referenceItem.Text = FilterReferenceDisplayText(referenceItem.Text);
 
-                if (!RazorLSPConventions.IsRazorCSharpFile(referenceItem.Location.Uri) &&
-                    !RazorLSPConventions.IsRazorHtmlFile(referenceItem.Location.Uri))
+                if (!RazorLSPConventions.IsVirtualCSharpFile(referenceItem.Location.Uri) &&
+                    !RazorLSPConventions.IsVirtualHtmlFile(referenceItem.Location.Uri))
                 {
                     // This location doesn't point to a virtual cs file. No need to remap.
                     remappedLocations.Add(referenceItem);
@@ -180,7 +180,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
 
                 var razorDocumentUri = RazorLSPConventions.GetRazorDocumentUri(referenceItem.Location.Uri);
-                var languageKind = RazorLSPConventions.IsRazorCSharpFile(referenceItem.Location.Uri) ? RazorLanguageKind.CSharp : RazorLanguageKind.Html;
+                var languageKind = RazorLSPConventions.IsVirtualCSharpFile(referenceItem.Location.Uri) ? RazorLanguageKind.CSharp : RazorLanguageKind.Html;
                 var mappingResult = await _documentMappingProvider.MapToDocumentRangesAsync(
                     languageKind,
                     razorDocumentUri,

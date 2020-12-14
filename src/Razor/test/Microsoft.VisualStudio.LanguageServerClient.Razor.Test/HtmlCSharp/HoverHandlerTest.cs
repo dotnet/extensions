@@ -123,7 +123,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var projectionResult = new ProjectionResult()
             {
-                LanguageKind = RazorLanguageKind.CSharp,
+                LanguageKind = RazorLanguageKind.CSharp
             };
             var projectionProvider = new Mock<LSPProjectionProvider>();
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
@@ -136,7 +136,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                         Start = new Position(0, 0),
                         End = new Position(0, 1)
                     }
-                }
+                },
+                HostDocumentVersion = 0
             };
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, It.IsAny<Uri>(), It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).
@@ -222,7 +223,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                         Start = new Position(0, 0),
                         End = new Position(0, 1)
                     }
-                }
+                },
+                HostDocumentVersion = 0
             };
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.Html, It.IsAny<Uri>(), It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).
