@@ -164,6 +164,9 @@ if (true)
 {
 <div>@DateTime.Now</div>
             }
+
+            @while(true){
+ }
         }
         </p>
 }
@@ -182,6 +185,10 @@ expected: @"@page ""/test""
             if (true)
             {
                 <div>@DateTime.Now</div>
+            }
+
+            @while (true)
+            {
             }
         }
     </p>
