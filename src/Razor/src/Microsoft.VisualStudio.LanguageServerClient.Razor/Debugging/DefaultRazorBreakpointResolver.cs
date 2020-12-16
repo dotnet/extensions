@@ -107,7 +107,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
             }
 
             var sourceText = virtualDocument.Snapshot.AsText();
-            var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, isGeneratedCode: true, cancellationToken: cancellationToken);
+            var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, cancellationToken: cancellationToken);
             if (!_csharpBreakpointResolver.TryGetBreakpointSpan(syntaxTree, projectionResult.PositionIndex, cancellationToken, out var csharpBreakpointSpan))
             {
                 return null;

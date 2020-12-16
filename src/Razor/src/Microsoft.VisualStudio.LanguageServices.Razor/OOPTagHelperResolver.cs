@@ -102,7 +102,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // This will change in the future to an easier to consume API but for VS RTM this is what we have.
             try
             {
+#pragma warning disable CS0612 // Type or member is obsolete
                 var remoteClient = await RazorRemoteHostClient.CreateAsync(_workspace, CancellationToken.None);
+#pragma warning restore CS0612 // Type or member is obsolete
 
                 var args = new object[]
                 {
@@ -110,11 +112,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     factory?.GetType().AssemblyQualifiedName,
                 };
 
+#pragma warning disable CS0612 // Type or member is obsolete
                 var result = await remoteClient.TryRunRemoteAsync<TagHelperResolutionResult>(
                     "GetTagHelpersAsync",
                     workspaceProject.Solution,
                     args,
                     CancellationToken.None).ConfigureAwait(false);
+#pragma warning restore CS0612 // Type or member is obsolete
 
                 return result.HasValue ? result.Value : null;
             }

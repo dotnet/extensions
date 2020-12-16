@@ -87,7 +87,9 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             _projectManager = projectManager;
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         public async void ProjectLoaded(ProjectLoadedEventArgs args)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             try
             {
@@ -109,11 +111,11 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 // When documents get added or removed we need to refresh project state to properly reflect the host documents in the project.
 
                 var evaluatedProjectInstance = _projectInstanceEvaluator.Evaluate(args.UnevaluatedProjectInstance);
-                Task.Factory.StartNew(
+                _ = Task.Factory.StartNew(
                     () => UpdateProjectState(evaluatedProjectInstance),
                     CancellationToken.None,
                     TaskCreationOptions.None,
-                    _foregroundDispatcher.ForegroundScheduler);
+                    _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
             }
         }
 

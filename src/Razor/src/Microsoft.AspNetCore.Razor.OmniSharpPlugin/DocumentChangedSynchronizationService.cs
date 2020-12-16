@@ -53,9 +53,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             var projectFilePath = args.UnevaluatedProjectInstance.ProjectFileLocation.File;
             var documentFilePath = args.FilePath;
 
-            Task.Factory.StartNew(
+            _ = Task.Factory.StartNew(
                 () => _projectManager.DocumentChanged(projectFilePath, documentFilePath),
-                CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+                CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
         }
     }
 }

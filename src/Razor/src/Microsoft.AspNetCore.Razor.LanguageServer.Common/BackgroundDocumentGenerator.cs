@@ -158,7 +158,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             }
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void Timer_Tick(object state)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             try
             {

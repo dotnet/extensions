@@ -140,7 +140,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             if (_loaderTask != null && _loaderTask.IsCompleted)
             {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                 result = _loaderTask.Result.Text;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 return true;
             }
 
@@ -158,7 +160,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             if (_loaderTask != null && _loaderTask.IsCompleted)
             {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                 result = _loaderTask.Result.Version;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 return true;
             }
 

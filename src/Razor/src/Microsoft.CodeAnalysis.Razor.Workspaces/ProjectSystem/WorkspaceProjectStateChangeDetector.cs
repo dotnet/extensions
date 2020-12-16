@@ -257,11 +257,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             var cts = new CancellationTokenSource();
-            var updateTask = UpdateAfterDelay(projectId, cts);
+            var updateTask = UpdateAfterDelayAsync(projectId, cts);
             _deferredUpdates[projectId] = new UpdateItem(updateTask, cts);
         }
 
-        private async Task UpdateAfterDelay(ProjectId projectId, CancellationTokenSource cts)
+        private async Task UpdateAfterDelayAsync(ProjectId projectId, CancellationTokenSource cts)
         {
             try
             {

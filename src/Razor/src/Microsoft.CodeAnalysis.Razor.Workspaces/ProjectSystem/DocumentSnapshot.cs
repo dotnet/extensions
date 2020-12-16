@@ -38,8 +38,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public abstract bool TryGetGeneratedOutput(out RazorCodeDocument result);
 
-        public abstract bool TryGetGeneratedCSharpOutputVersionAsync(out VersionStamp result);
+        public abstract bool TryGetGeneratedCSharpOutputVersion(out VersionStamp result);
 
-        public abstract bool TryGetGeneratedHtmlOutputVersionAsync(out VersionStamp result);
+        public abstract bool TryGetGeneratedHtmlOutputVersion(out VersionStamp result);
     }
 }

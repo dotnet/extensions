@@ -18,6 +18,9 @@
     <PackageReference Include="Microsoft.VisualStudio.LanguageServer.Client.Implementation" Version="$(MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Text.Data" Version="$(MicrosoftVisualStudioTextDataPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="$(MicrosoftVisualStudioTextUIPackageVersion)" />
+
+    <!-- We must pin the LogHub dependency for now until the Microsoft.VisualStudio.LanguageServer.Client.Implementation package is able to take a dependency on the latest -->
+    <PackageReference Include="Microsoft.VisualStudio.LogHub" Version="$(MicrosoftVisualStudioLogHubPackageVersion)" />
   </ItemGroup>
 
 </Project>

@@ -94,12 +94,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             throw new NotSupportedException();
         }
 
-        public override bool TryGetGeneratedCSharpOutputVersionAsync(out VersionStamp result)
+        public override bool TryGetGeneratedCSharpOutputVersion(out VersionStamp result)
         {
             throw new NotSupportedException();
         }
 
-        public override bool TryGetGeneratedHtmlOutputVersionAsync(out VersionStamp result)
+        public override bool TryGetGeneratedHtmlOutputVersion(out VersionStamp result)
         {
             throw new NotSupportedException();
         }

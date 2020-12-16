@@ -85,11 +85,11 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             // Project file was modified or impacted in a significant way.
 
-            Task.Factory.StartNew(
+            _ = Task.Factory.StartNew(
                 () => EnqueueUpdate(args.ProjectInstance.ProjectFileLocation.File),
                 CancellationToken.None,
                 TaskCreationOptions.None,
-                _foregroundDispatcher.ForegroundScheduler);
+                _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
         }
 
         public void RazorDocumentChanged(RazorFileChangeEventArgs args)
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             // Razor document changed
 
-            Task.Factory.StartNew(
+            _ = Task.Factory.StartNew(
                 () =>
                 {
                     if (IsComponentFile(args.FilePath, args.UnevaluatedProjectInstance.ProjectFileLocation.File))
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 },
                 CancellationToken.None,
                 TaskCreationOptions.None,
-                _foregroundDispatcher.ForegroundScheduler);
+                _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
         }
 
         public void RazorDocumentOutputChanged(RazorFileChangeEventArgs args)
@@ -125,11 +125,11 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             // Razor build occurred
 
-            Task.Factory.StartNew(
+            _ = Task.Factory.StartNew(
                 () => EnqueueUpdate(args.UnevaluatedProjectInstance.ProjectFileLocation.File),
                 CancellationToken.None,
                 TaskCreationOptions.None,
-                _foregroundDispatcher.ForegroundScheduler);
+                _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
         }
 
         // Internal for testing

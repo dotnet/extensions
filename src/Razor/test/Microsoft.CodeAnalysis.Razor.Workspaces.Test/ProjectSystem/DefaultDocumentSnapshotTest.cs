@@ -79,8 +79,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.False(LegacyDocument.TryGetGeneratedOutput(out _));
-            Assert.False(LegacyDocument.TryGetGeneratedCSharpOutputVersionAsync(out _));
-            Assert.False(LegacyDocument.TryGetGeneratedHtmlOutputVersionAsync(out _));
+            Assert.False(LegacyDocument.TryGetGeneratedCSharpOutputVersion(out _));
+            Assert.False(LegacyDocument.TryGetGeneratedHtmlOutputVersion(out _));
         }
 
         [Fact]
@@ -112,8 +112,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Act & Assert
             Assert.True(LegacyDocument.TryGetGeneratedOutput(out _));
-            Assert.True(LegacyDocument.TryGetGeneratedCSharpOutputVersionAsync(out _));
-            Assert.True(LegacyDocument.TryGetGeneratedHtmlOutputVersionAsync(out _));
+            Assert.True(LegacyDocument.TryGetGeneratedCSharpOutputVersion(out _));
+            Assert.True(LegacyDocument.TryGetGeneratedHtmlOutputVersion(out _));
         }
 
         [Fact]

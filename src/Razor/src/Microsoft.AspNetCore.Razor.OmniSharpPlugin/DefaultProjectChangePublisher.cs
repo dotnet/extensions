@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
                 if (!_deferredPublishTasks.TryGetValue(projectSnapshot.FilePath, out var update) || update.IsCompleted)
                 {
-                    _deferredPublishTasks[projectSnapshot.FilePath] = PublishAfterDelay(projectSnapshot.FilePath);
+                    _deferredPublishTasks[projectSnapshot.FilePath] = PublishAfterDelayAsync(projectSnapshot.FilePath);
                 }
             }
         }
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             }
         }
 
-        private async Task PublishAfterDelay(string projectFilePath)
+        private async Task PublishAfterDelayAsync(string projectFilePath)
         {
             await Task.Delay(EnqueueDelay);
 

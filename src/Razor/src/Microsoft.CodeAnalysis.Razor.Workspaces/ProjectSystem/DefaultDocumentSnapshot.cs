@@ -88,7 +88,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             if (State.IsGeneratedOutputResultAvailable)
             {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                 result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.output;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 return true;
             }
 
@@ -96,11 +98,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return false;
         }
 
-        public override bool TryGetGeneratedCSharpOutputVersionAsync(out VersionStamp result)
+        public override bool TryGetGeneratedCSharpOutputVersion(out VersionStamp result)
         {
             if (State.IsGeneratedOutputResultAvailable)
             {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                 result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputCSharpVersion;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 return true;
             }
 
@@ -108,11 +112,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return false;
         }
 
-        public override bool TryGetGeneratedHtmlOutputVersionAsync(out VersionStamp result)
+        public override bool TryGetGeneratedHtmlOutputVersion(out VersionStamp result)
         {
             if (State.IsGeneratedOutputResultAvailable)
             {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                 result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputHtmlVersion;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 return true;
             }
 
