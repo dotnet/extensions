@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -562,6 +563,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             if (IsInHtmlTag() ||
                 IsInSingleLineDirective() ||
                 IsImplicitOrExplicitExpression() ||
+                IsInSectionDirective() ||
                 (!allowImplicitStatements && IsImplicitStatementStart()))
             {
                 return false;
@@ -620,6 +622,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 // `@(|foo)` - true
                 //
                 return owner.AncestorsAndSelf().Any(n => n is CSharpImplicitExpressionSyntax || n is CSharpExplicitExpressionSyntax);
+            }
+
+            bool IsInSectionDirective()
+            {
+                var directive = owner.FirstAncestorOrSelf<RazorDirectiveSyntax>();
+                if (directive != null &&
+                    directive.DirectiveDescriptor.Directive == SectionDirective.Directive.Directive)
+                {
+                    return true;
+                }
+
+                return false;
             }
         }
     }
