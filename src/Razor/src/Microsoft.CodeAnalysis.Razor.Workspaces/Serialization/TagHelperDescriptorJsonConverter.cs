@@ -832,13 +832,55 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
                 }
             });
 
-            // TODO: Needed?
             var cachedMsg = Cached(message);
-            var descriptor = new RazorDiagnosticDescriptor(Cached(id), () => cachedMsg, (RazorDiagnosticSeverity)severity);
-
+            var cachedId = Cached(id);
+            var descriptor = CreateDiagnosticDescriptor(cachedId, cachedMsg, (RazorDiagnosticSeverity)severity);
             var diagnostic = RazorDiagnostic.Create(descriptor, sourceSpan);
             diagnostics.Add(diagnostic);
+
+            static RazorDiagnosticDescriptor CreateDiagnosticDescriptor(string id, string message, RazorDiagnosticSeverity severity)
+            {
+                // Do NOT inline this descriptor factory method into the call site above.
+                //
+                // Reasoning:
+                //  Because "message" is referenced in not only the below "() => message" but also the above switch statement containing lambda without this separate static method the
+                //  compiler would generate a fake display class that looks something like:
+                //  private sealed class <>c__DisplayClass26_0
+                //  {
+                //      public JsonReader reader;
+                //      public string id;
+                //      public int severity;
+                //      public string message;
+                //      public SourceSpan sourceSpan;
+                //
+                //       internal void <ReadDiagnostic>b__0(string propertyName)
+                //       {
+                //           switch (propertyName)
+                //           {
+                //              ....
+                //               case "Message":
+                //                   if (reader.Read())
+                //                   {
+                //                       message = (string)reader.Value;
+                //                   }
+                //              ...
+                //           }
+                //       }
+                //
+                //       internal string <ReadDiagnostic>b__1()
+                //       {
+                //           return message;
+                //       }
+                //  }
+                //
+                // And then uses that display class's "b_1" method as the lambda parameter for the diagnostic descriptor. Its reasoning is to maintain correctness
+                // in the case that the above lambda mutates the value of "message". The problem with this is then the lambda has a reference to the higher level
+                // display class which has the entire JsonReader payload pinned. This bloats memory in scenarios where a user has TagHelper diagnostics. Each
+                // diagnostic ends up having a refernce back to the original JSON payload that created it which in our case is huge!
+                return new RazorDiagnosticDescriptor(id, () => message, severity);
+            }
         }
+
 
         private static SourceSpan ReadSourceSpan(JsonReader reader)
         {
