@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
         {
             var serializer = new JsonSerializer();
             serializer.Converters.Add(new RazorDiagnosticJsonConverter());
-            serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
+            serializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
 
             using (var reader = new JsonTextReader(File.OpenText(filePath)))
             {
