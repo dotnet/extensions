@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.Serialization;
 using Newtonsoft.Json;
@@ -163,7 +162,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         {
             // Arrange
             var expectedDescriptor = CreateTagHelperDescriptor(
-                kind: ViewComponentTagHelperConventions.Kind,
+                kind: "MVC.ViewComponent",
                 tagName: "tag-name",
                 typeName: "type name",
                 assemblyName: "assembly name",

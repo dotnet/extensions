@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\*.cs">
+    <Compile Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\Serialization\*.cs">
       <Link>Serialization\%(FileName)%(Extension)</Link>
     </Compile>
     <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestServices.cs">

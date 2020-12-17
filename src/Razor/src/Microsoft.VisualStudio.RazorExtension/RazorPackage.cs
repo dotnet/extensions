@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.LanguageServerClient.Razor;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.ServiceBroker;
 using Microsoft.VisualStudio.Threading;
 using Task = System.Threading.Tasks.Task;
 
@@ -20,6 +21,9 @@ namespace Microsoft.VisualStudio.RazorExtension
     [AboutDialogInfo(PackageGuidString, "ASP.NET Core Razor Language Services", "#110", "#112", IconResourceID = "#400")]
     [ProvideService(typeof(RazorLanguageService))]
     [ProvideLanguageService(typeof(RazorLanguageService), RazorLSPConstants.RazorLSPContentTypeName, 110)]
+    [ProvideBrokeredServiceHubService("Microsoft.VisualStudio.Razor.TagHelperProvider", Audience = Shell.ServiceBroker.ServiceAudience.Local)]
+    [ProvideBrokeredServiceHubService("Microsoft.VisualStudio.Razor.TagHelperProvider64", Audience = Shell.ServiceBroker.ServiceAudience.Local)]
+    [ProvideBrokeredServiceHubService("Microsoft.VisualStudio.Razor.TagHelperProvider64S", Audience = Shell.ServiceBroker.ServiceAudience.Local)]
     [Guid(PackageGuidString)]
     public sealed class RazorPackage : AsyncPackage
     {

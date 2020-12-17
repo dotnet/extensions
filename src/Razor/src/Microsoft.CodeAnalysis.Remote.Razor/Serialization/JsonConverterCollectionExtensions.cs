@@ -10,7 +10,7 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     internal static class JsonConverterCollectionExtensions
     {
-        public static void RegisterRazorConverters(this JsonConverterCollection collection)
+        public static JsonConverterCollection RegisterRazorConverters(this JsonConverterCollection collection)
         {
             if (collection == null)
             {
@@ -21,8 +21,9 @@ namespace Microsoft.CodeAnalysis.Razor
             collection.Add(RazorDiagnosticJsonConverter.Instance);
             collection.Add(RazorExtensionJsonConverter.Instance);
             collection.Add(RazorConfigurationJsonConverter.Instance);
-            collection.Add(ProjectSnapshotJsonConverter.Instance);
             collection.Add(ProjectSnapshotHandleJsonConverter.Instance);
+
+            return collection;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Serialization;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
         public RazorExtensionSerializationTest()
         {
             var converters = new JsonConverterCollection();
-            converters.RegisterRazorConverters();
+            converters.Add(RazorExtensionJsonConverter.Instance);
             Converters = converters.ToArray();
         }
 

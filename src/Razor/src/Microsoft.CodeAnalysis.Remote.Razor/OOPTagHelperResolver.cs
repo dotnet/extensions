@@ -4,12 +4,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor
+namespace Microsoft.CodeAnalysis.Remote.Razor
 {
     internal class OOPTagHelperResolver : TagHelperResolver
     {
@@ -73,69 +72,50 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 TagHelperResolutionResult result = null;
                 if (factory != null)
                 {
-                    result = await ResolveTagHelpersOutOfProcessAsync(factory, workspaceProject, projectSnapshot).ConfigureAwait(false);
+                    result = await ResolveTagHelpersOutOfProcessAsync(factory, workspaceProject, projectSnapshot, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (result == null)
                 {
                     // Was unable to get tag helpers OOP, fallback to default behavior.
-                    result = await ResolveTagHelpersInProcessAsync(workspaceProject, projectSnapshot).ConfigureAwait(false);
+                    result = await ResolveTagHelpersInProcessAsync(workspaceProject, projectSnapshot, cancellationToken).ConfigureAwait(false);
                 }
 
                 return result;
             }
             catch (Exception exception)
             {
-                throw new InvalidOperationException(
-                    Resources.FormatUnexpectedException(
-                        typeof(DefaultTagHelperResolver).FullName,
-                        nameof(GetTagHelpersAsync)),
-                    exception);
+                throw new InvalidOperationException($"An unexpected exception occurred when invoking '{typeof(DefaultTagHelperResolver).FullName}.{nameof(GetTagHelpersAsync)}' on the Razor language service.", exception);
             }
         }
 
-        protected virtual async Task<TagHelperResolutionResult> ResolveTagHelpersOutOfProcessAsync(IProjectEngineFactory factory, Project workspaceProject, ProjectSnapshot projectSnapshot)
+        protected virtual async Task<TagHelperResolutionResult> ResolveTagHelpersOutOfProcessAsync(IProjectEngineFactory factory, Project workspaceProject, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken)
         {
             // We're being overly defensive here because the OOP host can return null for the client/session/operation
             // when it's disconnected (user stops the process).
             //
             // This will change in the future to an easier to consume API but for VS RTM this is what we have.
-            try
+            var remoteClient = await RazorRemoteHostClient.TryGetClientAsync(_workspace.Services, RazorServiceDescriptors.TagHelperProviderServiceDescriptors, RazorRemoteServiceCallbackDispatcherRegistry.Empty, cancellationToken);
+
+            if (remoteClient == null)
             {
-#pragma warning disable CS0612 // Type or member is obsolete
-                var remoteClient = await RazorRemoteHostClient.CreateAsync(_workspace, CancellationToken.None);
-#pragma warning restore CS0612 // Type or member is obsolete
-
-                var args = new object[]
-                {
-                    projectSnapshot,
-                    factory?.GetType().AssemblyQualifiedName,
-                };
-
-#pragma warning disable CS0612 // Type or member is obsolete
-                var result = await remoteClient.TryRunRemoteAsync<TagHelperResolutionResult>(
-                    "GetTagHelpersAsync",
-                    workspaceProject.Solution,
-                    args,
-                    CancellationToken.None).ConfigureAwait(false);
-#pragma warning restore CS0612 // Type or member is obsolete
-
-                return result.HasValue ? result.Value : null;
-            }
-            catch (Exception ex)
-            {
-                // We silence exceptions from the OOP host because we don't want to bring down VS for an OOP failure.
-                // We will retry all failures in process anyway, so if there's a real problem that isn't unique to OOP
-                // then it will report a crash in VS.
-                _errorReporter.ReportError(ex, projectSnapshot);
+                // Could not resolve
+                return null;
             }
 
-            return null;
+            var projectHandle = new ProjectSnapshotHandle(projectSnapshot.FilePath, projectSnapshot.Configuration, projectSnapshot.RootNamespace);
+            var result = await remoteClient.TryInvokeAsync<IRemoteTagHelperProviderService, TagHelperResolutionResult>(
+                workspaceProject.Solution,
+                (service, solutionInfo, innerCancellationToken) => service.GetTagHelpersAsync(solutionInfo, projectHandle, factory?.GetType().AssemblyQualifiedName, innerCancellationToken),
+                cancellationToken
+            );
+
+            return result.HasValue ? result.Value : null;
         }
 
-        protected virtual Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(Project project, ProjectSnapshot projectSnapshot)
+        protected virtual Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(Project project, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken)
         {
-            return _defaultResolver.GetTagHelpersAsync(project, projectSnapshot);
+            return _defaultResolver.GetTagHelpersAsync(project, projectSnapshot, cancellationToken);
         }
     }
 }

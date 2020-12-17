@@ -3,17 +3,15 @@
 
 using System;
 using System.Linq;
-using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.VisualStudio.Editor.Razor;
 using Moq;
 using Xunit;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor
+namespace Microsoft.CodeAnalysis.Remote.Razor
 {
     public class OOPTagHelperResolverTest
     {
@@ -27,13 +25,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             CustomFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
             {
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                    () => new LegacyProjectEngineFactory_2_0(),
-                    typeof(LegacyProjectEngineFactory_2_0).GetCustomAttribute<ExportCustomProjectEngineFactoryAttribute>()),
+                    () => Mock.Of<IProjectEngineFactory>(),
+                    new ExportCustomProjectEngineFactoryAttribute("MVC-2.0") { SupportsSerialization = true, }),
 
                 // We don't really use this factory, we just use it to ensure that the call is going to go out of process.
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                    () => new LegacyProjectEngineFactory_2_1(),
-                    new ExportCustomProjectEngineFactoryAttribute("Random-0.1") { SupportsSerialization = false, }),
+                    () => Mock.Of<IProjectEngineFactory>(),
+                    new ExportCustomProjectEngineFactoryAttribute("Test-2") { SupportsSerialization = false, }),
             };
 
             FallbackFactory = new FallbackProjectEngineFactory();
@@ -118,7 +116,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
         private class TestTagHelperResolver : OOPTagHelperResolver
         {
-            public TestTagHelperResolver(ProjectSnapshotProjectEngineFactory factory, ErrorReporter errorReporter, Workspace workspace) 
+            public TestTagHelperResolver(ProjectSnapshotProjectEngineFactory factory, ErrorReporter errorReporter, Workspace workspace)
                 : base(factory, errorReporter, workspace)
             {
             }
@@ -127,18 +125,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             public Func<ProjectSnapshot, Task<TagHelperResolutionResult>> OnResolveInProcess { get; set; }
 
-            protected override Task<TagHelperResolutionResult> ResolveTagHelpersOutOfProcessAsync(IProjectEngineFactory factory, Project workspaceProject, ProjectSnapshot projectSnapshot)
+            protected override Task<TagHelperResolutionResult> ResolveTagHelpersOutOfProcessAsync(IProjectEngineFactory factory, Project workspaceProject, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken)
             {
                 Assert.NotNull(OnResolveOutOfProcess);
                 return OnResolveOutOfProcess(factory, projectSnapshot);
             }
 
-            protected override Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(Project project, ProjectSnapshot projectSnapshot)
+            protected override Task<TagHelperResolutionResult> ResolveTagHelpersInProcessAsync(Project project, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken)
             {
                 Assert.NotNull(OnResolveInProcess);
                 return OnResolveInProcess(projectSnapshot);
             }
         }
+
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(Workspace workspace)

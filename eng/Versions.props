@@ -137,12 +137,11 @@
     <Tooling_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <Tooling_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
     <Tooling_MicrosoftCodeAnalysisFeaturesPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisFeaturesPackageVersion>
-    <Tooling_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
+    <Tooling_MicrosoftCodeAnalysisRemoteServiceHubPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisRemoteServiceHubPackageVersion>
     <Tooling_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
     <Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <Tooling_MicrosoftNetCoreAnalyzersPackageVersion>$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)</Tooling_MicrosoftNetCoreAnalyzersPackageVersion>
     <Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>
-    <Tooling_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>3.8.0-1.20330.5</Tooling_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitVersion>2.4.1</XunitVersion>
   </PropertyGroup>

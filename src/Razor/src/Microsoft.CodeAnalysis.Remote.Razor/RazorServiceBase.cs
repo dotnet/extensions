@@ -1,32 +1,38 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Newtonsoft.Json;
+using Microsoft.ServiceHub.Framework;
 
 namespace Microsoft.CodeAnalysis.Remote.Razor
 {
-    internal abstract class RazorServiceBase : ServiceHubServiceBase
+    internal abstract class RazorServiceBase : IDisposable
     {
-        public RazorServiceBase(Stream stream, IServiceProvider serviceProvider)
-            : base(serviceProvider, stream, GetRazorConverters())
+        protected readonly ServiceBrokerClient ServiceBrokerClient;
+
+        public RazorServiceBase(IServiceBroker serviceBroker)
         {
             RazorServices = new RazorServices();
 
-            // Due to this issue - https://github.com/dotnet/roslyn/issues/16900#issuecomment-277378950
-            // We need to manually start the RPC connection. Otherwise we'd be opting ourselves into 
-            // race condition prone call paths.
-            StartService();
+#pragma warning disable VSTHRD012 // Provide JoinableTaskFactory where allowed
+            ServiceBrokerClient = new ServiceBrokerClient(serviceBroker);
+#pragma warning restore
         }
 
         protected RazorServices RazorServices { get; }
+
+        public void Dispose()
+        {
+            ServiceBrokerClient.Dispose();
+        }
 
         protected virtual Task<ProjectSnapshot> GetProjectSnapshotAsync(ProjectSnapshotHandle projectHandle, CancellationToken cancellationToken)
         {
@@ -35,14 +41,8 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
                 throw new ArgumentNullException(nameof(projectHandle));
             }
 
-            return Task.FromResult<ProjectSnapshot>(new SerializedProjectSnapshot(projectHandle.FilePath, projectHandle.Configuration, projectHandle.RootNamespace));
-        }
-
-        private static IEnumerable<JsonConverter> GetRazorConverters()
-        {
-            var collection = new JsonConverterCollection();
-            collection.RegisterRazorConverters();
-            return collection;
+            var snapshot = new SerializedProjectSnapshot(projectHandle.FilePath, projectHandle.Configuration, projectHandle.RootNamespace);
+            return Task.FromResult<ProjectSnapshot>(snapshot);
         }
 
         private class SerializedProjectSnapshot : ProjectSnapshot
@@ -66,7 +66,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
 
             public override VersionStamp Version { get; }
 
-            public override DocumentSnapshot GetDocument(string filePath)
+            public override DocumentSnapshot? GetDocument(string filePath)
             {
                 if (filePath == null)
                 {
@@ -76,20 +76,11 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
                 return null;
             }
 
-            public override bool IsImportDocument(DocumentSnapshot document)
-            {
-                throw new NotImplementedException();
-            }
+            public override bool IsImportDocument(DocumentSnapshot document) => throw new NotImplementedException();
 
-            public override IEnumerable<DocumentSnapshot> GetRelatedDocuments(DocumentSnapshot document)
-            {
-                throw new NotImplementedException();
-            }
+            public override IEnumerable<DocumentSnapshot> GetRelatedDocuments(DocumentSnapshot document) => throw new NotImplementedException();
 
-            public override RazorProjectEngine GetProjectEngine()
-            {
-                throw new NotImplementedException();
-            }
+            public override RazorProjectEngine GetProjectEngine() => throw new NotImplementedException();
         }
     }
 }

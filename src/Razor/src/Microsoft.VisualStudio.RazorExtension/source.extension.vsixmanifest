@@ -25,9 +25,9 @@
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="Microsoft.VisualStudio.RazorExtension.Custom" Path="Microsoft.VisualStudio.RazorExtension.Custom.pkgdef" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-    <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="razorLanguageService.servicehub.service.json" />
-    <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="razorLanguageService64.servicehub.service.json" />
-    <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="razorLanguageService64S.servicehub.service.json" />
+    <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="Microsoft.VisualStudio.Razor.TagHelperProvider.servicehub.service" />
+    <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="Microsoft.VisualStudio.Razor.TagHelperProvider64.servicehub.service" />
+    <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="Microsoft.VisualStudio.Razor.TagHelperProvider64S.servicehub.service" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.VisualStudio.LanguageServer.Protocol.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.VisualStudio.LanguageServer.Protocol.Extensions.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />

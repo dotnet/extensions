@@ -45,15 +45,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="razorLanguageService.servicehub.service.json">
+    <Content Include="Microsoft.VisualStudio.Razor.TagHelperProvider.servicehub.service.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="razorLanguageService64S.servicehub.service.json">
+    <Content Include="Microsoft.VisualStudio.Razor.TagHelperProvider64.servicehub.service.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="razorLanguageService64.servicehub.service.json">
+    <Content Include="Microsoft.VisualStudio.Razor.TagHelperProvider64S.servicehub.service.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
