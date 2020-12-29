@@ -54,6 +54,6 @@ namespace Microsoft.CodeAnalysis.Razor
             return new TagHelperResolutionResult(results, Array.Empty<RazorDiagnostic>());
         }
 
-        protected virtual Task<TagHelperResolutionResult> GetTagHelpersAsync(Project workspaceProject, RazorProjectEngine engine) => GetTagHelpersAsync(workspaceProject, engine);
+        protected virtual Task<TagHelperResolutionResult> GetTagHelpersAsync(Project workspaceProject, RazorProjectEngine engine) => GetTagHelpersAsync(workspaceProject, engine, CancellationToken.None);
     }
 }
