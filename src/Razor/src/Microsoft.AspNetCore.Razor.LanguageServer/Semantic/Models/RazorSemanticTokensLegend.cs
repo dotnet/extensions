@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
         public static int CSharpKeyword => TokenTypesLegend["keyword"];
         public static int CSharpVariable => TokenTypesLegend["variable"];
         public static int CSharpOperator => TokenTypesLegend["operator"];
+        public static int CSharpString => TokenTypesLegend["string"];
+        public static int CSharpPunctuation => TokenTypesLegend["punctuation"];
 
         private static readonly IReadOnlyCollection<string> _tokenTypes = new string[] {
             // C# token types
