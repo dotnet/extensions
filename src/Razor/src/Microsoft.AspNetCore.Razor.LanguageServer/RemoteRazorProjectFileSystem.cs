@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             throw new NotImplementedException();
         }
 
-        [Obsolete]
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);
