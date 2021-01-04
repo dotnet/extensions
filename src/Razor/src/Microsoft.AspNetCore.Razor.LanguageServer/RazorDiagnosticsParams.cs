@@ -3,19 +3,17 @@
 
 using System;
 using MediatR;
-using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     // Note: This type should be kept in sync with the one in VisualStudio.LanguageServerClient assembly.
-    internal class RazorMapToDocumentRangesParams : IRequest<RazorMapToDocumentRangesResponse>
+    internal class RazorDiagnosticsParams : IRequest<RazorDiagnosticsResponse>
     {
         public RazorLanguageKind Kind { get; set; }
 
         public Uri RazorDocumentUri { get; set; }
 
-        public Range[] ProjectedRanges { get; set; }
-
-        public MappingBehavior MappingBehavior { get; set; }
+        public Diagnostic[] Diagnostics { get; set; }
     }
 }

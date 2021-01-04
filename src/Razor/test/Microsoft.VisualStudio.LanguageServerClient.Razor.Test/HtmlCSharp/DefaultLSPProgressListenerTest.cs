@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Act
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1); },
+                onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1).ConfigureAwait(false); },
                 NotificationTimeout,
                 cts.Token,
                 out var onCompleted);
@@ -59,13 +59,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Act
             _ = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1); },
+                onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1).ConfigureAwait(false); },
                 NotificationTimeout,
                 cts.Token,
                 out _);
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1); },
+                onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1).ConfigureAwait(false); },
                 NotificationTimeout,
                 cts.Token,
                 out var onCompleted);
@@ -92,7 +92,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
                 onProgressNotifyAsync: async (value, ct) => {
-                    await Task.Delay(1);
+                    await Task.Delay(1).ConfigureAwait(false);
                     onProgressNotifyAsyncCalled = true;
                 },
                 notificationTimeout,
@@ -105,7 +105,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.False(onCompleted.IsCompleted, "Task completed immediately, should wait for timeout");
 
             // Act 2
-            await onCompleted;
+            await onCompleted.ConfigureAwait(false);
 
             // Assert 2
             Assert.True(onCompleted.IsCompleted);
@@ -128,7 +128,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
                 onProgressNotifyAsync: async (value, ct) => {
-                    await Task.Delay(1);
+                    await Task.Delay(1).ConfigureAwait(false);
                     onProgressNotifyAsyncCalled = true;
                 },
                 NotificationTimeout,
@@ -136,8 +136,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 out var onCompleted);
 
             // Note `Methods.ClientRegisterCapabilityName` is the wrong method, instead of `Methods.ProgressNotificationName`
-            await lspProgressListener.ProcessProgressNotificationAsync(Methods.ClientRegisterCapabilityName, new JObject());
-            await onCompleted;
+            await lspProgressListener.ProcessProgressNotificationAsync(Methods.ClientRegisterCapabilityName, new JObject()).ConfigureAwait(false);
+            await onCompleted.ConfigureAwait(false);
 
             // Assert
             Assert.False(onProgressNotifyAsyncCalled);
@@ -160,13 +160,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var onProgressNotifyAsyncCalled = false;
-            Func<JToken, CancellationToken, Task> onProgressNotifyAsync = (value, ct) => {
+            Task onProgressNotifyAsync(JToken value, CancellationToken ct)
+            {
                 var result = value.ToObject<string[]>();
                 var firstValue = Assert.Single(result);
                 Assert.Equal(expectedValue, firstValue);
                 onProgressNotifyAsyncCalled = true;
                 return Task.CompletedTask;
-            };
+            }
 
             using var lspProgressListener = new DefaultLSPProgressListener(languageServiceBroker);
 
@@ -178,8 +179,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 cts.Token,
                 out var onCompleted);
 
-            await lspProgressListener.ProcessProgressNotificationAsync(Methods.ProgressNotificationName, parameterToken);
-            await onCompleted;
+            await lspProgressListener.ProcessProgressNotificationAsync(Methods.ProgressNotificationName, parameterToken).ConfigureAwait(false);
+            await onCompleted.ConfigureAwait(false);
 
             // Assert
             Assert.True(onProgressNotifyAsyncCalled);
@@ -208,10 +209,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             var receivedResults = new ConcurrentBag<int>();
-            Func<JToken, CancellationToken, Task> onProgressNotifyAsync = (value, ct) => {
+            Task onProgressNotifyAsync(JToken value, CancellationToken ct)
+            {
                 receivedResults.Add(value.ToObject<int>());
                 return Task.CompletedTask;
-            };
+            }
 
             // Act
             var listenerAdded = lspProgressListener.TryListenForProgress(
@@ -225,7 +227,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 _ = lspProgressListener.ProcessProgressNotificationAsync(Methods.ProgressNotificationName, parameterToken);
             });
-            await onCompleted;
+            await onCompleted.ConfigureAwait(false);
 
             // Assert
             Assert.True(listenerAdded);

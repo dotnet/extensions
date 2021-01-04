@@ -10,6 +10,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal static class RangeExtensions
     {
+        public static readonly Range UndefinedRange = new Range
+        {
+            Start = new Position(-1, -1),
+            End = new Position(-1, -1)
+        };
+
         public static bool OverlapsWith(this Range range, Range other)
         {
             if (range is null)
@@ -128,6 +134,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var start = sourceText.Lines[(int)range.Start.Line].Start + (int)range.Start.Character;
             var end = sourceText.Lines[(int)range.End.Line].Start + (int)range.End.Character;
             return new TextSpan(start, end - start);
+        }
+
+        public static bool IsUndefined(this Range range)
+        {
+            if (range is null)
+            {
+                throw new ArgumentNullException(nameof(range));
+            }
+
+            return range == UndefinedRange;
         }
     }
 }

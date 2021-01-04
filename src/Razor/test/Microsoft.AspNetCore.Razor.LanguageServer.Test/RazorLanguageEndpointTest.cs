@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Ranges[0]);
+            Assert.Equal(RangeExtensions.UndefinedRange, response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Ranges[0]);
+            Assert.Equal(RangeExtensions.UndefinedRange, response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Ranges[0]);
+            Assert.Equal(RangeExtensions.UndefinedRange, response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var response = await Task.Run(() => languageEndpoint.Handle(request, default));
 
             // Assert
-            Assert.Equal(RazorLanguageEndpoint.UndefinedRange, response.Ranges[0]);
+            Assert.Equal(RangeExtensions.UndefinedRange, response.Ranges[0]);
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private static RazorCodeDocument CreateCodeDocument(string text, IReadOnlyList<TagHelperDescriptor> tagHelpers = null)
         {
-            tagHelpers = tagHelpers ?? Array.Empty<TagHelperDescriptor>();
+            tagHelpers ??= Array.Empty<TagHelperDescriptor>();
             var sourceDocument = TestRazorSourceDocument.Create(text);
             var projectEngine = RazorProjectEngine.Create(builder => { });
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, "mvc", Array.Empty<RazorSourceDocument>(), tagHelpers);

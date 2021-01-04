@@ -20,11 +20,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private readonly Uri MockDocumentUri = new Uri("C://project/path/document.razor");
 
-        private static string MockGeneratedContent = $"Hello {Environment.NewLine} This is the source text in the generated C# file. {Environment.NewLine} This is some more sample text for demo purposes.";
-        private static string MockRazorContent = $"Hello {Environment.NewLine} This is the {Environment.NewLine} source text {Environment.NewLine} in the generated C# file. {Environment.NewLine} This is some more sample text for demo purposes.";
+        private static readonly string MockGeneratedContent = $"Hello {Environment.NewLine} This is the source text in the generated C# file. {Environment.NewLine} This is some more sample text for demo purposes.";
+        private static readonly string MockRazorContent = $"Hello {Environment.NewLine} This is the {Environment.NewLine} source text {Environment.NewLine} in the generated C# file. {Environment.NewLine} This is some more sample text for demo purposes.";
 
-        private SourceText SourceTextGenerated = SourceText.From(MockGeneratedContent);
-        private SourceText SourceTextRazor = SourceText.From(MockRazorContent);
+        private readonly SourceText SourceTextGenerated = SourceText.From(MockGeneratedContent);
+        private readonly SourceText SourceTextRazor = SourceText.From(MockRazorContent);
 
         [Fact]
         public async Task MapSpans_WithinRange_ReturnsMapping()

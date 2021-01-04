@@ -98,7 +98,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         }
 
         // Internal for testing use only
+#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
         internal async Task<IEnumerable<(string filePath, LinePositionSpan linePositionSpan, TextSpan span)>> MapSpansAsyncTest(
+#pragma warning restore VSTHRD200 // Use "Async" suffix for async methods
             IEnumerable<TextSpan> spans,
             SourceText sourceTextGenerated,
             SourceText sourceTextRazor)

@@ -114,6 +114,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorCompletionEndpoint>()
                     .WithHandler<RazorHoverEndpoint>()
                     .WithHandler<RazorLanguageEndpoint>()
+                    .WithHandler<RazorDiagnosticsEndpoint>()
                     .WithHandler<RazorConfigurationEndpoint>()
                     .WithHandler<RazorFormattingEndpoint>()
                     .WithHandler<RazorSemanticTokensEndpoint>()
