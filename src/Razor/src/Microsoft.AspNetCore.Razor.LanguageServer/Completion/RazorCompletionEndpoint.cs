@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -22,10 +21,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal class RazorCompletionEndpoint : ICompletionHandler, ICompletionResolveHandler
     {
-        private const int XMLAttributeId = 3564;
-        private const string ImageCatalogGuidString = "{ae27a6b0-e345-4288-96df-5eaf394ee369}";
-        private static Guid ImageCatalogGuid = new Guid(ImageCatalogGuidString);
-
         private CompletionCapability _capability;
         private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
@@ -149,11 +144,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 completionItems.AddRange(tagHelperCompletionItems);
             }
 
-            // Temporary: We want to set custom icons in VS. Ideally this should be done on the client.
-            // This is a workaround until we have support for it in the middle layer.
-            var completionItemsWithIcon = completionItems.Select(c => SetIcon(c));
-
-            var completionList = new CompletionList(completionItemsWithIcon, isIncomplete: false);
+            var completionList = CreateLSPCompletionList(completionItems);
 
             return completionList;
         }
@@ -168,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
                 // NOTE: This property is *NOT* processed in O# versions < 0.16
                 // https://github.com/OmniSharp/csharp-language-server-protocol/blame/bdec4c73240be52fbb25a81f6ad7d409f77b5215/src/Protocol/Server/Capabilities/CompletionOptions.cs#L35-L44
-                AllCommitCharacters = new Container<string>(":", ">", " ", "=" ),
+                AllCommitCharacters = new Container<string>(":", ">", " ", "="),
             };
         }
 
@@ -232,6 +223,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             }
 
             return Task.FromResult(completionItem);
+        }
+
+        // Internal for benchmarking
+        internal static CompletionList CreateLSPCompletionList(IReadOnlyList<CompletionItem> completionItems)
+        {
+            // Temporary: We want to set custom icons in VS. Ideally this should be done on the client.
+            // This is a workaround until we have support for it in the middle layer.
+            var completionItemsWithIcon = completionItems.Select(c => SetIcon(c));
+
+            var completionList = new CompletionList(completionItemsWithIcon, isIncomplete: false);
+
+            // We wrap the pre-existing completion list with an optimized completion list to better control serialization/deserialization
+            var optimizedCompletionList = new OptimizedCompletionList(completionList);
+            return optimizedCompletionList;
         }
 
         // Internal for testing
@@ -336,22 +341,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return false;
         }
 
-        private CompletionItem SetIcon(CompletionItem item)
+        private static CompletionItem SetIcon(CompletionItem item)
         {
-            PascalCasedSerializableImageElement? icon = null;
+            PascalCasedSerializableImageElement icon = null;
             if (item.IsTagHelperElementCompletion() || item.IsTagHelperAttributeCompletion())
             {
-                icon = new PascalCasedSerializableImageElement(new PascalCasedSerializableImageId(ImageCatalogGuid, XMLAttributeId), automationName: null);
+                icon = VSLspCompletionItemIcons.TagHelper;
             }
             else if (item.TryGetRazorCompletionKind(out var kind) &&
                 (kind == RazorCompletionItemKind.DirectiveAttribute ||
                 kind == RazorCompletionItemKind.DirectiveAttributeParameter ||
                 kind == RazorCompletionItemKind.MarkupTransition))
             {
-                icon = new PascalCasedSerializableImageElement(new PascalCasedSerializableImageId(ImageCatalogGuid, XMLAttributeId), automationName: null);
+                icon = VSLspCompletionItemIcons.TagHelper;
             }
 
-            if (!icon.HasValue)
+            if (icon == null)
             {
                 return item;
             }
@@ -374,43 +379,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 Data = item.Data,
                 Icon = icon
             };
-        }
-
-        private class VSLspCompletionItem : CompletionItem
-        {
-            public PascalCasedSerializableImageElement? Icon { get; set; }
-        }
-
-        [DataContract]
-        private struct PascalCasedSerializableImageElement
-        {
-            public PascalCasedSerializableImageElement(PascalCasedSerializableImageId imageId, string automationName)
-            {
-                ImageId = imageId;
-                AutomationName = automationName;
-            }
-
-            [DataMember(Name = "ImageId")]
-            public PascalCasedSerializableImageId ImageId { get; set; }
-
-            [DataMember(Name = "AutomationName")]
-            public string AutomationName { get; set; }
-        }
-
-        [DataContract]
-        private struct PascalCasedSerializableImageId
-        {
-            public PascalCasedSerializableImageId(Guid guid, int id)
-            {
-                Guid = guid;
-                Id = id;
-            }
-
-            [DataMember(Name = "Guid")]
-            public Guid Guid { get; set; }
-
-            [DataMember(Name = "Id")]
-            public int Id { get; set; }
         }
     }
 }
