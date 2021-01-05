@@ -56,6 +56,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 attribute.TypeName = typeof(int).FullName;
             });
 
+            var builder3 = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "Component1TagHelper", "TestAssembly");
+            builder3.TagMatchingRule(rule => rule.TagName = "Component1");
+            builder3.SetTypeName("Component1");
+            builder3.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
+            builder3.BindAttribute(attribute => {
+                attribute.Name = "bool-val";
+                attribute.SetPropertyName("BoolVal");
+                attribute.TypeName = typeof(bool).FullName;
+            });
+            builder3.BindAttribute(attribute => {
+                attribute.Name = "int-val";
+                attribute.SetPropertyName("IntVal");
+                attribute.TypeName = typeof(int).FullName;
+            });
+
             var directiveAttribute1 = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, "TestDirectiveAttribute", "TestAssembly");
             directiveAttribute1.TagMatchingRule(rule =>
             {
@@ -130,7 +145,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             directiveAttribute2.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
             directiveAttribute2.SetTypeName("TestDirectiveAttribute");
 
-            DefaultTagHelpers = new[] { builder1.Build(), builder2.Build(), directiveAttribute1.Build(), directiveAttribute2.Build() };
+            DefaultTagHelpers = new[] { builder1.Build(), builder2.Build(), builder3.Build(), directiveAttribute1.Build(), directiveAttribute2.Build() };
 
             HtmlFactsService = new DefaultHtmlFactsService();
             TagHelperFactsService = new DefaultTagHelperFactsService();

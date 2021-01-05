@@ -168,6 +168,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             Visit(node.Body);
         }
 
+        public override void VisitRazorMetaCode(RazorMetaCodeSyntax node)
+        {
+            if (node.Kind == SyntaxKind.RazorMetaCode)
+            {
+                AddSemanticRange(node, RazorSemanticTokensLegend.RazorTransition);
+            }
+            else
+            {
+                throw new NotSupportedException("Attempted to visit a RazorMetaCode other than '{' or '}'.");
+            }
+        }
+
         public override void VisitRazorDirectiveBody(RazorDirectiveBodySyntax node)
         {
             // We can't provide colors for CSharp because if we both provided them then they would overlap, which violates the LSP spec.
@@ -175,6 +187,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             {
                 AddSemanticRange(node.Keyword, RazorSemanticTokensLegend.RazorDirective);
             }
+            else
+            {
+                Visit(node.Keyword);
+            }
+
+            Visit(node.CSharpCode);
         }
 
         public override void VisitMarkupTagHelperStartTag(MarkupTagHelperStartTagSyntax node)
