@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             {
                 return typeof(OptimizedCompletionList).IsAssignableFrom(objectType);
             }
+
             public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
                 var result = DefaultSerializer.Deserialize(reader, objectType);
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 if (completionItem.Documentation != null)
                 {
                     writer.WritePropertyName("documentation");
-                    writer.WriteValue(completionItem.Documentation);
+                    serializer.Serialize(writer, completionItem.Documentation);
                 }
 
                 // Only render preselect if it's "true"
