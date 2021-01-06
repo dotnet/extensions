@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using Newtonsoft.Json;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public class OptimizedCompletionListJsonConverter : JsonConverter
         {
             public static readonly OptimizedCompletionListJsonConverter Instance = new OptimizedCompletionListJsonConverter();
+            private static readonly ConcurrentDictionary<object, string> CommitCharactersRawJson;
             private static readonly string TagHelperIconRawJson;
             private static readonly JsonSerializer DefaultSerializer;
 
@@ -25,6 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             {
                 DefaultSerializer = JsonSerializer.CreateDefault();
                 TagHelperIconRawJson = JsonConvert.SerializeObject(VSLspCompletionItemIcons.TagHelper);
+                CommitCharactersRawJson = new ConcurrentDictionary<object, string>();
             }
 
             public override bool CanConvert(Type objectType)
@@ -152,7 +155,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 if (completionItem.CommitCharacters != null && completionItem.CommitCharacters.Any())
                 {
                     writer.WritePropertyName("commitCharacters");
-                    serializer.Serialize(writer, completionItem.CommitCharacters);
+
+                    if (!CommitCharactersRawJson.TryGetValue(completionItem.CommitCharacters, out var jsonString))
+                    {
+                        jsonString = JsonConvert.SerializeObject(completionItem.CommitCharacters);
+                        CommitCharactersRawJson.TryAdd(completionItem.CommitCharacters, jsonString);
+                    }
+
+                    writer.WriteRawValue(jsonString);
                 }
 
                 if (completionItem.Command != null)
