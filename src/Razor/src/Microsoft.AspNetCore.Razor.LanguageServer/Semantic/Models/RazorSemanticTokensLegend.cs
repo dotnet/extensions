@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
         public static int CSharpString => TokenTypesLegend["string"];
         public static int CSharpPunctuation => TokenTypesLegend["punctuation"];
 
-        private static readonly IReadOnlyCollection<string> _tokenTypes = new string[] {
+        public static readonly IReadOnlyCollection<string> TokenTypes = new string[] {
             // C# token types
             "namespace", // 0
             "type",
@@ -153,12 +153,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
             "static",
         };
 
-        public static readonly IReadOnlyDictionary<string, int> TokenTypesLegend = GetMap(_tokenTypes);
+        public static readonly IReadOnlyDictionary<string, int> TokenTypesLegend = GetMap(TokenTypes);
 
         public static readonly SemanticTokensLegend Instance = new SemanticTokensLegend
         {
             TokenModifiers = new Container<string>(_tokenModifiers),
-            TokenTypes = new Container<string>(_tokenTypes),
+            TokenTypes = new Container<string>(TokenTypes),
         };
 
         private static IReadOnlyDictionary<string, int> GetMap(IReadOnlyCollection<string> tokens)

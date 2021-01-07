@@ -1,6 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +17,12 @@ using RazorTagHelperCompletionService = Microsoft.VisualStudio.Editor.Razor.TagH
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
-    public abstract class DefaultTagHelperServiceTestBase : LanguageServerTestBase
+    public abstract class TagHelperServiceTestBase : LanguageServerTestBase
     {
         protected const string CSHtmlFile = "test.cshtml";
         protected const string RazorFile = "test.razor";
 
-        public DefaultTagHelperServiceTestBase()
+        public TagHelperServiceTestBase()
         {
             var builder1 = TagHelperDescriptorBuilder.Create("Test1TagHelper", "TestAssembly");
             builder1.TagMatchingRule(rule => rule.TagName = "test1");
@@ -60,12 +60,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             builder3.TagMatchingRule(rule => rule.TagName = "Component1");
             builder3.SetTypeName("Component1");
             builder3.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
-            builder3.BindAttribute(attribute => {
+            builder3.BindAttribute(attribute =>
+            {
                 attribute.Name = "bool-val";
                 attribute.SetPropertyName("BoolVal");
                 attribute.TypeName = typeof(bool).FullName;
             });
-            builder3.BindAttribute(attribute => {
+            builder3.BindAttribute(attribute =>
+            {
                 attribute.Name = "int-val";
                 attribute.SetPropertyName("IntVal");
                 attribute.TypeName = typeof(int).FullName;
@@ -171,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return new TextDocumentIdentifier(new Uri($"c:\\${file}"));
         }
 
-        internal (Queue<DocumentSnapshot>, Queue<TextDocumentIdentifier>) CreateDocumentSnapshot(string[] textArray, bool[] isRazorArray, params TagHelperDescriptor[] tagHelpers)
+        internal (Queue<DocumentSnapshot>, Queue<TextDocumentIdentifier>) CreateDocumentSnapshot(string?[] textArray, bool[] isRazorArray, params TagHelperDescriptor[] tagHelpers)
         {
             var documentSnapshots = new Queue<DocumentSnapshot>();
             var identifiers = new Queue<TextDocumentIdentifier>();

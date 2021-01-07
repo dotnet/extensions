@@ -14,7 +14,7 @@ using RangeModel = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
 {
-    public class DefaultRazorHoverInfoServiceTest : DefaultTagHelperServiceTestBase
+    public class DefaultRazorHoverInfoServiceTest : TagHelperServiceTestBase
     {
         internal ClientNotifierServiceBase LanguageServer
         {

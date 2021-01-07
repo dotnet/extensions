@@ -5,13 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models;
@@ -26,7 +24,11 @@ using OmniSharpRange = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 {
-    public class DefaultRazorSemanticTokenInfoServiceTest : DefaultTagHelperServiceTestBase
+    // Sets the FileName static variable.
+    // Finds the test method name using reflection, and uses
+    // that to find the expected input/output test files as Embedded resources.
+    [IntializeTestFile]
+    public class DefaultRazorSemanticTokenInfoServiceTest : SemanticTokenTestBase
     {
         #region CSharp
         [Fact]
@@ -36,28 +38,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
     var d = ""t"";
     <p>HTML @d</p>
 }}";
-
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                1, 4, 3, RazorSemanticTokensLegend.CSharpKeyword, 0,
-                0, 4, 1, RazorSemanticTokensLegend.CSharpVariable, 0,
-                0, 2, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-                0, 2, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-                0, 1, 1, RazorSemanticTokensLegend.CSharpString, 0,
-                0, 1, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-                0, 1, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-                1, 4, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 6, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.CSharpVariable, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                1, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-            };
 
             var cSharpTokens = new SemanticTokens
             {
@@ -86,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 (new OmniSharpRange(new Position(21, 0), new Position(21, 1)), new OmniSharpRange(new Position(2, 13), new Position(2, 14))),
             };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
+            await AssertSemanticTokens(txt, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
         }
 
         [Fact]
@@ -98,29 +78,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 $"@<a></a>" +
                 $"}}" +
                 $"-->";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 4, RazorSemanticTokensLegend.MarkupCommentPunctuation, 0,
-                0, 4, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 3, RazorSemanticTokensLegend.CSharpKeyword, 0,
-                0, 4, 1, RazorSemanticTokensLegend.CSharpVariable, 0,
-                0, 2, 1, RazorSemanticTokensLegend.CSharpOperator, 0,
-                0, 1, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-                0, 1, 6, RazorSemanticTokensLegend.CSharpString, 0,
-                0, 6, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-                0, 1, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-                0, 3, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 3, RazorSemanticTokensLegend.MarkupCommentPunctuation, 0
-            };
 
             var cSharpTokens = new SemanticTokens
             {
@@ -147,20 +104,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 (new OmniSharpRange(new Position(20, 0), new Position(20, 1)), new OmniSharpRange(new Position(1, 21), new Position(1, 22))),
             };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
+            await AssertSemanticTokens(txt, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
         }
 
         [Fact]
         public async Task GetSemanticTokens_CSharp_VSCodeWorks()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}@{{ var d = }}";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 10, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-            };
 
             var cSharpTokens = new SemanticTokens
             {
@@ -172,23 +122,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             var mappings = Array.Empty<(OmniSharpRange, OmniSharpRange?)>();
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings, documentVersion: 1);
+            await AssertSemanticTokens(txt, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings, documentVersion: 1);
         }
 
         [Fact]
         public async Task GetSemanticTokens_CSharp_Explicit()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}@(DateTime.Now)";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-                0, 1, 8, RazorSemanticTokensLegend.CSharpVariable, 0,
-                0, 8, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-                0, 1, 3, RazorSemanticTokensLegend.CSharpVariable, 0,
-                0, 3, 1, RazorSemanticTokensLegend.CSharpPunctuation, 0,
-            };
 
             var cSharpTokens = new SemanticTokens
             {
@@ -208,7 +148,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 (new OmniSharpRange(new Position(16, 0),new Position(16, 3)), new OmniSharpRange(new Position(1, 11), new Position(1, 14))),
             };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
+            await AssertSemanticTokens(txt, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
         }
 
         [Fact]
@@ -216,22 +156,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}@{{ var d = \"txt\";}}{Environment.NewLine}" +
                 $"@d";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 2, 3, RazorSemanticTokensLegend.CSharpKeyword, 0,
-                0, 4, 1, RazorSemanticTokensLegend.CSharpVariable, 0,
-                0, 2, 1, RazorSemanticTokensLegend.CSharpOperator, 0,
-                0, 2, 1, RazorSemanticTokensLegend.CSharpOperator, 0,
-                0, 1, 3, RazorSemanticTokensLegend.CSharpString, 0,
-                0, 3, 1, RazorSemanticTokensLegend.CSharpOperator, 0,
-                0, 1, 1, RazorSemanticTokensLegend.CSharpOperator, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                1, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.CSharpVariable, 0,
-            };
 
             var cSharpTokens = new SemanticTokens
             {
@@ -261,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 (new OmniSharpRange(new Position(21, 0), new Position(21, 1)), new OmniSharpRange(new Position(2, 1), new Position(2, 2))),
             };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
+            await AssertSemanticTokens(txt, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
         }
 
         [Fact]
@@ -289,23 +213,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                (new OmniSharpRange(new Position(50, 10), new Position(50, 35)), null)
             };
 
-            await AssertSemanticTokens(txt, expectedData: null, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings, documentVersion: 21);
+            await AssertSemanticTokens(txt, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings, documentVersion: 21);
         }
 
         [Fact]
         public async Task GetSemanticTokens_CSharp_FunctionAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}@{{ var d = }}";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 2, 3, RazorSemanticTokensLegend.CSharpKeyword, 0,
-                0, 4, 1, RazorSemanticTokensLegend.CSharpVariable, 0,
-                0, 2, 1, RazorSemanticTokensLegend.CSharpOperator, 0,
-                0, 2, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-            };
 
             var cSharpTokens = new SemanticTokens
             {
@@ -327,23 +241,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                (new OmniSharpRange(new Position(50, 10), new Position(50, 35)), null)
             };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
+            await AssertSemanticTokens(txt, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
         }
 
         [Fact]
         public async Task GetSemanticTokens_CSharp_StaticModifierAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}@{{ var d = }}";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 2, 3, RazorSemanticTokensLegend.CSharpKeyword, 0,
-                0, 4, 1, RazorSemanticTokensLegend.CSharpVariable, 1,
-                0, 2, 1, RazorSemanticTokensLegend.CSharpOperator, 0,
-                0, 2, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-            };
 
             var cSharpTokens = new SemanticTokens
             {
@@ -365,23 +269,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                (new OmniSharpRange(new Position(50, 10), new Position(50, 35)), null)
             };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
+            await AssertSemanticTokens(txt, isRazor: false, csharpTokens: cSharpResponse, documentMappings: mappings);
         }
 
         [Fact]
         public async Task GetSemanticTokens_CSharp_UsesCache()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}@{{ var d = }}";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 2, 3, RazorSemanticTokensLegend.CSharpKeyword, 0,
-                0, 4, 1, RazorSemanticTokensLegend.CSharpVariable, 0,
-                0, 2, 1, RazorSemanticTokensLegend.CSharpOperator, 0,
-                0, 2, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-            };
 
             var cSharpTokens = new SemanticTokens
             {
@@ -404,14 +298,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             };
 
             var isRazor = false;
-            var (previousResultId, service, mockClient, document) = await AssertSemanticTokens(txt, expectedData, isRazor, csharpTokens: cSharpResponse, documentMappings: mappings);
-            var expectedDelta = new SemanticTokensFullOrDelta(new SemanticTokensDelta
-            {
-                Edits = new Container<SemanticTokensEdit>(),
-                ResultId = previousResultId
-            });
+            var (previousResultId, service, mockClient, document) = await AssertSemanticTokens(txt, isRazor, csharpTokens: cSharpResponse, documentMappings: mappings);
 
-            await AssertSemanticTokenEdits(txt: null, expectedDelta, isRazor, previousResultId: previousResultId, service: service);
+            await AssertSemanticTokenEdits(txt: null, expectDelta: true, isRazor, previousResultId: previousResultId, service: service);
             mockClient.Verify(l => l.SendRequestAsync(LanguageServerConstants.RazorProvideSemanticTokensEndpoint, It.IsAny<SemanticTokensParams>()), Times.Once());
         }
         #endregion
@@ -421,19 +310,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_HTMLCommentWithCSharp()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<!-- @DateTime.Now -->";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 4, RazorSemanticTokensLegend.MarkupCommentPunctuation, 0,
-                0, 4, 1, RazorSemanticTokensLegend.MarkupComment, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0, // Shows up once we have implicit handling
-                0, 1, 8, 1, 0, // CSharpType
-                0, 8, 1, 21, 0, // operator
-                0, 1, 3, 9, 0, // property
-                0, 3, 1, RazorSemanticTokensLegend.MarkupComment, 0,
-                0, 1, 3, RazorSemanticTokensLegend.MarkupCommentPunctuation, 0,
-            };
 
             var cSharpTokens = new SemanticTokens
             {
@@ -452,99 +328,55 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 (new OmniSharpRange(new Position(14, 21),  new Position(14, 24)), new OmniSharpRange(new Position(1, 15), new Position(1, 18))),
             };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true, csharpTokens: cSharpResponse, documentMappings: mappings);
+            await AssertSemanticTokens(txt, isRazor: true, csharpTokens: cSharpResponse, documentMappings: mappings);
         }
 
         [Fact]
         public async Task GetSemanticTokens_IncompleteTag()
         {
             var txt = "<str";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 3, RazorSemanticTokensLegend.MarkupElement, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
 
         [Fact]
         public async Task GetSemanticTokens_MinimizedHTMLAttribute()
         {
             var txt = "<p attr />";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 2, 4, RazorSemanticTokensLegend.MarkupAttribute, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
 
         [Fact]
         public async Task GetSemanticTokens_MinimizedHTMLAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<input/> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
 
         [Fact]
         public async Task GetSemanticTokens_HTMLCommentAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<!-- comment with comma's --> ";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 4, RazorSemanticTokensLegend.MarkupCommentPunctuation, 0,
-                0, 4, 22, RazorSemanticTokensLegend.MarkupComment, 0,
-                0, 22, 3, RazorSemanticTokensLegend.MarkupCommentPunctuation, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
 
         [Fact]
         public async Task GetSemanticTokens_PartialHTMLCommentAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<!-- comment";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_HTMLIncludesBang()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<!input/>";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 1, 5, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 5, 1,  RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
         #endregion
 
@@ -553,143 +385,56 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_HalfOfCommentAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}@* comment";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.RazorCommentTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorCommentStar, 0,
-                0, 1, 8, RazorSemanticTokensLegend.RazorComment, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_NoAttributesAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
 
         [Fact]
         public async Task GetSemanticTokens_WithAttributeAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 6, 8, RazorSemanticTokensLegend.RazorTagHelperAttribute, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 7, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
 
         [Fact]
         public async Task GetSemanticTokens_MinimizedAttributeAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 6, 8, RazorSemanticTokensLegend.RazorTagHelperAttribute, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
 
         [Fact]
         public async Task GetSemanticTokens_IgnoresNonTagHelperAttributesAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true' class='display:none'></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 6, 8, RazorSemanticTokensLegend.RazorTagHelperAttribute, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 8, 5, RazorSemanticTokensLegend.MarkupAttribute, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 15, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
 
         [Fact]
         public async Task GetSemanticTokens_TagHelpersNotAvailableInRazorAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true' class='display:none'></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 6, 8, RazorSemanticTokensLegend.MarkupAttribute, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 8, 5, RazorSemanticTokensLegend.MarkupAttribute, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 15, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_DoesNotApplyOnNonTagHelpersAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<p bool-val='true'></p> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 2, 8, RazorSemanticTokensLegend.MarkupAttribute, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 7, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false);
+            await AssertSemanticTokens(txt, isRazor: false);
         }
         #endregion TagHelpers
 
@@ -699,145 +444,62 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         {
             // Capitalized, non-well-known-HTML elements are always marked as TagHelpers
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<NotATagHelp @minimized:something /> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 11, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 12, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 9, RazorSemanticTokensLegend.RazorDirectiveAttribute, 0,
-                0, 9, 1, RazorSemanticTokensLegend.RazorDirectiveColon, 0,
-                0, 1, 9, RazorSemanticTokensLegend.RazorDirectiveAttribute, 0,
-                0, 10, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_DirectiveAttributesParametersAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<Component1 @test:something='Function'></Component1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 10, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 11, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 4, RazorSemanticTokensLegend.RazorDirectiveAttribute, 0,
-                0, 4, 1, RazorSemanticTokensLegend.RazorDirectiveColon, 0,
-                0, 1, 9, RazorSemanticTokensLegend.RazorDirectiveAttribute, 0,
-                0, 9, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 11, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 10, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 10, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_NonComponentsDoNotShowInRazorAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 6, 8, RazorSemanticTokensLegend.MarkupAttribute, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 7, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_DirectivesAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<Component1 @test='Function'></Component1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 10, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 11, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 4, RazorSemanticTokensLegend.RazorDirectiveAttribute, 0,
-                0, 4, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 11, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 10, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 10, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_HandleTransitionEscape()
         {
             var txt = $"@@text";
-            var expectedData = new List<int>
-            {
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_DoNotColorNonTagHelpersAsync()
         {
             var txt = $"{Environment.NewLine}<p @test='Function'></p> ";
-            var expectedData = new List<int> {
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,  //line, character pos, length, tokenType, modifier
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 2, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 4, RazorSemanticTokensLegend.RazorDirectiveAttribute, 0,
-                0, 4, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 11, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_DoesNotApplyOnNonTagHelpersAsync()
         {
             var txt = $"@addTagHelpers *, TestAssembly{Environment.NewLine}<p></p> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupElement, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_InRangeAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
-            var expectedData = new List<int> {
-                1, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0, //line, character pos, length, tokenType, modifier
-            };
 
             var startIndex = txt.IndexOf("test1", StringComparison.Ordinal);
             var endIndex = startIndex + 5;
@@ -851,7 +513,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             var endPosition = new Position(endLine, endChar);
             var location = new OmniSharpRange(startPosition, endPosition);
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: false, location: location);
+            await AssertSemanticTokens(txt, isRazor: false, location: location);
         }
         #endregion DirectiveAttributes
 
@@ -860,15 +522,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_Razor_CodeDirectiveAsync()
         {
             var txt = $"@code {{}}";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 4, RazorSemanticTokensLegend.RazorDirective, 0,
-                0, 5, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-            }.ToImmutableArray();
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
@@ -880,43 +535,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 @DateTime.Now
     }}
 }}";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 4, RazorSemanticTokensLegend.RazorDirective, 0,
-                0, 5, 1, RazorSemanticTokensLegend.RazorTransition, 0, // left bracket
-                3, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                2, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, // right bracket
-            }.ToImmutableArray();
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_UsingDirective()
         {
             var txt = $"@using Microsoft.AspNetCore.Razor";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-            }.ToImmutableArray();
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_FunctionsDirectiveAsync()
         {
             var txt = $"@functions {{}}";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 9, RazorSemanticTokensLegend.RazorDirective, 0,
-                0, 10, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorTransition, 0,
-            }.ToImmutableArray();
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
         }
         #endregion
 
@@ -924,41 +560,33 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_Razor_CommentAsync()
         {
             var txt = $"@* A comment *@";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorCommentTransition, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorCommentStar, 0,
-                0, 1, 11, RazorSemanticTokensLegend.RazorComment, 0,
-                0, 11, 1, RazorSemanticTokensLegend.RazorCommentStar, 0,
-                0, 1, 1, RazorSemanticTokensLegend.RazorCommentTransition, 0,
-            };
 
-            await AssertSemanticTokens(txt, expectedData, isRazor: true);
+            await AssertSemanticTokens(txt, isRazor: true);
+        }
+
+        [Fact]
+        public async Task GetSemanticTokens_Razor_EditTwiceAsync()
+        {
+            var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1>";
+            var secondTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1>T</test1>";
+            var thirdTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1>Test</test1>";
+            var isRazor = true;
+            var (firstResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, secondTxt, thirdTxt }, new bool[] { isRazor, isRazor, isRazor });
+
+            var (secondResultId, _, _) = await AssertSemanticTokenEdits(secondTxt, expectDelta: true, isRazor, previousResultId: firstResultId, service);
+
+            var (_, _, _) = await AssertSemanticTokenEdits(thirdTxt, expectDelta: true, isRazor, previousResultId: secondResultId, service);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_NoDifferenceAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
             var isRazor = false;
-            var (previousResultId, service, _, _) = await AssertSemanticTokens(txt, expectedData, isRazor);
+            var (previousResultId, service, _, _) = await AssertSemanticTokens(txt, isRazor);
 
-            var (newResultId, _, _) = await AssertSemanticTokenEdits(txt, new SemanticTokensDelta
-            {
-                Edits = new List<SemanticTokensEdit>()
-            }, isRazor, previousResultId: previousResultId, service: service);
+            var (newResultId, _, _) = await AssertSemanticTokenEdits(txt, expectDelta: true, isRazor, previousResultId: previousResultId, service: service);
             Assert.Equal(previousResultId, newResultId);
         }
 
@@ -966,50 +594,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_Razor_RemoveTokensAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1><test1></test1><test1></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
-
             var newTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
             var isRazor = false;
-            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, expectedData, new bool[] { isRazor, isRazor });
+            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, new bool[] { isRazor, isRazor });
 
-            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, new SemanticTokensDelta
-            {
-                Edits = new List<SemanticTokensEdit>(){
-                    new SemanticTokensEdit
-                    {
-                        Data = Array.Empty<int>().ToImmutableArray(),
-                        DeleteCount = 70,
-                        Start = 45
-                    }
-            }
-            }, isRazor, previousResultId: previousResultId, service);
+            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, expectDelta: true, isRazor, previousResultId: previousResultId, service);
             Assert.NotEqual(previousResultId, newResultId);
         }
 
@@ -1017,38 +606,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_Razor_OnlyDifferences_AppendAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
             var newTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 bool-val='true'></test1> ";
             var isRazor = false;
-            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, expectedData, new bool[] { isRazor, isRazor });
+            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, new bool[] { isRazor, isRazor });
 
-            var newExpectedData = new SemanticTokensDelta
-            {
-                Edits = new SemanticTokensEdit[] {
-                    new SemanticTokensEdit
-                    {
-                        Start = 21,
-                        Data = new List<int>{
-                            6, 8, RazorSemanticTokensLegend.RazorTagHelperAttribute, 0,
-                            0, 8, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                            0, 7,
-                        }.ToImmutableArray(),
-                        DeleteCount = 1,
-                    },
-                }
-            };
-            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, newExpectedData, isRazor, previousResultId: previousResultId, service: service);
+            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, expectDelta: true, isRazor, previousResultId: previousResultId, service: service);
             Assert.NotEqual(previousResultId, newResultId);
         }
 
@@ -1056,116 +619,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_Razor_CoalesceDeleteAndAddAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1 /> ";
-            var expectedData = new List<int>
-            {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 6, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
+
             var newTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}{Environment.NewLine}<p @minimized /> ";
 
-            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, expectedData, new bool[] { false, true });
+            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, new bool[] { false, true });
 
-            var newExpectedData = new SemanticTokensDelta
-            {
-                Edits = new SemanticTokensEdit[] {
-                    new SemanticTokensEdit
-                    {
-                        Start = 10,
-                        DeleteCount = 0,
-                        Data = new List<int>{
-                           2, 0
-                        }.ToImmutableArray(),
-                    },
-                    new SemanticTokensEdit
-                    {
-                        Start = 11,
-                        DeleteCount = 0,
-                        Data = new List<int>
-                        {
-                            RazorSemanticTokensLegend.MarkupTagDelimiter,
-                        }.ToImmutableArray(),
-                    },
-                    new SemanticTokensEdit
-                    {
-                        Start = 12,
-                        DeleteCount = 0,
-                        Data = new List<int>
-                        {
-                            0, 1
-                        }.ToImmutableArray()
-                    },
-                    new SemanticTokensEdit
-                    {
-                        Start = 13,
-                        DeleteCount = 1,
-                        Data = new List<int>
-                        {
-                            RazorSemanticTokensLegend.MarkupElement, 0, 0, 2, 1, RazorSemanticTokensLegend.RazorTransition
-                        }.ToImmutableArray()
-                    },
-                    new SemanticTokensEdit
-                    {
-                        Start = 17,
-                        DeleteCount = 2,
-                        Data = new List<int>
-                        {
-                            9, RazorSemanticTokensLegend.RazorDirectiveAttribute
-                        }.ToImmutableArray()
-                    },
-                    new SemanticTokensEdit
-                    {
-                        Start = 21,
-                        DeleteCount = 1,
-                        Data = new List<int>
-                        {
-                            10
-                        }.ToImmutableArray(),
-                    }
-                }
-            };
-
-            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, newExpectedData, isRazor: true, previousResultId: previousResultId, service: service);
+            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, expectDelta: true, isRazor: true, previousResultId: previousResultId, service: service);
             Assert.NotEqual(previousResultId, newResultId);
         }
 
         [Fact]
         public async Task GetSemanticTokens_Razor_OriginallyNone_ThenSomeAsync()
         {
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-            };
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}";
             var newTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
 
             var isRazor = false;
-            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, expectedData, new bool[] { isRazor, isRazor });
+            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, new bool[] { isRazor, isRazor });
 
-            var newExpectedData = new SemanticTokensDelta
-            {
-                Edits = new List<SemanticTokensEdit> {
-                    new SemanticTokensEdit
-                    {
-                        Start = 10,
-                        Data = new int[]{
-                            1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                            0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                            0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                        }.ToImmutableArray(),
-                        DeleteCount = 0,
-                    }
-                }
-            };
-
-            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, newExpectedData, isRazor, previousResultId: previousResultId, service);
+            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, expectDelta: true, isRazor, previousResultId: previousResultId, service);
             Assert.NotEqual(previousResultId, newResultId);
         }
 
@@ -1173,21 +645,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_Razor_GetEditsWithNoPreviousAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
-            var expectedEdits = new SemanticTokens
-            {
-                Data = new int[] {
-                    0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                    0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                    1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                    0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                    0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                    0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                    0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                    0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                    0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                }.ToImmutableArray(),
-            };
-            var (previousResultId, _, _) = await AssertSemanticTokenEdits(txt, expectedEdits, isRazor: false, previousResultId: null);
+
+            var (previousResultId, _, _) = await AssertSemanticTokenEdits(txt, expectDelta: false, isRazor: false, previousResultId: null);
             Assert.NotNull(previousResultId);
         }
 
@@ -1195,55 +654,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_Razor_SomeTagHelpers_ThenNoneAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
-            var expectedData = new int[]{
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
             var newTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<p></p> ";
 
             var isRazor = false;
-            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, expectedData, new bool[] { isRazor, isRazor });
+            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, new bool[] { isRazor, isRazor });
 
-            var newExpectedData = new SemanticTokensDelta
-            {
-                Edits = new List<SemanticTokensEdit>
-                {
-                    new SemanticTokensEdit
-                    {
-                        Start = 17,
-                        Data = new int[]{ 1, RazorSemanticTokensLegend.MarkupElement }.ToImmutableArray(),
-                        DeleteCount = 2,
-                    },
-                    new SemanticTokensEdit
-                    {
-                        Start = 21,
-                        Data = new int[]{ 1 }.ToImmutableArray(),
-                        DeleteCount = 1,
-                    },
-                    new SemanticTokensEdit
-                    {
-                        Start = 37,
-                        Data = new int[]{ 1, RazorSemanticTokensLegend.MarkupElement }.ToImmutableArray(),
-                        DeleteCount = 2,
-                    },
-                    new SemanticTokensEdit
-                    {
-                        Start = 41,
-                        Data = new int[]{ 1 }.ToImmutableArray(),
-                        DeleteCount = 1,
-                    }
-                }
-            };
-
-            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, newExpectedData, isRazor, previousResultId: previousResultId, service);
+            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, expectDelta: true, isRazor, previousResultId: previousResultId, service);
             Assert.NotEqual(previousResultId, newResultId);
         }
 
@@ -1251,43 +668,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         public async Task GetSemanticTokens_Razor_OnlyDifferences_InternalAsync()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
             var newTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1><test1></test1> ";
 
             var isRazor = false;
-            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, expectedData, new bool[] { isRazor, isRazor });
+            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, new bool[] { isRazor, isRazor });
 
-            var newExpectedData = new SemanticTokensDelta
-            {
-                Edits = new List<SemanticTokensEdit> {
-                    new SemanticTokensEdit
-                    {
-                        Start = 45,
-                        Data = new int[]{
-                            0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                            0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                            0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                        }.ToImmutableArray(),
-                        DeleteCount = 0,
-                    }
-                }
-            };
-            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, newExpectedData, isRazor, previousResultId: previousResultId, service);
+            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, expectDelta: true, isRazor, previousResultId: previousResultId, service);
             Assert.NotEqual(previousResultId, newResultId);
         }
 
@@ -1298,31 +685,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 $"<test1 bool-val=\"true\" />{Environment.NewLine}" +
                 $"<test1 bool-val=\"true\" />{Environment.NewLine}" +
                 $"<test1 bool-val=\"true\" />{Environment.NewLine}";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 6, 8, RazorSemanticTokensLegend.RazorTagHelperAttribute, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 6, 8, RazorSemanticTokensLegend.RazorTagHelperAttribute, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 6, 8, RazorSemanticTokensLegend.RazorTagHelperAttribute, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupOperator, 0,
-                0, 8, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
             var newTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}" +
                 $"<test1 bool-va=\"true\" />{Environment.NewLine}" +
@@ -1330,27 +692,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 $"<test1 bool-val=\"true\" />{Environment.NewLine}";
 
             var isRazor = false;
-            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, expectedData, new bool[] { isRazor, isRazor });
+            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, new bool[] { isRazor, isRazor });
 
-            var newExpectedData = new SemanticTokensDelta
-            {
-                Edits = new List<SemanticTokensEdit>
-                {
-                    new SemanticTokensEdit
-                    {
-                        Start = 22,
-                        Data = new int[]{ 7, RazorSemanticTokensLegend.MarkupAttribute }.ToImmutableArray(),
-                        DeleteCount = 2,
-                    },
-                    new SemanticTokensEdit
-                    {
-                        Start = 26,
-                        Data = new int[]{ 7 }.ToImmutableArray(),
-                        DeleteCount = 1,
-                    }
-                }
-            };
-            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, newExpectedData, isRazor, previousResultId: previousResultId, service: service);
+            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, expectDelta: true, isRazor, previousResultId: previousResultId, service: service);
             Assert.NotEqual(previousResultId, newResultId);
         }
 
@@ -1360,47 +704,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1> ";
             var newTxt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<test1></test1>{Environment.NewLine}" +
                 $"<test1></test1> ";
-            var expectedData = new List<int> {
-                0, 0, 1, RazorSemanticTokensLegend.RazorTransition, 0, //line, character pos, length, tokenType, modifier
-                0, 1, 12, RazorSemanticTokensLegend.RazorDirective, 0,
-                1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-            };
 
             var isRazor = false;
-            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, expectedData, new bool[] { isRazor, isRazor });
+            var (previousResultId, service, _, _) = await AssertSemanticTokens(new string[] { txt, newTxt }, new bool[] { isRazor, isRazor });
 
-            var newExpectedData = new SemanticTokensDelta
-            {
-                Edits = new List<SemanticTokensEdit> {
-                    new SemanticTokensEdit
-                    {
-                        Start = 45,
-                        Data = new int[]{
-                            1, 0, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                            0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                            0, 1, 5, RazorSemanticTokensLegend.RazorTagHelperElement, 0,
-                            0, 5, 1, RazorSemanticTokensLegend.MarkupTagDelimiter, 0,
-                        }.ToImmutableArray(),
-                        DeleteCount = 0,
-                    }
-                }
-            };
-            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, newExpectedData, isRazor, previousResultId: previousResultId, service);
+            var (newResultId, _, _) = await AssertSemanticTokenEdits(newTxt, expectDelta: true, isRazor, previousResultId: previousResultId, service);
             Assert.NotEqual(previousResultId, newResultId);
         }
 
         private Task<(string?, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>, Queue<DocumentSnapshot>)> AssertSemanticTokens(
             string txt,
-            IEnumerable<int>? expectedData,
             bool isRazor,
             RazorSemanticTokensInfoService? service = null,
             OmniSharpRange? location = null,
@@ -1408,12 +721,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             (OmniSharpRange, OmniSharpRange?)[]? documentMappings = null,
             int? documentVersion = 0)
         {
-            return AssertSemanticTokens(new string[] { txt }, expectedData, new bool[] { isRazor }, service, location, csharpTokens, documentMappings, documentVersion);
+            return AssertSemanticTokens(new string[] { txt }, new bool[] { isRazor }, service, location, csharpTokens, documentMappings, documentVersion);
         }
 
         private async Task<(string?, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>, Queue<DocumentSnapshot>)> AssertSemanticTokens(
             string[] txtArray,
-            IEnumerable<int>? expectedData,
             bool[] isRazorArray,
             RazorSemanticTokensInfoService? service = null,
             OmniSharpRange? location = null,
@@ -1448,42 +760,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             var tokens = await service.GetSemanticTokensAsync(textDocumentIdentifier, location, CancellationToken.None);
 
             // Assert
-            Assert.True(ArrayEqual(expectedData, tokens?.Data));
+            AssertSemanticTokensMatchesBaseline(tokens?.Data);
 
             return (tokens?.ResultId, outService, serviceMock!, documentSnapshots);
         }
 
-        private static bool ArrayEqual(IEnumerable<int>? expectedData, IEnumerable<int>? actualData)
-        {
-            if (expectedData is null && actualData is null)
-            {
-                return true;
-            }
-
-            if (expectedData is null || actualData is null)
-            {
-                return false;
-            }
-
-            var expectedArray = expectedData.ToArray();
-            var actualArray = actualData.ToArray();
-            for (var i = 0; i < Math.Min(expectedData.Count(), actualData.Count()); i++)
-            {
-                if (expectedArray[i] != actualArray[i])
-                {
-                    Assert.True(false, $"expected: {expectedArray[i]}, actual: {actualArray[i]} i: {i}");
-                    return false;
-                }
-            }
-
-            Assert.Equal(expectedArray.Length, actualArray.Length);
-
-            return true;
-        }
-
         private async Task<(string?, RazorSemanticTokensInfoService, Mock<ClientNotifierServiceBase>)> AssertSemanticTokenEdits(
             string? txt,
-            SemanticTokensFullOrDelta expectedEdits,
+            bool expectDelta,
             bool isRazor,
             string? previousResultId,
             RazorSemanticTokensInfoService? service = null,
@@ -1506,19 +790,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
             var edits = (await service.GetSemanticTokensEditsAsync(textDocumentIdentifier, previousResultId, CancellationToken.None)).Value;
 
             // Assert
-            if (expectedEdits.IsDelta)
+            if (expectDelta)
             {
-                for (var i = 0; i < Math.Min(expectedEdits.Delta!.Edits.Count(), edits.Delta!.Edits.Count()); i++)
-                {
-                    Assert.Equal(expectedEdits.Delta.Edits.ElementAt(i), edits.Delta.Edits.ElementAt(i), SemanticEditComparer.Instance);
-                }
-                Assert.Equal(expectedEdits.Delta.Edits.Count(), edits.Delta.Edits.Count());
+                AssertSemanticTokensEditsMatchesBaseline(edits);
 
-                return (edits.Delta.ResultId, service, clientMock!);
+                return (edits.Delta!.ResultId, service, clientMock!);
             }
             else
             {
-                Assert.Equal(expectedEdits.Full!.Data, edits.Full!.Data, ImmutableArrayIntComparer.Instance);
+                AssertSemanticTokensMatchesBaseline(edits.Full!.Data);
 
                 return (edits.Full.ResultId, service, clientMock!);
             }
@@ -1588,56 +868,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
                 document = _documentSnapshots.Count == 1 ? _documentSnapshots.Peek() : _documentSnapshots.Dequeue();
 
                 return true;
-            }
-        }
-
-        private class SemanticEditComparer : IEqualityComparer<SemanticTokensEdit>
-        {
-            public static SemanticEditComparer Instance = new SemanticEditComparer();
-
-            public bool Equals([AllowNull] SemanticTokensEdit x, [AllowNull] SemanticTokensEdit y)
-            {
-                if (x == null && y == null)
-                {
-                    return true;
-                }
-                else if (x is null || y is null)
-                {
-                    return false;
-                }
-
-                Assert.Equal(x.DeleteCount, y.DeleteCount);
-                Assert.Equal(x.Start, y.Start);
-                Assert.Equal(x.Data!.Value, y.Data!.Value, ImmutableArrayIntComparer.Instance);
-
-                return x.DeleteCount == y.DeleteCount &&
-                    x.Start == y.Start;
-            }
-
-            public int GetHashCode([DisallowNull] SemanticTokensEdit obj)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class ImmutableArrayIntComparer : IEqualityComparer<ImmutableArray<int>>
-        {
-            public static ImmutableArrayIntComparer Instance = new ImmutableArrayIntComparer();
-
-            public bool Equals([AllowNull] ImmutableArray<int> x, [AllowNull] ImmutableArray<int> y)
-            {
-                for (var i = 0; i < Math.Min(x.Length, y.Length); i++)
-                {
-                    Assert.True(x[i] == y[i], $"x {x[i]} y {y[i]} i {i}");
-                }
-                Assert.Equal(x.Length, y.Length);
-
-                return true;
-            }
-
-            public int GetHashCode([DisallowNull] ImmutableArray<int> obj)
-            {
-                throw new NotImplementedException();
             }
         }
     }

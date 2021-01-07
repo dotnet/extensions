@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Formatting\TestFiles\**\*" />
+    <EmbeddedResource Include="Semantic\TestFiles\**\*" />
   </ItemGroup>
 
 </Project>

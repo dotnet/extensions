@@ -1,0 +1,11 @@
+//line,characterPos,length,tokenType,modifier
+0 0 1 73 0 //razorTransition
+0 1 12 76 0 //razorDirective
+1 0 1 80 0 //markupTagDelimiter
+0 1 11 71 0 //razorTagHelperElement
+0 12 1 73 0 //razorTransition
+0 1 9 75 0 //razorDirectiveAttribute
+0 9 1 74 0 //razorDirectiveColon
+0 1 9 75 0 //razorDirectiveAttribute
+0 10 1 80 0 //markupTagDelimiter
+0 1 1 80 0 //markupTagDelimiter

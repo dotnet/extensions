@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
-    public class DefaultTagHelperCompletionServiceTest : DefaultTagHelperServiceTestBase
+    public class DefaultTagHelperCompletionServiceTest : TagHelperServiceTestBase
     {
         protected ILanguageServer LanguageServer
         {
