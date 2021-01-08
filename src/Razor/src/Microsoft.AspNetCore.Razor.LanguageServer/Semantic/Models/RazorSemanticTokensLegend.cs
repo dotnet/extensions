@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
         private const string MarkupOperatorString = "markupOperator";
         private const string MarkupElementString = "markupElement";
         private const string MarkupAttributeString = "markupAttribute";
+        private const string MarkupAttributeValueString = "markupAttributeValue";
         private const string MarkupAttributeQuoteString = "markupAttributeQuoteString";
         private const string MarkupTextLiteralString = "markupTextLiteral";
         private const string MarkupCommentPunctuationString = "markupCommentPunctuation";
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
         public static int MarkupOperator => TokenTypesLegend[MarkupOperatorString];
         public static int MarkupElement => TokenTypesLegend[MarkupElementString];
         public static int MarkupAttribute => TokenTypesLegend[MarkupAttributeString];
+        public static int MarkupAttributeValue => TokenTypesLegend[MarkupAttributeValueString];
         public static int MarkupAttributeQuote => TokenTypesLegend[MarkupAttributeQuoteString];
         public static int RazorDirectiveAttribute => TokenTypesLegend[RazorDirectiveAttributeString];
         public static int RazorDirectiveColon => TokenTypesLegend[RazorDirectiveColonString];
@@ -144,6 +146,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
             MarkupTextLiteralString,
             MarkupCommentPunctuationString,
             MarkupCommentString,
+            MarkupAttributeValueString,
         };
 
         private static readonly string[] _tokenModifiers = new string[] {

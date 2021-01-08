@@ -155,7 +155,9 @@
         </dict>
       </dict>
 
-      <dict>
+      <!-- Temporarily removed because IN VS TextMate sometimes superceeds Semantic tokes
+        and this is a common offender -->
+      <!-- <dict>
         <key>scope</key>
         <string>storage.type.cs, entity.name.type.class.cs</string>
         <key>settings</key>
@@ -163,7 +165,7 @@
           <key>vsclassificationtype</key>
           <string>class name</string>
         </dict>
-      </dict>
+      </dict> -->
 
       <dict>
         <key>scope</key>
