@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
+using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Text;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RazorCompletionFactsService _completionFactsService;
-        private readonly TagHelperDescriptionFactory _tagHelperDescriptionFactory;
+        private readonly TagHelperTooltipFactory _tagHelperTooltipFactory;
         private static readonly Command RetriggerCompletionCommand = new Command()
         {
             Name = "editor.action.triggerSuggest",
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             RazorCompletionFactsService completionFactsService,
-            TagHelperDescriptionFactory tagHelperDescriptionFactory,
+            TagHelperTooltipFactory tagHelperTooltipFactory,
             ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
@@ -54,9 +55,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 throw new ArgumentNullException(nameof(completionFactsService));
             }
 
-            if (tagHelperDescriptionFactory == null)
+            if (tagHelperTooltipFactory == null)
             {
-                throw new ArgumentNullException(nameof(tagHelperDescriptionFactory));
+                throw new ArgumentNullException(nameof(tagHelperTooltipFactory));
             }
 
             if (loggerFactory == null)
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _completionFactsService = completionFactsService;
-            _tagHelperDescriptionFactory = tagHelperDescriptionFactory;
+            _tagHelperTooltipFactory = tagHelperTooltipFactory;
             _logger = loggerFactory.CreateLogger<RazorCompletionEndpoint>();
         }
 
@@ -137,14 +138,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 {
                     case RazorCompletionItemKind.DirectiveAttribute:
                     case RazorCompletionItemKind.DirectiveAttributeParameter:
+                    case RazorCompletionItemKind.TagHelperAttribute:
                         return true;
                 }
 
                 return false;
             }
 
-            if (completionItem.IsTagHelperElementCompletion() ||
-                completionItem.IsTagHelperAttributeCompletion())
+            if (completionItem.IsTagHelperElementCompletion())
             {
                 return true;
             }
@@ -162,8 +163,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 {
                     case RazorCompletionItemKind.DirectiveAttribute:
                     case RazorCompletionItemKind.DirectiveAttributeParameter:
+                    case RazorCompletionItemKind.TagHelperAttribute:
                         var descriptionInfo = completionItem.GetAttributeDescriptionInfo();
-                        _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out tagHelperDescription);
+                        _tagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperDescription);
                         break;
                 }
             }
@@ -172,13 +174,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 if (completionItem.IsTagHelperElementCompletion())
                 {
                     var descriptionInfo = completionItem.GetElementDescriptionInfo();
-                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out tagHelperDescription);
-                }
-
-                if (completionItem.IsTagHelperAttributeCompletion())
-                {
-                    var descriptionInfo = completionItem.GetTagHelperAttributeDescriptionInfo();
-                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out tagHelperDescription);
+                    _tagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperDescription);
                 }
             }
 
@@ -355,8 +351,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             tagHelperAttributeCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
                         }
 
-                        var descriptionInfo = razorCompletionItem.GetTagHelperAttributeDescriptionInfo();
+                        var descriptionInfo = razorCompletionItem.GetAttributeCompletionDescription();
                         tagHelperAttributeCompletionItem.SetDescriptionInfo(descriptionInfo);
+                        tagHelperAttributeCompletionItem.SetRazorCompletionKind(razorCompletionItem.Kind);
 
                         completionItem = tagHelperAttributeCompletionItem;
                         return true;

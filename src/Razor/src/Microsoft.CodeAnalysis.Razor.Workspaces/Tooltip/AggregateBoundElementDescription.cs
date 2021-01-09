@@ -4,13 +4,13 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
+namespace Microsoft.CodeAnalysis.Razor.Tooltip
 {
-    internal class ElementDescriptionInfo
+    internal class AggregateBoundElementDescription
     {
-        public static readonly ElementDescriptionInfo Default = new ElementDescriptionInfo(Array.Empty<TagHelperDescriptionInfo>());
+        public static readonly AggregateBoundElementDescription Default = new AggregateBoundElementDescription(Array.Empty<BoundElementDescriptionInfo>());
 
-        public ElementDescriptionInfo(IReadOnlyList<TagHelperDescriptionInfo> associatedTagHelperDescriptions)
+        public AggregateBoundElementDescription(IReadOnlyList<BoundElementDescriptionInfo> associatedTagHelperDescriptions)
         {
             if (associatedTagHelperDescriptions == null)
             {
@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             AssociatedTagHelperDescriptions = associatedTagHelperDescriptions;
         }
 
-        public IReadOnlyList<TagHelperDescriptionInfo> AssociatedTagHelperDescriptions { get; }
+        public IReadOnlyList<BoundElementDescriptionInfo> AssociatedTagHelperDescriptions { get; }
     }
 }

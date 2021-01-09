@@ -5,48 +5,27 @@
 
 using System;
 using Microsoft.CodeAnalysis.Razor.Completion;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal static class RazorCompletionItemExtensions
     {
-        private readonly static string TagHelperAttributeCompletionDescriptionKey = "Razor.TagHelperAttributeDescription";
         private readonly static string TagHelperElementCompletionDescriptionKey = "Razor.TagHelperElementDescription";
 
-        public static void SetTagHelperElementDescriptionInfo(this RazorCompletionItem completionItem, ElementDescriptionInfo elementDescriptionInfo)
+        public static void SetTagHelperElementDescriptionInfo(this RazorCompletionItem completionItem, AggregateBoundElementDescription elementDescriptionInfo)
         {
             completionItem.Items[TagHelperElementCompletionDescriptionKey] = elementDescriptionInfo;
         }
 
-        public static ElementDescriptionInfo? GetTagHelperElementDescriptionInfo(this RazorCompletionItem completionItem)
+        public static AggregateBoundElementDescription? GetTagHelperElementDescriptionInfo(this RazorCompletionItem completionItem)
         {
             if (completionItem is null)
             {
                 throw new ArgumentNullException(nameof(completionItem));
             }
 
-            var description = completionItem.Items[TagHelperElementCompletionDescriptionKey] as ElementDescriptionInfo;
-            return description;
-        }
-
-        public static void SetTagHelperAttributeDescriptionInfo(this RazorCompletionItem completionItem, AttributeDescriptionInfo attributeDescriptionInfo)
-        {
-            if (completionItem is null)
-            {
-                throw new ArgumentNullException(nameof(completionItem));
-            }
-
-            completionItem.Items[TagHelperAttributeCompletionDescriptionKey] = attributeDescriptionInfo;
-        }
-
-        public static AttributeDescriptionInfo? GetTagHelperAttributeDescriptionInfo(this RazorCompletionItem completionItem)
-        {
-            if (completionItem is null)
-            {
-                throw new ArgumentNullException(nameof(completionItem));
-            }
-
-            var description = completionItem.Items[TagHelperAttributeCompletionDescriptionKey] as AttributeDescriptionInfo;
+            var description = completionItem.Items[TagHelperElementCompletionDescriptionKey] as AggregateBoundElementDescription;
             return description;
         }
     }

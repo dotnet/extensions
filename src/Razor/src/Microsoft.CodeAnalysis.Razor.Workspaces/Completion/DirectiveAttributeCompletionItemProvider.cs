@@ -7,6 +7,7 @@ using System.Composition;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.CodeAnalysis.Razor.Completion
@@ -104,7 +105,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             }
 
             // Attributes are case sensitive when matching
-            var attributeCompletions = new Dictionary<string, (HashSet<AttributeDescriptionInfo>, HashSet<string>)>(StringComparer.Ordinal);
+            var attributeCompletions = new Dictionary<string, (HashSet<BoundAttributeDescriptionInfo>, HashSet<string>)>(StringComparer.Ordinal);
             for (var i = 0; i < descriptorsForTag.Count; i++)
             {
                 var descriptor = descriptorsForTag[i];
@@ -166,7 +167,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     insertText,
                     RazorCompletionItemKind.DirectiveAttribute,
                     commitCharacters);
-                var completionDescription = new AttributeCompletionDescription(attributeDescriptionInfos.ToArray());
+                var completionDescription = new AggregateBoundAttributeDescription(attributeDescriptionInfos.ToArray());
                 razorCompletionItem.SetAttributeCompletionDescription(completionDescription);
 
                 completionItems.Add(razorCompletionItem);
@@ -192,20 +193,18 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             {
                 if (!attributeCompletions.TryGetValue(attributeName, out var attributeDetails))
                 {
-                    attributeDetails = (new HashSet<AttributeDescriptionInfo>(), new HashSet<string>());
+                    attributeDetails = (new HashSet<BoundAttributeDescriptionInfo>(), new HashSet<string>());
                     attributeCompletions[attributeName] = attributeDetails;
                 }
 
                 (var attributeDescriptionInfos, var commitCharacters) = attributeDetails;
 
-                var descriptionInfo = new AttributeDescriptionInfo(
-                    boundAttributeDescriptor.TypeName,
-                    tagHelperDescriptor.GetTypeName(),
-                    boundAttributeDescriptor.GetPropertyName(),
-                    boundAttributeDescriptor.Documentation);
+                var indexerCompletion = attributeName.EndsWith("...", StringComparison.Ordinal);
+                var tagHelperTypeName = tagHelperDescriptor.GetTypeName();
+                var descriptionInfo = BoundAttributeDescriptionInfo.From(boundAttributeDescriptor, indexer: indexerCompletion, tagHelperTypeName);
                 attributeDescriptionInfos.Add(descriptionInfo);
 
-                if (attributeName.EndsWith("...", StringComparison.Ordinal))
+                if (indexerCompletion)
                 {
                     // Indexer attribute, we don't want to commit with standard chars
                     return;

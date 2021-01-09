@@ -32,6 +32,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Definition;
 using Microsoft.AspNetCore.Razor.LanguageServer.Serialization;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -189,7 +190,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
                         services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
                         services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();
-                        services.AddSingleton<TagHelperDescriptionFactory, DefaultTagHelperDescriptionFactory>();
+                        services.AddSingleton<TagHelperTooltipFactory, DefaultTagHelperTooltipFactory>();
 
                         // Completion
                         services.AddSingleton<TagHelperCompletionService, DefaultTagHelperCompletionService>();

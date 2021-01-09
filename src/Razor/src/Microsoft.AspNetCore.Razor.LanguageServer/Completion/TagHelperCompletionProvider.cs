@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.CodeAnalysis.Razor.Completion;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
@@ -150,13 +151,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     RazorCompletionItemKind.TagHelperAttribute,
                     attributeCommitCharacters);
 
-                var attributeDescriptions = completion.Value.Select(boundAttribute => new TagHelperAttributeDescriptionInfo(
-                    boundAttribute.DisplayName,
-                    boundAttribute.GetPropertyName(),
-                    indexerCompletion ? boundAttribute.IndexerTypeName : boundAttribute.TypeName,
-                    boundAttribute.Documentation));
-                var attributeDescriptionInfo = new AttributeDescriptionInfo(attributeDescriptions.ToList());
-                razorCompletionItem.SetTagHelperAttributeDescriptionInfo(attributeDescriptionInfo);
+                var attributeDescriptions = completion.Value.Select(boundAttribute =>
+                {
+                    var descriptionInfo = BoundAttributeDescriptionInfo.From(boundAttribute, indexerCompletion);
+
+                    return descriptionInfo;
+                });
+                var attributeDescriptionInfo = new AggregateBoundAttributeDescription(attributeDescriptions.ToList());
+                razorCompletionItem.SetAttributeCompletionDescription(attributeDescriptionInfo);
 
                 completionItems.Add(razorCompletionItem);
             }
@@ -191,8 +193,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     RazorCompletionItemKind.TagHelperElement,
                     ElementCommitCharacters);
 
-                var tagHelperDescriptions = completion.Value.Select(tagHelper => new TagHelperDescriptionInfo(tagHelper.GetTypeName(), tagHelper.Documentation));
-                var elementDescription = new ElementDescriptionInfo(tagHelperDescriptions.ToList());
+                var tagHelperDescriptions = completion.Value.Select(tagHelper => BoundElementDescriptionInfo.From(tagHelper));
+                var elementDescription = new AggregateBoundElementDescription(tagHelperDescriptions.ToList());
                 razorCompletionItem.SetTagHelperElementDescriptionInfo(elementDescription);
 
                 completionItems.Add(razorCompletionItem);
