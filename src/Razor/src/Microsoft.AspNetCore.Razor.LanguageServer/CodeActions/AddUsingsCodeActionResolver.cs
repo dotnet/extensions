@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
@@ -229,7 +230,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         {
             if (node is RazorDirectiveSyntax directiveNode)
             {
-                return directiveNode.DirectiveDescriptor == ComponentPageDirective.Directive || directiveNode.DirectiveDescriptor == NamespaceDirective.Directive;
+                return directiveNode.DirectiveDescriptor == ComponentPageDirective.Directive ||
+                    directiveNode.DirectiveDescriptor == NamespaceDirective.Directive ||
+                    directiveNode.DirectiveDescriptor == PageDirective.Directive;
             }
             return false;
         }

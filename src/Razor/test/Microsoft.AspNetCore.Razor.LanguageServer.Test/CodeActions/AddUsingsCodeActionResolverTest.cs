@@ -98,13 +98,54 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         [Fact]
-        public async Task Handle_AddOneUsingToPage()
+        public async Task Handle_AddOneUsingToComponentPageDirective()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
             var documentUri = new Uri(documentPath);
             var contents = $"@page \"/\"{Environment.NewLine}";
             var codeDocument = CreateCodeDocument(contents);
+
+            var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument));
+            var actionParams = new AddUsingsCodeActionParams
+            {
+                Uri = documentUri,
+                Namespace = "System"
+            };
+            var data = JObject.FromObject(actionParams);
+
+            // Act
+            var workspaceEdit = await resolver.ResolveAsync(data, default);
+
+            // Assert
+            Assert.NotNull(workspaceEdit);
+            Assert.NotNull(workspaceEdit.DocumentChanges);
+            Assert.Single(workspaceEdit.DocumentChanges);
+
+            var documentChanges = workspaceEdit.DocumentChanges.ToArray();
+            var addUsingsChange = documentChanges[0];
+            Assert.True(addUsingsChange.IsTextDocumentEdit);
+            var firstEdit = Assert.Single(addUsingsChange.TextDocumentEdit.Edits);
+            Assert.Equal(1, firstEdit.Range.Start.Line);
+            Assert.Equal($"@using System{Environment.NewLine}", firstEdit.NewText);
+        }
+
+        [Fact]
+        public async Task Handle_AddOneUsingToPageDirective()
+        {
+            // Arrange
+            var documentPath = "c:/Test.cshtml";
+            var documentUri = new Uri(documentPath);
+            var contents = $"@page{Environment.NewLine}@model IndexModel";
+
+            var projectItem = new TestRazorProjectItem("c:/Test.cshtml", "c:/Test.cshtml", "Test.cshtml") { Content = contents };
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) =>
+            {
+                PageDirective.Register(builder);
+                ModelDirective.Register(builder);
+            });
+            var codeDocument = projectEngine.Process(projectItem);
+            codeDocument.SetFileKind(FileKinds.Legacy);
 
             var resolver = new AddUsingsCodeActionResolver(new DefaultForegroundDispatcher(), CreateDocumentResolver(documentPath, codeDocument));
             var actionParams = new AddUsingsCodeActionParams
@@ -312,7 +353,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         private static RazorCodeDocument CreateCodeDocument(string text)
         {
-            var projectItem = new TestRazorProjectItem("c:/Test.razor", "c:/Test.razor", "Test.razor") { Content = text };
+            var fileName = "Test.razor";
+            var filePath = $"c:/{fileName}";
+            var projectItem = new TestRazorProjectItem(filePath, filePath, fileName) { Content = text };
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) =>
             {
                 PageDirective.Register(builder);
