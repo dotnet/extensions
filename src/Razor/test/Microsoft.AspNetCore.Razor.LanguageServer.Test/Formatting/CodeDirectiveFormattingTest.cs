@@ -124,6 +124,36 @@ fileKind: FileKinds.Legacy);
         }
 
         [Fact]
+        public async Task DoesNotFormat_SectionDirectiveBlock()
+        {
+            await RunFormattingTestAsync(
+input: @"
+|@functions {
+ public class Foo{
+void Method() {  }
+    }
+}
+
+@section Scripts {
+<script></script>
+}|
+",
+expected: @"
+@functions {
+    public class Foo
+    {
+        void Method() { }
+    }
+}
+
+@section Scripts {
+<script></script>
+}
+",
+fileKind: FileKinds.Legacy);
+        }
+
+        [Fact]
         public async Task Formats_CodeBlockDirectiveWithRazorComments()
         {
             await RunFormattingTestAsync(

@@ -202,6 +202,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
                 var line = context.SourceText.Lines[i];
                 var lineStart = line.GetFirstNonWhitespacePosition() ?? line.Start;
+
+                var lineStartSpan = new TextSpan(lineStart, 0);
+                if (!ShouldFormat(context, lineStartSpan, allowImplicitStatements: true))
+                {
+                    // We don't care about this range as this can potentially lead to incorrect scopes.
+                    continue;
+                }
+
                 if (DocumentMappingService.TryMapToProjectedDocumentPosition(context.CodeDocument, lineStart, out _, out var projectedLineStart))
                 {
                     lineStartMap[lineStart] = projectedLineStart;
@@ -255,6 +263,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var minCSharpIndentation = context.GetIndentationOffsetForLevel(context.Indentations[i].MinCSharpIndentLevel);
                 var line = context.SourceText.Lines[i];
                 var lineStart = line.GetFirstNonWhitespacePosition() ?? line.Start;
+                var lineStartSpan = new TextSpan(lineStart, 0);
+                if (!ShouldFormat(context, lineStartSpan, allowImplicitStatements: true))
+                {
+                    // We don't care about this line as it lies in an area we don't want to format.
+                    continue;
+                }
+
                 if (!lineStartIndentations.TryGetValue(lineStart, out var csharpDesiredIndentation))
                 {
                     // Couldn't remap. This is probably a non-C# location.

@@ -197,6 +197,70 @@ expected: @"@page ""/test""
         }
 
         [Fact]
+        public async Task FormatsMixedContentWithMultilineExpressions()
+        {
+            await RunFormattingTestAsync(
+input: @"|@page ""/test""
+
+<div
+attr='val'
+class=@className>Some Text</div>
+
+@{
+@: Hi!
+var x = DateTime
+    .Now.ToString();
+<p>
+        @if (true) {
+                var t = 1;
+        }
+        </p>
+}
+
+@(DateTime
+    .Now
+.ToString())
+
+@(
+    Foo.Values.Select(f =>
+    {
+        return f.ToString();
+    })
+)
+|",
+expected: @"@page ""/test""
+
+<div attr='val'
+     class=@className>
+    Some Text
+</div>
+
+@{
+    @: Hi!
+    var x = DateTime
+        .Now.ToString();
+    <p>
+        @if (true)
+        {
+            var t = 1;
+        }
+    </p>
+}
+
+@(DateTime
+    .Now
+.ToString())
+
+@(
+    Foo.Values.Select(f =>
+    {
+        return f.ToString();
+    })
+)
+");
+        }
+
+        [Fact]
         public async Task FormatsComplexBlock()
         {
             await RunFormattingTestAsync(
