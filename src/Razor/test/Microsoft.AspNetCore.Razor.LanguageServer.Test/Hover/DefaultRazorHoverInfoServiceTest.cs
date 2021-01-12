@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
 using Microsoft.AspNetCore.Razor.LanguageServer.Hover;
+using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -337,8 +338,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
                 languageServer = LanguageServer;
             }
 
-            var tagHelperDescriptionFactory = new DefaultTagHelperDescriptionFactory(languageServer);
-            return new DefaultRazorHoverInfoService(TagHelperFactsService, tagHelperDescriptionFactory, HtmlFactsService);
+            var tagHelperTooltipFactory = new DefaultTagHelperTooltipFactory(languageServer);
+            return new DefaultRazorHoverInfoService(TagHelperFactsService, tagHelperTooltipFactory, HtmlFactsService);
         }
     }
 }

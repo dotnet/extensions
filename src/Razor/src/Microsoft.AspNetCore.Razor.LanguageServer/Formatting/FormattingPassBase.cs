@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -201,6 +202,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
                 var line = context.SourceText.Lines[i];
                 var lineStart = line.GetFirstNonWhitespacePosition() ?? line.Start;
+
+                var lineStartSpan = new TextSpan(lineStart, 0);
+                if (!ShouldFormat(context, lineStartSpan, allowImplicitStatements: true))
+                {
+                    // We don't care about this range as this can potentially lead to incorrect scopes.
+                    continue;
+                }
+
                 if (DocumentMappingService.TryMapToProjectedDocumentPosition(context.CodeDocument, lineStart, out _, out var projectedLineStart))
                 {
                     lineStartMap[lineStart] = projectedLineStart;
@@ -254,6 +263,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var minCSharpIndentation = context.GetIndentationOffsetForLevel(context.Indentations[i].MinCSharpIndentLevel);
                 var line = context.SourceText.Lines[i];
                 var lineStart = line.GetFirstNonWhitespacePosition() ?? line.Start;
+                var lineStartSpan = new TextSpan(lineStart, 0);
+                if (!ShouldFormat(context, lineStartSpan, allowImplicitStatements: true))
+                {
+                    // We don't care about this line as it lies in an area we don't want to format.
+                    continue;
+                }
+
                 if (!lineStartIndentations.TryGetValue(lineStart, out var csharpDesiredIndentation))
                 {
                     // Couldn't remap. This is probably a non-C# location.
@@ -562,6 +578,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             if (IsInHtmlTag() ||
                 IsInSingleLineDirective() ||
                 IsImplicitOrExplicitExpression() ||
+                IsInSectionDirective() ||
                 (!allowImplicitStatements && IsImplicitStatementStart()))
             {
                 return false;
@@ -620,6 +637,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 // `@(|foo)` - true
                 //
                 return owner.AncestorsAndSelf().Any(n => n is CSharpImplicitExpressionSyntax || n is CSharpExplicitExpressionSyntax);
+            }
+
+            bool IsInSectionDirective()
+            {
+                var directive = owner.FirstAncestorOrSelf<RazorDirectiveSyntax>();
+                if (directive != null &&
+                    directive.DirectiveDescriptor.Directive == SectionDirective.Directive.Directive)
+                {
+                    return true;
+                }
+
+                return false;
             }
         }
     }

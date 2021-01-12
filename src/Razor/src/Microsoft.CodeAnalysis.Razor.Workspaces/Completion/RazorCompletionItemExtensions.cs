@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 
 namespace Microsoft.CodeAnalysis.Razor.Completion
 {
@@ -11,7 +12,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         private readonly static string DirectiveCompletionDescriptionKey = "Razor.DirectiveDescription";
         private readonly static string MarkupTransitionDescriptionKey = "Razor.MarkupTransitionDescription";
 
-        public static void SetAttributeCompletionDescription(this RazorCompletionItem completionItem, AttributeCompletionDescription attributeCompletionDescription)
+        public static void SetAttributeCompletionDescription(this RazorCompletionItem completionItem, AggregateBoundAttributeDescription attributeCompletionDescription)
         {
             if (completionItem is null)
             {
@@ -21,14 +22,14 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             completionItem.Items[AttributeCompletionDescriptionKey] = attributeCompletionDescription;
         }
 
-        public static AttributeCompletionDescription GetAttributeCompletionDescription(this RazorCompletionItem completionItem)
+        public static AggregateBoundAttributeDescription GetAttributeCompletionDescription(this RazorCompletionItem completionItem)
         {
             if (completionItem is null)
             {
                 throw new ArgumentNullException(nameof(completionItem));
             }
 
-            var attributeCompletionDescription = completionItem.Items[AttributeCompletionDescriptionKey] as AttributeCompletionDescription;
+            var attributeCompletionDescription = completionItem.Items[AttributeCompletionDescriptionKey] as AggregateBoundAttributeDescription;
             return attributeCompletionDescription;
         }
 

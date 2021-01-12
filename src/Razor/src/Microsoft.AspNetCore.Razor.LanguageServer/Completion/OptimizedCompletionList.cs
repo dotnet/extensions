@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     writer.WriteValue(completionItem.InsertText);
                 }
 
-                if (completionItem.InsertTextFormat != InsertTextFormat.PlainText)
+                if (completionItem.InsertTextFormat != default && completionItem.InsertTextFormat != InsertTextFormat.PlainText)
                 {
                     writer.WritePropertyName("insertTextFormat");
                     writer.WriteValue(completionItem.InsertTextFormat);

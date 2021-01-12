@@ -2,42 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.CodeAnalysis.Razor.Completion;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using RazorAttributeDescriptionInfo = Microsoft.CodeAnalysis.Razor.Completion.AttributeDescriptionInfo;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
 {
-    internal class DefaultTagHelperDescriptionFactory : TagHelperDescriptionFactory
+    internal class DefaultTagHelperTooltipFactory : TagHelperTooltipFactory
     {
         private static readonly Lazy<Regex> ExtractCrefRegex = new Lazy<Regex>(
             () => new Regex("<(see|seealso)[\\s]+cref=\"([^\">]+)\"[^>]*>", RegexOptions.Compiled, TimeSpan.FromSeconds(1)));
-        private static readonly IReadOnlyDictionary<string, string> PrimitiveDisplayTypeNameLookups = new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            [typeof(byte).FullName] = "byte",
-            [typeof(sbyte).FullName] = "sbyte",
-            [typeof(int).FullName] = "int",
-            [typeof(uint).FullName] = "uint",
-            [typeof(short).FullName] = "short",
-            [typeof(ushort).FullName] = "ushort",
-            [typeof(long).FullName] = "long",
-            [typeof(ulong).FullName] = "ulong",
-            [typeof(float).FullName] = "float",
-            [typeof(double).FullName] = "double",
-            [typeof(char).FullName] = "char",
-            [typeof(bool).FullName] = "bool",
-            [typeof(object).FullName] = "object",
-            [typeof(string).FullName] = "string",
-            [typeof(decimal).FullName] = "decimal",
-        };
 
         // Need to have a lazy server here because if we try to resolve the server it creates types which create a DefaultTagHelperDescriptionFactory, and we end up StackOverflowing.
         // This lazy can be avoided in the future by using an upcoming ILanguageServerSettings interface, but it doesn't exist/work yet.
-        public DefaultTagHelperDescriptionFactory(ClientNotifierServiceBase languageServer)
+        public DefaultTagHelperTooltipFactory(ClientNotifierServiceBase languageServer)
         {
             if (languageServer is null)
             {
@@ -49,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         public ClientNotifierServiceBase LanguageServer;
 
-        public override bool TryCreateDescription(ElementDescriptionInfo elementDescriptionInfo, out MarkupContent tagHelperDescription)
+        public override bool TryCreateTooltip(AggregateBoundElementDescription elementDescriptionInfo, out MarkupContent tagHelperDescription)
         {
             var associatedTagHelperInfos = elementDescriptionInfo.AssociatedTagHelperDescriptions;
             if (associatedTagHelperInfos.Count == 0)
@@ -103,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return true;
         }
 
-        public override bool TryCreateDescription(AttributeCompletionDescription descriptionInfos, out MarkupContent tagHelperDescription)
+        public override bool TryCreateTooltip(AggregateBoundAttributeDescription descriptionInfos, out MarkupContent tagHelperDescription)
         {
             var associatedAttributeInfos = descriptionInfos.DescriptionInfos;
             if (associatedAttributeInfos.Count == 0)
@@ -131,7 +111,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 }
 
                 StartOrEndBold(descriptionBuilder);
-                var returnTypeName = GetSimpleName(descriptionInfo.ReturnTypeName);
+                if (!TypeNameStringResolver.TryGetSimpleName(descriptionInfo.ReturnTypeName, out var returnTypeName))
+                {
+                    returnTypeName = descriptionInfo.ReturnTypeName;
+                }
                 var reducedReturnTypeName = ReduceTypeName(returnTypeName);
                 descriptionBuilder.Append(reducedReturnTypeName);
                 StartOrEndBold(descriptionBuilder);
@@ -163,26 +146,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             tagHelperDescription.Value = descriptionBuilder.ToString();
             return true;
-        }
-
-        public override bool TryCreateDescription(AttributeDescriptionInfo attributeDescriptionInfo, out MarkupContent tagHelperDescription)
-        {
-            var convertedDescriptionInfos = new List<RazorAttributeDescriptionInfo>();
-            foreach (var descriptionInfo in attributeDescriptionInfo.AssociatedAttributeDescriptions)
-            {
-                var tagHelperTypeName = ResolveTagHelperTypeName(descriptionInfo);
-                var converted = new RazorAttributeDescriptionInfo(
-                    descriptionInfo.ReturnTypeName,
-                    tagHelperTypeName,
-                    descriptionInfo.PropertyName,
-                    descriptionInfo.Documentation);
-
-                convertedDescriptionInfos.Add(converted);
-            }
-
-            var convertedDescriptionInfo = new AttributeCompletionDescription(convertedDescriptionInfos);
-
-            return TryCreateDescription(convertedDescriptionInfo, out tagHelperDescription);
         }
 
         // Internal for testing
@@ -281,44 +244,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             }
 
             return value;
-        }
-
-        // Internal for testing
-        internal static string GetSimpleName(string typeName)
-        {
-            if (PrimitiveDisplayTypeNameLookups.TryGetValue(typeName, out var simpleName))
-            {
-                return simpleName;
-            }
-
-            return typeName;
-        }
-
-        // Internal for testing
-        internal static string ResolveTagHelperTypeName(TagHelperAttributeDescriptionInfo info)
-        {
-            // A BoundAttributeDescriptor does not have a direct reference to its parent TagHelper.
-            // However, when it was constructed the parent TagHelper's type name was embedded into
-            // its DisplayName. In VSCode we can't use the DisplayName verbatim for descriptions
-            // because the DisplayName is typically too long to display properly. Therefore we need
-            // to break it apart and then reconstruct it in a reduced format.
-            // i.e. this is the format the display name comes in:
-            // ReturnTypeName SomeTypeName.SomePropertyName
-
-            // We must simplify the return type name before using it to determine the type name prefix
-            // because that is how the display name was originally built (a little hacky).
-            var simpleReturnType = GetSimpleName(info.ReturnTypeName);
-
-            // "ReturnTypeName "
-            var typeNamePrefixLength = simpleReturnType.Length + 1 /* space */;
-
-            // ".SomePropertyName"
-            var typeNameSuffixLength = /* . */ 1 + info.PropertyName.Length;
-
-            // "SomeTypeName"
-            var typeNameLength = info.DisplayName.Length - typeNamePrefixLength - typeNameSuffixLength;
-            var tagHelperTypeName = info.DisplayName.Substring(typeNamePrefixLength, typeNameLength);
-            return tagHelperTypeName;
         }
 
         // Internal for testing

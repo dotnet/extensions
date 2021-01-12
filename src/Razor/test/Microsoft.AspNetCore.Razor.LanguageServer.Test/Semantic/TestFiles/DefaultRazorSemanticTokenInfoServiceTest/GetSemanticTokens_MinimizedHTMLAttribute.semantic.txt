@@ -1,6 +1,8 @@
 //line,characterPos,length,tokenType,modifier
 0 0 1 80 0 //markupTagDelimiter
 0 1 1 81 0 //markupElement
-0 2 4 83 0 //markupAttribute
-0 5 1 80 0 //markupTagDelimiter
+0 1 1 85 0 //markupTextLiteral
+0 1 4 83 0 //markupAttribute
+0 4 1 85 0 //markupTextLiteral
+0 1 1 80 0 //markupTagDelimiter
 0 1 1 80 0 //markupTagDelimiter

@@ -11,8 +11,6 @@ using Microsoft.VisualStudio.Editor.Razor;
 using Newtonsoft.Json;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Serialization;
-using LSPTagHelperCompletionService = Microsoft.AspNetCore.Razor.LanguageServer.Completion.DefaultTagHelperCompletionService;
-using RazorTagHelperCompletionService = Microsoft.VisualStudio.Editor.Razor.DefaultTagHelperCompletionService;
 
 namespace Microsoft.AspNetCore.Razor.Performance
 {
@@ -23,13 +21,13 @@ namespace Microsoft.AspNetCore.Razor.Performance
         public CompletionListSerializationBenchmark()
         {
             var tagHelperFactsService = new DefaultTagHelperFactsService();
-            var completionService = new RazorTagHelperCompletionService(tagHelperFactsService);
+            var completionService = new DefaultTagHelperCompletionService(tagHelperFactsService);
             var htmlFactsService = new DefaultHtmlFactsService();
-            var componentCompletionService = new LSPTagHelperCompletionService(completionService, htmlFactsService, tagHelperFactsService);
+            var tagHelperCompletionProvider = new TagHelperCompletionProvider(completionService, htmlFactsService, tagHelperFactsService);
 
             var documentContent = "<";
             var queryIndex = 1;
-            CompletionList = GenerateCompletionList(documentContent, queryIndex, componentCompletionService);
+            CompletionList = GenerateCompletionList(documentContent, queryIndex, tagHelperCompletionProvider);
             _completionListBuffer = GenerateBuffer(CompletionList);
 
             Serializer.Instance.JsonSerializer.Converters.Add(TagHelperDescriptorJsonConverter.Instance);
@@ -75,20 +73,15 @@ namespace Microsoft.AspNetCore.Razor.Performance
             deserializedCompletions = Serializer.Instance.JsonSerializer.Deserialize<CompletionList>(reader);
         }
 
-        private CompletionList GenerateCompletionList(string documentContent, int queryIndex, LSPTagHelperCompletionService componentCompletionService)
+        private CompletionList GenerateCompletionList(string documentContent, int queryIndex, TagHelperCompletionProvider componentCompletionProvider)
         {
             var sourceDocument = RazorSourceDocument.Create(documentContent, RazorSourceDocumentProperties.Default);
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
-
             var syntaxTree = RazorSyntaxTree.Parse(sourceDocument);
-            codeDocument.SetSyntaxTree(syntaxTree);
-
             var tagHelperDocumentContext = TagHelperDocumentContext.Create(prefix: string.Empty, DefaultTagHelpers);
-            codeDocument.SetTagHelperContext(tagHelperDocumentContext);
 
             var completionQueryLocation = new SourceSpan(queryIndex, length: 0);
-            var completionItems = componentCompletionService.GetCompletionsAt(completionQueryLocation, codeDocument);
-            var completionList = RazorCompletionEndpoint.CreateLSPCompletionList(completionItems);
+            var razorCompletionItems = componentCompletionProvider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, completionQueryLocation);
+            var completionList = RazorCompletionEndpoint.CreateLSPCompletionList(razorCompletionItems);
             return completionList;
         }
 

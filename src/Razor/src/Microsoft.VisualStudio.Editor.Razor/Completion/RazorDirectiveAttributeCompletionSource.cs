@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Completion;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.Core.Imaging;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
@@ -162,7 +163,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 throw new ArgumentNullException(nameof(item));
             }
 
-            if (!item.Properties.TryGetProperty(DescriptionKey, out AttributeCompletionDescription completionDescription))
+            if (!item.Properties.TryGetProperty(DescriptionKey, out AggregateBoundAttributeDescription completionDescription))
             {
                 return Task.FromResult<object>(string.Empty);
             }

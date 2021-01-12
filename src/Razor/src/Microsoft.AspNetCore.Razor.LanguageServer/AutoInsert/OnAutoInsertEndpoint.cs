@@ -104,16 +104,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             var uri = request.TextDocument.Uri;
             var position = request.Position;
 
-            var formattingContext = FormattingContext.Create(uri, document, codeDocument, request.Options, new Range(position, position));
-            for (var i = 0; i < applicableProviders.Count; i++)
+            using (var formattingContext = FormattingContext.Create(uri, document, codeDocument, request.Options, new Range(position, position)))
             {
-                if (applicableProviders[i].TryResolveInsertion(position, formattingContext, out var textEdit, out var format))
+                for (var i = 0; i < applicableProviders.Count; i++)
                 {
-                    return new OnAutoInsertResponse()
+                    if (applicableProviders[i].TryResolveInsertion(position, formattingContext, out var textEdit, out var format))
                     {
-                        TextEdit = textEdit,
-                        TextEditFormat = format,
-                    };
+                        return new OnAutoInsertResponse()
+                        {
+                            TextEdit = textEdit,
+                            TextEditFormat = format,
+                        };
+                    }
                 }
             }
 

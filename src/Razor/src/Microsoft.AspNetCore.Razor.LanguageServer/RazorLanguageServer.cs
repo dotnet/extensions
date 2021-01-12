@@ -32,6 +32,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Definition;
 using Microsoft.AspNetCore.Razor.LanguageServer.Serialization;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -189,16 +190,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
                         services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
                         services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();
-                        services.AddSingleton<VisualStudio.Editor.Razor.TagHelperCompletionService, VisualStudio.Editor.Razor.DefaultTagHelperCompletionService>();
-                        services.AddSingleton<TagHelperDescriptionFactory, DefaultTagHelperDescriptionFactory>();
+                        services.AddSingleton<TagHelperTooltipFactory, DefaultTagHelperTooltipFactory>();
 
                         // Completion
-                        services.AddSingleton<Completion.TagHelperCompletionService, Completion.DefaultTagHelperCompletionService>();
+                        services.AddSingleton<TagHelperCompletionService, DefaultTagHelperCompletionService>();
+                        services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
                         services.AddSingleton<RazorCompletionItemProvider, DirectiveCompletionItemProvider>();
                         services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeCompletionItemProvider>();
                         services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeParameterCompletionItemProvider>();
                         services.AddSingleton<RazorCompletionItemProvider, DirectiveAttributeTransitionCompletionItemProvider>();
                         services.AddSingleton<RazorCompletionItemProvider, MarkupTransitionCompletionItemProvider>();
+                        services.AddSingleton<RazorCompletionItemProvider, TagHelperCompletionProvider>();
 
                         // Auto insert
                         services.AddSingleton<RazorOnAutoInsertProvider, HtmlSmartIndentOnAutoInsertProvider>();
@@ -231,7 +233,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<CSharpCodeActionResolver, AddUsingsCSharpCodeActionResolver>();
 
                         // Other
-                        services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
                         services.AddSingleton<RazorSemanticTokensInfoService, DefaultRazorSemanticTokensInfoService>();
                         services.AddSingleton<RazorHoverInfoService, DefaultRazorHoverInfoService>();
                         services.AddSingleton<HtmlFactsService, DefaultHtmlFactsService>();

@@ -9,7 +9,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
-using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
+using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using HoverModel = OmniSharp.Extensions.LanguageServer.Protocol.Models.Hover;
@@ -20,13 +21,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
     internal class DefaultRazorHoverInfoService : RazorHoverInfoService
     {
         private readonly TagHelperFactsService _tagHelperFactsService;
-        private readonly TagHelperDescriptionFactory _tagHelperDescriptionFactory;
+        private readonly TagHelperTooltipFactory _tagHelperTooltipFactory;
         private readonly HtmlFactsService _htmlFactsService;
 
         [ImportingConstructor]
         public DefaultRazorHoverInfoService(
             TagHelperFactsService tagHelperFactsService,
-            TagHelperDescriptionFactory tagHelperDescriptionFactory,
+            TagHelperTooltipFactory tagHelperTooltipFactory,
             HtmlFactsService htmlFactsService)
         {
             if (tagHelperFactsService is null)
@@ -34,9 +35,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                 throw new ArgumentNullException(nameof(tagHelperFactsService));
             }
 
-            if (tagHelperDescriptionFactory is null)
+            if (tagHelperTooltipFactory is null)
             {
-                throw new ArgumentNullException(nameof(tagHelperDescriptionFactory));
+                throw new ArgumentNullException(nameof(tagHelperTooltipFactory));
             }
 
             if (htmlFactsService is null)
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
             }
 
             _tagHelperFactsService = tagHelperFactsService;
-            _tagHelperDescriptionFactory = tagHelperDescriptionFactory;
+            _tagHelperTooltipFactory = tagHelperTooltipFactory;
             _htmlFactsService = htmlFactsService;
         }
 
@@ -146,6 +147,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                         attribute = miniDirectiveAttribute;
                     }
 
+                    var attributeName = attribute.GetContent();
                     var range = attribute.GetRange(codeDocument.Source);
 
                     // Include the @ in the range
@@ -154,14 +156,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
                         case SyntaxKind.MarkupTagHelperDirectiveAttribute:
                             var directiveAttribute = attribute.Parent as MarkupTagHelperDirectiveAttributeSyntax;
                             range.Start.Character -= directiveAttribute.Transition.FullWidth;
+                            attributeName = "@" + attributeName;
                             break;
                         case SyntaxKind.MarkupMinimizedTagHelperDirectiveAttribute:
                             var minimizedAttribute = containingTagNameToken.Parent as MarkupMinimizedTagHelperDirectiveAttributeSyntax;
                             range.Start.Character -= minimizedAttribute.Transition.FullWidth;
+                            attributeName = "@" + attributeName;
                             break;
                     }
 
-                    var attributeHoverModel = AttributeInfoToHover(tagHelperAttributes, range);
+                    var attributeHoverModel = AttributeInfoToHover(tagHelperAttributes, range, attributeName);
 
                     return attributeHoverModel;
                 }
@@ -170,14 +174,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
             return null;
         }
 
-        private HoverModel AttributeInfoToHover(IEnumerable<BoundAttributeDescriptor> descriptors, RangeModel range)
+        private HoverModel AttributeInfoToHover(IEnumerable<BoundAttributeDescriptor> descriptors, RangeModel range, string attributeName)
         {
-            var descriptionInfos = descriptors.Select(d => new TagHelperAttributeDescriptionInfo(d.DisplayName, d.GetPropertyName(), d.TypeName, d.Documentation))
-                .ToList()
-                .AsReadOnly();
-            var attrDescriptionInfo = new AttributeDescriptionInfo(descriptionInfos);
+            var descriptionInfos = descriptors.Select(boundAttribute =>
+            {
+                var indexer = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(attributeName, boundAttribute);
+                var descriptionInfo = BoundAttributeDescriptionInfo.From(boundAttribute, indexer);
+                return descriptionInfo;
+            }).ToList().AsReadOnly();
+            var attrDescriptionInfo = new AggregateBoundAttributeDescription(descriptionInfos);
 
-            if (!_tagHelperDescriptionFactory.TryCreateDescription(attrDescriptionInfo, out var markupContent))
+            if (!_tagHelperTooltipFactory.TryCreateTooltip(attrDescriptionInfo, out var markupContent))
             {
                 return null;
             }
@@ -193,12 +200,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
 
         private HoverModel ElementInfoToHover(IEnumerable<TagHelperDescriptor> descriptors, RangeModel range)
         {
-            var descriptionInfos = descriptors.Select(d => new TagHelperDescriptionInfo(d.DisplayName, d.Documentation))
+            var descriptionInfos = descriptors.Select(descriptor => BoundElementDescriptionInfo.From(descriptor))
                 .ToList()
                 .AsReadOnly();
-            var elementDescriptionInfo = new ElementDescriptionInfo(descriptionInfos);
+            var elementDescriptionInfo = new AggregateBoundElementDescription(descriptionInfos);
 
-            if (!_tagHelperDescriptionFactory.TryCreateDescription(elementDescriptionInfo, out var markupContent))
+            if (!_tagHelperTooltipFactory.TryCreateTooltip(elementDescriptionInfo, out var markupContent))
             {
                 return null;
             }
