@@ -178,7 +178,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var syntaxTree = codeDocument.GetSyntaxTree();
             var classifiedSpans = syntaxTree.GetClassifiedSpans();
             var tagHelperSpans = syntaxTree.GetTagHelperSpans();
-            var languageKind = GetLanguageKindCore(classifiedSpans, tagHelperSpans, originalIndex);
+            var documentLength = codeDocument.GetSourceText().Length;
+            var languageKind = GetLanguageKindCore(classifiedSpans, tagHelperSpans, originalIndex, documentLength);
 
             return languageKind;
         }
@@ -187,7 +188,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         internal static RazorLanguageKind GetLanguageKindCore(
             IReadOnlyList<ClassifiedSpanInternal> classifiedSpans,
             IReadOnlyList<TagHelperSpanInternal> tagHelperSpans,
-            int absoluteIndex)
+            int absoluteIndex,
+            int documentLength)
         {
             for (var i = 0; i < classifiedSpans.Count; i++)
             {
@@ -211,18 +213,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                             }
                         }
 
-                        // Overlaps with request
-                        switch (classifiedSpan.SpanKind)
-                        {
-                            case SpanKindInternal.Markup:
-                                return RazorLanguageKind.Html;
-                            case SpanKindInternal.Code:
-                                return RazorLanguageKind.CSharp;
-                        }
-
-                        // Content type was non-C# or Html or we couldn't find a classified span overlapping the request position.
-                        // All other classified span kinds default back to Razor
-                        return RazorLanguageKind.Razor;
+                        return GetLanguageFromClassifiedSpan(classifiedSpan);
                     }
                 }
             }
@@ -249,8 +240,30 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 }
             }
 
+            // Use the language of the last classified span if we're at the end
+            // of the document.
+            if (classifiedSpans.Count != 0 && absoluteIndex == documentLength)
+            {
+                var lastClassifiedSpan = classifiedSpans.Last();
+                return GetLanguageFromClassifiedSpan(lastClassifiedSpan);
+            }
+
             // Default to Razor
             return RazorLanguageKind.Razor;
+
+            static RazorLanguageKind GetLanguageFromClassifiedSpan(ClassifiedSpanInternal classifiedSpan)
+            {
+                // Overlaps with request
+                return classifiedSpan.SpanKind switch
+                {
+                    SpanKindInternal.Markup => RazorLanguageKind.Html,
+                    SpanKindInternal.Code => RazorLanguageKind.CSharp,
+
+                    // Content type was non-C# or Html or we couldn't find a classified span overlapping the request position.
+                    // All other classified span kinds default back to Razor
+                    _ => RazorLanguageKind.Razor,
+                };
+            }
         }
 
         private bool TryMapFromProjectedDocumentRangeStrict(RazorCodeDocument codeDocument, Range projectedRange, out Range originalRange)
