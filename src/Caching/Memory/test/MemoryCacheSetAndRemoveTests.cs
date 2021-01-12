@@ -211,6 +211,13 @@ namespace Microsoft.Extensions.Caching.Memory
         [Fact]
         public void DisposingCacheEntryReleasesScope()
         {
+            object GetScope(ICacheEntry entry)
+            {
+                return entry.GetType()
+                    .GetField("_scope", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(entry);
+            }
+
             var cache = CreateCache();
 
             ICacheEntry entry = cache.CreateEntry("myKey");
@@ -218,6 +225,44 @@ namespace Microsoft.Extensions.Caching.Memory
 
             entry.Dispose();
             Assert.Null(GetScope(entry));
+        }
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValue_WhenGenericTypeIsIncompatible()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            int value = 42;
+
+            cache.Set(key, value);
+
+            Assert.False(cache.TryGetValue(key, out string obj));
+        }
+
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValueAndSucceed_WhenValueNull()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            string value = null;
+
+            cache.Set(key, value);
+
+            Assert.True(cache.TryGetValue(key, out string obj));
+        }
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValueAndSucceed_WhenValueNullForValueType()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            string value = null;
+
+            cache.Set(key, value);
+
+            Assert.True(cache.TryGetValue(key, out int obj));
+            Assert.Equal(default, obj);
         }
 
         [Fact]
@@ -560,7 +605,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             var task1 = Task.Run(() =>
             {
@@ -569,7 +614,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             var task2 = Task.Run(() =>
             {
@@ -578,7 +623,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             cts.CancelAfter(TimeSpan.FromSeconds(5));
             var task3 = Task.Delay(TimeSpan.FromSeconds(7));
@@ -634,21 +679,14 @@ namespace Microsoft.Extensions.Caching.Memory
         public void GetOrCreateFromCacheWithNullKeyThrows()
         {
             var cache = CreateCache();
-            Assert.Throws<ArgumentNullException>(() => cache.GetOrCreate<object>(null, null))
-;       }
+            Assert.Throws<ArgumentNullException>(() => cache.GetOrCreate<object>(null, null));
+        }
 
         [Fact]
         public async Task GetOrCreateAsyncFromCacheWithNullKeyThrows()
         {
             var cache = CreateCache();
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await cache.GetOrCreateAsync<object>(null, null));
-        }
-
-        private object GetScope(ICacheEntry entry)
-        {
-            return entry.GetType()
-                .GetField("_scope", BindingFlags.NonPublic | BindingFlags.Instance)
-                .GetValue(entry);
         }
 
         private class TestKey

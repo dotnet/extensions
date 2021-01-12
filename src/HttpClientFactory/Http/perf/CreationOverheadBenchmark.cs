@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Http.Performance
 {
-    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class CreationOverheadBenchmark
     {
         private const int Iterations = 100;
@@ -20,31 +19,50 @@ namespace Microsoft.Extensions.Http.Performance
             Handler = new FakeClientHandler();
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddHttpClient("example", c =>
+            serviceCollection.AddHttpClient<TypedClient>("example", c =>
             {
                 c.BaseAddress = new Uri("http://example.com/");
                 c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
             .ConfigurePrimaryHttpMessageHandler(() => Handler);
 
-            var services = serviceCollection.BuildServiceProvider();
-            Factory = services.GetRequiredService<IHttpClientFactory>();
+            Services = serviceCollection.BuildServiceProvider();
+            Factory = Services.GetRequiredService<IHttpClientFactory>();
         }
+
+        public IServiceProvider Services { get; }
 
         public IHttpClientFactory Factory { get; }
 
         public HttpMessageHandler Handler { get; }
 
         [Benchmark(
-            Description = "use IHttpClientFactory", 
+            Description = "use IHttpClientFactory with named client", 
             OperationsPerInvoke = Iterations)]
-        public async Task CreateClient()
+        public async Task CreateNamedClient()
         {
             for (var i = 0; i < Iterations; i++)
             {
                 var client = Factory.CreateClient("example");
 
                 var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "api/Products"));
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        // This test is a super set of CreateNamedClient - because all of the work done in there
+        // also has to happen to create a typed client. This is here for scenario comparison purposes,
+        // It won't be possible to optimize this code path enough to have the same performance as CreateNamedClient.
+        [Benchmark(
+            Description = "use IHttpClientFactory with typed client", 
+            OperationsPerInvoke = Iterations)]
+        public async Task CreateTypeClient()
+        {
+            for (var i = 0; i < Iterations; i++)
+            {
+                var client = Services.GetRequiredService<TypedClient>();
+
+                var response = await client.HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "api/Products"));
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -72,6 +90,16 @@ namespace Microsoft.Extensions.Http.Performance
                 var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "api/Products"));
                 response.EnsureSuccessStatusCode();
             }
+        }
+
+        private class TypedClient
+        {
+            public TypedClient(HttpClient httpClient)
+            {
+                HttpClient = httpClient;
+            }
+
+            public HttpClient HttpClient { get; }
         }
     }
 }
