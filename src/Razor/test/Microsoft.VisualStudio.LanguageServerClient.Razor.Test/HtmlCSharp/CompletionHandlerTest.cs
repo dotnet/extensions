@@ -428,7 +428,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedItems = new CompletionItem[] {
                  new CompletionItem() { InsertText = "DateTime", Label = "DateTime" },
-                 new CompletionItem() { InsertText = "FROMCSHARP", Label = "for" }, // TO-DO: Why is this returning keywords from C# when C# rn doesn't return keywords?
+                 new CompletionItem() { InsertText = "FROMCSHARP", Label = "for" },
 
             };
 
