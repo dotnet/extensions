@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- Ignore API warnings in shim projects -->
+    <NoWarn>$(NoWarn);IDE0060</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
