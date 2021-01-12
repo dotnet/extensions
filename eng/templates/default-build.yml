@@ -69,6 +69,10 @@ jobs:
         _SignType: test
       ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
         _SignType: real
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      PB_PackageVersionPropsUrl: ''
+      PB_AssetRootUrl: ''
+      PB_RestoreSource: ''
   steps:
   - checkout: self
     clean: true
@@ -89,12 +93,20 @@ jobs:
         feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
   - ${{ if eq(parameters.agentOs, 'Windows') }}:
     - script: .\build.cmd -ci /p:SignType=$(_SignType) /p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
+      env:
+        PB_PackageVersionPropsUrl: $(PB_PackageVersionPropsUrl)
+        PB_AssetRootUrl: $(PB_AssetRootUrl)
+        PB_RestoreSource: $(PB_RestoreSource)
       displayName: Run build.cmd
     - powershell: eng\scripts\KillProcesses.ps1
       displayName: Kill processes
       condition: always()
   - ${{ if ne(parameters.agentOs, 'Windows') }}:
     - script: ./build.sh -ci -p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
+      env:
+        PB_PackageVersionPropsUrl: $(PB_PackageVersionPropsUrl)
+        PB_AssetRootUrl: $(PB_AssetRootUrl)
+        PB_RestoreSource: $(PB_RestoreSource)
       displayName: Run build.sh
     - script: eng/scripts/KillProcesses.sh
       displayName: Kill processes
