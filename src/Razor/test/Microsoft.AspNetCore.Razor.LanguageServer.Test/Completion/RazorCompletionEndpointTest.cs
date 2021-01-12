@@ -1,24 +1,24 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Language.Components;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
+using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Editor.Razor;
 using Moq;
 using Newtonsoft.Json;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
-using Microsoft.CodeAnalysis.Razor.Tooltip;
-using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
@@ -65,9 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Equal(completionItem.DisplayText, converted.FilterText);
             Assert.Equal(completionItem.DisplayText, converted.SortText);
             Assert.Null(converted.Detail);
-            Assert.Equal(description, converted.Documentation.String);
-            Assert.True(converted.TryGetRazorCompletionKind(out var convertedKind));
-            Assert.Equal(RazorCompletionItemKind.Directive, convertedKind);
+            Assert.Null(converted.Documentation);
         }
 
         [Fact]
@@ -99,7 +97,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var completionItem = DirectiveAttributeTransitionCompletionItemProvider.TransitionCompletionItem;
-            var description = completionItem.GetDirectiveCompletionDescription().Description;
 
             // Act
             var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
@@ -112,10 +109,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Equal(completionItem.DisplayText, converted.FilterText);
             Assert.Equal(completionItem.DisplayText, converted.SortText);
             Assert.Null(converted.Detail);
-            Assert.Equal(description, converted.Documentation.String);
+            Assert.Null(converted.Documentation);
             Assert.NotNull(converted.Command);
-            Assert.True(converted.TryGetRazorCompletionKind(out var convertedKind));
-            Assert.Equal(RazorCompletionItemKind.Directive, convertedKind);
         }
 
         [Fact]
@@ -123,7 +118,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var completionItem = MarkupTransitionCompletionItemProvider.MarkupTransitionCompletionItem;
-            var description = completionItem.GetMarkupTransitionCompletionDescription().Description;
 
             // Act
             var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
@@ -135,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Equal(completionItem.DisplayText, converted.FilterText);
             Assert.Equal(completionItem.DisplayText, converted.SortText);
             Assert.Null(converted.Detail);
-            Assert.Equal(description, converted.Documentation.String);
+            Assert.Null(converted.Documentation);
             Assert.Equal(converted.CommitCharacters, completionItem.CommitCharacters);
         }
 
@@ -154,8 +148,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public void TryConvert_DirectiveAttribute_ReturnsTrue()
         {
             // Arrange
-            var completionItem = new RazorCompletionItem("@testDisplay", "testInsert", RazorCompletionItemKind.DirectiveAttribute, new [] { "=", ":" });
-            completionItem.SetAttributeCompletionDescription(new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>()));
+            var completionItem = new RazorCompletionItem("@testDisplay", "testInsert", RazorCompletionItemKind.DirectiveAttribute, new[] { "=", ":" });
 
             // Act
             var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
@@ -170,8 +163,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Null(converted.Detail);
             Assert.Null(converted.Documentation);
             Assert.Null(converted.Command);
-            Assert.True(converted.TryGetRazorCompletionKind(out var convertedKind));
-            Assert.Equal(RazorCompletionItemKind.DirectiveAttribute, convertedKind);
         }
 
         [Fact]
@@ -179,7 +170,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var completionItem = new RazorCompletionItem("format", "format", RazorCompletionItemKind.DirectiveAttributeParameter);
-            completionItem.SetAttributeCompletionDescription(new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>()));
 
             // Act
             var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
@@ -193,8 +183,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Null(converted.Detail);
             Assert.Null(converted.Documentation);
             Assert.Null(converted.Command);
-            Assert.True(converted.TryGetRazorCompletionKind(out var convertedKind));
-            Assert.Equal(RazorCompletionItemKind.DirectiveAttributeParameter, convertedKind);
         }
 
         [Fact]
@@ -202,7 +190,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var completionItem = new RazorCompletionItem("format", "format", RazorCompletionItemKind.TagHelperElement);
-            completionItem.SetTagHelperElementDescriptionInfo(new AggregateBoundElementDescription(Array.Empty<BoundElementDescriptionInfo>()));
 
             // Act
             var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
@@ -216,8 +203,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Null(converted.Detail);
             Assert.Null(converted.Documentation);
             Assert.Null(converted.Command);
-            var descriptionInfo = completionItem.GetTagHelperElementDescriptionInfo();
-            Assert.NotNull(descriptionInfo);
         }
 
         [Fact]
@@ -225,7 +210,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var completionItem = new RazorCompletionItem("format", "format", RazorCompletionItemKind.TagHelperAttribute);
-            completionItem.SetAttributeCompletionDescription(new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>()));
 
             // Act
             var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
@@ -239,12 +223,46 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             Assert.Null(converted.Detail);
             Assert.Null(converted.Documentation);
             Assert.Null(converted.Command);
-            var descriptionInfo = completionItem.GetAttributeCompletionDescription();
-            Assert.NotNull(descriptionInfo);
         }
 
         [Fact]
-        public async Task Handle_DirectiveAttributeCompletion_ReturnsCompletionItemWithDocumentation()
+        public async Task Handle_Resolve_DirectiveCompletion_ReturnsCompletionItemWithDocumentation()
+        {
+            // Arrange
+            var descriptionFactory = Mock.Of<TagHelperTooltipFactory>();
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, descriptionFactory, LoggerFactory);
+            var razorCompletionItem = new RazorCompletionItem("TestItem", "TestItem", RazorCompletionItemKind.Directive);
+            razorCompletionItem.SetDirectiveCompletionDescription(new DirectiveCompletionDescription("Test directive"));
+            var completionList = completionEndpoint.CreateLSPCompletionList(new[] { razorCompletionItem });
+            var completionItem = completionList.Items.Single();
+
+            // Act
+            var newCompletionItem = await completionEndpoint.Handle(completionItem, default);
+
+            // Assert
+            Assert.NotNull(newCompletionItem.Documentation);
+        }
+
+        [Fact]
+        public async Task Handle_Resolve_MarkupTransitionCompletion_ReturnsCompletionItemWithDocumentation()
+        {
+            // Arrange
+            var descriptionFactory = Mock.Of<TagHelperTooltipFactory>();
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, descriptionFactory, LoggerFactory);
+            var razorCompletionItem = new RazorCompletionItem("@...", "@", RazorCompletionItemKind.MarkupTransition);
+            razorCompletionItem.SetMarkupTransitionCompletionDescription(new MarkupTransitionCompletionDescription("Test description"));
+            var completionList = completionEndpoint.CreateLSPCompletionList(new[] { razorCompletionItem });
+            var completionItem = completionList.Items.Single();
+
+            // Act
+            var newCompletionItem = await completionEndpoint.Handle(completionItem, default);
+
+            // Assert
+            Assert.NotNull(newCompletionItem.Documentation);
+        }
+
+        [Fact]
+        public async Task Handle_Resolve_DirectiveAttributeCompletion_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperTooltipFactory>();
@@ -256,9 +274,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             descriptionFactory.Setup(factory => factory.TryCreateTooltip(It.IsAny<AggregateBoundAttributeDescription>(), out markdown))
                 .Returns(true);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, descriptionFactory.Object, LoggerFactory);
-            var completionItem = new CompletionItem();
-            completionItem.SetDescriptionInfo(new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>()));
-            completionItem.SetRazorCompletionKind(RazorCompletionItemKind.DirectiveAttribute);
+            var razorCompletionItem = new RazorCompletionItem("TestItem", "TestItem", RazorCompletionItemKind.DirectiveAttribute);
+            razorCompletionItem.SetAttributeCompletionDescription(new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>()));
+            var completionList = completionEndpoint.CreateLSPCompletionList(new[] { razorCompletionItem });
+            var completionItem = completionList.Items.Single();
 
             // Act
             var newCompletionItem = await completionEndpoint.Handle(completionItem, default);
@@ -268,7 +287,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         [Fact]
-        public async Task Handle_DirectiveAttributeParameterCompletion_ReturnsCompletionItemWithDocumentation()
+        public async Task Handle_Resolve_DirectiveAttributeParameterCompletion_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperTooltipFactory>();
@@ -280,9 +299,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             descriptionFactory.Setup(factory => factory.TryCreateTooltip(It.IsAny<AggregateBoundAttributeDescription>(), out markdown))
                 .Returns(true);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, descriptionFactory.Object, LoggerFactory);
-            var completionItem = new CompletionItem();
-            completionItem.SetDescriptionInfo(new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>()));
-            completionItem.SetRazorCompletionKind(RazorCompletionItemKind.DirectiveAttributeParameter);
+            var razorCompletionItem = new RazorCompletionItem("TestItem", "TestItem", RazorCompletionItemKind.DirectiveAttributeParameter);
+            razorCompletionItem.SetAttributeCompletionDescription(new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>()));
+            var completionList = completionEndpoint.CreateLSPCompletionList(new[] { razorCompletionItem });
+            var completionItem = completionList.Items.Single();
 
             // Act
             var newCompletionItem = await completionEndpoint.Handle(completionItem, default);
@@ -292,7 +312,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         [Fact]
-        public async Task Handle_TagHelperElementCompletion_ReturnsCompletionItemWithDocumentation()
+        public async Task Handle_Resolve_TagHelperElementCompletion_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperTooltipFactory>();
@@ -304,8 +324,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             descriptionFactory.Setup(factory => factory.TryCreateTooltip(It.IsAny<AggregateBoundElementDescription>(), out markdown))
                 .Returns(true);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, descriptionFactory.Object, LoggerFactory);
-            var completionItem = new CompletionItem();
-            completionItem.SetDescriptionInfo(AggregateBoundElementDescription.Default);
+            var razorCompletionItem = new RazorCompletionItem("TestItem", "TestItem", RazorCompletionItemKind.TagHelperElement);
+            razorCompletionItem.SetTagHelperElementDescriptionInfo(new AggregateBoundElementDescription(Array.Empty<BoundElementDescriptionInfo>()));
+            var completionList = completionEndpoint.CreateLSPCompletionList(new[] { razorCompletionItem });
+            var completionItem = completionList.Items.Single();
 
             // Act
             var newCompletionItem = await completionEndpoint.Handle(completionItem, default);
@@ -315,20 +337,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         [Fact]
-        public async Task Handle_TagHelperAttribute_ReturnsCompletionItemWithDocumentation()
+        public async Task Handle_Resolve_TagHelperAttribute_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperTooltipFactory>();
-            var markdown = new MarkupContent{
+            var markdown = new MarkupContent
+            {
                 Kind = MarkupKind.Markdown,
                 Value = "Some Markdown"
             };
             descriptionFactory.Setup(factory => factory.TryCreateTooltip(It.IsAny<AggregateBoundAttributeDescription>(), out markdown))
                 .Returns(true);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, descriptionFactory.Object, LoggerFactory);
-            var completionItem = new CompletionItem();
-            completionItem.SetDescriptionInfo(AggregateBoundAttributeDescription.Default);
-            completionItem.SetRazorCompletionKind(RazorCompletionItemKind.TagHelperAttribute);
+            var razorCompletionItem = new RazorCompletionItem("TestItem", "TestItem", RazorCompletionItemKind.TagHelperAttribute);
+            razorCompletionItem.SetAttributeCompletionDescription(new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>()));
+            var completionList = completionEndpoint.CreateLSPCompletionList(new[] { razorCompletionItem });
+            var completionItem = completionList.Items.Single();
 
             // Act
             var newCompletionItem = await completionEndpoint.Handle(completionItem, default);
@@ -338,7 +362,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         [Fact]
-        public async Task Handle_NonTagHelperCompletion_Noops()
+        public async Task Handle_Resolve_NonTagHelperCompletion_Noops()
         {
             // Arrange
             var descriptionFactory = new Mock<TagHelperTooltipFactory>();
@@ -357,81 +381,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             // Assert
             Assert.Null(newCompletionItem.Documentation);
-        }
-
-        [Fact]
-        public void CanResolve_DirectiveAttributeCompletion_ReturnsTrue()
-        {
-            // Arrange
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperTooltipFactory, LoggerFactory);
-            var completionItem = new CompletionItem();
-            completionItem.SetRazorCompletionKind(RazorCompletionItemKind.DirectiveAttribute);
-
-            // Act
-            var result = completionEndpoint.CanResolve(completionItem);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void CanResolve_DirectiveAttributeParameterCompletion_ReturnsTrue()
-        {
-            // Arrange
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperTooltipFactory, LoggerFactory);
-            var completionItem = new CompletionItem();
-            completionItem.SetRazorCompletionKind(RazorCompletionItemKind.DirectiveAttributeParameter);
-
-            // Act
-            var result = completionEndpoint.CanResolve(completionItem);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void CanResolve_TagHelperElementCompletion_ReturnsTrue()
-        {
-            // Arrange
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperTooltipFactory, LoggerFactory);
-            var completionItem = new CompletionItem();
-            completionItem.SetDescriptionInfo(AggregateBoundElementDescription.Default);
-
-            // Act
-            var result = completionEndpoint.CanResolve(completionItem);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void CanResolve_TagHelperAttribute_ReturnsTrue()
-        {
-            // Arrange
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperTooltipFactory, LoggerFactory);
-            var completionItem = new CompletionItem();
-            completionItem.SetDescriptionInfo(AggregateBoundAttributeDescription.Default);
-            completionItem.SetRazorCompletionKind(RazorCompletionItemKind.TagHelperAttribute);
-
-            // Act
-            var result = completionEndpoint.CanResolve(completionItem);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void CanResolve_NonTagHelperCompletion_ReturnsFalse()
-        {
-            // Arrange
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, TagHelperTooltipFactory, LoggerFactory);
-            var completionItem = new CompletionItem();
-
-            // Act
-            var result = completionEndpoint.CanResolve(completionItem);
-
-            // Assert
-            Assert.False(result);
         }
 
         // This is more of an integration test to validate that all the pieces work together
@@ -459,7 +408,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         // This is more of an integration test to validate that all the pieces work together
         [Fact]
-        public async Task Handle_ResolvesDirectiveCompletionItems()
+        public async Task Handle_ProvidesDirectiveCompletionItems()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
@@ -485,7 +434,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         // This is more of an integration test to validate that all the pieces work together
         [Fact]
-        public async Task Handle_ResolvesTagHelperElementCompletionItems()
+        public async Task Handle_ProvidesTagHelperElementCompletionItems()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
@@ -513,7 +462,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         // This is more of an integration test to validate that all the pieces work together
         [Fact]
-        public async Task Handle_ResolvesTagHelperAttributeItems()
+        public async Task Handle_ProvidesTagHelperAttributeItems()
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
