@@ -428,7 +428,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedItems = new CompletionItem[] {
                  new CompletionItem() { InsertText = "DateTime", Label = "DateTime" },
-                 new CompletionItem() { InsertText = "FROMCSHARP", Label = "for" },
+                 new CompletionItem() { InsertText = "FROMCSHARP", Label = "for" }, // TO-DO: Why is this returning keywords from C# when C# rn doesn't return keywords?
 
             };
 
@@ -496,6 +496,72 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 list => {
                     throw new NotImplementedException();
                 });
+        }
+
+        [Fact]
+        public async Task HandleRequestAsync_CSharpProjection_ReturnsKeywordsFromCSharp_Reinvoked_UsingStatement()
+        {
+            // Arrange
+            var called = false;
+
+            var completionRequest = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Context = new CompletionContext() { TriggerKind = CompletionTriggerKind.Invoked },
+                Position = new Position(0, 3)
+            };
+
+            var documentSnapshot = new TestLSPDocumentSnapshot(new Uri("C:/path/file.razor"), 0, snapshotContent: "@us");
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, documentSnapshot);
+
+            var wordSnapshotSpan = new SnapshotSpan(documentSnapshot.Snapshot, new Span(1, 2));
+            var wordRange = new TextExtent(wordSnapshotSpan, isSignificant: true);
+            var navigatorSelector = BuildNavigatorSelector(wordRange);
+            var requestInvoker = new Mock<LSPRequestInvoker>();
+            requestInvoker
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
+                {
+                    Assert.Equal(Methods.TextDocumentCompletionName, method);
+                    Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
+                    called = true;
+                })
+                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(Array.Empty<CompletionItem>()));
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.CSharp,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>();
+            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
+
+            var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, navigatorSelector);
+
+            // Act
+            var result = await completionHandler.HandleRequestAsync(completionRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            Assert.True(called);
+            Assert.True(result.HasValue);
+            var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+                array => {
+                    Assert.Collection(array,
+                        item => Assert.Equal("for", item.Label),
+                        item => Assert.Equal("foreach", item.Label),
+                        item => Assert.Equal("while", item.Label),
+                        item => Assert.Equal("switch", item.Label),
+                        item => Assert.Equal("lock", item.Label),
+                        item => Assert.Equal("case", item.Label),
+                        item => Assert.Equal("if", item.Label),
+                        item => Assert.Equal("try", item.Label),
+                        item => Assert.Equal("do", item.Label),
+                        item => Assert.Equal("using", item.Label)
+                    ); ;
+
+                    return array;
+                },
+                list => throw new NotImplementedException());
         }
 
         [Fact]
