@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <ExtensionsBaselineVersion>2.1.23</ExtensionsBaselineVersion>
+    <ExtensionsBaselineVersion>2.1.24</ExtensionsBaselineVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Caching.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Abstractions' ">
@@ -47,13 +47,13 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.AzureKeyVault-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.AzureKeyVault' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.24</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.AzureKeyVault' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Azure.KeyVault" Version="[2.3.2, )" />
     <BaselinePackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="[1.0.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[2.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.Binder-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Binder' ">
