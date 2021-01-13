@@ -544,7 +544,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Assert
             Assert.True(called);
             Assert.True(result.HasValue);
-            var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+            _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
                 array => {
                     Assert.Collection(array,
                         item => Assert.Equal("for", item.Label),
