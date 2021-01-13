@@ -1,0 +1,6 @@
+<Project>
+  <!-- ItemsToSign will be empty when we are not building any packages.-->
+  <PropertyGroup>
+    <AllowEmptySignList>true</AllowEmptySignList>  
+  </PropertyGroup>
+</Project>
