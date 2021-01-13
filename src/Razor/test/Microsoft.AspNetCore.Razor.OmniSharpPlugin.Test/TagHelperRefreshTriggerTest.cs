@@ -8,8 +8,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed;
-using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
@@ -62,6 +62,83 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public OmniSharpHostProject Project1 { get; }
 
         public object Project1Instance { get; }
+
+
+        [Fact]
+        public async Task IsComponentFile_UnknownProject_ReturnsFalse()
+        {
+            // Arrange
+            var projectManager = CreateProjectSnapshotManager();
+            var refreshTrigger = CreateRefreshTrigger();
+            refreshTrigger.Initialize(projectManager);
+
+            // Act
+            var result = await RunOnForegroundAsync(() => refreshTrigger.IsComponentFile("file.razor", "/path/to/project.csproj"));
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task IsComponentFile_UnknownDocument_ReturnsFalse()
+        {
+            // Arrange
+            var projectManager = CreateProjectSnapshotManager();
+            var refreshTrigger = CreateRefreshTrigger();
+            refreshTrigger.Initialize(projectManager);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            await RunOnForegroundAsync(() => projectManager.ProjectAdded(hostProject));
+
+            // Act
+            var result = await RunOnForegroundAsync(() => refreshTrigger.IsComponentFile("file.razor", hostProject.FilePath));
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task IsComponentFile_NonComponent_ReturnsFalse()
+        {
+            // Arrange
+            var projectManager = CreateProjectSnapshotManager();
+            var refreshTrigger = CreateRefreshTrigger();
+            refreshTrigger.Initialize(projectManager);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            var hostDocument = new OmniSharpHostDocument("file.cshtml", "file.cshtml", FileKinds.Legacy);
+            await RunOnForegroundAsync(() =>
+            {
+                projectManager.ProjectAdded(hostProject);
+                projectManager.DocumentAdded(hostProject, hostDocument);
+            });
+
+            // Act
+            var result = await RunOnForegroundAsync(() => refreshTrigger.IsComponentFile(hostDocument.FilePath, hostProject.FilePath));
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task IsComponentFile_Component_ReturnsTrue()
+        {
+            // Arrange
+            var projectManager = CreateProjectSnapshotManager();
+            var refreshTrigger = CreateRefreshTrigger();
+            refreshTrigger.Initialize(projectManager);
+            var hostProject = new OmniSharpHostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
+            var hostDocument = new OmniSharpHostDocument("file.cshtml", "file.cshtml", FileKinds.Component);
+            await RunOnForegroundAsync(() =>
+            {
+                projectManager.ProjectAdded(hostProject);
+                projectManager.DocumentAdded(hostProject, hostDocument);
+            });
+
+            // Act
+            var result = await RunOnForegroundAsync(() => refreshTrigger.IsComponentFile(hostDocument.FilePath, hostProject.FilePath));
+
+            // Assert
+            Assert.True(result);
+        }
 
         [Fact]
         public async Task ProjectLoaded_TriggersUpdate()
@@ -136,7 +213,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) => mre.Set());
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object);
-            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", "obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);
@@ -164,7 +241,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                     mre.Set();
                 });
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object, enqueueDelay: 10);
-            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", "obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
+            var args = new RazorFileChangeEventArgs("/path/to/obj/file.cshtml.g.cs", (ProjectInstance)Project1Instance, RazorFileChangeKind.Added);
 
             // Act
             refreshTrigger.RazorDocumentOutputChanged(args);
@@ -207,8 +284,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             await RunOnForegroundAsync(() => refreshTrigger.UpdateAfterDelayAsync(((ProjectInstance)Project1Instance).ProjectFileLocation.File));
         }
 
-        private TagHelperRefreshTrigger CreateRefreshTrigger(OmniSharpProjectWorkspaceStateGenerator workspaceStateGenerator, Workspace workspace = null, int enqueueDelay = 1)
+        private TagHelperRefreshTrigger CreateRefreshTrigger(OmniSharpProjectWorkspaceStateGenerator workspaceStateGenerator = null, Workspace workspace = null, int enqueueDelay = 1)
         {
+            workspaceStateGenerator = workspaceStateGenerator ?? Mock.Of<OmniSharpProjectWorkspaceStateGenerator>();
             workspace = workspace ?? Workspace;
             var refreshTrigger = new TagHelperRefreshTrigger(Dispatcher, workspace, workspaceStateGenerator)
             {

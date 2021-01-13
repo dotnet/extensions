@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             var engine = CreateProjectEngine(configuration, factoryTypeName);
-            return GetTagHelpersAsync(project, engine);
+            return GetTagHelpersAsync(project, engine, cancellationToken);
         }
 
         internal RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, string factoryTypeName)
@@ -71,7 +73,7 @@ namespace Microsoft.CodeAnalysis.Razor
             return factory.Create(configuration, RazorProjectFileSystem.Empty, b => { });
         }
 
-        private IProjectEngineFactory CreateFactory(RazorConfiguration configuration, string factoryTypeName)
+        private IProjectEngineFactory? CreateFactory(RazorConfiguration configuration, string factoryTypeName)
         {
             if (factoryTypeName == null)
             {

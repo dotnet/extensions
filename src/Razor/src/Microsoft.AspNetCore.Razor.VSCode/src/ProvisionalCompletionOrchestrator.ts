@@ -44,9 +44,9 @@ export class ProvisionalCompletionOrchestrator {
 
             await this.tryRemoveProvisionalDot(args.document);
         });
-        const onDidChangeActiveEditorRegistration = vscode.window.onDidChangeActiveTextEditor(args => {
+        const onDidChangeActiveEditorRegistration = vscode.window.onDidChangeActiveTextEditor(async args => {
             if (this.currentActiveDocument) {
-                this.tryRemoveProvisionalDot(this.currentActiveDocument);
+                await this.tryRemoveProvisionalDot(this.currentActiveDocument);
             }
 
             if (args) {

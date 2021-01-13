@@ -1,0 +1,3 @@
+//line,characterPos,length,tokenType,modifier
+0 0 1 80 0 //markupTagDelimiter
+0 1 3 81 0 //markupElement

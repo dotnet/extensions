@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Moq;
 using Xunit;
@@ -16,14 +17,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DocumentProjectResolverTest : LanguageServerTestBase
     {
         [Fact]
-        public void TryResolvePotentialProject_NoProjects_ReturnsFalse()
+        public void TryResolveProject_NoProjects_ReturnsFalse()
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
-            var projectResolver = CreateProjectResolver(() => new ProjectSnapshot[0]);
+            var projectResolver = CreateProjectResolver(() => Array.Empty<ProjectSnapshot>());
 
             // Act
-            var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
+            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
 
             // Assert
             Assert.False(result);
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void TryResolvePotentialProject_OnlyMiscellaneousProject_ReturnsFalse()
+        public void TryResolveProject_OnlyMiscellaneousProjectDoesNotContainDocument_ReturnsFalse()
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectResolver = CreateProjectResolver(() => new[] { miscProject.Object });
 
             // Act
-            var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
+            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
 
             // Assert
             Assert.False(result);
@@ -50,7 +51,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void TryResolvePotentialProject_UnrelatedProject_ReturnsFalse()
+        public void TryResolveProject_OnlyMiscellaneousProjectContainsDocument_ReturnsTrue()
+        {
+            // Arrange
+            var documentFilePath = "C:/path/to/document.cshtml";
+            DefaultProjectResolver projectResolver = null;
+            var miscProject = new Mock<ProjectSnapshot>();
+            miscProject.Setup(p => p.FilePath)
+                .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
+            miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>());
+            projectResolver = CreateProjectResolver(() => new[] { miscProject.Object });
+
+            // Act
+            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(miscProject.Object, project);
+        }
+
+        [Fact]
+        public void TryResolveProject_UnrelatedProject_ReturnsFalse()
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
@@ -58,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectResolver = CreateProjectResolver(() => new[] { unrelatedProject });
 
             // Act
-            var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
+            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
 
             // Assert
             Assert.False(result);
@@ -66,16 +87,86 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void TryResolvePotentialProject_OwnerProjectWithOthers_ReturnsTrue()
+        public void TryResolveProject_OwnerProjectWithOthers_ReturnsTrue()
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
             var unrelatedProject = Mock.Of<ProjectSnapshot>(p => p.FilePath == "C:/other/path/to/project.csproj");
-            var ownerProject = Mock.Of<ProjectSnapshot>(p => p.FilePath == "C:/path/to/project.csproj");
+            var ownerProject = Mock.Of<ProjectSnapshot>(
+                p => p.FilePath == "C:/path/to/project.csproj" &&
+                p.GetDocument(documentFilePath) == Mock.Of<DocumentSnapshot>());
+
             var projectResolver = CreateProjectResolver(() => new[] { unrelatedProject, ownerProject });
 
             // Act
-            var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
+            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(ownerProject, project);
+        }
+
+        [Fact]
+        public void TryResolveProject_MiscellaneousOwnerProjectWithOthers_EnforceDocumentTrue_ReturnsTrue()
+        {
+            // Arrange
+            var documentFilePath = "C:/path/to/document.cshtml";
+            DefaultProjectResolver projectResolver = null;
+            var miscProject = new Mock<ProjectSnapshot>();
+            miscProject.Setup(p => p.FilePath)
+                .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
+            miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>());
+            var ownerProject = Mock.Of<ProjectSnapshot>(
+                p => p.FilePath == "C:/path/to/project.csproj" &&
+                p.GetDocument(documentFilePath) == null);
+
+            projectResolver = CreateProjectResolver(() => new[] { miscProject.Object, ownerProject });
+
+            // Act
+            var result = projectResolver.TryResolveProject(documentFilePath, out var project, enforceDocumentInProject: true);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(miscProject.Object, project);
+        }
+
+        [Fact]
+        public void TryResolveProject_MiscellaneousOwnerProjectWithOthers_EnforceDocumentFalse_ReturnsTrue()
+        {
+            // Arrange
+            var documentFilePath = "C:/path/to/document.cshtml";
+            DefaultProjectResolver projectResolver = null;
+            var miscProject = new Mock<ProjectSnapshot>();
+            miscProject.Setup(p => p.FilePath)
+                .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
+            miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>());
+            var ownerProject = Mock.Of<ProjectSnapshot>(
+                p => p.FilePath == "C:/path/to/project.csproj" &&
+                p.GetDocument(documentFilePath) == null);
+
+            projectResolver = CreateProjectResolver(() => new[] { miscProject.Object, ownerProject });
+
+            // Act
+            var result = projectResolver.TryResolveProject(documentFilePath, out var project, enforceDocumentInProject: false);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(ownerProject, project);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Linux/Mac have case sensitive file comparers.")]
+        public void TryResolveProject_OwnerProjectDifferentCasing_ReturnsTrue()
+        {
+            // Arrange
+            var documentFilePath = "c:/path/to/document.cshtml";
+            var ownerProject = Mock.Of<ProjectSnapshot>(
+                p => p.FilePath == "C:/Path/To/project.csproj" &&
+                p.GetDocument(documentFilePath) == Mock.Of<DocumentSnapshot>());
+            var projectResolver = CreateProjectResolver(() => new[] { ownerProject });
+
+            // Act
+            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
 
             // Assert
             Assert.True(result);

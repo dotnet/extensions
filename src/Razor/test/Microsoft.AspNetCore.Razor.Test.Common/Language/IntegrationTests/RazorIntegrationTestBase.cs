@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -146,7 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
             var filePath = cshtmlRelativePath.Replace('\\', '/');
-            if (!filePath.StartsWith("/"))
+            if (!filePath.StartsWith("/", StringComparison.Ordinal))
             {
                 filePath = '/' + filePath;
             }

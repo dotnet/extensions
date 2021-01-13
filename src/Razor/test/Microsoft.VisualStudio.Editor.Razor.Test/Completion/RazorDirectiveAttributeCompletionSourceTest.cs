@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.Completion;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
@@ -37,7 +38,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var expectedResult = new ContainerElement(ContainerElementStyle.Wrapped);
-            var description = new AttributeCompletionDescription(Array.Empty<AttributeDescriptionInfo>());
+            var description = new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>());
             var descriptionFactory = Mock.Of<VisualStudioDescriptionFactory>(factory => factory.CreateClassifiedDescription(description) == expectedResult);
             var source = new RazorDirectiveAttributeCompletionSource(
                 Dispatcher,

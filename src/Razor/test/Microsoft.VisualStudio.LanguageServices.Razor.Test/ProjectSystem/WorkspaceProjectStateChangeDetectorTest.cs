@@ -28,6 +28,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var cshtmlDocumentInfo = DocumentInfo.Create(CshtmlDocumentId, "Test", filePath: "file.cshtml.g.cs");
             RazorDocumentId = DocumentId.CreateNewId(projectId1);
             var razorDocumentInfo = DocumentInfo.Create(RazorDocumentId, "Test", filePath: "file.razor.g.cs");
+            BackgroundVirtualCSharpDocumentId = DocumentId.CreateNewId(projectId1);
+            var backgroundDocumentInfo = DocumentInfo.Create(BackgroundVirtualCSharpDocumentId, "Test", filePath: "file.razor__bg__virtual.cs");
             PartialComponentClassDocumentId = DocumentId.CreateNewId(projectId1);
             var partialComponentClassDocumentInfo = DocumentInfo.Create(PartialComponentClassDocumentId, "Test", filePath: "file.razor.cs");
 
@@ -39,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     "One",
                     LanguageNames.CSharp,
                     filePath: "One.csproj",
-                    documents: new[] { cshtmlDocumentInfo, razorDocumentInfo, partialComponentClassDocumentInfo }))
+                    documents: new[] { cshtmlDocumentInfo, razorDocumentInfo, partialComponentClassDocumentInfo, backgroundDocumentInfo }))
                 .AddProject(ProjectInfo.Create(
                     projectId2,
                     VersionStamp.Default,
@@ -87,6 +89,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public DocumentId CshtmlDocumentId { get; }
 
         public DocumentId RazorDocumentId { get; }
+
+        public DocumentId BackgroundVirtualCSharpDocumentId { get; }
 
         public DocumentId PartialComponentClassDocumentId { get; }
 
@@ -180,7 +184,43 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
+
+            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+        }
+
+        [ForegroundFact]
+        public async Task WorkspaceChanged_DocumentChanged_BackgroundVirtualCS_UpdatesProjectState_AfterDelay()
+        {
+            // Arrange
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator)
+            {
+                EnqueueDelay = 1,
+                BlockDelayedUpdateWorkEnqueue = new ManualResetEventSlim(initialState: false),
+            };
+
+            Workspace.TryApplyChanges(SolutionWithTwoProjects);
+            var projectManager = new TestProjectSnapshotManager(new[] { detector }, Workspace);
+            projectManager.ProjectAdded(HostProjectOne);
+            workspaceStateGenerator.ClearQueue();
+
+            var solution = SolutionWithTwoProjects.WithDocumentText(BackgroundVirtualCSharpDocumentId, SourceText.From("public class Foo{}"));
+            var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.DocumentChanged, oldSolution: SolutionWithTwoProjects, newSolution: solution, projectId: ProjectNumberOne.Id, BackgroundVirtualCSharpDocumentId);
+
+            // Act
+            detector.Workspace_WorkspaceChanged(Workspace, e);
+
+            // Assert
+            //
+            // The change hasn't come through yet.
+            Assert.Empty(workspaceStateGenerator.UpdateQueue);
+
+            detector.BlockDelayedUpdateWorkEnqueue.Set();
+
+            await detector._deferredUpdates.Single().Value.Task;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
             Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
@@ -216,7 +256,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
             Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
@@ -252,7 +292,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
             Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
@@ -305,7 +345,7 @@ namespace Microsoft.AspNetCore.Components
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
             var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
             Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
@@ -353,6 +393,33 @@ namespace Microsoft.AspNetCore.Components
             Assert.Collection(
                 workspaceStateGenerator.UpdateQueue,
                 p => Assert.Equal(ProjectNumberThree.Id, p.workspaceProject.Id));
+        }
+
+        [Fact]
+        public async Task IsPartialComponentClass_NoIComponent_ReturnsFalse()
+        {
+            // Arrange
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator);
+            var sourceText = SourceText.From(
+$@"
+public partial class TestComponent{{}}
+");
+            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var solution = SolutionWithTwoProjects
+                .WithDocumentText(PartialComponentClassDocumentId, sourceText)
+                .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
+            var document = solution.GetDocument(PartialComponentClassDocumentId);
+
+            // Initialize document
+            await document.GetSyntaxRootAsync();
+            await document.GetSemanticModelAsync();
+
+            // Act
+            var result = detector.IsPartialComponentClass(document);
+
+            // Assert
+            Assert.False(result);
         }
 
         [Fact]

@@ -31,6 +31,9 @@
         Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
+
+    <!-- Remove unneeded reference to AspNetCore.App -->
+    <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <Target Name="GetCustomAssemblyAttributes"

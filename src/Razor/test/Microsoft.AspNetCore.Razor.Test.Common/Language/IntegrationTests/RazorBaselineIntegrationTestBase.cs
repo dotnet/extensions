@@ -11,7 +11,13 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
+    // Sets the FileName static variable.
+    // Finds the test method name using reflection, and uses
+    // that to find the expected input/output test files in the file system.
     [IntializeTestFile]
+
+    // These tests must be run serially due to the test specific FileName static var.
+    [Collection("RazorBaselineIntegrationTestSerialRuns")]
     public abstract class RazorBaselineIntegrationTestBase : RazorIntegrationTestBase
     {
         private static readonly AsyncLocal<string> _directoryPath = new AsyncLocal<string>();
@@ -38,9 +44,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 #else
         protected bool GenerateBaselines { get; } = false;
 #endif
-        
+
         protected string TestProjectRoot { get; }
-        
+
         // For consistent line endings because the character counts are going to be recorded in files.
         internal override string LineEnding => "\r\n";
 

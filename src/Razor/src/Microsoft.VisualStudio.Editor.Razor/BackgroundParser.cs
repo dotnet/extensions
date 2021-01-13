@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -57,6 +55,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void Dispose()
         {
             _main.Cancel();
+            _main.Dispose();
         }
 
         public IDisposable SynchronizeMainThreadState()
@@ -111,12 +110,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private class MainThreadState : ThreadStateBase, IDisposable
         {
             private readonly CancellationTokenSource _cancelSource = new CancellationTokenSource();
-            private readonly ManualResetEventSlim _hasParcel = new ManualResetEventSlim(false);
+            private ManualResetEventSlim _hasParcel = new ManualResetEventSlim(false);
             private CancellationTokenSource _currentParcelCancelSource;
 
             private string _fileName;
+            private readonly object _disposeLock = new object();
             private readonly object _stateLock = new object();
             private IList<ChangeReference> _changes = new List<ChangeReference>();
+            private bool _disposed;
 
             public MainThreadState(string fileName)
             {
@@ -175,16 +176,49 @@ namespace Microsoft.VisualStudio.Editor.Razor
             public WorkParcel GetParcel()
             {
                 EnsureNotOnThread(); // Only the background thread can get a parcel
-                _hasParcel.Wait(_cancelSource.Token);
-                _hasParcel.Reset();
-                lock (_stateLock)
-                {
-                    // Create a cancellation source for this parcel
-                    _currentParcelCancelSource = new CancellationTokenSource();
 
-                    var changes = _changes;
-                    _changes = new List<ChangeReference>();
-                    return new WorkParcel(changes, _currentParcelCancelSource.Token);
+                lock (_disposeLock)
+                {
+                    if (_disposed)
+                    {
+                        return WorkParcel.Empty;
+                    }
+                }
+
+                try
+                {
+                    _hasParcel?.Wait(_cancelSource.Token);
+                }
+                catch (Exception)
+                {
+                    // Swallow any exceptions caused by waiting on the parcel to avoid crashing VS.
+                }
+
+                lock (_disposeLock)
+                {
+                    if (_disposed)
+                    {
+                        return WorkParcel.Empty;
+                    }
+
+                    try
+                    {
+                        _hasParcel.Reset();
+                    }
+                    catch (Exception)
+                    {
+                        // Swallow any exceptions caused by resetting the parcel switch to avoid crashing VS.
+                    }
+
+                    lock (_stateLock)
+                    {
+                        // Create a cancellation source for this parcel
+                        _currentParcelCancelSource = new CancellationTokenSource();
+
+                        var changes = _changes;
+                        _changes = new List<ChangeReference>();
+                        return new WorkParcel(changes, _currentParcelCancelSource.Token);
+                    }
                 }
             }
 
@@ -222,13 +256,24 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 if (disposing)
                 {
-                    if (_currentParcelCancelSource != null)
+                    lock (_disposeLock)
                     {
-                        _currentParcelCancelSource.Dispose();
-                        _currentParcelCancelSource = null;
+                        if (_disposed)
+                        {
+                            return;
+                        }
+
+                        _disposed = true;
+
+                        if (_currentParcelCancelSource != null)
+                        {
+                            _currentParcelCancelSource.Dispose();
+                            _currentParcelCancelSource = null;
+                        }
+                        _cancelSource.Dispose();
+                        _hasParcel.Dispose();
+                        _hasParcel = null;
                     }
-                    _cancelSource.Dispose();
-                    _hasParcel.Dispose();
                 }
             }
         }
@@ -383,6 +428,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private class WorkParcel
         {
+            public static readonly WorkParcel Empty = new WorkParcel(Array.Empty<ChangeReference>(), CancellationToken.None);
+
             public WorkParcel(IList<ChangeReference> changes, CancellationToken cancelToken)
             {
                 Changes = changes;

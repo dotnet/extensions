@@ -1,8 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net461</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <!-- Ignore API warnings in shim projects -->
+    <NoWarn>$(NoWarn);CA1822;CA1018;IDE0060</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

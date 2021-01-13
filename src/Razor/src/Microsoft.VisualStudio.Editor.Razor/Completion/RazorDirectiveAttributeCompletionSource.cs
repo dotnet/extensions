@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Completion;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.Core.Imaging;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
@@ -162,7 +163,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 throw new ArgumentNullException(nameof(item));
             }
 
-            if (!item.Properties.TryGetProperty(DescriptionKey, out AttributeCompletionDescription completionDescription))
+            if (!item.Properties.TryGetProperty(DescriptionKey, out AggregateBoundAttributeDescription completionDescription))
             {
                 return Task.FromResult<object>(string.Empty);
             }
@@ -174,7 +175,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
 
         public CompletionStartData InitializeCompletion(CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)
         {
-            // We can't retrieve the correct SyntaxTree/CodeDocument at this time because this extension point is synchronous so we need 
+            // We can't retrieve the correct SyntaxTree/CodeDocument at this time because this extension point is synchronous so we need
             // to make our "do we participate in completion and what do we apply to" decision without one. We'll look to see if what
             // we're operating on potentially looks like a directive attribute. We care about syntax that looks like an expression when
             // providing directive attribute completions. Basically anything starting with a transition (@).
@@ -223,7 +224,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 // The left side of our simple expression should always be a Razor transition. We have this restriction to
                 // ensure that we don't provide directive attribute completions that override WTE's legacy completion.
                 // Since WTE's legacy completion also provides HTML completions and is not yet on modern completion we'd
-                // end up nuking all HTML completions without this restriction.
+                // end up removing all HTML completions without this restriction.
                 return CompletionStartData.DoesNotParticipateInCompletion;
             }
 
@@ -277,7 +278,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             {
                 // Our directive attribute does not have parameters and our leftEnd -> rightEnd bounds encompass:
                 //
-                // <InputSelect |@bind-foo|  =>  <InputSelect @|bind-foo|  
+                // <InputSelect |@bind-foo|  =>  <InputSelect @|bind-foo|
                 //
                 // We don't want leftEnd to include the "@"
                 leftEnd++;

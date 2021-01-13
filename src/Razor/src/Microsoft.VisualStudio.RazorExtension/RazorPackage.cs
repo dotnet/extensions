@@ -2,38 +2,48 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
+using System.Threading;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Editor;
+using Microsoft.VisualStudio.LanguageServerClient.Razor;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell.ServiceBroker;
+using Microsoft.VisualStudio.Threading;
+using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.VisualStudio.RazorExtension
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [AboutDialogInfo(PackageGuidString, "ASP.NET Core Razor Language Services", "#110", "#112", IconResourceID = "#400")]
+    [ProvideService(typeof(RazorLanguageService))]
+    [ProvideLanguageService(typeof(RazorLanguageService), RazorLSPConstants.RazorLSPContentTypeName, 110)]
+    [ProvideBrokeredServiceHubService("Microsoft.VisualStudio.Razor.TagHelperProvider", Audience = Shell.ServiceBroker.ServiceAudience.Local)]
+    [ProvideBrokeredServiceHubService("Microsoft.VisualStudio.Razor.TagHelperProvider64", Audience = Shell.ServiceBroker.ServiceAudience.Local)]
+    [ProvideBrokeredServiceHubService("Microsoft.VisualStudio.Razor.TagHelperProvider64S", Audience = Shell.ServiceBroker.ServiceAudience.Local)]
     [Guid(PackageGuidString)]
-    public sealed class RazorPackage : Package
+    public sealed class RazorPackage : AsyncPackage
     {
         public const string PackageGuidString = "13b72f58-279e-49e0-a56d-296be02f0805";
 
-        private const string CSharpPackageIdString = "13c3bbb4-f18f-4111-9f54-a0fb010d9194";
-
-        protected override void Initialize()
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-            ThreadHelper.ThrowIfNotOnUIThread();
+            cancellationToken.ThrowIfCancellationRequested();
 
-            // We need to force the CSharp package to load. That's responsible for the initialization
-            // of the remote host client.
-            var shell = GetService(typeof(SVsShell)) as IVsShell;
-            if (shell == null)
+            var container = this as IServiceContainer;
+            container.AddService(typeof(RazorLanguageService), (container, type) =>
             {
-                return;
-            }
-
-            IVsPackage package = null;
-            var packageGuid = new Guid(CSharpPackageIdString);
-            shell.LoadPackage(ref packageGuid, out package);
+                var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
+                var breakpointResolver = componentModel.GetService<RazorBreakpointResolver>();
+                var waitDialogFactory = componentModel.GetService<WaitDialogFactory>();
+                var editorAdaptersFactory = componentModel.GetService<IVsEditorAdaptersFactoryService>();
+                return new RazorLanguageService(breakpointResolver, waitDialogFactory, editorAdaptersFactory);
+            }, promote: true);
         }
     }
 }

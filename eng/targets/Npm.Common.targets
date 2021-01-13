@@ -22,7 +22,8 @@
 
   <ItemGroup>
     <TSFiles Include="src\**\*.ts" />
-    <TSFiles Include="test\**\*.ts" />
+    <TSFiles Include="tests\**\*.ts" />
+    <TSFiles Include="**\*.yml" />
     <TSFiles Include="package.json" />
     <TSFiles Include="*.npmproj" />
 
@@ -42,7 +43,9 @@
 
   <Target Name="Restore">
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <!-- Workaround until Python is on the path on build agents -->
+    <Exec Condition=" '$(OS)' == 'Windows_NT' and Exists('C:\python3.7.0\python.exe') " Command="npm config set python C:\python3.7.0\python.exe" />
+    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
   <Target Name="PrepareForBuild">
@@ -75,7 +78,7 @@
     DependsOnTargets="GetBuildInputCacheFile"
     Inputs="@(TSFiles);$(BaseIntermediateOutputPath)tsfiles.cache"
     Outputs="@(BuildOutputFiles)">
-    <Yarn Command="$(NpmBuildArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="$(NpmBuildArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="true" />
     <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)build-sentinel" />
   </Target>
 
@@ -120,7 +123,7 @@
 
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
-    <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
 </Project>
