@@ -180,7 +180,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var navigator = _textStructureNavigator.GetTextStructureNavigator(snapshot.TextBuffer);
             var line = snapshot.GetLineFromLineNumber(request.Position.Line);
             var absoluteIndex = line.Start + request.Position.Character;
-            if (absoluteIndex >= snapshot.Length)
+            if (absoluteIndex > snapshot.Length)
             {
                 Debug.Fail("This should never happen when resolving C# polyfills given we're operating on snapshots.");
                 return false;
