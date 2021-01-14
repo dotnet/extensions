@@ -30,10 +30,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 return 1;
             }
 
-            Debug.Assert(Range.Start.CompareTo(other.Range.Start) == 0 || !Range.OverlapsWith(other.Range), $"{this} overlapped with {other}");
-
-            // Since overlapping SemanticRanges are STRICTLY FORBIDDEN we need only compare the starts 
-            return Range.Start.CompareTo(other.Range.Start);
+            var startCompare = Range.Start.CompareTo(other.Range.Start);
+            return startCompare != 0 ? startCompare : Range.End.CompareTo(other.Range.End);
         }
 
         public override string ToString()
