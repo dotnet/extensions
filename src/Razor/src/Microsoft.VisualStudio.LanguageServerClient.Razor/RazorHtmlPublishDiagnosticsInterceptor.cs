@@ -6,9 +6,11 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage.MessageInterception;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Newtonsoft.Json.Linq;
 
@@ -20,11 +22,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPDiagnosticsTranslator _diagnosticsProvider;
+        private readonly ILogger _logger;
 
         [ImportingConstructor]
         public RazorHtmlPublishDiagnosticsInterceptor(
             LSPDocumentManager documentManager,
-            LSPDiagnosticsTranslator diagnosticsProvider)
+            LSPDiagnosticsTranslator diagnosticsProvider,
+            HTMLCSharpLanguageServerFeedbackFileLoggerProvider loggerProvider)
         {
             if (documentManager is null)
             {
@@ -36,8 +40,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(diagnosticsProvider));
             }
 
+            if (loggerProvider == null)
+            {
+                throw new ArgumentNullException(nameof(loggerProvider));
+            }
+
             _documentManager = documentManager;
             _diagnosticsProvider = diagnosticsProvider;
+
+            _logger = loggerProvider.CreateLogger(nameof(RazorHtmlPublishDiagnosticsInterceptor));
         }
 
         public override async Task<InterceptionResult> ApplyChangesAsync(JToken token, string containedLanguageName, CancellationToken cancellationToken)
@@ -50,10 +61,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             cancellationToken.ThrowIfCancellationRequested();
             var diagnosticParams = token.ToObject<VSPublishDiagnosticParams>();
 
-            if (diagnosticParams is null)
+            if (diagnosticParams?.Uri is null)
             {
                 throw new ArgumentException("Conversion of token failed.");
             }
+
+            _logger.LogInformation($"Received HTML Publish diagnostic request for {diagnosticParams.Uri} with {diagnosticParams.Diagnostics.Length} diagnostics.");
 
             // We only support interception of Virtual HTML Files
             if (!RazorLSPConventions.IsVirtualHtmlFile(diagnosticParams.Uri))
@@ -72,18 +85,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             if (!_documentManager.TryGetDocument(razorDocumentUri, out var razorDocumentSnapshot))
             {
+                _logger.LogInformation($"Failed to find document {razorDocumentUri}.");
                 return CreateEmptyDiagnosticsResponse(diagnosticParams);
             }
 
             if (!razorDocumentSnapshot.TryGetVirtualDocument<HtmlVirtualDocumentSnapshot>(out var htmlDocumentSnapshot) ||
                 !htmlDocumentSnapshot.Uri.Equals(htmlDocumentUri))
             {
+                _logger.LogInformation($"Failed to find virtual HTML document {htmlDocumentUri}.");
                 return CreateEmptyDiagnosticsResponse(diagnosticParams);
             }
 
             // Return early if there aren't any diagnostics to process
             if (diagnosticParams.Diagnostics?.Any() != true)
             {
+                _logger.LogInformation("No diagnostics to process.");
                 return CreateResponse(diagnosticParams);
             }
 
@@ -100,6 +116,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             //
             // This'll need to be revisited based on preferences with flickering vs lingering.
 
+            _logger.LogInformation($"Returning {processedDiagnostics.Diagnostics.Length} diagnostics.");
             diagnosticParams.Diagnostics = processedDiagnostics.Diagnostics;
 
             return CreateResponse(diagnosticParams);

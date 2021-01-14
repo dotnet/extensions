@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(false);
 
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver.Object, DocumentVersionCache, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver.Object, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             documentVersionCache.Setup(cache => cache.TryGetDocumentVersion(It.IsAny<DocumentSnapshot>(), out version))
                 .Returns(false);
 
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, documentVersionCache.Object, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, documentVersionCache.Object, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.CSharp,
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<p>@DateTime.Now</p>");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.Html,
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<p>@DateTime.Now</p>");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.Razor,
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 });
             codeDocument.SetUnsupported();
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
             var request = new RazorDiagnosticsParams()
             {
                 Kind = RazorLanguageKind.CSharp,

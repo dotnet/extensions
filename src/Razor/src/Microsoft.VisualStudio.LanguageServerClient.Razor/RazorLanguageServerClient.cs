@@ -30,11 +30,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [ContentType(RazorLSPConstants.RazorLSPContentTypeName)]
     internal class RazorLanguageServerClient : ILanguageClient, ILanguageClientCustomMessage2, ILanguageClientPriority
     {
+        private static readonly string LogFileIdentifier = "RazorLanguageServer";
+
         private readonly RazorLanguageServerCustomMessageTarget _customMessageTarget;
         private readonly ILanguageClientMiddleLayer _middleLayer;
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
-        private readonly FeedbackFileLoggerProviderFactory _feedbackFileLoggerProviderFactory;
+        private readonly RazorLanguageServerFeedbackFileLoggerProviderFactory _feedbackFileLoggerProviderFactory;
         private readonly VSLanguageServerFeatureOptions _vsLanguageServerFeatureOptions;
 
         private object _shutdownLock;
@@ -49,7 +51,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             RazorLanguageClientMiddleLayer middleLayer,
             LSPRequestInvoker requestInvoker,
             ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
-            FeedbackFileLoggerProviderFactory feedbackFileLoggerProviderFactory,
+            RazorLanguageServerFeedbackFileLoggerProviderFactory feedbackFileLoggerProviderFactory,
             VSLanguageServerFeatureOptions vsLanguageServerFeatureOptions)
         {
             if (customTarget is null)
@@ -143,7 +145,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             services.AddLogging(logging =>
             {
                 logging.AddFilter<FeedbackFileLoggerProvider>(level => true);
-                var loggerProvider = (FeedbackFileLoggerProvider)_feedbackFileLoggerProviderFactory.GetOrCreate();
+                var loggerProvider = (FeedbackFileLoggerProvider)_feedbackFileLoggerProviderFactory.GetOrCreate(LogFileIdentifier);
                 logging.AddProvider(loggerProvider);
             });
             services.AddSingleton<LanguageServerFeatureOptions>(_vsLanguageServerFeatureOptions);
@@ -209,7 +211,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             while (_server != null && ++attempts < WaitForShutdownAttempts)
             {
                 // Server failed to shutdown, lets wait a little bit and check again.
-                await Task.Delay(100, token);
+                await Task.Delay(100, token).ConfigureAwait(false);
             }
 
             lock (_shutdownLock)

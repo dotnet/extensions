@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
         private string _logFile;
         private bool _disposed;
 
-        public DefaultFeedbackFileLogWriter(FeedbackLogDirectoryProvider feedbackLogDirectoryProvider)
+        public DefaultFeedbackFileLogWriter(FeedbackLogDirectoryProvider feedbackLogDirectoryProvider, string logFileIdentifier)
         {
             if (feedbackLogDirectoryProvider is null)
             {
@@ -33,7 +33,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
             _writeToLock = new object();
             _feedbackLogDirectoryProvider = feedbackLogDirectoryProvider;
 
-            InitializeLogFile();
+            InitializeLogFile(logFileIdentifier);
 
             _logWriterTask = Task.Run(WriteToLogAsync);
         }
@@ -91,7 +91,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
             }
         }
 
-        private void InitializeLogFile()
+        private void InitializeLogFile(string logFileIdentifier)
         {
             var logDirectory = _feedbackLogDirectoryProvider.GetDirectory();
 
@@ -100,7 +100,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
             {
                 var fileName = string.Format(
                     CultureInfo.InvariantCulture,
-                    "{0:yyyyMMdd_HHmmss}{1}.log",
+                    "{0}_{1:yyyyMMdd_HHmmss}{2}.log",
+                    logFileIdentifier,
                     DateTime.UtcNow,
                     index == 0 ? string.Empty : "." + index);
 

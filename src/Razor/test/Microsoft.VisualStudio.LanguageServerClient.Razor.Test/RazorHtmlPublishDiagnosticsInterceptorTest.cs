@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Text;
 using Moq;
@@ -17,7 +18,7 @@ using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
-    public class RazorHtmlPublishDiagnosticsInterceptorTest
+    public class RazorHtmlPublishDiagnosticsInterceptorTest : IDisposable
     {
         private static readonly Uri RazorUri = new Uri("C:/path/to/file.razor");
         private static readonly Uri CshtmlUri = new Uri("C:/path/to/file.cshtml");
@@ -50,6 +51,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             ValidDiagnostic_CSS
         };
 
+        public RazorHtmlPublishDiagnosticsInterceptorTest()
+        {
+            var directoryProvider = new DefaultFeedbackLogDirectoryProvider();
+            var loggerFactory = new HTMLCSharpLanguageServerFeedbackFileLoggerProviderFactory(directoryProvider);
+            LoggerProvider = new HTMLCSharpLanguageServerFeedbackFileLoggerProvider(loggerFactory);
+        }
+
+        private HTMLCSharpLanguageServerFeedbackFileLoggerProvider LoggerProvider { get; }
+
         [Fact]
         public async Task ApplyChangesAsync_InvalidParams_ThrowsException()
         {
@@ -57,7 +67,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var documentManager = new TestDocumentManager();
             var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
 
-            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider);
+            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new CodeActionParams()
             {
                 TextDocument = new TextDocumentIdentifier()
@@ -81,7 +91,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var documentManager = new TestDocumentManager();
             var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
 
-            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider);
+            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
             {
                 Diagnostics = Diagnostics,
@@ -105,7 +115,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var documentManager = new TestDocumentManager();
             var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
 
-            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider);
+            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
             {
                 Diagnostics = Diagnostics,
@@ -129,7 +139,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var documentManager = new TestDocumentManager();
             var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
 
-            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider);
+            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
             {
                 Diagnostics = Diagnostics,
@@ -153,7 +163,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var documentManager = new TestDocumentManager();
             var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
 
-            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider);
+            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
             {
                 Diagnostics = Diagnostics,
@@ -183,7 +193,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out testDocument))
                 .Returns(true);
 
-            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager.Object, diagnosticsProvider);
+            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager.Object, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
             {
                 Diagnostics = Diagnostics,
@@ -208,7 +218,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var documentManager = CreateDocumentManager();
             var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
 
-            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider);
+            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
             {
                 Diagnostics = Array.Empty<Diagnostic>(),
@@ -233,7 +243,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var documentManager = CreateDocumentManager();
             var diagnosticsProvider = GetDiagnosticsProvider();
 
-            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider);
+            var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
             {
                 Diagnostics = Diagnostics,
@@ -302,6 +312,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 });
 
             return diagnosticsProvider.Object;
+        }
+
+        public void Dispose()
+        {
+            LoggerProvider?.Dispose();
         }
     }
 }

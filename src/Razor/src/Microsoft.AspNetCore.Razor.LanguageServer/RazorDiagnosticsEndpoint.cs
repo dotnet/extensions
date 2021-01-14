@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -29,12 +30,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly DocumentResolver _documentResolver;
         private readonly DocumentVersionCache _documentVersionCache;
         private readonly RazorDocumentMappingService _documentMappingService;
+        private readonly ILogger _logger;
 
         public RazorDiagnosticsEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             DocumentVersionCache documentVersionCache,
-            RazorDocumentMappingService documentMappingService)
+            RazorDocumentMappingService documentMappingService,
+            ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -56,10 +59,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentMappingService));
             }
 
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _documentVersionCache = documentVersionCache;
             _documentMappingService = documentMappingService;
+            _logger = loggerFactory.CreateLogger<RazorDiagnosticsEndpoint>();
         }
 
         public async Task<RazorDiagnosticsResponse> Handle(RazorDiagnosticsParams request, CancellationToken cancellationToken)
@@ -68,6 +77,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 throw new ArgumentNullException(nameof(request));
             }
+
+            _logger.LogInformation($"Received {request.Kind:G} diagnostic request for {request.RazorDocumentUri} with {request.Diagnostics.Length} diagnostics.");
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -88,6 +99,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             if (documentSnapshot is null)
             {
+                _logger.LogInformation($"Failed to find document {request.RazorDocumentUri}.");
+
                 return new RazorDiagnosticsResponse()
                 {
                     Diagnostics = null,
@@ -99,6 +112,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var filteredDiagnostics = unmappedDiagnostics.Where(d => !CanDiagnosticBeFiltered(request.Kind, d)).ToArray();
             if (!filteredDiagnostics.Any())
             {
+                _logger.LogInformation("No diagnostics remaining after filtering.");
+
                 // No diagnostics left after filtering.
                 return new RazorDiagnosticsResponse()
                 {
@@ -107,10 +122,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 };
             }
 
+            _logger.LogInformation($"{filteredDiagnostics.Length}/{unmappedDiagnostics.Length} diagnostics remain after filtering.");
+
             var mappedDiagnostics = await MapDiagnosticsAsync(
                 request,
                 filteredDiagnostics,
                 documentSnapshot).ConfigureAwait(false);
+
+            _logger.LogInformation($"Returning {mappedDiagnostics.Length} mapped diagnostics.");
 
             return new RazorDiagnosticsResponse()
             {
@@ -147,6 +166,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var codeDocument = await documentSnapshot.GetGeneratedOutputAsync().ConfigureAwait(false);
             if (codeDocument?.IsUnsupported() != false)
             {
+                _logger.LogInformation("Unsupported code document.");
                 return Array.Empty<Diagnostic>();
             }
 

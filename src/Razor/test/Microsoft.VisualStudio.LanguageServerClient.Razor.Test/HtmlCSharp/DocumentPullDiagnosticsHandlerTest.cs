@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
 using Microsoft.VisualStudio.Text;
 using Moq;
 using Xunit;
@@ -94,9 +95,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public DocumentPullDiagnosticsHandlerTest()
         {
             Uri = new Uri("C:/path/to/file.razor");
+
+            var directoryProvider = new DefaultFeedbackLogDirectoryProvider();
+            var loggerFactory = new HTMLCSharpLanguageServerFeedbackFileLoggerProviderFactory(directoryProvider);
+            LoggerProvider = new HTMLCSharpLanguageServerFeedbackFileLoggerProvider(loggerFactory);
         }
 
         private Uri Uri { get; }
+        private HTMLCSharpLanguageServerFeedbackFileLoggerProvider LoggerProvider { get; }
 
         [Fact]
         public async Task HandleRequestAsync_DocumentNotFound_ReturnsNull()
@@ -106,7 +112,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>();
             var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
             var documentSynchronizer = Mock.Of<LSPDocumentSynchronizer>();
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -139,7 +145,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var diagnosticsProvider = GetDiagnosticsProvider(ValidDiagnostic_UnknownName_MappedRange, ValidDiagnostic_InvalidExpression_MappedRange);
             var documentSynchronizer = CreateDocumentSynchronizer();
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -189,7 +195,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Setup(d => d.TrySynchronizeVirtualDocumentAsync(It.IsAny<int>(), It.IsAny<CSharpVirtualDocumentSnapshot>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(false));
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer.Object, diagnosticsProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer.Object, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -259,7 +265,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentSynchronizer = CreateDocumentSynchronizer();
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -325,7 +331,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var diagnosticsProvider = GetDiagnosticsProvider(filteredDiagnostic_mappedRange);
             var documentSynchronizer = CreateDocumentSynchronizer();
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -363,7 +369,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var diagnosticsProvider = GetDiagnosticsProvider(ValidDiagnostic_UnknownName_MappedRange, ValidDiagnostic_InvalidExpression_MappedRange);
             var documentSynchronizer = CreateDocumentSynchronizer();
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -399,7 +405,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var diagnosticsProvider = GetDiagnosticsProvider();
             var documentSynchronizer = CreateDocumentSynchronizer();
 
-            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider);
+            var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
