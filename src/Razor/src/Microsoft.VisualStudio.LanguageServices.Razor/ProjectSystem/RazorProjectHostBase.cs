@@ -286,8 +286,45 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var basePath = new DirectoryInfo(baseIntermediateOutputPathValue).Parent;
             var joinedPath = Path.Combine(basePath.FullName, intermediateOutputPathValue);
 
+            if (!Directory.Exists(joinedPath))
+            {
+                // The directory doesn't exist for the currently executing application.
+                // This can occur in Razor class library scenarios because:
+                //   1. Razor class libraries base intermediate path is not absolute. Meaning instead of C:/project/obj it returns /obj.
+                //   2. Our `new DirectoryInfo(...).Parent` call above is forgiving so if the path passed to it isn't absolute (Razor class library scenario) it utilizes Directory.GetCurrentDirectory where
+                //      in this case would be the C:/Windows/System path
+                // Because of the above two issues the joinedPath ends up looking like "C:\WINDOWS\system32\obj\Debug\netstandard2.0\" which doesn't actually exist and of course isn't writeable. The end-user effect of this
+                // quirk means that you don't get any component completions for Razor class libraries because we're unable to capture their project state information.
+                // 
+                // To workaround these inconsistencies with Razor class libraries we fall back to the MSBuildProjectDirectory and build what we think is the intermediate output path.
+                joinedPath = ResolveFallbackIntermediateOutputPath(rule, intermediateOutputPathValue);
+                if (joinedPath == null)
+                {
+                    // Still couldn't resolve a valid directory.
+                    path = null;
+                    return false;
+                }
+            }
+
             path = joinedPath;
             return true;
+        }
+
+        private static string ResolveFallbackIntermediateOutputPath(IProjectRuleSnapshot rule, string intermediateOutputPathValue)
+        {
+            if (!rule.Properties.TryGetValue(MSBuildProjectDirectoryPropertyName, out var projectDirectory))
+            {
+                // Can't resolve the project, bail.
+                return null;
+            }
+
+            var joinedPath = Path.Combine(projectDirectory, intermediateOutputPathValue);
+            if (!Directory.Exists(joinedPath))
+            {
+                return null;
+            }
+
+            return joinedPath;
         }
     }
 }
