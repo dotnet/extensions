@@ -15,7 +15,7 @@
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <PackageTags>analyzers;async</PackageTags>
-    <IsPackable>true</IsPackable>
+    <IsPackable>false</IsPackable>
     <IsShipping>false</IsShipping>
     <!-- This project is not included in the shared framework -->
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
