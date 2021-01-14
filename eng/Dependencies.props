@@ -98,16 +98,12 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <LatestPackageReference Include="NETStandard.Library" Version="2.0.3" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <LatestPackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
-    <LatestPackageReference Include="Polly" Version="7.1.0" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
     <LatestPackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
-    <LatestPackageReference Include="StackExchange.Redis" Version="2.0.593" />
     <LatestPackageReference Include="xunit.abstractions" Version="2.0.3" />
     <LatestPackageReference Include="xunit.assert" Version="$(XUnitVersion)" />
     <LatestPackageReference Include="xunit.extensibility.core" Version="$(XUnitVersion)" />
     <LatestPackageReference Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />
-    <LatestPackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19239.1" />
 
     <!-- External DI container references -->
     <LatestPackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />

@@ -63,6 +63,9 @@ The following list identifies all the packages we currently ship from [dotnet/ex
     * **Primitives**
         * [`Microsoft.Extensions.Primitives`](https://nuget.org/packages/Microsoft.Extensions.Primitives)
 * Moved to [dotnet/aspnetcore](https://github.com/dotnet/aspnetcore)
+    * **Caching** (6.0 and beyond)
+        * [`Microsoft.Extensions.Caching.SqlServer`](https://nuget.org/packages/Microsoft.Extensions.Caching.SqlServer)
+        * [`Microsoft.Extensions.Caching.StackExchangeRedis`](https://nuget.org/packages/Microsoft.Extensions.Caching.StackExchangeRedis)
     * **Configuration**
         * [`Microsoft.Extensions.Configuration.KeyPerFile`](https://nuget.org/packages/Microsoft.Extensions.Configuration.KeyPerFile)
     * **File Providers**
@@ -71,6 +74,8 @@ The following list identifies all the packages we currently ship from [dotnet/ex
     * **Health Checks**
         * [`Microsoft.Extensions.Diagnostics.HealthChecks`](https://nuget.org/packages/Microsoft.Extensions.Diagnostics.HealthChecks)
         * [`Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions`](https://nuget.org/packages/Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions)
+    * **Http Client Factory** (6.0 and beyond)
+        * [`Microsoft.Extensions.Http.Polly`](https://nuget.org/packages/Microsoft.Extensions.Http.Polly)
     * **JS Interop**
         * [`Microsoft.JSInterop`](https://nuget.org/packages/Microsoft.JSInterop)
         * [`Mono.WebAssembly.Interop`](https://nuget.org/packages/Mono.WebAssembly.Interop)
@@ -84,16 +89,11 @@ The following list identifies all the packages we currently ship from [dotnet/ex
     * **Web Encoders**
         * [`Microsoft.Extensions.WebEncoders`](https://nuget.org/packages/Microsoft.Extensions.WebEncoders)
 * Remaining in [dotnet/extensions](https://github.com/dotnet/extensions) for now
-    * **Caching**
-        * [`Microsoft.Extensions.Caching.SqlServer`](https://nuget.org/packages/Microsoft.Extensions.Caching.SqlServer)
-        * [`Microsoft.Extensions.Caching.StackExchangeRedis`](https://nuget.org/packages/Microsoft.Extensions.Caching.StackExchangeRedis)
     * **Configuration**
         * [`Microsoft.Extensions.Configuration.NewtonsoftJson`](https://nuget.org/packages/Microsoft.Extensions.Configuration.NewtonsoftJson)
     * **Hosting**
         * [`Microsoft.Extensions.Hosting.Systemd`](https://nuget.org/packages/Microsoft.Extensions.Hosting.Systemd)
         * [`Microsoft.Extensions.Hosting.WindowsServices`](https://nuget.org/packages/Microsoft.Extensions.Hosting.WindowsServices)
-    * **Http Client Factory**
-        * [`Microsoft.Extensions.Http.Polly`](https://nuget.org/packages/Microsoft.Extensions.Http.Polly)
     * **Logging**
         * `Microsoft.Extensions.Logging.Analyzers` (has not been released to NuGet.org as of writing)
         * [`Microsoft.Extensions.DependencyInjection.Specification.Tests`](https://nuget.org/packages/Microsoft.Extensions.DependencyInjection.Specification.Tests)

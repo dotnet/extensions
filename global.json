@@ -6,12 +6,12 @@
     "dotnet": "5.0.100",
     "runtimes": {
       "dotnet": [
-        "$(MicrosoftNETCoreAppInternalPackageVersion)"
+        "$(MicrosoftExtensionsInternalTransportPackageVersion)"
       ]
     }
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "5.0.0-beta.20621.10",
-    "Microsoft.DotNet.Helix.Sdk": "5.0.0-beta.20621.10"
+    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21058.3",
+    "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.21058.3"
   }
 }

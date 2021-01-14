@@ -1,3 +1,0 @@
-System.Threading.Tasks.Task.Wait
-System.Threading.Tasks.Task<TResult>.Result
-System.Runtime.CompilerServices.TaskAwaiter.GetResult
