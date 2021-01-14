@@ -7,4 +7,10 @@
                  See $(RepoRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
   </Target>
 
+  <Target Name="SetAzureDevOpsVariableForBuiltPackages"
+          Condition="'$(ContinuousIntegrationBuild)' == 'true'"
+          AfterTargets="Build;Pack">
+    <Message Condition="Exists('$(ArtifactsDir)packages')" Importance="High" Text="##vso[task.setvariable variable=_extensionsBuildProducedPackages]true" />
+  </Target>
+
 </Project>

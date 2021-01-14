@@ -334,7 +334,7 @@ stages:
       displayName: Upload package artifacts
       # Only capture source build artifacts in PRs for the sake of inspecting
       # changes that impact source-build. The artifacts from this build pipeline are never actually used.
-      condition: and(succeeded(), in(variables['Build.Reason'], 'PullRequest'))
+      condition: and(succeeded(), in(variables['Build.Reason'], 'PullRequest'), eq(variables['_extensionsBuildProducedPackages'], true))
       inputs:
         pathtoPublish: artifacts/packages/
         artifactName: Source_Build_Packages
