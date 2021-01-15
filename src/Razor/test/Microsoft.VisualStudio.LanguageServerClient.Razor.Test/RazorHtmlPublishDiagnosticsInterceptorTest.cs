@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
@@ -18,7 +19,7 @@ using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
-    public class RazorHtmlPublishDiagnosticsInterceptorTest : IDisposable
+    public class RazorHtmlPublishDiagnosticsInterceptorTest
     {
         private static readonly Uri RazorUri = new Uri("C:/path/to/file.razor");
         private static readonly Uri CshtmlUri = new Uri("C:/path/to/file.cshtml");
@@ -53,9 +54,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public RazorHtmlPublishDiagnosticsInterceptorTest()
         {
-            var directoryProvider = new DefaultFeedbackLogDirectoryProvider();
-            var loggerFactory = new HTMLCSharpLanguageServerFeedbackFileLoggerProviderFactory(directoryProvider);
-            LoggerProvider = new HTMLCSharpLanguageServerFeedbackFileLoggerProvider(loggerFactory);
+            var logger = Mock.Of<ILogger>();
+            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerFeedbackFileLoggerProvider>(l => l.CreateLogger(It.IsAny<string>()) == logger);
         }
 
         private HTMLCSharpLanguageServerFeedbackFileLoggerProvider LoggerProvider { get; }
@@ -312,11 +312,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 });
 
             return diagnosticsProvider.Object;
-        }
-
-        public void Dispose()
-        {
-            LoggerProvider?.Dispose();
         }
     }
 }

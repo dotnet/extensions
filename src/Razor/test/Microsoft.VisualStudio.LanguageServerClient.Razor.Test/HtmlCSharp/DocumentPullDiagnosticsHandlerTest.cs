@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
@@ -96,9 +97,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             Uri = new Uri("C:/path/to/file.razor");
 
-            var directoryProvider = new DefaultFeedbackLogDirectoryProvider();
-            var loggerFactory = new HTMLCSharpLanguageServerFeedbackFileLoggerProviderFactory(directoryProvider);
-            LoggerProvider = new HTMLCSharpLanguageServerFeedbackFileLoggerProvider(loggerFactory);
+            var logger = Mock.Of<ILogger>();
+            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerFeedbackFileLoggerProvider>(l => l.CreateLogger(It.IsAny<string>()) == logger);
         }
 
         private Uri Uri { get; }

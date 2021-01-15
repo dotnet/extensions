@@ -114,7 +114,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 _logger.LogInformation("No diagnostics remaining after filtering.");
 
-                // No diagnostics left after filtering.
                 return new RazorDiagnosticsResponse()
                 {
                     Diagnostics = Array.Empty<Diagnostic>(),
