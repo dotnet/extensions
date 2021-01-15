@@ -110,8 +110,10 @@
         </dict>
       </dict>
 
+      <!-- Temporarily removed because in VS TextMate sometimes superceeds Semantic tokens
+        and this is a common offender -->
       <!-- <a> href=["Hello"]> -->
-      <dict>
+      <!-- <dict>
         <key>scope</key>
         <string>meta.attribute, meta.attribute string.quoted</string>
         <key>settings</key>
@@ -119,7 +121,7 @@
           <key>vsclassificationtype</key>
           <string>HTML Attribute Value</string>
         </dict>
-      </dict>
+      </dict> -->
 
       <dict>
         <key>scope</key>
@@ -155,7 +157,7 @@
         </dict>
       </dict>
 
-      <!-- Temporarily removed because IN VS TextMate sometimes superceeds Semantic tokes
+      <!-- Temporarily removed because in VS TextMate sometimes superceeds Semantic tokens
         and this is a common offender -->
       <!-- <dict>
         <key>scope</key>
@@ -177,7 +179,9 @@
         </dict>
       </dict>
 
-      <dict>
+      <!-- Temporarily removed because in VS TextMate sometimes superceeds Semantic tokens
+        and this is a common offender -->
+      <!-- <dict>
         <key>scope</key>
         <string>variable.other.object.cs, entity.name.variable.local.cs</string>
         <key>settings</key>
@@ -185,7 +189,7 @@
           <key>vsclassificationtype</key>
           <string>local name</string>
         </dict>
-      </dict>
+      </dict> -->
 
       <dict>
         <key>scope</key>

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
         private const string MarkupElementString = "markupElement";
         private const string MarkupAttributeString = "markupAttribute";
         private const string MarkupAttributeValueString = "markupAttributeValue";
-        private const string MarkupAttributeQuoteString = "markupAttributeQuoteString";
+        private const string MarkupAttributeQuoteString = "markupAttributeQuote";
         private const string MarkupTextLiteralString = "markupTextLiteral";
         private const string MarkupCommentPunctuationString = "markupCommentPunctuation";
         private const string MarkupCommentString = "markupComment";

@@ -8,8 +8,8 @@
 0 5 1 85 0 //markupTextLiteral
 0 1 8 72 0 //razorTagHelperAttribute
 0 8 1 82 0 //markupOperator
-0 1 1 82 0 //markupOperator
-0 5 1 82 0 //markupOperator
+0 1 1 84 0 //markupAttributeQuote
+0 5 1 84 0 //markupAttributeQuote
 0 1 1 85 0 //markupTextLiteral
 0 1 1 80 0 //markupTagDelimiter
 0 1 1 80 0 //markupTagDelimiter
@@ -19,8 +19,8 @@
 0 5 1 85 0 //markupTextLiteral
 0 1 8 72 0 //razorTagHelperAttribute
 0 8 1 82 0 //markupOperator
-0 1 1 82 0 //markupOperator
-0 5 1 82 0 //markupOperator
+0 1 1 84 0 //markupAttributeQuote
+0 5 1 84 0 //markupAttributeQuote
 0 1 1 85 0 //markupTextLiteral
 0 1 1 80 0 //markupTagDelimiter
 0 1 1 80 0 //markupTagDelimiter
@@ -30,8 +30,8 @@
 0 5 1 85 0 //markupTextLiteral
 0 1 8 72 0 //razorTagHelperAttribute
 0 8 1 82 0 //markupOperator
-0 1 1 82 0 //markupOperator
-0 5 1 82 0 //markupOperator
+0 1 1 84 0 //markupAttributeQuote
+0 5 1 84 0 //markupAttributeQuote
 0 1 1 85 0 //markupTextLiteral
 0 1 1 80 0 //markupTagDelimiter
 0 1 1 80 0 //markupTagDelimiter

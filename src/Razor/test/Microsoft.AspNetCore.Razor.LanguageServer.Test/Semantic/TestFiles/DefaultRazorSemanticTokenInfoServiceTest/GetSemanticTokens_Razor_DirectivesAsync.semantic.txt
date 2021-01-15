@@ -9,9 +9,9 @@
 0 1 1 73 0 //razorTransition
 0 1 4 75 0 //razorDirectiveAttribute
 0 4 1 82 0 //markupOperator
-0 1 1 82 0 //markupOperator
+0 1 1 84 0 //markupAttributeQuote
 0 1 8 85 0 //markupTextLiteral
-0 8 1 82 0 //markupOperator
+0 8 1 84 0 //markupAttributeQuote
 0 1 1 80 0 //markupTagDelimiter
 0 1 1 80 0 //markupTagDelimiter
 0 1 1 80 0 //markupTagDelimiter

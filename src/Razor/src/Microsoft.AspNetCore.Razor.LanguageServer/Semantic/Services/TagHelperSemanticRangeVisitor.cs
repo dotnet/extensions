@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
         public override void VisitMarkupLiteralAttributeValue(MarkupLiteralAttributeValueSyntax node)
         {
-            AddSemanticRange(node, RazorSemanticTokensLegend.MarkupAttributeValue);
+            AddSemanticRange(node, RazorSemanticTokensLegend.MarkupAttributeQuote);
         }
 
         public override void VisitMarkupAttributeBlock(MarkupAttributeBlockSyntax node)
@@ -61,9 +61,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             Visit(node.NameSuffix);
             AddSemanticRange(node.EqualsToken, RazorSemanticTokensLegend.MarkupOperator);
 
-            AddSemanticRange(node.ValuePrefix, RazorSemanticTokensLegend.MarkupOperator);
+            AddSemanticRange(node.ValuePrefix, RazorSemanticTokensLegend.MarkupAttributeQuote);
             Visit(node.Value);
-            AddSemanticRange(node.ValueSuffix, RazorSemanticTokensLegend.MarkupOperator);
+            AddSemanticRange(node.ValueSuffix, RazorSemanticTokensLegend.MarkupAttributeQuote);
         }
 
         public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
@@ -278,9 +278,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
             AddSemanticRange(node.EqualsToken, RazorSemanticTokensLegend.MarkupOperator);
 
-            AddSemanticRange(node.ValuePrefix, RazorSemanticTokensLegend.MarkupOperator);
+            AddSemanticRange(node.ValuePrefix, RazorSemanticTokensLegend.MarkupAttributeQuote);
             Visit(node.Value);
-            AddSemanticRange(node.ValueSuffix, RazorSemanticTokensLegend.MarkupOperator);
+            AddSemanticRange(node.ValueSuffix, RazorSemanticTokensLegend.MarkupAttributeQuote);
         }
 
         public override void VisitMarkupTagHelperDirectiveAttribute(MarkupTagHelperDirectiveAttributeSyntax node)
@@ -304,9 +304,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             }
 
             AddSemanticRange(node.EqualsToken, RazorSemanticTokensLegend.MarkupOperator);
-            AddSemanticRange(node.ValuePrefix, RazorSemanticTokensLegend.MarkupOperator);
+            AddSemanticRange(node.ValuePrefix, RazorSemanticTokensLegend.MarkupAttributeQuote);
             Visit(node.Value);
-            AddSemanticRange(node.ValueSuffix, RazorSemanticTokensLegend.MarkupOperator);
+            AddSemanticRange(node.ValueSuffix, RazorSemanticTokensLegend.MarkupAttributeQuote);
         }
 
         public override void VisitMarkupMinimizedTagHelperDirectiveAttribute(MarkupMinimizedTagHelperDirectiveAttributeSyntax node)
