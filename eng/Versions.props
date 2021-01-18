@@ -47,16 +47,16 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.1.12-servicing.21065.9</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.1.12-servicing.21065.9</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.1.12-servicing.21065.9</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.1.12-servicing.21067.4</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.1.12-servicing.21067.4</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.1.12-servicing.21067.4</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>3.1.6</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.1.12-servicing.21065.9</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.1.12-servicing.21067.4</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>3.1.12</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.1.12-servicing.21065.9</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.1.12-servicing.21067.4</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.12</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.12-servicing.21065.7</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.12-servicing.21067.3</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>3.1.4</MicrosoftNETCorePlatformsPackageVersion>
     <SystemTextJsonPackageVersion>4.7.2</SystemTextJsonPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.7.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
