@@ -51,7 +51,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 {
                     return Task.Run(() =>
                     {
-                        cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(3));
+                        cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5));
 
                         Assert.True(disposedService);
                         return Array.Empty<Uri>();

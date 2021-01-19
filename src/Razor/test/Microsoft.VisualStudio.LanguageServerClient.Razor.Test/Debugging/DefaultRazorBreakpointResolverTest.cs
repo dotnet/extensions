@@ -120,7 +120,7 @@ $@"public class SomeRazorFile
             // Arrange
             var hostDocumentPosition = GetPosition(InvalidBreakpointCSharp, HostTextbuffer);
             var csharpDocumentPosition = GetPosition(InvalidBreakpointCSharp, CSharpTextBuffer);
-            var csharpDocumentIndex = CSharpTextBuffer.CurrentSnapshot.GetText().IndexOf(ValidBreakpointCSharp, StringComparison.Ordinal);
+            var csharpDocumentIndex = CSharpTextBuffer.CurrentSnapshot.GetText().IndexOf(InvalidBreakpointCSharp, StringComparison.Ordinal);
             var projectionProvider = new TestLSPProjectionProvider(
                 DocumentUri,
                 new Dictionary<Position, ProjectionResult>()

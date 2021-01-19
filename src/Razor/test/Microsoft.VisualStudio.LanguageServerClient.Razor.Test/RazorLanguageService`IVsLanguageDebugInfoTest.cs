@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Editor;
@@ -100,16 +101,87 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             Assert.Equal(VSConstants.E_FAIL, result);
         }
 
+        [Fact]
+        public void GetProximityExpressions_CanNotGetBackingTextBuffer_ReturnsNotImpl()
+        {
+            // Arrange
+            var languageService = CreateLanguageServiceWith(editorAdaptersFactory: Mock.Of<IVsEditorAdaptersFactoryService>());
+
+            // Act
+            var result = languageService.GetProximityExpressions(Mock.Of<IVsTextBuffer>(), 0, 0, 0, out _);
+
+            // Assert
+            Assert.Equal(VSConstants.E_NOTIMPL, result);
+        }
+
+        [Fact]
+        public void GetProximityExpressions_InvalidLocation_ReturnsEFail()
+        {
+            // Arrange
+            var languageService = CreateLanguageServiceWith();
+
+            // Act
+            var result = languageService.GetProximityExpressions(Mock.Of<IVsTextBuffer>(), int.MaxValue, 0, 0, out _);
+
+            // Assert
+            Assert.Equal(VSConstants.E_FAIL, result);
+        }
+
+        [Fact]
+        public void GetProximityExpressions_NullRange_ReturnsEFail()
+        {
+            // Arrange
+            var languageService = CreateLanguageServiceWith();
+
+            // Act
+            var result = languageService.GetProximityExpressions(Mock.Of<IVsTextBuffer>(), 0, 0, 0, out _);
+
+            // Assert
+            Assert.Equal(VSConstants.E_FAIL, result);
+        }
+
+        [Fact]
+        public void GetProximityExpressions_ValidRange_ReturnsSOK()
+        {
+            // Arrange
+            IReadOnlyList<string> expressions = new[] { "something" };
+            var resolver = Mock.Of<RazorProximityExpressionResolver>(resolver => resolver.TryResolveProximityExpressionsAsync(It.IsAny<ITextBuffer>(), 0, 0, It.IsAny<CancellationToken>()) == Task.FromResult(expressions));
+            var languageService = CreateLanguageServiceWith(proximityExpressionResolver: resolver);
+
+            // Act
+            var result = languageService.GetProximityExpressions(Mock.Of<IVsTextBuffer>(), 0, 0, 0, out var resolvedExpressions);
+
+            // Assert
+            Assert.Equal(VSConstants.S_OK, result);
+            var concreteResolvedExpressions = Assert.IsType<VsEnumBSTR>(resolvedExpressions);
+            Assert.Equal(expressions, concreteResolvedExpressions._values);
+        }
+
+        [Fact]
+        public void GetProximityExpressions_CanNotCreateDialog_ReturnsEFail()
+        {
+            // Arrange
+            var languageService = CreateLanguageServiceWith(waitDialogFactory: Mock.Of<WaitDialogFactory>());
+
+            // Act
+            var result = languageService.GetProximityExpressions(Mock.Of<IVsTextBuffer>(), 0, 0, 0, out _);
+
+            // Assert
+            Assert.Equal(VSConstants.E_FAIL, result);
+        }
+
         private RazorLanguageService CreateLanguageServiceWith(
             RazorBreakpointResolver breakpointResolver = null,
+            RazorProximityExpressionResolver proximityExpressionResolver = null,
             WaitDialogFactory waitDialogFactory = null,
             IVsEditorAdaptersFactoryService editorAdaptersFactory = null)
         {
             breakpointResolver ??= Mock.Of<RazorBreakpointResolver>();
+            proximityExpressionResolver ??= Mock.Of<RazorProximityExpressionResolver>();
             waitDialogFactory ??= new TestWaitDialogFactory();
             editorAdaptersFactory ??= Mock.Of<IVsEditorAdaptersFactoryService>(service => service.GetDataBuffer(It.IsAny<IVsTextBuffer>()) == new TestTextBuffer(new StringTextSnapshot(Environment.NewLine)));
 
-            var languageService = new RazorLanguageService(breakpointResolver, waitDialogFactory, editorAdaptersFactory);
+            var languageService = new RazorLanguageService(breakpointResolver, proximityExpressionResolver, waitDialogFactory, editorAdaptersFactory);
             return languageService;
         }
 

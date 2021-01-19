@@ -54,6 +54,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 languageQueryParams,
                 cancellationToken).ConfigureAwait(false);
 
+            if (languageResponse == null)
+            {
+                // The language server is still being spun up. Could not resolve the projection.
+                return null;
+            }
+
             VirtualDocumentSnapshot virtualDocument;
             if (languageResponse.Kind == RazorLanguageKind.CSharp &&
                 documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDoc))

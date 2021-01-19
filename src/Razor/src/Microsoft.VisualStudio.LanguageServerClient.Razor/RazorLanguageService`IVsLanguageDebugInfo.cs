@@ -14,17 +14,24 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     internal partial class RazorLanguageService : IVsLanguageDebugInfo
     {
         private readonly RazorBreakpointResolver _breakpointResolver;
+        private readonly RazorProximityExpressionResolver _proximityExpressionResolver;
         private readonly WaitDialogFactory _waitDialogFactory;
         private readonly IVsEditorAdaptersFactoryService _editorAdaptersFactory;
 
         public RazorLanguageService(
             RazorBreakpointResolver breakpointResolver,
+            RazorProximityExpressionResolver proximityExpressionResolver,
             WaitDialogFactory waitDialogFactory,
             IVsEditorAdaptersFactoryService editorAdaptersFactory)
         {
             if (breakpointResolver is null)
             {
                 throw new ArgumentNullException(nameof(breakpointResolver));
+            }
+
+            if (proximityExpressionResolver is null)
+            {
+                throw new ArgumentNullException(nameof(proximityExpressionResolver));
             }
 
             if (waitDialogFactory is null)
@@ -38,14 +45,59 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             _breakpointResolver = breakpointResolver;
+            _proximityExpressionResolver = proximityExpressionResolver;
             _waitDialogFactory = waitDialogFactory;
             _editorAdaptersFactory = editorAdaptersFactory;
         }
 
         public int GetProximityExpressions(IVsTextBuffer pBuffer, int iLine, int iCol, int cLines, out IVsEnumBSTR ppEnum)
         {
-            ppEnum = default;
-            return VSConstants.E_NOTIMPL;
+            var textBuffer = _editorAdaptersFactory.GetDataBuffer(pBuffer);
+            if (textBuffer == null)
+            {
+                // Can't resolve the text buffer, let someone else deal with this breakpoint.
+                ppEnum = null;
+                return VSConstants.E_NOTIMPL;
+            }
+
+            var snapshot = textBuffer.CurrentSnapshot;
+            if (!ValidateLocation(snapshot, iLine, iCol))
+            {
+                // The point disappeared between sessions. Do not evaluate proximity expressions here.
+                ppEnum = null;
+                return VSConstants.E_FAIL;
+            }
+
+            var dialogResult = _waitDialogFactory.TryCreateWaitDialog(
+                title: "Determining proximity expressions...",
+                message: "Razor Debugger",
+                async (context) =>
+                {
+                    var proximityExpressions = await _proximityExpressionResolver.TryResolveProximityExpressionsAsync(textBuffer, iLine, iCol, context.CancellationToken);
+                    return proximityExpressions;
+                });
+
+            if (dialogResult == null)
+            {
+                // Failed to create the dialog at all.
+                ppEnum = null;
+                return VSConstants.E_FAIL;
+            }
+
+            if (dialogResult.Cancelled)
+            {
+                ppEnum = null;
+                return VSConstants.E_FAIL;
+            }
+
+            if (dialogResult.Result == null)
+            {
+                ppEnum = null;
+                return VSConstants.E_FAIL;
+            }
+
+            ppEnum = new VsEnumBSTR(dialogResult.Result);
+            return VSConstants.S_OK;
         }
 
         public int ValidateBreakpointLocation(IVsTextBuffer pBuffer, int iLine, int iCol, TextSpan[] pCodeSpan)
@@ -58,7 +110,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             var snapshot = textBuffer.CurrentSnapshot;
-            if (!ValidBreakpointLocation(snapshot, iLine, iCol))
+            if (!ValidateLocation(snapshot, iLine, iCol))
             {
                 // The point disappeared between sessions. Do not allow a breakpoint here.
                 return VSConstants.E_FAIL;
@@ -130,7 +182,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return VSConstants.E_NOTIMPL;
         }
 
-        public static bool ValidBreakpointLocation(ITextSnapshot snapshot, int lineNumber, int columnIndex)
+        private static bool ValidateLocation(ITextSnapshot snapshot, int lineNumber, int columnIndex)
         {
             if (lineNumber < 0 || lineNumber >= snapshot.LineCount)
             {

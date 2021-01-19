@@ -40,9 +40,10 @@ namespace Microsoft.VisualStudio.RazorExtension
             {
                 var componentModel = (IComponentModel)GetGlobalService(typeof(SComponentModel));
                 var breakpointResolver = componentModel.GetService<RazorBreakpointResolver>();
+                var proximityExpressionResolver = componentModel.GetService<RazorProximityExpressionResolver>();
                 var waitDialogFactory = componentModel.GetService<WaitDialogFactory>();
                 var editorAdaptersFactory = componentModel.GetService<IVsEditorAdaptersFactoryService>();
-                return new RazorLanguageService(breakpointResolver, waitDialogFactory, editorAdaptersFactory);
+                return new RazorLanguageService(breakpointResolver, proximityExpressionResolver, waitDialogFactory, editorAdaptersFactory);
             }, promote: true);
         }
     }
