@@ -53,26 +53,43 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
-        public async Task HandleRequestAsync_DoesNotInvokeHtmlLanguageServer()
+        public async Task HandleRequestAsync_InvokesHtmlLanguageServer()
         {
             // Arrange
+            var called = false;
             var originalData = new object();
             var request = new CompletionItem()
             {
-                InsertText = "div",
+                InsertText = "strong",
                 Data = new CompletionResolveData() { LanguageServerKind = LanguageServerKind.Html, OriginalData = originalData }
+            };
+            var expectedResponse = new CompletionItem()
+            {
+                InsertText = "strong",
+                Data = originalData,
+                Detail = "Some documentation"
             };
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
+            requestInvoker
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionItem, CompletionItem>(It.IsAny<string>(), RazorLSPConstants.HtmlLSPContentTypeName, It.IsAny<CompletionItem>(), It.IsAny<CancellationToken>()))
+                .Callback<string, string, CompletionItem, CancellationToken>((method, serverContentType, completionItem, ct) =>
+                {
+                    Assert.Equal(Methods.TextDocumentCompletionResolveName, method);
+                    Assert.Equal(RazorLSPConstants.HtmlLSPContentTypeName, serverContentType);
+                    Assert.Same(originalData, completionItem.Data);
+                    called = true;
+                })
+                .Returns(Task.FromResult<CompletionItem>(expectedResponse));
 
             var handler = new CompletionResolveHandler(requestInvoker.Object);
 
             // Act
             var result = await handler.HandleRequestAsync(request, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
 
-            // Assert (Does not throw with MockBehavior.Strict)
-            Assert.Equal("div", result.InsertText);
-            Assert.Same(originalData, result.Data);
+            // Assert
+            Assert.True(called);
+            Assert.Same(expectedResponse, result);
         }
     }
 }

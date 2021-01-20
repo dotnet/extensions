@@ -48,12 +48,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Set the original resolve data back so the language server deserializes it correctly.
             request.Data = resolveData.OriginalData;
 
-            if (resolveData.LanguageServerKind != LanguageServerKind.CSharp)
-            {
-                // We currently only want to resolve C# completion items.
-                return request;
-            }
-
             var serverContentType = resolveData.LanguageServerKind.ToContentType();
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionItem, CompletionItem>(
                 Methods.TextDocumentCompletionResolveName,
