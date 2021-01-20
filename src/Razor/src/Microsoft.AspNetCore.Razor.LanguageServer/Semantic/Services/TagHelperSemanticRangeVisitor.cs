@@ -46,7 +46,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         #region HTML
         public override void VisitMarkupTextLiteral(MarkupTextLiteralSyntax node)
         {
-            AddSemanticRange(node, RazorSemanticTokensLegend.MarkupTextLiteral);
+            if (!node.ContainsOnlyWhitespace())
+            {
+                AddSemanticRange(node, RazorSemanticTokensLegend.MarkupTextLiteral);
+            }
         }
 
         public override void VisitMarkupLiteralAttributeValue(MarkupLiteralAttributeValueSyntax node)
@@ -388,11 +391,37 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             var source = _razorCodeDocument.Source;
             var range = node.GetRange(source);
 
-            var semanticRange = new SemanticRange(semanticKind, range, modifier: 0);
-
-            if (_range is null || semanticRange.Range.OverlapsWith(_range))
+            // LSP spec forbids multi-line tokens, so we need to split this up.
+            // Thankfully all instances of this have multiple component tokens.
+            if (range.Start.Line != range.End.Line)
             {
-                _semanticRanges.Add(semanticRange);
+                // We have to iterate over the individual nodes because this node might consist of multiple lines
+                // ie: "/r/ntext/r/n" would be parsed as one node containing three elements (newline, "text", newline).
+                foreach (var token in node.ChildNodes())
+                {
+                    // We skip whitespace to avoid "multiline" ranges for "/r/n", where the /n is interpreted as being on a new line.
+                    // This also stops us from returning data for " ", which seems like a nice side-effect as it's not likly to have any colorization anyway.
+                    if (!token.ContainsOnlyWhitespace())
+                    {
+                        var tokenRange = token.GetRange(source);
+
+                        var semantic = new SemanticRange(semanticKind, tokenRange, modifier: 0);
+                        AddRange(semantic);
+                    }
+                }
+            }
+            else
+            {
+                var semanticRange = new SemanticRange(semanticKind, range, modifier: 0);
+                AddRange(semanticRange);
+            }
+
+            void AddRange(SemanticRange semanticRange)
+            {
+                if (_range is null || semanticRange.Range.OverlapsWith(_range))
+                {
+                    _semanticRanges.Add(semanticRange);
+                }
             }
         }
     }

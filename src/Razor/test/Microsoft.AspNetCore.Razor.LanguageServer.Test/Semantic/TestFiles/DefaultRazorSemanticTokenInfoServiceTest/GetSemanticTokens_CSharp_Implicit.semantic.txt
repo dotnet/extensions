@@ -1,8 +1,6 @@
 //line,characterPos,length,tokenType,modifier
 0 0 1 73 0 //razorTransition
 0 1 12 76 0 //razorDirective
-0 12 1 85 0 //markupTextLiteral
-0 16 2 85 0 //markupTextLiteral
 1 0 1 73 0 //razorTransition
 0 1 1 73 0 //razorTransition
 0 2 3 15 0 //keyword

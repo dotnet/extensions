@@ -150,3 +150,5 @@ src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Performance/BenchmarkDotNet.Arti
 
 # Yarn Logs
 yarn-*.log
+
+*.svclog

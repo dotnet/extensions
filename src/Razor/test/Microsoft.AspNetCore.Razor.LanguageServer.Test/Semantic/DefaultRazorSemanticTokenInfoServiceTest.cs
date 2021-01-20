@@ -307,6 +307,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
         #region HTML
         [Fact]
+        public async Task GetSemanticTokens_MultipleBlankLines()
+        {
+            var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}<p>first{Environment.NewLine}second</p>";
+
+            await AssertSemanticTokens(txt, isRazor: false);
+        }
+
+        [Fact]
         public async Task GetSemanticTokens_HTMLCommentWithCSharp()
         {
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<!-- @DateTime.Now -->";

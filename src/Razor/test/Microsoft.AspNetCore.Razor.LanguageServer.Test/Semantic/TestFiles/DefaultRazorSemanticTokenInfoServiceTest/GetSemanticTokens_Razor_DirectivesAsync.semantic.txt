@@ -1,12 +1,9 @@
 //line,characterPos,length,tokenType,modifier
 0 0 1 73 0 //razorTransition
 0 1 12 76 0 //razorDirective
-0 12 1 85 0 //markupTextLiteral
-0 16 2 85 0 //markupTextLiteral
 1 0 1 80 0 //markupTagDelimiter
 0 1 10 71 0 //razorTagHelperElement
-0 10 1 85 0 //markupTextLiteral
-0 1 1 73 0 //razorTransition
+0 11 1 73 0 //razorTransition
 0 1 4 75 0 //razorDirectiveAttribute
 0 4 1 82 0 //markupOperator
 0 1 1 84 0 //markupAttributeQuote
@@ -17,4 +14,3 @@
 0 1 1 80 0 //markupTagDelimiter
 0 1 10 71 0 //razorTagHelperElement
 0 10 1 80 0 //markupTagDelimiter
-0 1 1 85 0 //markupTextLiteral
