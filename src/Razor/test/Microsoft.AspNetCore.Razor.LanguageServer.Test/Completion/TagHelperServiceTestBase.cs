@@ -107,6 +107,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     parameter.SetPropertyName("Something");
                 });
             });
+            directiveAttribute1.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly] = bool.TrueString;
             directiveAttribute1.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
             directiveAttribute1.SetTypeName("TestDirectiveAttribute");
 
@@ -144,6 +145,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     parameter.SetPropertyName("Something");
                 });
             });
+            directiveAttribute2.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly] = bool.TrueString;
             directiveAttribute2.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
             directiveAttribute2.SetTypeName("TestDirectiveAttribute");
 

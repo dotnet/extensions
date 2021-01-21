@@ -5,10 +5,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models;
-using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
@@ -360,30 +358,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
             if (node.StartTag != null && node.StartTag.Name != null)
             {
-                var name = node.StartTag.Name.Content;
-
-                if (!HtmlFactsService.IsHtmlTagName(name))
-                {
-                    // We always classify non-HTML tag names as TagHelpers if they're within a MarkupTagHelperElementSyntax
-                    return true;
-                }
-
-                // This must be a well-known HTML tag name like 'input', 'br'.
-
                 var binding = node.TagHelperInfo.BindingResult;
-                foreach (var descriptor in binding.Descriptors)
-                {
-                    if (!descriptor.IsComponentTagHelper())
-                    {
-                        return false;
-                    }
-                }
-
-                if (name.Length > 0 && char.IsUpper(name[0]))
-                {
-                    // pascal cased Component TagHelper tag name such as <Input>
-                    return true;
-                }
+                return !binding.IsAttributeMatch;
             }
 
             return false;

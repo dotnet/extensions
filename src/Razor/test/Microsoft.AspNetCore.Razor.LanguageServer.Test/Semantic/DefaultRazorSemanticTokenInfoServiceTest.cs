@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         [Fact]
         public async Task GetSemanticTokens_Razor_MinimizedDirectiveAttributeParameters()
         {
-            // Capitalized, non-well-known-HTML elements are always marked as TagHelpers
+            // Capitalized, non-well-known-HTML elements should not be marked as TagHelpers
             var txt = $"@addTagHelper *, TestAssembly{Environment.NewLine}<NotATagHelp @minimized:something /> ";
 
             await AssertSemanticTokens(txt, isRazor: true);
