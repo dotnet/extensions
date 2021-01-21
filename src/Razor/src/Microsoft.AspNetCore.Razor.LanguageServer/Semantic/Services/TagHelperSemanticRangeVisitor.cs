@@ -286,6 +286,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             AddSemanticRange(node.ValueSuffix, RazorSemanticTokensLegend.MarkupAttributeQuote);
         }
 
+        public override void VisitMarkupTagHelperAttributeValue(MarkupTagHelperAttributeValueSyntax node)
+        {
+            foreach (var child in node.Children)
+            {
+                if (child.Kind == SyntaxKind.MarkupTextLiteral)
+                {
+                    AddSemanticRange(child, RazorSemanticTokensLegend.MarkupAttributeQuote);
+                }
+                else
+                {
+                    Visit(child);
+                }
+            }
+        }
+
         public override void VisitMarkupTagHelperDirectiveAttribute(MarkupTagHelperDirectiveAttributeSyntax node)
         {
             if (node.TagHelperAttributeInfo.Bound)

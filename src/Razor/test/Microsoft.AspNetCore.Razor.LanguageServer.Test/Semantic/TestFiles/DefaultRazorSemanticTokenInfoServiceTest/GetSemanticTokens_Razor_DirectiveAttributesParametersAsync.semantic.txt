@@ -9,7 +9,7 @@
 0 1 9 75 0 //razorDirectiveAttribute
 0 9 1 82 0 //markupOperator
 0 1 1 84 0 //markupAttributeQuote
-0 1 8 85 0 //markupTextLiteral
+0 1 8 84 0 //markupAttributeQuote
 0 8 1 84 0 //markupAttributeQuote
 0 1 1 80 0 //markupTagDelimiter
 0 1 1 80 0 //markupTagDelimiter
