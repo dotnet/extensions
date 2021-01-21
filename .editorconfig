@@ -36,6 +36,9 @@ indent_size = 2
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 
+# IDE0046: If expression can be simplified
+dotnet_style_prefer_conditional_expression_over_return = false:silent
+
 # Don't use this. qualifier
 dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
