@@ -345,6 +345,75 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
+        [Fact]
+        public async Task Handle_ProcessDiagnostics_HTML_WithCSharpInAttribute_SingleDiagnostic()
+        {
+            // Arrange
+            var documentPath = "C:/path/to/document.cshtml";
+            var codeDocument = CreateCodeDocumentWithCSharpProjection(
+                "<p style=\"padding: @System.Math.PI px;\">Hello</p>",
+                "var __o = System.Math.PI",
+                new[] {
+                    new SourceMapping(
+                        new SourceSpan(20, 14),
+                        new SourceSpan(10, 14))
+                });
+            var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var request = new RazorDiagnosticsParams()
+            {
+                Kind = RazorLanguageKind.Html,
+                Diagnostics = new[] { new Diagnostic() { Range = new Range(new Position(0, 18), new Position(0, 19)) } },
+                RazorDocumentUri = new Uri(documentPath),
+            };
+
+            // Act
+            var response = await Task.Run(() => diagnosticsEndpoint.Handle(request, default));
+
+            // Assert
+            Assert.Empty(response.Diagnostics);
+            Assert.Equal(1337, response.HostDocumentVersion);
+        }
+
+        [Fact]
+        public async Task Handle_ProcessDiagnostics_HTML_WithCSharpInAttribute_MultipleDiagnostics()
+        {
+            // Arrange
+            var documentPath = "C:/path/to/document.cshtml";
+            var codeDocument = CreateCodeDocumentWithCSharpProjection(
+                "<p style=\"abc;padding: @System.Math.PI px;abc;\">Hello</p>",
+                "var __o = System.Math.PI",
+                new[] {
+                    new SourceMapping(
+                        new SourceSpan(24, 14),
+                        new SourceSpan(10, 14))
+                });
+            var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var request = new RazorDiagnosticsParams()
+            {
+                Kind = RazorLanguageKind.Html,
+                Diagnostics = new[]
+                {
+                    new Diagnostic() { Range = new Range(new Position(0, 1), new Position(0, 2)) },     // start of `p` tag
+                    new Diagnostic() { Range = new Range(new Position(0, 13), new Position(0, 14)) },   // leading `abc`
+                    new Diagnostic() { Range = new Range(new Position(0, 25), new Position(0, 26)) },   // `@`
+                    new Diagnostic() { Range = new Range(new Position(0, 45), new Position(0, 46)) },   // trailing `abc`
+                    new Diagnostic() { Range = new Range(new Position(0, 55), new Position(0, 57)) }    // in `Hello`
+                },
+                RazorDocumentUri = new Uri(documentPath),
+            };
+
+            // Act
+            var response = await Task.Run(() => diagnosticsEndpoint.Handle(request, default));
+
+            // Assert
+            Assert.Collection(response.Diagnostics,
+                d => Assert.Equal(new Range(new Position(0, 1), new Position(0, 2)), d.Range),
+                d => Assert.Equal(new Range(new Position(0, 55), new Position(0, 57)), d.Range));
+            Assert.Equal(1337, response.HostDocumentVersion);
+        }
+
         private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)
         {
             var sourceTextChars = new char[codeDocument.Source.Length];

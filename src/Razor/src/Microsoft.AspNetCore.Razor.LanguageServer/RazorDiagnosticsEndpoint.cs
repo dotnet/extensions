@@ -7,12 +7,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using SourceText = Microsoft.CodeAnalysis.Text.SourceText;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -108,8 +112,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 };
             }
 
+            var codeDocument = await documentSnapshot.GetGeneratedOutputAsync().ConfigureAwait(false);
+            if (codeDocument?.IsUnsupported() != false)
+            {
+                _logger.LogInformation("Unsupported code document.");
+                return new RazorDiagnosticsResponse()
+                {
+                    Diagnostics = Array.Empty<Diagnostic>(),
+                    HostDocumentVersion = documentVersion
+                };
+            }
+
             var unmappedDiagnostics = request.Diagnostics;
-            var filteredDiagnostics = unmappedDiagnostics.Where(d => !CanDiagnosticBeFiltered(request.Kind, d)).ToArray();
+            var filteredDiagnostics = request.Kind == RazorLanguageKind.CSharp ?
+                FilterCSharpDiagnostics(unmappedDiagnostics) :
+                await FilterHTMLDiagnosticsAsync(unmappedDiagnostics, codeDocument, documentSnapshot).ConfigureAwait(false);
             if (!filteredDiagnostics.Any())
             {
                 _logger.LogInformation("No diagnostics remaining after filtering.");
@@ -123,10 +140,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _logger.LogInformation($"{filteredDiagnostics.Length}/{unmappedDiagnostics.Length} diagnostics remain after filtering.");
 
-            var mappedDiagnostics = await MapDiagnosticsAsync(
+            var mappedDiagnostics = MapDiagnostics(
                 request,
                 filteredDiagnostics,
-                documentSnapshot).ConfigureAwait(false);
+                codeDocument);
 
             _logger.LogInformation($"Returning {mappedDiagnostics.Length} mapped diagnostics.");
 
@@ -135,38 +152,87 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 Diagnostics = mappedDiagnostics,
                 HostDocumentVersion = documentVersion,
             };
-
-            // TODO; HTML filtering blocked on https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1257401
-            static bool CanDiagnosticBeFiltered(RazorLanguageKind kind, Diagnostic d)
-            {
-                return kind == RazorLanguageKind.CSharp ?
-                    CanCSharpDiagnosticBeFiltered(d) :
-                    CanHTMLDiagnosticBeFiltered(d);
-            }
-
-            static bool CanCSharpDiagnosticBeFiltered(Diagnostic d) =>
-                (DiagnosticsToIgnore.Contains(d.Code?.String) &&
-                 d.Severity != DiagnosticSeverity.Error);
-
-            static bool CanHTMLDiagnosticBeFiltered(Diagnostic d) => false;
         }
 
-        private async Task<Diagnostic[]> MapDiagnosticsAsync(
+        private async Task<Diagnostic[]> FilterHTMLDiagnosticsAsync(
+            Diagnostic[] unmappedDiagnostics,
+            RazorCodeDocument codeDocument,
+            DocumentSnapshot documentSnapshot)
+        {
+            var sourceText = await documentSnapshot.GetTextAsync();
+            var syntaxTree = codeDocument.GetSyntaxTree();
+
+            var processedAttributes = new Dictionary<TextSpan, bool>();
+
+            var filteredDiagnostics = unmappedDiagnostics
+                .Where(d =>
+                    // TODO: undesired HTML Diagnostic codes
+                    // (https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1257401) ||
+                    !InAttributeContainingCSharp(d, sourceText, syntaxTree, processedAttributes))
+                .ToArray();
+
+            return filteredDiagnostics;
+
+            static bool InAttributeContainingCSharp(
+                Diagnostic d,
+                SourceText sourceText,
+                RazorSyntaxTree syntaxTree,
+                Dictionary<TextSpan, bool> processedAttributes)
+            {
+                // Examine the _end_ of the diagnostic to see if we're at the
+                // start of an (im/ex)plicit expression. Looking at the start
+                // of the diagnostic isn't sufficient.
+                var absoluteIndex = d.Range.End.GetAbsoluteIndex(sourceText);
+                var change = new SourceChange(absoluteIndex, 0, string.Empty);
+                var owner = syntaxTree.Root.LocateOwner(change);
+
+                var markupAttributeNode = owner.FirstAncestorOrSelf<RazorSyntaxNode>(n =>
+                    n is MarkupAttributeBlockSyntax ||
+                    n is MarkupTagHelperAttributeValueSyntax);
+
+                if (markupAttributeNode != null)
+                {
+                    if (!processedAttributes.TryGetValue(markupAttributeNode.FullSpan, out var doesAttributeContainNonMarkup))
+                    {
+                        doesAttributeContainNonMarkup = CheckIfAttributeContainsNonMarkupNodes(markupAttributeNode);
+                        processedAttributes.Add(markupAttributeNode.FullSpan, doesAttributeContainNonMarkup);
+                    }
+
+                    return doesAttributeContainNonMarkup;
+                }
+
+                return false;
+            }
+
+            static bool CheckIfAttributeContainsNonMarkupNodes(RazorSyntaxNode attributeNode)
+            {
+                // Only allow markup, generic & (non-razor comment) token nodes
+                var containsNonMarkupNodes = attributeNode.DescendantNodes()
+                    .Any(n => !(n is MarkupBlockSyntax ||
+                        n is MarkupSyntaxNode ||
+                        n is GenericBlockSyntax ||
+                        (n is SyntaxNode sn && sn.IsToken && sn.Kind != SyntaxKind.RazorCommentTransition)));
+                return containsNonMarkupNodes;
+            }
+        }
+
+        private Diagnostic[] FilterCSharpDiagnostics(Diagnostic[] unmappedDiagnostics)
+        {
+            return unmappedDiagnostics.Where(d =>
+                !(DiagnosticsToIgnore.Contains(d.Code?.String) &&
+                  d.Severity != DiagnosticSeverity.Error))
+                .ToArray();
+        }
+
+        private Diagnostic[] MapDiagnostics(
             RazorDiagnosticsParams request,
             IReadOnlyList<Diagnostic> filteredDiagnostics,
-            DocumentSnapshot documentSnapshot)
+            RazorCodeDocument codeDocument)
         {
             if (request.Kind != RazorLanguageKind.CSharp)
             {
                 // All other non-C# requests map directly to where they are in the document.
                 return filteredDiagnostics.ToArray();
-            }
-
-            var codeDocument = await documentSnapshot.GetGeneratedOutputAsync().ConfigureAwait(false);
-            if (codeDocument?.IsUnsupported() != false)
-            {
-                _logger.LogInformation("Unsupported code document.");
-                return Array.Empty<Diagnostic>();
             }
 
             var mappedDiagnostics = new List<Diagnostic>();
