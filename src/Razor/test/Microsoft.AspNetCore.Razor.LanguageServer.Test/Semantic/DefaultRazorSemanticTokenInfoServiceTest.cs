@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
         [Fact]
         public async Task GetSemanticTokens_IncompleteTag()
         {
-            var txt = "<str";
+            var txt = "<str class='";
 
             await AssertSemanticTokens(txt, isRazor: false);
         }

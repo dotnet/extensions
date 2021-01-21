@@ -378,7 +378,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         {
             if (node is null)
             {
-                throw new ArgumentNullException(nameof(node));
+                // This can happen in situations like "<p class='", where the trailing ' hasn't been typed yet.
+                return;
             }
 
             if (node.Width == 0)
