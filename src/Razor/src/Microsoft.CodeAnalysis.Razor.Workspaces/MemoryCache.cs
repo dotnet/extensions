@@ -62,11 +62,11 @@ namespace Microsoft.CodeAnalysis.Razor
 
         protected virtual void Compact()
         {
-            var kvps = _dict.OrderBy(x => x.Value.LastAccess);
+            var kvps = _dict.OrderBy(x => x.Value.LastAccess).ToArray();
 
             for (var i = 0; i < _sizeLimit / 2; i++)
             {
-                _dict.Remove(kvps.ElementAt(i).Key);
+                _dict.Remove(kvps[i].Key);
             }
         }
 
