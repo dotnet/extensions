@@ -16,9 +16,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     [Export(typeof(VirtualDocumentFactory))]
     internal class CSharpVirtualDocumentFactory : VirtualDocumentFactoryBase
     {
+        public static readonly string CSharpClientName = "RazorCSharp";
         private static readonly IReadOnlyDictionary<object, object> _languageBufferProperties = new Dictionary<object, object>
         {
-            { LanguageClientConstants.ClientNamePropertyKey, "RazorCSharp" }
+            { LanguageClientConstants.ClientNamePropertyKey, CSharpClientName }
         };
 
         private static IContentType _csharpContentType;

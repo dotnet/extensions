@@ -426,12 +426,24 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             foreach (var languageClientAndMetadata in _languageServiceBroker.LanguageClients)
             {
-                if (languageClientAndMetadata.Metadata.ContentTypes.Contains(RazorLSPConstants.HtmlLSPContentTypeName) ||
-                    languageClientAndMetadata.Metadata.ContentTypes.Contains(RazorLSPConstants.CSharpContentTypeName))
+                var metadata = languageClientAndMetadata.Metadata as ILanguageClientMetadata;
+                if (metadata == null)
+                {
+                    continue;
+                }
+
+                if (metadata is IIsUserExperienceDisabledMetadata userExperienceDisabledMetadata &&
+                    userExperienceDisabledMetadata.IsUserExperienceDisabled)
+                {
+                    continue;
+                }
+
+                if (IsCSharpApplicable(metadata) ||
+                    metadata.ContentTypes.Contains(RazorLSPConstants.HtmlLSPContentTypeName))
                 {
                     relevantLanguageClients.Add(languageClientAndMetadata.Value);
 
-                    var loadAsyncTask = _languageClientBroker.LoadAsync((ILanguageClientMetadata)languageClientAndMetadata.Metadata, languageClientAndMetadata.Value);
+                    var loadAsyncTask = _languageClientBroker.LoadAsync(metadata, languageClientAndMetadata.Value);
                     clientLoadTasks.Add(loadAsyncTask);
                 }
             }
@@ -439,6 +451,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             await Task.WhenAll(clientLoadTasks).ConfigureAwait(false);
 
             return relevantLanguageClients;
+
+            static bool IsCSharpApplicable(ILanguageClientMetadata metadata)
+            {
+                return metadata.ContentTypes.Contains(RazorLSPConstants.CSharpContentTypeName) &&
+                    metadata.ClientName == CSharpVirtualDocumentFactory.CSharpClientName;
+            }
         }
     }
 }
