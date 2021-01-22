@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis.Text;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.JsonRpc;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
