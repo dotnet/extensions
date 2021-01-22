@@ -66,11 +66,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             // Assert
             Assert.Equal(SupportedCodeActions.Length, providedCodeActions.Count);
-
-            for (var i = 0; i < SupportedCodeActions.Length; i++)
-            {
-                Assert.Equal(SupportedCodeActions[i].Title, providedCodeActions.ElementAt(i).Title);
-            }
+            var providedTitles = providedCodeActions.Select(action => action.Title);
+            var expectedTitles = SupportedCodeActions.Select(action => action.Title);
+            Assert.Equal(expectedTitles, providedTitles);
         }
 
         [Fact]

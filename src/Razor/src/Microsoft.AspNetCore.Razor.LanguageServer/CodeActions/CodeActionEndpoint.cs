@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             for (var i = 0; i < results.Length; i++)
             {
-                var result = results.ElementAt(i);
+                var result = results[i];
 
                 if (!(result is null))
                 {

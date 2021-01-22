@@ -223,7 +223,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
 
             if (referenceText is ClassifiedTextElement textElement &&
-                FilterReferenceClassifiedRuns(textElement.Runs))
+                FilterReferenceClassifiedRuns(textElement.Runs.ToArray()))
             {
                 var filteredRuns = textElement.Runs.Skip(4); // `__o`, ` `, `=`, ` `
                 filteredRuns = filteredRuns.Take(filteredRuns.Count() - 1); // Trailing `;`
@@ -233,18 +233,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return referenceText;
         }
 
-        private bool FilterReferenceClassifiedRuns(IEnumerable<ClassifiedTextRun> runs)
+        private bool FilterReferenceClassifiedRuns(IReadOnlyList<ClassifiedTextRun> runs)
         {
-            if (runs.Count() < 5)
+            if (runs.Count < 5)
             {
                 return false;
             }
 
-            return VerifyRunMatches(runs.ElementAt(0), "field name", "__o") &&
-                VerifyRunMatches(runs.ElementAt(1), "text", " ") &&
-                VerifyRunMatches(runs.ElementAt(2), "operator", "=") &&
-                VerifyRunMatches(runs.ElementAt(3), "text", " ") &&
-                VerifyRunMatches(runs.Last(), "punctuation", ";");
+            return VerifyRunMatches(runs[0], "field name", "__o") &&
+                VerifyRunMatches(runs[1], "text", " ") &&
+                VerifyRunMatches(runs[2], "operator", "=") &&
+                VerifyRunMatches(runs[3], "text", " ") &&
+                VerifyRunMatches(runs[runs.Count - 1], "punctuation", ";");
 
             static bool VerifyRunMatches(ClassifiedTextRun run, string expectedClassificationType, string expectedText)
             {

@@ -3,7 +3,6 @@
 #pragma warning disable CS0618
 #nullable enable
 using System.Collections.Generic;
-using System.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models.Proposals;
 
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
         public static int CSharpString => TokenTypesLegend["string"];
         public static int CSharpPunctuation => TokenTypesLegend["punctuation"];
 
-        public static readonly IReadOnlyCollection<string> TokenTypes = new string[] {
+        public static readonly IReadOnlyList<string> TokenTypes = new string[] {
             // C# token types
             "namespace", // 0
             "type",
@@ -164,12 +163,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models
             TokenTypes = new Container<string>(TokenTypes),
         };
 
-        private static IReadOnlyDictionary<string, int> GetMap(IReadOnlyCollection<string> tokens)
+        private static IReadOnlyDictionary<string, int> GetMap(IReadOnlyList<string> tokens)
         {
             var result = new Dictionary<string, int>();
             for (var i = 0; i < tokens.Count; i++)
             {
-                result[tokens.ElementAt(i)] = i;
+                result[tokens[i]] = i;
             }
 
             return result;

@@ -472,8 +472,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                         });
                     }
 
-                    var filteredDiagnostics = diagnostics.Where(d => !CanDiagnosticBeFiltered(d));
-                    if (!filteredDiagnostics.Any())
+                    var filteredDiagnostics = diagnostics.Where(d => !CanDiagnosticBeFiltered(d)).ToArray();
+                    if (filteredDiagnostics.Length == 0)
                     {
                         return Task.FromResult(new RazorDiagnosticsResponse()
                         {
@@ -484,9 +484,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                     var mappedDiagnostics = new List<Diagnostic>();
 
-                    for (var i = 0; i < filteredDiagnostics.Count(); i++)
+                    for (var i = 0; i < filteredDiagnostics.Length; i++)
                     {
-                        var diagnostic = filteredDiagnostics.ElementAt(i);
+                        var diagnostic = filteredDiagnostics[i];
                         var range = expectedRanges[i];
 
                         if (range.IsUndefined())
