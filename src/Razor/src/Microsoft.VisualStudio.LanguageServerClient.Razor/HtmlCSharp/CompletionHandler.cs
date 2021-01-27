@@ -41,6 +41,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             "__tagHelperExecutionContext",
             "__tagHelperRunner",
             "__typeHelper",
+            "_Imports",
             "BuildRenderTree"
         };
 

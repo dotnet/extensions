@@ -732,6 +732,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 new CompletionItem() { InsertText = "DateTime", Label = "DateTime" },
                 new CompletionItem() { InsertText = "__o", Label = "__o" },
                 new CompletionItem() { InsertText = "__RazorDirectiveTokenHelpers__", Label = "__RazorDirectiveTokenHelpers__" },
+                new CompletionItem() { InsertText = "_Imports", Label = "_Imports" },
             };
 
             var completionRequest = new CompletionParams()
@@ -801,6 +802,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 new CompletionItem() { InsertText = "__RazorDirectiveTokenHelpers__", Label = "__RazorDirectiveTokenHelpers__" },
                 new CompletionItem() { InsertText = "__o", Label = "__o" },
                 new CompletionItem() { InsertText = "__x", Label = "__x" },
+                new CompletionItem() { InsertText = "_Imports", Label = "_Imports" },
             };
 
             // Requesting completion at:
