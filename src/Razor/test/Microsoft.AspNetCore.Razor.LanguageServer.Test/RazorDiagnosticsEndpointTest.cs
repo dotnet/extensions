@@ -414,6 +414,58 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
+        [Fact]
+        public async Task Handle_ProcessDiagnostics_HTML_WithCSharpInTagHelperAttribute_MultipleDiagnostics()
+        {
+            // Arrange
+            var documentPath = "C:/path/to/document.cshtml";
+
+            var descriptor = TagHelperDescriptorBuilder.Create("ButtonTagHelper", "TestAssembly");
+            descriptor.SetTypeName("TestNamespace.ButtonTagHelper");
+            descriptor.TagMatchingRule(builder => builder.RequireTagName("button"));
+            descriptor.BindAttribute(builder =>
+                builder
+                    .Name("onactivate")
+                    .PropertyName("onactivate")
+                    .TypeName(typeof(string).FullName));
+
+            var addTagHelper = $"@addTagHelper *, TestAssembly{Environment.NewLine}";
+            var codeDocument = CreateCodeDocumentWithCSharpProjection(
+                $"{addTagHelper}<button onactivate=\"Send\" disabled=\"@(Something)\">Hi</button>",
+                $"var __o = Send;var __o = Something;",
+                new[] {
+                    new SourceMapping(
+                        new SourceSpan(addTagHelper.Length + 20, 4),
+                        new SourceSpan(addTagHelper.Length + 10, 4)),
+
+                    new SourceMapping(
+                        new SourceSpan(addTagHelper.Length + 38, 9),
+                        new SourceSpan(addTagHelper.Length + 25, 9))
+                },
+                new[] {
+                    descriptor.Build()
+                });
+            var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var request = new RazorDiagnosticsParams()
+            {
+                Kind = RazorLanguageKind.Html,
+                Diagnostics = new[]
+                {
+                    new Diagnostic() { Range = new Range(new Position(0, addTagHelper.Length + 20), new Position(0, addTagHelper.Length + 25)) },
+                    new Diagnostic() { Range = new Range(new Position(0, addTagHelper.Length + 38), new Position(0, addTagHelper.Length + 47)) }
+                },
+                RazorDocumentUri = new Uri(documentPath),
+            };
+
+            // Act
+            var response = await Task.Run(() => diagnosticsEndpoint.Handle(request, default));
+
+            // Assert
+            Assert.Empty(response.Diagnostics);
+            Assert.Equal(1337, response.HostDocumentVersion);
+        }
+
         private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)
         {
             var sourceTextChars = new char[codeDocument.Source.Length];
@@ -433,13 +485,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             tagHelpers ??= Array.Empty<TagHelperDescriptor>();
             var sourceDocument = TestRazorSourceDocument.Create(text);
             var projectEngine = RazorProjectEngine.Create(builder => { });
-            var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, "mvc", Array.Empty<RazorSourceDocument>(), tagHelpers);
+            var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, FileKinds.Legacy, Array.Empty<RazorSourceDocument>(), tagHelpers);
             return codeDocument;
         }
 
-        private static RazorCodeDocument CreateCodeDocumentWithCSharpProjection(string razorSource, string projectedCSharpSource, IEnumerable<SourceMapping> sourceMappings)
+        private static RazorCodeDocument CreateCodeDocumentWithCSharpProjection(
+            string razorSource,
+            string projectedCSharpSource,
+            IEnumerable<SourceMapping> sourceMappings,
+            IReadOnlyList<TagHelperDescriptor> tagHelpers = null)
         {
-            var codeDocument = CreateCodeDocument(razorSource, Array.Empty<TagHelperDescriptor>());
+            var codeDocument = CreateCodeDocument(razorSource, tagHelpers);
             var csharpDocument = RazorCSharpDocument.Create(
                     projectedCSharpSource,
                     RazorCodeGenerationOptions.CreateDefault(),

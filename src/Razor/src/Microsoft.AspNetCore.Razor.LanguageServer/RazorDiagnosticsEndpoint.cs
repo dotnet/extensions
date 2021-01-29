@@ -188,7 +188,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 var markupAttributeNode = owner.FirstAncestorOrSelf<RazorSyntaxNode>(n =>
                     n is MarkupAttributeBlockSyntax ||
-                    n is MarkupTagHelperAttributeValueSyntax);
+                    n is MarkupTagHelperAttributeSyntax ||
+                    n is MarkupMiscAttributeContentSyntax);
 
                 if (markupAttributeNode != null)
                 {
