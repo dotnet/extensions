@@ -50,7 +50,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
 
     public class DefaultRazorProjectChangePublisherTest : LanguageServerTestBase
     {
-        private readonly RazorLogger RazorLogger = Mock.Of<RazorLogger>();
+        private readonly RazorLogger RazorLogger = Mock.Of<RazorLogger>(MockBehavior.Strict);
 
         public DefaultRazorProjectChangePublisherTest()
         {

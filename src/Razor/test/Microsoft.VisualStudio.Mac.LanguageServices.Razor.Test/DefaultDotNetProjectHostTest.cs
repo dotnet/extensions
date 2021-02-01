@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
                 .Returns(false);
             var dotNetProjectHost = new DefaultDotNetProjectHost(
                 Dispatcher,
-                Mock.Of<VisualStudioMacWorkspaceAccessor>(),
+                Mock.Of<VisualStudioMacWorkspaceAccessor>(MockBehavior.Strict),
                 projectService.Object);
 
             // Act & Assert

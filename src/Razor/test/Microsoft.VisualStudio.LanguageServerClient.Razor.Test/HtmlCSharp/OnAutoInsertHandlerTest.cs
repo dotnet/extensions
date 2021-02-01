@@ -41,8 +41,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 })
                 .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() }));
 
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
+            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
 
             var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider);
             var request = new DocumentOnAutoInsertParams()
@@ -80,8 +80,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 })
                 .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() }));
 
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
+            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
 
             var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider);
             var request = new DocumentOnAutoInsertParams()
@@ -126,7 +126,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
 
             var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider);
             var request = new DocumentOnAutoInsertParams()
@@ -153,7 +153,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(s => s.Uri == Uri && s.Snapshot == Mock.Of<ITextSnapshot>()));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(s => s.Uri == Uri && s.Snapshot == Mock.Of<ITextSnapshot>(MockBehavior.Strict)));
 
             var invokedServer = false;
             var mappedTextEdits = false;
@@ -206,7 +206,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(s => s.Uri == Uri && s.Snapshot == Mock.Of<ITextSnapshot>()));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(s => s.Uri == Uri && s.Snapshot == Mock.Of<ITextSnapshot>(MockBehavior.Strict)));
 
             var invokedServer = false;
             var mappedTextEdits = false;

@@ -96,9 +96,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var callCount = 0;
             var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>(MockBehavior.Strict);
+            var fileChangeTracker = new Mock<FileChangeTracker>(MockBehavior.Strict);
+            fileChangeTracker.Setup(t => t.StartListening()).Verifiable();
             fileChangeTrackerFactory
                 .Setup(f => f.Create(It.IsAny<string>()))
-                .Returns(Mock.Of<FileChangeTracker>())
+                .Returns(fileChangeTracker.Object)
                 .Callback(() => callCount++);
 
             var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object);

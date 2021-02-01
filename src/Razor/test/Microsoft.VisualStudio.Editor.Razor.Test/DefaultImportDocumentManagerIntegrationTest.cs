@@ -59,12 +59,14 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 .Setup(f => f.Create(testImportsPath))
                 .Returns(fileChangeTracker.Object);
             
+            var fileChangeTracker2 = new Mock<FileChangeTracker>(MockBehavior.Strict);
+            fileChangeTracker2.Setup(f => f.StartListening()).Verifiable();
             fileChangeTrackerFactory
                 .Setup(f => f.Create(Path.Combine(DirectoryPath, "Views", "_ViewImports.cshtml")))
-                .Returns(Mock.Of<FileChangeTracker>());
+                .Returns(fileChangeTracker2.Object);
             fileChangeTrackerFactory
                 .Setup(f => f.Create(Path.Combine(DirectoryPath, "Views", "Home", "_ViewImports.cshtml")))
-                .Returns(Mock.Of<FileChangeTracker>());
+                .Returns(Mock.Of<FileChangeTracker>(MockBehavior.Strict));
 
             var called = false;
             var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object);

@@ -30,14 +30,14 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             // Arrange
             var sessionAccessor = Mock.Of<LiveShareSessionAccessor>(accessor => accessor.IsGuestSessionActive == false);
-            var textBuffer = Mock.Of<ITextBuffer>();
-            var textDocument = Mock.Of<ITextDocument>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
+            var textDocument = Mock.Of<ITextDocument>(MockBehavior.Strict);
             var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>(factory => factory.TryGetTextDocument(textBuffer, out textDocument) == true);
             var projectPathProvider = new TestGuestProjectPathProvider(
                 new Uri("vsls:/path/project.csproj"),
                 JoinableTaskContext,
                 textDocumentFactory,
-                Mock.Of<ProxyAccessor>(),
+                Mock.Of<ProxyAccessor>(MockBehavior.Strict),
                 sessionAccessor);
 
             // Act
@@ -52,11 +52,13 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         public void TryGetProjectPath_NoTextDocument_ReturnsFalse()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
+            var textDocumentFactoryService = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict);
+            textDocumentFactoryService.Setup(s => s.TryGetTextDocument(It.IsAny<ITextBuffer>(), out It.Ref<ITextDocument>.IsAny)).Returns(false);
             var projectPathProvider = new GuestProjectPathProvider(
                 JoinableTaskContext,
-                Mock.Of<ITextDocumentFactoryService>(),
-                Mock.Of<ProxyAccessor>(),
+                textDocumentFactoryService.Object,
+                Mock.Of<ProxyAccessor>(MockBehavior.Strict),
                 SessionAccessor);
 
             // Act
@@ -71,14 +73,14 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         public void TryGetProjectPath_NullHostProjectPath_ReturnsFalse()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
-            var textDocument = Mock.Of<ITextDocument>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
+            var textDocument = Mock.Of<ITextDocument>(MockBehavior.Strict);
             var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>(factory => factory.TryGetTextDocument(textBuffer, out textDocument) == true);
             var projectPathProvider = new TestGuestProjectPathProvider(
                 null,
                 JoinableTaskContext,
                 textDocumentFactory,
-                Mock.Of<ProxyAccessor>(),
+                Mock.Of<ProxyAccessor>(MockBehavior.Strict),
                 SessionAccessor);
 
             // Act
@@ -93,15 +95,15 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         public void TryGetProjectPath_ValidHostProjectPath_ReturnsTrueWithGuestNormalizedPath()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
-            var textDocument = Mock.Of<ITextDocument>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
+            var textDocument = Mock.Of<ITextDocument>(MockBehavior.Strict);
             var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>(factory => factory.TryGetTextDocument(textBuffer, out textDocument) == true);
             var expectedProjectPath = "/guest/path/project.csproj";
             var projectPathProvider = new TestGuestProjectPathProvider(
                 new Uri("vsls:/path/project.csproj"),
                 JoinableTaskContext,
                 textDocumentFactory,
-                Mock.Of<ProxyAccessor>(),
+                Mock.Of<ProxyAccessor>(MockBehavior.Strict),
                 SessionAccessor);
 
             // Act
@@ -127,7 +129,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var textDocument = Mock.Of<ITextDocument>(document => document.FilePath == expectedGuestFilePath);
             var projectPathProvider = new GuestProjectPathProvider(
                 JoinableTaskContext,
-                Mock.Of<ITextDocumentFactoryService>(),
+                Mock.Of<ITextDocumentFactoryService>(MockBehavior.Strict),
                 proxyAccessor,
                 sessionAccessor);
 

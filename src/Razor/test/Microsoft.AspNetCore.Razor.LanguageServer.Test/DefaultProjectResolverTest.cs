@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var miscProject = new Mock<ProjectSnapshot>(MockBehavior.Strict);
             miscProject.Setup(p => p.FilePath)
                 .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
-            miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>());
+            miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>(MockBehavior.Strict));
             projectResolver = CreateProjectResolver(() => new[] { miscProject.Object });
 
             // Act
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var unrelatedProject = Mock.Of<ProjectSnapshot>(p => p.FilePath == "C:/other/path/to/project.csproj");
             var ownerProject = Mock.Of<ProjectSnapshot>(
                 p => p.FilePath == "C:/path/to/project.csproj" &&
-                p.GetDocument(documentFilePath) == Mock.Of<DocumentSnapshot>());
+                p.GetDocument(documentFilePath) == Mock.Of<DocumentSnapshot>(MockBehavior.Strict));
 
             var projectResolver = CreateProjectResolver(() => new[] { unrelatedProject, ownerProject });
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var miscProject = new Mock<ProjectSnapshot>(MockBehavior.Strict);
             miscProject.Setup(p => p.FilePath)
                 .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
-            miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>());
+            miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>(MockBehavior.Strict));
             var ownerProject = Mock.Of<ProjectSnapshot>(
                 p => p.FilePath == "C:/path/to/project.csproj" &&
                 p.GetDocument(documentFilePath) == null);
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var miscProject = new Mock<ProjectSnapshot>(MockBehavior.Strict);
             miscProject.Setup(p => p.FilePath)
                 .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
-            miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>());
+            miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>(MockBehavior.Strict));
             var ownerProject = Mock.Of<ProjectSnapshot>(
                 p => p.FilePath == "C:/path/to/project.csproj" &&
                 p.GetDocument(documentFilePath) == null);
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentFilePath = "c:/path/to/document.cshtml";
             var ownerProject = Mock.Of<ProjectSnapshot>(
                 p => p.FilePath == "C:/Path/To/project.csproj" &&
-                p.GetDocument(documentFilePath) == Mock.Of<DocumentSnapshot>());
+                p.GetDocument(documentFilePath) == Mock.Of<DocumentSnapshot>(MockBehavior.Strict));
             var projectResolver = CreateProjectResolver(() => new[] { ownerProject });
 
             // Act

@@ -21,7 +21,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 {
     public class ExtractToCodeBehindCodeActionResolverTest : LanguageServerTestBase
     {
-        private readonly DocumentResolver EmptyDocumentResolver = Mock.Of<DocumentResolver>();
+        private readonly DocumentResolver EmptyDocumentResolver;
+
+        public ExtractToCodeBehindCodeActionResolverTest()
+        {
+            EmptyDocumentResolver = new Mock<DocumentResolver>(MockBehavior.Strict).Object;
+            Mock.Get(EmptyDocumentResolver).Setup(r => r.TryResolveDocument(It.IsAny<string>(), out It.Ref<DocumentSnapshot>.IsAny)).Returns(false);
+        }
 
         [Fact]
         public async Task Handle_MissingFile()

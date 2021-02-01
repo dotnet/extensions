@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class RazorDocumentSynchronizationEndpointTest : LanguageServerTestBase
     {
-        private DocumentResolver DocumentResolver => Mock.Of<DocumentResolver>();
+        private DocumentResolver DocumentResolver => Mock.Of<DocumentResolver>(MockBehavior.Strict);
 
-        private RazorProjectService ProjectService => Mock.Of<RazorProjectService>();
+        private RazorProjectService ProjectService => Mock.Of<RazorProjectService>(MockBehavior.Strict);
 
         [Fact]
         public void ApplyContentChanges_SingleChange()

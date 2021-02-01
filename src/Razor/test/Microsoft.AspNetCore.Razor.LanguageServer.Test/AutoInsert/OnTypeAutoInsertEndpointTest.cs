@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         public OnTypeAutoInsertEndpointTest()
         {
-            EmptyDocumentResolver = Mock.Of<DocumentResolver>();
+            EmptyDocumentResolver = Mock.Of<DocumentResolver>(r => r.TryResolveDocument(It.IsAny<string>(), out It.Ref<DocumentSnapshot>.IsAny) == false, MockBehavior.Strict);
         }
 
         private DocumentResolver EmptyDocumentResolver { get; }

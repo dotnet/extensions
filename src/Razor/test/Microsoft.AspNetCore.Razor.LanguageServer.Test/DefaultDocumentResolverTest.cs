@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentFilePath = "C:\\path\\to\\document.cshtml";
             var normalizedFilePath = "C:/path/to/document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
-            var expectedDocument = Mock.Of<DocumentSnapshot>();
+            var expectedDocument = Mock.Of<DocumentSnapshot>(MockBehavior.Strict);
             var project = Mock.Of<ProjectSnapshot>(shim => shim.GetDocument(normalizedFilePath) == expectedDocument);
             var projectResolver = Mock.Of<ProjectResolver>(resolver => resolver.TryResolveProject(normalizedFilePath, out project, true) == true);
             var documentResolver = new DefaultDocumentResolver(Dispatcher, projectResolver, filePathNormalizer);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentFilePath = "C:\\path\\to\\document.cshtml";
             var normalizedFilePath = "C:/path/to/document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
-            var expectedDocument = Mock.Of<DocumentSnapshot>();
+            var expectedDocument = Mock.Of<DocumentSnapshot>(MockBehavior.Strict);
             var project = Mock.Of<ProjectSnapshot>(shim => shim.GetDocument(normalizedFilePath) == expectedDocument);
             var projectResolver = Mock.Of<ProjectResolver>(resolver => resolver.TryResolveProject(normalizedFilePath, out project, true) == true);
             var documentResolver = new DefaultDocumentResolver(Dispatcher, projectResolver, filePathNormalizer);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentFilePath = "C:\\path\\to\\document.cshtml";
             var normalizedFilePath = "C:/path/to/document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
-            var expectedDocument = Mock.Of<DocumentSnapshot>();
+            var expectedDocument = Mock.Of<DocumentSnapshot>(MockBehavior.Strict);
             var project = Mock.Of<ProjectSnapshot>(shim => shim.DocumentFilePaths == Array.Empty<string>());
             var miscProject = Mock.Of<ProjectSnapshot>(shim => shim.GetDocument(normalizedFilePath) == expectedDocument);
             var projectResolver = Mock.Of<ProjectResolver>(resolver =>

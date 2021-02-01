@@ -54,7 +54,7 @@ $@"public class SomeRazorFile
         public async Task TryResolveProximityExpressionsAsync_UnaddressableTextBuffer_ReturnsNull()
         {
             // Arrange
-            var differentTextBuffer = Mock.Of<ITextBuffer>();
+            var differentTextBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var resolver = CreateResolverWith();
 
             // Act
@@ -68,7 +68,8 @@ $@"public class SomeRazorFile
         public async Task TryResolveProximityExpressionsAsync_UnknownRazorDocument_ReturnsNull()
         {
             // Arrange
-            var documentManager = Mock.Of<LSPDocumentManager>();
+            var documentManager = new Mock<LSPDocumentManager>(MockBehavior.Strict).Object;
+            Mock.Get(documentManager).Setup(m => m.TryGetDocument(DocumentUri, out It.Ref<LSPDocumentSnapshot>.IsAny)).Returns(false);
             var resolver = CreateResolverWith(documentManager: documentManager);
 
             // Act
@@ -183,7 +184,12 @@ $@"public class SomeRazorFile
             var csharpVirtualDocumentSnapshot = new CSharpVirtualDocumentSnapshot(csharpDocumentUri, CSharpTextBuffer.CurrentSnapshot, hostDocumentSyncVersion: 0);
             LSPDocumentSnapshot documentSnapshot = new TestLSPDocumentSnapshot(DocumentUri, 0, csharpVirtualDocumentSnapshot);
             documentManager ??= Mock.Of<LSPDocumentManager>(manager => manager.TryGetDocument(DocumentUri, out documentSnapshot) == true);
-            projectionProvider ??= Mock.Of<LSPProjectionProvider>();
+            if (projectionProvider is null)
+            {
+                projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
+                Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
+                    .Returns(Task.FromResult<ProjectionResult>(null));
+            }
             var csharpProximityExpressionResolver = new DefaultCSharpProximityExpressionResolver();
             var razorProximityExpressionResolver = new DefaultRazorProximityExpressionResolver(
                 uriProvider,

@@ -27,9 +27,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
+            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider, mappingProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
@@ -56,9 +56,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 public string _foo;
 }");
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(m => m.Snapshot == snapshot));
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
+            Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
+                .Returns(Task.FromResult<ProjectionResult>(null));
+            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider, mappingProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
@@ -85,14 +87,14 @@ public string _foo;
 public string _foo;
 }");
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(m => m.Snapshot == snapshot));
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
             var projectionResult = new ProjectionResult()
             {
                 LanguageKind = RazorLanguageKind.Html,
             };
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider.Object, mappingProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
@@ -119,14 +121,14 @@ public string _foo;
 public string _foo;
 }");
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(m => m.Snapshot == snapshot));
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
             var projectionResult = new ProjectionResult()
             {
                 LanguageKind = RazorLanguageKind.Razor,
             };
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider.Object, mappingProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
@@ -153,14 +155,14 @@ public string _foo;
 public string _foo;
 }");
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(m => m.Snapshot == snapshot));
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
             var projectionResult = new ProjectionResult()
             {
                 LanguageKind = RazorLanguageKind.CSharp,
             };
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider.Object, mappingProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
@@ -206,7 +208,9 @@ public string _foo;
             };
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
-            var mappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var mappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict).Object;
+            Mock.Get(mappingProvider).Setup(p => p.RemapFormattedTextEditsAsync(null, It.IsAny<TextEdit[]>(), It.IsAny<FormattingOptions>(), false, CancellationToken.None))
+                .Returns(Task.FromResult<TextEdit[]>(null));
             var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider.Object, mappingProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {

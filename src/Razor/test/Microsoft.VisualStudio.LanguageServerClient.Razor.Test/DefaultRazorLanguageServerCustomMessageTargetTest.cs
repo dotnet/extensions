@@ -73,7 +73,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public async Task RazorRangeFormattingAsync_LanguageKindRazor_ReturnsEmpty()
         {
             // Arrange
-            var documentManager = Mock.Of<TrackingLSPDocumentManager>();
+            var documentManager = Mock.Of<TrackingLSPDocumentManager>(MockBehavior.Strict);
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
 
@@ -103,7 +103,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public async Task RazorRangeFormattingAsync_DocumentNotFound_ReturnsEmpty()
         {
             // Arrange
-            var documentManager = Mock.Of<TrackingLSPDocumentManager>();
+            var documentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict).Object;
+            Mock.Get(documentManager).Setup(m => m.TryGetDocument(new Uri("c:/Some/path/to/file.razor"), out It.Ref<LSPDocumentSnapshot>.IsAny)).Returns(false);
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
 
@@ -135,7 +136,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Arrange
             var filePath = "c:/Some/path/to/file.razor";
             var uri = new Uri(filePath);
-            var virtualDocument = new CSharpVirtualDocumentSnapshot(new Uri($"{filePath}.g.cs"), Mock.Of<ITextSnapshot>(), 1);
+            var virtualDocument = new CSharpVirtualDocumentSnapshot(new Uri($"{filePath}.g.cs"), Mock.Of<ITextSnapshot>(MockBehavior.Strict), 1);
             LSPDocumentSnapshot document = new TestLSPDocumentSnapshot(uri, 1, new[] { virtualDocument });
             var documentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
             documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out document))
@@ -239,7 +240,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var testCSharpDocUri = new Uri("C:/path/to/file.razor.g.cs");
 
             var testVirtualDocument = new TestVirtualDocumentSnapshot(testVirtualDocUri, 0);
-            var csharpVirtualDocument = new CSharpVirtualDocumentSnapshot(testCSharpDocUri, Mock.Of<ITextSnapshot>(), 0);
+            var csharpVirtualDocument = new CSharpVirtualDocumentSnapshot(testCSharpDocUri, Mock.Of<ITextSnapshot>(MockBehavior.Strict), 0);
             LSPDocumentSnapshot testDocument = new TestLSPDocumentSnapshot(testDocUri, 0, testVirtualDocument, csharpVirtualDocument);
 
             var documentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
@@ -381,7 +382,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var documentVersion = 0;
             var testVirtualDocument = new TestVirtualDocumentSnapshot(testVirtualDocUri, 0);
-            var csharpVirtualDocument = new CSharpVirtualDocumentSnapshot(testCSharpDocUri, Mock.Of<ITextSnapshot>(), 0);
+            var csharpVirtualDocument = new CSharpVirtualDocumentSnapshot(testCSharpDocUri, Mock.Of<ITextSnapshot>(MockBehavior.Strict), 0);
             LSPDocumentSnapshot testDocument = new TestLSPDocumentSnapshot(testDocUri, documentVersion, testVirtualDocument, csharpVirtualDocument);
 
             var documentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
@@ -425,7 +426,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var testCSharpDocUri = new Uri("C:/path/to/file.razor.g.cs");
 
             var testVirtualDocument = new TestVirtualDocumentSnapshot(testVirtualDocUri, 0);
-            var csharpVirtualDocument = new CSharpVirtualDocumentSnapshot(testCSharpDocUri, Mock.Of<ITextSnapshot>(), 0);
+            var csharpVirtualDocument = new CSharpVirtualDocumentSnapshot(testCSharpDocUri, Mock.Of<ITextSnapshot>(MockBehavior.Strict), 0);
             LSPDocumentSnapshot testDocument = new TestLSPDocumentSnapshot(testDocUri, 0, testVirtualDocument, csharpVirtualDocument);
 
             var documentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);

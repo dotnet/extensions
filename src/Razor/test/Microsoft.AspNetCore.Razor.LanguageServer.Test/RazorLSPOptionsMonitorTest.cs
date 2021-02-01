@@ -71,7 +71,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task UpdateAsync_ConfigReturnsNull_DoesNotInvoke_OnChangeRegistration()
         {
             // Arrange
-            var configService = Mock.Of<RazorConfigurationService>();
+            var configService = new Mock<RazorConfigurationService>(MockBehavior.Strict).Object;
+            Mock.Get(configService).Setup(s => s.GetLatestOptionsAsync(CancellationToken.None)).ReturnsAsync(value: null);
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;
             var onChangeToken = optionsMonitor.OnChange(options =>

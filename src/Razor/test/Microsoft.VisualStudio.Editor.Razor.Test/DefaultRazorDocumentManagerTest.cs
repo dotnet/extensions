@@ -27,9 +27,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private ProjectSnapshotManager ProjectManager => Mock.Of<ProjectSnapshotManager>(p => p.Projects == new List<ProjectSnapshot>());
 
-        private WorkspaceEditorSettings WorkspaceEditorSettings => new DefaultWorkspaceEditorSettings(Dispatcher, Mock.Of<EditorSettingsManager>());
+        private WorkspaceEditorSettings WorkspaceEditorSettings => new DefaultWorkspaceEditorSettings(Dispatcher, Mock.Of<EditorSettingsManager>(MockBehavior.Strict));
 
-        private ImportDocumentManager ImportDocumentManager => Mock.Of<ImportDocumentManager>();
+        private ImportDocumentManager ImportDocumentManager
+        {
+            get
+            {
+                var importDocumentManager = new Mock<ImportDocumentManager>(MockBehavior.Strict);
+                importDocumentManager.Setup(m => m.OnSubscribed(It.IsAny<VisualStudioDocumentTracker>())).Verifiable();
+                importDocumentManager.Setup(m => m.OnUnsubscribed(It.IsAny<VisualStudioDocumentTracker>())).Verifiable();
+                return importDocumentManager.Object;
+            }
+        }
 
         private Workspace Workspace => TestWorkspace.Create();
 
@@ -39,7 +48,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var editorFactoryService = new Mock<RazorEditorFactoryService>(MockBehavior.Strict);
             var documentManager = new DefaultRazorDocumentManager(Dispatcher, editorFactoryService.Object);
-            var textView = Mock.Of<ITextView>();
+            var textView = Mock.Of<ITextView>(MockBehavior.Strict);
             var buffers = new Collection<ITextBuffer>()
             {
                 Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorCoreContentType && b.Properties == new PropertyCollection()),
@@ -53,7 +62,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void OnTextViewOpened_ForRazorTextBuffer_AddsTextViewToTracker()
         {
             // Arrange
-            var textView = Mock.Of<ITextView>();
+            var textView = Mock.Of<ITextView>(MockBehavior.Strict);
             var buffers = new Collection<ITextBuffer>()
             {
                 Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
@@ -73,7 +82,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void OnTextViewOpened_SubscribesAfterFirstTextViewOpened()
         {
             // Arrange
-            var textView = Mock.Of<ITextView>();
+            var textView = Mock.Of<ITextView>(MockBehavior.Strict);
             var buffers = new Collection<ITextBuffer>()
             {
                 Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
@@ -97,8 +106,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void OnTextViewClosed_TextViewWithoutDocumentTracker_DoesNothing()
         {
             // Arrange
-            var documentManager = new DefaultRazorDocumentManager(Dispatcher, Mock.Of<RazorEditorFactoryService>());
-            var textView = Mock.Of<ITextView>();
+            var documentManager = new DefaultRazorDocumentManager(Dispatcher, Mock.Of<RazorEditorFactoryService>(MockBehavior.Strict));
+            var textView = Mock.Of<ITextView>(MockBehavior.Strict);
             var buffers = new Collection<ITextBuffer>()
             {
                 Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
@@ -115,8 +124,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void OnTextViewClosed_ForAnyTextBufferWithTracker_RemovesTextView()
         {
             // Arrange
-            var textView1 = Mock.Of<ITextView>();
-            var textView2 = Mock.Of<ITextView>();
+            var textView1 = Mock.Of<ITextView>(MockBehavior.Strict);
+            var textView2 = Mock.Of<ITextView>(MockBehavior.Strict);
             var buffers = new Collection<ITextBuffer>()
             {
                 Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
@@ -134,7 +143,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             documentTracker.AddTextView(textView2);
             buffers[1].Properties.AddProperty(typeof(VisualStudioDocumentTracker), documentTracker);
 
-            var editorFactoryService = Mock.Of<RazorEditorFactoryService>();
+            var editorFactoryService = Mock.Of<RazorEditorFactoryService>(MockBehavior.Strict);
             var documentManager = new DefaultRazorDocumentManager(Dispatcher, editorFactoryService);
 
             // Act
@@ -152,8 +161,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void OnTextViewClosed_UnsubscribesAfterLastTextViewClosed()
         {
             // Arrange
-            var textView1 = Mock.Of<ITextView>();
-            var textView2 = Mock.Of<ITextView>();
+            var textView1 = Mock.Of<ITextView>(MockBehavior.Strict);
+            var textView2 = Mock.Of<ITextView>(MockBehavior.Strict);
             var buffers = new Collection<ITextBuffer>()
             {
                 Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
@@ -161,7 +170,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             };
             var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, WorkspaceEditorSettings, Workspace, buffers[0], ImportDocumentManager);
             buffers[0].Properties.AddProperty(typeof(VisualStudioDocumentTracker), documentTracker);
-            var editorFactoryService = Mock.Of<RazorEditorFactoryService>();
+            var editorFactoryService = Mock.Of<RazorEditorFactoryService>(MockBehavior.Strict);
             var documentManager = new DefaultRazorDocumentManager(Dispatcher, editorFactoryService);
 
             // Populate the text views

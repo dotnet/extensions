@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 {
     public class CreateComponentCodeActionResolverTest : LanguageServerTestBase
     {
-        private readonly DocumentResolver EmptyDocumentResolver = Mock.Of<DocumentResolver>();
+        private readonly DocumentResolver EmptyDocumentResolver = Mock.Of<DocumentResolver>(r => r.TryResolveDocument(It.IsAny<string>(), out It.Ref<DocumentSnapshot>.IsAny) == false, MockBehavior.Strict);
 
         [Fact]
         public async Task Handle_MissingFile()

@@ -25,12 +25,12 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             CustomFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
             {
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                    () => Mock.Of<IProjectEngineFactory>(),
+                    () => Mock.Of<IProjectEngineFactory>(MockBehavior.Strict),
                     new ExportCustomProjectEngineFactoryAttribute("MVC-2.0") { SupportsSerialization = true, }),
 
                 // We don't really use this factory, we just use it to ensure that the call is going to go out of process.
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                    () => Mock.Of<IProjectEngineFactory>(),
+                    () => Mock.Of<IProjectEngineFactory>(MockBehavior.Strict),
                     new ExportCustomProjectEngineFactoryAttribute("Test-2") { SupportsSerialization = false, }),
             };
 
@@ -142,11 +142,18 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
         {
             public TestProjectSnapshotManager(Workspace workspace)
                 : base(
-                      Mock.Of<ForegroundDispatcher>(),
-                      Mock.Of<ErrorReporter>(),
+                      CreateForegroundDispatcher(),
+                      Mock.Of<ErrorReporter>(MockBehavior.Strict),
                       Enumerable.Empty<ProjectSnapshotChangeTrigger>(),
                       workspace)
             {
+            }
+
+            private static ForegroundDispatcher CreateForegroundDispatcher()
+            {
+                var dispatcher = new Mock<ForegroundDispatcher>(MockBehavior.Strict);
+                dispatcher.Setup(d => d.AssertForegroundThread(It.IsAny<string>())).Verifiable();
+                return dispatcher.Object;
             }
         }
     }

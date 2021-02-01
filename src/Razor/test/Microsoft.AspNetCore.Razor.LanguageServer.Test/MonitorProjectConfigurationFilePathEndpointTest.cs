@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     workspaceDirectoryPathResolver,
                     listeners)
             {
-                _fileChangeDetectorFactory = fileChangeDetectorFactory ?? (() => Mock.Of<IFileChangeDetector>());
+                _fileChangeDetectorFactory = fileChangeDetectorFactory ?? (() => Mock.Of<IFileChangeDetector>(MockBehavior.Strict));
             }
 
             protected override IFileChangeDetector CreateFileChangeDetector() => _fileChangeDetectorFactory();

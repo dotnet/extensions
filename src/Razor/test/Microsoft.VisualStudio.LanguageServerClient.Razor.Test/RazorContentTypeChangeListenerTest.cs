@@ -125,7 +125,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 .Throws<XunitException>();
             var listener = CreateListener(lspDocumentManager.Object);
             var args = new TextDocumentFileActionEventArgs("C:/path/to/file.razor", DateTime.UtcNow, FileActionTypes.DocumentRenamed);
-            var textDocument = Mock.Of<ITextDocument>();
+            var textDocument = new Mock<ITextDocument>(MockBehavior.Strict).Object;
+            Mock.Get(textDocument).SetupGet(d => d.TextBuffer).Returns(value: null);
 
             // Act & Assert
             listener.TextDocument_FileActionOccurred(textDocument, args);
@@ -170,16 +171,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             TrackingLSPDocumentManager lspDocumentManager = null,
             LSPEditorFeatureDetector lspEditorFeatureDetector = null)
         {
-            var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>();
+            var textDocumentFactory = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict).Object;
+            Mock.Get(textDocumentFactory).Setup(f => f.TryGetTextDocument(It.IsAny<ITextBuffer>(), out It.Ref<ITextDocument>.IsAny)).Returns(false);
 
-            lspDocumentManager ??= Mock.Of<TrackingLSPDocumentManager>();
+            lspDocumentManager ??= Mock.Of<TrackingLSPDocumentManager>(MockBehavior.Strict);
             lspEditorFeatureDetector ??= Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsLSPEditorAvailable(It.IsAny<string>(), null) == true);
+            var textManager = new Mock<IVsTextManager2>(MockBehavior.Strict);
+            textManager.Setup(m => m.GetUserPreferences2(null, null, It.IsAny<LANGPREFERENCES2[]>(), null)).Returns(VSConstants.E_NOTIMPL);
             var listener = new RazorContentTypeChangeListener(
                 textDocumentFactory,
                 lspDocumentManager,
                 lspEditorFeatureDetector,
-                Mock.Of<SVsServiceProvider>(s => s.GetService(It.IsAny<Type>()) == Mock.Of<IVsTextManager2>()),
-                Mock.Of<IEditorOptionsFactoryService>(s => s.GetOptions(It.IsAny<ITextBuffer>()) == Mock.Of<IEditorOptions>()));
+                Mock.Of<SVsServiceProvider>(s => s.GetService(It.IsAny<Type>()) == textManager.Object),
+                Mock.Of<IEditorOptionsFactoryService>(s => s.GetOptions(It.IsAny<ITextBuffer>()) == Mock.Of<IEditorOptions>(MockBehavior.Strict)));
 
             return listener;
         }

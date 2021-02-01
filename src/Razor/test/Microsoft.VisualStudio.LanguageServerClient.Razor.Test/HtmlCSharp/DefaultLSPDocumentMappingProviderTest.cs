@@ -146,7 +146,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => {
                 var documentManager = new TestDocumentManager();
-                documentManager.AddDocument(CSharpFile, Mock.Of<LSPDocumentSnapshot>());
+                documentManager.AddDocument(CSharpFile, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
                 return documentManager;
             });
 

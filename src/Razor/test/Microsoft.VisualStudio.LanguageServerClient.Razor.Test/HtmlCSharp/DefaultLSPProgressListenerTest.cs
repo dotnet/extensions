@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public void TryListenForProgress_ReturnsTrue()
         {
             // Arrange
-            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
+            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
             var token = Guid.NewGuid().ToString();
             using var cts = new CancellationTokenSource();
@@ -49,7 +49,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public void TryListenForProgress_DuplicateRegistration_ReturnsFalse()
         {
             // Arrange
-            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
+            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
             var token = Guid.NewGuid().ToString();
             using var cts = new CancellationTokenSource();
@@ -79,7 +79,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public async Task TryListenForProgress_TaskNotificationTimeoutAfterNoInitialProgress()
         {
             // Arrange
-            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
+            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
             var token = Guid.NewGuid().ToString();
             var notificationTimeout = TimeSpan.FromSeconds(15);
@@ -116,7 +116,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public async Task TryListenForProgress_ProgressNotificationInvalid()
         {
             // Arrange
-            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
+            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
             var token = Guid.NewGuid().ToString();
             using var cts = new CancellationTokenSource();
@@ -147,7 +147,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public async Task TryListenForProgress_SingleProgressNotificationReported()
         {
             // Arrange
-            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
+            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
             var token = Guid.NewGuid().ToString();
             using var cts = new CancellationTokenSource();
@@ -191,7 +191,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             const int NUM_NOTIFICATIONS = 50;
-            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>();
+            var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
             var token = Guid.NewGuid().ToString();
             using var cts = new CancellationTokenSource();

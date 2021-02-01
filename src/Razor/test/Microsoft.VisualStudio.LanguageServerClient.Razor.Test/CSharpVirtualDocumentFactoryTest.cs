@@ -14,13 +14,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         public CSharpVirtualDocumentFactoryTest()
         {
-            var csharpContentType = Mock.Of<IContentType>();
+            var csharpContentType = new Mock<IContentType>(MockBehavior.Strict).Object;
+            Mock.Get(csharpContentType).Setup(t => t.TypeName).Returns("CSharp");
+            Mock.Get(csharpContentType).Setup(t => t.DisplayName).Returns("CSharp");
             ContentTypeRegistry = Mock.Of<IContentTypeRegistryService>(
                 registry => registry.GetContentType(RazorLSPConstants.CSharpContentTypeName) == csharpContentType);
             var textBufferFactory = new Mock<ITextBufferFactoryService>(MockBehavior.Strict);
             textBufferFactory
                 .Setup(factory => factory.CreateTextBuffer())
-                .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>() && buffer.Properties == new PropertyCollection()));
+                .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>(MockBehavior.Strict) && buffer.Properties == new PropertyCollection()));
             TextBufferFactory = textBufferFactory.Object;
 
             var razorLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName) == true);
@@ -29,7 +31,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var nonRazorLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(It.IsAny<string>()) == false);
             NonRazorLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == nonRazorLSPContentType);
 
-            TextDocumentFactoryService = Mock.Of<ITextDocumentFactoryService>();
+            TextDocumentFactoryService = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict).Object;
+            Mock.Get(TextDocumentFactoryService).Setup(s => s.CreateTextDocument(It.IsAny<ITextBuffer>(), It.IsAny<string>())).Returns((ITextDocument)null);
         }
 
         private ITextBuffer NonRazorLSPBuffer { get; }

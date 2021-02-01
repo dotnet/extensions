@@ -13,7 +13,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
         public void CreateLogger_OmniSharpFrameworkCategory_DisabledByDefault()
         {
             // Arrange
-            var fileLogWriter = Mock.Of<FeedbackFileLogWriter>();
+            var fileLogWriter = Mock.Of<FeedbackFileLogWriter>(MockBehavior.Strict);
             var provider = new FeedbackFileLoggerProvider(fileLogWriter);
             var categoryName = FeedbackFileLoggerProvider.OmniSharpFrameworkCategoryPrefix + ".Test";
 
@@ -29,7 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
         public void CreateLogger_Category_EnabledByDefault()
         {
             // Arrange
-            var fileLogWriter = Mock.Of<FeedbackFileLogWriter>();
+            var fileLogWriter = Mock.Of<FeedbackFileLogWriter>(MockBehavior.Strict);
             var provider = new FeedbackFileLoggerProvider(fileLogWriter);
             var categoryName = "Test";
 

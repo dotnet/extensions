@@ -20,13 +20,13 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
 
         private IContentType NonRazorContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(It.IsAny<string>()) == false);
 
-        private RazorCompletionFactsService CompletionFactsService { get; } = Mock.Of<RazorCompletionFactsService>();
+        private RazorCompletionFactsService CompletionFactsService { get; } = Mock.Of<RazorCompletionFactsService>(MockBehavior.Strict);
 
         [Fact]
         public void CreateCompletionSource_ReturnsNullIfParserHasNotBeenAssocitedWithRazorBuffer()
         {
             // Arrange
-            var expectedParser = Mock.Of<VisualStudioRazorParser>();
+            var expectedParser = Mock.Of<VisualStudioRazorParser>(MockBehavior.Strict);
             var properties = new PropertyCollection();
             properties.AddProperty(typeof(VisualStudioRazorParser), expectedParser);
             var razorBuffer = Mock.Of<ITextBuffer>(buffer => buffer.ContentType == RazorContentType && buffer.Properties == properties);
@@ -72,7 +72,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         public void GetOrCreate_CachesCompletionSource()
         {
             // Arrange
-            var expectedParser = Mock.Of<VisualStudioRazorParser>();
+            var expectedParser = Mock.Of<VisualStudioRazorParser>(MockBehavior.Strict);
             var properties = new PropertyCollection();
             properties.AddProperty(typeof(VisualStudioRazorParser), expectedParser);
             var textView = CreateTextView(RazorContentType, properties);

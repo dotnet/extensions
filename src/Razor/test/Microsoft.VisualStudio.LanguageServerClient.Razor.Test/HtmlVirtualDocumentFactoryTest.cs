@@ -14,13 +14,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         public HtmlVirtualDocumentFactoryTest()
         {
-            var htmlContentType = Mock.Of<IContentType>();
+            var htmlContentType = Mock.Of<IContentType>(MockBehavior.Strict);
             ContentTypeRegistry = Mock.Of<IContentTypeRegistryService>(
                 registry => registry.GetContentType(RazorLSPConstants.HtmlLSPContentTypeName) == htmlContentType);
             var textBufferFactory = new Mock<ITextBufferFactoryService>(MockBehavior.Strict);
             textBufferFactory
                 .Setup(factory => factory.CreateTextBuffer())
-                .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>() && buffer.Properties == new PropertyCollection()));
+                .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>(MockBehavior.Strict) && buffer.Properties == new PropertyCollection()));
             TextBufferFactory = textBufferFactory.Object;
 
             var razorLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName) == true);
@@ -29,7 +29,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var nonRazorLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(It.IsAny<string>()) == false);
             NonRazorLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == nonRazorLSPContentType);
 
-            TextDocumentFactoryService = Mock.Of<ITextDocumentFactoryService>();
+            TextDocumentFactoryService = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict).Object;
+            Mock.Get(TextDocumentFactoryService).Setup(s => s.CreateTextDocument(It.IsAny<ITextBuffer>(), It.IsAny<string>())).Returns((ITextDocument)null);
         }
 
         private ITextBuffer NonRazorLSPBuffer { get; }

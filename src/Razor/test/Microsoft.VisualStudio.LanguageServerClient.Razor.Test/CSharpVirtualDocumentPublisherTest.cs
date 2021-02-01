@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var lspDocumentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var fileInfoProvider = new Mock<RazorDynamicFileInfoProvider>(MockBehavior.Strict);
             var publisher = new CSharpVirtualDocumentPublisher(fileInfoProvider.Object, lspDocumentMappingProvider.Object);
-            var args = new LSPDocumentChangeEventArgs(old: null, @new: Mock.Of<LSPDocumentSnapshot>(), LSPDocumentChangeKind.Added);
+            var args = new LSPDocumentChangeEventArgs(old: null, @new: Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict), LSPDocumentChangeKind.Added);
 
             // Act & Assert
             publisher.DocumentManager_Changed(sender: null, args);
@@ -33,7 +33,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var lspDocumentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var fileInfoProvider = new Mock<RazorDynamicFileInfoProvider>(MockBehavior.Strict);
             var publisher = new CSharpVirtualDocumentPublisher(fileInfoProvider.Object, lspDocumentMappingProvider.Object);
-            var args = new LSPDocumentChangeEventArgs(old: Mock.Of<LSPDocumentSnapshot>(), @new: null, LSPDocumentChangeKind.Removed);
+            var args = new LSPDocumentChangeEventArgs(old: Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict), @new: null, LSPDocumentChangeKind.Removed);
 
             // Act & Assert
             publisher.DocumentManager_Changed(sender: null, args);
@@ -47,8 +47,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var fileInfoProvider = new Mock<RazorDynamicFileInfoProvider>(MockBehavior.Strict);
             var publisher = new CSharpVirtualDocumentPublisher(fileInfoProvider.Object, lspDocumentMappingProvider.Object);
             var args = new LSPDocumentChangeEventArgs(
-                old: Mock.Of<LSPDocumentSnapshot>(), @new: Mock.Of<LSPDocumentSnapshot>(),
-                virtualOld: Mock.Of<VirtualDocumentSnapshot>(), virtualNew: Mock.Of<VirtualDocumentSnapshot>(),
+                old: Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict), @new: Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict),
+                virtualOld: Mock.Of<VirtualDocumentSnapshot>(MockBehavior.Strict), virtualNew: Mock.Of<VirtualDocumentSnapshot>(MockBehavior.Strict),
                 LSPDocumentChangeKind.VirtualDocumentChanged);
 
             // Act & Assert
@@ -59,7 +59,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public void DocumentManager_Changed_VirtualDocumentChanged_UpdatesFileInfo()
         {
             // Arrange
-            var csharpSnapshot = new CSharpVirtualDocumentSnapshot(new Uri("C:/path/to/something.razor.g.cs"), Mock.Of<ITextSnapshot>(), hostDocumentSyncVersion: 1337);
+            var csharpSnapshot = new CSharpVirtualDocumentSnapshot(new Uri("C:/path/to/something.razor.g.cs"), Mock.Of<ITextSnapshot>(MockBehavior.Strict), hostDocumentSyncVersion: 1337);
             var lspDocument = new TestLSPDocumentSnapshot(new Uri("C:/path/to/something.razor"), 1337, csharpSnapshot);
             var fileInfoProvider = new Mock<RazorDynamicFileInfoProvider>(MockBehavior.Strict);
             var lspDocumentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
@@ -67,8 +67,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 .Verifiable();
             var publisher = new CSharpVirtualDocumentPublisher(fileInfoProvider.Object, lspDocumentMappingProvider.Object);
             var args = new LSPDocumentChangeEventArgs(
-                old: Mock.Of<LSPDocumentSnapshot>(), @new: lspDocument,
-                virtualOld: Mock.Of<VirtualDocumentSnapshot>(), virtualNew: csharpSnapshot,
+                old: Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict), @new: lspDocument,
+                virtualOld: Mock.Of<VirtualDocumentSnapshot>(MockBehavior.Strict), virtualNew: csharpSnapshot,
                 LSPDocumentChangeKind.VirtualDocumentChanged);
 
             // Act

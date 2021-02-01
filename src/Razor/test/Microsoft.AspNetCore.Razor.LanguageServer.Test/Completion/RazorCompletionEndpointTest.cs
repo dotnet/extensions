@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 new TagHelperCompletionProvider(tagHelperCompletionService, new DefaultHtmlFactsService(), tagHelperFactsService)
             };
             CompletionFactsService = new DefaultRazorCompletionFactsService(completionProviders);
-            TagHelperTooltipFactory = Mock.Of<TagHelperTooltipFactory>();
-            EmptyDocumentResolver = Mock.Of<DocumentResolver>();
+            TagHelperTooltipFactory = Mock.Of<TagHelperTooltipFactory>(MockBehavior.Strict);
+            EmptyDocumentResolver = Mock.Of<DocumentResolver>(MockBehavior.Strict);
         }
 
         private RazorCompletionFactsService CompletionFactsService { get; }
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task Handle_Resolve_DirectiveCompletion_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
-            var descriptionFactory = Mock.Of<TagHelperTooltipFactory>();
+            var descriptionFactory = Mock.Of<TagHelperTooltipFactory>(MockBehavior.Strict);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, descriptionFactory, LoggerFactory);
             var razorCompletionItem = new RazorCompletionItem("TestItem", "TestItem", RazorCompletionItemKind.Directive);
             razorCompletionItem.SetDirectiveCompletionDescription(new DirectiveCompletionDescription("Test directive"));
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task Handle_Resolve_MarkupTransitionCompletion_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
-            var descriptionFactory = Mock.Of<TagHelperTooltipFactory>();
+            var descriptionFactory = Mock.Of<TagHelperTooltipFactory>(MockBehavior.Strict);
             var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, EmptyDocumentResolver, CompletionFactsService, descriptionFactory, LoggerFactory);
             var razorCompletionItem = new RazorCompletionItem("@...", "@", RazorCompletionItemKind.MarkupTransition);
             razorCompletionItem.SetMarkupTransitionCompletionDescription(new MarkupTransitionCompletionDescription("Test description"));

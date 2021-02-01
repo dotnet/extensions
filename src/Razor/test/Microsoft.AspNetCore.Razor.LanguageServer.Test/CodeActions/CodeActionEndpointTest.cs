@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 {
     public class CodeActionEndpointTest : LanguageServerTestBase
     {
-        private readonly RazorDocumentMappingService DocumentMappingService = Mock.Of<RazorDocumentMappingService>();
-        private readonly DocumentResolver EmptyDocumentResolver = Mock.Of<DocumentResolver>();
+        private readonly RazorDocumentMappingService DocumentMappingService = Mock.Of<RazorDocumentMappingService>(s => s.TryMapToProjectedDocumentRange(It.IsAny<RazorCodeDocument>(), It.IsAny<Range>(), out It.Ref<Range>.IsAny) == false, MockBehavior.Strict);
+        private readonly DocumentResolver EmptyDocumentResolver = Mock.Of<DocumentResolver>(r => r.TryResolveDocument(It.IsAny<string>(), out It.Ref<DocumentSnapshot>.IsAny) == false, MockBehavior.Strict);
         private readonly LanguageServerFeatureOptions LanguageServerFeatureOptions = Mock.Of<LanguageServerFeatureOptions>(l => l.SupportsFileManipulation == true);
-        private readonly ClientNotifierServiceBase LanguageServer = Mock.Of<ClientNotifierServiceBase>();
+        private readonly ClientNotifierServiceBase LanguageServer = Mock.Of<ClientNotifierServiceBase>(MockBehavior.Strict);
 
         [Fact]
         public async Task Handle_NoDocument()

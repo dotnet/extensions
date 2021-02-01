@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                Mock.Of<ProjectChangePublisher>(MockBehavior.Strict),
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                Mock.Of<ProjectChangePublisher>(MockBehavior.Strict),
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                Mock.Of<ProjectChangePublisher>(MockBehavior.Strict),
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                Mock.Of<ProjectChangePublisher>(MockBehavior.Strict),
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();
@@ -196,10 +196,12 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var configurationProvider = new Mock<ProjectConfigurationProvider>(MockBehavior.Strict);
             configurationProvider.Setup(provider => provider.TryResolveConfiguration(It.IsAny<ProjectConfigurationProviderContext>(), out projectConfiguration))
                 .Returns(true);
+            var projectChangePublisher = new Mock<ProjectChangePublisher>(MockBehavior.Strict);
+            projectChangePublisher.Setup(p => p.SetPublishFilePath(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
             var msbuildProjectManager = new MSBuildProjectManager(
                 new[] { configurationProvider.Object },
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                projectChangePublisher.Object,
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();

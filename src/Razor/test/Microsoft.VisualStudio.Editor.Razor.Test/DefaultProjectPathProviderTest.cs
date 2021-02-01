@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             projectService.Setup(service => service.GetProjectPath(It.IsAny<object>()))
                 .Returns(expectedProjectPath);
             var projectPathProvider = new DefaultProjectPathProvider(projectService.Object, liveShareProjectPathProvider: null);
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
 
             // Act
             var result = projectPathProvider.TryGetProjectPath(textBuffer, out var filePath);
@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             projectService.Setup(service => service.GetHostProject(It.IsAny<ITextBuffer>()))
                 .Throws<XunitException>();
             var projectPathProvider = new DefaultProjectPathProvider(projectService.Object, liveShareProjectPathProvider.Object);
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
 
             // Act
             var result = projectPathProvider.TryGetProjectPath(textBuffer, out var filePath);
@@ -57,8 +57,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void TryGetProjectPath_ReturnsFalseIfNoProject()
         {
             // Arrange
-            var projectPathProvider = new DefaultProjectPathProvider(Mock.Of<TextBufferProjectService>(), Mock.Of<LiveShareProjectPathProvider>());
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var projectService = new Mock<TextBufferProjectService>(MockBehavior.Strict);
+            projectService.Setup(service => service.GetHostProject(It.IsAny<ITextBuffer>()))
+                .Returns(value: null);
+            var liveShareProjectPathProvider = new Mock<LiveShareProjectPathProvider>(MockBehavior.Strict);
+            liveShareProjectPathProvider.Setup(p => p.TryGetProjectPath(It.IsAny<ITextBuffer>(), out It.Ref<string>.IsAny)).Returns(false);
+            var projectPathProvider = new DefaultProjectPathProvider(projectService.Object, liveShareProjectPathProvider.Object);
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
 
             // Act
             var result = projectPathProvider.TryGetProjectPath(textBuffer, out var filePath);
@@ -78,8 +83,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Returns(new object());
             projectService.Setup(service => service.GetProjectPath(It.IsAny<object>()))
                 .Returns(expectedProjectPath);
-            var projectPathProvider = new DefaultProjectPathProvider(projectService.Object, Mock.Of<LiveShareProjectPathProvider>());
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var liveShareProjectPathProvider = new Mock<LiveShareProjectPathProvider>(MockBehavior.Strict);
+            liveShareProjectPathProvider.Setup(p => p.TryGetProjectPath(It.IsAny<ITextBuffer>(), out It.Ref<string>.IsAny)).Returns(false);
+            var projectPathProvider = new DefaultProjectPathProvider(projectService.Object, liveShareProjectPathProvider.Object);
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
 
             // Act
             var result = projectPathProvider.TryGetProjectPath(textBuffer, out var filePath);

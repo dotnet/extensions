@@ -15,11 +15,11 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test
     {
         public VirtualDocumentFactoryBaseTest()
         {
-            ContentTypeRegistry = Mock.Of<IContentTypeRegistryService>();
+            ContentTypeRegistry = Mock.Of<IContentTypeRegistryService>(MockBehavior.Strict);
             var textBufferFactory = new Mock<ITextBufferFactoryService>(MockBehavior.Strict);
             textBufferFactory
                 .Setup(factory => factory.CreateTextBuffer())
-                .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>() && buffer.Properties == new PropertyCollection() && buffer.ContentType == TestVirtualDocumentFactory.LanguageLSPContentTypeInstance));
+                .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>(MockBehavior.Strict) && buffer.Properties == new PropertyCollection() && buffer.ContentType == TestVirtualDocumentFactory.LanguageLSPContentTypeInstance));
             TextBufferFactory = textBufferFactory.Object;
 
             var hostContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(TestVirtualDocumentFactory.HostDocumentContentTypeNameConst) == true);
@@ -28,7 +28,8 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test
             var nonHostLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(It.IsAny<string>()) == false);
             NonHostLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == nonHostLSPContentType);
 
-            TextDocumentFactoryService = Mock.Of<ITextDocumentFactoryService>();
+            TextDocumentFactoryService = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict).Object;
+            Mock.Get(TextDocumentFactoryService).Setup(s => s.CreateTextDocument(It.IsAny<ITextBuffer>(), It.IsAny<string>())).Returns((ITextDocument)null);
         }
 
         private ITextBuffer NonHostLSPBuffer { get; }

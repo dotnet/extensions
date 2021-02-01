@@ -22,7 +22,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void UpdateVirtualDocument_UpdatesProvidedVirtualDocumentWithProvidedArgs_AndRecalcsSnapshot()
         {
             // Arrange
-            var snapshot = Mock.Of<ITextSnapshot>(s => s.Version == Mock.Of<ITextVersion>());
+            var textVersion = new Mock<ITextVersion>(MockBehavior.Strict);
+            textVersion.SetupGet(v => v.VersionNumber).Returns(0);
+            var snapshot = Mock.Of<ITextSnapshot>(s => s.Version == textVersion.Object);
             var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == snapshot);
             var virtualDocument = new TestVirtualDocument();
             using var document = new DefaultLSPDocument(Uri, textBuffer, new[] { virtualDocument });

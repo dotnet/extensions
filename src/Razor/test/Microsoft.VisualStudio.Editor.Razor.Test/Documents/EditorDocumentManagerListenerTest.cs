@@ -90,7 +90,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         private EditorDocument GetEditorDocument(bool isOpen = false)
         {
             var document = new EditorDocument(
-                Mock.Of<EditorDocumentManager>(),
+                Mock.Of<EditorDocumentManager>(MockBehavior.Strict),
                 ProjectFilePath,
                 DocumentFilePath,
                 TextLoader,

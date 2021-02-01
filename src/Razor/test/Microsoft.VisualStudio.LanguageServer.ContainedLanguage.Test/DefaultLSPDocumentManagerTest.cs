@@ -17,15 +17,15 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             ChangeTriggers = Enumerable.Empty<LSPDocumentManagerChangeTrigger>();
             JoinableTaskContext = new JoinableTaskContext();
-            TextBuffer = Mock.Of<ITextBuffer>();
+            TextBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             Uri = new Uri("C:/path/to/file.razor");
             UriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(TextBuffer) == Uri);
-            LSPDocumentSnapshot = Mock.Of<LSPDocumentSnapshot>();
+            LSPDocumentSnapshot = Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict);
             LSPDocument = Mock.Of<LSPDocument>(document =>
                 document.Uri == Uri &&
                 document.CurrentSnapshot == LSPDocumentSnapshot &&
                 document.VirtualDocuments == new[] { new TestVirtualDocument() } &&
-                document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<ITextChange>>(), It.IsAny<int>()) == Mock.Of<LSPDocumentSnapshot>());
+                document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<ITextChange>>(), It.IsAny<int>()) == Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
             LSPDocumentFactory = Mock.Of<LSPDocumentFactory>(factory => factory.Create(TextBuffer) == LSPDocument);
         }
 

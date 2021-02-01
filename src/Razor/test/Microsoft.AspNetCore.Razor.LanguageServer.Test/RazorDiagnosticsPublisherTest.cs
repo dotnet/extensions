@@ -61,7 +61,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var codeDocument = CreateCodeDocument(SingleDiagnosticCollection);
             processedOpenDocument.With(codeDocument);
             // ILanguageServerDocument
-            var languageServerDocument = Mock.Of<ITextDocumentLanguageServer>();
+            var languageServerDocument = new Mock<ITextDocumentLanguageServer>(MockBehavior.Strict).Object;
+            Mock.Get(languageServerDocument).Setup(d => d.SendNotification(It.IsAny<IRequest>())).Verifiable();
             using (var publisher = new TestRazorDiagnosticsPublisher(Dispatcher, languageServerDocument, LoggerFactory)
             {
                 BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: true),

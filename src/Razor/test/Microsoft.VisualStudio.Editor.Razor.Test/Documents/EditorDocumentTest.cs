@@ -15,7 +15,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
     {
         public EditorDocumentTest()
         {
-            DocumentManager = Mock.Of<EditorDocumentManager>();
+            DocumentManager = new Mock<EditorDocumentManager>(MockBehavior.Strict).Object;
+            Mock.Get(DocumentManager).Setup(m => m.RemoveDocument(It.IsAny<EditorDocument>())).Verifiable();
             ProjectFilePath = TestProjectData.SomeProject.FilePath;
             DocumentFilePath = TestProjectData.SomeProjectFile1.FilePath;
             TextLoader = TextLoader.From(TextAndVersion.Create(SourceText.From("FILE"), VersionStamp.Default));
