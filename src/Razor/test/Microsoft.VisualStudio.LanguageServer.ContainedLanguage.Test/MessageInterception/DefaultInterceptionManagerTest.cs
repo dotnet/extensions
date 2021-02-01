@@ -120,7 +120,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test.MessageIn
             var fakeInterceptor = Mock.Of<MessageInterceptor>();
             Mock.Get(fakeInterceptor).Setup(x => x.ApplyChangesAsync(It.IsAny<JToken>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                      .Returns(Task.FromResult(new InterceptionResult(expected, false)));
-            var mockSecondInterceptor = new Mock<MessageInterceptor>();
+            var mockSecondInterceptor = new Mock<MessageInterceptor>(MockBehavior.Strict);
+            mockSecondInterceptor.Setup(x => x.ApplyChangesAsync(new JArray(), "testLangauge", CancellationToken.None))
+                .Returns(Task.FromResult(new InterceptionResult(expected, false)));
             var sut = new DefaultInterceptorManager(GenerateLazyInterceptors((fakeInterceptor, "testMessage"),
                                                                              (mockSecondInterceptor.Object, "testMessage")));
             var testToken = JToken.Parse("\"theToken\"");
@@ -136,7 +138,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test.MessageIn
         public async Task ProcessInterceptorsAsync_InterceptorChangesDocumentUri_CausesAdditionalPass()
         {
             var expected = JToken.Parse("\"new token\"");
-            var mockInterceptor =new Mock<MessageInterceptor>();
+            var mockInterceptor =new Mock<MessageInterceptor>(MockBehavior.Strict);
             mockInterceptor.SetupSequence(x => x.ApplyChangesAsync(It.IsAny<JToken>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                            .Returns(Task.FromResult(new InterceptionResult(expected, true)))
                            .Returns(Task.FromResult(new InterceptionResult(expected, false)));
@@ -155,7 +157,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test.MessageIn
             var fakeInterceptor = Mock.Of<MessageInterceptor>();
             Mock.Get(fakeInterceptor).Setup(x => x.ApplyChangesAsync(It.IsAny<JToken>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                      .Returns(Task.FromResult(new InterceptionResult(null, false)));
-            var mockSecondInterceptor = new Mock<MessageInterceptor>();
+            var mockSecondInterceptor = new Mock<MessageInterceptor>(MockBehavior.Strict);
             var sut = new DefaultInterceptorManager(GenerateLazyInterceptors((fakeInterceptor, "testMessage"),
                                                                              (mockSecondInterceptor.Object, "testMessage")));
             var testToken = JToken.Parse("\"theToken\"");

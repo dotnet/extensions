@@ -49,11 +49,12 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 t.ProjectPath == ProjectPath &&
                 t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
 
-            var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>();
-            var fileChangeTracker = new Mock<FileChangeTracker>();
+            var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>(MockBehavior.Strict);
+            var fileChangeTracker = new Mock<FileChangeTracker>(MockBehavior.Strict);
             fileChangeTracker
                 .Setup(f => f.FilePath)
                 .Returns(testImportsPath);
+            fileChangeTracker.Setup(f => f.StartListening()).Verifiable();
             fileChangeTrackerFactory
                 .Setup(f => f.Create(testImportsPath))
                 .Returns(fileChangeTracker.Object);

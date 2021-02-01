@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var textSpan = new TextSpan(1, 10);
             var spans = new TextSpan[] { textSpan };
 
-            var documentSnapshot = new Mock<LSPDocumentSnapshot>();
+            var documentSnapshot = new Mock<LSPDocumentSnapshot>(MockBehavior.Strict);
             documentSnapshot.SetupGet(doc => doc.Uri).Returns(MockDocumentUri);
 
             var textSnapshot = new StringTextSnapshot(MockGeneratedContent, 1);
@@ -47,7 +47,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 End = new Position(2, 11)
             };
 
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var mappingResult = new RazorMapToDocumentRangesResponse()
             {
                 Ranges = new Range[] { mappedRange }
@@ -86,14 +86,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var textSpan = new TextSpan(10, 10);
             var spans = new TextSpan[] { textSpan };
 
-            var documentSnapshot = new Mock<LSPDocumentSnapshot>();
+            var documentSnapshot = new Mock<LSPDocumentSnapshot>(MockBehavior.Strict);
             documentSnapshot.SetupGet(doc => doc.Uri).Returns(MockDocumentUri);
 
             var textSnapshot = new StringTextSnapshot(MockGeneratedContent, 1);
 
             var textSpanAsRange = textSpan.AsLSPRange(SourceTextGenerated);
 
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider.Setup(dmp => dmp.MapToDocumentRangesAsync(It.IsAny<RazorLanguageKind>(), It.IsAny<Uri>(), It.IsAny<Range[]>(), It.IsAny<CancellationToken>()))
                 .Callback<RazorLanguageKind, Uri, Range[], CancellationToken>((languageKind, Uri, ranges, ct) =>
                 {

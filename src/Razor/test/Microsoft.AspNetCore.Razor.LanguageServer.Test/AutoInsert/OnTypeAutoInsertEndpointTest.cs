@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
                 document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);
             return documentResolver.Object;

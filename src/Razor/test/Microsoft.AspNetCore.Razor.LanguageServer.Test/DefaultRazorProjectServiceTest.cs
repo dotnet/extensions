@@ -438,7 +438,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
             var project = Mock.Of<ProjectSnapshot>();
-            var projectResolver = new Mock<ProjectResolver>();
+            var projectResolver = new Mock<ProjectResolver>(MockBehavior.Strict);
             projectResolver.Setup(resolver => resolver.TryResolveProject(It.IsAny<string>(), out project, It.IsAny<bool>()))
                 .Throws(new InvalidOperationException("This shouldn't have been called."));
             var alreadyOpenDoc = Mock.Of<DocumentSnapshot>();
@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     [documentFilePath] = ownerProject
                 },
                 TestProjectSnapshot.Create("C:/__MISC_PROJECT__"));
-            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>();
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.DocumentRemoved(It.IsAny<HostProject>(), It.IsAny<HostDocument>()))
                 .Throws(new InvalidOperationException("Should not have been called."));
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>(),
                 miscellaneousProject);
-            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>();
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.DocumentRemoved(It.IsAny<HostProject>(), It.IsAny<HostDocument>()))
                 .Throws(new InvalidOperationException("Should not have been called."));
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
@@ -701,7 +701,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     [documentFilePath] = ownerProject
                 },
                 TestProjectSnapshot.Create("C:/__MISC_PROJECT__"));
-            var documentVersionCache = new Mock<DocumentVersionCache>();
+            var documentVersionCache = new Mock<DocumentVersionCache>(MockBehavior.Strict);
             documentVersionCache.Setup(cache => cache.TrackDocumentVersion(It.IsAny<DocumentSnapshot>(), It.IsAny<int>()))
                 .Throws<XunitException>();
             var newText = SourceText.From("Something New");
@@ -789,9 +789,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectFilePath = "C:/path/to/project.csproj";
             var miscellaneousProject = TestProjectSnapshot.Create("C:/__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
-            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>();
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.ProjectRemoved(It.IsAny<HostProject>()))
                 .Throws(new InvalidOperationException("Should not have been called."));
+            projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
+                .Returns((ProjectSnapshot)null);
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
 
             // Act & Assert
@@ -873,7 +875,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentFilePath2 = "C:/path/to/document2.cshtml";
             var miscellaneousProject = TestProjectSnapshot.Create("C:/__MISC_PROJECT__", new[] { documentFilePath1, documentFilePath2 });
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
-            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>();
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.DocumentAdded(It.IsAny<HostProject>(), It.IsAny<HostDocument>(), It.IsAny<TextLoader>()))
                 .Throws(new InvalidOperationException("Should not have been called."));
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);

@@ -88,7 +88,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
 
         private static ITextView CreateTextView(IContentType contentType, PropertyCollection properties)
         {
-            var bufferGraph = new Mock<IBufferGraph>();
+            var bufferGraph = new Mock<IBufferGraph>(MockBehavior.Strict);
             bufferGraph.Setup(graph => graph.GetTextBuffers(It.IsAny<Predicate<ITextBuffer>>()))
                 .Returns(new Collection<ITextBuffer>()
                 {

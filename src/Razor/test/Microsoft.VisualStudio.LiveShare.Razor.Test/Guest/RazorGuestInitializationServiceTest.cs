@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
-            var session = new Mock<CollaborationSession>();
+            var session = new Mock<CollaborationSession>(MockBehavior.Strict);
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(Array.Empty<Uri>()))
                 .Verifiable();
@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
-            var session = new Mock<CollaborationSession>();
+            var session = new Mock<CollaborationSession>(MockBehavior.Strict);
             var disposedService = false;
             IDisposable sessionService = null;
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))
@@ -76,7 +76,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
-            var session = new Mock<CollaborationSession>();
+            var session = new Mock<CollaborationSession>(MockBehavior.Strict);
             using var cts = new CancellationTokenSource();
             IDisposable sessionService = null;
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))
@@ -108,7 +108,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
-            var session = new Mock<CollaborationSession>();
+            var session = new Mock<CollaborationSession>(MockBehavior.Strict);
             using var cts = new CancellationTokenSource();
             IDisposable sessionService = null;
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))

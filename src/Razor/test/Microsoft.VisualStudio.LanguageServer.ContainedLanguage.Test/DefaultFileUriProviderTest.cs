@@ -111,7 +111,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void GetOrCreate_TurnsTextDocumentFilePathIntoUri()
         {
             // Arrange
-            var factory = new Mock<ITextDocumentFactoryService>();
+            var factory = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict);
             var expectedFilePath = "C:/path/to/file.razor";
             var textDocument = Mock.Of<ITextDocument>(document => document.FilePath == expectedFilePath);
             factory.Setup(f => f.TryGetTextDocument(TextBuffer, out textDocument))

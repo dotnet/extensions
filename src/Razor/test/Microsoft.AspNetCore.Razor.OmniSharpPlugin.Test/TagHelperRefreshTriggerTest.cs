@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
             var mre = new ManualResetEventSlim(initialState: false);
-            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>();
+            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) => mre.Set());
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object);
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
             var mre = new ManualResetEventSlim(initialState: false);
-            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>();
+            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) =>
                 {
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
             var mre = new ManualResetEventSlim(initialState: false);
-            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>();
+            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) => mre.Set());
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object);
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             // Arrange
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
             var mre = new ManualResetEventSlim(initialState: false);
-            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>();
+            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) =>
                 {
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var workspace = TestWorkspace.Create();
             var projectManager = CreateProjectSnapshotManager();
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
-            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>();
+            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Throws<XunitException>();
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object, workspace);
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         {
             // Arrange
             var projectManager = CreateProjectSnapshotManager();
-            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>();
+            var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Throws<XunitException>();
             var refreshTrigger = CreateRefreshTrigger(workspaceStateGenerator.Object);

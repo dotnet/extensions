@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private JsonFileDeserializer CreateJsonFileDeserializer(FullProjectSnapshotHandle deserializedHandle)
         {
-            var deserializer = new Mock<JsonFileDeserializer>();
+            var deserializer = new Mock<JsonFileDeserializer>(MockBehavior.Strict);
             deserializer.Setup(deserializer => deserializer.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()))
                 .Returns(deserializedHandle);
 

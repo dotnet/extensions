@@ -44,8 +44,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 t.ProjectPath == ProjectPath &&
                 t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
             
-            var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>();
-            var fileChangeTracker1 = new Mock<FileChangeTracker>();
+            var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>(MockBehavior.Strict);
+            var fileChangeTracker1 = new Mock<FileChangeTracker>(MockBehavior.Strict);
             fileChangeTracker1
                 .Setup(f => f.StartListening())
                 .Verifiable();
@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Setup(f => f.Create(Path.Combine(DirectoryPath, "Views", "Home", "_ViewImports.cshtml")))
                 .Returns(fileChangeTracker1.Object)
                 .Verifiable();
-            var fileChangeTracker2 = new Mock<FileChangeTracker>();
+            var fileChangeTracker2 = new Mock<FileChangeTracker>(MockBehavior.Strict);
             fileChangeTracker2
                 .Setup(f => f.StartListening())
                 .Verifiable();
@@ -61,7 +61,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Setup(f => f.Create(Path.Combine(DirectoryPath, "Views", "_ViewImports.cshtml")))
                 .Returns(fileChangeTracker2.Object)
                 .Verifiable();
-            var fileChangeTracker3 = new Mock<FileChangeTracker>();
+            var fileChangeTracker3 = new Mock<FileChangeTracker>(MockBehavior.Strict);
             fileChangeTracker3.Setup(f => f.StartListening()).Verifiable();
             fileChangeTrackerFactory
                 .Setup(f => f.Create(Path.Combine(DirectoryPath, "_ViewImports.cshtml")))
@@ -95,7 +95,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
 
             var callCount = 0;
-            var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>();
+            var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>(MockBehavior.Strict);
             fileChangeTrackerFactory
                 .Setup(f => f.Create(It.IsAny<string>()))
                 .Returns(Mock.Of<FileChangeTracker>())
@@ -121,7 +121,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
 
             var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>(MockBehavior.Strict);
-            var fileChangeTracker = new Mock<FileChangeTracker>();
+            var fileChangeTracker = new Mock<FileChangeTracker>(MockBehavior.Strict);
+            fileChangeTracker.Setup(f => f.StartListening()).Verifiable();
             fileChangeTracker
                 .Setup(f => f.StopListening())
                 .Verifiable();
@@ -155,8 +156,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 t.ProjectPath == ProjectPath &&
                 t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
 
-            var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>();
-            var fileChangeTracker = new Mock<FileChangeTracker>();
+            var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>(MockBehavior.Strict);
+            var fileChangeTracker = new Mock<FileChangeTracker>(MockBehavior.Strict);
+            fileChangeTracker.Setup(f => f.StartListening()).Verifiable();
             fileChangeTracker
                 .Setup(f => f.StopListening())
                 .Throws(new InvalidOperationException());

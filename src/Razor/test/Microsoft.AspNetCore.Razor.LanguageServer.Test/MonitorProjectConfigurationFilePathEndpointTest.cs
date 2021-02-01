@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task Handle_Disposed_Noops()
         {
             // Arrange
-            var directoryPathResolver = new Mock<WorkspaceDirectoryPathResolver>();
+            var directoryPathResolver = new Mock<WorkspaceDirectoryPathResolver>(MockBehavior.Strict);
             directoryPathResolver.Setup(resolver => resolver.Resolve())
                 .Throws<XunitException>();
             var configurationFileEndpoint = new MonitorProjectConfigurationFilePathEndpoint(
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task Handle_ConfigurationFilePath_UntrackedMonitorNoops()
         {
             // Arrange
-            var directoryPathResolver = new Mock<WorkspaceDirectoryPathResolver>();
+            var directoryPathResolver = new Mock<WorkspaceDirectoryPathResolver>(MockBehavior.Strict);
             directoryPathResolver.Setup(resolver => resolver.Resolve())
                 .Throws<XunitException>();
             var configurationFileEndpoint = new MonitorProjectConfigurationFilePathEndpoint(

@@ -32,7 +32,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(s => s.Uri == Uri));
 
             var invokedServer = false;
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentManager = new TestDocumentManager();
 
             var invokedServer = false;
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
@@ -111,7 +111,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(s => s.Uri == Uri));
 
             var invokedServer = false;
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
@@ -124,7 +124,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 LanguageKind = RazorLanguageKind.Razor,
             };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
 
@@ -172,7 +172,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Uri = projectionUri,
                 LanguageKind = RazorLanguageKind.Html,
             };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
@@ -225,7 +225,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Uri = projectionUri,
                 LanguageKind = RazorLanguageKind.CSharp,
             };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);

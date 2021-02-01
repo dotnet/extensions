@@ -469,7 +469,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Test
 
         private class TestDefaultRazorProjectChangePublisher : DefaultRazorProjectChangePublisher
         {
-            private static readonly Mock<LSPEditorFeatureDetector> _lspEditorFeatureDetector = new Mock<LSPEditorFeatureDetector>();
+            private static readonly Mock<LSPEditorFeatureDetector> _lspEditorFeatureDetector = new Mock<LSPEditorFeatureDetector>(MockBehavior.Strict);
 
             private readonly Action<ProjectSnapshot, string> _onSerializeToFile;
 

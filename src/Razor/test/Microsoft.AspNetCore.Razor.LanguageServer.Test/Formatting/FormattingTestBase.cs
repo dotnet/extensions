@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var projectEngine = RazorProjectEngine.Create(builder => { builder.SetRootNamespace("Test"); });
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), tagHelpers);
 
-            var documentSnapshot = new Mock<DocumentSnapshot>();
+            var documentSnapshot = new Mock<DocumentSnapshot>(MockBehavior.Strict);
             documentSnapshot.Setup(d => d.GetGeneratedOutputAsync()).Returns(Task.FromResult(codeDocument));
             documentSnapshot.Setup(d => d.Project.GetProjectEngine()).Returns(projectEngine);
             documentSnapshot.Setup(d => d.FilePath).Returns(path);

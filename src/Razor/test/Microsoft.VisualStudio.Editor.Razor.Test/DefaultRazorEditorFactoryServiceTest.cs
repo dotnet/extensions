@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             Workspace workspace = null;
-            var workspaceAccessor = new Mock<VisualStudioWorkspaceAccessor>();
+            var workspaceAccessor = new Mock<VisualStudioWorkspaceAccessor>(MockBehavior.Strict);
             workspaceAccessor.Setup(provider => provider.TryGetWorkspace(It.IsAny<ITextBuffer>(), out workspace))
                 .Returns(false);
             var factoryService = new DefaultRazorEditorFactoryService(workspaceAccessor.Object);
@@ -263,7 +263,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             });
 
             var workspace = TestWorkspace.Create(services);
-            var workspaceAccessor = new Mock<VisualStudioWorkspaceAccessor>();
+            var workspaceAccessor = new Mock<VisualStudioWorkspaceAccessor>(MockBehavior.Strict);
             workspaceAccessor.Setup(p => p.TryGetWorkspace(It.IsAny<ITextBuffer>(), out workspace))
                 .Returns(true);
 

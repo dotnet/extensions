@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private static DocumentResolver CreateDocumentResolver(string documentPath, SourceText sourceText)
         {
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document => document.GetTextAsync() == Task.FromResult(sourceText) && document.FilePath == documentPath);
-            var documentResolver = new Mock<DocumentResolver>();
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);
             return documentResolver.Object;

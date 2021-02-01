@@ -16,7 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test
         public VirtualDocumentFactoryBaseTest()
         {
             ContentTypeRegistry = Mock.Of<IContentTypeRegistryService>();
-            var textBufferFactory = new Mock<ITextBufferFactoryService>();
+            var textBufferFactory = new Mock<ITextBufferFactoryService>(MockBehavior.Strict);
             textBufferFactory
                 .Setup(factory => factory.CreateTextBuffer())
                 .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>() && buffer.Properties == new PropertyCollection() && buffer.ContentType == TestVirtualDocumentFactory.LanguageLSPContentTypeInstance));

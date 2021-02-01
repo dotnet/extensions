@@ -37,9 +37,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
             DefaultProjectResolver projectResolver = null;
-            var miscProject = new Mock<ProjectSnapshot>();
+            var miscProject = new Mock<ProjectSnapshot>(MockBehavior.Strict);
             miscProject.Setup(p => p.FilePath)
                 .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
+            miscProject.Setup(p => p.GetDocument(documentFilePath))
+                .Returns((DocumentSnapshot)null);
             projectResolver = CreateProjectResolver(() => new[] { miscProject.Object });
 
             // Act
@@ -56,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
             DefaultProjectResolver projectResolver = null;
-            var miscProject = new Mock<ProjectSnapshot>();
+            var miscProject = new Mock<ProjectSnapshot>(MockBehavior.Strict);
             miscProject.Setup(p => p.FilePath)
                 .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
             miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>());
@@ -112,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
             DefaultProjectResolver projectResolver = null;
-            var miscProject = new Mock<ProjectSnapshot>();
+            var miscProject = new Mock<ProjectSnapshot>(MockBehavior.Strict);
             miscProject.Setup(p => p.FilePath)
                 .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
             miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>());
@@ -136,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
             DefaultProjectResolver projectResolver = null;
-            var miscProject = new Mock<ProjectSnapshot>();
+            var miscProject = new Mock<ProjectSnapshot>(MockBehavior.Strict);
             miscProject.Setup(p => p.FilePath)
                 .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
             miscProject.Setup(p => p.GetDocument(documentFilePath)).Returns(Mock.Of<DocumentSnapshot>());
@@ -178,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             DefaultProjectResolver projectResolver = null;
-            var miscProject = new Mock<ProjectSnapshot>();
+            var miscProject = new Mock<ProjectSnapshot>(MockBehavior.Strict);
             miscProject.Setup(p => p.FilePath)
                 .Returns(() => projectResolver._miscellaneousHostProject.FilePath);
             var expectedProject = miscProject.Object;
@@ -198,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             DefaultProjectResolver projectResolver = null;
             var projects = new List<ProjectSnapshot>();
             var filePathNormalizer = new FilePathNormalizer();
-            var snapshotManager = new Mock<ProjectSnapshotManagerBase>();
+            var snapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             snapshotManager.Setup(manager => manager.Projects)
                 .Returns(() => projects);
             snapshotManager.Setup(manager => manager.GetLoadedProject(It.IsAny<string>()))
@@ -219,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private DefaultProjectResolver CreateProjectResolver(Func<ProjectSnapshot[]> projectFactory)
         {
             var filePathNormalizer = new FilePathNormalizer();
-            var snapshotManager = new Mock<ProjectSnapshotManagerBase>();
+            var snapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             snapshotManager.Setup(manager => manager.Projects)
                 .Returns(projectFactory);
             snapshotManager.Setup(manager => manager.GetLoadedProject(It.IsAny<string>()))

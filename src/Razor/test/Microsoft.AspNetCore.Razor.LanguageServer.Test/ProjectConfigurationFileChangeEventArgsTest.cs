@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void TryDeserialize_RemovedKind_ReturnsFalse()
         {
             // Arrange
-            var jsonFileDeserializer = new Mock<JsonFileDeserializer>();
+            var jsonFileDeserializer = new Mock<JsonFileDeserializer>(MockBehavior.Strict);
             jsonFileDeserializer.Setup(deserializer => deserializer.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()))
                 .Returns(new FullProjectSnapshotHandle("c:/path/to/project.csproj", configuration: null, rootNamespace: null, projectWorkspaceState: null, documents: Array.Empty<DocumentSnapshotHandle>()));
             var args = new ProjectConfigurationFileChangeEventArgs("c:/some/path", RazorFileChangeKind.Removed, jsonFileDeserializer.Object);
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void TryDeserialize_MemoizesResults()
         {
             // Arrange
-            var jsonFileDeserializer = new Mock<JsonFileDeserializer>();
+            var jsonFileDeserializer = new Mock<JsonFileDeserializer>(MockBehavior.Strict);
             var projectSnapshotHandle = new FullProjectSnapshotHandle("c:/path/to/project.csproj", configuration: null, rootNamespace: null, projectWorkspaceState: null, documents: Array.Empty<DocumentSnapshotHandle>());
             jsonFileDeserializer.Setup(deserializer => deserializer.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()))
                 .Returns(projectSnapshotHandle);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void TryDeserialize_NullFileDeserialization_MemoizesResults_ReturnsFalse()
         {
             // Arrange
-            var jsonFileDeserializer = new Mock<JsonFileDeserializer>();
+            var jsonFileDeserializer = new Mock<JsonFileDeserializer>(MockBehavior.Strict);
             var callCount = 0;
             jsonFileDeserializer.Setup(deserializer => deserializer.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()))
                 .Callback(() => callCount++)

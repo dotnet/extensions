@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public RazorLanguageEndpointTest()
         {
-            var documentVersionCache = new Mock<DocumentVersionCache>();
+            var documentVersionCache = new Mock<DocumentVersionCache>(MockBehavior.Strict);
             int? version = 1337;
             documentVersionCache.Setup(cache => cache.TryGetDocumentVersion(It.IsAny<DocumentSnapshot>(), out version))
                 .Returns(true);
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
                 document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);
             return documentResolver.Object;

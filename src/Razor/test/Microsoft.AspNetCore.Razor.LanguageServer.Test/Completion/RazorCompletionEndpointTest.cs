@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task Handle_Resolve_DirectiveAttributeCompletion_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
-            var descriptionFactory = new Mock<TagHelperTooltipFactory>();
+            var descriptionFactory = new Mock<TagHelperTooltipFactory>(MockBehavior.Strict);
             var markdown = new MarkupContent
             {
                 Kind = MarkupKind.Markdown,
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task Handle_Resolve_DirectiveAttributeParameterCompletion_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
-            var descriptionFactory = new Mock<TagHelperTooltipFactory>();
+            var descriptionFactory = new Mock<TagHelperTooltipFactory>(MockBehavior.Strict);
             var markdown = new MarkupContent
             {
                 Kind = MarkupKind.Markdown,
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task Handle_Resolve_TagHelperElementCompletion_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
-            var descriptionFactory = new Mock<TagHelperTooltipFactory>();
+            var descriptionFactory = new Mock<TagHelperTooltipFactory>(MockBehavior.Strict);
             var markdown = new MarkupContent
             {
                 Kind = MarkupKind.Markdown,
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task Handle_Resolve_TagHelperAttribute_ReturnsCompletionItemWithDocumentation()
         {
             // Arrange
-            var descriptionFactory = new Mock<TagHelperTooltipFactory>();
+            var descriptionFactory = new Mock<TagHelperTooltipFactory>(MockBehavior.Strict);
             var markdown = new MarkupContent
             {
                 Kind = MarkupKind.Markdown,
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public async Task Handle_Resolve_NonTagHelperCompletion_Noops()
         {
             // Arrange
-            var descriptionFactory = new Mock<TagHelperTooltipFactory>();
+            var descriptionFactory = new Mock<TagHelperTooltipFactory>(MockBehavior.Strict);
             var markdown = new MarkupContent
             {
                 Kind = MarkupKind.Markdown,
@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
                 document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);
             return documentResolver.Object;

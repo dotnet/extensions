@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         private static IOptionsMonitor<RazorLSPOptions> GetOptionsMonitor(bool enableFormatting)
         {
-            var monitor = new Mock<IOptionsMonitor<RazorLSPOptions>>();
+            var monitor = new Mock<IOptionsMonitor<RazorLSPOptions>>(MockBehavior.Strict);
             monitor.SetupGet(m => m.CurrentValue).Returns(new RazorLSPOptions(default, enableFormatting, true));
             return monitor.Object;
         }
@@ -125,9 +125,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
                 document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);
+            documentResolver.Setup(resolver => resolver.TryResolveDocument(It.IsNotIn(documentPath), out documentSnapshot))
+                .Returns(false);
             return documentResolver.Object;
         }
 
