@@ -23,9 +23,18 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             await this.launchApp(folder, configuration);
         }
 
-        this.vscodeType.debug.onDidStartDebugSession(async event => {
-            if (event.name === SERVER_APP_NAME) {
-                await this.launchBrowser(folder, configuration, event);
+        const result = await vscode.commands.executeCommand<{
+            url: string,
+            debuggingPort: number,
+        } | undefined>('blazorwasm-companion.launchDebugProxy');
+        if (result) {
+            await this.launchBrowser(folder, configuration, result.url, result.debuggingPort);
+        }
+
+        const terminateDebugProxy = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
+            if (event.name === JS_DEBUG_NAME || event.name === SERVER_APP_NAME) {
+                await vscode.commands.executeCommand('blazorwasm-companion.killDebugProxy', result ? result.url : null);
+                terminateDebugProxy.dispose();
             }
         });
 
@@ -78,7 +87,8 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
         }
     }
 
-    private async launchBrowser(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration, parentSession?: vscode.DebugSession) {
+    private async launchBrowser(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration, wsAddress?: string, debuggingPort?: number) {
+        const inspectUri = `${wsAddress}{browserInspectUriPath}`;
         const browser = {
             name: JS_DEBUG_NAME,
             type: configuration.browser === 'edge' ? 'pwa-msedge' : 'pwa-chrome',
@@ -86,9 +96,10 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
             timeout: configuration.timeout || 30000,
             url: configuration.url || 'https://localhost:5001',
             webRoot: configuration.webRoot || '${workspaceFolder}',
-            inspectUri: '{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}',
+            inspectUri,
             trace: configuration.trace || false,
             noDebug: configuration.noDebug || false,
+            port: debuggingPort,
             ...configuration.browserConfig,
         };
 
@@ -102,7 +113,7 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
              * We do this to provide immediate visual feedback to the user
              * that their debugger session has started.
              */
-            await this.vscodeType.debug.startDebugging(folder, browser, parentSession);
+            await this.vscodeType.debug.startDebugging(folder, browser);
         } catch (error) {
             this.logger.logError(
                 '[DEBUGGER] Error when launching browser debugger: ',

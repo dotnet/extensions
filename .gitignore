@@ -152,3 +152,7 @@ src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Performance/BenchmarkDotNet.Arti
 yarn-*.log
 
 *.svclog
+
+# Bundled extension assets
+src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.BlazorWasmCompanionExtension/BlazorDebugProxy/*.dll
+src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.BlazorWasmCompanionExtension/BlazorDebugProxy/*.json
