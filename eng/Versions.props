@@ -140,6 +140,7 @@
     <Tooling_MicrosoftCodeAnalysisRemoteServiceHubPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisRemoteServiceHubPackageVersion>
     <Tooling_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
     <Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <Tooling_MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion>$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)</Tooling_MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion>
     <Tooling_MicrosoftNetCoreAnalyzersPackageVersion>$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)</Tooling_MicrosoftNetCoreAnalyzersPackageVersion>
     <Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
