@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             // Arrange
             var manager = new RazorDirectiveAttributeCommitManager();
             var properties = new PropertyCollection();
-            var session = Mock.Of<IAsyncCompletionSession>(s => s.Properties == properties);
+            var session = Mock.Of<IAsyncCompletionSession>(s => s.Properties == properties, MockBehavior.Strict);
 
             // Act
             var result = manager.ShouldCommitCompletion(session, location: default, typedChar: '=', token: default);
@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             var manager = new RazorDirectiveAttributeCommitManager();
             var properties = new PropertyCollection();
             properties.SetCompletionItemKinds(new HashSet<RazorCompletionItemKind>() { RazorCompletionItemKind.DirectiveAttribute });
-            var session = Mock.Of<IAsyncCompletionSession>(s => s.Properties == properties);
+            var session = Mock.Of<IAsyncCompletionSession>(s => s.Properties == properties, MockBehavior.Strict);
 
             // Act
             var result = manager.ShouldCommitCompletion(session, location: default, typedChar: '=', token: default);
@@ -50,7 +50,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             var manager = new RazorDirectiveAttributeCommitManager();
             var properties = new PropertyCollection();
             properties.SetCompletionItemKinds(new HashSet<RazorCompletionItemKind>() { RazorCompletionItemKind.DirectiveAttributeParameter });
-            var session = Mock.Of<IAsyncCompletionSession>(s => s.Properties == properties);
+            var session = Mock.Of<IAsyncCompletionSession>(s => s.Properties == properties, MockBehavior.Strict);
 
             // Act
             var result = manager.ShouldCommitCompletion(session, location: default, typedChar: ':', token: default);

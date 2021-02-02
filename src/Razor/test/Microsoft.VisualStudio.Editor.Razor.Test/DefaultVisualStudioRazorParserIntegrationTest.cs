@@ -626,14 +626,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private VisualStudioDocumentTracker CreateDocumentTracker(Text.ITextBuffer textBuffer, string filePath = TestLinePragmaFileName)
         {
-            var focusedTextView = Mock.Of<ITextView>(textView => textView.HasAggregateFocus == true);
+            var focusedTextView = Mock.Of<ITextView>(textView => textView.HasAggregateFocus == true, MockBehavior.Strict);
             var documentTracker = Mock.Of<VisualStudioDocumentTracker>(tracker =>
                 tracker.TextBuffer == textBuffer &&
                 tracker.TextViews == new[] { focusedTextView } &&
                 tracker.FilePath == filePath &&
                 tracker.ProjectPath == TestProjectPath &&
                 tracker.ProjectSnapshot == ProjectSnapshot &&
-                tracker.IsSupportedProject == true);
+                tracker.IsSupportedProject == true, MockBehavior.Strict);
             textBuffer.Properties.AddProperty(typeof(VisualStudioDocumentTracker), documentTracker);
 
             return documentTracker;

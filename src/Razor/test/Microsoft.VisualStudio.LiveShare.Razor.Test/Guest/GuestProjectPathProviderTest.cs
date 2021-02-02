@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             JoinableTaskContext = new JoinableTaskContext();
             var collabSession = new TestCollaborationSession(isHost: false);
-            SessionAccessor = Mock.Of<LiveShareSessionAccessor>(accessor => accessor.IsGuestSessionActive == true && accessor.Session == collabSession);
+            SessionAccessor = Mock.Of<LiveShareSessionAccessor>(accessor => accessor.IsGuestSessionActive == true && accessor.Session == collabSession, MockBehavior.Strict);
         }
 
         private JoinableTaskContext JoinableTaskContext { get; }
@@ -29,10 +29,10 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         public void TryGetProjectPath_GuestSessionNotActive_ReturnsFalse()
         {
             // Arrange
-            var sessionAccessor = Mock.Of<LiveShareSessionAccessor>(accessor => accessor.IsGuestSessionActive == false);
+            var sessionAccessor = Mock.Of<LiveShareSessionAccessor>(accessor => accessor.IsGuestSessionActive == false, MockBehavior.Strict);
             var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var textDocument = Mock.Of<ITextDocument>(MockBehavior.Strict);
-            var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>(factory => factory.TryGetTextDocument(textBuffer, out textDocument) == true);
+            var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>(factory => factory.TryGetTextDocument(textBuffer, out textDocument) == true, MockBehavior.Strict);
             var projectPathProvider = new TestGuestProjectPathProvider(
                 new Uri("vsls:/path/project.csproj"),
                 JoinableTaskContext,
@@ -75,7 +75,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             // Arrange
             var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var textDocument = Mock.Of<ITextDocument>(MockBehavior.Strict);
-            var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>(factory => factory.TryGetTextDocument(textBuffer, out textDocument) == true);
+            var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>(factory => factory.TryGetTextDocument(textBuffer, out textDocument) == true, MockBehavior.Strict);
             var projectPathProvider = new TestGuestProjectPathProvider(
                 null,
                 JoinableTaskContext,
@@ -97,7 +97,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             // Arrange
             var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var textDocument = Mock.Of<ITextDocument>(MockBehavior.Strict);
-            var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>(factory => factory.TryGetTextDocument(textBuffer, out textDocument) == true);
+            var textDocumentFactory = Mock.Of<ITextDocumentFactoryService>(factory => factory.TryGetTextDocument(textBuffer, out textDocument) == true, MockBehavior.Strict);
             var expectedProjectPath = "/guest/path/project.csproj";
             var projectPathProvider = new TestGuestProjectPathProvider(
                 new Uri("vsls:/path/project.csproj"),
@@ -122,11 +122,11 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var expectedHostFilePath = new Uri("vsls:/path/index.cshtml");
             var expectedHostProjectPath = new Uri("vsls:/path/project.csproj");
             var collabSession = new TestCollaborationSession(isHost: true);
-            var sessionAccessor = Mock.Of<LiveShareSessionAccessor>(accessor => accessor.IsGuestSessionActive == true && accessor.Session == collabSession);
+            var sessionAccessor = Mock.Of<LiveShareSessionAccessor>(accessor => accessor.IsGuestSessionActive == true && accessor.Session == collabSession, MockBehavior.Strict);
 
-            var proxy = Mock.Of<IProjectHierarchyProxy>(p => p.GetProjectPathAsync(expectedHostFilePath, CancellationToken.None) == Task.FromResult(expectedHostProjectPath));
-            var proxyAccessor = Mock.Of<ProxyAccessor>(accessor => accessor.GetProjectHierarchyProxy() == proxy);
-            var textDocument = Mock.Of<ITextDocument>(document => document.FilePath == expectedGuestFilePath);
+            var proxy = Mock.Of<IProjectHierarchyProxy>(p => p.GetProjectPathAsync(expectedHostFilePath, CancellationToken.None) == Task.FromResult(expectedHostProjectPath), MockBehavior.Strict);
+            var proxyAccessor = Mock.Of<ProxyAccessor>(accessor => accessor.GetProjectHierarchyProxy() == proxy, MockBehavior.Strict);
+            var textDocument = Mock.Of<ITextDocument>(document => document.FilePath == expectedGuestFilePath, MockBehavior.Strict);
             var projectPathProvider = new GuestProjectPathProvider(
                 JoinableTaskContext,
                 Mock.Of<ITextDocumentFactoryService>(MockBehavior.Strict),

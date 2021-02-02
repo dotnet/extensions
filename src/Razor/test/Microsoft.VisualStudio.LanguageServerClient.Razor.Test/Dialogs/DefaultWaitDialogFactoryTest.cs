@@ -69,7 +69,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs
         {
             // Arrange
             IVsThreadedWaitDialog2 waitDialog2 = null;
-            var vsWaitDialogFactory = Mock.Of<IVsThreadedWaitDialogFactory>(factory => factory.CreateInstance(out waitDialog2) == VSConstants.E_FAIL);
+            var vsWaitDialogFactory = Mock.Of<IVsThreadedWaitDialogFactory>(factory => factory.CreateInstance(out waitDialog2) == VSConstants.E_FAIL, MockBehavior.Strict);
             var waitDialogFactory = new DefaultWaitDialogFactory(JoinableTaskContext, vsWaitDialogFactory);
 
             // Act
@@ -87,7 +87,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs
         private IVsThreadedWaitDialogFactory CreateVSWaitDialogFactory(IVsThreadedWaitDialog2 waitDialog = null)
         {
             waitDialog ??= new TestThreadedWaitDialog();
-            var vsWaitDialogFactory = Mock.Of<IVsThreadedWaitDialogFactory>(factory => factory.CreateInstance(out waitDialog) == VSConstants.S_OK);
+            var vsWaitDialogFactory = Mock.Of<IVsThreadedWaitDialogFactory>(factory => factory.CreateInstance(out waitDialog) == VSConstants.S_OK, MockBehavior.Strict);
             return vsWaitDialogFactory;
         }
 

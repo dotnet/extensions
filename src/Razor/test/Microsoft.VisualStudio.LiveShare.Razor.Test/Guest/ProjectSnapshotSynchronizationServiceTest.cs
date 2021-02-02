@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 ProjectWorkspaceStateWithTagHelpers);
             var state = new ProjectSnapshotManagerProxyState(new[] { projectHandle });
             var hostProjectManagerProxy = Mock.Of<IProjectSnapshotManagerProxy>(
-                proxy => proxy.GetProjectManagerStateAsync(It.IsAny<CancellationToken>()) == Task.FromResult(state));
+                proxy => proxy.GetProjectManagerStateAsync(It.IsAny<CancellationToken>()) == Task.FromResult(state), MockBehavior.Strict);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,

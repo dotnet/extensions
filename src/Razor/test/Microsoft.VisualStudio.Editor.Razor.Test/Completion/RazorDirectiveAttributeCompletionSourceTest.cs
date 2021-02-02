@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             // Arrange
             var expectedResult = new ContainerElement(ContainerElementStyle.Wrapped);
             var description = new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>());
-            var descriptionFactory = Mock.Of<VisualStudioDescriptionFactory>(factory => factory.CreateClassifiedDescription(description) == expectedResult);
+            var descriptionFactory = Mock.Of<VisualStudioDescriptionFactory>(factory => factory.CreateClassifiedDescription(description) == expectedResult, MockBehavior.Strict);
             var source = new RazorDirectiveAttributeCompletionSource(
                 Dispatcher,
                 Mock.Of<VisualStudioRazorParser>(MockBehavior.Strict),

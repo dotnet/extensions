@@ -42,12 +42,12 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             var tracker = Mock.Of<VisualStudioDocumentTracker>(
                 t => t.FilePath == Path.Combine(DirectoryPath, "Views", "Home", "_ViewImports.cshtml") &&
                 t.ProjectPath == ProjectPath &&
-                t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
+                t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine && p.GetDocument(It.IsAny<string>()) == null, MockBehavior.Strict), MockBehavior.Strict);
 
             var anotherTracker = Mock.Of<VisualStudioDocumentTracker>(
                 t => t.FilePath == Path.Combine(DirectoryPath, "anotherFile.cshtml") &&
                 t.ProjectPath == ProjectPath &&
-                t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
+                t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine && p.GetDocument(It.IsAny<string>()) == null, MockBehavior.Strict), MockBehavior.Strict);
 
             var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>(MockBehavior.Strict);
             var fileChangeTracker = new Mock<FileChangeTracker>(MockBehavior.Strict);

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
         public async Task Handle_Rename_FileManipulationNotSupported_ReturnsNull()
         {
             // Arrange
-            var languageServerFeatureOptions = Mock.Of<LanguageServerFeatureOptions>(options => options.SupportsFileManipulation == false);
+            var languageServerFeatureOptions = Mock.Of<LanguageServerFeatureOptions>(options => options.SupportsFileManipulation == false, MockBehavior.Strict);
             var endpoint = CreateEndpoint(languageServerFeatureOptions);
             var request = new RenameParams
             {
@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
                 d.FilePath == item.FilePath &&
                 d.FileKind == FileKinds.Component &&
                 d.GetTextAsync() == Task.FromResult(sourceText) &&
-                d.Project == projectSnapshot);
+                d.Project == projectSnapshot, MockBehavior.Strict);
             return documentSnapshot;
         }
 
@@ -464,7 +464,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
                 p.GetDocument("c:/First/Component2.razor") == component2 &&
                 p.GetDocument(itemDirectory1.FilePath) == directory1Component &&
                 p.GetDocument(itemDirectory2.FilePath) == directory2Component &&
-                p.GetDocument(component1337.FilePath) == component1337);
+                p.GetDocument(component1337.FilePath) == component1337, MockBehavior.Strict);
 
             var secondProject = Mock.Of<ProjectSnapshot>(p =>
                 p.FilePath == "c:/Second/Second.csproj" &&
@@ -472,9 +472,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
                 p.GetDocument("c:/Second/Component3.razor") == component3 &&
                 p.GetDocument("c:/Second/Component4.razor") == component4 &&
                 p.GetDocument("c:/Second/ComponentWithParam.razor") == componentWithParam &&
-                p.GetDocument(index.FilePath) == index);
+                p.GetDocument(index.FilePath) == index, MockBehavior.Strict);
 
-            var projectSnapshotManager = Mock.Of<ProjectSnapshotManagerBase>(p => p.Projects == new[] { firstProject, secondProject });
+            var projectSnapshotManager = Mock.Of<ProjectSnapshotManagerBase>(p => p.Projects == new[] { firstProject, secondProject }, MockBehavior.Strict);
             var projectSnapshotManagerAccessor = new TestProjectSnapshotManagerAccessor(projectSnapshotManager);
 
             var documentResolver = Mock.Of<DocumentResolver>(d =>
@@ -486,10 +486,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
                 d.TryResolveDocument(index.FilePath, out index) == true &&
                 d.TryResolveDocument(component1337.FilePath, out component1337) == true &&
                 d.TryResolveDocument(itemDirectory1.FilePath, out directory1Component) == true &&
-                d.TryResolveDocument(itemDirectory2.FilePath, out directory2Component) == true);
+                d.TryResolveDocument(itemDirectory2.FilePath, out directory2Component) == true, MockBehavior.Strict);
 
             var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, projectSnapshotManagerAccessor);
-            languageServerFeatureOptions = languageServerFeatureOptions ?? Mock.Of<LanguageServerFeatureOptions>(options => options.SupportsFileManipulation == true);
+            languageServerFeatureOptions = languageServerFeatureOptions ?? Mock.Of<LanguageServerFeatureOptions>(options => options.SupportsFileManipulation == true, MockBehavior.Strict);
             var endpoint = new RazorComponentRenameEndpoint(Dispatcher, documentResolver, searchEngine, projectSnapshotManagerAccessor, languageServerFeatureOptions);
             return endpoint;
         }

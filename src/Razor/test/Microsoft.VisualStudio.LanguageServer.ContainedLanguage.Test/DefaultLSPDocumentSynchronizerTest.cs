@@ -195,7 +195,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         private FileUriProvider CreateUriProviderFor(ITextBuffer textBuffer, Uri bufferUri)
         {
-            var fileUriProvider = Mock.Of<FileUriProvider>(provider => provider.TryGet(textBuffer, out bufferUri) == true);
+            var fileUriProvider = Mock.Of<FileUriProvider>(provider => provider.TryGet(textBuffer, out bufferUri) == true, MockBehavior.Strict);
             return fileUriProvider;
         }
 

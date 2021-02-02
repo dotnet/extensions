@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.NotNull(text);
                 });
             var documentSnapshot = Mock.Of<DocumentSnapshot>(s => s.GetGeneratedOutputAsync() == Task.FromResult<RazorCodeDocument>(null), MockBehavior.Strict);
-            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out documentSnapshot) == true);
+            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out documentSnapshot) == true, MockBehavior.Strict);
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object, documentResolver);
             var sourceText = SourceText.From("Hello World");
 
@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 });
             var documentSnapshot = new Mock<DocumentSnapshot>(MockBehavior.Strict).Object;
             Mock.Get(documentSnapshot).Setup(s => s.GetGeneratedOutputAsync()).ReturnsAsync(value: null);
-            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out documentSnapshot) == true);
+            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out documentSnapshot) == true, MockBehavior.Strict);
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object, documentResolver);
             var sourceText = SourceText.From("Hello World");
 
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectResolver.Setup(resolver => resolver.TryResolveProject(It.IsAny<string>(), out project, It.IsAny<bool>()))
                 .Throws(new InvalidOperationException("This shouldn't have been called."));
             var alreadyOpenDoc = Mock.Of<DocumentSnapshot>(MockBehavior.Strict);
-            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out alreadyOpenDoc));
+            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out alreadyOpenDoc), MockBehavior.Strict);
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.DocumentAdded(It.IsAny<HostProject>(), It.IsAny<HostDocument>(), It.IsAny<TextLoader>()))
                 .Throws(new InvalidOperationException("This should not have been called."));
@@ -669,7 +669,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 },
                 TestProjectSnapshot.Create("C:/__MISC_PROJECT__"));
             DocumentSnapshot documentSnapshot = TestDocumentSnapshot.Create(documentFilePath);
-            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out documentSnapshot) == true);
+            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out documentSnapshot) == true, MockBehavior.Strict);
             var documentVersionCache = new Mock<DocumentVersionCache>(MockBehavior.Strict);
             documentVersionCache.Setup(cache => cache.TrackDocumentVersion(documentSnapshot, It.IsAny<int>()))
                 .Callback<DocumentSnapshot, int>((snapshot, version) =>
@@ -946,14 +946,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             var filePathNormalizer = new FilePathNormalizer();
-            var accessor = Mock.Of<ProjectSnapshotManagerAccessor>(a => a.Instance == projectSnapshotManager);
+            var accessor = Mock.Of<ProjectSnapshotManagerAccessor>(a => a.Instance == projectSnapshotManager, MockBehavior.Strict);
             if (documentResolver is null)
             {
                 documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict).Object;
                 Mock.Get(documentResolver).Setup(r => r.TryResolveDocument(It.IsAny<string>(), out It.Ref<DocumentSnapshot>.IsAny)).Returns(false);
             }
             var hostDocumentFactory = new TestHostDocumentFactory();
-            var remoteTextLoaderFactory = Mock.Of<RemoteTextLoaderFactory>(factory => factory.Create(It.IsAny<string>()) == Mock.Of<TextLoader>(MockBehavior.Strict));
+            var remoteTextLoaderFactory = Mock.Of<RemoteTextLoaderFactory>(factory => factory.Create(It.IsAny<string>()) == Mock.Of<TextLoader>(MockBehavior.Strict), MockBehavior.Strict);
             var projectService = new DefaultRazorProjectService(
                 Dispatcher,
                 hostDocumentFactory,

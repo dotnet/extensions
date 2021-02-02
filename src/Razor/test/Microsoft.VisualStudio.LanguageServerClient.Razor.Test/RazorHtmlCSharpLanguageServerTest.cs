@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             handler.Setup(h => h.HandleRequestAsync("hello world", It.IsAny<ClientCapabilities>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(123))
                 .Verifiable();
-            var metadata = Mock.Of<IRequestHandlerMetadata>(rhm => rhm.MethodName == "test");
+            var metadata = Mock.Of<IRequestHandlerMetadata>(rhm => rhm.MethodName == "test", MockBehavior.Strict);
             using var languageServer = new RazorHtmlCSharpLanguageServer(new[] { new Lazy<IRequestHandler, IRequestHandlerMetadata>(() => handler.Object, metadata) });
 
             // Act
@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 })
                 .Returns(Task.FromResult(initializeResult))
                 .Verifiable();
-            var metadata = Mock.Of<IRequestHandlerMetadata>(rhm => rhm.MethodName == Methods.InitializeName);
+            var metadata = Mock.Of<IRequestHandlerMetadata>(rhm => rhm.MethodName == Methods.InitializeName, MockBehavior.Strict);
             using var languageServer = new RazorHtmlCSharpLanguageServer(new[] { new Lazy<IRequestHandler, IRequestHandlerMetadata>(() => handler.Object, metadata) });
             var serializedInitParams = JToken.FromObject(originalInitParams);
 

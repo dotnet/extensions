@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public MonitorProjectConfigurationFilePathEndpointTest()
         {
-            DirectoryPathResolver = Mock.Of<WorkspaceDirectoryPathResolver>(resolver => resolver.Resolve() == "C:/dir");
+            DirectoryPathResolver = Mock.Of<WorkspaceDirectoryPathResolver>(resolver => resolver.Resolve() == "C:/dir", MockBehavior.Strict);
         }
 
         private WorkspaceDirectoryPathResolver DirectoryPathResolver { get; }

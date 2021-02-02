@@ -75,7 +75,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedHighlight = GetHighlight(5, 5, 5, 5);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 0));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 0, MockBehavior.Strict));
 
             var csharpHighlight = GetHighlight(100, 100, 100, 100);
             var requestInvoker = GetRequestInvoker<DocumentHighlightParams, DocumentHighlight[]>(
@@ -118,7 +118,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedHighlight = GetHighlight(5, 5, 5, 5);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 0));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 0, MockBehavior.Strict));
 
             var htmlHighlight = GetHighlight(100, 100, 100, 100);
             var requestInvoker = GetRequestInvoker<DocumentHighlightParams, DocumentHighlight[]>(
@@ -161,7 +161,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedHighlight = GetHighlight(5, 5, 5, 5);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 1));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 1, MockBehavior.Strict));
 
             var csharpHighlight = GetHighlight(100, 100, 100, 100);
             var requestInvoker = GetRequestInvoker<DocumentHighlightParams, DocumentHighlight[]>(
@@ -203,7 +203,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedHighlight = GetHighlight(5, 5, 5, 5);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 0));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 0, MockBehavior.Strict));
 
             var csharpHighlight = GetHighlight(100, 100, 100, 100);
             var requestInvoker = GetRequestInvoker<DocumentHighlightParams, DocumentHighlight[]>(

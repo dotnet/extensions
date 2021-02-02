@@ -27,7 +27,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 f => f.Create(
                     It.IsAny<RazorConfiguration>(),
                     It.IsAny<RazorProjectFileSystem>(),
-                    It.IsAny<Action<RazorProjectEngineBuilder>>()) == engine);
+                    It.IsAny<Action<RazorProjectEngineBuilder>>()) == engine, MockBehavior.Strict);
         }
 
         private ProjectSnapshot ProjectSnapshot { get; }
@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 tracker.ProjectPath == "c:\\SomeProject.csproj" &&
                 tracker.ProjectSnapshot == ProjectSnapshot &&
                 tracker.FilePath == "c:\\SomeFilePath.cshtml" &&
-                tracker.IsSupportedProject == isSupportedProject);
+                tracker.IsSupportedProject == isSupportedProject, MockBehavior.Strict);
 
             return documentTracker;
         }

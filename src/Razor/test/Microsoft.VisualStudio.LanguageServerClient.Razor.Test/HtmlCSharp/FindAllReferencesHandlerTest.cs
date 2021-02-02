@@ -192,7 +192,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     It.IsAny<Func<JToken, CancellationToken, Task>>(),
                     It.IsAny<TimeSpan>(),
                     It.IsAny<CancellationToken>(),
-                    out onCompleted) == false);
+                    out onCompleted) == false, MockBehavior.Strict);
 
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider, progressListener);
             referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
@@ -304,8 +304,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var externalUri = new Uri("C:/path/to/someotherfile.razor");
             var expectedLocation = GetReferenceItem(5, externalUri);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2));
-            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2, MockBehavior.Strict));
+            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5, MockBehavior.Strict));
 
             var virtualCSharpUri = new Uri("C:/path/to/someotherfile.razor.g.cs");
             var csharpLocation = GetReferenceItem(100, virtualCSharpUri);
@@ -361,8 +361,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var externalUri = new Uri("C:/path/to/someotherfile.razor");
             var expectedReferenceItem = GetReferenceItem(5, 5, 5, 5, externalUri, text: filteredText);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2));
-            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2, MockBehavior.Strict));
+            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5, MockBehavior.Strict));
 
             var virtualCSharpUri = new Uri("C:/path/to/someotherfile.razor.g.cs");
             var csharpLocation = GetReferenceItem(100, 100, 100, 100, virtualCSharpUri, text: rawText);
@@ -421,8 +421,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             });
             var expectedReferenceItem = GetReferenceItem(5, 5, 5, 5, externalUri, text: expectedClassifiedRun);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2));
-            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2, MockBehavior.Strict));
+            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5, MockBehavior.Strict));
 
             var virtualClassifiedRun = new ClassifiedTextElement(new ClassifiedTextRun[]
             {
@@ -530,7 +530,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var progressReported = false;
             var expectedLocation = GetReferenceItem(5, Uri);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 123));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 123, MockBehavior.Strict));
 
             var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
             var csharpLocation = GetReferenceItem(100, virtualCSharpUri);
@@ -586,8 +586,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var externalUri = new Uri("C:/path/to/someotherfile.razor");
             var expectedLocation = GetReferenceItem(5, externalUri);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2));
-            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 2, MockBehavior.Strict));
+            documentManager.AddDocument(externalUri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 5, MockBehavior.Strict));
 
             var virtualCSharpUri = new Uri("C:/path/to/someotherfile.razor.g.cs");
             var csharpLocation = GetReferenceItem(100, virtualCSharpUri);

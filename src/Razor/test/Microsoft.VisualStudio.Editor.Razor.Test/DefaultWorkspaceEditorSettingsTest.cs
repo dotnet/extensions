@@ -16,7 +16,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var editorSettings = new EditorSettings(true, 123);
-            var editorSettingsManager = Mock.Of<EditorSettingsManager>(m => m.Current == editorSettings);
+            var editorSettingsManager = Mock.Of<EditorSettingsManager>(m => m.Current == editorSettings, MockBehavior.Strict);
 
             // Act
             var manager = new DefaultWorkspaceEditorSettings(Dispatcher, editorSettingsManager);

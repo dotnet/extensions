@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             var documentSnapshot = Mock.Of<DocumentSnapshot>(d =>
                 d.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
                 d.FilePath == filePath &&
-                d.FileKind == FileKinds.Component);
+                d.FileKind == FileKinds.Component, MockBehavior.Strict);
             return documentSnapshot;
         }
     
@@ -127,14 +127,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
                 p.FilePath == "c:/First/First.csproj" &&
                 p.DocumentFilePaths == new[] { "c:/First/Component1.razor", "c:/First/Component2.razor" } &&
                 p.GetDocument("c:/First/Component1.razor") == CreateRazorDocumentSnapshot("", "c:/First/Component1.razor", "First.Components") &&
-                p.GetDocument("c:/First/Component2.razor") == CreateRazorDocumentSnapshot("@namespace Test", "c:/First/Component2.razor", "Test"));
+                p.GetDocument("c:/First/Component2.razor") == CreateRazorDocumentSnapshot("@namespace Test", "c:/First/Component2.razor", "Test"), MockBehavior.Strict);
 
             var secondProject = Mock.Of<ProjectSnapshot>(p =>
                 p.FilePath == "c:/Second/Second.csproj" &&
                 p.DocumentFilePaths == new[] { "c:/Second/Component3.razor" } &&
-                p.GetDocument("c:/Second/Component3.razor") == CreateRazorDocumentSnapshot("", "c:/Second/Component3.razor", "Second.Components"));
+                p.GetDocument("c:/Second/Component3.razor") == CreateRazorDocumentSnapshot("", "c:/Second/Component3.razor", "Second.Components"), MockBehavior.Strict);
 
-            var projectSnapshotManager = Mock.Of<ProjectSnapshotManagerBase>(p => p.Projects == new[] { firstProject, secondProject });
+            var projectSnapshotManager = Mock.Of<ProjectSnapshotManagerBase>(p => p.Projects == new[] { firstProject, secondProject }, MockBehavior.Strict);
             return new TestProjectSnapshotManagerAccessor(projectSnapshotManager);
         }
 

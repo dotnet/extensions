@@ -75,7 +75,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 Start = new Position(2, 4),
                 End = new Position(3, 5),
             };
-            var breakpointResolver = Mock.Of<RazorBreakpointResolver>(resolver => resolver.TryResolveBreakpointRangeAsync(It.IsAny<ITextBuffer>(), 0, 0, It.IsAny<CancellationToken>()) == Task.FromResult(breakpointRange));
+            var breakpointResolver = Mock.Of<RazorBreakpointResolver>(resolver => resolver.TryResolveBreakpointRangeAsync(It.IsAny<ITextBuffer>(), 0, 0, It.IsAny<CancellationToken>()) == Task.FromResult(breakpointRange), MockBehavior.Strict);
             var languageService = CreateLanguageServiceWith(breakpointResolver);
 
             // Act
@@ -151,7 +151,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             IReadOnlyList<string> expressions = new[] { "something" };
-            var resolver = Mock.Of<RazorProximityExpressionResolver>(resolver => resolver.TryResolveProximityExpressionsAsync(It.IsAny<ITextBuffer>(), 0, 0, It.IsAny<CancellationToken>()) == Task.FromResult(expressions));
+            var resolver = Mock.Of<RazorProximityExpressionResolver>(resolver => resolver.TryResolveProximityExpressionsAsync(It.IsAny<ITextBuffer>(), 0, 0, It.IsAny<CancellationToken>()) == Task.FromResult(expressions), MockBehavior.Strict);
             var languageService = CreateLanguageServiceWith(proximityExpressionResolver: resolver);
 
             // Act
@@ -197,7 +197,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             }
 
             waitDialogFactory ??= new TestWaitDialogFactory();
-            editorAdaptersFactory ??= Mock.Of<IVsEditorAdaptersFactoryService>(service => service.GetDataBuffer(It.IsAny<IVsTextBuffer>()) == new TestTextBuffer(new StringTextSnapshot(Environment.NewLine)));
+            editorAdaptersFactory ??= Mock.Of<IVsEditorAdaptersFactoryService>(service => service.GetDataBuffer(It.IsAny<IVsTextBuffer>()) == new TestTextBuffer(new StringTextSnapshot(Environment.NewLine)), MockBehavior.Strict);
 
             var languageService = new RazorLanguageService(breakpointResolver, proximityExpressionResolver, waitDialogFactory, editorAdaptersFactory);
             return languageService;

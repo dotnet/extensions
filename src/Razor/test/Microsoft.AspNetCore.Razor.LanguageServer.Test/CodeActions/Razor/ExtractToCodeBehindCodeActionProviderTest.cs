@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
-                document.GetTextAsync() == Task.FromResult(codeDocument.GetSourceText()));
+                document.GetTextAsync() == Task.FromResult(codeDocument.GetSourceText()), MockBehavior.Strict);
 
             var sourceText = SourceText.From(text);
 

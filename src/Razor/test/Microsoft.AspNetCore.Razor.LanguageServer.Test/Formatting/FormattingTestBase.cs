@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             TestProjectPath = GetProjectDirectory();
             FilePathNormalizer = new FilePathNormalizer();
-            LoggerFactory = Mock.Of<ILoggerFactory>(factory => factory.CreateLogger(It.IsAny<string>()) == Mock.Of<ILogger>(MockBehavior.Strict));
+            LoggerFactory = Mock.Of<ILoggerFactory>(factory => factory.CreateLogger(It.IsAny<string>()) == Mock.Of<ILogger>(MockBehavior.Strict), MockBehavior.Strict);
         }
 
         public static string TestProjectPath { get; private set; }
