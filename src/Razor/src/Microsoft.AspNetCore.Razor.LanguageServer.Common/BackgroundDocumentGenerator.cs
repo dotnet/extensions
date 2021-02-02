@@ -320,11 +320,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
         private void ReportError(Exception ex)
         {
-            GC.KeepAlive(Task.Factory.StartNew(
+            _ = Task.Factory.StartNew(
                 () => _projectManager.ReportError(ex),
                 CancellationToken.None,
                 TaskCreationOptions.None,
-                _foregroundDispatcher.ForegroundScheduler));
+                _foregroundDispatcher.ForegroundScheduler);
         }
     }
 }
