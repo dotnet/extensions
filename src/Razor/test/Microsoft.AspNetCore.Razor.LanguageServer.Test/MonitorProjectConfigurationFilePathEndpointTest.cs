@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public MonitorProjectConfigurationFilePathEndpointTest()
         {
-            DirectoryPathResolver = Mock.Of<WorkspaceDirectoryPathResolver>(resolver => resolver.Resolve() == "C:/dir");
+            DirectoryPathResolver = Mock.Of<WorkspaceDirectoryPathResolver>(resolver => resolver.Resolve() == "C:/dir", MockBehavior.Strict);
         }
 
         private WorkspaceDirectoryPathResolver DirectoryPathResolver { get; }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task Handle_Disposed_Noops()
         {
             // Arrange
-            var directoryPathResolver = new Mock<WorkspaceDirectoryPathResolver>();
+            var directoryPathResolver = new Mock<WorkspaceDirectoryPathResolver>(MockBehavior.Strict);
             directoryPathResolver.Setup(resolver => resolver.Resolve())
                 .Throws<XunitException>();
             var configurationFileEndpoint = new MonitorProjectConfigurationFilePathEndpoint(
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task Handle_ConfigurationFilePath_UntrackedMonitorNoops()
         {
             // Arrange
-            var directoryPathResolver = new Mock<WorkspaceDirectoryPathResolver>();
+            var directoryPathResolver = new Mock<WorkspaceDirectoryPathResolver>(MockBehavior.Strict);
             directoryPathResolver.Setup(resolver => resolver.Resolve())
                 .Throws<XunitException>();
             var configurationFileEndpoint = new MonitorProjectConfigurationFilePathEndpoint(
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     workspaceDirectoryPathResolver,
                     listeners)
             {
-                _fileChangeDetectorFactory = fileChangeDetectorFactory ?? (() => Mock.Of<IFileChangeDetector>());
+                _fileChangeDetectorFactory = fileChangeDetectorFactory ?? (() => Mock.Of<IFileChangeDetector>(MockBehavior.Strict));
             }
 
             protected override IFileChangeDetector CreateFileChangeDetector() => _fileChangeDetectorFactory();

@@ -15,20 +15,23 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test
     {
         public VirtualDocumentFactoryBaseTest()
         {
-            ContentTypeRegistry = Mock.Of<IContentTypeRegistryService>();
-            var textBufferFactory = new Mock<ITextBufferFactoryService>();
+            ContentTypeRegistry = Mock.Of<IContentTypeRegistryService>(MockBehavior.Strict);
+            var textBufferFactory = new Mock<ITextBufferFactoryService>(MockBehavior.Strict);
+            var factoryBuffer = Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>(MockBehavior.Strict) && buffer.Properties == new PropertyCollection() && buffer.ContentType == TestVirtualDocumentFactory.LanguageLSPContentTypeInstance, MockBehavior.Strict);
+            Mock.Get(factoryBuffer).Setup(b => b.ChangeContentType(It.IsAny<IContentType>(), It.IsAny<object>())).Verifiable();
             textBufferFactory
                 .Setup(factory => factory.CreateTextBuffer())
-                .Returns(Mock.Of<ITextBuffer>(buffer => buffer.CurrentSnapshot == Mock.Of<ITextSnapshot>() && buffer.Properties == new PropertyCollection() && buffer.ContentType == TestVirtualDocumentFactory.LanguageLSPContentTypeInstance));
+                .Returns(factoryBuffer);
             TextBufferFactory = textBufferFactory.Object;
 
-            var hostContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(TestVirtualDocumentFactory.HostDocumentContentTypeNameConst) == true);
-            HostLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == hostContentType);
+            var hostContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(TestVirtualDocumentFactory.HostDocumentContentTypeNameConst) == true, MockBehavior.Strict);
+            HostLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == hostContentType, MockBehavior.Strict);
 
-            var nonHostLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(It.IsAny<string>()) == false);
-            NonHostLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == nonHostLSPContentType);
+            var nonHostLSPContentType = Mock.Of<IContentType>(contentType => contentType.IsOfType(It.IsAny<string>()) == false, MockBehavior.Strict);
+            NonHostLSPBuffer = Mock.Of<ITextBuffer>(textBuffer => textBuffer.ContentType == nonHostLSPContentType, MockBehavior.Strict);
 
-            TextDocumentFactoryService = Mock.Of<ITextDocumentFactoryService>();
+            TextDocumentFactoryService = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict).Object;
+            Mock.Get(TextDocumentFactoryService).Setup(s => s.CreateTextDocument(It.IsAny<ITextBuffer>(), It.IsAny<string>())).Returns((ITextDocument)null);
         }
 
         private ITextBuffer NonHostLSPBuffer { get; }
@@ -46,7 +49,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test
         {
             // Arrange
             var uri = new Uri("C:/path/to/file.razor");
-            var uriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(It.IsAny<ITextBuffer>()) == uri);
+            var uriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(It.IsAny<ITextBuffer>()) == uri, MockBehavior.Strict);
             var factory = new TestVirtualDocumentFactory(ContentTypeRegistry, TextBufferFactory, TextDocumentFactoryService, uriProvider);
 
             // Act
@@ -64,7 +67,8 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test
         {
             // Arrange
             var uri = new Uri("C:/path/to/file.razor");
-            var uriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(HostLSPBuffer) == uri);
+            var uriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(HostLSPBuffer) == uri, MockBehavior.Strict);
+            Mock.Get(uriProvider).Setup(p => p.AddOrUpdate(It.IsAny<ITextBuffer>(), It.IsAny<Uri>())).Verifiable();
             var factory = new TestVirtualDocumentFactory(ContentTypeRegistry, TextBufferFactory, TextDocumentFactoryService, uriProvider);
 
             // Act

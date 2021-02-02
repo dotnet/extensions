@@ -97,8 +97,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             Uri = new Uri("C:/path/to/file.razor");
 
-            var logger = Mock.Of<ILogger>();
-            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerFeedbackFileLoggerProvider>(l => l.CreateLogger(It.IsAny<string>()) == logger);
+            var logger = new Mock<ILogger>(MockBehavior.Strict).Object;
+            Mock.Get(logger).Setup(l => l.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception, string>>())).Verifiable();
+            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerFeedbackFileLoggerProvider>(l => l.CreateLogger(It.IsAny<string>()) == logger, MockBehavior.Strict);
         }
 
         private Uri Uri { get; }
@@ -109,9 +110,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
-            var documentSynchronizer = Mock.Of<LSPDocumentSynchronizer>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>(MockBehavior.Strict);
+            var documentSynchronizer = Mock.Of<LSPDocumentSynchronizer>(MockBehavior.Strict);
             var documentDiagnosticsHandler = new DocumentPullDiagnosticsHandler(requestInvoker, documentManager, documentSynchronizer, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new DocumentDiagnosticsParams()
             {
@@ -437,7 +438,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             var testVirtualDocUri = new Uri("C:/path/to/file.razor.g.cs");
             var testVirtualDocument = new TestVirtualDocumentSnapshot(Uri, hostDocumentVersion);
-            var csharpVirtualDocument = new CSharpVirtualDocumentSnapshot(testVirtualDocUri, Mock.Of<ITextSnapshot>(), hostDocumentVersion);
+            var csharpVirtualDocument = new CSharpVirtualDocumentSnapshot(testVirtualDocUri, Mock.Of<ITextSnapshot>(MockBehavior.Strict), hostDocumentVersion);
             LSPDocumentSnapshot testDocument = new TestLSPDocumentSnapshot(Uri, hostDocumentVersion, testVirtualDocument, csharpVirtualDocument);
             var documentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
             documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out testDocument))

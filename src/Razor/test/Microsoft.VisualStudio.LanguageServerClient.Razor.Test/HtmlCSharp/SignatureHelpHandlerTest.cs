@@ -26,8 +26,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
             var signatureHelpHandler = new SignatureHelpHandler(requestInvoker, documentManager, projectionProvider);
             var signatureHelpRequest = new TextDocumentPositionParams()
             {
@@ -47,9 +47,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
+            Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
+                .Returns(Task.FromResult<ProjectionResult>(null));
             var signatureHelpHandler = new SignatureHelpHandler(requestInvoker, documentManager, projectionProvider);
             var signatureHelpRequest = new TextDocumentPositionParams()
             {
@@ -71,7 +73,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedResult = new SignatureHelp();
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
 
             var virtualHtmlUri = new Uri("C:/path/to/file.razor__virtual.html");
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
@@ -114,7 +116,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedResult = new SignatureHelp();
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
 
             var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
@@ -155,11 +157,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 123));
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(d => d.Version == 123, MockBehavior.Strict));
 
             var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
             var requestInvoker = Mock.Of<LSPRequestInvoker>(i =>
-                    i.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, SignatureHelp>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()) == Task.FromResult<SignatureHelp>(null));
+                    i.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, SignatureHelp>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()) == Task.FromResult<SignatureHelp>(null), MockBehavior.Strict);
 
             var projectionResult = new ProjectionResult()
             {

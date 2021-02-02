@@ -13,12 +13,12 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         public void UpdateRazorHostProject_UnsupportedProjectNoops()
         {
             // Arrange
-            var projectService = new Mock<TextBufferProjectService>();
+            var projectService = new Mock<TextBufferProjectService>(MockBehavior.Strict);
             projectService.Setup(p => p.IsSupportedProject(It.IsAny<object>()))
                 .Returns(false);
             var dotNetProjectHost = new DefaultDotNetProjectHost(
                 Dispatcher,
-                Mock.Of<VisualStudioMacWorkspaceAccessor>(),
+                Mock.Of<VisualStudioMacWorkspaceAccessor>(MockBehavior.Strict),
                 projectService.Object);
 
             // Act & Assert

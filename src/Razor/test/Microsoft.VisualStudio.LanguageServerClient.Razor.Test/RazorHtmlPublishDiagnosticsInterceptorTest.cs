@@ -54,8 +54,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public RazorHtmlPublishDiagnosticsInterceptorTest()
         {
-            var logger = Mock.Of<ILogger>();
-            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerFeedbackFileLoggerProvider>(l => l.CreateLogger(It.IsAny<string>()) == logger);
+            var logger = new Mock<ILogger>(MockBehavior.Strict).Object;
+            Mock.Get(logger).Setup(l => l.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception, string>>())).Verifiable();
+            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerFeedbackFileLoggerProvider>(l => l.CreateLogger(It.IsAny<string>()) == logger, MockBehavior.Strict);
         }
 
         private HTMLCSharpLanguageServerFeedbackFileLoggerProvider LoggerProvider { get; }
@@ -65,7 +66,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
+            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>(MockBehavior.Strict);
 
             var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new CodeActionParams()
@@ -89,7 +90,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
+            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>(MockBehavior.Strict);
 
             var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
@@ -113,7 +114,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
+            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>(MockBehavior.Strict);
 
             var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
@@ -137,7 +138,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
+            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>(MockBehavior.Strict);
 
             var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
@@ -161,7 +162,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
+            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>(MockBehavior.Strict);
 
             var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
@@ -185,7 +186,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public async Task ApplyChangesAsync_VirtualHtmlDocumentNotFound_ReturnsEmptyDiagnosticResponse()
         {
             // Arrange
-            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
+            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>(MockBehavior.Strict);
 
             var testVirtualDocument = new TestVirtualDocumentSnapshot(RazorUri, hostDocumentVersion: 0);
             LSPDocumentSnapshot testDocument = new TestLSPDocumentSnapshot(RazorUri, version: 0, testVirtualDocument);
@@ -216,7 +217,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             // Arrange
             var documentManager = CreateDocumentManager();
-            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>();
+            var diagnosticsProvider = Mock.Of<LSPDiagnosticsTranslator>(MockBehavior.Strict);
 
             var htmlDiagnosticsInterceptor = new RazorHtmlPublishDiagnosticsInterceptor(documentManager, diagnosticsProvider, LoggerProvider);
             var diagnosticRequest = new VSPublishDiagnosticParams()
@@ -265,7 +266,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             var testVirtualDocUri = RazorVirtualHtmlUri;
             var testVirtualDocument = new TestVirtualDocumentSnapshot(RazorUri, hostDocumentVersion);
-            var htmlVirtualDocument = new HtmlVirtualDocumentSnapshot(testVirtualDocUri, Mock.Of<ITextSnapshot>(), hostDocumentVersion);
+            var htmlVirtualDocument = new HtmlVirtualDocumentSnapshot(testVirtualDocUri, Mock.Of<ITextSnapshot>(MockBehavior.Strict), hostDocumentVersion);
             LSPDocumentSnapshot testDocument = new TestLSPDocumentSnapshot(RazorUri, hostDocumentVersion, testVirtualDocument, htmlVirtualDocument);
             var documentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
             documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out testDocument))

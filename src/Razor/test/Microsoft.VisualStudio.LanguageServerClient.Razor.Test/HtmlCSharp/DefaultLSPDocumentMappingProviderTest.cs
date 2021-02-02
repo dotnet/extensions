@@ -76,7 +76,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var expectedVersion = 1;
             var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => {
                 var documentManager = new TestDocumentManager();
-                documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion && d.Uri == RazorFile));
+                documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion && d.Uri == RazorFile, MockBehavior.Strict));
                 return documentManager;
             });
 
@@ -111,7 +111,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => {
                 var documentManager = new TestDocumentManager();
-                documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion && d.Uri == RazorFile));
+                documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion && d.Uri == RazorFile, MockBehavior.Strict));
                 return documentManager;
             });
 
@@ -146,7 +146,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => {
                 var documentManager = new TestDocumentManager();
-                documentManager.AddDocument(CSharpFile, Mock.Of<LSPDocumentSnapshot>());
+                documentManager.AddDocument(CSharpFile, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
                 return documentManager;
             });
 
@@ -180,8 +180,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var lazyDocumentManager = new Lazy<LSPDocumentManager>(() => {
                 var documentManager = new TestDocumentManager();
-                documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion1 && d.Uri == RazorFile));
-                documentManager.AddDocument(AnotherRazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion2 && d.Uri == AnotherRazorFile));
+                documentManager.AddDocument(RazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion1 && d.Uri == RazorFile, MockBehavior.Strict));
+                documentManager.AddDocument(AnotherRazorFile, Mock.Of<LSPDocumentSnapshot>(d => d.Version == expectedVersion2 && d.Uri == AnotherRazorFile, MockBehavior.Strict));
                 return documentManager;
             });
 

@@ -18,11 +18,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public async Task ExecuteRequestAsync_InvokesCustomHandler()
         {
             // Arrange
-            var handler = new Mock<IRequestHandler<string, int>>();
+            var handler = new Mock<IRequestHandler<string, int>>(MockBehavior.Strict);
             handler.Setup(h => h.HandleRequestAsync("hello world", It.IsAny<ClientCapabilities>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(123))
                 .Verifiable();
-            var metadata = Mock.Of<IRequestHandlerMetadata>(rhm => rhm.MethodName == "test");
+            var metadata = Mock.Of<IRequestHandlerMetadata>(rhm => rhm.MethodName == "test", MockBehavior.Strict);
             using var languageServer = new RazorHtmlCSharpLanguageServer(new[] { new Lazy<IRequestHandler, IRequestHandlerMetadata>(() => handler.Object, metadata) });
 
             // Act
@@ -46,7 +46,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 RootUri = new Uri("C:/path/to/workspace"),
             };
             var initializeResult = new InitializeResult();
-            var handler = new Mock<IRequestHandler<InitializeParams, InitializeResult>>();
+            var handler = new Mock<IRequestHandler<InitializeParams, InitializeResult>>(MockBehavior.Strict);
             handler.Setup(h => h.HandleRequestAsync(It.IsAny<InitializeParams>(), It.IsAny<ClientCapabilities>(), It.IsAny<CancellationToken>()))
                 .Callback<InitializeParams, ClientCapabilities, CancellationToken>((initParams, clientCapabilities, token) =>
                 {
@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 })
                 .Returns(Task.FromResult(initializeResult))
                 .Verifiable();
-            var metadata = Mock.Of<IRequestHandlerMetadata>(rhm => rhm.MethodName == Methods.InitializeName);
+            var metadata = Mock.Of<IRequestHandlerMetadata>(rhm => rhm.MethodName == Methods.InitializeName, MockBehavior.Strict);
             using var languageServer = new RazorHtmlCSharpLanguageServer(new[] { new Lazy<IRequestHandler, IRequestHandlerMetadata>(() => handler.Object, metadata) });
             var serializedInitParams = JToken.FromObject(originalInitParams);
 

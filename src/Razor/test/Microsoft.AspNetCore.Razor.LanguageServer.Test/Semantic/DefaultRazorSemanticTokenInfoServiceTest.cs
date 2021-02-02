@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Moq.Protected;
 using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models.Proposals;
@@ -842,7 +844,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 #pragma warning restore CS8604 // Possible null reference argument.
                 }
             }
-            var loggingFactory = new Mock<LoggerFactory>();
+            var loggingFactory = new Mock<LoggerFactory>(MockBehavior.Strict);
+            loggingFactory.Protected().Setup("CheckDisposed").CallBase();
 
 
             var foregroundDispatcher = new DefaultForegroundDispatcher();

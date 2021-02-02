@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var source = CreateCompletionSource();
-            var completionSessionSource = Mock.Of<IAsyncCompletionSource>();
+            var completionSessionSource = Mock.Of<IAsyncCompletionSource>(MockBehavior.Strict);
             var completionItem = new CompletionItem("@random", completionSessionSource);
 
             // Act
@@ -39,14 +39,14 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             // Arrange
             var expectedResult = new ContainerElement(ContainerElementStyle.Wrapped);
             var description = new AggregateBoundAttributeDescription(Array.Empty<BoundAttributeDescriptionInfo>());
-            var descriptionFactory = Mock.Of<VisualStudioDescriptionFactory>(factory => factory.CreateClassifiedDescription(description) == expectedResult);
+            var descriptionFactory = Mock.Of<VisualStudioDescriptionFactory>(factory => factory.CreateClassifiedDescription(description) == expectedResult, MockBehavior.Strict);
             var source = new RazorDirectiveAttributeCompletionSource(
                 Dispatcher,
-                Mock.Of<VisualStudioRazorParser>(),
-                Mock.Of<RazorCompletionFactsService>(),
-                Mock.Of<ICompletionBroker>(),
+                Mock.Of<VisualStudioRazorParser>(MockBehavior.Strict),
+                Mock.Of<RazorCompletionFactsService>(MockBehavior.Strict),
+                Mock.Of<ICompletionBroker>(MockBehavior.Strict),
                 descriptionFactory);
-            var completionSessionSource = Mock.Of<IAsyncCompletionSource>();
+            var completionSessionSource = Mock.Of<IAsyncCompletionSource>(MockBehavior.Strict);
             var completionItem = new CompletionItem("@random", completionSessionSource);
             completionItem.Properties.AddProperty(RazorDirectiveAttributeCompletionSource.DescriptionKey, description);
 
@@ -231,10 +231,10 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             var source = new RazorDirectiveAttributeCompletionSource(
                 Dispatcher,
-                Mock.Of<VisualStudioRazorParser>(),
-                Mock.Of<RazorCompletionFactsService>(),
-                Mock.Of<ICompletionBroker>(),
-                Mock.Of<VisualStudioDescriptionFactory>());
+                Mock.Of<VisualStudioRazorParser>(MockBehavior.Strict),
+                Mock.Of<RazorCompletionFactsService>(MockBehavior.Strict),
+                Mock.Of<ICompletionBroker>(MockBehavior.Strict),
+                Mock.Of<VisualStudioDescriptionFactory>(MockBehavior.Strict));
             return source;
         }
     }

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false, autoClosingTags: true);
-            var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync(CancellationToken.None) == Task.FromResult(expectedOptions));
+            var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync(CancellationToken.None) == Task.FromResult(expectedOptions), MockBehavior.Strict);
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var expectedOptions = new RazorLSPOptions(Trace.Messages, enableFormatting: false, autoClosingTags: true);
-            var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync(CancellationToken.None) == Task.FromResult(expectedOptions));
+            var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync(CancellationToken.None) == Task.FromResult(expectedOptions), MockBehavior.Strict);
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;
             var onChangeToken = optionsMonitor.OnChange(options =>
@@ -71,7 +71,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task UpdateAsync_ConfigReturnsNull_DoesNotInvoke_OnChangeRegistration()
         {
             // Arrange
-            var configService = Mock.Of<RazorConfigurationService>();
+            var configService = new Mock<RazorConfigurationService>(MockBehavior.Strict).Object;
+            Mock.Get(configService).Setup(s => s.GetLatestOptionsAsync(CancellationToken.None)).ReturnsAsync(value: null);
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;
             var onChangeToken = optionsMonitor.OnChange(options =>

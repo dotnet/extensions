@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public UnsynchronizableContentDocumentProcessedListenerTest()
         {
-            var projectSnapshotManager = new Mock<ProjectSnapshotManager>();
+            var projectSnapshotManager = new Mock<ProjectSnapshotManager>(MockBehavior.Strict);
             projectSnapshotManager.Setup(psm => psm.IsDocumentOpen(It.IsAny<string>()))
                 .Returns(true);
             ProjectSnapshotManager = projectSnapshotManager.Object;
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var lastVersion = VersionStamp.Default.GetNewerVersion();
             var lastDocument = TestDocumentSnapshot.Create("C:/path/old.cshtml", lastVersion);
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml", lastVersion);
-            var generatedDocumentPublisher = new Mock<GeneratedDocumentPublisher>();
+            var generatedDocumentPublisher = new Mock<GeneratedDocumentPublisher>(MockBehavior.Strict);
             generatedDocumentPublisher.Setup(publisher => publisher.PublishCSharp(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<int>()))
                 .Callback<string, SourceText, int>((filePath, sourceText, hostDocumentVersion) =>
                 {

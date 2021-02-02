@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 {
     public class CodeActionEndpointTest : LanguageServerTestBase
     {
-        private readonly RazorDocumentMappingService DocumentMappingService = Mock.Of<RazorDocumentMappingService>();
-        private readonly DocumentResolver EmptyDocumentResolver = Mock.Of<DocumentResolver>();
-        private readonly LanguageServerFeatureOptions LanguageServerFeatureOptions = Mock.Of<LanguageServerFeatureOptions>(l => l.SupportsFileManipulation == true);
-        private readonly ClientNotifierServiceBase LanguageServer = Mock.Of<ClientNotifierServiceBase>();
+        private readonly RazorDocumentMappingService DocumentMappingService = Mock.Of<RazorDocumentMappingService>(s => s.TryMapToProjectedDocumentRange(It.IsAny<RazorCodeDocument>(), It.IsAny<Range>(), out It.Ref<Range>.IsAny) == false, MockBehavior.Strict);
+        private readonly DocumentResolver EmptyDocumentResolver = Mock.Of<DocumentResolver>(r => r.TryResolveDocument(It.IsAny<string>(), out It.Ref<DocumentSnapshot>.IsAny) == false, MockBehavior.Strict);
+        private readonly LanguageServerFeatureOptions LanguageServerFeatureOptions = Mock.Of<LanguageServerFeatureOptions>(l => l.SupportsFileManipulation == true, MockBehavior.Strict);
+        private readonly ClientNotifierServiceBase LanguageServer = Mock.Of<ClientNotifierServiceBase>(MockBehavior.Strict);
 
         [Fact]
         public async Task Handle_NoDocument()
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             Range projectedRange = null;
             var documentMappingService = Mock.Of<DefaultRazorDocumentMappingService>(
                 d => d.TryMapToProjectedDocumentRange(It.IsAny<RazorCodeDocument>(), It.IsAny<Range>(), out projectedRange) == false
-            );
+            , MockBehavior.Strict);
             var codeActionEndpoint = new CodeActionEndpoint(
                 documentMappingService,
                 Array.Empty<RazorCodeActionProvider>(),
@@ -658,7 +658,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             projectedRange ??= new Range(new Position(5, 2), new Position(5, 2));
             var documentMappingService = Mock.Of<DefaultRazorDocumentMappingService>(
                 d => d.TryMapToProjectedDocumentRange(It.IsAny<RazorCodeDocument>(), It.IsAny<Range>(), out projectedRange) == true
-            );
+            , MockBehavior.Strict);
             return documentMappingService;
         }
 
@@ -666,10 +666,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         {
             var response = Mock.Of<IResponseRouterReturns>(
                 r => r.Returning<CodeAction[]>(It.IsAny<CancellationToken>()) == Task.FromResult(new[] { new CodeAction() })
-            );
+            , MockBehavior.Strict);
             var languageServer = Mock.Of<ClientNotifierServiceBase>(
                 l => l.SendRequestAsync(LanguageServerConstants.RazorProvideCodeActionsEndpoint, It.IsAny<CodeActionParams>()) == Task.FromResult(response)
-            );
+            , MockBehavior.Strict);
             return languageServer;
         }
 
@@ -680,8 +680,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
             var sourceText = SourceText.From(new string(sourceTextChars));
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
-                document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
+                document.GetTextAsync() == Task.FromResult(sourceText), MockBehavior.Strict);
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver
                 .Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         public OnTypeAutoInsertEndpointTest()
         {
-            EmptyDocumentResolver = Mock.Of<DocumentResolver>();
+            EmptyDocumentResolver = Mock.Of<DocumentResolver>(r => r.TryResolveDocument(It.IsAny<string>(), out It.Ref<DocumentSnapshot>.IsAny) == false, MockBehavior.Strict);
         }
 
         private DocumentResolver EmptyDocumentResolver { get; }
@@ -255,8 +255,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var sourceText = SourceText.From(new string(sourceTextChars));
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
-                document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
+                document.GetTextAsync() == Task.FromResult(sourceText), MockBehavior.Strict);
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);
             return documentResolver.Object;

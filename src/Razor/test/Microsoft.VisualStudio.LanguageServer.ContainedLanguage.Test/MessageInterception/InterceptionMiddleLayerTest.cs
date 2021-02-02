@@ -26,7 +26,7 @@ namespace Microsoft.WebTools.Languages.Shared.VS.Test.LanguageServer.MiddleLayer
         [InlineData("")]
         public void Ctor_EmptyLanguageName_Throws(string languageName)
         {
-            var fakeInterceptorManager = Mock.Of<InterceptorManager>();
+            var fakeInterceptorManager = Mock.Of<InterceptorManager>(MockBehavior.Strict);
             Assert.Throws<ArgumentException>(() => new InterceptionMiddleLayer(fakeInterceptorManager, languageName));
         }
 
@@ -35,7 +35,7 @@ namespace Microsoft.WebTools.Languages.Shared.VS.Test.LanguageServer.MiddleLayer
         [InlineData(false)]
         public void CanHandle_DelegatesToInterceptionManager(bool value)
         {
-            var fakeInterceptorManager = Mock.Of<InterceptorManager>();
+            var fakeInterceptorManager = Mock.Of<InterceptorManager>(MockBehavior.Strict);
             Mock.Get(fakeInterceptorManager).Setup(x => x.HasInterceptor("testMessage"))
                                             .Returns(value);
             var sut = new InterceptionMiddleLayer(fakeInterceptorManager, "testLanguage");
@@ -48,7 +48,7 @@ namespace Microsoft.WebTools.Languages.Shared.VS.Test.LanguageServer.MiddleLayer
         [Fact]
         public async Task HandleNotificationAsync_IfInterceptorReturnsNull_DoesNotSendNotification()
         {
-            var fakeInterceptorManager = Mock.Of<InterceptorManager>();
+            var fakeInterceptorManager = Mock.Of<InterceptorManager>(MockBehavior.Strict);
             Mock.Get(fakeInterceptorManager).Setup(x => x.HasInterceptor("testMethod"))
                                             .Returns(true);
             Mock.Get(fakeInterceptorManager).Setup(x => x.ProcessInterceptorsAsync("testMethod", It.IsAny<JToken>(), "testLanguage", CancellationToken.None))
@@ -68,7 +68,7 @@ namespace Microsoft.WebTools.Languages.Shared.VS.Test.LanguageServer.MiddleLayer
             var token = JToken.Parse("{}");
             var expected = JToken.Parse("\"expected\"");
             JToken? actual = null;
-            var fakeInterceptorManager = Mock.Of<InterceptorManager>();
+            var fakeInterceptorManager = Mock.Of<InterceptorManager>(MockBehavior.Strict);
             Mock.Get(fakeInterceptorManager).Setup(x => x.HasInterceptor("testMethod"))
                                             .Returns(true);
             Mock.Get(fakeInterceptorManager).Setup(x => x.ProcessInterceptorsAsync("testMethod", It.IsAny<JToken>(), "testLanguage", CancellationToken.None))

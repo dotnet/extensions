@@ -25,9 +25,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
+            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var renameRequest = new RenameParams()
             {
@@ -48,10 +48,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
+            Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
+                .Returns(Task.FromResult<ProjectionResult>(null));
+            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var renameRequest = new RenameParams()
             {
@@ -74,7 +76,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedEdit = new WorkspaceEdit();
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
 
             var requestInvoker = GetRequestInvoker<RenameParams, WorkspaceEdit>(
                 new WorkspaceEdit(),
@@ -113,7 +115,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var called = false;
             var expectedEdit = new WorkspaceEdit();
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
 
             var requestInvoker = GetRequestInvoker<RenameParams, WorkspaceEdit>(
                 new WorkspaceEdit(),

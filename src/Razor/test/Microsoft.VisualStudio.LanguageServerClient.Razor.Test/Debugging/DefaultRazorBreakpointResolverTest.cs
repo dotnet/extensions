@@ -52,7 +52,7 @@ $@"public class SomeRazorFile
         public async Task TryResolveBreakpointRangeAsync_UnaddressableTextBuffer_ReturnsNull()
         {
             // Arrange
-            var differentTextBuffer = Mock.Of<ITextBuffer>();
+            var differentTextBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var resolver = CreateResolverWith();
 
             // Act
@@ -66,7 +66,8 @@ $@"public class SomeRazorFile
         public async Task TryResolveBreakpointRangeAsync_UnknownRazorDocument_ReturnsNull()
         {
             // Arrange
-            var documentManager = Mock.Of<LSPDocumentManager>();
+            var documentManager = new Mock<LSPDocumentManager>(MockBehavior.Strict).Object;
+            Mock.Get(documentManager).Setup(m => m.TryGetDocument(DocumentUri, out It.Ref<LSPDocumentSnapshot>.IsAny)).Returns(false);
             var resolver = CreateResolverWith(documentManager: documentManager);
 
             // Act
@@ -227,13 +228,25 @@ $@"public class SomeRazorFile
             LSPDocumentMappingProvider documentMappingProvider = null)
         {
             var documentUri = DocumentUri;
-            uriProvider ??= Mock.Of<FileUriProvider>(provider => provider.TryGet(HostTextbuffer, out documentUri) == true);
+            uriProvider ??= Mock.Of<FileUriProvider>(provider => provider.TryGet(HostTextbuffer, out documentUri) == true && provider.TryGet(It.IsNotIn(HostTextbuffer), out It.Ref<Uri>.IsAny) == false, MockBehavior.Strict);
             var csharpDocumentUri = new Uri(DocumentUri.OriginalString + ".g.cs", UriKind.Absolute);
             var csharpVirtualDocumentSnapshot = new CSharpVirtualDocumentSnapshot(csharpDocumentUri, CSharpTextBuffer.CurrentSnapshot, hostDocumentSyncVersion: 0);
             LSPDocumentSnapshot documentSnapshot = new TestLSPDocumentSnapshot(DocumentUri, 0, csharpVirtualDocumentSnapshot);
-            documentManager ??= Mock.Of<LSPDocumentManager>(manager => manager.TryGetDocument(DocumentUri, out documentSnapshot) == true);
-            projectionProvider ??= Mock.Of<LSPProjectionProvider>();
-            documentMappingProvider ??= Mock.Of<LSPDocumentMappingProvider>();
+            documentManager ??= Mock.Of<LSPDocumentManager>(manager => manager.TryGetDocument(DocumentUri, out documentSnapshot) == true, MockBehavior.Strict);
+            if (projectionProvider is null)
+            {
+                projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
+                Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
+                    .Returns(Task.FromResult<ProjectionResult>(null));
+            }
+
+            if (documentMappingProvider is null)
+            {
+                documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict).Object;
+                Mock.Get(documentMappingProvider).Setup(p => p.MapToDocumentRangesAsync(It.IsAny<RazorLanguageKind>(), It.IsAny<Uri>(), It.IsAny<Range[]>(), CancellationToken.None))
+                    .Returns(Task.FromResult<RazorMapToDocumentRangesResponse>(null));
+            }
+
             var csharpBreakpointResolver = new DefaultCSharpBreakpointResolver();
             var razorBreakpointResolver = new DefaultRazorBreakpointResolver(
                 uriProvider,

@@ -19,7 +19,7 @@ namespace OmniSharp
             {
                 var factory = LoggerFactory.Create((b) => { });
                 var hostServicesAggregator = new HostServicesAggregator(Enumerable.Empty<IHostServicesProvider>(), factory);
-                var fileSystemWatcher = Mock.Of<IFileSystemWatcher>();
+                var fileSystemWatcher = Mock.Of<IFileSystemWatcher>(MockBehavior.Strict);
                 var workspace = new OmniSharpWorkspace(hostServicesAggregator, factory, fileSystemWatcher);
 
                 return workspace;

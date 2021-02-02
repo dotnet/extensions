@@ -41,7 +41,7 @@ character: ">");
 
         internal override RazorOnAutoInsertProvider CreateProvider()
         {
-            var optionsMonitor = new Mock<IOptionsMonitor<RazorLSPOptions>>();
+            var optionsMonitor = new Mock<IOptionsMonitor<RazorLSPOptions>>(MockBehavior.Strict);
             optionsMonitor.SetupGet(o => o.CurrentValue).Returns(RazorLSPOptions.Default);
             var provider = new CloseTextTagOnAutoInsertProvider(optionsMonitor.Object);
 

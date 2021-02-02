@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
             var synchronizer = GetSynchronizer(projectService.Object);
-            var jsonFileDeserializer = Mock.Of<JsonFileDeserializer>();
+            var jsonFileDeserializer = Mock.Of<JsonFileDeserializer>(MockBehavior.Strict);
             var args = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Removed, jsonFileDeserializer);
 
             // Act
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var addArgs = new ProjectConfigurationFileChangeEventArgs("/path/to\\project.razor.json", RazorFileChangeKind.Added, jsonFileDeserializer);
             synchronizer.ProjectConfigurationFileChanged(addArgs);
             WaitForEnqueue(synchronizer).Wait();
-            var removeArgs = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Removed, Mock.Of<JsonFileDeserializer>());
+            var removeArgs = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Removed, Mock.Of<JsonFileDeserializer>(MockBehavior.Strict));
 
             // Act
             synchronizer.ProjectConfigurationFileChanged(removeArgs);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
             var synchronizer = GetSynchronizer(projectService.Object);
-            var jsonFileDeserializer = Mock.Of<JsonFileDeserializer>();
+            var jsonFileDeserializer = Mock.Of<JsonFileDeserializer>(d => d.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()) == null, MockBehavior.Strict);
             var args = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Added, jsonFileDeserializer);
 
             // Act
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var addArgs = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Added, jsonFileDeserializer);
             synchronizer.ProjectConfigurationFileChanged(addArgs);
             WaitForEnqueue(synchronizer).Wait();
-            var removeArgs = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Removed, Mock.Of<JsonFileDeserializer>());
+            var removeArgs = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Removed, Mock.Of<JsonFileDeserializer>(MockBehavior.Strict));
 
             // Act
             synchronizer.ProjectConfigurationFileChanged(removeArgs);
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var addArgs = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Added, addDeserializer);
             synchronizer.ProjectConfigurationFileChanged(addArgs);
             WaitForEnqueue(synchronizer).Wait();
-            var changedDeserializer = Mock.Of<JsonFileDeserializer>();
+            var changedDeserializer = Mock.Of<JsonFileDeserializer>(d => d.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()) == null, MockBehavior.Strict);
             var changedArgs = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Changed, changedDeserializer);
 
             // Act
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
             var synchronizer = GetSynchronizer(projectService.Object);
-            var changedDeserializer = Mock.Of<JsonFileDeserializer>();
+            var changedDeserializer = Mock.Of<JsonFileDeserializer>(d => d.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()) == null, MockBehavior.Strict);
             var changedArgs = new ProjectConfigurationFileChangeEventArgs("/path/to/project.razor.json", RazorFileChangeKind.Changed, changedDeserializer);
 
             // Act
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private JsonFileDeserializer CreateJsonFileDeserializer(FullProjectSnapshotHandle deserializedHandle)
         {
-            var deserializer = new Mock<JsonFileDeserializer>();
+            var deserializer = new Mock<JsonFileDeserializer>(MockBehavior.Strict);
             deserializer.Setup(deserializer => deserializer.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()))
                 .Returns(deserializedHandle);
 

@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 Assert.Same(projectInstance, args.UnevaluatedProjectInstance);
             }
 
-            var listener1 = new Mock<IRazorDocumentChangeListener>();
+            var listener1 = new Mock<IRazorDocumentChangeListener>(MockBehavior.Strict);
             listener1.Setup(listener => listener.RazorDocumentChanged(It.IsAny<RazorFileChangeEventArgs>()))
                 .Callback<RazorFileChangeEventArgs>((args) => AssertCallbackArgs(args))
                 .Verifiable();
-            var listener2 = new Mock<IRazorDocumentChangeListener>();
+            var listener2 = new Mock<IRazorDocumentChangeListener>(MockBehavior.Strict);
             listener2.Setup(listener => listener.RazorDocumentChanged(It.IsAny<RazorFileChangeEventArgs>()))
                 .Callback<RazorFileChangeEventArgs>((args) => AssertCallbackArgs(args))
                 .Verifiable();
@@ -56,11 +56,11 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                 Assert.Same(projectInstance, args.UnevaluatedProjectInstance);
             }
 
-            var listener1 = new Mock<IRazorDocumentOutputChangeListener>();
+            var listener1 = new Mock<IRazorDocumentOutputChangeListener>(MockBehavior.Strict);
             listener1.Setup(listener => listener.RazorDocumentOutputChanged(It.IsAny<RazorFileChangeEventArgs>()))
                 .Callback<RazorFileChangeEventArgs>((args) => AssertCallbackArgs(args))
                 .Verifiable();
-            var listener2 = new Mock<IRazorDocumentOutputChangeListener>();
+            var listener2 = new Mock<IRazorDocumentOutputChangeListener>(MockBehavior.Strict);
             listener2.Setup(listener => listener.RazorDocumentOutputChanged(It.IsAny<RazorFileChangeEventArgs>()))
                 .Callback<RazorFileChangeEventArgs>((args) => AssertCallbackArgs(args))
                 .Verifiable();

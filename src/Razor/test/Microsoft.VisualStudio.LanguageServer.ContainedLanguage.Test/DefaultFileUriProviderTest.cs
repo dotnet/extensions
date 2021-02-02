@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             // Arrange
             var expectedUri = new Uri("C:/path/to/file.razor");
-            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>(MockBehavior.Strict));
 
             // Act
             uriProvider.AddOrUpdate(TextBuffer, expectedUri);
@@ -38,7 +38,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             // Arrange
             var expectedUri = new Uri("C:/path/to/file.razor");
-            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>(MockBehavior.Strict));
             uriProvider.AddOrUpdate(TextBuffer, new Uri("C:/original/uri.razor"));
 
             // Act
@@ -54,7 +54,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             // Arrange
             var expectedUri = new Uri("C:/path/to/file.razor");
-            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>(MockBehavior.Strict));
             uriProvider.AddOrUpdate(TextBuffer, expectedUri);
 
             // Act
@@ -69,7 +69,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void TryGet_DoesNotExist_ReturnsFalse()
         {
             // Arrange
-            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>(MockBehavior.Strict));
 
             // Act
             var result = uriProvider.TryGet(TextBuffer, out var uri);
@@ -83,7 +83,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void GetOrCreate_NoTextDocument_Creates()
         {
             // Arrange
-            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+            var textDocumentFactoryService = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict);
+            textDocumentFactoryService.Setup(s => s.TryGetTextDocument(TextBuffer, out It.Ref<ITextDocument>.IsAny)).Returns(false);
+            var uriProvider = new DefaultFileUriProvider(textDocumentFactoryService.Object);
 
             // Act
             var uri = uriProvider.GetOrCreate(TextBuffer);
@@ -96,7 +98,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void GetOrCreate_NoTextDocument_MemoizesGeneratedUri()
         {
             // Arrange
-            var uriProvider = new DefaultFileUriProvider(Mock.Of<ITextDocumentFactoryService>());
+            var textDocumentFactoryService = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict);
+            textDocumentFactoryService.Setup(s => s.TryGetTextDocument(TextBuffer, out It.Ref<ITextDocument>.IsAny)).Returns(false);
+            var uriProvider = new DefaultFileUriProvider(textDocumentFactoryService.Object);
 
             // Act
             var uri1 = uriProvider.GetOrCreate(TextBuffer);
@@ -111,9 +115,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void GetOrCreate_TurnsTextDocumentFilePathIntoUri()
         {
             // Arrange
-            var factory = new Mock<ITextDocumentFactoryService>();
+            var factory = new Mock<ITextDocumentFactoryService>(MockBehavior.Strict);
             var expectedFilePath = "C:/path/to/file.razor";
-            var textDocument = Mock.Of<ITextDocument>(document => document.FilePath == expectedFilePath);
+            var textDocument = Mock.Of<ITextDocument>(document => document.FilePath == expectedFilePath, MockBehavior.Strict);
             factory.Setup(f => f.TryGetTextDocument(TextBuffer, out textDocument))
                 .Returns(true);
             var uriProvider = new DefaultFileUriProvider(factory.Object);

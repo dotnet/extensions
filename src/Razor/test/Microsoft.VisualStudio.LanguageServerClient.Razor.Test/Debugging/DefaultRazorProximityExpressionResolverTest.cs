@@ -54,7 +54,7 @@ $@"public class SomeRazorFile
         public async Task TryResolveProximityExpressionsAsync_UnaddressableTextBuffer_ReturnsNull()
         {
             // Arrange
-            var differentTextBuffer = Mock.Of<ITextBuffer>();
+            var differentTextBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var resolver = CreateResolverWith();
 
             // Act
@@ -68,7 +68,8 @@ $@"public class SomeRazorFile
         public async Task TryResolveProximityExpressionsAsync_UnknownRazorDocument_ReturnsNull()
         {
             // Arrange
-            var documentManager = Mock.Of<LSPDocumentManager>();
+            var documentManager = new Mock<LSPDocumentManager>(MockBehavior.Strict).Object;
+            Mock.Get(documentManager).Setup(m => m.TryGetDocument(DocumentUri, out It.Ref<LSPDocumentSnapshot>.IsAny)).Returns(false);
             var resolver = CreateResolverWith(documentManager: documentManager);
 
             // Act
@@ -178,12 +179,17 @@ $@"public class SomeRazorFile
             LSPProjectionProvider projectionProvider = null)
         {
             var documentUri = DocumentUri;
-            uriProvider ??= Mock.Of<FileUriProvider>(provider => provider.TryGet(HostTextbuffer, out documentUri) == true);
+            uriProvider ??= Mock.Of<FileUriProvider>(provider => provider.TryGet(HostTextbuffer, out documentUri) == true && provider.TryGet(It.IsNotIn(HostTextbuffer), out It.Ref<Uri>.IsAny) == false, MockBehavior.Strict);
             var csharpDocumentUri = new Uri(DocumentUri.OriginalString + ".g.cs", UriKind.Absolute);
             var csharpVirtualDocumentSnapshot = new CSharpVirtualDocumentSnapshot(csharpDocumentUri, CSharpTextBuffer.CurrentSnapshot, hostDocumentSyncVersion: 0);
             LSPDocumentSnapshot documentSnapshot = new TestLSPDocumentSnapshot(DocumentUri, 0, csharpVirtualDocumentSnapshot);
-            documentManager ??= Mock.Of<LSPDocumentManager>(manager => manager.TryGetDocument(DocumentUri, out documentSnapshot) == true);
-            projectionProvider ??= Mock.Of<LSPProjectionProvider>();
+            documentManager ??= Mock.Of<LSPDocumentManager>(manager => manager.TryGetDocument(DocumentUri, out documentSnapshot) == true, MockBehavior.Strict);
+            if (projectionProvider is null)
+            {
+                projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
+                Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
+                    .Returns(Task.FromResult<ProjectionResult>(null));
+            }
             var csharpProximityExpressionResolver = new DefaultCSharpProximityExpressionResolver();
             var razorProximityExpressionResolver = new DefaultRazorProximityExpressionResolver(
                 uriProvider,

@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                Mock.Of<ProjectChangePublisher>(MockBehavior.Strict),
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                Mock.Of<ProjectChangePublisher>(MockBehavior.Strict),
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                Mock.Of<ProjectChangePublisher>(MockBehavior.Strict),
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager(allowNotifyListeners: true);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var msbuildProjectManager = new MSBuildProjectManager(
                 Enumerable.Empty<ProjectConfigurationProvider>(),
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                Mock.Of<ProjectChangePublisher>(MockBehavior.Strict),
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();
@@ -193,13 +193,15 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var projectInstance = new ProjectInstance(projectRootElement);
             var hostDocument = new OmniSharpHostDocument("file.razor", "file.razor", FileKinds.Component);
             var projectConfiguration = new ProjectConfiguration(CustomConfiguration, new[] { hostDocument }, "TestRootNamespace");
-            var configurationProvider = new Mock<ProjectConfigurationProvider>();
+            var configurationProvider = new Mock<ProjectConfigurationProvider>(MockBehavior.Strict);
             configurationProvider.Setup(provider => provider.TryResolveConfiguration(It.IsAny<ProjectConfigurationProviderContext>(), out projectConfiguration))
                 .Returns(true);
+            var projectChangePublisher = new Mock<ProjectChangePublisher>(MockBehavior.Strict);
+            projectChangePublisher.Setup(p => p.SetPublishFilePath(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
             var msbuildProjectManager = new MSBuildProjectManager(
                 new[] { configurationProvider.Object },
                 CreateProjectInstanceEvaluator(),
-                Mock.Of<ProjectChangePublisher>(),
+                projectChangePublisher.Object,
                 Dispatcher,
                 LoggerFactory);
             var projectManager = CreateProjectSnapshotManager();
@@ -229,11 +231,11 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.AddItem(MSBuildProjectManager.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
-            var provider1 = new Mock<ProjectConfigurationProvider>();
+            var provider1 = new Mock<ProjectConfigurationProvider>(MockBehavior.Strict);
             var configuration = new ProjectConfiguration(RazorConfiguration.Default, Array.Empty<OmniSharpHostDocument>(), "TestRootNamespace"); // Setting to non-null to ensure the listener doesn't return the config verbatim.
             provider1.Setup(p => p.TryResolveConfiguration(It.IsAny<ProjectConfigurationProviderContext>(), out configuration))
                 .Returns(false);
-            var provider2 = new Mock<ProjectConfigurationProvider>();
+            var provider2 = new Mock<ProjectConfigurationProvider>(MockBehavior.Strict);
             provider2.Setup(p => p.TryResolveConfiguration(It.IsAny<ProjectConfigurationProviderContext>(), out configuration))
                 .Returns(true);
 
@@ -250,7 +252,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             projectInstance.AddItem(MSBuildProjectManager.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
-            var provider = new Mock<ProjectConfigurationProvider>();
+            var provider = new Mock<ProjectConfigurationProvider>(MockBehavior.Strict);
             var configuration = new ProjectConfiguration(RazorConfiguration.Default, Array.Empty<OmniSharpHostDocument>(), "TestRootNamespace"); // Setting to non-null to ensure the listener doesn't return the config verbatim.
             provider.Setup(p => p.TryResolveConfiguration(It.IsAny<ProjectConfigurationProviderContext>(), out configuration))
                 .Returns(false);
@@ -350,7 +352,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
 
         private ProjectInstanceEvaluator CreateProjectInstanceEvaluator()
         {
-            var projectInstanceEvaluator = new Mock<ProjectInstanceEvaluator>();
+            var projectInstanceEvaluator = new Mock<ProjectInstanceEvaluator>(MockBehavior.Strict);
             projectInstanceEvaluator.Setup(instance => instance.Evaluate(It.IsAny<ProjectInstance>()))
                 .Returns<ProjectInstance>(pi => pi);
             return projectInstanceEvaluator.Object;

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         public RazorFormattingEndpointTest()
         {
-            EmptyDocumentResolver = Mock.Of<DocumentResolver>();
+            EmptyDocumentResolver = Mock.Of<DocumentResolver>(r => r.TryResolveDocument(It.IsAny<string>(), out It.Ref<DocumentSnapshot>.IsAny) == false, MockBehavior.Strict);
         }
 
         private DocumentResolver EmptyDocumentResolver { get; }
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         private static IOptionsMonitor<RazorLSPOptions> GetOptionsMonitor(bool enableFormatting)
         {
-            var monitor = new Mock<IOptionsMonitor<RazorLSPOptions>>();
+            var monitor = new Mock<IOptionsMonitor<RazorLSPOptions>>(MockBehavior.Strict);
             monitor.SetupGet(m => m.CurrentValue).Returns(new RazorLSPOptions(default, enableFormatting, true));
             return monitor.Object;
         }
@@ -124,10 +124,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var sourceText = SourceText.From(new string(sourceTextChars));
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
-                document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
+                document.GetTextAsync() == Task.FromResult(sourceText), MockBehavior.Strict);
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);
+            documentResolver.Setup(resolver => resolver.TryResolveDocument(It.IsNotIn(documentPath), out documentSnapshot))
+                .Returns(false);
             return documentResolver.Object;
         }
 

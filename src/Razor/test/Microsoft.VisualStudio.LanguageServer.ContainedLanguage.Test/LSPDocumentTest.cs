@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Utilities;
 using Moq;
 using Xunit;
 
@@ -21,7 +22,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void TryGetVirtualDocument_NoCSharpDocument_ReturnsFalse()
         {
             // Arrange
-            using var lspDocument = new DefaultLSPDocument(Uri, Mock.Of<ITextBuffer>(), new[] { Mock.Of<VirtualDocument>() });
+            var virtualDocumentMock = new Mock<VirtualDocument>(MockBehavior.Strict);
+            virtualDocumentMock.Setup(d => d.Dispose()).Verifiable();
+            using var lspDocument = new DefaultLSPDocument(Uri, Mock.Of<ITextBuffer>(MockBehavior.Strict), new[] { virtualDocumentMock.Object });
 
             // Act
             var result = lspDocument.TryGetVirtualDocument<TestVirtualDocument>(out var virtualDocument);
@@ -35,8 +38,14 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void TryGetVirtualCSharpDocument_CSharpDocument_ReturnsTrue()
         {
             // Arrange
-            var testVirtualDocument = new TestVirtualDocument(Uri, Mock.Of<ITextBuffer>());
-            using var lspDocument = new DefaultLSPDocument(Uri, Mock.Of<ITextBuffer>(), new[] { Mock.Of<VirtualDocument>(), testVirtualDocument });
+            var textBuffer = new Mock<ITextBuffer>(MockBehavior.Strict);
+            textBuffer.SetupGet(b => b.CurrentSnapshot).Returns((ITextSnapshot)null);
+            textBuffer.Setup(b => b.ChangeContentType(It.IsAny<IContentType>(), null)).Verifiable();
+            textBuffer.SetupGet(b => b.Properties).Returns(new PropertyCollection());
+            var testVirtualDocument = new TestVirtualDocument(Uri, textBuffer.Object);
+            var virtualDocumentMock = new Mock<VirtualDocument>(MockBehavior.Strict);
+            virtualDocumentMock.Setup(d => d.Dispose()).Verifiable();
+            using var lspDocument = new DefaultLSPDocument(Uri, Mock.Of<ITextBuffer>(MockBehavior.Strict), new[] { virtualDocumentMock.Object, testVirtualDocument });
 
             // Act
             var result = lspDocument.TryGetVirtualDocument<TestVirtualDocument>(out var virtualDocument);

@@ -27,9 +27,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
+            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var definitionHandler = new GoToDefinitionHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var definitionRequest = new TextDocumentPositionParams()
             {
@@ -49,10 +49,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
+            Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
+                .Returns(Task.FromResult<ProjectionResult>(null));
+            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var definitionHandler = new GoToDefinitionHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var definitionRequest = new TextDocumentPositionParams()
             {
@@ -75,7 +77,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var invokedRemapRequest = false;
             var expectedLocation = GetLocation(5, 5, 5, 5, Uri);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
 
             var virtualHtmlUri = new Uri("C:/path/to/file.razor__virtual.html");
             var htmlLocation = GetLocation(100, 100, 100, 100, virtualHtmlUri);
@@ -97,7 +99,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider
                 .Setup(d => d.RemapLocationsAsync(It.IsAny<Location[]>(), It.IsAny<CancellationToken>()))
                 .Callback<Location[], CancellationToken>((locations, token) =>
@@ -132,7 +134,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var invokedRemapRequest = false;
             var expectedLocation = GetLocation(5, 5, 5, 5, Uri);
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
 
             var virtualCSharpUri = new Uri("C:/path/to/file.razor.g.cs");
             var csharpLocation = GetLocation(100, 100, 100, 100, virtualCSharpUri);
@@ -154,7 +156,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider
                 .Setup(d => d.RemapLocationsAsync(It.IsAny<Location[]>(), It.IsAny<CancellationToken>()))
                 .Callback<Location[], CancellationToken>((locations, token) =>

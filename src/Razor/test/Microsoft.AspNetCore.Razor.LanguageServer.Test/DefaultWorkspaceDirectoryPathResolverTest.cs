@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 RootPath = expectedWorkspaceDirectory
             };
-            var server = Mock.Of<IClientLanguageServer>(server => server.ClientSettings == clientSettings);
+            var server = Mock.Of<IClientLanguageServer>(server => server.ClientSettings == clientSettings, MockBehavior.Strict);
             var workspaceDirectoryPathResolver = new DefaultWorkspaceDirectoryPathResolver(server);
 
             // Act
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 RootPath = "/somethingelse",
                 RootUri = new DocumentUri("file", authority: null, path: initialWorkspaceDirectory, query: null, fragment: null),
             };
-            var server = Mock.Of<IClientLanguageServer>(server => server.ClientSettings == clientSettings);
+            var server = Mock.Of<IClientLanguageServer>(server => server.ClientSettings == clientSettings, MockBehavior.Strict);
             var workspaceDirectoryPathResolver = new DefaultWorkspaceDirectoryPathResolver(server);
 
             // Act

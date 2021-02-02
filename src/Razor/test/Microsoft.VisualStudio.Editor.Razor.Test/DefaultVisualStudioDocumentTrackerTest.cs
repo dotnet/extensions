@@ -22,15 +22,20 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         public DefaultVisualStudioDocumentTrackerTest()
         {
-            RazorCoreContentType = Mock.Of<IContentType>(c => c.IsOfType(RazorLanguage.ContentType) == true);
-            TextBuffer = Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType);
+            RazorCoreContentType = Mock.Of<IContentType>(c => c.IsOfType(RazorLanguage.ContentType) == true, MockBehavior.Strict);
+            TextBuffer = Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType, MockBehavior.Strict);
 
             FilePath = TestProjectData.SomeProjectFile1.FilePath;
             ProjectPath = TestProjectData.SomeProject.FilePath;
             RootNamespace = TestProjectData.SomeProject.RootNamespace;
 
-            ImportDocumentManager = Mock.Of<ImportDocumentManager>();
-            WorkspaceEditorSettings = new DefaultWorkspaceEditorSettings(Mock.Of<ForegroundDispatcher>(), Mock.Of<EditorSettingsManager>());
+            ImportDocumentManager = new Mock<ImportDocumentManager>(MockBehavior.Strict).Object;
+            Mock.Get(ImportDocumentManager).Setup(m => m.OnSubscribed(It.IsAny<VisualStudioDocumentTracker>())).Verifiable();
+            Mock.Get(ImportDocumentManager).Setup(m => m.OnUnsubscribed(It.IsAny<VisualStudioDocumentTracker>())).Verifiable();
+
+            var foregroundDispatcher = new Mock<ForegroundDispatcher>(MockBehavior.Strict);
+            foregroundDispatcher.Setup(d => d.AssertForegroundThread(It.IsAny<string>())).Verifiable();
+            WorkspaceEditorSettings = new DefaultWorkspaceEditorSettings(foregroundDispatcher.Object, Mock.Of<EditorSettingsManager>(MockBehavior.Strict));
 
             SomeTagHelpers = new List<TagHelperDescriptor>()
             {
@@ -356,7 +361,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void AddTextView_AddsToTextViewCollection()
         {
             // Arrange
-            var textView = Mock.Of<ITextView>();
+            var textView = Mock.Of<ITextView>(MockBehavior.Strict);
 
             // Act
             DocumentTracker.AddTextView(textView);
@@ -369,7 +374,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void AddTextView_DoesNotAddDuplicateTextViews()
         {
             // Arrange
-            var textView = Mock.Of<ITextView>();
+            var textView = Mock.Of<ITextView>(MockBehavior.Strict);
 
             // Act
             DocumentTracker.AddTextView(textView);
@@ -383,8 +388,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void AddTextView_AddsMultipleTextViewsToCollection()
         {
             // Arrange
-            var textView1 = Mock.Of<ITextView>();
-            var textView2 = Mock.Of<ITextView>();
+            var textView1 = Mock.Of<ITextView>(MockBehavior.Strict);
+            var textView2 = Mock.Of<ITextView>(MockBehavior.Strict);
 
             // Act
             DocumentTracker.AddTextView(textView1);
@@ -401,7 +406,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void RemoveTextView_RemovesTextViewFromCollection_SingleItem()
         {
             // Arrange
-            var textView = Mock.Of<ITextView>();
+            var textView = Mock.Of<ITextView>(MockBehavior.Strict);
             DocumentTracker.AddTextView(textView);
 
             // Act
@@ -415,9 +420,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void RemoveTextView_RemovesTextViewFromCollection_MultipleItems()
         {
             // Arrange
-            var textView1 = Mock.Of<ITextView>();
-            var textView2 = Mock.Of<ITextView>();
-            var textView3 = Mock.Of<ITextView>();
+            var textView1 = Mock.Of<ITextView>(MockBehavior.Strict);
+            var textView2 = Mock.Of<ITextView>(MockBehavior.Strict);
+            var textView3 = Mock.Of<ITextView>(MockBehavior.Strict);
             DocumentTracker.AddTextView(textView1);
             DocumentTracker.AddTextView(textView2);
             DocumentTracker.AddTextView(textView3);
@@ -436,9 +441,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void RemoveTextView_NoopsWhenRemovingTextViewNotInCollection()
         {
             // Arrange
-            var textView1 = Mock.Of<ITextView>();
+            var textView1 = Mock.Of<ITextView>(MockBehavior.Strict);
             DocumentTracker.AddTextView(textView1);
-            var textView2 = Mock.Of<ITextView>();
+            var textView2 = Mock.Of<ITextView>(MockBehavior.Strict);
 
             // Act
             DocumentTracker.RemoveTextView(textView2);

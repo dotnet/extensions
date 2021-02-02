@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
                     }
                 };
 
-                var languageServer = new Mock<ClientNotifierServiceBase>();
+                var languageServer = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
                 languageServer.SetupGet(server => server.ClientSettings)
                     .Returns(initializeParams);
 

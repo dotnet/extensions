@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
                     }
                 };
 
-                var languageServer = new Mock<ClientNotifierServiceBase>();
+                var languageServer = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
                 languageServer.SetupGet(server => server.ClientSettings)
                     .Returns(initializeParams);
 

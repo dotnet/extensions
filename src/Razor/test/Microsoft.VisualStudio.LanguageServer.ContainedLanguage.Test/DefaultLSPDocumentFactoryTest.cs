@@ -15,9 +15,9 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void Create_BuildsLSPDocumentWithTextBufferURI()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var uri = new Uri("C:/path/to/file.razor");
-            var uriProvider = Mock.Of<FileUriProvider>(p => p.GetOrCreate(textBuffer) == uri);
+            var uriProvider = Mock.Of<FileUriProvider>(p => p.GetOrCreate(textBuffer) == uri, MockBehavior.Strict);
             var factory = new DefaultLSPDocumentFactory(uriProvider, Enumerable.Empty<VirtualDocumentFactory>());
 
             // Act
@@ -31,13 +31,13 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         public void Create_MultipleFactories_CreatesLSPDocumentWithVirtualDocuments()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var uri = new Uri("C:/path/to/file.razor");
-            var uriProvider = Mock.Of<FileUriProvider>(p => p.GetOrCreate(textBuffer) == uri);
-            var virtualDocument1 = Mock.Of<VirtualDocument>();
-            var factory1 = Mock.Of<VirtualDocumentFactory>(f => f.TryCreateFor(textBuffer, out virtualDocument1) == true);
-            var virtualDocument2 = Mock.Of<VirtualDocument>();
-            var factory2 = Mock.Of<VirtualDocumentFactory>(f => f.TryCreateFor(textBuffer, out virtualDocument2) == true);
+            var uriProvider = Mock.Of<FileUriProvider>(p => p.GetOrCreate(textBuffer) == uri, MockBehavior.Strict);
+            var virtualDocument1 = Mock.Of<VirtualDocument>(MockBehavior.Strict);
+            var factory1 = Mock.Of<VirtualDocumentFactory>(f => f.TryCreateFor(textBuffer, out virtualDocument1) == true, MockBehavior.Strict);
+            var virtualDocument2 = Mock.Of<VirtualDocument>(MockBehavior.Strict);
+            var factory2 = Mock.Of<VirtualDocumentFactory>(f => f.TryCreateFor(textBuffer, out virtualDocument2) == true, MockBehavior.Strict);
             var factory = new DefaultLSPDocumentFactory(uriProvider, new[] { factory1, factory2 });
 
             // Act

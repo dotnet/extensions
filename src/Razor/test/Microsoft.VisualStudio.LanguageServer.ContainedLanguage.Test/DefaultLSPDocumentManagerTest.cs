@@ -17,16 +17,17 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         {
             ChangeTriggers = Enumerable.Empty<LSPDocumentManagerChangeTrigger>();
             JoinableTaskContext = new JoinableTaskContext();
-            TextBuffer = Mock.Of<ITextBuffer>();
+            TextBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             Uri = new Uri("C:/path/to/file.razor");
-            UriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(TextBuffer) == Uri);
-            LSPDocumentSnapshot = Mock.Of<LSPDocumentSnapshot>();
+            UriProvider = Mock.Of<FileUriProvider>(provider => provider.GetOrCreate(TextBuffer) == Uri, MockBehavior.Strict);
+            Mock.Get(UriProvider).Setup(p => p.Remove(It.IsAny<ITextBuffer>())).Verifiable();
+            LSPDocumentSnapshot = Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict);
             LSPDocument = Mock.Of<LSPDocument>(document =>
                 document.Uri == Uri &&
                 document.CurrentSnapshot == LSPDocumentSnapshot &&
                 document.VirtualDocuments == new[] { new TestVirtualDocument() } &&
-                document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<ITextChange>>(), It.IsAny<int>()) == Mock.Of<LSPDocumentSnapshot>());
-            LSPDocumentFactory = Mock.Of<LSPDocumentFactory>(factory => factory.Create(TextBuffer) == LSPDocument);
+                document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<ITextChange>>(), It.IsAny<int>()) == Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict), MockBehavior.Strict);
+            LSPDocumentFactory = Mock.Of<LSPDocumentFactory>(factory => factory.Create(TextBuffer) == LSPDocument, MockBehavior.Strict);
         }
 
         private IEnumerable<LSPDocumentManagerChangeTrigger> ChangeTriggers { get; }

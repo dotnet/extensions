@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     }
                 };
 
-                var languageServer = new Mock<ILanguageServer>();
+                var languageServer = new Mock<ILanguageServer>(MockBehavior.Strict);
                 languageServer.SetupGet(server => server.ClientSettings)
                     .Returns(initializeParams);
 

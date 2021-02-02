@@ -220,14 +220,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                                 It.IsAny<FormattingOptions>(),
                                 It.IsAny<CancellationToken>(),
                                 /*bypassValidationPasses:*/ true,
-                                It.IsAny<bool>()) == Task.FromResult(DefaultFormattedEdits));
+                                It.IsAny<bool>()) == Task.FromResult(DefaultFormattedEdits), MockBehavior.Strict);
             return razorFormattingService;
         }
 
         private static DocumentVersionCache CreateDocumentVersionCache()
         {
             int? documentVersion = 2;
-            var documentVersionCache = Mock.Of<DocumentVersionCache>(dvc => dvc.TryGetDocumentVersion(It.IsAny<DocumentSnapshot>(), out documentVersion) == true);
+            var documentVersionCache = Mock.Of<DocumentVersionCache>(dvc => dvc.TryGetDocumentVersion(It.IsAny<DocumentSnapshot>(), out documentVersion) == true, MockBehavior.Strict);
             return documentVersionCache;
         }
 
@@ -253,8 +253,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var sourceText = SourceText.From(new string(sourceTextChars));
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
-                document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
+                document.GetTextAsync() == Task.FromResult(sourceText), MockBehavior.Strict);
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver
                 .Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);

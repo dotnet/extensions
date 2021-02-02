@@ -27,9 +27,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
+            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var hoverhandler = new HoverHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var hoverRequest = new TextDocumentPositionParams()
             {
@@ -49,10 +49,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
-            var requestInvoker = Mock.Of<LSPRequestInvoker>();
-            var projectionProvider = Mock.Of<LSPProjectionProvider>();
-            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>();
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
+            var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
+            Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
+                .Returns(Task.FromResult<ProjectionResult>(null));
+            var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var hoverhandler = new HoverHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
             var hoverRequest = new TextDocumentPositionParams()
             {
@@ -108,9 +110,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            var document = new Mock<LSPDocumentSnapshot>(MockBehavior.Strict);
+            document.SetupGet(d => d.Version).Returns(0);
+            documentManager.AddDocument(Uri, document.Object);
 
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Hover>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, hoverParams, ct) =>
@@ -125,7 +129,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 LanguageKind = RazorLanguageKind.CSharp
             };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
             var remappingResult = new RazorMapToDocumentRangesResponse()
@@ -139,7 +143,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 },
                 HostDocumentVersion = 0
             };
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, It.IsAny<Uri>(), It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
@@ -195,9 +199,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            var document = new Mock<LSPDocumentSnapshot>(MockBehavior.Strict);
+            document.SetupGet(d => d.Version).Returns(0);
+            documentManager.AddDocument(Uri, document.Object);
 
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Hover>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, hoverParams, ct) =>
@@ -212,7 +218,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 LanguageKind = RazorLanguageKind.Html,
             };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
             var remappingResult = new RazorMapToDocumentRangesResponse()
@@ -226,7 +232,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 },
                 HostDocumentVersion = 0
             };
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.Html, It.IsAny<Uri>(), It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
@@ -253,9 +259,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
 
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Hover>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, hoverParams, ct) =>
@@ -270,10 +276,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 LanguageKind = RazorLanguageKind.CSharp,
             };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
 
             var hoverHandler = new HoverHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
 
@@ -326,9 +332,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict));
 
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Hover>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, hoverParams, ct) =>
@@ -343,10 +349,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 LanguageKind = RazorLanguageKind.CSharp,
             };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, It.IsAny<Uri>(), It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult<RazorMapToDocumentRangesResponse>(null));
 
@@ -392,9 +398,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             var documentManager = new TestDocumentManager();
-            documentManager.AddDocument(Uri, Mock.Of<LSPDocumentSnapshot>());
+            var document = new Mock<LSPDocumentSnapshot>(MockBehavior.Strict);
+            document.SetupGet(d => d.Version).Returns(0);
+            documentManager.AddDocument(Uri, document.Object);
 
-            var requestInvoker = new Mock<LSPRequestInvoker>();
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Hover>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextDocumentPositionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, TextDocumentPositionParams, CancellationToken>((method, serverContentType, hoverParams, ct) =>
@@ -409,7 +417,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 LanguageKind = RazorLanguageKind.CSharp,
             };
-            var projectionProvider = new Mock<LSPProjectionProvider>();
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
             var remappingResult = new RazorMapToDocumentRangesResponse()
@@ -417,7 +425,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 Ranges = new[] { new Range() },
                 HostDocumentVersion = 1
             };
-            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>();
+            var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, It.IsAny<Uri>(), It.IsAny<Range[]>(), It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 

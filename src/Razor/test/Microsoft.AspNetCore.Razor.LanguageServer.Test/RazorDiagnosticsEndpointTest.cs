@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public RazorDiagnosticsEndpointTest()
         {
-            var documentVersionCache = new Mock<DocumentVersionCache>();
+            var documentVersionCache = new Mock<DocumentVersionCache>(MockBehavior.Strict);
             int? version = 1337;
             documentVersionCache.Setup(cache => cache.TryGetDocumentVersion(It.IsAny<DocumentSnapshot>(), out version))
                 .Returns(true);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
-            var documentResolver = new Mock<DocumentResolver>();
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             var documentSnapshot = default(DocumentSnapshot);
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(false);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new SourceSpan(10, 12))
                 });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var documentVersionCache = new Mock<DocumentVersionCache>();
+            var documentVersionCache = new Mock<DocumentVersionCache>(MockBehavior.Strict);
             int? version = default;
             documentVersionCache.Setup(cache => cache.TryGetDocumentVersion(It.IsAny<DocumentSnapshot>(), out version))
                 .Returns(false);
@@ -473,8 +473,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceText = SourceText.From(new string(sourceTextChars));
             var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
-                document.GetTextAsync() == Task.FromResult(sourceText));
-            var documentResolver = new Mock<DocumentResolver>();
+                document.GetTextAsync() == Task.FromResult(sourceText), MockBehavior.Strict);
+            var documentResolver = new Mock<DocumentResolver>(MockBehavior.Strict);
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);
             return documentResolver.Object;

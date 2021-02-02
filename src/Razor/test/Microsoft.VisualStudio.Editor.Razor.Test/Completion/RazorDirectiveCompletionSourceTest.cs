@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var text = "@validCompletion";
-            var parser = new Mock<VisualStudioRazorParser>();
+            var parser = new Mock<VisualStudioRazorParser>(MockBehavior.Strict);
             parser.Setup(p => p.GetLatestCodeDocumentAsync(It.IsAny<ITextSnapshot>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult<RazorCodeDocument>(null)); // CodeDocument will be null faking a parser without a parse.
             var completionSource = new RazorDirectiveCompletionSource(Dispatcher, parser.Object, CompletionFactsService);
@@ -98,10 +98,10 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         public async Task GetDescriptionAsync_AddsDirectiveDescriptionIfPropertyExists()
         {
             // Arrange
-            var completionItem = new CompletionItem("TestDirective", Mock.Of<IAsyncCompletionSource>());
+            var completionItem = new CompletionItem("TestDirective", Mock.Of<IAsyncCompletionSource>(MockBehavior.Strict));
             var expectedDescription = new DirectiveCompletionDescription("The expected description");
             completionItem.Properties.AddProperty(RazorDirectiveCompletionSource.DescriptionKey, expectedDescription);
-            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, Mock.Of<VisualStudioRazorParser>(), CompletionFactsService);
+            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, Mock.Of<VisualStudioRazorParser>(MockBehavior.Strict), CompletionFactsService);
 
             // Act
             var descriptionObject = await completionSource.GetDescriptionAsync(null, completionItem, CancellationToken.None);
@@ -115,8 +115,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         public async Task GetDescriptionAsync_DoesNotAddDescriptionWhenPropertyAbsent()
         {
             // Arrange
-            var completionItem = new CompletionItem("TestDirective", Mock.Of<IAsyncCompletionSource>());
-            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, Mock.Of<VisualStudioRazorParser>(), CompletionFactsService);
+            var completionItem = new CompletionItem("TestDirective", Mock.Of<IAsyncCompletionSource>(MockBehavior.Strict));
+            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, Mock.Of<VisualStudioRazorParser>(MockBehavior.Strict), CompletionFactsService);
 
             // Act
             var descriptionObject = await completionSource.GetDescriptionAsync(null, completionItem, CancellationToken.None);
@@ -157,7 +157,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(text, RazorSourceDocumentProperties.Default));
             codeDocument.SetSyntaxTree(syntaxTree);
             codeDocument.SetTagHelperContext(TagHelperDocumentContext.Create(prefix: null, Enumerable.Empty<TagHelperDescriptor>()));
-            var parser = new Mock<VisualStudioRazorParser>();
+            var parser = new Mock<VisualStudioRazorParser>(MockBehavior.Strict);
             parser.Setup(p => p.GetLatestCodeDocumentAsync(It.IsAny<ITextSnapshot>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(codeDocument));
 

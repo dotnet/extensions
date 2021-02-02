@@ -61,7 +61,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var codeDocument = CreateCodeDocument(SingleDiagnosticCollection);
             processedOpenDocument.With(codeDocument);
             // ILanguageServerDocument
-            var languageServerDocument = Mock.Of<ITextDocumentLanguageServer>();
+            var languageServerDocument = new Mock<ITextDocumentLanguageServer>(MockBehavior.Strict).Object;
+            Mock.Get(languageServerDocument).Setup(d => d.SendNotification(It.IsAny<IRequest>())).Verifiable();
             using (var publisher = new TestRazorDiagnosticsPublisher(Dispatcher, languageServerDocument, LoggerFactory)
             {
                 BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: true),
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task PublishDiagnosticsAsync_NoopsIfDiagnosticsAreSameAsPreviousPublish()
         {
             // Arrange
-            var languageServer = new Mock<ITextDocumentLanguageServer>();
+            var languageServer = new Mock<ITextDocumentLanguageServer>(MockBehavior.Strict);
             var processedOpenDocument = TestDocumentSnapshot.Create(OpenedDocument.FilePath);
             var codeDocument = CreateCodeDocument(SingleDiagnosticCollection);
             processedOpenDocument.With(codeDocument);
@@ -195,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ClearClosedDocuments_NoopsIfDocumentIsStillOpen()
         {
             // Arrange
-            var languageServer = new Mock<ITextDocumentLanguageServer>();
+            var languageServer = new Mock<ITextDocumentLanguageServer>(MockBehavior.Strict);
             using (var publisher = new TestRazorDiagnosticsPublisher(Dispatcher, languageServer.Object, LoggerFactory))
             {
                 publisher._publishedDiagnostics[OpenedDocument.FilePath] = SingleDiagnosticCollection;
@@ -210,7 +211,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ClearClosedDocuments_NoopsIfDocumentIsClosedButNoDiagnostics()
         {
             // Arrange
-            var languageServer = new Mock<ITextDocumentLanguageServer>();
+            var languageServer = new Mock<ITextDocumentLanguageServer>(MockBehavior.Strict);
             using (var publisher = new TestRazorDiagnosticsPublisher(Dispatcher, languageServer.Object, LoggerFactory))
             {
                 publisher._publishedDiagnostics[ClosedDocument.FilePath] = EmptyDiagnostics;
@@ -225,7 +226,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ClearClosedDocuments_RestartsTimerIfDocumentsStillOpen()
         {
             // Arrange
-            var languageServer = new Mock<ITextDocumentLanguageServer>();
+            var languageServer = new Mock<ITextDocumentLanguageServer>(MockBehavior.Strict);
             using (var publisher = new TestRazorDiagnosticsPublisher(Dispatcher, languageServer.Object, LoggerFactory))
             {
                 publisher._publishedDiagnostics[ClosedDocument.FilePath] = EmptyDiagnostics;

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var services = new ServiceCollection().AddOptions();
             Cache = services.BuildServiceProvider().GetRequiredService<IOptionsMonitorCache<RazorLSPOptions>>();
 
-            ConfigurationService = Mock.Of<RazorConfigurationService>();
+            ConfigurationService = Mock.Of<RazorConfigurationService>(MockBehavior.Strict);
         }
 
         private IOptionsMonitorCache<RazorLSPOptions> Cache { get; }

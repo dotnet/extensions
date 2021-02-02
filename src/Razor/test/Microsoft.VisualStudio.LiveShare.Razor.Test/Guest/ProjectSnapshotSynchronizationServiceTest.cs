@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 ProjectWorkspaceStateWithTagHelpers);
             var state = new ProjectSnapshotManagerProxyState(new[] { projectHandle });
             var hostProjectManagerProxy = Mock.Of<IProjectSnapshotManagerProxy>(
-                proxy => proxy.GetProjectManagerStateAsync(It.IsAny<CancellationToken>()) == Task.FromResult(state));
+                proxy => proxy.GetProjectManagerStateAsync(It.IsAny<CancellationToken>()) == Task.FromResult(state), MockBehavior.Strict);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
@@ -82,7 +82,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
-                Mock.Of<IProjectSnapshotManagerProxy>(),
+                Mock.Of<IProjectSnapshotManagerProxy>(MockBehavior.Strict),
                 ProjectSnapshotManager);
             var args = new ProjectChangeEventProxyArgs(older: null, newHandle, ProjectProxyChangeKind.ProjectAdded);
 
@@ -108,7 +108,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
-                Mock.Of<IProjectSnapshotManagerProxy>(),
+                Mock.Of<IProjectSnapshotManagerProxy>(MockBehavior.Strict),
                 ProjectSnapshotManager);
             var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default, "project");
             ProjectSnapshotManager.ProjectAdded(hostProject);
@@ -139,7 +139,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
-                Mock.Of<IProjectSnapshotManagerProxy>(),
+                Mock.Of<IProjectSnapshotManagerProxy>(MockBehavior.Strict),
                 ProjectSnapshotManager);
             var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default, "project");
             ProjectSnapshotManager.ProjectAdded(hostProject);
@@ -174,7 +174,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
-                Mock.Of<IProjectSnapshotManagerProxy>(),
+                Mock.Of<IProjectSnapshotManagerProxy>(MockBehavior.Strict),
                 ProjectSnapshotManager);
             var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default, "project");
             ProjectSnapshotManager.ProjectAdded(hostProject);
