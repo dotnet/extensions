@@ -265,12 +265,12 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             OnErrorBeingReported();
 
-            GC.KeepAlive(Task.Factory.StartNew(
+            _ = Task.Factory.StartNew(
                 (p) => ((ProjectSnapshotManagerBase)p).ReportError(ex, project),
                 _projectManager,
                 CancellationToken.None,
                 TaskCreationOptions.None,
-                _foregroundDispatcher.ForegroundScheduler));
+                _foregroundDispatcher.ForegroundScheduler);
         }
 
         private void ProjectManager_Changed(object sender, ProjectChangeEventArgs e)
