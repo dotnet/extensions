@@ -19,6 +19,7 @@
                 "limit": 200
             }
         },
-        "one-line": [true, "check-open-brace", "check-catch", "check-finally", "check-else", "check-whitespace"]
+        "one-line": [true, "check-open-brace", "check-catch", "check-finally", "check-else", "check-whitespace"],
+        "eofline": true
     }
 }
