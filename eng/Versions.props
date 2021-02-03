@@ -83,6 +83,10 @@
 
     Versions below this comment are not managed by automation and can be changed as needed.
   -->
+  <PropertyGroup>
+    <!-- Several packages from the editor are used for testing HTML support, and share the following version. -->
+    <Tooling_HtmlEditorPackageVersion>16.10.57-preview1</Tooling_HtmlEditorPackageVersion>
+  </PropertyGroup>
   <PropertyGroup Label="Manual">
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>5.0.0-preview.4.20205.1</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <BenchmarkDotNetPackageVersion>0.12.1</BenchmarkDotNetPackageVersion>
@@ -115,8 +119,15 @@
     <MicrosoftVisualStudioShell150PackageVersion>16.7.30204.53-pre</MicrosoftVisualStudioShell150PackageVersion>
     <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6073</MicrosoftVisualStudioShellInteropPackageVersion>
     <MicrosoftVisualStudioTextDataPackageVersion>16.8.272</MicrosoftVisualStudioTextDataPackageVersion>
+    <MicrosoftVisualStudioTextLogicPackageVersion>16.8.272</MicrosoftVisualStudioTextLogicPackageVersion>
     <MicrosoftVisualStudioTextUIPackageVersion>16.8.272</MicrosoftVisualStudioTextUIPackageVersion>
-    <MicrosoftVisualStudioThreadingPackageVersion>16.8.55</MicrosoftVisualStudioThreadingPackageVersion>
+    <MicrosoftVisualStudioThreadingPackageVersion>16.9.45-alpha</MicrosoftVisualStudioThreadingPackageVersion>
+    <MicrosoftVisualStudioWebPackageVersion>16.10.0-preview-1-31008-014</MicrosoftVisualStudioWebPackageVersion>
+    <MicrosoftWebToolsLanguagesHtmlPackageVersion>$(Tooling_HtmlEditorPackageVersion)</MicrosoftWebToolsLanguagesHtmlPackageVersion>
+    <MicrosoftWebToolsLanguagesLanguageServerServerPackageVersion>$(Tooling_HtmlEditorPackageVersion)</MicrosoftWebToolsLanguagesLanguageServerServerPackageVersion>
+    <MicrosoftWebToolsLanguagesSharedPackageVersion>$(Tooling_HtmlEditorPackageVersion)</MicrosoftWebToolsLanguagesSharedPackageVersion>
+    <MicrosoftWebToolsLanguagesSharedEditorPackageVersion>$(Tooling_HtmlEditorPackageVersion)</MicrosoftWebToolsLanguagesSharedEditorPackageVersion>
+    <MicrosoftWebToolsSharedPackageVersion>$(Tooling_HtmlEditorPackageVersion)</MicrosoftWebToolsSharedPackageVersion>
     <MonoAddinsPackageVersion>1.3.8</MonoAddinsPackageVersion>
     <MonoDevelopSdkPackageVersion>1.0.15</MonoDevelopSdkPackageVersion>
     <MoqPackageVersion>4.16.0</MoqPackageVersion>
