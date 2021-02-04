@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
@@ -40,6 +41,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             string token,
             Func<JToken, CancellationToken, Task> onProgressNotifyAsync,
             TimeSpan timeoutAfterLastNotify,
+            CancellationToken immediateNotificationTimeout,
             CancellationToken handlerCancellationToken,
             out Task onCompleted)
         {
@@ -47,6 +49,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var request = new ProgressRequest(
                 onProgressNotifyAsync,
                 timeoutAfterLastNotify,
+                immediateNotificationTimeout,
                 handlerCancellationToken,
                 onCompletedSource);
 
@@ -114,20 +117,25 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     request.HandlerCancellationToken);
             }
 
-            _ = CompleteAfterDelayAsync(token, request.TimeoutAfterLastNotify, linkedCTS); // Fire and forget
+            _ = CompleteAfterDelayAsync(token, request.TimeoutAfterLastNotify, request.ImmediateNotificationTimeout, linkedCTS); // Fire and forget
 
 
-            async Task CompleteAfterDelayAsync(string token, TimeSpan delay, CancellationTokenSource cts)
+            async Task CompleteAfterDelayAsync(string token, TimeSpan delay, CancellationToken immediateNotificationTimeout, CancellationTokenSource cts)
             {
+                using var combinedToken = cts.Token.CombineWith(immediateNotificationTimeout);
+
                 try
                 {
-                    await Task.Delay(delay, cts.Token).ConfigureAwait(false);
+                    await Task.Delay(delay, combinedToken.Token).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {
-                    // Task cancelled, new progress notification received.
-                    // Don't allow handler to return
-                    return;
+                    if (!immediateNotificationTimeout.IsCancellationRequested)
+                    {
+                        // Task cancelled, new progress notification received.
+                        // Don't allow handler to return
+                        return;
+                    }
                 }
                 finally
                 {
@@ -180,6 +188,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             public ProgressRequest(
                 Func<JToken, CancellationToken, Task> onProgressNotifyAsync,
                 TimeSpan timeoutAfterLastNotify,
+                CancellationToken immediateNotificationTimeout,
                 CancellationToken handlerCancellationToken,
                 TaskCompletionSource<bool> onCompleted)
             {
@@ -195,6 +204,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 OnProgressNotifyAsync = onProgressNotifyAsync;
                 TimeoutAfterLastNotify = timeoutAfterLastNotify;
+                ImmediateNotificationTimeout = immediateNotificationTimeout;
                 HandlerCancellationToken = handlerCancellationToken;
                 OnCompleted = onCompleted;
             }
@@ -204,6 +214,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             internal CancellationToken HandlerCancellationToken { get; }
 
             internal TimeSpan TimeoutAfterLastNotify { get; }
+            internal CancellationToken ImmediateNotificationTimeout { get; }
             internal CancellationTokenSource TimeoutCancellationTokenSource { get; set; }
             internal object RequestLock { get; } = new object();
         }

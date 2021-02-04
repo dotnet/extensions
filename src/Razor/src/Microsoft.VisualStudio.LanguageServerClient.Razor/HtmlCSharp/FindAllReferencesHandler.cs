@@ -108,6 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 token,
                 onProgressNotifyAsync: (value, ct) => ProcessReferenceItemsAsync(value, request.PartialResultToken, ct),
                 WaitForProgressNotificationTimeout,
+                ImmediateNotificationTimeout,
                 cancellationToken,
                 out var onCompleted))
             {

@@ -14,6 +14,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             string token,
             Func<JToken, CancellationToken, Task> onProgressNotifyAsync,
             TimeSpan timeoutAfterLastNotify,
+            CancellationToken immediateNotificationTimeout,
             CancellationToken handlerCancellationToken,
             out Task onCompleted);
     }
