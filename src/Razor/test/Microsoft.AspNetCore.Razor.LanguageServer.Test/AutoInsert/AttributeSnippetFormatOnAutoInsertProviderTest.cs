@@ -17,7 +17,7 @@ input: @"
 @addTagHelper *, TestAssembly
 
 <section>
-    <span intAttribute|></span>
+    <span intAttribute=$$></span>
 </section>
 ",
 expected: $@"
@@ -27,7 +27,6 @@ expected: $@"
     <span intAttribute=""$0""></span>
 </section>
 ",
-character: "=",
 fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }
@@ -40,7 +39,7 @@ input: @"
 @addTagHelper *, TestAssembly
 
 <section>
-    <span test2|></span>
+    <span test2=$$></span>
 </section>
 ",
 expected: $@"
@@ -50,7 +49,6 @@ expected: $@"
     <span test2=></span>
 </section>
 ",
-character: "=",
 fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }
@@ -63,7 +61,7 @@ input: @"
 @addTagHelper *, TestAssembly
 
 <section>
-    <span stringAttribute|></span>
+    <span stringAttribute=$$></span>
 </section>
 ",
 expected: $@"
@@ -73,7 +71,6 @@ expected: $@"
     <span stringAttribute=></span>
 </section>
 ",
-character: "=",
 fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }
@@ -86,7 +83,7 @@ input: @"
 @addTagHelper *, TestAssembly
 
 <section>
-    <span|></span>
+    <span=$$></span>
 </section>
 ",
 expected: $@"
@@ -96,7 +93,6 @@ expected: $@"
     <span=></span>
 </section>
 ",
-character: "=",
 fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }
@@ -109,7 +105,7 @@ input: @"
 @addTagHelper *, TestAssembly
 
 <section>
-    <span intAttribute=|></span>
+    <span intAttribute==$$></span>
 </section>
 ",
 expected: $@"
@@ -119,7 +115,6 @@ expected: $@"
     <span intAttribute==></span>
 </section>
 ",
-character: "=",
 fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }

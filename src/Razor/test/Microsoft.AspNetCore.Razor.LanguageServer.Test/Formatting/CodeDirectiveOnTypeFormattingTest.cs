@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             await RunOnTypeFormattingTestAsync(
 input: @"
 @code {
- public class Foo{|}|
+ public class Foo{$$}
 }
 ",
 expected: @"
@@ -32,7 +32,7 @@ triggerCharacter: "}");
 input: @"
 @code {
  public class Foo{
-|}|
+$$}
 }
 ",
 expected: @"
@@ -51,7 +51,7 @@ triggerCharacter: "}");
             await RunOnTypeFormattingTestAsync(
 input: @"
 @code {
- public void Foo{|}|
+ public void Foo{$$}
 }
 ",
 expected: @"
@@ -69,7 +69,7 @@ triggerCharacter: "}");
 input: @"
 @code {
  public void Foo{
-|}|
+$$}
 }
 ",
 expected: @"
@@ -88,7 +88,7 @@ triggerCharacter: "}");
             await RunOnTypeFormattingTestAsync(
 input: @"
 @code {
- public string Foo{ get;set;|}|
+ public string Foo{ get;set;$$}
 }
 ",
 expected: @"
@@ -106,7 +106,7 @@ triggerCharacter: "}");
 input: @"
 @code {
  public string Foo{
-get;set;|}|
+get;set;$$}
 }
 ",
 expected: @"
@@ -125,7 +125,7 @@ triggerCharacter: "}");
         {
             await RunOnTypeFormattingTestAsync(
 input: @"
-@code { public string Foo{ get;set;|}|
+@code { public string Foo{ get;set;$$}
 }
 ",
 expected: @"
@@ -142,7 +142,7 @@ triggerCharacter: "}");
             await RunOnTypeFormattingTestAsync(
 input: @"
 @code {
- public class Foo{private int _hello = 0|;|}
+ public class Foo{private int _hello = 0$$;}
 }
 ",
 expected: @"
@@ -160,7 +160,7 @@ triggerCharacter: ";");
 input: @"
 @code {
     public class Foo{
-private int _hello = 0|;| }
+private int _hello = 0$$; }
 }
 ",
 expected: @"
@@ -180,7 +180,7 @@ input: @"
 @code {
     public void Foo()
     {
-                            var hello = 0|;|
+                            var hello = 0$$;
     }
 }
 ",
@@ -201,8 +201,8 @@ triggerCharacter: ";");
             await RunOnTypeFormattingTestAsync(
 input: @"
 @code {
-    public class Foo {|
-|}
+    public class Foo {$$
+}
 }
 ",
 expected: @"

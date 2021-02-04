@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -60,15 +62,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             // Arrange
             fileKind ??= FileKinds.Component;
-            input = input.TrimStart('\r', '\n');
-            expected = expected.TrimStart('\r', '\n');
 
-            var start = input.IndexOf('|', StringComparison.Ordinal);
-            var end = input.LastIndexOf('|');
-            input = input.Replace("|", string.Empty, StringComparison.Ordinal);
+            TestFileMarkupParser.GetSpans(input, out input, out ImmutableArray<TextSpan> spans);
+            var span = spans.IsEmpty ? new TextSpan(0, input.Length) : spans.Single();
 
             var source = SourceText.From(input);
-            var span = TextSpan.FromBounds(start, end - 1);
             var range = span.AsRange(source);
 
             var path = "file:///path/to/document.razor";
@@ -100,12 +98,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             // Arrange
             fileKind ??= FileKinds.Component;
-            input = input.TrimStart('\r', '\n');
-            expected = expected.TrimStart('\r', '\n');
 
-            var beforeTrigger = input.IndexOf('|', StringComparison.Ordinal);
-            var afterTrigger = input.LastIndexOf('|') - 1;
-            input = input.Replace("|", string.Empty, StringComparison.Ordinal);
+            TestFileMarkupParser.GetPosition(input, out input, out var beforeTrigger);
 
             var source = SourceText.From(input);
 

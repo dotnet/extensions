@@ -20,13 +20,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Formatting
         {
             await RunFormattingTestAsync(
 input: @"
-|   <html>
+   <html>
 <head>
    <title>Hello</title></head>
 <body><div>
 </div>
         </body>
- </html>|
+ </html>
 ",
 expected: @"
 <html>
@@ -45,7 +45,7 @@ expected: @"
         public async Task FormatsRazorHtmlBlock()
         {
             await RunFormattingTestAsync(
-input: @"|@page ""/error""
+input: @"@page ""/error""
 
         <h1 class=
 ""text-danger"">Error.</h1>
@@ -67,7 +67,7 @@ input: @"|@page ""/error""
     </div>
         </div>
 </p>
-|",
+",
 expected: @"@page ""/error""
 
 <h1 class=""text-danger"">
@@ -100,7 +100,7 @@ expected: @"@page ""/error""
         public async Task FormatsMixedHtmlBlock()
         {
             await RunFormattingTestAsync(
-input: @"|@page ""/test""
+input: @"@page ""/test""
 @{
 <p>
         @{
@@ -121,7 +121,7 @@ if (true)
     }
         </div>
 }
-|",
+",
 expected: @"@page ""/test""
 @{
     <p>
@@ -150,7 +150,7 @@ expected: @"@page ""/test""
         public async Task FormatsMixedRazorBlock()
         {
             await RunFormattingTestAsync(
-input: @"|@page ""/test""
+input: @"@page ""/test""
 
 <div class=@className>Some Text</div>
 
@@ -170,7 +170,7 @@ if (true)
         }
         </p>
 }
-|",
+",
 expected: @"@page ""/test""
 
 <div class=@className>Some Text</div>
@@ -200,7 +200,7 @@ expected: @"@page ""/test""
         public async Task FormatsMixedContentWithMultilineExpressions()
         {
             await RunFormattingTestAsync(
-input: @"|@page ""/test""
+input: @"@page ""/test""
 
 <div
 attr='val'
@@ -227,7 +227,7 @@ var x = DateTime
         return f.ToString();
     })
 )
-|",
+",
 expected: @"@page ""/test""
 
 <div attr='val'
@@ -264,7 +264,7 @@ expected: @"@page ""/test""
         public async Task FormatsComplexBlock()
         {
             await RunFormattingTestAsync(
-input: @"|@page ""/""
+input: @"@page ""/""
 
 <h1>Hello, world!</h1>
 
@@ -299,7 +299,7 @@ input: @"|@page ""/""
         void Method() { }
     }
 }
-|",
+",
 expected: @"@page ""/""
 
 <h1>Hello, world!</h1>
@@ -350,7 +350,7 @@ expected: @"@page ""/""
             var tagHelpers = GetComponents();
             await RunFormattingTestAsync(
 input: @"
-|   <Counter>
+   <Counter>
     @if(true){
         <p>@DateTime.Now</p>
 }
@@ -362,7 +362,7 @@ input: @"
         @foreach (var cell in row){
     <GridCell>@cell</GridCell>}</GridRow>
     }
-</GridTable>|
+</GridTable>
 ",
 expected: @"
 <Counter>
