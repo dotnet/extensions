@@ -36,7 +36,6 @@
 
     <!-- Working around https://github.com/microsoft/msbuild/pull/4764 -->
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
-    <CodeAnalysisRuleSet>$(RepoRoot)src/Razor/Microsoft.AspNetCore.Razor.Basic.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
