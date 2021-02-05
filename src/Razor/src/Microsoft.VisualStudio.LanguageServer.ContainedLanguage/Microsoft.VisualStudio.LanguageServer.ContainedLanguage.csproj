@@ -4,7 +4,6 @@
     <TargetFramework>net472</TargetFramework>
     <Description>This package contains the Visual Studio Language Server infrastructure for interacting with contained languages.</Description>
     <EnableApiCheck>false</EnableApiCheck>
-    <CodeAnalysisRuleSet>Microsoft.VisualStudio.LanguageServer.ContainedLanguage.ruleset</CodeAnalysisRuleSet>
     <IsShipping>false</IsShipping>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>

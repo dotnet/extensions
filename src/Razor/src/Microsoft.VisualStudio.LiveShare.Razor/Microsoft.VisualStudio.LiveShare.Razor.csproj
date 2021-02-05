@@ -4,7 +4,6 @@
     <TargetFramework>net472</TargetFramework>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Visual Studio Live Share Razor infrastructure.</Description>
     <EnableApiCheck>false</EnableApiCheck>
-    <CodeAnalysisRuleSet>Microsoft.VisualStudio.LiveShare.Razor.ruleset</CodeAnalysisRuleSet>
     <IsShipping>false</IsShipping>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
