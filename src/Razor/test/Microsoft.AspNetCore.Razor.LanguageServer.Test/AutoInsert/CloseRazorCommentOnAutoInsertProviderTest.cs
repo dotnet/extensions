@@ -12,12 +12,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
         {
             RunAutoInsertTest(
 input: @"
-@|
+@*$$
 ",
 expected: @"
 @* $0 *@
-",
-character: "*");
+");
         }
 
         [Fact]
@@ -25,12 +24,11 @@ character: "*");
         {
             RunAutoInsertTest(
 input: @"
-@* @| *@
+@* @*$$ *@
 ",
 expected: $@"
 @* @* *@
-",
-character: "*");
+");
         }
 
         [Fact]
@@ -38,12 +36,11 @@ character: "*");
         {
             RunAutoInsertTest(
 input: @"
-@* Hello |@
+@* Hello *$$@
 ",
 expected: $@"
 @* Hello *@
-",
-character: "*");
+");
         }
 
         [Fact]
@@ -51,12 +48,11 @@ character: "*");
         {
             RunAutoInsertTest(
 input: @"
-@| Hello
+@*$$ Hello
 ",
 expected: @"
 @* $0 *@ Hello
-",
-character: "*");
+");
         }
 
         internal override RazorOnAutoInsertProvider CreateProvider()

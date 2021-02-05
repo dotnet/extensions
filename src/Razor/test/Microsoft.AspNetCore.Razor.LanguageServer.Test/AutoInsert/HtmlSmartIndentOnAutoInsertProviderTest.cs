@@ -33,49 +33,49 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
         public void TryResolveInsertion_VoidHtmlTag_Noops()
         {
             RunAutoInsertTest(
-input: @"<input>|<strong></strong>
+input: @"<input>
+$$<strong></strong>
 ",
 expected: @"<input>
 <strong></strong>
-",
-character: Environment.NewLine);
+");
         }
 
         [Fact]
         public void TryResolveInsertion_SelfClosingHtmlTag_Noops()
         {
             RunAutoInsertTest(
-input: @"<input />|<strong></strong>
+input: @"<input />
+$$<strong></strong>
 ",
 expected: @"<input />
 <strong></strong>
-",
-character: Environment.NewLine);
+");
         }
 
         [Fact]
         public void TryResolveInsertion_SelfClosingVoidHtmlTag_Noops()
         {
             RunAutoInsertTest(
-input: @"<input />|<input>
+input: @"<input />
+$$<input>
 ",
 expected: @"<input />
 <input>
-",
-character: Environment.NewLine);
+");
         }
 
         [Fact]
         public void TryResolveInsertion_HtmlTag_SmartIndents()
         {
             RunAutoInsertTest(
-input: @"<strong>|</strong>
+input: @"<strong>
+$$</strong>
 ",
 expected: @"<strong>
     $0
 </strong>
-",
-character: Environment.NewLine);
+");
         }
 
         [Fact]
@@ -83,7 +83,8 @@ character: Environment.NewLine);
         {
             RunAutoInsertTest(
 input: @"<section>
-    <div>|</div>
+    <div>
+$$</div>
 </section>
 ",
 expected: @"<section>
@@ -91,8 +92,7 @@ expected: @"<section>
         $0
     </div>
 </section>
-",
-character: Environment.NewLine);
+");
         }
 
         [Fact]
@@ -103,7 +103,8 @@ input: @"
 @if (true)
 {
     <section class='column-1'>@{<hr>
-        <div onclick='invokeMethod(""Some Content</div>"")'>|</div><input />
+        <div onclick='invokeMethod(""Some Content</div>"")'>
+$$</div><input />
     }
     <hr /></section>
 }
@@ -118,8 +119,7 @@ expected: @"
     }
     <hr /></section>
 }
-",
-character: Environment.NewLine);
+");
         }
 
         [Fact]
@@ -129,7 +129,8 @@ character: Environment.NewLine);
 input: @"
 @addTagHelper *, TestAssembly
 
-<span>|</span>
+<span>
+$$</span>
 ",
 expected: @"
 @addTagHelper *, TestAssembly
@@ -138,7 +139,6 @@ expected: @"
     $0
 </span>
 ",
-character: Environment.NewLine,
 fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }
@@ -151,7 +151,8 @@ input: @"
 @addTagHelper *, TestAssembly
 
 <section>
-    <span>|</span>
+    <span>
+$$</span>
 </section>
 ",
 expected: @"
@@ -163,7 +164,6 @@ expected: @"
     </span>
 </section>
 ",
-character: Environment.NewLine,
 fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }
@@ -179,7 +179,8 @@ input: @"
 @if (true)
 {
     <section class='column-1'>@{<hr>
-        <span onclick='invokeMethod(""Some Content</span>"")' test='hello world'>|</span><input />
+        <span onclick='invokeMethod(""Some Content</span>"")' test='hello world'>
+$$</span><input />
     }
     <hr /></section>
 }
@@ -198,7 +199,6 @@ expected: @"
     <hr /></section>
 }
 ",
-character: Environment.NewLine,
 fileKind: FileKinds.Legacy,
 tagHelpers: TagHelpers);
         }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -19,11 +20,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
     {
         internal abstract RazorOnAutoInsertProvider CreateProvider();
 
-        protected void RunAutoInsertTest(string input, string expected, string character, int tabSize = 4, bool insertSpaces = true, string fileKind = default, IReadOnlyList<TagHelperDescriptor> tagHelpers = default)
+        protected void RunAutoInsertTest(string input, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = default, IReadOnlyList<TagHelperDescriptor> tagHelpers = default)
         {
             // Arrange
-            var location = input.IndexOf('|', StringComparison.Ordinal) + character.Length;
-            input = input.Replace("|", character, StringComparison.Ordinal);
+            TestFileMarkupParser.GetPosition(input, out input, out var location);
 
             var source = SourceText.From(input);
             source.GetLineAndOffset(location, out var line, out var column);

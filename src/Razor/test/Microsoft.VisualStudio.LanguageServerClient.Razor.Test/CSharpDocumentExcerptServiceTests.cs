@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var razorSource = @"
 <html>
 @{
-    var |foo| = ""Hello, World!"";
+    var [|foo|] = ""Hello, World!"";
 }
   <body>@foo</body>
   <div>@(3 + 4)</div><div>@(foo + foo)</div>
@@ -104,7 +104,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 @{
     var foo = ""Hello, World!"";
 }
-  <body>@|foo|</body>
+  <body>@[|foo|]</body>
   <div>@(3 + 4)</div><div>@(foo + foo)</div>
 </html>
 ";
@@ -147,7 +147,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     var foo = ""Hello, World!"";
 }
   <body>@foo</body>
-  <div>@(3 + 4)</div><div>@(foo + |foo|)</div>
+  <div>@(3 + 4)</div><div>@(foo + [|foo|])</div>
 </html>
 ";
 
@@ -187,7 +187,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var razorSource = @"
 <html>
 @{
-    var |foo| = ""Hello, World!"";
+    var [|foo|] = ""Hello, World!"";
 }
   <body></body>
   <div></div>
@@ -234,7 +234,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public async Task TryGetExcerptInternalAsync_MultiLine_Boundaries_CanClassifyCSharp()
         {
             // Arrange
-            var razorSource = @"@{ var |foo| = ""Hello, World!""; }";
+            var razorSource = @"@{ var [|foo|] = ""Hello, World!""; }";
 
             var (generatedDocument, razorSourceText, primarySpan, generatedSpan) = await InitializeAsync(razorSource);
 

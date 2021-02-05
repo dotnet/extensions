@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
+using TestFileMarkupParser = Microsoft.CodeAnalysis.Testing.TestFileMarkupParser;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -28,18 +29,10 @@ namespace Microsoft.CodeAnalysis.Razor
             // Since we're using positions, normalize to Windows style
 #pragma warning disable CA1307 // Specify StringComparison
             text = text.Replace("\r", "").Replace("\n", "\r\n");
-
-            var start = text.IndexOf('|');
-            var length = text.IndexOf('|', start + 1) - start - 1;
-            text = text.Replace("|", "");
 #pragma warning restore CA1307 // Specify StringComparison
 
-            if (start < 0 || length < 0)
-            {
-                throw new InvalidOperationException("Could not find delimited text.");
-            }
-
-            return (SourceText.From(text), new TextSpan(start, length));
+            TestFileMarkupParser.GetSpan(text, out text, out var span);
+            return (SourceText.From(text), span);
         }
 
         // Adds the text to a ProjectSnapshot, generates code, and updates the workspace.

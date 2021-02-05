@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             await RunOnTypeFormattingTestAsync(
 input: @"
 @{
- if(true){|}|
+ if(true){$$}
 }
 ",
 expected: @"
@@ -33,7 +33,7 @@ input: @"
 @{
  if(true)
 {
- |}|
+ $$}
 }
 ",
 expected: @"
@@ -60,7 +60,7 @@ input: @"
 @{
  if(true)
 {
- |}|
+ $$}
 }
 ",
 expected: @"
@@ -85,7 +85,7 @@ triggerCharacter: "}");
             await RunOnTypeFormattingTestAsync(
 input: @"
 @{
- var x = 'foo'|;|
+ var x = 'foo'$$;
 }
 ",
 expected: @"
@@ -103,7 +103,7 @@ triggerCharacter: ";");
 input: @"
 @{
  var x = @""
-foo""|;|
+foo""$$;
 }
 ",
 expected: @"

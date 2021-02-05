@@ -93,6 +93,7 @@
     <MicrosoftInternalVisualStudioShellEmbeddablePackageVersion>16.4.29305.180</MicrosoftInternalVisualStudioShellEmbeddablePackageVersion>
     <MicrosoftNETCoreApp50PackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreApp50PackageVersion>
     <!-- Packages from dotnet/roslyn -->
+    <MicrosoftCodeAnalysisAnalyzerTestingPackageVersion>1.0.1-beta1.21103.2</MicrosoftCodeAnalysisAnalyzerTestingPackageVersion>
     <MicrosoftNetCompilersToolsetPackageVersion>3.9.0-2.20573.10</MicrosoftNetCompilersToolsetPackageVersion>
     <MicrosoftNetRoslynDiagnosticsPackageVersion>2.6.3</MicrosoftNetRoslynDiagnosticsPackageVersion>
     <MicrosoftServiceHubFrameworkPackageVersion>2.7.313-preview</MicrosoftServiceHubFrameworkPackageVersion>

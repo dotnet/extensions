@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             await RunFormattingTestAsync(
 input: @"
-|@code {
+@code {
  public class Foo{}
         public interface Bar {
 }
-}|
+}
 ",
 expected: @"
 @code {
@@ -35,11 +35,11 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
-|@{
+@{
 var x = ""foo"";
 }
 <div>
-        </div>|
+        </div>
 ",
 expected: @"
 @{
@@ -55,11 +55,11 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
-|@functions {
+@functions {
  public class Foo{
 void Method() { <div></div> }
 }
-}|
+}
 ",
 expected: @"
 @functions {
@@ -79,11 +79,11 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
-|@code {
+@code {
  public class Foo{
 void Method() { @DateTime.Now }
     }
-}|
+}
 ",
 expected: @"
 @code {
@@ -103,11 +103,11 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
-|@functions {
+@functions {
  public class Foo{
 void Method() { @(DateTime.Now) }
     }
-}|
+}
 ",
 expected: @"
 @functions {
@@ -128,7 +128,7 @@ fileKind: FileKinds.Legacy);
         {
             await RunFormattingTestAsync(
 input: @"
-|@functions {
+@functions {
  public class Foo{
 void Method() {  }
     }
@@ -136,7 +136,7 @@ void Method() {  }
 
 @section Scripts {
 <script></script>
-}|
+}
 ",
 expected: @"
 @functions {
@@ -158,12 +158,12 @@ fileKind: FileKinds.Legacy);
         {
             await RunFormattingTestAsync(
 input: @"
-|@functions {
+@functions {
  public class Foo{
 @* This is a Razor Comment *@
 void Method() {  }
 }
-}|
+}
 ",
 expected: @"
 @functions {
@@ -181,11 +181,11 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
-|@functions {
+@functions {
  public class Foo{
 @* This is a Razor Comment *@
     }
-}|
+}
 ",
 expected: @"
 @functions {
@@ -202,7 +202,7 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
-|<div>Foo</div>|
+[|<div>Foo</div>|]
 @functions {
  public class Foo{}
         public interface Bar {
@@ -226,8 +226,8 @@ expected: @"
 input: @"
 @functions {
  public class Foo{}
-        |public interface Bar {
-}|
+        [|public interface Bar {
+}|]
 }
 ",
 expected: @"
@@ -245,7 +245,7 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
-|@functions {
+@functions {
  public class Foo{}
         public interface Bar {
 }
@@ -256,7 +256,7 @@ Hello World
           void Method ( )
           { }
           }
-}|
+}
 ",
 expected: @"
 @functions {
@@ -282,7 +282,7 @@ fileKind: FileKinds.Legacy);
         {
             await RunFormattingTestAsync(
 input: @"
-|Hello World
+Hello World
 @code {
 public class HelloWorld
 {
@@ -293,7 +293,7 @@ public class HelloWorld
 
  public class Bar {}
 }
-|",
+",
 expected: @"
 Hello World
 @code {
@@ -313,9 +313,9 @@ Hello World
         {
             await RunFormattingTestAsync(
 input: @"
-|@functions {public class Foo{
+@functions {public class Foo{
 }
-}|
+}
 ",
 expected: @"
 @functions {
@@ -331,9 +331,9 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
-|@functions {
+@functions {
 public class Foo{
-}}|
+}}
 ",
 expected: @"
 @functions {
@@ -349,8 +349,8 @@ expected: @"
         {
             await RunFormattingTestAsync(
 input: @"
-|@functions {public class Foo{}
-}|
+@functions {public class Foo{}
+}
 ",
 expected: @"
 @functions {
@@ -363,10 +363,10 @@ expected: @"
         public async Task IndentsCodeBlockDirectiveStart()
         {
             await RunFormattingTestAsync(
-input: @"|
+input: @"
 Hello World
      @functions {public class Foo{}
-}|
+}
 ",
 expected: @"
 Hello World
@@ -380,10 +380,10 @@ Hello World
         public async Task IndentsCodeBlockDirectiveEnd()
         {
             await RunFormattingTestAsync(
-input: @"|
+input: @"
  @functions {
 public class Foo{}
-     }|
+     }
 ",
 expected: @"
 @functions {
@@ -398,7 +398,7 @@ expected: @"
             await RunFormattingTestAsync(
 input: @"
 @using System.Buffers
-|@functions{
+@functions{
      public class Foo
             {
                 public Foo()
@@ -422,7 +422,7 @@ void Method(){
 
 }
                     }
-}|
+}
 ",
 expected: @"
 @using System.Buffers
@@ -464,11 +464,11 @@ be indented.
         {
             await RunFormattingTestAsync(
 input: @"
-|@code {
+@code {
  public class Foo{}
         void Method(  ) {
 }
-}|
+}
 ",
 expected: @"
 @code {
@@ -486,11 +486,11 @@ insertSpaces: false);
         {
             await RunFormattingTestAsync(
 input: @"
-|@code {
+@code {
  public class Foo{}
         void Method(  ) {
 }
-}|
+}
 ",
 expected: @"
 @code {
@@ -509,11 +509,11 @@ insertSpaces: false);
         {
             await RunFormattingTestAsync(
 input: @"
-|@code {
+@code {
  public class Foo{}
         void Method(  ) {
 }
-}|
+}
 ",
 expected: @"
 @code {
@@ -531,11 +531,11 @@ tabSize: 3);
         {
             await RunFormattingTestAsync(
 input: @"
-|@code {
+@code {
  public class Foo{}
         void Method(  ) {
 }
-}|
+}
 ",
 expected: @"
 @code {
@@ -553,11 +553,11 @@ tabSize: 8);
         {
             await RunFormattingTestAsync(
 input: @"
-|@code {
+@code {
  public class Foo{}
         void Method(  ) {
 }
-}|
+}
 ",
 expected: @"
 @code {

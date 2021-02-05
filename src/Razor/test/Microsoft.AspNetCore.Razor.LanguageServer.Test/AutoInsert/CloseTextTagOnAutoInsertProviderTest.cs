@@ -15,15 +15,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             RunAutoInsertTest(
 input: @"
 @{
-    <text|
+    <text>$$
 }
 ",
 expected: @"
 @{
     <text>$0</text>
 }
-",
-character: ">");
+");
         }
 
         [Fact]
@@ -31,12 +30,11 @@ character: ">");
         {
             RunAutoInsertTest(
 input: @"
-    <text|
+    <text>$$
 ",
 expected: @"
     <text>
-",
-character: ">");
+");
         }
 
         internal override RazorOnAutoInsertProvider CreateProvider()

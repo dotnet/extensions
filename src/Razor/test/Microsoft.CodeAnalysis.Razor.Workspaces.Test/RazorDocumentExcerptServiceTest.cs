@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var razorSource = @"
 <html>
 @{
-    var |foo| = ""Hello, World!"";
+    var [|foo|] = ""Hello, World!"";
 }
   <body>@foo</body>
   <div>@(3 + 4)</div><div>@(foo + foo)</div>
@@ -104,7 +104,7 @@ namespace Microsoft.CodeAnalysis.Razor
 @{
     var foo = ""Hello, World!"";
 }
-  <body>@|foo|</body>
+  <body>@[|foo|]</body>
   <div>@(3 + 4)</div><div>@(foo + foo)</div>
 </html>
 ";
@@ -157,7 +157,7 @@ namespace Microsoft.CodeAnalysis.Razor
     var foo = ""Hello, World!"";
 }
   <body>@foo</body>
-  <div>@(3 + 4)</div><div>@(foo + |foo|)</div>
+  <div>@(3 + 4)</div><div>@(foo + [|foo|])</div>
 </html>
 ";
 
@@ -256,7 +256,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var razorSource = @"
 <html>
 @{
-    var |foo| = ""Hello, World!"";
+    var [|foo|] = ""Hello, World!"";
 }
   <body></body>
   <div></div>
@@ -369,7 +369,7 @@ namespace Microsoft.CodeAnalysis.Razor
         public async Task TryGetExcerptInternalAsync_MultiLine_Boundaries_CanClassifyCSharp()
         {
             // Arrange
-            var razorSource = @"@{ var |foo| = ""Hello, World!""; }";
+            var razorSource = @"@{ var [|foo|] = ""Hello, World!""; }";
 
             var (primary, secondary, secondarySpan) = await InitializeWithSnapshotAsync(razorSource);
 
