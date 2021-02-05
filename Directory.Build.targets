@@ -36,6 +36,16 @@
     <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <!-- Global Analyzer Config -->
+  <ItemGroup>
+    <!-- Always include Common.globalconfig -->
+    <EditorConfigFiles Include="$(RepositoryEngineeringDir)config\globalconfigs\Common.globalconfig" />
+    <!-- Include Shipping.globalconfig for shipping projects -->
+    <EditorConfigFiles Condition="'$(IsShipping)' == 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\Shipping.globalconfig" />
+    <!-- Include NonShipping.globalconfig for non-shipping projects -->
+    <EditorConfigFiles Condition="'$(IsShipping)' != 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\NonShipping.globalconfig" />
+  </ItemGroup>
+
   <Target Name="GetCustomAssemblyAttributes"
           BeforeTargets="GetAssemblyAttributes"
           Condition=" '$(MSBuildProjectExtension)' == '.csproj' "
