@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Hosting
         /// Gets a collection of arbitrary metadata associated with the item.
         /// </summary>
         /// <remarks>
-        /// For items loaded with the default implementation of <see cref="RazorCompiledItemLoader"/>, the 
+        /// For items loaded with the default implementation of <see cref="DefaultRazorCompiledItem"/>, the 
         /// metadata collection will return all attributes defined on the <see cref="Type"/>.
         /// </remarks>
         public abstract IReadOnlyList<object> Metadata { get; }
