@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472</TargetFrameworks>
-    <NoWarn>$(NoWarn);VSSDK005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
