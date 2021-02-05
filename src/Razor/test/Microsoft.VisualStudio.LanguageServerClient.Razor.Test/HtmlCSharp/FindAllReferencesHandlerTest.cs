@@ -197,8 +197,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 l.TryListenForProgress(
                     It.IsAny<string>(),
                     It.IsAny<Func<JToken, CancellationToken, Task>>(),
-                    It.IsAny<TimeSpan>(),
-                    It.IsAny<CancellationToken>(),
+                    It.IsAny<Func<CancellationToken, Task>>(),
                     It.IsAny<CancellationToken>(),
                     out onCompleted) == false, MockBehavior.Strict);
 
