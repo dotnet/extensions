@@ -26,3 +26,6 @@ dotnet_diagnostic.CA2208.severity = none
 
 # CA2237: Mark ISerializable types with SerializableAttribute
 dotnet_diagnostic.CA2237.severity = none
+
+# VSSDK002: The PackageRegistrationAttribute.AllowsBackgroundLoading should be set to true if and only if the package derives from AsyncPackage
+dotnet_diagnostic.VSSDK002.severity = suggestion
