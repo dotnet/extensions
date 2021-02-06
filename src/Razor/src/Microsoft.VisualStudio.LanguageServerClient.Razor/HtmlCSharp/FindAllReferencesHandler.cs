@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Text.Adornments;
+using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
@@ -107,7 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             if (!_lspProgressListener.TryListenForProgress(
                 token,
                 onProgressNotifyAsync: (value, ct) => ProcessReferenceItemsAsync(value, request.PartialResultToken, ct),
-                WaitForProgressNotificationTimeout,
+                DelayAfterLastNotifyAsync,
                 cancellationToken,
                 out var onCompleted))
             {
@@ -136,6 +137,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Results returned through Progress notification
             var remappedResults = await RemapReferenceItemsAsync(result, cancellationToken).ConfigureAwait(false);
             return remappedResults;
+
+            // Local functions
+            async Task DelayAfterLastNotifyAsync(CancellationToken cancellationToken)
+            {
+                using var combined = ImmediateNotificationTimeout.CombineWith(cancellationToken);
+
+                try
+                {
+                    await Task.Delay(WaitForProgressNotificationTimeout, combined.Token).ConfigureAwait(false);
+                }
+                catch (TaskCanceledException) when (ImmediateNotificationTimeout.IsCancellationRequested)
+                {
+                    // The delay was requested to complete immediately
+                }
+            }
         }
 
         private async Task ProcessReferenceItemsAsync(

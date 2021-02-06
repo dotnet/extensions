@@ -40,8 +40,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var progressListener = Mock.Of<LSPProgressListener>(MockBehavior.Strict);
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
             var referenceRequest = new ReferenceParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -67,8 +69,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Returns(Task.FromResult<ProjectionResult>(null));
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var progressListener = Mock.Of<LSPProgressListener>(MockBehavior.Strict);
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
             var referenceRequest = new ReferenceParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -143,8 +147,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.Html, It.IsAny<Uri>(), It.IsAny<Range[]>(), It.IsAny<CancellationToken>()))
                 .Returns<RazorLanguageKind, Uri, Range[], CancellationToken>((languageKind, uri, ranges, ct) => Task.FromResult(uri.LocalPath.Contains("file1") ? remappingResult1 : remappingResult2));
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object, lspProgressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -153,6 +159,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     a => AssertVSReferenceItem(expectedLocation1, a),
                     b => AssertVSReferenceItem(expectedLocation2, b));
                 progressReported = true;
+                completedTokenSource.CancelAfter(0);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -190,12 +197,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 l.TryListenForProgress(
                     It.IsAny<string>(),
                     It.IsAny<Func<JToken, CancellationToken, Task>>(),
-                    It.IsAny<TimeSpan>(),
+                    It.IsAny<Func<CancellationToken, Task>>(),
                     It.IsAny<CancellationToken>(),
                     out onCompleted) == false, MockBehavior.Strict);
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
             var referenceRequest = new ReferenceParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -270,8 +279,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, It.IsAny<Uri>(), It.IsAny<Range[]>(), It.IsAny<CancellationToken>()))
                 .Returns<RazorLanguageKind, Uri, Range[], CancellationToken>((languageKind, uri, ranges, ct) => Task.FromResult(uri.LocalPath.Contains("file1") ? remappingResult1 : remappingResult2));
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object, lspProgressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -280,6 +291,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     a => AssertVSReferenceItem(expectedLocation1, a),
                     b => AssertVSReferenceItem(expectedLocation2, b));
                 progressReported = true;
+                completedTokenSource.CancelAfter(0);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -327,8 +339,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, externalUri, new[] { csharpLocation.Location.Range }, It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -336,6 +350,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 var actualLocation = Assert.Single(results);
                 AssertVSReferenceItem(expectedLocation, actualLocation);
                 progressReported = true;
+                completedTokenSource.CancelAfter(0);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -384,8 +399,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, externalUri, new[] { csharpLocation.Location.Range }, It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -393,6 +410,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 var actualReferenceItem = Assert.Single(results);
                 AssertVSReferenceItem(expectedReferenceItem, actualReferenceItem);
                 progressReported = true;
+                completedTokenSource.CancelAfter(0);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -453,8 +471,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             documentMappingProvider.Setup(d => d.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, externalUri, new[] { csharpLocation.Location.Range }, It.IsAny<CancellationToken>())).
                 Returns(Task.FromResult(remappingResult));
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -462,6 +482,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 var actualReferenceItem = Assert.Single(results);
                 AssertVSReferenceItem(expectedReferenceItem, actualReferenceItem);
                 progressReported = true;
+                completedTokenSource.CancelAfter(0);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -499,8 +520,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
@@ -508,6 +531,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 var actualLocation = Assert.Single(results);
                 AssertVSReferenceItem(externalCsharpLocation, actualLocation);
                 progressReported = true;
+                completedTokenSource.CancelAfter(0);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -554,14 +578,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
                 var results = Assert.IsType<VSReferenceItem[]>(val);
                 Assert.Empty(results);
                 progressReported = true;
+                completedTokenSource.CancelAfter(0);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -611,14 +638,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
                 var results = Assert.IsType<VSReferenceItem[]>(val);
                 Assert.Empty(results);
                 progressReported = true;
+                completedTokenSource.CancelAfter(0);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -660,14 +690,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker, documentManager, projectionProvider.Object, documentMappingProvider.Object, progressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressToken = new ProgressWithCompletion<object>((val) =>
             {
                 var results = Assert.IsType<VSReferenceItem[]>(val);
                 Assert.Empty(results);
                 progressReported = true;
+                completedTokenSource.CancelAfter(0);
             });
             var referenceRequest = new ReferenceParams()
             {
@@ -780,8 +813,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     return Task.FromResult(response);
                 });
 
+            using var completedTokenSource = new CancellationTokenSource();
             var referencesHandler = new FindAllReferencesHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object, lspProgressListener);
-            referencesHandler.WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().WaitForProgressNotificationTimeout = TestWaitForProgressNotificationTimeout;
+            referencesHandler.GetTestAccessor().ImmediateNotificationTimeout = completedTokenSource.Token;
 
             var progressBatchesReported = new ConcurrentBag<VSReferenceItem[]>();
             var progressToken = new ProgressWithCompletion<object>((val) =>
@@ -789,6 +824,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 var results = Assert.IsType<VSReferenceItem[]>(val);
                 Assert.Equal(BATCH_SIZE, results.Length);
                 progressBatchesReported.Add(results);
+                if (progressBatchesReported.Count == NUM_BATCHES)
+                {
+                    // All expected results were received
+                    completedTokenSource.CancelAfter(0);
+                }
             });
             var referenceRequest = new ReferenceParams()
             {

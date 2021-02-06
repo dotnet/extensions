@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.Threading;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -35,7 +36,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
                 onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1).ConfigureAwait(false); },
-                NotificationTimeout,
+                delayAfterLastNotifyAsync: cancellationToken => Task.Delay(NotificationTimeout, cancellationToken),
                 cts.Token,
                 out var onCompleted);
 
@@ -60,13 +61,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             _ = lspProgressListener.TryListenForProgress(
                 token,
                 onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1).ConfigureAwait(false); },
-                NotificationTimeout,
+                delayAfterLastNotifyAsync: cancellationToken => Task.Delay(NotificationTimeout, cancellationToken),
                 cts.Token,
                 out _);
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
                 onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1).ConfigureAwait(false); },
-                NotificationTimeout,
+                delayAfterLastNotifyAsync: cancellationToken => Task.Delay(NotificationTimeout, cancellationToken),
                 cts.Token,
                 out var onCompleted);
 
@@ -82,7 +83,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageServiceBroker = Mock.Of<ILanguageServiceBroker2>(MockBehavior.Strict);
 
             var token = Guid.NewGuid().ToString();
-            var notificationTimeout = TimeSpan.FromSeconds(15);
+            var notificationTimeout = TimeSpan.FromSeconds(1);
             using var cts = new CancellationTokenSource();
             var onProgressNotifyAsyncCalled = false;
 
@@ -91,11 +92,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Act 1
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: async (value, ct) => {
-                    await Task.Delay(1).ConfigureAwait(false);
+                onProgressNotifyAsync: (value, ct) => {
                     onProgressNotifyAsyncCalled = true;
+                    return Task.CompletedTask;
                 },
-                notificationTimeout,
+                delayAfterLastNotifyAsync: cancellationToken => Task.Delay(notificationTimeout, cancellationToken),
                 cts.Token,
                 out var onCompleted);
 
@@ -127,11 +128,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Act
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: async (value, ct) => {
-                    await Task.Delay(1).ConfigureAwait(false);
+                onProgressNotifyAsync: (value, ct) => {
                     onProgressNotifyAsyncCalled = true;
+                    return Task.CompletedTask;
                 },
-                NotificationTimeout,
+                delayAfterLastNotifyAsync: cancellationToken => Task.Delay(TimeSpan.FromSeconds(1), cancellationToken),
                 cts.Token,
                 out var onCompleted);
 
@@ -159,6 +160,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 { "value", JArray.FromObject(new[] { expectedValue }) }
             };
 
+            using var completedTokenSource = new CancellationTokenSource();
             var onProgressNotifyAsyncCalled = false;
             Task onProgressNotifyAsync(JToken value, CancellationToken ct)
             {
@@ -166,6 +168,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 var firstValue = Assert.Single(result);
                 Assert.Equal(expectedValue, firstValue);
                 onProgressNotifyAsyncCalled = true;
+                completedTokenSource.CancelAfter(0);
                 return Task.CompletedTask;
             }
 
@@ -175,7 +178,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
                 onProgressNotifyAsync: onProgressNotifyAsync,
-                NotificationTimeout,
+                delayAfterLastNotifyAsync: cancellationToken => DelayAfterLastNotifyAsync(NotificationTimeout, completedTokenSource.Token, cancellationToken),
                 cts.Token,
                 out var onCompleted);
 
@@ -208,10 +211,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 });
             }
 
+            using var completedTokenSource = new CancellationTokenSource();
             var receivedResults = new ConcurrentBag<int>();
             Task onProgressNotifyAsync(JToken value, CancellationToken ct)
             {
                 receivedResults.Add(value.ToObject<int>());
+                if (receivedResults.Count == NUM_NOTIFICATIONS)
+                {
+                    // All notifications received
+                    completedTokenSource.CancelAfter(0);
+                }
+
                 return Task.CompletedTask;
             }
 
@@ -219,7 +229,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
                 onProgressNotifyAsync: onProgressNotifyAsync,
-                NotificationTimeout,
+                delayAfterLastNotifyAsync: cancellationToken => DelayAfterLastNotifyAsync(NotificationTimeout, completedTokenSource.Token, cancellationToken),
                 cts.Token,
                 out var onCompleted);
 
@@ -236,6 +246,20 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             for (var i = 0; i < NUM_NOTIFICATIONS; ++i)
             {
                 Assert.Equal(i, sortedResults[i]);
+            }
+        }
+
+        private static async Task DelayAfterLastNotifyAsync(TimeSpan waitForProgressNotificationTimeout, CancellationToken immediateNotificationTimeout, CancellationToken cancellationToken)
+        {
+            using var combined = immediateNotificationTimeout.CombineWith(cancellationToken);
+
+            try
+            {
+                await Task.Delay(waitForProgressNotificationTimeout, combined.Token).ConfigureAwait(false);
+            }
+            catch (TaskCanceledException) when (immediateNotificationTimeout.IsCancellationRequested)
+            {
+                // The delay was requested to complete immediately
             }
         }
     }
