@@ -95,7 +95,6 @@
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftCodeAnalysisAnalyzerTestingPackageVersion>1.0.1-beta1.21103.2</MicrosoftCodeAnalysisAnalyzerTestingPackageVersion>
     <MicrosoftNetCompilersToolsetPackageVersion>3.9.0-2.20573.10</MicrosoftNetCompilersToolsetPackageVersion>
-    <MicrosoftNetRoslynDiagnosticsPackageVersion>2.6.3</MicrosoftNetRoslynDiagnosticsPackageVersion>
     <MicrosoftServiceHubFrameworkPackageVersion>2.7.313-preview</MicrosoftServiceHubFrameworkPackageVersion>
     <MicrosoftVisualStudioCoreUtilityPackageVersion>16.8.272</MicrosoftVisualStudioCoreUtilityPackageVersion>
     <MicrosoftVisualStudioComponentModelHostPackageVersion>16.0.467</MicrosoftVisualStudioComponentModelHostPackageVersion>
@@ -143,6 +142,7 @@
     <Tooling_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
     <Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <Tooling_MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion>$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)</Tooling_MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion>
+    <Tooling_RoslynDiagnosticsAnalyzersPackageVersion>$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)</Tooling_RoslynDiagnosticsAnalyzersPackageVersion>
     <Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitCombinatorialPackageVersion>1.4.1</XunitCombinatorialPackageVersion>

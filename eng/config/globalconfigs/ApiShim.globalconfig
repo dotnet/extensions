@@ -2,9 +2,6 @@ is_global = true
 
 # API-related warnings do not make sense in API shim files
 
-# CA1018: Mark attributes with AttributeUsageAttribute
-dotnet_diagnostic.CA1018.severity = none
-
 # CA1816: Call GC.SuppressFinalize correctly
 dotnet_diagnostic.CA1816.severity = none
 
