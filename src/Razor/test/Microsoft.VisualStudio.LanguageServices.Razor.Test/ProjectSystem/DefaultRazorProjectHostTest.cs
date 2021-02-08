@@ -23,6 +23,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
 
+            var projectConfigurationFilePathStore = new Mock<ProjectConfigurationFilePathStore>(MockBehavior.Strict);
+            projectConfigurationFilePathStore.Setup(s => s.Remove(It.IsAny<string>())).Verifiable();
+            ProjectConfigurationFilePathStore = projectConfigurationFilePathStore.Object;
+
             ConfigurationItems = new ItemCollection(Rules.RazorConfiguration.SchemaName);
             ExtensionItems = new ItemCollection(Rules.RazorExtension.SchemaName);
             RazorComponentWithTargetPathItems = new ItemCollection(Rules.RazorComponentWithTargetPath.SchemaName);
@@ -36,7 +40,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private ItemCollection ExtensionItems { get; }
 
-        private ProjectConfigurationFilePathStore ProjectConfigurationFilePathStore = Mock.Of<ProjectConfigurationFilePathStore>();
+        private ProjectConfigurationFilePathStore ProjectConfigurationFilePathStore { get; }
 
         private ItemCollection RazorComponentWithTargetPathItems { get; }
 
@@ -1131,7 +1135,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, Workspace workspace) 
-                : base(dispatcher, Mock.Of<ErrorReporter>(), Array.Empty<ProjectSnapshotChangeTrigger>(), workspace)
+                : base(dispatcher, Mock.Of<ErrorReporter>(MockBehavior.Strict), Array.Empty<ProjectSnapshotChangeTrigger>(), workspace)
             {
             }
         }

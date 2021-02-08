@@ -629,7 +629,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace)
-                : base(dispatcher, Mock.Of<ErrorReporter>(), triggers, workspace)
+                : base(dispatcher, Mock.Of<ErrorReporter>(MockBehavior.Strict), triggers, workspace)
             {
             }
 
