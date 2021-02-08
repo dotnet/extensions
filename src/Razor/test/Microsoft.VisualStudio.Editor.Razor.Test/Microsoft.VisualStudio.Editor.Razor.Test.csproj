@@ -31,7 +31,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion)"/>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(Tooling_MicrosoftCodeAnalysisCommonPackageVersion)" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
-    <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
   </ItemGroup>
 
 </Project>
