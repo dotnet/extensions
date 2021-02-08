@@ -1,7 +1,7 @@
 is_global = true
 
 # CA1707: Remove the underscores from member name 'name'
-dotnet_diagnostic.CA1707.severity = suggestion
+dotnet_diagnostic.CA1707.severity = none
 
 # CA1822: Member GetSecondarySpanAsync does not access instance data and can be marked as static
 dotnet_diagnostic.CA1822.severity = suggestion
