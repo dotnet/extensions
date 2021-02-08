@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472</TargetFrameworks>
-    <NoWarn>$(NoWarn);VSSDK005</NoWarn>
-    <CodeAnalysisRuleSet>..\..\src\Microsoft.VisualStudio.LanguageServerClient.Razor\Microsoft.VisualStudio.LanguageServerClient.Razor.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

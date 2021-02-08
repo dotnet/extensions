@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472</TargetFrameworks>
-    <NoWarn>$(NoWarn);VSSDK005</NoWarn>
-    <CodeAnalysisRuleSet>..\..\src\Microsoft.VisualStudio.LanguageServer.ContainedLanguage\Microsoft.VisualStudio.LanguageServer.ContainedLanguage.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

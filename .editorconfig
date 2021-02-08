@@ -15,8 +15,6 @@ indent_size = 4
 insert_final_newline = true
 encoding = utf-8-bom
 
-# IDE0073: The file header is missing or not located at the top of the file
-dotnet_diagnostic.IDE0073.severity = error
 file_header_template = Copyright (c) .NET Foundation. All rights reserved.\nLicensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 # Xml project files
@@ -69,15 +67,6 @@ csharp_new_line_before_catch = true
 csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
-
-# IDE0051: Remove unused private members
-dotnet_diagnostic.IDE0051.severity = warning
-
-# CS0219: Variable is assigned but its value is never used
-dotnet_diagnostic.CS0219.severity = warning
-
-# IDE0005: Using directive is unnecessary.
-dotnet_diagnostic.IDE0005.severity = warning
 
 # IDE0058
 csharp_style_unused_value_expression_statement_preference = discard_variable:none

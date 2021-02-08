@@ -7,9 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-
-    <!-- Don't warn in tests for methods that are async and don't end in "Async" -->
-    <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

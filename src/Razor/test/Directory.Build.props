@@ -2,8 +2,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory).., Directory.Build.props))\Directory.Build.props" Condition="'$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))'!= ''" />
 
   <PropertyGroup>
-    <!-- Don't warn in tests for methods that are async and don't end in "Async" -->
-    <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <DeveloperBuildTestTfms>$(DefaultNetCoreTargetFramework)</DeveloperBuildTestTfms>
     <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>

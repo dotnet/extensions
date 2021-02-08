@@ -18,6 +18,7 @@
 
   <PropertyGroup Label="Build Settings">
     <LangVersion>8.0</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
@@ -36,7 +37,6 @@
 
     <!-- Working around https://github.com/microsoft/msbuild/pull/4764 -->
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
-    <CodeAnalysisRuleSet>$(RepoRoot)src/Razor/Microsoft.AspNetCore.Razor.Basic.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
