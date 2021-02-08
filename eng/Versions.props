@@ -145,6 +145,7 @@
     <Tooling_MicrosoftNetCoreAnalyzersPackageVersion>$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)</Tooling_MicrosoftNetCoreAnalyzersPackageVersion>
     <Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>3.9.0-3.20604.2</Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
+    <XunitCombinatorialPackageVersion>1.4.1</XunitCombinatorialPackageVersion>
     <XunitVersion>2.4.1</XunitVersion>
   </PropertyGroup>
 </Project>
