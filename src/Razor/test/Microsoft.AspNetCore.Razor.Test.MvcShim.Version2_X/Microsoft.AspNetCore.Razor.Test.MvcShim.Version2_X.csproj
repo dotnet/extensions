@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net461</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <IsApiShim>true</IsApiShim>
   </PropertyGroup>
 
   <ItemGroup>
