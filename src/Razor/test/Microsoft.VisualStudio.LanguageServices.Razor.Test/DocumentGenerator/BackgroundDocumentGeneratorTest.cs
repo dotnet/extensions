@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             HostProject2 = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.AnotherProject.RootNamespace);
 
             var razorDocumentServiceProviderFactory = new DefaultRazorDocumentServiceProviderFactory();
-            var testLSPEnabledEditorFeatureDetector = Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsLSPEditorFeatureEnabled() == true);
+            var testLSPEnabledEditorFeatureDetector = Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsLSPEditorFeatureEnabled() == true, MockBehavior.Strict);
             DynamicFileInfoProvider = new DefaultRazorDynamicFileInfoProvider(razorDocumentServiceProviderFactory, testLSPEnabledEditorFeatureDetector);
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
             projectManager.ProjectAdded(HostProject1);
 
-            var textLoader = new Mock<TextLoader>();
+            var textLoader = new Mock<TextLoader>(MockBehavior.Strict);
             textLoader.Setup(loader => loader.LoadTextAndVersionAsync(It.IsAny<Workspace>(), It.IsAny<DocumentId>(), It.IsAny<CancellationToken>()))
                 .Throws<FileNotFoundException>();
             projectManager.DocumentAdded(HostProject1, Documents[0], textLoader.Object);
@@ -84,7 +84,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
             projectManager.ProjectAdded(HostProject1);
 
-            var textLoader = new Mock<TextLoader>();
+            var textLoader = new Mock<TextLoader>(MockBehavior.Strict);
             textLoader.Setup(loader => loader.LoadTextAndVersionAsync(It.IsAny<Workspace>(), It.IsAny<DocumentId>(), It.IsAny<CancellationToken>()))
                 .Throws<UnauthorizedAccessException>();
             projectManager.DocumentAdded(HostProject1, Documents[0], textLoader.Object);

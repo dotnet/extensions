@@ -18,9 +18,6 @@ dotnet_diagnostic.CA2213.severity = suggestion
 # CA2227: Change 'property' to be read-only by removing the property setter
 dotnet_diagnostic.CA2227.severity = suggestion
 
-# RS0030: The symbol 'symbol' is banned in this project
-dotnet_diagnostic.RS0030.severity = suggestion
-
 # VSTHRD002: Synchronously waiting on tasks or awaiters may cause deadlocks
 dotnet_diagnostic.VSTHRD002.severity = suggestion
 

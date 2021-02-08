@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public void TryGetWorkspace_CanGetWorkspaceFromProjectionBuffersOnly()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var workspaceAccessor = new TestWorkspaceAccessor(true, false);
 
             // Act
@@ -32,7 +32,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public void TryGetWorkspace_CanGetWorkspaceFromBuffersInHierarchyOnly()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var workspaceAccessor = new TestWorkspaceAccessor(false, true);
 
             // Act
@@ -46,7 +46,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public void TryGetWorkspace_CanGetWorkspaceFromBuffersInHierarchyOrProjectionBuffers()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
             var workspaceAccessor = new TestWorkspaceAccessor(true, true);
 
             // Act
@@ -60,14 +60,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public void TryGetWorkspaceFromProjectionBuffer_NoProjectionBuffer_ReturnsFalse()
         {
             // Arrange
-            var bufferGraph = new Mock<IBufferGraph>();
+            var bufferGraph = new Mock<IBufferGraph>(MockBehavior.Strict);
             bufferGraph.Setup(graph => graph.GetTextBuffers(It.IsAny<Predicate<ITextBuffer>>()))
                 .Returns<Predicate<ITextBuffer>>(predicate => new Collection<ITextBuffer>());
-            var bufferGraphService = new Mock<IBufferGraphFactoryService>();
+            var bufferGraphService = new Mock<IBufferGraphFactoryService>(MockBehavior.Strict);
             bufferGraphService.Setup(service => service.CreateBufferGraph(It.IsAny<ITextBuffer>()))
                 .Returns(bufferGraph.Object);
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(bufferGraphService.Object, Mock.Of<TextBufferProjectService>(), TestWorkspace.Create());
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(bufferGraphService.Object, Mock.Of<TextBufferProjectService>(MockBehavior.Strict), TestWorkspace.Create());
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
 
             // Act
             var result = workspaceAccessor.TryGetWorkspaceFromProjectionBuffer(textBuffer, out var workspace);
@@ -80,8 +80,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public void TryGetWorkspaceFromHostProject_NoHostProject_ReturnsFalse()
         {
             // Arrange
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(), Mock.Of<TextBufferProjectService>(), TestWorkspace.Create());
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(MockBehavior.Strict), Mock.Of<TextBufferProjectService>(s => s.GetHostProject(It.IsAny<ITextBuffer>()) == null, MockBehavior.Strict), TestWorkspace.Create());
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
 
             // Act
             var result = workspaceAccessor.TryGetWorkspaceFromHostProject(textBuffer, out var workspace);
@@ -94,10 +94,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public void TryGetWorkspaceFromHostProject_HasHostProject_ReturnsTrueWithDefaultWorkspace()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>();
-            var projectService = Mock.Of<TextBufferProjectService>(service => service.GetHostProject(textBuffer) == new object());
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
+            var projectService = Mock.Of<TextBufferProjectService>(service => service.GetHostProject(textBuffer) == new object(), MockBehavior.Strict);
             var defaultWorkspace = TestWorkspace.Create();
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(), projectService, defaultWorkspace);
+            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<IBufferGraphFactoryService>(MockBehavior.Strict), projectService, defaultWorkspace);
 
             // Act
             var result = workspaceAccessor.TryGetWorkspaceFromHostProject(textBuffer, out var workspace);
@@ -116,8 +116,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 bool canGetWorkspaceFromProjectionBuffer,
                 bool canGetWorkspaceFromHostProject) :
                 base(
-                    Mock.Of<IBufferGraphFactoryService>(),
-                    Mock.Of<TextBufferProjectService>(),
+                    Mock.Of<IBufferGraphFactoryService>(MockBehavior.Strict),
+                    Mock.Of<TextBufferProjectService>(MockBehavior.Strict),
                     TestWorkspace.Create())
             {
                 _canGetWorkspaceFromProjectionBuffer = canGetWorkspaceFromProjectionBuffer;

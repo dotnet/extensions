@@ -607,8 +607,15 @@ namespace Microsoft.AspNetCore.Components
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace)
-                : base(Mock.Of<ForegroundDispatcher>(), Mock.Of<ErrorReporter>(), triggers, workspace)
+                : base(CreateForegroundDispatcher(), Mock.Of<ErrorReporter>(MockBehavior.Strict), triggers, workspace)
             {
+            }
+
+            private static ForegroundDispatcher CreateForegroundDispatcher()
+            {
+                var dispatcher = new Mock<ForegroundDispatcher>(MockBehavior.Strict);
+                dispatcher.Setup(d => d.AssertForegroundThread(It.IsAny<string>())).Verifiable();
+                return dispatcher.Object;
             }
         }
     }

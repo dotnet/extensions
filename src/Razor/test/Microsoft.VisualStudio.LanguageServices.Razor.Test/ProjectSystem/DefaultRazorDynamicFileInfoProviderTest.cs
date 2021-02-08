@@ -13,8 +13,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.ProjectSystem
     {
         public DefaultRazorDynamicFileInfoProviderTest()
         {
-            DocumentServiceFactory = Mock.Of<RazorDocumentServiceProviderFactory>();
-            EditorFeatureDetector = Mock.Of<LSPEditorFeatureDetector>();
+            DocumentServiceFactory = Mock.Of<RazorDocumentServiceProviderFactory>(MockBehavior.Strict);
+            EditorFeatureDetector = Mock.Of<LSPEditorFeatureDetector>(MockBehavior.Strict);
         }
 
         private RazorDocumentServiceProviderFactory DocumentServiceFactory { get; }
@@ -28,7 +28,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.ProjectSystem
             provider.Updated += (sender, args) => throw new XunitException("Should not have been called.");
 
             // Act & Assert
-            provider.UpdateLSPFileInfo(new Uri("C:/this/does/not/exist.razor"), Mock.Of<DynamicDocumentContainer>());
+            var documentContainer = new Mock<DynamicDocumentContainer>(MockBehavior.Strict);
+            documentContainer.SetupSet(c => c.SupportsDiagnostics = true).Verifiable();
+            provider.UpdateLSPFileInfo(new Uri("C:/this/does/not/exist.razor"), documentContainer.Object);
         }
 
         // Can't currently add any more tests because of IVT restrictions from Roslyn
