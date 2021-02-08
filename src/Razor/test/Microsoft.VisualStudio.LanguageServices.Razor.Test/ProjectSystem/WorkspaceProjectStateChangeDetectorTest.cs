@@ -155,7 +155,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 p => Assert.Equal(ProjectNumberTwo.Id, p.workspaceProject.Id));
         }
 
-        [ForegroundTheory]
+        [ForegroundTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/29994")]
         [InlineData(WorkspaceChangeKind.ProjectChanged)]
         [InlineData(WorkspaceChangeKind.ProjectReloaded)]
         public async Task WorkspaceChanged_ProjectChangeEvents_UpdatesProjectState_AfterDelay(WorkspaceChangeKind kind)
