@@ -9,9 +9,6 @@ dotnet_diagnostic.CA1303.severity = none
 # CA1810: Initialize reference type static fields inline
 dotnet_diagnostic.CA1810.severity = none
 
-# CA1816: Call GC.SuppressFinalize correctly
-dotnet_diagnostic.CA1816.severity = none
-
 # CA1826: Use property instead of Linq Enumerable method
 dotnet_diagnostic.CA1826.severity = none
 

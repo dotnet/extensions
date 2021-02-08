@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
@@ -114,7 +115,8 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             _onDispose = onDispose;
         }
 
-        public void Dispose()
+        [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "https://github.com/dotnet/roslyn-analyzers/issues/4801")]
+        public virtual void Dispose()
         {
             _onDispose();
         }
