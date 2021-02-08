@@ -44,6 +44,8 @@
     <EditorConfigFiles Condition="'$(IsShipping)' == 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\Shipping.globalconfig" />
     <!-- Include NonShipping.globalconfig for non-shipping projects -->
     <EditorConfigFiles Condition="'$(IsShipping)' != 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\NonShipping.globalconfig" />
+    <!-- Include ApiShim.globalconfig for API shim projects -->
+    <EditorConfigFiles Condition="'$(IsApiShim)' == 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\ApiShim.globalconfig" />
   </ItemGroup>
 
   <Target Name="GetCustomAssemblyAttributes"
