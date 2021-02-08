@@ -8,7 +8,7 @@ namespace Xunit
 {
     // Similar to WpfTheoryAttribute https://github.com/xunit/samples.xunit/blob/969d9f7e887836f01a6c525324bf3db55658c28f/STAExamples/WpfTheoryAttribute.cs
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    [XunitTestCaseDiscoverer("Xunit.ForegroundTheoryDiscoverer", "Microsoft.VisualStudio.LanguageServices.Razor.Test")]
+    [XunitTestCaseDiscoverer("Xunit." + nameof(ForegroundTheoryDiscoverer), "Microsoft.VisualStudio.Editor.Razor.Test.Common")]
     internal class ForegroundTheoryAttribute : TheoryAttribute
     {
     }
