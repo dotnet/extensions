@@ -7,7 +7,7 @@ dotnet_diagnostic.CA1707.severity = suggestion
 dotnet_diagnostic.CA1822.severity = suggestion
 
 # CA1825: Avoid unnecessary zero-length array allocations
-dotnet_diagnostic.CA1825.severity = suggestion
+dotnet_diagnostic.CA1825.severity = none
 
 # CA2007: Do not directly await a Task without calling ConfigureAwait
 dotnet_diagnostic.CA2007.severity = suggestion
