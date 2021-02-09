@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
@@ -71,6 +72,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         protected abstract T GetUpdatedSnapshot();
 
+        [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "https://github.com/dotnet/roslyn-analyzers/issues/4801")]
         public override void Dispose()
         {
             TextBuffer.ChangeContentType(InertContentType.Instance, null);

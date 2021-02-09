@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
@@ -39,7 +40,8 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             return false;
         }
 
-        public void Dispose()
+        [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "https://github.com/dotnet/roslyn-analyzers/issues/4801")]
+        public virtual void Dispose()
         {
             foreach (var virtualDocument in VirtualDocuments)
             {

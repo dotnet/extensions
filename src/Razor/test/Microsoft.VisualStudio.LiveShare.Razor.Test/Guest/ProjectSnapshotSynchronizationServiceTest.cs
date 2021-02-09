@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -191,7 +192,8 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             Assert.Same(newProjectWorkspaceState.TagHelpers, project.TagHelpers);
         }
 
-        public void Dispose()
+        [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "https://github.com/dotnet/roslyn-analyzers/issues/4801")]
+        public virtual void Dispose()
         {
             JoinableTaskContext.Dispose();
         }

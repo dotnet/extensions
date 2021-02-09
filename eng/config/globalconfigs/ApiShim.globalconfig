@@ -5,6 +5,9 @@ is_global = true
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = none
 
+# CA1816: Call GC.SuppressFinalize correctly
+dotnet_diagnostic.CA1816.severity = none
+
 # CA1822: Mark members as static
 dotnet_diagnostic.CA1822.severity = none
 

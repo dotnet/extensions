@@ -26,6 +26,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
             if (Directory.Exists(DirectoryPath))
             {
                 Directory.Delete(DirectoryPath, recursive: true);
@@ -34,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         ~TempDirectory()
         {
-            Dispose();
+            Dispose(false);
         }
     }
 }

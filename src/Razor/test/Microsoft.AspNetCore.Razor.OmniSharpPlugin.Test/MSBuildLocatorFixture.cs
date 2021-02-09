@@ -6,7 +6,7 @@ using Microsoft.Build.Locator;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class MSBuildLocatorFixture : IDisposable
+    public sealed class MSBuildLocatorFixture : IDisposable
     {
         public MSBuildLocatorFixture()
         {

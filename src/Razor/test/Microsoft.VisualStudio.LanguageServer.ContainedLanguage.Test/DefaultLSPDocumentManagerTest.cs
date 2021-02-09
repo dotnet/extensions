@@ -27,6 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                 document.CurrentSnapshot == LSPDocumentSnapshot &&
                 document.VirtualDocuments == new[] { new TestVirtualDocument() } &&
                 document.UpdateVirtualDocument<TestVirtualDocument>(It.IsAny<IReadOnlyList<ITextChange>>(), It.IsAny<int>()) == Mock.Of<LSPDocumentSnapshot>(MockBehavior.Strict), MockBehavior.Strict);
+            Mock.Get(LSPDocument).Setup(document => document.Dispose()).Verifiable();
             LSPDocumentFactory = Mock.Of<LSPDocumentFactory>(factory => factory.Create(TextBuffer) == LSPDocument, MockBehavior.Strict);
         }
 
