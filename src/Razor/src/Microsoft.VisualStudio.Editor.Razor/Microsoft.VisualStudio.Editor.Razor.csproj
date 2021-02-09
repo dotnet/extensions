@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Visual Studio agnostic Razor design-time infrastructure.</Description>
     <EnableApiCheck>false</EnableApiCheck>
-    <IsShipping>false</IsShipping>
+    <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
