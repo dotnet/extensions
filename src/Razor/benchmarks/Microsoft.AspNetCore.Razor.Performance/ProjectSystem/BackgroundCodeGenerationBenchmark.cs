@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
         private DefaultProjectSnapshotManager SnapshotManager { get; set; }
 
         [Benchmark(Description = "Generates the code for 100 files", OperationsPerInvoke = 100)]
-        public async Task BackgroundCodeGeneration_Generate100Files()
+        public async Task BackgroundCodeGeneration_Generate100FilesAsync()
         {
             for (var i = 0; i < Documents.Length; i++)
             {

@@ -415,11 +415,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new NotImplementedException();
             }
 
-            public Task<TResponse> SendRequest<T, TResponse>(string method, T @params) => throw new NotImplementedException();
+            public Task<TResponse> SendRequestAsync<T, TResponse>(string method, T @params) => throw new NotImplementedException();
 
-            public Task<TResponse> SendRequest<TResponse>(string method) => throw new NotImplementedException();
+            public Task<TResponse> SendRequestAsync<TResponse>(string method) => throw new NotImplementedException();
 
-            public Task SendRequest<T>(string method, T @params) => throw new NotImplementedException();
+            public Task SendRequestAsync<T>(string method, T @params) => throw new NotImplementedException();
 
             public IResponseRouterReturns SendRequest(string method)
             {
