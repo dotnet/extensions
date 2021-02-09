@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         // Run after the HTML formatter pass.
-        public override int Order => DefaultOrder - 5;
+        public override int Order => DefaultOrder - 4;
 
         public override bool IsValidationPass => false;
 
