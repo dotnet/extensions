@@ -229,18 +229,22 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private void ProjectManager_Changed(object sender, ProjectChangeEventArgs args)
         {
-            if (args.Kind == ProjectChangeKind.ProjectAdded)
+            switch (args.Kind)
             {
-                var associatedWorkspaceProject = _projectManager
-                    .Workspace
-                    .CurrentSolution
-                    .Projects
-                    .FirstOrDefault(project => FilePathComparer.Instance.Equals(args.ProjectFilePath, project.FilePath));
+                case ProjectChangeKind.ProjectAdded:
+                case ProjectChangeKind.DocumentRemoved:
+                case ProjectChangeKind.DocumentAdded:
+                    var associatedWorkspaceProject = _projectManager
+                        .Workspace
+                        .CurrentSolution
+                        .Projects
+                        .FirstOrDefault(project => FilePathComparer.Instance.Equals(args.ProjectFilePath, project.FilePath));
 
-                if (associatedWorkspaceProject != null)
-                {
-                    _workspaceStateGenerator.Update(associatedWorkspaceProject, args.Newer, CancellationToken.None);
-                }
+                    if (associatedWorkspaceProject != null)
+                    {
+                        _workspaceStateGenerator.Update(associatedWorkspaceProject, args.Newer, CancellationToken.None);
+                    }
+                    break;
             }
         }
 
