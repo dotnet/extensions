@@ -10,7 +10,7 @@ dotnet_diagnostic.CA1822.severity = suggestion
 dotnet_diagnostic.CA1825.severity = none
 
 # CA2007: Do not directly await a Task without calling ConfigureAwait
-dotnet_diagnostic.CA2007.severity = suggestion
+dotnet_diagnostic.CA2007.severity = none
 
 # CA2227: Change 'property' to be read-only by removing the property setter
 dotnet_diagnostic.CA2227.severity = suggestion
