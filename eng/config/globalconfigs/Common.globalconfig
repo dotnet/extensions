@@ -36,5 +36,11 @@ dotnet_diagnostic.IDE0051.severity = warning
 # IDE0073: The file header is missing or not located at the top of the file
 dotnet_diagnostic.IDE0073.severity = error
 
+# VSTHRD100: Avoid "async void" methods
+dotnet_diagnostic.VSTHRD100.severity = suggestion
+
+# VSTHRD200: Use "Async" suffix in names of methods that return an awaitable type
+dotnet_diagnostic.VSTHRD200.severity = suggestion
+
 # VSSDK002: The PackageRegistrationAttribute.AllowsBackgroundLoading should be set to true if and only if the package derives from AsyncPackage
 dotnet_diagnostic.VSSDK002.severity = suggestion

@@ -12,9 +12,6 @@ dotnet_diagnostic.CA1825.severity = none
 # CA2007: Do not directly await a Task without calling ConfigureAwait
 dotnet_diagnostic.CA2007.severity = suggestion
 
-# CA2213: 'type' contains field 'field' that is of IDisposable type 'type', but it is never disposed
-dotnet_diagnostic.CA2213.severity = suggestion
-
 # CA2227: Change 'property' to be read-only by removing the property setter
 dotnet_diagnostic.CA2227.severity = suggestion
 
@@ -24,20 +21,11 @@ dotnet_diagnostic.VSTHRD002.severity = suggestion
 # VSTHRD003: Avoid awaiting or returning a Task representing work that was not started within your context as that can lead to deadlocks
 dotnet_diagnostic.VSTHRD003.severity = suggestion
 
-# VSTHRD010: Accessing "member" should only be done on the main thread
-dotnet_diagnostic.VSTHRD010.severity = suggestion
-
 # VSTHRD012: Provide an instance of JoinableTaskFactory in this call (or another overload) to avoid deadlocks with the main thread
 dotnet_diagnostic.VSTHRD012.severity = suggestion
 
-# VSTHRD100: Avoid "async void" methods
-dotnet_diagnostic.VSTHRD100.severity = suggestion
-
 # VSTHRD103: 'member' synchronously blocks
 dotnet_diagnostic.VSTHRD103.severity = suggestion
-
-# VSTHRD200: Use "Async" suffix in names of methods that return an awaitable type
-dotnet_diagnostic.VSTHRD200.severity = suggestion
 
 # VSSDK005: Use the ThreadHelper.JoinableTaskContext singleton rather than instantiating your own to avoid deadlocks
 dotnet_diagnostic.VSSDK005.severity = suggestion
