@@ -87,11 +87,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var edited = ApplyEdits(source, edits);
             var actual = edited.ToString();
 
-#if GENERATE_BASELINES
-            Assert.False(true, "GENERATE_BASELINES is set to true.");
-#else
             Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
-#endif
         }
 
         protected async Task RunOnTypeFormattingTestAsync(string input, string expected, string triggerCharacter, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
@@ -122,11 +118,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var edited = ApplyEdits(source, edits);
             var actual = edited.ToString();
 
-#if GENERATE_BASELINES
-            Assert.False(true, "GENERATE_BASELINES is set to true.");
-#else
             Assert.Equal(expected, actual);
-#endif
         }
 
         private (RazorLanguageKind, TextEdit[]) GetFormattedEdits(RazorCodeDocument codeDocument, string expected, int positionBeforeTriggerChar)

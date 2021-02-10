@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -33,7 +32,6 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Progress;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.WorkDone;
 using Xunit;
-using Xunit.Sdk;
 using FormattingOptions = OmniSharp.Extensions.LanguageServer.Protocol.Models.FormattingOptions;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
@@ -50,12 +48,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             _projectPath = projectPath;
             _baselineFileName = fileName;
         }
-
-#if GENERATE_BASELINES
-        protected bool GenerateBaselines { get; } = true;
-#else
-        protected bool GenerateBaselines { get; } = false;
-#endif
 
         public IProgressManager ProgressManager => throw new NotImplementedException();
 
@@ -162,59 +154,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var serializedTextChanges = JsonConvert.SerializeObject(rawTextChanges, Newtonsoft.Json.Formatting.Indented);
                 var textChanges = JsonConvert.DeserializeObject<HtmlFormatterTextEdit[]>(serializedTextChanges);
                 response.Edits = textChanges.Select(change => change.AsTextEdit(SourceText.From(generatedHtml))).ToArray();
-
-                // Get formatted baseline file
-                var baselineInputFileName = Path.ChangeExtension(_baselineFileName, ".input.html");
-                var baselineOutputFileName = Path.ChangeExtension(_baselineFileName, ".output.html");
-
-                var baselineInputFile = TestFile.Create(baselineInputFileName, GetType().GetTypeInfo().Assembly);
-                var baselineOutputFile = TestFile.Create(baselineOutputFileName, GetType().GetTypeInfo().Assembly);
-
-                if (GenerateBaselines)
-                {
-                    if (baselineInputFile.Exists())
-                    {
-                        // If it already exists, we only want to update if the input is different.
-                        var inputContent = baselineInputFile.ReadAllText();
-                        if (string.Equals(inputContent, generatedHtml, StringComparison.Ordinal))
-                        {
-                            return response;
-                        }
-                    }
-
-                    var baselineInputFilePath = Path.Combine(_projectPath, baselineInputFileName);
-                    File.WriteAllText(baselineInputFilePath, generatedHtml);
-
-                    var baselineOutputFilePath = Path.Combine(_projectPath, baselineOutputFileName);
-                    File.WriteAllText(baselineOutputFilePath, generatedHtml);
-
-                    return response;
-                }
-
-                if (!baselineInputFile.Exists())
-                {
-                    throw new XunitException($"The resource {baselineInputFileName} was not found.");
-                }
-
-                if (!baselineOutputFile.Exists())
-                {
-                    throw new XunitException($"The resource {baselineOutputFileName} was not found.");
-                }
-
-                var baselineInputHtml = baselineInputFile.ReadAllText();
-                if (!string.Equals(baselineInputHtml, generatedHtml, StringComparison.Ordinal))
-                {
-                    throw new XunitException($"The baseline for {_baselineFileName} is out of date.");
-                }
-
-                var baselineOutputHtml = baselineOutputFile.ReadAllText();
-                var baselineInputText = SourceText.From(baselineInputHtml);
-                var baselineOutputText = SourceText.From(baselineOutputHtml);
-                var changes = SourceTextDiffer.GetMinimalTextChanges(baselineInputText, baselineOutputText, lineDiffOnly: false);
-                var edits = changes.Select(c => c.AsTextEdit(baselineInputText)).ToArray();
-#if false // Use the results from the real formatter
-                response.Edits = edits;
-#endif
             }
 
             return response;
