@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Fo    undation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,7 +59,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed
             // OmniSharp currently has an issue where they update the Solution on multiple different threads resulting
             // in change events dispatching through the Workspace on multiple different threads. This normalizes
             // that abnormality.
+#pragma warning disable VSTHRD100 // Avoid async void methods
             protected override async void InitializeSolution(Solution solution)
+#pragma warning restore VSTHRD100 // Avoid async void methods
             {
                 if (_foregroundDispatcher.IsForegroundThread)
                 {
@@ -88,7 +90,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin.StrongNamed
             // OmniSharp currently has an issue where they update the Solution on multiple different threads resulting
             // in change events dispatching through the Workspace on multiple different threads. This normalizes
             // that abnormality.
+#pragma warning disable VSTHRD100 // Avoid async void methods
             internal override async void Workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs args)
+#pragma warning restore VSTHRD100 // Avoid async void methods
             {
                 if (_foregroundDispatcher.IsForegroundThread)
                 {

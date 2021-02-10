@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 [typeof(VisualStudioRazorParser)] = parser
             };
-            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.Properties == properties);
+            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.Properties == properties, MockBehavior.Strict);
             var provider = new DefaultTextBufferCodeDocumentProvider();
 
             // Act
@@ -41,7 +41,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 [typeof(VisualStudioRazorParser)] = parser
             };
-            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.Properties == properties);
+            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.Properties == properties, MockBehavior.Strict);
             var provider = new DefaultTextBufferCodeDocumentProvider();
 
             // Act
@@ -56,7 +56,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void TryGetFromBuffer_FailsIfNoParserIsAvailable()
         {
             // Arrange
-            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.Properties == new PropertyCollection());
+            var textBuffer = Mock.Of<ITextBuffer>(buffer => buffer.Properties == new PropertyCollection(), MockBehavior.Strict);
             var provider = new DefaultTextBufferCodeDocumentProvider();
 
             // Act

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly Dictionary<string, RazorProjectItem> _lookup;
 
         public TestRazorProjectFileSystem()
-            : this(new RazorProjectItem[0])
+            : this(Array.Empty<RazorProjectItem>())
         {
         }
 
@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             throw new NotImplementedException();
         }
 
-        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);

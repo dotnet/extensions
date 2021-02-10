@@ -58,13 +58,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override async Task<RazorCodeDocument> GetGeneratedOutputAsync()
         {
-            var (output, _, _) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
+            var (output, _, _, _) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
             return output;
         }
 
-        public override async Task<VersionStamp> GetGeneratedOutputVersionAsync()
+        public override async Task<VersionStamp> GetGeneratedCSharpOutputVersionAsync()
         {
-            var (_, _, version) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
+            var (_, _, version, _) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
+            return version;
+        }
+
+        public override async Task<VersionStamp> GetGeneratedHtmlOutputVersionAsync()
+        {
+            var (_, _, _, version) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
             return version;
         }
 
@@ -82,7 +88,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             if (State.IsGeneratedOutputResultAvailable)
             {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                 result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.output;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 return true;
             }
 
@@ -90,15 +98,31 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return false;
         }
 
-        public override bool TryGetGeneratedOutputVersionAsync(out VersionStamp result)
+        public override bool TryGetGeneratedCSharpOutputVersion(out VersionStamp result)
         {
             if (State.IsGeneratedOutputResultAvailable)
             {
-                result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputVersion;
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+                result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputCSharpVersion;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 return true;
             }
 
-            result = default(VersionStamp);
+            result = default;
+            return false;
+        }
+
+        public override bool TryGetGeneratedHtmlOutputVersion(out VersionStamp result)
+        {
+            if (State.IsGeneratedOutputResultAvailable)
+            {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+                result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputHtmlVersion;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+                return true;
+            }
+
+            result = default;
             return false;
         }
     }

@@ -27,7 +27,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 f => f.Create(
                     It.IsAny<RazorConfiguration>(),
                     It.IsAny<RazorProjectFileSystem>(),
-                    It.IsAny<Action<RazorProjectEngineBuilder>>()) == engine);
+                    It.IsAny<Action<RazorProjectEngineBuilder>>()) == engine, MockBehavior.Strict);
         }
 
         private ProjectSnapshot ProjectSnapshot { get; }
@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 tracker.ProjectPath == "c:\\SomeProject.csproj" &&
                 tracker.ProjectSnapshot == ProjectSnapshot &&
                 tracker.FilePath == "c:\\SomeFilePath.cshtml" &&
-                tracker.IsSupportedProject == isSupportedProject);
+                tracker.IsSupportedProject == isSupportedProject, MockBehavior.Strict);
 
             return documentTracker;
         }
@@ -58,7 +58,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 var latestChange = new SourceChange(0, 0, string.Empty);
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
@@ -100,7 +100,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 var latestChange = new SourceChange(0, 0, string.Empty);
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
@@ -139,7 +139,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 var latestChange = new SourceChange(0, 0, string.Empty);
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
@@ -165,7 +165,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 var latestChange = new SourceChange(0, 0, string.Empty);
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
@@ -193,7 +193,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 var latestChange = new SourceChange(0, 0, string.Empty);
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
@@ -236,7 +236,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 var latestChange = new SourceChange(0, 0, string.Empty);
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
@@ -377,7 +377,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>());
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict));
             parser.Dispose();
 
             // Act & Assert
@@ -393,7 +393,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>());
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict));
             parser.Dispose();
 
             // Act & Assert
@@ -409,7 +409,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>());
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict));
             parser.Dispose();
 
             // Act & Assert
@@ -425,7 +425,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 var called = false;
                 parser.DocumentStructureChanged += (sender, e) => called = true;
@@ -452,7 +452,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 var called = false;
                 parser.DocumentStructureChanged += (sender, e) => called = true;
@@ -483,7 +483,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 var called = false;
                 parser.DocumentStructureChanged += (sender, e) => called = true;
@@ -522,7 +522,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>())
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict))
             {
                 BlockBackgroundIdleWork = new ManualResetEventSlim(),
                 IdleDelay = TimeSpan.FromSeconds(5)
@@ -552,7 +552,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>())
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict))
             {
                 BlockBackgroundIdleWork = new ManualResetEventSlim(),
                 IdleDelay = TimeSpan.FromSeconds(5)
@@ -581,7 +581,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 parser.StartParser();
 
@@ -605,7 +605,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 // Act
                 parser.StartParser();
@@ -625,7 +625,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(isSupportedProject: true),
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 // Act
                 var result = parser.TryReinitializeParser();
@@ -644,7 +644,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(isSupportedProject: false),
                 ProjectEngineFactory,
                 new DefaultErrorReporter(),
-                Mock.Of<VisualStudioCompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>(MockBehavior.Strict)))
             {
                 // Act
                 var result = parser.TryReinitializeParser();

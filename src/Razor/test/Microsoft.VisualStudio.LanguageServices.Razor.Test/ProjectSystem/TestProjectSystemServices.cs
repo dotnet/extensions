@@ -617,7 +617,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             private static IRule CreateRule(IEnumerable<IProperty> properties)
             {
-                var rule = new Mock<IRule>();
+                var rule = new Mock<IRule>(MockBehavior.Strict);
                 rule
                     .Setup(o => o.GetProperty(It.IsAny<string>()))
                     .Returns((string propertyName) =>
@@ -631,7 +631,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             private static IProperty CreateProperty(string name, object value, List<object> setValues = null)
             {
-                var property = new Mock<IProperty>();
+                var property = new Mock<IProperty>(MockBehavior.Strict);
                 property.SetupGet(o => o.Name)
                         .Returns(name);
 

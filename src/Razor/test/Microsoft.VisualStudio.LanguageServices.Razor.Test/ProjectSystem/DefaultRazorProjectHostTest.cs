@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
+using Microsoft.VisualStudio.Threading;
 using Moq;
 using Xunit;
 using ItemCollection = Microsoft.VisualStudio.ProjectSystem.ItemCollection;
@@ -22,16 +23,24 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
 
+            var projectConfigurationFilePathStore = new Mock<ProjectConfigurationFilePathStore>(MockBehavior.Strict);
+            projectConfigurationFilePathStore.Setup(s => s.Remove(It.IsAny<string>())).Verifiable();
+            ProjectConfigurationFilePathStore = projectConfigurationFilePathStore.Object;
+
             ConfigurationItems = new ItemCollection(Rules.RazorConfiguration.SchemaName);
             ExtensionItems = new ItemCollection(Rules.RazorExtension.SchemaName);
             RazorComponentWithTargetPathItems = new ItemCollection(Rules.RazorComponentWithTargetPath.SchemaName);
             RazorGenerateWithTargetPathItems = new ItemCollection(Rules.RazorGenerateWithTargetPath.SchemaName);
             RazorGeneralProperties = new PropertyCollection(Rules.RazorGeneral.SchemaName);
+
+            JoinableTaskContext = new JoinableTaskContext();
         }
 
         private ItemCollection ConfigurationItems { get; }
 
         private ItemCollection ExtensionItems { get; }
+
+        private ProjectConfigurationFilePathStore ProjectConfigurationFilePathStore { get; }
 
         private ItemCollection RazorComponentWithTargetPathItems { get; }
 
@@ -40,6 +49,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private PropertyCollection RazorGeneralProperties { get; }
 
         private TestProjectSnapshotManager ProjectManager { get; }
+
+        private JoinableTaskContext JoinableTaskContext { get; }
 
         [Fact]
         public void TryGetDefaultConfiguration_FailsIfNoRule()
@@ -221,7 +232,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var projectState = new Dictionary<string, IProjectRuleSnapshot>().ToImmutableDictionary();
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetConfigurationItem("Razor-13.37", projectState, out var configurationItem);
+            var result = DefaultRazorProjectHost.TryGetConfigurationItem("Razor-13.37", projectState, out _);
 
             // Assert
             Assert.False(result);
@@ -239,7 +250,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }.ToImmutableDictionary();
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetConfigurationItem("Razor-13.37", projectState, out var configurationItem);
+            var result = DefaultRazorProjectHost.TryGetConfigurationItem("Razor-13.37", projectState, out _);
 
             // Assert
             Assert.False(result);
@@ -260,7 +271,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }.ToImmutableDictionary();
 
             // Act
-            var result = DefaultRazorProjectHost.TryGetConfigurationItem("Razor-13.37", projectState, out var configurationItem);
+            var result = DefaultRazorProjectHost.TryGetConfigurationItem("Razor-13.37", projectState, out _);
 
             // Assert
             Assert.False(result);
@@ -612,7 +623,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
-            var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
+            var host = new DefaultRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
 
             // Act & Assert
             await host.LoadAsync();
@@ -627,7 +638,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
-            var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
+            var host = new DefaultRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
 
             // Act & Assert
             await Task.Run(async () => await host.LoadAsync());
@@ -646,13 +657,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             };
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
-            var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
+            var host = new DefaultRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
 
             // Act & Assert
             await Task.Run(async () => await host.LoadAsync());
             Assert.Empty(ProjectManager.Projects);
 
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
             Assert.Empty(ProjectManager.Projects);
         }
 
@@ -686,13 +697,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
-            var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
+            var host = new DefaultRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
 
             await Task.Run(async () => await host.LoadAsync());
             Assert.Empty(ProjectManager.Projects);
 
             // Act
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
 
             // Assert
             var snapshot = Assert.Single(ProjectManager.Projects);
@@ -750,13 +761,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
-            var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
+            var host = new DefaultRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
 
             await Task.Run(async () => await host.LoadAsync());
             Assert.Empty(ProjectManager.Projects);
 
             // Act
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
 
             // Assert
             Assert.Empty(ProjectManager.Projects);
@@ -798,13 +809,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
-            var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
+            var host = new DefaultRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
 
             await Task.Run(async () => await host.LoadAsync());
             Assert.Empty(ProjectManager.Projects);
 
             // Act - 1
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
 
             // Assert - 1
             var snapshot = Assert.Single(ProjectManager.Projects);
@@ -864,7 +875,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 RazorGenerateWithTargetPathItems.ToChange(changes[4].After),
             };
 
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
 
             // Assert - 2
             snapshot = Assert.Single(ProjectManager.Projects);
@@ -949,13 +960,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
-            var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
+            var host = new DefaultRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
 
             await Task.Run(async () => await host.LoadAsync());
             Assert.Empty(ProjectManager.Projects);
 
             // Act - 1
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
 
             // Assert - 1
             var snapshot = Assert.Single(ProjectManager.Projects);
@@ -981,7 +992,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 RazorGenerateWithTargetPathItems.ToChange(changes[4].After),
             };
 
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
 
             // Assert - 2
             Assert.Empty(ProjectManager.Projects);
@@ -1020,13 +1031,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
-            var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
+            var host = new DefaultRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
 
             await Task.Run(async () => await host.LoadAsync());
             Assert.Empty(ProjectManager.Projects);
 
             // Act - 1
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
 
             // Assert - 1
             var snapshot = Assert.Single(ProjectManager.Projects);
@@ -1059,7 +1070,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 RazorGenerateWithTargetPathItems.ToChange(changes[4].After),
             };
 
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
 
             // Assert - 3
             Assert.Empty(ProjectManager.Projects);
@@ -1095,13 +1106,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
-            var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
+            var host = new DefaultRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
 
             await Task.Run(async () => await host.LoadAsync());
             Assert.Empty(ProjectManager.Projects);
 
             // Act - 1
-            await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
+            await Task.Run(async () => await host.OnProjectChangedAsync(services.CreateUpdate(changes)));
 
             // Assert - 1
             var snapshot = Assert.Single(ProjectManager.Projects);
@@ -1124,7 +1135,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, Workspace workspace) 
-                : base(dispatcher, Mock.Of<ErrorReporter>(), Array.Empty<ProjectSnapshotChangeTrigger>(), workspace)
+                : base(dispatcher, Mock.Of<ErrorReporter>(MockBehavior.Strict), Array.Empty<ProjectSnapshotChangeTrigger>(), workspace)
             {
             }
         }

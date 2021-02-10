@@ -7,6 +7,7 @@ using System.Composition;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.CodeAnalysis.Razor.Completion
@@ -54,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (!TryGetAttributeInfo(owner, out var attributeName, out _, out var parameterName, out var parameterNameLocation))
+            if (!TryGetAttributeInfo(owner, out _, out var attributeName, out _, out var parameterName, out var parameterNameLocation))
             {
                 // Either we're not in an attribute or the attribute is so malformed that we can't provide proper completions.
                 return Array.Empty<RazorCompletionItem>();
@@ -92,7 +93,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             }
 
             // Attribute parameters are case sensitive when matching
-            var attributeCompletions = new Dictionary<string, HashSet<AttributeDescriptionInfo>>(StringComparer.Ordinal);
+            var attributeCompletions = new Dictionary<string, HashSet<BoundAttributeDescriptionInfo>>(StringComparer.Ordinal);
             foreach (var descriptor in descriptorsForTag)
             {
                 for (var i = 0; i < descriptor.BoundAttributes.Count; i++)
@@ -118,15 +119,12 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
                             if (!attributeCompletions.TryGetValue(parameterDescriptor.Name, out var attributeDescriptionInfos))
                             {
-                                attributeDescriptionInfos = new HashSet<AttributeDescriptionInfo>();
+                                attributeDescriptionInfos = new HashSet<BoundAttributeDescriptionInfo>();
                                 attributeCompletions[parameterDescriptor.Name] = attributeDescriptionInfos;
                             }
 
-                            var descriptionInfo = new AttributeDescriptionInfo(
-                                parameterDescriptor.TypeName,
-                                descriptor.GetTypeName(),
-                                parameterDescriptor.GetPropertyName(),
-                                parameterDescriptor.Documentation);
+                            var tagHelperTypeName = descriptor.GetTypeName();
+                            var descriptionInfo = BoundAttributeDescriptionInfo.From(parameterDescriptor, tagHelperTypeName);
                             attributeDescriptionInfos.Add(descriptionInfo);
                         }
                     }
@@ -147,7 +145,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
                     completion.Key,
                     completion.Key,
                     RazorCompletionItemKind.DirectiveAttributeParameter);
-                var completionDescription = new AttributeCompletionDescription(completion.Value.ToArray());
+                var completionDescription = new AggregateBoundAttributeDescription(completion.Value.ToArray());
                 razorCompletionItem.SetAttributeCompletionDescription(completionDescription);
 
                 completionItems.Add(razorCompletionItem);

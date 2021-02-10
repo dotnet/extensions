@@ -7,9 +7,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Text;
-using Moq;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -66,6 +66,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
             builder.SetImportFeature(new TestImportProjectFeature());
+        }
+
+        [Fact]
+        public void GetImportDocumentTargetPaths_DoesNotIncludeCurrentImport()
+        {
+            // Arrange
+            var state = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState);
+
+            // Act
+            var paths = state.GetImportDocumentTargetPaths(TestProjectData.SomeProjectComponentImportFile1);
+
+            // Assert
+            Assert.DoesNotContain(TestProjectData.SomeProjectComponentImportFile1.TargetPath, paths);
         }
 
         [Fact]
@@ -162,7 +175,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                             TestProjectData.SomeProjectNestedFile3.FilePath,
                         },
                         kvp.Value.OrderBy(f => f));
-           },
+                },
                 kvp =>
                 {
                     Assert.Equal(TestProjectData.SomeProjectNestedImportFile.TargetPath, kvp.Key);
@@ -542,6 +555,31 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
+        public void ProjectState_WithHostProject_RootNamespaceChange_UpdatesConfigurationState()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
+            var hostProjectWithRootNamespaceChange = new HostProject(
+                original.HostProject.FilePath,
+                original.HostProject.Configuration,
+                "ChangedRootNamespace");
+
+            // Force init
+            var originalTagHelpers = original.TagHelpers;
+            var originalProjectWorkspaceStateVersion = original.ConfigurationVersion;
+
+            TagHelperResolver.TagHelpers = SomeTagHelpers;
+
+            // Act
+            var state = original.WithHostProject(hostProjectWithRootNamespaceChange);
+
+            // Assert
+            Assert.NotSame(original, state);
+        }
+
+        [Fact]
         public void ProjectState_WithHostProject_NoConfigurationChange_Noops()
         {
             // Arrange
@@ -673,7 +711,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var originalTagHelpers = original.TagHelpers;
             var originalProjectWorkspaceStateVersion = original.ProjectWorkspaceStateVersion;
 
-            var changed = new ProjectWorkspaceState(ProjectWorkspaceState.TagHelpers, default);
+            var changed = new ProjectWorkspaceState(ProjectWorkspaceState.TagHelpers, LanguageVersion.CSharp6);
 
             // Act
             var state = original.WithProjectWorkspaceState(changed);
@@ -685,10 +723,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var actualTagHelpers = state.TagHelpers;
             var actualProjectWorkspaceStateVersion = state.ProjectWorkspaceStateVersion;
 
-            // The configuration didn't change, and the tag helpers didn't actually change
-            Assert.Same(original.ProjectEngine, state.ProjectEngine);
+            // The C# language version changed, and the tag helpers didn't change
+            Assert.NotSame(original.ProjectEngine, state.ProjectEngine);
             Assert.Same(originalTagHelpers, actualTagHelpers);
-            Assert.Equal(originalProjectWorkspaceStateVersion, actualProjectWorkspaceStateVersion);
+            Assert.NotEqual(originalProjectWorkspaceStateVersion, actualProjectWorkspaceStateVersion);
 
             Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
             Assert.NotSame(original.Documents[Documents[2].FilePath], state.Documents[Documents[2].FilePath]);
@@ -729,6 +767,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             Assert.NotSame(original.Documents[Documents[1].FilePath], state.Documents[Documents[1].FilePath]);
             Assert.NotSame(original.Documents[Documents[2].FilePath], state.Documents[Documents[2].FilePath]);
+        }
+
+        [Fact]
+        public void ProjectState_WithProjectWorkspaceState_IdenticalState_Caches()
+        {
+            // Arrange
+            var original = ProjectState.Create(Workspace.Services, HostProject, ProjectWorkspaceState)
+                .WithAddedHostDocument(Documents[2], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
+
+            // Force init
+            var originalTagHelpers = original.TagHelpers;
+            var originalProjectWorkspaceStateVersion = original.ProjectWorkspaceStateVersion;
+
+            var changed = new ProjectWorkspaceState(original.TagHelpers, original.CSharpLanguageVersion);
+
+            // Now create some tag helpers
+            TagHelperResolver.TagHelpers = SomeTagHelpers;
+
+            // Act
+            var state = original.WithProjectWorkspaceState(changed);
+
+            // Assert
+            Assert.Same(original, state);
         }
 
         [Fact]

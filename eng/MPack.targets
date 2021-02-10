@@ -15,14 +15,15 @@
     -->
 
     <PropertyGroup>
-      <MPackName>$(AddinName)_$(AddinVersion)</MPackName>
+      <MPackVersion Condition="'$(MPackVersion)' == '' And '$(TF_BUILD)' == 'true'">-$(BUILD_BUILDNUMBER)-$(BUILD_SOURCEVERSION.Substring(0, 8))-$(BUILD_SOURCEBRANCHNAME)</MPackVersion>
+      <MPackName>Razor$(MPackVersion)</MPackName>
       <MPackFileName>$(MPackName).mpack</MPackFileName>
       <MPackOutputPath>$(ArtifactsMPackDir)$(MPackFileName)</MPackOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
       <MPackFile Include="$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).dll" />
-      <MPackFile Include="$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).pdb" />
+      <MPackFile Include="$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).pdb" Condition="Exists('$(ArtifactsBinDir)$(TargetName)\$(Configuration)\$(TargetFramework)\$(TargetName).pdb')" />
     </ItemGroup>
 
     <RemoveDir Directories="$(IntermediateOutputPath)MPack\" />

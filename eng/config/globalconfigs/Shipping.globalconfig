@@ -1,0 +1,19 @@
+is_global = true
+
+# CA2213: 'type' contains field 'field' that is of IDisposable type 'type', but it is never disposed
+dotnet_diagnostic.CA2213.severity = suggestion
+
+# RS0016: Add public types and members to the declared API
+dotnet_diagnostic.RS0016.severity = none
+
+# RS0026: Do not add multiple public overloads with optional parameters
+dotnet_diagnostic.RS0026.severity = none
+
+# RS0037: Enable tracking of nullability of reference types in the declared API
+dotnet_diagnostic.RS0037.severity = none
+
+# VSTHRD002: Synchronously waiting on tasks or awaiters may cause deadlocks
+dotnet_diagnostic.VSTHRD002.severity = suggestion
+
+# VSTHRD010: Accessing "member" should only be done on the main thread
+dotnet_diagnostic.VSTHRD010.severity = suggestion

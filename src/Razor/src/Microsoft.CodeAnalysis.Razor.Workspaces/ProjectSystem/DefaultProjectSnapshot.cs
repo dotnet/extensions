@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         private readonly object _lock;
 
-        private Dictionary<string, DefaultDocumentSnapshot> _documents;
+        private readonly Dictionary<string, DefaultDocumentSnapshot> _documents;
 
         public DefaultProjectSnapshot(ProjectState state)
         {

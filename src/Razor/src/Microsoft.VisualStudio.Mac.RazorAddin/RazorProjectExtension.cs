@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Composition;
-using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Projects;
 
 namespace Microsoft.VisualStudio.Mac.RazorAddin
