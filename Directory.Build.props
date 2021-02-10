@@ -43,6 +43,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)" NoWarn="NU1608" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="$(Tooling_MicrosoftCodeAnalysisNetAnalyzersPackageVersion)" NoWarn="NU1608" />
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(Tooling_MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion)" />
+    <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="$(Tooling_RoslynDiagnosticsAnalyzersPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

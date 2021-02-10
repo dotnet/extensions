@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             throw new NotImplementedException();
         }
 
-        public Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken)
+        public Task<TResponse> SendRequestAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

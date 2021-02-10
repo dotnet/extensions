@@ -91,7 +91,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         protected override Task InitializeCoreAsync(CancellationToken cancellationToken)
         {
-            CommonServices.UnconfiguredProject.ProjectRenaming += UnconfiguredProject_ProjectRenaming;
+            CommonServices.UnconfiguredProject.ProjectRenaming += UnconfiguredProject_ProjectRenamingAsync;
 
             return Task.CompletedTask;
         }
@@ -100,9 +100,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             if (initialized)
             {
-                CommonServices.UnconfiguredProject.ProjectRenaming -= UnconfiguredProject_ProjectRenaming;
+                CommonServices.UnconfiguredProject.ProjectRenaming -= UnconfiguredProject_ProjectRenamingAsync;
 
-                await ExecuteWithLock(async () =>
+                await ExecuteWithLockAsync(async () =>
                 {
                     if (Current != null)
                     {
@@ -120,7 +120,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // However, the project snapshot manager uses the project Fullpath as the key. We want to just
             // reinitialize the HostProject with the same configuration and settings here, but the updated
             // FilePath.
-            await ExecuteWithLock(async () =>
+            await ExecuteWithLockAsync(async () =>
             {
                 if (Current != null)
                 {
@@ -228,7 +228,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _currentDocuments.Clear();
         }
         
-        protected async Task ExecuteWithLock(Func<Task> func)
+        protected async Task ExecuteWithLockAsync(Func<Task> func)
         {
             using (JoinableCollection.Join())
             {
@@ -250,7 +250,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return DisposeAsync();
         }
 
-        private async Task UnconfiguredProject_ProjectRenaming(object sender, ProjectRenamedEventArgs args)
+        private async Task UnconfiguredProject_ProjectRenamingAsync(object sender, ProjectRenamedEventArgs args)
         {
             await OnProjectRenamingAsync().ConfigureAwait(false);
         }

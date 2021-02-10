@@ -82,7 +82,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             {
                 try
                 {
-                    return await _fileChangeService.AdviseFileChangeAsync(FilePath, FileChangeFlags, this);
+                    return await _fileChangeService.AdviseFileChangeAsync(FilePath, FileChangeFlags, this).ConfigureAwait(true);
                 }
                 catch (PathTooLongException)
                 {
@@ -120,7 +120,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                         return;
                     }
 
-                    await _fileChangeService.UnadviseFileChangeAsync(fileChangeCookie);
+                    await _fileChangeService.UnadviseFileChangeAsync(fileChangeCookie).ConfigureAwait(true);
                     _fileChangeAdviseTask = null;
                 }
                 catch (PathTooLongException)

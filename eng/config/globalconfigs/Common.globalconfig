@@ -3,6 +3,9 @@ is_global = true
 # CS0219: Variable is assigned but its value is never used
 dotnet_diagnostic.CS0219.severity = warning
 
+# CA1018: Mark attributes with AttributeUsageAttribute
+dotnet_diagnostic.CA1018.severity = suggestion
+
 # CA1303: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1303.severity = none
 
@@ -27,6 +30,30 @@ dotnet_diagnostic.CA2208.severity = none
 # CA2237: Mark ISerializable types with SerializableAttribute
 dotnet_diagnostic.CA2237.severity = none
 
+# RS0022: Constructor make noninheritable base class inheritable
+dotnet_diagnostic.RS0022.severity = none
+
+# RS0023: Parts exported with MEFv2 must be marked with 'SharedAttribute'
+dotnet_diagnostic.RS0023.severity = none
+
+# RS0033: Importing constructor should be marked with 'ObsoleteAttribute'
+dotnet_diagnostic.RS0033.severity = none
+
+# RS0034: Exported parts should be marked with 'ImportingConstructorAttribute'
+dotnet_diagnostic.RS0034.severity = none
+
+# RS0038: Prefer null literal
+dotnet_diagnostic.RS0038.severity = none
+
+# RS0100: Statements must be placed on their own line
+dotnet_diagnostic.RS0100.severity = none
+
+# RS0101: Avoid multiple blank lines
+dotnet_diagnostic.RS0101.severity = none
+
+# RS0102: Braces must not have blank lines between them
+dotnet_diagnostic.RS0102.severity = none
+
 # IDE0005: Using directive is unnecessary.
 dotnet_diagnostic.IDE0005.severity = warning
 
@@ -38,9 +65,6 @@ dotnet_diagnostic.IDE0073.severity = error
 
 # VSTHRD100: Avoid "async void" methods
 dotnet_diagnostic.VSTHRD100.severity = suggestion
-
-# VSTHRD200: Use "Async" suffix in names of methods that return an awaitable type
-dotnet_diagnostic.VSTHRD200.severity = suggestion
 
 # VSSDK002: The PackageRegistrationAttribute.AllowsBackgroundLoading should be set to true if and only if the package derives from AsyncPackage
 dotnet_diagnostic.VSSDK002.severity = suggestion
