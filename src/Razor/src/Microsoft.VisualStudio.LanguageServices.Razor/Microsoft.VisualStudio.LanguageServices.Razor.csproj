@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="$(MicrosoftVisualStudioProjectSystemSDKPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="$(MicrosoftVisualStudioShellInteropPackageVersion)" />
+    <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
     <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutablePackageVersion)" />
     <PackageReference Include="System.Private.Uri" Version="$(SystemPrivateUriPackageVersion)" />
   </ItemGroup>

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +16,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Moq;
 using Xunit;
+using SystemDebugger = System.Diagnostics.Debugger;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -611,7 +611,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private static void DoWithTimeoutIfNotDebugging(Func<int, bool> withTimeout)
         {
 #if DEBUG
-            if (Debugger.IsAttached)
+            if (SystemDebugger.IsAttached)
             {
                 withTimeout(Timeout.Infinite);
             }

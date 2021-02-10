@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Reflection;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
@@ -26,7 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
                     "Do",
                     BindingFlags.NonPublic | BindingFlags.Static,
                     binder: null,
-                    types: new[] { typeof(SyntaxTree), typeof(int) },
+                    types: new[] { typeof(SyntaxTree), typeof(int), typeof(CancellationToken) },
                     modifiers: Array.Empty<ParameterModifier>());
 
                 if (_getProximityExpressionAsync == null)
@@ -43,14 +44,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
             }
         }
 
-        public override IReadOnlyList<string> GetProximityExpressions(SyntaxTree syntaxTree, int absoluteIndex)
+        public override IReadOnlyList<string> GetProximityExpressions(SyntaxTree syntaxTree, int absoluteIndex, CancellationToken cancellationToken)
         {
             if (syntaxTree is null)
             {
                 throw new ArgumentNullException(nameof(syntaxTree));
             }
 
-            var parameters = new object[] { syntaxTree, absoluteIndex };
+            var parameters = new object[] { syntaxTree, absoluteIndex, cancellationToken };
             var result = _getProximityExpressionAsync.Invoke(obj: null, parameters);
             var expressions = (IReadOnlyList<string>)result;
 

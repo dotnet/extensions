@@ -100,7 +100,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
 
             var sourceText = virtualDocument.Snapshot.AsText();
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, cancellationToken: cancellationToken);
-            var proximityExpressions = _csharpProximityExpressionResolver.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex);
+            var proximityExpressions = _csharpProximityExpressionResolver.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex, cancellationToken);
 
 
             return proximityExpressions;
