@@ -3,6 +3,7 @@
 
 using System;
 using System.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
@@ -16,16 +17,33 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     internal class CompletionResolveHandler : IRequestHandler<CompletionItem, CompletionItem>
     {
         private readonly LSPRequestInvoker _requestInvoker;
+        private readonly LSPDocumentMappingProvider _documentMappingProvider;
+        private readonly FormattingOptionsProvider _formattingOptionsProvider;
 
         [ImportingConstructor]
-        public CompletionResolveHandler(LSPRequestInvoker requestInvoker)
+        public CompletionResolveHandler(
+            LSPRequestInvoker requestInvoker,
+            LSPDocumentMappingProvider documentMappingProvider,
+            FormattingOptionsProvider formattingOptionsProvider)
         {
             if (requestInvoker is null)
             {
                 throw new ArgumentNullException(nameof(requestInvoker));
             }
 
+            if (documentMappingProvider is null)
+            {
+                throw new ArgumentNullException(nameof(documentMappingProvider));
+            }
+
+            if (formattingOptionsProvider is null)
+            {
+                throw new ArgumentNullException(nameof(formattingOptionsProvider));
+            }
+
             _requestInvoker = requestInvoker;
+            _documentMappingProvider = documentMappingProvider;
+            _formattingOptionsProvider = formattingOptionsProvider;
         }
 
         public async Task<CompletionItem> HandleRequestAsync(CompletionItem request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
@@ -55,7 +73,56 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 request,
                 cancellationToken).ConfigureAwait(false);
 
+            result = await PostProcessCompletionItemAsync(request, result, resolveData, cancellationToken).ConfigureAwait(false);
             return result;
+        }
+
+        private async Task<CompletionItem> PostProcessCompletionItemAsync(
+            CompletionItem preResolveCompletionItem,
+            CompletionItem resolvedCompletionItem,
+            CompletionResolveData resolveData,
+            CancellationToken cancellationToken)
+        {
+            // This is a special contract between the Visual Studio LSP platform and language servers where if insert text and text edit's are not present
+            // then the "resolve" endpoint is guaranteed to run prior to a completion item's content being comitted. This gives language servers the
+            // opportunity to lazily evaluate text edits which in turn we need to remap. Given text edits generated through this mechanism tend to be
+            // more exntensive we do a full remapping gesture which includes formatting of said text-edits.
+            var shouldRemapTextEdits = preResolveCompletionItem.InsertText == null && preResolveCompletionItem.TextEdit == null;
+            if (!shouldRemapTextEdits)
+            {
+                // Don't need to remap anything, return early.
+                return resolvedCompletionItem;
+            }
+
+            var formattingOptions = _formattingOptionsProvider.GetOptions(resolveData.HostDocumentUri);
+            if (resolvedCompletionItem.TextEdit != null)
+            {
+                var containsSnippet = resolvedCompletionItem.InsertTextFormat == InsertTextFormat.Snippet;
+                var remappedEdits = await _documentMappingProvider.RemapFormattedTextEditsAsync(
+                    resolveData.ProjectedDocumentUri,
+                    new[] { resolvedCompletionItem.TextEdit },
+                    formattingOptions,
+                    containsSnippet,
+                    cancellationToken).ConfigureAwait(false);
+
+                // We only passed in a single edit to be remapped
+                var remappedEdit = remappedEdits.Single();
+                resolvedCompletionItem.TextEdit = remappedEdit;
+            }
+
+            if (resolvedCompletionItem.AdditionalTextEdits != null)
+            {
+                var remappedEdits = await _documentMappingProvider.RemapFormattedTextEditsAsync(
+                    resolveData.ProjectedDocumentUri,
+                    resolvedCompletionItem.AdditionalTextEdits,
+                    formattingOptions,
+                    containsSnippet: false, // Additional text edits can't contain snippets
+                    cancellationToken).ConfigureAwait(false);
+
+                resolvedCompletionItem.AdditionalTextEdits = remappedEdits;
+            }
+
+            return resolvedCompletionItem;
         }
     }
 }

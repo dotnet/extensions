@@ -85,7 +85,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             // Arrange
             var called = false;
-            var expectedItem = new CompletionItem() { InsertText = "Sample"};
+            var expectedItem = new CompletionItem() { InsertText = "Sample" };
             var completionRequest = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -221,7 +221,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(result.HasValue);
             var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
                 array => throw new NotImplementedException(),
-                list => {
+                list =>
+                {
                     Assert.Collection(list.Items,
                         item => Assert.Equal("DateTime", item.Label)
                     );
@@ -281,7 +282,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(result.HasValue);
             var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
                 array => throw new NotImplementedException(),
-                list => {
+                list =>
+                {
 
                     Assert.Collection(list.Items,
                         item =>
@@ -320,7 +322,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new CompletionList{
+                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new CompletionList
+                {
                     Items = new[] { expectedItem }
                 }));
 
@@ -341,7 +344,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(result.HasValue);
             var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
                 array => throw new NotImplementedException(),
-                list => {
+                list =>
+                {
                     Assert.Collection(list.Items,
                         item => Assert.Equal("DateTime", item.Label)
                     );
@@ -398,10 +402,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(called);
             Assert.True(result.HasValue);
             var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
-                array => {
+                array =>
+                {
                     Assert.Collection(array,
                         item => Assert.Equal("DateTime", item.InsertText),
-                        item => {
+                        item =>
+                        {
                             Assert.Equal("for", item.Label);
                             Assert.Equal("FROMCSHARP", item.InsertText);
                         },
@@ -418,7 +424,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                     return array;
                 },
-                list => {
+                list =>
+                {
                     throw new NotImplementedException();
                 });
         }
@@ -475,10 +482,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(called);
             Assert.True(result.HasValue);
             var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
-                array => {
+                array =>
+                {
                     Assert.Collection(array,
                         item => Assert.Equal("DateTime", item.InsertText),
-                        item => {
+                        item =>
+                        {
                             Assert.Equal("for", item.Label);
                             Assert.Equal("FROMCSHARP", item.InsertText);
                         },
@@ -495,7 +504,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                     return array;
                 },
-                list => {
+                list =>
+                {
                     throw new NotImplementedException();
                 });
         }
@@ -547,7 +557,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(called);
             Assert.True(result.HasValue);
             _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
-                array => {
+                array =>
+                {
                     Assert.Collection(array,
                         item => Assert.Equal("for", item.Label),
                         item => Assert.Equal("foreach", item.Label),
@@ -850,7 +861,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(called);
             Assert.True(result.HasValue);
             _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
-                array => {
+                array =>
+                {
                     Assert.Collection(array,
                         item => Assert.Equal("__x", item.Label)
                     ); ;
@@ -914,13 +926,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 new CompletionItem() { InsertText = "Hello", Data = originalData }
             };
+            var hostDocumentUri = new Uri("C:/path/to/file.razor");
+            var projectedDocumentUri = new Uri("C:/path/to/file.razor.g.cs");
             var documentManager = new TestDocumentManager();
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict).Object;
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
             var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker, documentManager, projectionProvider, TextStructureNavigatorSelectorService);
 
             // Act
-            var result = completionHandler.SetResolveData(items, LanguageServerKind.CSharp);
+            var result = completionHandler.SetResolveData(items, LanguageServerKind.CSharp, hostDocumentUri, projectedDocumentUri);
 
             // Assert
             Assert.True(result.HasValue);
@@ -928,6 +942,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var newData = Assert.IsType<CompletionResolveData>(item.Data);
             Assert.Equal(LanguageServerKind.CSharp, newData.LanguageServerKind);
             Assert.Same(originalData, newData.OriginalData);
+            Assert.Same(hostDocumentUri, newData.HostDocumentUri);
+            Assert.Same(projectedDocumentUri, newData.ProjectedDocumentUri);
         }
 
         [Fact]

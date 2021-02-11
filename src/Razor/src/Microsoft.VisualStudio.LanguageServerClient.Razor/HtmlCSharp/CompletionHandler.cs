@@ -155,7 +155,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             if (result.HasValue)
             {
                 // Set some context on the CompletionItem so the CompletionResolveHandler can handle it accordingly.
-                result = SetResolveData(result.Value, serverKind);
+                result = SetResolveData(result.Value, serverKind, request.TextDocument.Uri, projectionResult.Uri);
 
                 if (serverKind == LanguageServerKind.CSharp)
                 {
@@ -420,17 +420,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         // Internal for testing
-        internal SumType<CompletionItem[], CompletionList>? SetResolveData(SumType<CompletionItem[], CompletionList> completionResult, LanguageServerKind kind)
+        internal SumType<CompletionItem[], CompletionList>? SetResolveData(SumType<CompletionItem[], CompletionList> completionResult, LanguageServerKind kind, Uri hostDocumentUri, Uri projectedDocumentUri)
         {
             var result = completionResult.Match<SumType<CompletionItem[], CompletionList>?>(
                 items =>
                 {
-                    var newItems = items.Select(item => SetData(item)).ToArray();
+                    var newItems = items.Select(item => SetData(hostDocumentUri, projectedDocumentUri, item)).ToArray();
                     return newItems;
                 },
                 list =>
                 {
-                    var newItems = list.Items.Select(item => SetData(item)).ToArray();
+                    var newItems = list.Items.Select(item => SetData(hostDocumentUri, projectedDocumentUri, item)).ToArray();
                     if (list is VSCompletionList vsList)
                     {
                         return new VSCompletionList()
@@ -452,10 +452,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             return result;
 
-            CompletionItem SetData(CompletionItem item)
+            CompletionItem SetData(Uri hostDocumentUri, Uri projectedDocumentUri, CompletionItem item)
             {
                 var data = new CompletionResolveData()
                 {
+                    HostDocumentUri = hostDocumentUri,
+                    ProjectedDocumentUri = projectedDocumentUri,
                     LanguageServerKind = kind,
                     OriginalData = item.Data
                 };
