@@ -101,12 +101,12 @@
     <MicrosoftNetCompilersToolsetPackageVersion>3.9.0-2.20573.10</MicrosoftNetCompilersToolsetPackageVersion>
     <MicrosoftNetRoslynDiagnosticsPackageVersion>2.6.3</MicrosoftNetRoslynDiagnosticsPackageVersion>
     <MicrosoftServiceHubFrameworkPackageVersion>2.7.313-preview</MicrosoftServiceHubFrameworkPackageVersion>
-    <MicrosoftVisualStudioCoreUtilityPackageVersion>16.8.272</MicrosoftVisualStudioCoreUtilityPackageVersion>
+    <MicrosoftVisualStudioCoreUtilityPackageVersion>16.10.8</MicrosoftVisualStudioCoreUtilityPackageVersion>
     <MicrosoftVisualStudioComponentModelHostPackageVersion>16.0.467</MicrosoftVisualStudioComponentModelHostPackageVersion>
     <MicrosoftVisualStudioImageCatalogPackageVersion>16.8.30406.65-pre</MicrosoftVisualStudioImageCatalogPackageVersion>
     <MicrosoftVisualStudioEditorPackageVersion>16.8.272</MicrosoftVisualStudioEditorPackageVersion>
-    <MicrosoftVisualStudioLanguagePackageVersion>16.8.272</MicrosoftVisualStudioLanguagePackageVersion>
-    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>16.8.272</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
+    <MicrosoftVisualStudioLanguagePackageVersion>16.10.8</MicrosoftVisualStudioLanguagePackageVersion>
+    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>16.10.8</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
     <MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>16.9.150</MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>
     <MicrosoftVisualStudioPackageLanguageService150PackageVersion>16.7.30204.53-pre</MicrosoftVisualStudioPackageLanguageService150PackageVersion>
     <MicrosoftVisualStudioLiveSharePackageVersion>0.3.1074</MicrosoftVisualStudioLiveSharePackageVersion>
@@ -118,9 +118,10 @@
     <MicrosoftVisualStudioShellInterop163DesignTimePackageVersion>16.3.29316.127</MicrosoftVisualStudioShellInterop163DesignTimePackageVersion>
     <MicrosoftVisualStudioShell150PackageVersion>16.7.30204.53-pre</MicrosoftVisualStudioShell150PackageVersion>
     <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6073</MicrosoftVisualStudioShellInteropPackageVersion>
-    <MicrosoftVisualStudioTextDataPackageVersion>16.8.272</MicrosoftVisualStudioTextDataPackageVersion>
-    <MicrosoftVisualStudioTextLogicPackageVersion>16.8.272</MicrosoftVisualStudioTextLogicPackageVersion>
-    <MicrosoftVisualStudioTextUIPackageVersion>16.8.272</MicrosoftVisualStudioTextUIPackageVersion>
+    <MicrosoftVisualStudioTextDataPackageVersion>16.10.8</MicrosoftVisualStudioTextDataPackageVersion>
+    <MicrosoftVisualStudioTextImplementationPackageVersion>16.10.8</MicrosoftVisualStudioTextImplementationPackageVersion>
+    <MicrosoftVisualStudioTextLogicPackageVersion>16.10.8</MicrosoftVisualStudioTextLogicPackageVersion>
+    <MicrosoftVisualStudioTextUIPackageVersion>16.10.8</MicrosoftVisualStudioTextUIPackageVersion>
     <MicrosoftVisualStudioThreadingPackageVersion>16.9.45-alpha</MicrosoftVisualStudioThreadingPackageVersion>
     <MicrosoftVisualStudioWebPackageVersion>16.10.0-preview-1-31008-014</MicrosoftVisualStudioWebPackageVersion>
     <MicrosoftWebToolsLanguagesHtmlPackageVersion>$(Tooling_HtmlEditorPackageVersion)</MicrosoftWebToolsLanguagesHtmlPackageVersion>

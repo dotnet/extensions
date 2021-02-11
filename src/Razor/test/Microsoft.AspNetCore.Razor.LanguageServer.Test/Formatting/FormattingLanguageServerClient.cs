@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test.Formatting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
@@ -113,10 +114,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var editHandlerType = editHandlerAssembly.GetType("Microsoft.WebTools.Languages.LanguageServer.Server.Html.OperationHandlers.ApplyFormatEditsHandler", throwOnError: true);
                 var bufferManagerType = editHandlerAssembly.GetType("Microsoft.WebTools.Languages.LanguageServer.Server.Shared.Buffer.BufferManager", throwOnError: true);
 
-                var contentTypeService = new FakeContentTypeRegistryService();
+                var exportProvider = EditorTestCompositions.Editor.ExportProviderFactory.CreateExportProvider();
+                var contentTypeService = exportProvider.GetExportedValue<IContentTypeRegistryService>();
+
                 contentTypeService.AddContentType(HtmlContentTypeDefinition.HtmlContentType, new[] { StandardContentTypeNames.Text });
 
-                var textBufferFactoryService = new FakeTextBufferFactoryService(contentTypeService);
+                var textBufferFactoryService = exportProvider.GetExportedValue<ITextBufferFactoryService>();
                 var textBufferListeners = Array.Empty<Lazy<IWebTextBufferListener, IOrderedComponentContentTypes>>();
                 var bufferManager = Activator.CreateInstance(bufferManagerType, new object[] { contentTypeService, textBufferFactoryService, textBufferListeners });
                 var joinableTaskFactoryThreadSwitcher = typeof(IdAttribute).Assembly.GetType("Microsoft.WebTools.Shared.Threading.JoinableTaskFactoryThreadSwitcher", throwOnError: true);
