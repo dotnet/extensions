@@ -135,7 +135,7 @@
     <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <OmniSharpExtensionsLanguageServerPackageVersion>0.18.1</OmniSharpExtensionsLanguageServerPackageVersion>
     <OmniSharpMSBuildPackageVersion>1.33.0</OmniSharpMSBuildPackageVersion>
-    <StreamJsonRpcPackageVersion>2.7.66-alpha</StreamJsonRpcPackageVersion>
+    <StreamJsonRpcPackageVersion>2.7.72</StreamJsonRpcPackageVersion>
     <SystemPrivateUriPackageVersion>4.3.2</SystemPrivateUriPackageVersion>
     <SystemCompositionPackageVersion>1.0.31.0</SystemCompositionPackageVersion>
     <SystemCollectionsImmutablePackageVersion>5.0.0</SystemCollectionsImmutablePackageVersion>

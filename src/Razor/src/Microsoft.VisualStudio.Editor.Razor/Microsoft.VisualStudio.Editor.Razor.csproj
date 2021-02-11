@@ -14,6 +14,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(Tooling_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Language" Version="$(MicrosoftVisualStudioLanguagePackageVersion)" />
+    <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
     <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutablePackageVersion)" />
     <PackageReference Include="System.Private.Uri" Version="$(SystemPrivateUriPackageVersion)" />
   </ItemGroup>
