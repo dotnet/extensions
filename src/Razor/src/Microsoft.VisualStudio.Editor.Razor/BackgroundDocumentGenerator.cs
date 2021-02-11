@@ -137,7 +137,7 @@ namespace Microsoft.CodeAnalysis.Razor
             _projectManager.Changed += ProjectManager_Changed;
         }
 
-        protected virtual async Task ProcessDocument(ProjectSnapshot project, DocumentSnapshot document)
+        protected virtual async Task ProcessDocumentAsync(ProjectSnapshot project, DocumentSnapshot document)
         {
             await document.GetGeneratedOutputAsync().ConfigureAwait(false);
             var container = new DefaultDynamicDocumentContainer(document);
@@ -187,10 +187,10 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private void Timer_Tick()
         {
-            _ = TimerTick();
+            _ = TimerTickAsync();
         }
 
-        private async Task TimerTick()
+        private async Task TimerTickAsync()
         {
             try
             {
@@ -215,7 +215,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     var (project, document) = work[i].Value;
                     try
                     {
-                        await ProcessDocument(project, document).ConfigureAwait(false);
+                        await ProcessDocumentAsync(project, document).ConfigureAwait(false);
                     }
                     catch (UnauthorizedAccessException)
                     {

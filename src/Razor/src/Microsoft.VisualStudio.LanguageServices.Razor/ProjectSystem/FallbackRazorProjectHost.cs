@@ -60,7 +60,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // to the UI thread to push our updates.
             //
             // Just subscribe and handle the notification later.
-            var receiver = new ActionBlock<IProjectVersionedValue<IProjectSubscriptionUpdate>>(OnProjectChanged);
+            var receiver = new ActionBlock<IProjectVersionedValue<IProjectSubscriptionUpdate>>(OnProjectChangedAsync);
             _subscription = CommonServices.ActiveConfiguredProjectSubscription.JointRuleSource.SourceBlock.LinkTo(
                 receiver,
                 initialDataAsNew: true,
@@ -85,7 +85,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         // Internal for testing
-        internal async Task OnProjectChanged(IProjectVersionedValue<IProjectSubscriptionUpdate> update)
+        internal async Task OnProjectChangedAsync(IProjectVersionedValue<IProjectSubscriptionUpdate> update)
         {
             if (IsDisposing || IsDisposed)
             {
@@ -94,7 +94,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             await CommonServices.TasksService.LoadedProjectAsync(async () =>
             {
-                await ExecuteWithLock(async () =>
+                await ExecuteWithLockAsync(async () =>
                 {
                     string mvcReferenceFullPath = null;
                     if (update.Value.CurrentState.ContainsKey(ResolvedCompilationReference.SchemaName))
