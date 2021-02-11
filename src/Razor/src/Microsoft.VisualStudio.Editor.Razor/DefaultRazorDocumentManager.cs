@@ -95,8 +95,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // one of them for a tracker because the content type could have changed.
             foreach (var textBuffer in subjectBuffers)
             {
-                DefaultVisualStudioDocumentTracker documentTracker;
-                if (textBuffer.Properties.TryGetProperty(typeof(VisualStudioDocumentTracker), out documentTracker))
+                if (textBuffer.Properties.TryGetProperty(typeof(VisualStudioDocumentTracker), out DefaultVisualStudioDocumentTracker documentTracker))
                 {
                     documentTracker.RemoveTextView(textView);
 

@@ -247,9 +247,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
             VisualStudioRazorParser parser = null,
             BraceSmartIndenter smartIndenter = null)
         {
-            documentTracker = documentTracker ?? Mock.Of<VisualStudioDocumentTracker>(MockBehavior.Strict);
-            parser = parser ?? Mock.Of<VisualStudioRazorParser>(MockBehavior.Strict);
-            smartIndenter = smartIndenter ?? Mock.Of<BraceSmartIndenter>(MockBehavior.Strict);
+            documentTracker ??= Mock.Of<VisualStudioDocumentTracker>(MockBehavior.Strict);
+            parser ??= Mock.Of<VisualStudioRazorParser>(MockBehavior.Strict);
+            smartIndenter ??= Mock.Of<BraceSmartIndenter>(MockBehavior.Strict);
 
             var documentTrackerFactory = Mock.Of<VisualStudioDocumentTrackerFactory>(f => f.Create(It.IsAny<ITextBuffer>()) == documentTracker, MockBehavior.Strict);
             var parserFactory = Mock.Of<VisualStudioRazorParserFactory>(f => f.Create(It.IsAny<VisualStudioDocumentTracker>()) == parser, MockBehavior.Strict);

@@ -198,8 +198,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             foreach (var classDeclaration in classDeclarations)
             {
-                var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
-                if (classSymbol == null)
+                if (!(semanticModel.GetDeclaredSymbol(classDeclaration) is INamedTypeSymbol classSymbol))
                 {
                     continue;
                 }

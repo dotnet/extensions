@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.Text
             var testArgs = new TestTextContentChangedEventArgs(before, after);
 
             // Act
-            var result = testArgs.TextChangeOccurred(out var changeInformation);
+            var result = testArgs.TextChangeOccurred(out _);
 
             // Assert
             Assert.False(result);
@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.Text
             var testArgs = new TestTextContentChangedEventArgs(before, after);
 
             // Act
-            var result = testArgs.TextChangeOccurred(out var changeInformation);
+            var result = testArgs.TextChangeOccurred(out _);
 
             // Assert
             Assert.False(result);

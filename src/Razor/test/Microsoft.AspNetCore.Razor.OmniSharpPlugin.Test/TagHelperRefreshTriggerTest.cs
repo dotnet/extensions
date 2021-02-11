@@ -286,8 +286,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         private TagHelperRefreshTrigger CreateRefreshTrigger(OmniSharpProjectWorkspaceStateGenerator workspaceStateGenerator = null, Workspace workspace = null, int enqueueDelay = 1)
         {
-            workspaceStateGenerator = workspaceStateGenerator ?? Mock.Of<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
-            workspace = workspace ?? Workspace;
+            workspaceStateGenerator ??= Mock.Of<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
+            workspace ??= Workspace;
             var refreshTrigger = new TagHelperRefreshTrigger(Dispatcher, workspace, workspaceStateGenerator)
             {
                 EnqueueDelay = enqueueDelay,

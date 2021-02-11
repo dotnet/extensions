@@ -172,7 +172,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Act
             store.Remove(projectFilePath);
-            var result = store.TryGet(projectFilePath, out var configurationFilePath);
+            var result = store.TryGet(projectFilePath, out _);
 
             // Assert
             Assert.False(result);

@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.Razor
             // The default configuration currently matches MVC-2.0. Beyond MVC-2.0 we added SDK support for 
             // properly detecting project versions, so that's a good version to assume when we can't find a
             // configuration.
-            configuration = configuration ?? DefaultConfiguration;
+            configuration ??= DefaultConfiguration;
 
             // If there's no factory to handle the configuration then fall back to a very basic configuration.
             //

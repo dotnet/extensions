@@ -49,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var node = GetNodeAt("<p bin>", 4);
 
             // Act
-            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out var parameterNameLocation);
+            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out _);
 
             // Assert
             Assert.True(result);
@@ -66,7 +66,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var node = GetNodeAt("<p @>", 4);
 
             // Act
-            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out var parameterNameLocation);
+            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out _);
 
             // Assert
             Assert.True(result);
@@ -83,7 +83,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var node = GetNodeAt("<p foo=\"anything\">", 4);
 
             // Act
-            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out var parameterNameLocation);
+            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out _);
 
             // Assert
             Assert.True(result);
@@ -99,7 +99,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             var node = GetNodeAt("<input type=\"text\" @bind />", 22);
 
             // Act
-            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out var parameterNameLocation);
+            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out _);
 
             // Assert
             Assert.True(result);
@@ -118,7 +118,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 }", 22);
 
             // Act
-            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out var parameterNameLocation);
+            var result = DirectiveAttributeCompletionItemProviderBase.TryGetAttributeInfo(node, out var prefixLocation, out var name, out var nameLocation, out var parameterName, out _);
 
             // Assert
             Assert.True(result);

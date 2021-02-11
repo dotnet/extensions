@@ -337,7 +337,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private static RazorSyntaxTree GetSyntaxTree(StringTextSnapshot source, IEnumerable<DirectiveDescriptor> directives = null)
         {
-            directives = directives ?? Enumerable.Empty<DirectiveDescriptor>();
+            directives ??= Enumerable.Empty<DirectiveDescriptor>();
             var engine = RazorProjectEngine.Create(builder =>
             {
                 foreach (var directive in directives)

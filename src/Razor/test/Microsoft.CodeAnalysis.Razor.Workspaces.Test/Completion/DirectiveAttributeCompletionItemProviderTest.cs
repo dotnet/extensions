@@ -287,7 +287,6 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         public void GetAttributeCompletions_BaseDirectiveAttributeAndParameterVariationsExist_ExcludesCompletion()
         {
             // Arrange
-            var expectedCompletion = new RazorCompletionItem("@bind", "@bind", RazorCompletionItemKind.DirectiveAttribute);
             var attributeNames = new[]
             {
                 "@bind",
@@ -306,7 +305,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
         private static void AssertContains(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText, IReadOnlyCollection<string> commitCharacters)
         {
-            displayText = displayText ?? insertText;
+            displayText ??= insertText;
 
             Assert.Contains(completions, completion =>
             {
@@ -319,7 +318,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
         private static void AssertDoesNotContain(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText)
         {
-            displayText = displayText ?? insertText;
+            displayText ??= insertText;
 
             Assert.DoesNotContain(completions, completion =>
             {

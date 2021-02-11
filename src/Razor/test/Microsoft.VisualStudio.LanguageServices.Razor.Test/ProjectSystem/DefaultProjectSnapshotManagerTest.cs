@@ -483,7 +483,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.ProjectConfigurationChanged(HostProjectWithConfigurationChange);
 
             // Assert
-            var snapshot = ProjectManager.GetSnapshot(HostProjectWithConfigurationChange);
             Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
         }
 

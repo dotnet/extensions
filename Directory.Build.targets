@@ -42,8 +42,8 @@
     <EditorConfigFiles Include="$(RepositoryEngineeringDir)config\globalconfigs\Common.globalconfig" />
     <!-- Include Shipping.globalconfig for shipping projects -->
     <EditorConfigFiles Condition="'$(IsShipping)' == 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\Shipping.globalconfig" />
-    <!-- Include NonShipping.globalconfig for non-shipping projects -->
-    <EditorConfigFiles Condition="'$(IsShipping)' != 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\NonShipping.globalconfig" />
+    <!-- Include NonShipping.globalconfig for non-shipping projects, except for API shims -->
+    <EditorConfigFiles Condition="'$(IsShipping)' != 'true' AND '$(IsApiShim)' != 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\NonShipping.globalconfig" />
     <!-- Include ApiShim.globalconfig for API shim projects -->
     <EditorConfigFiles Condition="'$(IsApiShim)' == 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\ApiShim.globalconfig" />
   </ItemGroup>

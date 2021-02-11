@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public RazorLSPOptions Get(string name)
         {
-            name = name ?? Options.DefaultName;
+            name ??= Options.DefaultName;
             return _cache.GetOrAdd(name, () => _currentValue);
         }
 

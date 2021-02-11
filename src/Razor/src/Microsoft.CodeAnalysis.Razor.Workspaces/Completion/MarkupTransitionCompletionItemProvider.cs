@@ -74,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
             // Also helps filter out edge cases like `< te` and `< te=""`
             // (see comment in AtMarkupTransitionCompletionPoint)
-            if (!_htmlFactsService.TryGetElementInfo(parent, out var containingTagNameToken, out var attributes) ||
+            if (!_htmlFactsService.TryGetElementInfo(parent, out var containingTagNameToken, out _) ||
                 !containingTagNameToken.Span.IntersectsWith(location.AbsoluteIndex))
             {
                 return Array.Empty<RazorCompletionItem>();

@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             var context = FormattingContext.Create(uri, Mock.Of<DocumentSnapshot>(MockBehavior.Strict), codeDocument, options, new Range(position, position));
 
             // Act
-            if (!provider.TryResolveInsertion(position, context, out var edit, out var format))
+            if (!provider.TryResolveInsertion(position, context, out var edit, out _))
             {
                 edit = null;
             }

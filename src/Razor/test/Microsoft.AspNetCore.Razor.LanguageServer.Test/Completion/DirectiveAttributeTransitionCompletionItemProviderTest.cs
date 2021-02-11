@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         private static RazorSyntaxTree GetSyntaxTree(string text, string fileKind = null)
         {
-            fileKind = fileKind ?? FileKinds.Component;
+            fileKind ??= FileKinds.Component;
             var sourceDocument = TestRazorSourceDocument.Create(text);
             var projectEngine = RazorProjectEngine.Create(builder => { });
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), Array.Empty<TagHelperDescriptor>());

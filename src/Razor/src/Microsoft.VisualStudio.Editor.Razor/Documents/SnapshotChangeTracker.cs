@@ -48,7 +48,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
 
         private void OnTextBufferChanged(object sender, TextContentChangedEventArgs e)
         {
-            if (sender is ITextBuffer buffer)
+            if (sender is ITextBuffer)
             {
                 var snapshot = _snapshot;
                 if (snapshot != null && snapshot.Version != null && e.AfterVersion != null &&

@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 
         private static RazorCodeDocument CreateComponentDocument(string text, params TagHelperDescriptor[] tagHelpers)
         {
-            tagHelpers = tagHelpers ?? Array.Empty<TagHelperDescriptor>();
+            tagHelpers ??= Array.Empty<TagHelperDescriptor>();
             var sourceDocument = TestRazorSourceDocument.Create(text);
             var projectEngine = RazorProjectEngine.Create(builder => { });
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), tagHelpers);

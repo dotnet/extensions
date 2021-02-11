@@ -567,8 +567,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 "ChangedRootNamespace");
 
             // Force init
-            var originalTagHelpers = original.TagHelpers;
-            var originalProjectWorkspaceStateVersion = original.ConfigurationVersion;
+            _ = original.TagHelpers;
+            _ = original.ConfigurationVersion;
 
             TagHelperResolver.TagHelpers = SomeTagHelpers;
 
@@ -588,7 +588,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Force init
-            var originalProjectWorkspaceStateVersion = original.ProjectWorkspaceStateVersion;
+            _ = original.ProjectWorkspaceStateVersion;
 
             // Act
             var state = original.WithHostProject(HostProject);
@@ -778,8 +778,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader);
 
             // Force init
-            var originalTagHelpers = original.TagHelpers;
-            var originalProjectWorkspaceStateVersion = original.ProjectWorkspaceStateVersion;
+            _ = original.TagHelpers;
+            _ = original.ProjectWorkspaceStateVersion;
 
             var changed = new ProjectWorkspaceState(original.TagHelpers, original.CSharpLanguageVersion);
 

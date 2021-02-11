@@ -53,11 +53,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             _projectManager = projectManager;
 
             // Attach the event sink to solution update events.
-            var solutionBuildManager = _services.GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager;
-            if (solutionBuildManager != null)
+            if (_services.GetService(typeof(SVsSolutionBuildManager)) is IVsSolutionBuildManager solutionBuildManager)
             {
                 // We expect this to be called only once. So we don't need to Unadvise.
-                var hr = solutionBuildManager.AdviseUpdateSolutionEvents(this, out var cookie);
+                var hr = solutionBuildManager.AdviseUpdateSolutionEvents(this, out _);
                 Marshal.ThrowExceptionForHR(hr);
             }
         }

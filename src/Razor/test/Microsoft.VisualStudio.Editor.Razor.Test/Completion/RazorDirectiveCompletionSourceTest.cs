@@ -108,7 +108,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
 
             // Assert
             var description = Assert.IsType<string>(descriptionObject);
-            Assert.Equal(expectedDescription.Description, descriptionObject);
+            Assert.Equal(expectedDescription.Description, description);
         }
 
         [Fact]

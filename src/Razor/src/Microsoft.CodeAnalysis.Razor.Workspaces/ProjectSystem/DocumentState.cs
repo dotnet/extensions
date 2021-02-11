@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(hostDocument));
             }
 
-            loader = loader ?? EmptyLoader;
+            loader ??= EmptyLoader;
             return new DocumentState(services, hostDocument, null, null, loader);
         }
 
@@ -172,12 +172,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public virtual DocumentState WithConfigurationChange()
         {
-            var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader);
-
-            // The source could not have possibly changed.
-            state._sourceText = _sourceText;
-            state._version = _version;
-            state._loaderTask = _loaderTask;
+            var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader)
+            {
+                // The source could not have possibly changed.
+                _sourceText = _sourceText,
+                _version = _version,
+                _loaderTask = _loaderTask
+            };
 
             // Do not cache computed state
 
@@ -186,12 +187,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public virtual DocumentState WithImportsChange()
         {
-            var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader);
-
-            // The source could not have possibly changed.
-            state._sourceText = _sourceText;
-            state._version = _version;
-            state._loaderTask = _loaderTask;
+            var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader)
+            {
+                // The source could not have possibly changed.
+                _sourceText = _sourceText,
+                _version = _version,
+                _loaderTask = _loaderTask
+            };
 
             // Optimisically cache the computed state
             state._computedState = new ComputedStateTracker(state, _computedState);
@@ -201,12 +203,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public virtual DocumentState WithProjectWorkspaceStateChange()
         {
-            var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader);
-
-            // The source could not have possibly changed.
-            state._sourceText = _sourceText;
-            state._version = _version;
-            state._loaderTask = _loaderTask;
+            var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader)
+            {
+                // The source could not have possibly changed.
+                _sourceText = _sourceText,
+                _version = _version,
+                _loaderTask = _loaderTask
+            };
 
             // Optimisically cache the computed state
             state._computedState = new ComputedStateTracker(state, _computedState);

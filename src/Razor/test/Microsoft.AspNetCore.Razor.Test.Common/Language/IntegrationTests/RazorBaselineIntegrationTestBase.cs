@@ -254,7 +254,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         private static void WriteBaseline(string text, string filePath)
         {
-            var lines = text.Replace("\r", "").Replace("\n", "\r\n");
             File.WriteAllText(filePath, text);
         }
 

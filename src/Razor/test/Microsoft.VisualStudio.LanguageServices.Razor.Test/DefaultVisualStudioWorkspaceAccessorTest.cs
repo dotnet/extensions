@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var workspaceAccessor = new TestWorkspaceAccessor(true, false);
 
             // Act
-            var result = workspaceAccessor.TryGetWorkspace(textBuffer, out var workspace);
+            var result = workspaceAccessor.TryGetWorkspace(textBuffer, out _);
 
             // Assert
             Assert.True(result);
@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var workspaceAccessor = new TestWorkspaceAccessor(false, true);
 
             // Act
-            var result = workspaceAccessor.TryGetWorkspace(textBuffer, out var workspace);
+            var result = workspaceAccessor.TryGetWorkspace(textBuffer, out _);
 
             // Assert
             Assert.True(result);
@@ -50,7 +50,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var workspaceAccessor = new TestWorkspaceAccessor(true, true);
 
             // Act
-            var result = workspaceAccessor.TryGetWorkspace(textBuffer, out var workspace);
+            var result = workspaceAccessor.TryGetWorkspace(textBuffer, out _);
 
             // Assert
             Assert.True(result);

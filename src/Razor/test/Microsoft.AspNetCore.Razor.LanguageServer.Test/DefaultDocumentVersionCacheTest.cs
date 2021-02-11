@@ -94,14 +94,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectSnapshotManager.DocumentAdded(document.ProjectInternal.HostProject, document.State.HostDocument, TextLoader.From(textAndVersion));
 
             // Act - 1
-            var result = documentVersionCache.TryGetDocumentVersion(document, out var version);
+            var result = documentVersionCache.TryGetDocumentVersion(document, out _);
 
             // Assert - 1
             Assert.True(result);
 
             // Act - 2
             projectSnapshotManager.DocumentRemoved(document.ProjectInternal.HostProject, document.State.HostDocument);
-            result = documentVersionCache.TryGetDocumentVersion(document, out version);
+            result = documentVersionCache.TryGetDocumentVersion(document, out _);
 
             // Assert - 2
             Assert.True(result);
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectSnapshotManager.DocumentOpened(document.ProjectInternal.FilePath, document.FilePath, textAndVersion.Text);
 
             // Act - 1
-            var result = documentVersionCache.TryGetDocumentVersion(document, out var version);
+            var result = documentVersionCache.TryGetDocumentVersion(document, out _);
 
             // Assert - 1
             Assert.True(result);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Act - 2
             projectSnapshotManager.DocumentRemoved(document.ProjectInternal.HostProject, document.State.HostDocument);
-            result = documentVersionCache.TryGetDocumentVersion(document, out version);
+            result = documentVersionCache.TryGetDocumentVersion(document, out _);
 
             // Assert - 2
             Assert.True(result);
@@ -157,14 +157,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectSnapshotManager.DocumentAdded(document.ProjectInternal.HostProject, document.State.HostDocument, textLoader);
 
             // Act - 1
-            var result = documentVersionCache.TryGetDocumentVersion(document, out var version);
+            var result = documentVersionCache.TryGetDocumentVersion(document, out _);
 
             // Assert - 1
             Assert.True(result);
 
             // Act - 2
             projectSnapshotManager.DocumentClosed(document.ProjectInternal.HostProject.FilePath, document.State.HostDocument.FilePath, textLoader);
-            result = documentVersionCache.TryGetDocumentVersion(document, out version);
+            result = documentVersionCache.TryGetDocumentVersion(document, out var version);
 
             // Assert - 2
             Assert.False(result);

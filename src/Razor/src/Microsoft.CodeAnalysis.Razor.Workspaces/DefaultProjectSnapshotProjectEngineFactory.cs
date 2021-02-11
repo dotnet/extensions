@@ -44,13 +44,13 @@ namespace Microsoft.CodeAnalysis.Razor
             // 
             // This service is only used in process in Visual Studio, and any other callers should provide these
             // things also.
-            configure = configure ?? ((b) => { });
+            configure ??= ((b) => { });
 
             // The default configuration currently matches the newest MVC configuration.
             //
             // We typically want this because the language adds features over time - we don't want to a bunch of errors
             // to show up when a document is first opened, and then go away when the configuration loads, we'd prefer the opposite.
-            configuration = configuration ?? DefaultConfiguration;
+            configuration ??= DefaultConfiguration;
 
             // If there's no factory to handle the configuration then fall back to a very basic configuration.
             //

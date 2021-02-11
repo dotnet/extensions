@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false, RazorParserFeatureFlags featureFlags = null, string fileKind = null)
         {
-            directives = directives ?? Array.Empty<DirectiveDescriptor>();
+            directives ??= Array.Empty<DirectiveDescriptor>();
 
             var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
 

@@ -307,7 +307,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             var triggerCharEnumeration = mergedCapabilities.OnAutoInsertProvider?.TriggerCharacters ?? Enumerable.Empty<string>();
             var onAutoInsertMergedTriggerChars = new HashSet<string>(triggerCharEnumeration);
-            var vsServerCapabilities = InitializeResult.Capabilities as VSServerCapabilities;
             if (!onAutoInsertMergedTriggerChars.SetEquals(triggerCharEnumeration))
             {
                 await _joinableTaskFactory.SwitchToMainThreadAsync();
@@ -426,8 +425,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             foreach (var languageClientAndMetadata in _languageServiceBroker.LanguageClients)
             {
-                var metadata = languageClientAndMetadata.Metadata as ILanguageClientMetadata;
-                if (metadata == null)
+                if (!(languageClientAndMetadata.Metadata is ILanguageClientMetadata metadata))
                 {
                     continue;
                 }

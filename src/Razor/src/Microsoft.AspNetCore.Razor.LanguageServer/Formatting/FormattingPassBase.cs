@@ -172,7 +172,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             foreach (var mapping in context.CodeDocument.GetCSharpDocument().SourceMappings)
             {
                 var mappingSpan = new TextSpan(mapping.OriginalSpan.AbsoluteIndex, mapping.OriginalSpan.Length);
-                var mappingRange = mappingSpan.AsRange(context.SourceText);
                 if (!ShouldFormat(context, mappingSpan, allowImplicitStatements: true))
                 {
                     // We don't care about this range as this can potentially lead to incorrect scopes.
