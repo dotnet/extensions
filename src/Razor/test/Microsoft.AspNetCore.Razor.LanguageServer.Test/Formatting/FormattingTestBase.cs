@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var edited = ApplyEdits(source, edits);
             var actual = edited.ToString();
 
-            Assert.Equal(expected, actual, ignoreLineEndingDifferences: true);
+            new XUnitVerifier().EqualOrDiff(expected, actual);
         }
 
         protected async Task RunOnTypeFormattingTestAsync(string input, string expected, string triggerCharacter, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
@@ -118,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var edited = ApplyEdits(source, edits);
             var actual = edited.ToString();
 
-            Assert.Equal(expected, actual);
+            new XUnitVerifier().EqualOrDiff(expected, actual);
         }
 
         private (RazorLanguageKind, TextEdit[]) GetFormattedEdits(RazorCodeDocument codeDocument, string expected, int positionBeforeTriggerChar)
