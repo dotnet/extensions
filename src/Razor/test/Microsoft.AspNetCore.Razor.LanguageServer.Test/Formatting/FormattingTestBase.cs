@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             new XUnitVerifier().EqualOrDiff(expected, actual);
         }
 
-        protected async Task RunOnTypeFormattingTestAsync(string input, string expected, string triggerCharacter, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
+        protected async Task RunOnTypeFormattingTestAsync(string input, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
         {
             // Arrange
             fileKind ??= FileKinds.Component;
