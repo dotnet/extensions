@@ -18,6 +18,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         private TestFormattingOptionsProvider FormattingOptionsProvider { get; } = new TestFormattingOptionsProvider();
 
+        private CompletionRequestContextCache CompletionRequestContextCache { get; } = new CompletionRequestContextCache();
+
         [Fact]
         public async Task HandleRequestAsync_NonNullOriginalInsertText_DoesNotRemapTextEdit()
         {
@@ -29,14 +31,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestedCompletionItem = new CompletionItem()
             {
                 InsertText = "DateTime",
-                Data = new CompletionResolveData() { LanguageServerKind = LanguageServerKind.CSharp }
             };
+            AssociateRequest(LanguageServerKind.CSharp, requestedCompletionItem, CompletionRequestContextCache);
             var resolvedCompletionItem = new CompletionItem()
             {
                 TextEdit = originalEdit,
             };
             var requestInvoker = CreateRequestInvoker((method, serverContentType, completionItem) => resolvedCompletionItem);
-            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider);
+            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider, CompletionRequestContextCache);
 
             // Act
             var result = await handler.HandleRequestAsync(requestedCompletionItem, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -56,15 +58,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestedCompletionItem = new CompletionItem()
             {
                 TextEdit = originalEdit,
-                Data = new CompletionResolveData() { LanguageServerKind = LanguageServerKind.CSharp }
             };
+            AssociateRequest(LanguageServerKind.CSharp, requestedCompletionItem, CompletionRequestContextCache);
             var resolvedCompletionItem = new CompletionItem()
             {
                 InsertText = "DateTime",
                 TextEdit = originalEdit,
             };
             var requestInvoker = CreateRequestInvoker((method, serverContentType, completionItem) => resolvedCompletionItem);
-            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider);
+            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider, CompletionRequestContextCache);
 
             // Act
             var result = await handler.HandleRequestAsync(requestedCompletionItem, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -77,16 +79,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public async Task HandleRequestAsync_ResolvedNullTextEdit_Noops()
         {
             // Arrange
-            var requestedCompletionItem = new CompletionItem()
-            {
-                Data = new CompletionResolveData() { LanguageServerKind = LanguageServerKind.CSharp }
-            };
+            var requestedCompletionItem = new CompletionItem();
+            AssociateRequest(LanguageServerKind.CSharp, requestedCompletionItem, CompletionRequestContextCache);
             var resolvedCompletionItem = new CompletionItem()
             {
                 InsertText = "DateTime",
             };
             var requestInvoker = CreateRequestInvoker((method, serverContentType, completionItem) => resolvedCompletionItem);
-            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider);
+            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider, CompletionRequestContextCache);
 
             // Act & Assert
             var result = await handler.HandleRequestAsync(requestedCompletionItem, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -99,16 +99,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var originalEdit = new TextEdit() { NewText = "original" };
             var mappedEdit = new TextEdit() { NewText = "mapped" };
             DocumentMappingProvider.AddMapping(originalEdit, mappedEdit);
-            var requestedCompletionItem = new CompletionItem()
-            {
-                Data = new CompletionResolveData() { LanguageServerKind = LanguageServerKind.CSharp }
-            };
+            var requestedCompletionItem = new CompletionItem();
+            AssociateRequest(LanguageServerKind.CSharp, requestedCompletionItem, CompletionRequestContextCache);
             var resolvedCompletionItem = new CompletionItem()
             {
                 TextEdit = originalEdit,
             };
             var requestInvoker = CreateRequestInvoker((method, serverContentType, completionItem) => resolvedCompletionItem);
-            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider);
+            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider, CompletionRequestContextCache);
 
             // Act
             var result = await handler.HandleRequestAsync(requestedCompletionItem, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -124,16 +122,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var originalEdit = new TextEdit() { NewText = "original" };
             var mappedEdit = new TextEdit() { NewText = "mapped" };
             DocumentMappingProvider.AddMapping(originalEdit, mappedEdit);
-            var requestedCompletionItem = new CompletionItem()
-            {
-                Data = new CompletionResolveData() { LanguageServerKind = LanguageServerKind.CSharp }
-            };
+            var requestedCompletionItem = new CompletionItem();
+            AssociateRequest(LanguageServerKind.CSharp, requestedCompletionItem, CompletionRequestContextCache);
             var resolvedCompletionItem = new CompletionItem()
             {
                 AdditionalTextEdits = new[] { originalEdit },
             };
             var requestInvoker = CreateRequestInvoker((method, serverContentType, completionItem) => resolvedCompletionItem);
-            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider);
+            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider, CompletionRequestContextCache);
 
             // Act
             var result = await handler.HandleRequestAsync(requestedCompletionItem, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -151,8 +147,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var request = new CompletionItem()
             {
                 InsertText = "DateTime",
-                Data = new CompletionResolveData() { LanguageServerKind = LanguageServerKind.CSharp, OriginalData = originalData }
             };
+            AssociateRequest(LanguageServerKind.CSharp, request, CompletionRequestContextCache, originalData);
             var expectedResponse = new CompletionItem()
             {
                 InsertText = "DateTime",
@@ -169,7 +165,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return expectedResponse;
             });
 
-            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider);
+            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider, CompletionRequestContextCache);
 
             // Act
             var result = await handler.HandleRequestAsync(request, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -188,8 +184,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var request = new CompletionItem()
             {
                 InsertText = "strong",
-                Data = new CompletionResolveData() { LanguageServerKind = LanguageServerKind.Html, OriginalData = originalData }
             };
+            AssociateRequest(LanguageServerKind.Html, request, CompletionRequestContextCache, originalData);
             var expectedResponse = new CompletionItem()
             {
                 InsertText = "strong",
@@ -205,7 +201,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return expectedResponse;
             });
 
-            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider);
+            var handler = new CompletionResolveHandler(requestInvoker, DocumentMappingProvider, FormattingOptionsProvider, CompletionRequestContextCache);
 
             // Act
             var result = await handler.HandleRequestAsync(request, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
@@ -228,6 +224,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Returns(() => Task.FromResult(response));
 
             return requestInvoker.Object;
+        }
+
+        private static void AssociateRequest(LanguageServerKind requestKind, CompletionItem item, CompletionRequestContextCache cache, object originalData = null)
+        {
+            var documentUri = new Uri("C:/path/to/file.razor");
+            var projectedUri = new Uri("C:/path/to/file.razor.g.xyz");
+            var requestContext = new CompletionRequestContext(documentUri, projectedUri, requestKind);
+
+            var resultId = cache.Set(requestContext);
+            var data = new CompletionResolveData()
+            {
+                ResultId = resultId,
+                OriginalData = originalData,
+            };
+            item.Data = data;
         }
 
         private class TestFormattingOptionsProvider : FormattingOptionsProvider

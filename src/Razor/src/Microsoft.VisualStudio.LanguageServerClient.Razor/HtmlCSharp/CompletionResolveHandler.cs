@@ -19,12 +19,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
         private readonly FormattingOptionsProvider _formattingOptionsProvider;
+        private readonly CompletionRequestContextCache _completionRequestContextCache;
 
         [ImportingConstructor]
         public CompletionResolveHandler(
             LSPRequestInvoker requestInvoker,
             LSPDocumentMappingProvider documentMappingProvider,
-            FormattingOptionsProvider formattingOptionsProvider)
+            FormattingOptionsProvider formattingOptionsProvider,
+            CompletionRequestContextCache completionRequestContextCache)
         {
             if (requestInvoker is null)
             {
@@ -41,9 +43,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(formattingOptionsProvider));
             }
 
+            if (completionRequestContextCache is null)
+            {
+                throw new ArgumentNullException(nameof(completionRequestContextCache));
+            }
+
             _requestInvoker = requestInvoker;
             _documentMappingProvider = documentMappingProvider;
             _formattingOptionsProvider = formattingOptionsProvider;
+            _completionRequestContextCache = completionRequestContextCache;
         }
 
         public async Task<CompletionItem> HandleRequestAsync(CompletionItem request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
@@ -66,21 +74,27 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Set the original resolve data back so the language server deserializes it correctly.
             request.Data = resolveData.OriginalData;
 
-            var serverContentType = resolveData.LanguageServerKind.ToContentType();
+            if (!_completionRequestContextCache.TryGet(resolveData.ResultId, out var requestContext))
+            {
+                // Could not find the associated request context.
+                return request;
+            }
+
+            var serverContentType = requestContext.LanguageServerKind.ToContentType();
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionItem, CompletionItem>(
                 Methods.TextDocumentCompletionResolveName,
                 serverContentType,
                 request,
                 cancellationToken).ConfigureAwait(false);
 
-            result = await PostProcessCompletionItemAsync(request, result, resolveData, cancellationToken).ConfigureAwait(false);
+            result = await PostProcessCompletionItemAsync(request, result, requestContext, cancellationToken).ConfigureAwait(false);
             return result;
         }
 
         private async Task<CompletionItem> PostProcessCompletionItemAsync(
             CompletionItem preResolveCompletionItem,
             CompletionItem resolvedCompletionItem,
-            CompletionResolveData resolveData,
+            CompletionRequestContext requestContext,
             CancellationToken cancellationToken)
         {
             // This is a special contract between the Visual Studio LSP platform and language servers where if insert text and text edit's are not present
@@ -94,12 +108,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return resolvedCompletionItem;
             }
 
-            var formattingOptions = _formattingOptionsProvider.GetOptions(resolveData.HostDocumentUri);
+            var formattingOptions = _formattingOptionsProvider.GetOptions(requestContext.HostDocumentUri);
             if (resolvedCompletionItem.TextEdit != null)
             {
                 var containsSnippet = resolvedCompletionItem.InsertTextFormat == InsertTextFormat.Snippet;
                 var remappedEdits = await _documentMappingProvider.RemapFormattedTextEditsAsync(
-                    resolveData.ProjectedDocumentUri,
+                    requestContext.ProjectedDocumentUri,
                     new[] { resolvedCompletionItem.TextEdit },
                     formattingOptions,
                     containsSnippet,
@@ -113,7 +127,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             if (resolvedCompletionItem.AdditionalTextEdits != null)
             {
                 var remappedEdits = await _documentMappingProvider.RemapFormattedTextEditsAsync(
-                    resolveData.ProjectedDocumentUri,
+                    requestContext.ProjectedDocumentUri,
                     resolvedCompletionItem.AdditionalTextEdits,
                     formattingOptions,
                     containsSnippet: false, // Additional text edits can't contain snippets
