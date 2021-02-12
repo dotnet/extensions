@@ -13,7 +13,6 @@ using MediatR;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test;
-using Microsoft.AspNetCore.Razor.LanguageServer.Test.Formatting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
@@ -123,8 +122,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 var textBufferListeners = Array.Empty<Lazy<IWebTextBufferListener, IOrderedComponentContentTypes>>();
                 var bufferManager = Activator.CreateInstance(bufferManagerType, new object[] { contentTypeService, textBufferFactoryService, textBufferListeners });
                 var joinableTaskFactoryThreadSwitcher = typeof(IdAttribute).Assembly.GetType("Microsoft.WebTools.Shared.Threading.JoinableTaskFactoryThreadSwitcher", throwOnError: true);
-                var joinableTaskFactoryThreadSwitcherCtor = joinableTaskFactoryThreadSwitcher.GetConstructor(new[] { typeof(JoinableTaskFactory) });
-                var threadSwitcher = (IThreadSwitcher)joinableTaskFactoryThreadSwitcherCtor.Invoke(new object[] { new JoinableTaskContext().Factory });
+                var threadSwitcher = (IThreadSwitcher)Activator.CreateInstance(joinableTaskFactoryThreadSwitcher, new object[] { new JoinableTaskContext().Factory });
                 var applyFormatEditsHandler = Activator.CreateInstance(editHandlerType, new object[] { bufferManager, threadSwitcher, textBufferFactoryService });
 
                 // Make sure the buffer manager knows about the source document
