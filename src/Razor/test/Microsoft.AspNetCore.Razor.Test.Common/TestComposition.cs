@@ -202,9 +202,11 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
             {
                 var name = assembly.GetName().Name!;
                 return
+                    name.EndsWith(".Test", StringComparison.OrdinalIgnoreCase) ||
                     name.EndsWith(".Tests", StringComparison.OrdinalIgnoreCase) ||
                     name.EndsWith(".UnitTests", StringComparison.OrdinalIgnoreCase) ||
-                    name.IndexOf("Test.Utilities", StringComparison.OrdinalIgnoreCase) >= 0;
+                    name.IndexOf("Test.Utilities", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    name.IndexOf("Test.Common", StringComparison.OrdinalIgnoreCase) >= 0;
             }
         }
 
