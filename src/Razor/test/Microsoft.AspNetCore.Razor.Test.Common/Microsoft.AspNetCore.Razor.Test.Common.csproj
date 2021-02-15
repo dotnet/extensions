@@ -26,4 +26,8 @@
     <PackageReference Include="Xunit.Combinatorial" Version="$(XunitCombinatorialPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+
 </Project>

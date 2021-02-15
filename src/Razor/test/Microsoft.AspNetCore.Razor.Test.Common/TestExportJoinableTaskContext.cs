@@ -8,6 +8,10 @@ using System.Threading;
 using Microsoft.VisualStudio.Threading;
 using Xunit.Sdk;
 
+#if NETFRAMEWORK
+using System.Windows.Threading;
+#endif
+
 #if false
 using System.Collections.Generic;
 using System.Reflection;
@@ -44,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
         {
             Thread mainThread;
             SynchronizationContext synchronizationContext;
-#if false
+#if NETFRAMEWORK
             if (SynchronizationContext.Current is DispatcherSynchronizationContext)
             {
                 // The current thread is the main thread, and provides a suitable synchronization context
