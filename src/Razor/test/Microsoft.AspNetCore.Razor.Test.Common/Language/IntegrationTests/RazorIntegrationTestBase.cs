@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
@@ -18,6 +19,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
+    [UseExportProvider]
     public class RazorIntegrationTestBase
     {
         internal const string ArbitraryWindowsPath = "x:\\dir\\subdir\\Test";

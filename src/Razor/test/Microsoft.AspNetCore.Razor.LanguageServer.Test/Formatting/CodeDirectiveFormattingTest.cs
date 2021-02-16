@@ -20,8 +20,7 @@ input: @"
 }
 }
 ",
-expected: @"
-@code {
+expected: @"@code {
     public class Foo { }
     public interface Bar
     {
@@ -41,8 +40,7 @@ var x = ""foo"";
 <div>
         </div>
 ",
-expected: @"
-@{
+expected: @"@{
     var x = ""foo"";
 }
 <div>
@@ -61,8 +59,7 @@ void Method() { <div></div> }
 }
 }
 ",
-expected: @"
-@functions {
+expected: @"@functions {
     public class Foo
     {
         void Method()
@@ -85,8 +82,7 @@ void Method() { @DateTime.Now }
     }
 }
 ",
-expected: @"
-@code {
+expected: @"@code {
     public class Foo
     {
         void Method()
@@ -109,8 +105,7 @@ void Method() { @(DateTime.Now) }
     }
 }
 ",
-expected: @"
-@functions {
+expected: @"@functions {
     public class Foo
     {
         void Method()
@@ -138,8 +133,7 @@ void Method() {  }
 <script></script>
 }
 ",
-expected: @"
-@functions {
+expected: @"@functions {
     public class Foo
     {
         void Method() { }
@@ -165,8 +159,7 @@ void Method() {  }
 }
 }
 ",
-expected: @"
-@functions {
+expected: @"@functions {
     public class Foo
     {
         @* This is a Razor Comment *@
@@ -187,8 +180,7 @@ input: @"
     }
 }
 ",
-expected: @"
-@functions {
+expected: @"@functions {
     public class Foo
     {
         @* This is a Razor Comment *@
@@ -258,8 +250,7 @@ Hello World
           }
 }
 ",
-expected: @"
-@functions {
+expected: @"@functions {
     public class Foo { }
     public interface Bar
     {
@@ -294,8 +285,7 @@ public class HelloWorld
  public class Bar {}
 }
 ",
-expected: @"
-Hello World
+expected: @"Hello World
 @code {
     public class HelloWorld
     {
@@ -317,8 +307,7 @@ input: @"
 }
 }
 ",
-expected: @"
-@functions {
+expected: @"@functions {
     public class Foo
     {
     }
@@ -335,8 +324,7 @@ input: @"
 public class Foo{
 }}
 ",
-expected: @"
-@functions {
+expected: @"@functions {
     public class Foo
     {
     }
@@ -352,8 +340,7 @@ input: @"
 @functions {public class Foo{}
 }
 ",
-expected: @"
-@functions {
+expected: @"@functions {
     public class Foo { }
 }
 ");
@@ -368,9 +355,8 @@ Hello World
      @functions {public class Foo{}
 }
 ",
-expected: @"
-Hello World
-@functions {
+expected: @"Hello World
+     @functions {
     public class Foo { }
 }
 ");
@@ -385,10 +371,9 @@ input: @"
 public class Foo{}
      }
 ",
-expected: @"
-@functions {
+expected: @" @functions {
     public class Foo { }
-}
+     }
 ");
         }
 
@@ -424,8 +409,7 @@ void Method(){
                     }
 }
 ",
-expected: @"
-@using System.Buffers
+expected: @"@using System.Buffers
 @functions{
     public class Foo
     {
@@ -470,8 +454,7 @@ input: @"
 }
 }
 ",
-expected: @"
-@code {
+expected: @"@code {
 	public class Foo { }
 	void Method()
 	{
@@ -492,8 +475,7 @@ input: @"
 }
 }
 ",
-expected: @"
-@code {
+expected: @"@code {
 	public class Foo { }
 	void Method()
 	{
@@ -537,8 +519,7 @@ input: @"
 }
 }
 ",
-expected: @"
-@code {
+expected: @"@code {
         public class Foo { }
         void Method()
         {

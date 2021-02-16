@@ -21,8 +21,7 @@ expected: @"
 @{
     if (true) { }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -42,8 +41,7 @@ expected: @"
     {
     }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -75,8 +73,7 @@ expected: @"
     {
     }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -92,8 +89,7 @@ expected: @"
 @{
     var x = 'foo';
 }
-",
-triggerCharacter: ";");
+");
         }
 
         [Fact]
@@ -111,8 +107,7 @@ expected: @"
     var x = @""
 foo"";
 }
-",
-triggerCharacter: ";");
+");
         }
     }
 }

@@ -13,12 +13,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.WebTools.Languages.Html" Version="$(MicrosoftWebToolsLanguagesHtmlPackageVersion)" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.WebTools.Languages.LanguageServer.Server" Version="$(MicrosoftWebToolsLanguagesLanguageServerServerPackageVersion)" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.WebTools.Languages.Shared" Version="$(MicrosoftWebToolsLanguagesSharedPackageVersion)" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.WebTools.Languages.Shared.Editor" Version="$(MicrosoftWebToolsLanguagesSharedEditorPackageVersion)" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Data" Version="$(MicrosoftVisualStudioTextDataPackageVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Implementation" Version="$(MicrosoftVisualStudioTextImplementationPackageVersion)" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="$(MicrosoftVisualStudioTextLogicPackageVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Web" Version="$(MicrosoftVisualStudioWebPackageVersion)" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.WebTools.Shared" Version="$(MicrosoftWebToolsSharedPackageVersion)" NoWarn="NU1701" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer.Test.Common\Microsoft.AspNetCore.Razor.LanguageServer.Test.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Formatting\TestFiles\**\*" />
     <EmbeddedResource Include="Semantic\TestFiles\**\*" />
   </ItemGroup>
 

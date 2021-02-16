@@ -21,8 +21,7 @@ expected: @"
 @code {
     public class Foo { }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -41,8 +40,7 @@ expected: @"
     {
     }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -58,8 +56,7 @@ expected: @"
 @code {
     public void Foo { }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -78,8 +75,7 @@ expected: @"
     {
     }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -95,8 +91,7 @@ expected: @"
 @code {
     public string Foo { get; set; }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -116,8 +111,7 @@ expected: @"
         get; set;
     }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -132,8 +126,7 @@ expected: @"
 @code {
     public string Foo { get; set; }
 }
-",
-triggerCharacter: "}");
+");
         }
 
         [Fact]
@@ -149,8 +142,7 @@ expected: @"
 @code {
     public class Foo { private int _hello = 0; }
 }
-",
-triggerCharacter: ";");
+");
         }
 
         [Fact]
@@ -168,8 +160,7 @@ expected: @"
     public class Foo{
         private int _hello = 0; }
 }
-",
-triggerCharacter: ";");
+");
         }
 
         [Fact]
@@ -191,8 +182,7 @@ expected: @"
         var hello = 0;
     }
 }
-",
-triggerCharacter: ";");
+");
         }
 
         [Fact]
@@ -211,9 +201,7 @@ expected: @"
     {
     }
 }
-",
-triggerCharacter: @"
-"); // Newline
+");
         }
     }
 }

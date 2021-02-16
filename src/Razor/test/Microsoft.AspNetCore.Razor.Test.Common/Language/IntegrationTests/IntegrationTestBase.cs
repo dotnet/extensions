@@ -497,7 +497,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 var span = spans[i];
                 var sourceSpan = span.GetSourceSpan(codeDocument.Source);
-                if (sourceSpan == null)
+                if (sourceSpan == SourceSpan.Undefined)
                 {
                     // Not in the main file, skip.
                     continue;
