@@ -293,6 +293,7 @@ expected: @"Hello World
 }
 
 @functions{
+
     public class Bar { }
 }
 ");
