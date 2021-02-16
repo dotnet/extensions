@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Test.Common;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
@@ -199,6 +200,35 @@ expected: @"
 @code {
     public class Foo
     {
+    }
+}
+");
+        }
+
+        [Fact]
+        [WorkItem("https://github.com/dotnet/aspnetcore/issues/27135")]
+        public async Task Semicolon_Fluent_Call()
+        {
+            await RunOnTypeFormattingTestAsync(
+input: @"@implements IDisposable
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri(""/chathub""))
+            .Build()$$;
+    }
+}
+",
+expected: @"@implements IDisposable
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri(""/chathub""))
+            .Build();
     }
 }
 ");
