@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         // We need to keep track of the last couple of requests for use in previousResultId,
         // but if we let the grow unbounded it could quickly allocate a lot of memory.
         // Solution: an in-memory cache
-        private readonly MemoryCache<string, (VersionStamp Version, IReadOnlyList<int> Data)> _semanticTokensCache =
-            new MemoryCache<string, (VersionStamp Version, IReadOnlyList<int> Data)>();
+        private readonly MemoryCache<string, (VersionStamp SemanticVersion, IReadOnlyList<int> Data)> _semanticTokensCache =
+            new MemoryCache<string, (VersionStamp SemanticVersion, IReadOnlyList<int> Data)>();
 
         private readonly ClientNotifierServiceBase _languageServer;
         private readonly ForegroundDispatcher _foregroundDispatcher;
@@ -91,8 +91,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-
-            cancellationToken.ThrowIfCancellationRequested();
             var razorSemanticRanges = TagHelperSemanticRangeVisitor.VisitAllNodes(codeDocument, range);
             IReadOnlyList<SemanticRange>? csharpSemanticRanges = null;
 
@@ -115,9 +113,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 return null;
             }
 
-            var documentVersionStamp = await documentSnapshot.GetTextVersionAsync();
+            var semanticVersion = await GetDocumentSemanticVersionAsync(documentSnapshot);
+
             var razorSemanticTokens = ConvertSemanticRangesToSemanticTokens(combinedSemanticRanges, codeDocument);
-            _semanticTokensCache.Set(razorSemanticTokens.ResultId!, (documentVersionStamp, razorSemanticTokens.Data));
+            _semanticTokensCache.Set(razorSemanticTokens.ResultId!, (semanticVersion, razorSemanticTokens.Data));
 
             return razorSemanticTokens;
         }
@@ -144,22 +143,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             {
                 throw new ArgumentNullException(nameof(codeDocument));
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
-            var documentVersionStamp = await documentSnapshot.GetTextVersionAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
-            VersionStamp? cachedVersionStamp = null;
+            VersionStamp? cachedSemanticVersion = null;
             IReadOnlyList<int>? previousResults = null;
             if (previousResultId != null)
             {
                 _semanticTokensCache.TryGetValue(previousResultId, out var tuple);
 
-                cachedVersionStamp = tuple.Version;
                 previousResults = tuple.Data;
+                cachedSemanticVersion = tuple.SemanticVersion;
             }
 
-            if (documentVersionStamp == default || cachedVersionStamp != documentVersionStamp)
+            var semanticVersion = await GetDocumentSemanticVersionAsync(documentSnapshot);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // SemanticVersion is different if there's been any text edits to the razor file or ProjectVersion has changed.
+            if (semanticVersion == default || cachedSemanticVersion != semanticVersion)
             {
                 var razorSemanticRanges = TagHelperSemanticRangeVisitor.VisitAllNodes(codeDocument);
                 var csharpSemanticRanges = await GetCSharpSemanticRangesAsync(codeDocument, textDocumentIdentifier, range: null, documentVersion, cancellationToken);
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 }
 
                 var newTokens = ConvertSemanticRangesToSemanticTokens(combinedSemanticRanges, codeDocument);
-                _semanticTokensCache.Set(newTokens.ResultId!, (documentVersionStamp, newTokens.Data));
+                _semanticTokensCache.Set(newTokens.ResultId!, (semanticVersion, newTokens.Data));
 
                 if (previousResults is null)
                 {
@@ -343,6 +343,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             };
 
             return tokensResult;
+        }
+
+        private static async Task<VersionStamp> GetDocumentSemanticVersionAsync(DocumentSnapshot documentSnapshot)
+        {
+            var documentVersionStamp = await documentSnapshot.GetTextVersionAsync();
+            var semanticVersion = documentVersionStamp.GetNewerVersion(documentSnapshot.Project.Version);
+
+            return semanticVersion;
         }
 
         /**

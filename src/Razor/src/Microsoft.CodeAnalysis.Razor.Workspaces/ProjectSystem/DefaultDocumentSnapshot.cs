@@ -50,7 +50,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             return State.GetTextAsync();
         }
-
         public override Task<VersionStamp> GetTextVersionAsync()
         {
             return State.GetTextVersionAsync();

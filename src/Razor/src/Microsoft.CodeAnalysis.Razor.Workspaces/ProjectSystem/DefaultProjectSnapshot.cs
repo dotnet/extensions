@@ -52,7 +52,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             lock (_lock)
             {
-                if (!_documents.TryGetValue(filePath, out var result) && 
+                if (!_documents.TryGetValue(filePath, out var result) &&
                     State.Documents.TryGetValue(filePath, out var state))
                 {
                     result = new DefaultDocumentSnapshot(this, state);
@@ -69,7 +69,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 throw new ArgumentNullException(nameof(document));
             }
-            
+
             return State.ImportsToRelatedDocuments.ContainsKey(document.TargetPath);
         }
 

@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public DocumentStateTest()
         {
             TagHelperResolver = new TestTagHelperResolver();
-            
+
             HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0, TestProjectData.SomeProject.RootNamespace);
             HostProjectWithConfigurationChange = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
             ProjectWorkspaceState = new ProjectWorkspaceState(new[]
@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange & Act
             var state = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader);
-            
+
             // Assert
             var text = await state.GetTextAsync();
             Assert.Equal(0, text.Length);

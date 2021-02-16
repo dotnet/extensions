@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return new TextDocumentIdentifier(new Uri($"c:\\${file}"));
         }
 
-        internal (Queue<DocumentSnapshot>, Queue<TextDocumentIdentifier>) CreateDocumentSnapshot(string?[] textArray, bool[] isRazorArray, params TagHelperDescriptor[] tagHelpers)
+        internal (Queue<DocumentSnapshot>, Queue<TextDocumentIdentifier>) CreateDocumentSnapshot(string?[] textArray, bool[] isRazorArray, TagHelperDescriptor[] tagHelpers, VersionStamp projectVersion = default)
         {
             var documentSnapshots = new Queue<DocumentSnapshot>();
             var identifiers = new Queue<TextDocumentIdentifier>();
@@ -183,6 +183,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             {
                 var file = isRazor ? RazorFile : CSHtmlFile;
                 var document = CreateCodeDocument(text, file, tagHelpers);
+
+                var projectSnapshot = new Mock<ProjectSnapshot>(MockBehavior.Strict);
+                projectSnapshot
+                    .Setup(p => p.Version)
+                    .Returns(projectVersion);
+
                 var documentSnapshot = new Mock<DocumentSnapshot>(MockBehavior.Strict);
                 documentSnapshot.Setup(d => d.GetGeneratedOutputAsync())
                     .ReturnsAsync(document);
@@ -190,6 +196,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 var version = VersionStamp.Create();
                 documentSnapshot.Setup(d => d.GetTextVersionAsync())
                     .ReturnsAsync(version);
+
+                documentSnapshot.Setup(d => d.Project)
+                    .Returns(projectSnapshot.Object);
 
                 documentSnapshots.Enqueue(documentSnapshot.Object);
                 var identifier = GetIdentifier(isRazor);
