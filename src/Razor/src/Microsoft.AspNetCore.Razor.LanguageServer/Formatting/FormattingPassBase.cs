@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -454,12 +455,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             // At this point, `contentIndentLevel` should contain the correct indentation level for `}` in the above example.
-            var replacement = context.NewLineString + context.GetIndentationLevelString(contentIndentLevel);
-            for (var i = 0; i < newLineCount - 1; i++)
-            {
-                // Make sure to preserve the same number of blank lines as the original string had
-                replacement = context.NewLineString + replacement;
-            }
+            // Make sure to preserve the same number of blank lines as the original string had
+            var replacement = PrependLines(context.GetIndentationLevelString(contentIndentLevel), context.NewLineString, Math.Max(newLineCount, 1));
 
             // After the below change the above example should look like,
             // @{
@@ -470,6 +467,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // }
             var change = new TextChange(spanToReplace, replacement);
             changes.Add(change);
+        }
+
+        private static string PrependLines(string text, string newLine, int count)
+        {
+            var builder = new StringBuilder(newLine.Length * count + text.Length);
+            for (var i = 0; i < count; i++)
+            {
+                builder.Append(newLine);
+            }
+
+            builder.Append(text);
+            return builder.ToString();
         }
 
         private void CleanupSourceMappingEnd(FormattingContext context, Range sourceMappingRange, List<TextChange> changes)
