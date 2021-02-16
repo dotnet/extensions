@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return i == source.Length && j == other.Length;
         }
 
-        public static int? GetFirstNonWhitespaceOffset(this SourceText source, TextSpan? span = null)
+        public static int? GetFirstNonWhitespaceOffset(this SourceText source, TextSpan? span, out int newLineCount)
         {
             if (source is null)
             {
@@ -129,12 +129,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             span ??= new TextSpan(0, source.Length);
+            newLineCount = 0;
 
             for (var i = span.Value.Start; i < span.Value.End; i++)
             {
                 if (!char.IsWhiteSpace(source[i]))
                 {
                     return i - span.Value.Start;
+                }
+                else if (source[i] == '\n')
+                {
+                    newLineCount++;
                 }
             }
 

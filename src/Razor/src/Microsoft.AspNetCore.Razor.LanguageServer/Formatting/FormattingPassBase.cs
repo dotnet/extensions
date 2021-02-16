@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -434,7 +435,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // }
             // We want to return the length of the range marked by |...|
             //
-            var whitespaceLength = text.GetFirstNonWhitespaceOffset(sourceMappingSpan);
+            var whitespaceLength = text.GetFirstNonWhitespaceOffset(sourceMappingSpan, out var newLineCount);
             if (whitespaceLength == null)
             {
                 // There was no content after the start of this mapping. Meaning it already is clean.
@@ -454,7 +455,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             // At this point, `contentIndentLevel` should contain the correct indentation level for `}` in the above example.
-            var replacement = context.NewLineString + context.GetIndentationLevelString(contentIndentLevel);
+            // Make sure to preserve the same number of blank lines as the original string had
+            var replacement = PrependLines(context.GetIndentationLevelString(contentIndentLevel), context.NewLineString, Math.Max(newLineCount, 1));
 
             // After the below change the above example should look like,
             // @{
@@ -465,6 +467,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // }
             var change = new TextChange(spanToReplace, replacement);
             changes.Add(change);
+        }
+
+        private static string PrependLines(string text, string newLine, int count)
+        {
+            var builder = new StringBuilder(newLine.Length * count + text.Length);
+            for (var i = 0; i < count; i++)
+            {
+                builder.Append(newLine);
+            }
+
+            builder.Append(text);
+            return builder.ToString();
         }
 
         private void CleanupSourceMappingEnd(FormattingContext context, Range sourceMappingRange, List<TextChange> changes)

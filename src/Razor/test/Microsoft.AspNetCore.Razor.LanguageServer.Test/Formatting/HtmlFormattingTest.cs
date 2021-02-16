@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
+using Microsoft.AspNetCore.Razor.Test.Common;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Formatting
@@ -385,6 +386,35 @@ expected: @"
 </GridTable>
 ",
 tagHelpers: tagHelpers);
+        }
+
+        [Fact]
+        [WorkItem("https://github.com/dotnet/aspnetcore/issues/26836")]
+        public async Task FormatNestedBlock()
+        {
+            await RunFormattingTestAsync(
+input: @"@code {
+    public string DoSomething()
+    {
+        <strong>
+            @DateTime.Now.ToString()
+        </strong>
+
+        return String.Empty;
+    }
+}
+",
+expected: @"@code {
+    public string DoSomething()
+    {
+        <strong>
+            @DateTime.Now.ToString()
+        </strong>
+
+        return String.Empty;
+    }
+}
+");
         }
 
         private IReadOnlyList<TagHelperDescriptor> GetComponents()

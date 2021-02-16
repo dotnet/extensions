@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentOutOfRangeException(nameof(startOffset), "Invalid offset.");
             }
 
-            return line.Text.GetFirstNonWhitespaceOffset(TextSpan.FromBounds(line.Start + startOffset, line.EndIncludingLineBreak));
+            return line.Text.GetFirstNonWhitespaceOffset(TextSpan.FromBounds(line.Start + startOffset, line.EndIncludingLineBreak), out _);
         }
     }
 }
