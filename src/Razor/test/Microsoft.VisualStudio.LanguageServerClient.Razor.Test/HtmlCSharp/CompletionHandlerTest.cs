@@ -236,6 +236,25 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
+        public void HandleRequestAsync_CSharpProjection_RewriteCompletionContext()
+        {
+            var completionRequest = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Context = new CompletionContext()
+                {
+                    TriggerKind = CompletionTriggerKind.TriggerCharacter,
+                    TriggerCharacter = "@",
+                },
+                Position = new Position(0, 1),
+            };
+
+            var rewrittenContext = CompletionHandler.RewriteContext(completionRequest.Context, RazorLanguageKind.CSharp);
+            Assert.True(rewrittenContext.TriggerKind == CompletionTriggerKind.Invoked);
+            Assert.True(((VSCompletionContext)rewrittenContext).InvokeKind == VSCompletionInvokeKind.Explicit);
+        }
+
+        [Fact]
         public async Task HandleRequestAsync_CSharpProjection_DoNotPreselectAfterAt()
         {
             // Arrange
