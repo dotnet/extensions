@@ -165,7 +165,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 if (serverKind == LanguageServerKind.CSharp)
                 {
-                    MassageCSharpCompletions(request, documentSnapshot, completionList);
+                    completionList = PostProcessCSharpCompletionList(request, documentSnapshot, completionList);
                 }
 
                 var requestContext = new CompletionRequestContext(documentSnapshot.Uri, projectionResult.Uri, serverKind);
@@ -193,16 +193,27 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
                 else if (!original.Value.TryGetSecond(out completionList))
                 {
-                    Debug.Fail("This should be impossible, the completion result should be either a completion list or a set of completion items.");
-                    completionList = null;
-                    return false;
+                    throw new InvalidOperationException("Could not convert Razor completion set to a completion list. This should be impossible, the completion result should be either a completion list, a set of completion items or `null`.");
                 }
 
                 return true;
             }
         }
 
-        private void MassageCSharpCompletions(
+        // For C# scenarios we want to do a few post-processing steps to the completion list.
+        //
+        // 1. Do not pre-select any C# items. Razor is complex and just because C# may think something should be "pre-selected" doesn't mean it makes sense based off of the top-level Razor view.
+        // 2. Incorporate C# keywords. Prevoiusly C# keywords like if, using, for etc. were added via VS' "Snippet" support in Razor scenarios. VS' LSP implementation doesn't currently support snippets
+        //    so those keywords will be missing from the completion list if we don't forcefully add them in Razor scenarios.
+        //
+        //    Razor is unique here because when you type @fo| it generates something like:
+        //
+        //    __o = fo|;
+        //
+        //    This isn't an applicable scenario for C# to provide the "for" keyword; however, Razor still wants that to be applicable because if you type out the full @for keyword it will generate the
+        //    appropriate C# code.
+        // 3. Remove Razor intrinsic design time items. Razor adds all sorts of C# helpers like __o, __builder etc. to aid in C# compilation/understanding; however, these aren't useful in regards to C# completion.
+        private CompletionList PostProcessCSharpCompletionList(
             CompletionParams request,
             LSPDocumentSnapshot documentSnapshot,
             CompletionList completionList)
@@ -210,11 +221,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var wordExtent = documentSnapshot.Snapshot.GetWordExtent(request.Position.Line, request.Position.Character, _textStructureNavigator);
             if (IsSimpleImplicitExpression(request, documentSnapshot, wordExtent))
             {
-                DoNotPreselect(completionList);
-                IncludeCSharpKeywords(completionList);
+                completionList = RemovePreselection(completionList);
+                completionList = IncludeCSharpKeywords(completionList);
             }
 
-            RemoveDesignTimeItems(documentSnapshot, wordExtent, completionList);
+            completionList = RemoveDesignTimeItems(documentSnapshot, wordExtent, completionList);
+
+            return completionList;
         }
 
         private static IReadOnlyCollection<CompletionItem> GenerateCompletionItems(IReadOnlyCollection<string> completionItems)
@@ -254,7 +267,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         // We should remove Razor design time helpers from C#'s completion list. If the current identifier being targeted does not start with a double
         // underscore, we trim out all items starting with "__" from the completion list. If the current identifier does start with a double underscore
         // (e.g. "__ab[||]"), we only trim out common design time helpers from the completion list.
-        private void RemoveDesignTimeItems(
+        private CompletionList RemoveDesignTimeItems(
             LSPDocumentSnapshot documentSnapshot,
             TextExtent? wordExtent,
             CompletionList completionList)
@@ -263,14 +276,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             // If the current identifier starts with "__", only trim out common design time helpers from the list.
             // In all other cases, trim out both common design time helpers and all completion items starting with "__".
-            if (RemoveAllDesignTimeItems(documentSnapshot, wordExtent))
+            if (ShouldRemoveAllDesignTimeItems(documentSnapshot, wordExtent))
             {
                 filteredItems = filteredItems.Where(item => item.Label != null && !item.Label.StartsWith("__", StringComparison.Ordinal)).ToArray();
             }
 
             completionList.Items = filteredItems;
 
-            static bool RemoveAllDesignTimeItems(LSPDocumentSnapshot documentSnapshot, TextExtent? wordExtent)
+            return completionList;
+
+            static bool ShouldRemoveAllDesignTimeItems(LSPDocumentSnapshot documentSnapshot, TextExtent? wordExtent)
             {
                 if (!wordExtent.HasValue)
                 {
@@ -396,21 +411,25 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         // In cases like "@{" preselection can lead to unexpected behavior, so let's exclude it.
-        private void DoNotPreselect(CompletionList completionList)
+        private CompletionList RemovePreselection(CompletionList completionList)
         {
             foreach (var item in completionList.Items)
             {
                 item.Preselect = false;
             }
+
+            return completionList;
         }
 
         // C# keywords were previously provided by snippets, but as of now C# LSP doesn't provide snippets. 
         // We're providing these for now to improve the user experience (not having to ESC out of completions to finish),
         // but once C# starts providing them their completion will be offered instead, at which point we should be able to remove this step.
-        private void IncludeCSharpKeywords(CompletionList completionList)
+        private CompletionList IncludeCSharpKeywords(CompletionList completionList)
         {
             var newList = completionList.Items.Union(KeywordCompletionItems, CompletionItemComparer.Instance);
             completionList.Items = newList.ToArray();
+
+            return completionList;
         }
 
         internal void SetResolveData(long resultId, CompletionList completionList)
