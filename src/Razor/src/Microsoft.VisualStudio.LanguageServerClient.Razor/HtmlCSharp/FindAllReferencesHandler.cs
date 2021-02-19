@@ -187,6 +187,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 referenceItem.DefinitionText = FilterReferenceDisplayText(referenceItem.DefinitionText);
                 referenceItem.Text = FilterReferenceDisplayText(referenceItem.Text);
 
+                // Indicates the reference item is directly available in the code
+                referenceItem.Origin = ItemOrigin.Exact;
+
                 if (!RazorLSPConventions.IsVirtualCSharpFile(referenceItem.Location.Uri) &&
                     !RazorLSPConventions.IsVirtualHtmlFile(referenceItem.Location.Uri))
                 {
