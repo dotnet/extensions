@@ -44,6 +44,8 @@ The following list identifies all the packages we currently ship from [dotnet/ex
     * **Hosting**
         * [`Microsoft.Extensions.Hosting`](https://nuget.org/packages/Microsoft.Extensions.Hosting)
         * [`Microsoft.Extensions.Hosting.Abstractions`](https://nuget.org/packages/Microsoft.Extensions.Hosting.Abstractions)
+        * [`Microsoft.Extensions.Hosting.Systemd`](https://nuget.org/packages/Microsoft.Extensions.Hosting.Systemd)
+        * [`Microsoft.Extensions.Hosting.WindowsServices`](https://nuget.org/packages/Microsoft.Extensions.Hosting.WindowsServices)
     * **Http Client Factory**
         * [`Microsoft.Extensions.Http`](https://nuget.org/packages/Microsoft.Extensions.Http)
     * **Logging**
@@ -89,16 +91,13 @@ The following list identifies all the packages we currently ship from [dotnet/ex
     * **Web Encoders**
         * [`Microsoft.Extensions.WebEncoders`](https://nuget.org/packages/Microsoft.Extensions.WebEncoders)
 * Remaining in [dotnet/extensions](https://github.com/dotnet/extensions) for now
-    * **Configuration**
-        * [`Microsoft.Extensions.Configuration.NewtonsoftJson`](https://nuget.org/packages/Microsoft.Extensions.Configuration.NewtonsoftJson)
-    * **Hosting**
-        * [`Microsoft.Extensions.Hosting.Systemd`](https://nuget.org/packages/Microsoft.Extensions.Hosting.Systemd)
-        * [`Microsoft.Extensions.Hosting.WindowsServices`](https://nuget.org/packages/Microsoft.Extensions.Hosting.WindowsServices)
     * **Logging**
         * `Microsoft.Extensions.Logging.Analyzers` (has not been released to NuGet.org as of writing)
-        * [`Microsoft.Extensions.DependencyInjection.Specification.Tests`](https://nuget.org/packages/Microsoft.Extensions.DependencyInjection.Specification.Tests)
 * No longer shipping in 5.0
     * [`Microsoft.Extensions.DiagnosticAdapter`](https://nuget.org/packages/Microsoft.Extensions.DiagnosticAdapter)
+    * [`Microsoft.Extensions.DependencyInjection.Specification.Tests`](https://nuget.org/packages/Microsoft.Extensions.DependencyInjection.Specification.Tests)
+* No longer shipping in 6.0
+    * [`Microsoft.Extensions.Configuration.NewtonsoftJson`](https://www.nuget.org/packages/Microsoft.Extensions.Configuration.NewtonsoftJson)
 
 ---
 
