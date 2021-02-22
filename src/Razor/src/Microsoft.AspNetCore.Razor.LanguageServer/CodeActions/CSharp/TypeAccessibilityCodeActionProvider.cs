@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             foreach (var diagnostic in diagnostics)
             {
-                // Edge case handling for diagnostics which (momentarily) linger after
+                // Corner case handling for diagnostics which (momentarily) linger after
                 // @code block is cleared out
                 if (diagnostic.Range.End.Line > context.SourceText.Lines.Count ||
                     diagnostic.Range.End.Character > context.SourceText.Lines[diagnostic.Range.End.Line].End)
