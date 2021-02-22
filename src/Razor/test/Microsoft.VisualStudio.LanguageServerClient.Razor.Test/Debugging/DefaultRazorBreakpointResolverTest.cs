@@ -247,13 +247,11 @@ $@"public class SomeRazorFile
                     .Returns(Task.FromResult<RazorMapToDocumentRangesResponse>(null));
             }
 
-            var csharpBreakpointResolver = new DefaultCSharpBreakpointResolver();
             var razorBreakpointResolver = new DefaultRazorBreakpointResolver(
                 uriProvider,
                 documentManager,
                 projectionProvider,
-                documentMappingProvider,
-                csharpBreakpointResolver);
+                documentMappingProvider);
 
             return razorBreakpointResolver;
         }

@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -22,14 +24,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
         private readonly FileUriProvider _fileUriProvider;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
-        private readonly CSharpProximityExpressionResolver _csharpProximityExpressionResolver;
 
         [ImportingConstructor]
         public DefaultRazorProximityExpressionResolver(
             FileUriProvider fileUriProvider,
             LSPDocumentManager documentManager,
-            LSPProjectionProvider projectionProvider,
-            CSharpProximityExpressionResolver csharpProximityExpressionResolver)
+            LSPProjectionProvider projectionProvider)
         {
             if (fileUriProvider is null)
             {
@@ -46,15 +46,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
                 throw new ArgumentNullException(nameof(projectionProvider));
             }
 
-            if (csharpProximityExpressionResolver is null)
-            {
-                throw new ArgumentNullException(nameof(csharpProximityExpressionResolver));
-            }
-
             _fileUriProvider = fileUriProvider;
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
-            _csharpProximityExpressionResolver = csharpProximityExpressionResolver;
         }
 
         public override async Task<IReadOnlyList<string>> TryResolveProximityExpressionsAsync(ITextBuffer textBuffer, int lineIndex, int characterIndex, CancellationToken cancellationToken)
@@ -100,10 +94,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
 
             var sourceText = virtualDocument.Snapshot.AsText();
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, cancellationToken: cancellationToken);
-            var proximityExpressions = _csharpProximityExpressionResolver.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex, cancellationToken);
+            var proximityExpressions = RazorCSharpProximityExpressionResolverService.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex, cancellationToken);
 
 
-            return proximityExpressions;
+            return proximityExpressions.ToArray();
         }
     }
 }

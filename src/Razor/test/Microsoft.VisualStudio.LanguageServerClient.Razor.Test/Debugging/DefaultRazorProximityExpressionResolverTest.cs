@@ -190,12 +190,10 @@ $@"public class SomeRazorFile
                 Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
                     .Returns(Task.FromResult<ProjectionResult>(null));
             }
-            var csharpProximityExpressionResolver = new DefaultCSharpProximityExpressionResolver();
             var razorProximityExpressionResolver = new DefaultRazorProximityExpressionResolver(
                 uriProvider,
                 documentManager,
-                projectionProvider,
-                csharpProximityExpressionResolver);
+                projectionProvider);
 
             return razorProximityExpressionResolver;
         }

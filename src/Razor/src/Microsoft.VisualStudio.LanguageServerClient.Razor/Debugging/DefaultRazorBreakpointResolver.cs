@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -23,15 +24,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
-        private readonly CSharpBreakpointResolver _csharpBreakpointResolver;
 
         [ImportingConstructor]
         public DefaultRazorBreakpointResolver(
             FileUriProvider fileUriProvider,
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
-            LSPDocumentMappingProvider documentMappingProvider,
-            CSharpBreakpointResolver csharpBreakpointResolver)
+            LSPDocumentMappingProvider documentMappingProvider)
         {
             if (fileUriProvider is null)
             {
@@ -53,16 +52,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
                 throw new ArgumentNullException(nameof(documentMappingProvider));
             }
 
-            if (csharpBreakpointResolver is null)
-            {
-                throw new ArgumentNullException(nameof(csharpBreakpointResolver));
-            }
-
             _fileUriProvider = fileUriProvider;
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
             _documentMappingProvider = documentMappingProvider;
-            _csharpBreakpointResolver = csharpBreakpointResolver;
         }
 
         public override async Task<Range> TryResolveBreakpointRangeAsync(ITextBuffer textBuffer, int lineIndex, int characterIndex, CancellationToken cancellationToken)
@@ -108,7 +101,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
 
             var sourceText = virtualDocument.Snapshot.AsText();
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, cancellationToken: cancellationToken);
-            if (!_csharpBreakpointResolver.TryGetBreakpointSpan(syntaxTree, projectionResult.PositionIndex, cancellationToken, out var csharpBreakpointSpan))
+            if (!RazorBreakpointSpans.TryGetBreakpointSpan(syntaxTree, projectionResult.PositionIndex, cancellationToken, out var csharpBreakpointSpan))
             {
                 return null;
             }
