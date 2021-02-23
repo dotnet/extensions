@@ -22,15 +22,6 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
     <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.593, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.Extensions.Configuration.NewtonsoftJson-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.NewtonsoftJson' ">
-    <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.NewtonsoftJson' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.Extensions.Hosting.Systemd-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Systemd' ">
     <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
