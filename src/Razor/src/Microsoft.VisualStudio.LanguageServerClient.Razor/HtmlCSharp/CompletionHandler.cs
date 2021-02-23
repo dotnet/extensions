@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -163,10 +162,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             if (TryConvertToCompletionList(result, out var completionList))
             {
+                var wordExtent = documentSnapshot.Snapshot.GetWordExtent(request.Position.Line, request.Position.Character, _textStructureNavigator);
+
                 if (serverKind == LanguageServerKind.CSharp)
                 {
-                    completionList = PostProcessCSharpCompletionList(request, documentSnapshot, completionList);
+                    completionList = PostProcessCSharpCompletionList(request, documentSnapshot, wordExtent, completionList);
                 }
+
+                completionList = TranslateTextEdits(request.Position, projectionResult.Position, wordExtent, completionList);
 
                 var requestContext = new CompletionRequestContext(documentSnapshot.Uri, projectionResult.Uri, serverKind);
                 var resultId = _completionRequestContextCache.Set(requestContext);
@@ -216,9 +219,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private CompletionList PostProcessCSharpCompletionList(
             CompletionParams request,
             LSPDocumentSnapshot documentSnapshot,
+            TextExtent? wordExtent,
             CompletionList completionList)
         {
-            var wordExtent = documentSnapshot.Snapshot.GetWordExtent(request.Position.Line, request.Position.Character, _textStructureNavigator);
             if (IsSimpleImplicitExpression(request, documentSnapshot, wordExtent))
             {
                 completionList = RemovePreselection(completionList);
@@ -430,6 +433,80 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             completionList.Items = newList.ToArray();
 
             return completionList;
+        }
+
+        // The TextEdit positions returned to us from the C#/HTML language servers are positions correlating to the virtual document.
+        // We need to translate these positions to apply to the Razor document instead. Performance is a big concern here, so we want to
+        // make the logic as simple as possible, i.e. no asynchronous calls.
+        // The current logic takes the approach of assuming the original request's position (Razor doc) correlates directly to the positions
+        // returned by the C#/HTML language servers. We use this assumption (+ math) to map from the virtual (projected) doc positions ->
+        // Razor doc positions.
+        internal static CompletionList TranslateTextEdits(
+            Position hostDocumentPosition,
+            Position projectedPosition,
+            TextExtent? wordExtent,
+            CompletionList completionList)
+        {
+            var wordRange = wordExtent.HasValue && wordExtent.Value.IsSignificant ? wordExtent?.Span.AsRange() : null;
+            var newItems = completionList.Items.Select(item => TranslateTextEdits(hostDocumentPosition, projectedPosition, wordRange, item)).ToArray();
+            completionList.Items = newItems;
+
+            return completionList;
+
+            static CompletionItem TranslateTextEdits(Position hostDocumentPosition, Position projectedPosition, Range wordRange, CompletionItem item)
+            {
+                if (item.TextEdit != null)
+                {
+                    var offset = projectedPosition.Character - hostDocumentPosition.Character;
+
+                    var editStartPosition = item.TextEdit.Range.Start;
+                    var translatedStartPosition = TranslatePosition(offset, hostDocumentPosition, editStartPosition);
+                    var editEndPosition = item.TextEdit.Range.End;
+                    var translatedEndPosition = TranslatePosition(offset, hostDocumentPosition, editEndPosition);
+                    var translatedRange = new Range()
+                    {
+                        Start = translatedStartPosition,
+                        End = translatedEndPosition,
+                    };
+
+                    // Reduce the range down to the wordRange if needed. This means if we have a C# text edit that goes beyond
+                    // the original word, then we need to ensure that the edit is scoped to the word, otherwise it may remove
+                    // portions of the Razor document. This may not happen in practice, but we want to be fail-safe.
+                    //
+                    // For example, if we had the following code in the C# virtual doc: 
+                    //     SomeMethod(|1|, 2);
+                    // Which corresponded to the following in a Razor file (notice '2' is not present here):
+                    //     <MyTagHelper SomeAttribute="|1|"/>
+                    // If there was a completion item that replaced '|1|, 2' with something like 'MyVariable', then without the
+                    // logic below, the TextEdit may be applied to the Razor file as:
+                    //     <MyTagHelper SomeAttribute="MyVariable>
+                    var scopedTranslatedRange = wordRange?.Overlap(translatedRange) ?? translatedRange;
+
+                    var translatedText = item.TextEdit.NewText;
+                    item.TextEdit = new TextEdit()
+                    {
+                        Range = scopedTranslatedRange,
+                        NewText = translatedText,
+                    };
+                }
+                else if (item.AdditionalTextEdits != null)
+                {
+                    // Additional text edits should typically only be provided at resolve time. We don't support them in the normal completion flow.
+                    item.AdditionalTextEdits = null;
+                }
+
+                return item;
+
+                static Position TranslatePosition(int offset, Position hostDocumentPosition, Position editPosition)
+                {
+                    var translatedCharacter = editPosition.Character - offset;
+
+                    // Note: If this completion handler ever expands to deal with multi-line TextEdits, this logic will likely need to change since
+                    // it assumes we're only dealing with single-line TextEdits.
+                    var translatedPosition = new Position(hostDocumentPosition.Line, translatedCharacter);
+                    return translatedPosition;
+                }
+            }
         }
 
         internal void SetResolveData(long resultId, CompletionList completionList)

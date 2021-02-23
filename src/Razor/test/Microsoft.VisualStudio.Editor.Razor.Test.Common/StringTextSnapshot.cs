@@ -85,7 +85,7 @@ namespace Microsoft.VisualStudio.Text
 
         public ITextSnapshotLine GetLineFromPosition(int position)
         {
-            var matchingLine = _lines.FirstOrDefault(line => line.Start + line.LengthIncludingLineBreak > position);
+            var matchingLine = _lines.FirstOrDefault(line => line.Start + line.Length >= position);
 
             if (position < 0 || matchingLine == null)
             {
