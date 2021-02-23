@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
                 return null;
             }
 
-            var originTagDescriptor = originTagHelperBinding.Descriptors.SingleOrDefault();
+            var originTagDescriptor = originTagHelperBinding.Descriptors.FirstOrDefault(d => !d.IsAttributeDescriptor());
             if (originTagDescriptor is null)
             {
                 return null;
@@ -115,12 +115,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
             _capability = capability;
         }
 
-        private async Task<TagHelperBinding> GetOriginTagHelperBindingAsync(DocumentSnapshot documentSnapshot, RazorCodeDocument codeDocument, Position position)
+        internal static async Task<TagHelperBinding> GetOriginTagHelperBindingAsync(
+            DocumentSnapshot documentSnapshot,
+            RazorCodeDocument codeDocument,
+            Position position)
         {
             var sourceText = await documentSnapshot.GetTextAsync().ConfigureAwait(false);
-            var linePosition = new LinePosition((int)position.Line, (int)position.Character);
+            var linePosition = new LinePosition(position.Line, position.Character);
             var hostDocumentIndex = sourceText.Lines.GetPosition(linePosition);
-            var location = new SourceLocation(hostDocumentIndex, (int)position.Line, (int)position.Character);
+            var location = new SourceLocation(hostDocumentIndex, position.Line, position.Character);
 
             var change = new SourceChange(location.AbsoluteIndex, length: 0, newText: string.Empty);
             var syntaxTree = codeDocument.GetSyntaxTree();
@@ -135,23 +138,41 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Definition
                 return null;
             }
 
-            var node = owner.Ancestors().FirstOrDefault(n => n.Kind == SyntaxKind.MarkupTagHelperStartTag);
-            if (node == null || !(node is MarkupTagHelperStartTagSyntax tagHelperStartTag))
+            var node = owner.Ancestors().FirstOrDefault(n =>
+                n.Kind == SyntaxKind.MarkupTagHelperStartTag ||
+                n.Kind == SyntaxKind.MarkupTagHelperEndTag);
+            if (node is null)
             {
                 return null;
             }
 
-            if (!tagHelperStartTag.Name.Span.Contains(location.AbsoluteIndex))
+            var name = GetStartOrEndTagName(node);
+            if (name is null)
             {
                 return null;
             }
 
-            if (!(tagHelperStartTag?.Parent is MarkupTagHelperElementSyntax tagHelperElement))
+            if (!name.Span.Contains(location.AbsoluteIndex))
+            {
+                return null;
+            }
+
+            if (!(node.Parent is MarkupTagHelperElementSyntax tagHelperElement))
             {
                 return null;
             }
 
             return tagHelperElement.TagHelperInfo.BindingResult;
+        }
+
+        private static SyntaxNode GetStartOrEndTagName(SyntaxNode node)
+        {
+            return node switch
+            {
+                MarkupTagHelperStartTagSyntax tagHelperStartTag => tagHelperStartTag.Name,
+                MarkupTagHelperEndTagSyntax tagHelperEndTag => tagHelperEndTag.Name,
+                _ => null
+            };
         }
     }
 }

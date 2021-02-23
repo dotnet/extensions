@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             return CreateCodeDocument(text, CSHtmlFile, tagHelpers);
         }
 
-        protected TextDocumentIdentifier GetIdentifier(bool isRazor)
+        protected static TextDocumentIdentifier GetIdentifier(bool isRazor)
         {
             var file = isRazor ? RazorFile : CSHtmlFile;
             return new TextDocumentIdentifier(new Uri($"c:\\${file}"));
