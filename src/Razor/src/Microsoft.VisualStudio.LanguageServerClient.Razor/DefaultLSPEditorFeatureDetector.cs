@@ -24,7 +24,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly Lazy<IVsUIShellOpenDocument> _vsUIShellOpenDocument;
         private readonly IVsFeatureFlags _featureFlags;
 
-        private bool? _featureFlagEnabled;
         private bool? _environmentFeatureEnabled;
         private bool? _isVSServer;
 
@@ -162,12 +161,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         // Private protected virtual for testing
         private protected virtual bool IsFeatureFlagEnabledCached()
         {
-            if (!_featureFlagEnabled.HasValue)
-            {
-                _featureFlagEnabled = _featureFlags.IsFeatureEnabled(RazorLSPEditorFeatureFlag, defaultValue: false);
-            }
-
-            return _featureFlagEnabled.Value;
+            var featureFlagEnabled = _featureFlags.IsFeatureEnabled(RazorLSPEditorFeatureFlag, defaultValue: false);
+            return featureFlagEnabled;
         }
 
         // Private protected virtual for testing
