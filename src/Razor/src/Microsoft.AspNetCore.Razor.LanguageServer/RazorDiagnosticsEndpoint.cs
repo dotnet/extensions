@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             };
         }
 
-        private async Task<Diagnostic[]> FilterHTMLDiagnosticsAsync(
+        private static async Task<Diagnostic[]> FilterHTMLDiagnosticsAsync(
             Diagnostic[] unmappedDiagnostics,
             RazorCodeDocument codeDocument,
             DocumentSnapshot documentSnapshot)
@@ -172,16 +172,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return filteredDiagnostics;
         }
 
-        private static bool FilterDiagnosticBasedOnErrorCode(Diagnostic d, SourceText sourceText, RazorSyntaxTree syntaxTree)
+        private static bool FilterDiagnosticBasedOnErrorCode(Diagnostic diagnostic, SourceText sourceText, RazorSyntaxTree syntaxTree)
         {
-            if (!d.Code.HasValue)
+            if (!diagnostic.Code.HasValue)
             {
                 return false;
             }
 
-            return d.Code.Value.String switch
+            return diagnostic.Code.Value.String switch
             {
-                HtmlErrorCodes.InvalidNestingErrorCode => IsInvalidNestingWarningWithinComponent(d, sourceText, syntaxTree),
+                HtmlErrorCodes.InvalidNestingErrorCode => IsInvalidNestingWarningWithinComponent(diagnostic, sourceText, syntaxTree),
+                HtmlErrorCodes.MissingEndTagErrorCode => FileKinds.IsComponent(syntaxTree.Options.FileKind), // Redundant with RZ9980 in Components
                 _ => false,
             };
 
