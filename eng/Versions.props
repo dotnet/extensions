@@ -8,7 +8,9 @@
   <PropertyGroup Label="Version settings">
     <MajorVersion>3</MajorVersion>
     <MinorVersion>1</MinorVersion>
-    <PatchVersion>13</PatchVersion>
+    <PatchVersion>14</PatchVersion>
+    <ValidateBasline>false</ValidateBasline>
+    
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
     <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
