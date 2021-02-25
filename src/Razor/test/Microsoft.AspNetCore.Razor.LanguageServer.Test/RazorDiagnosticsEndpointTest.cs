@@ -420,14 +420,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
 
-            var descriptor = TagHelperDescriptorBuilder.Create("ButtonTagHelper", "TestAssembly");
-            descriptor.SetTypeName("TestNamespace.ButtonTagHelper");
-            descriptor.TagMatchingRule(builder => builder.RequireTagName("button"));
-            descriptor.BindAttribute(builder =>
-                builder
-                    .Name("onactivate")
-                    .PropertyName("onactivate")
-                    .TypeName(typeof(string).FullName));
+            var descriptor = GetButtonTagHelperDescriptor();
 
             var addTagHelper = $"@addTagHelper *, TestAssembly{Environment.NewLine}";
             var codeDocument = CreateCodeDocumentWithCSharpProjection(
@@ -464,6 +457,74 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Assert
             Assert.Empty(response.Diagnostics);
             Assert.Equal(1337, response.HostDocumentVersion);
+        }
+
+        [Fact]
+        public async Task Handle_ProcessDiagnostics_HTML_DisableInvalidNestingWarningInTagHelper()
+        {
+            // Arrange
+            var documentPath = "C:/path/to/document.cshtml";
+            var descriptor = GetButtonTagHelperDescriptor();
+
+            var codeDocument = CreateCodeDocumentWithCSharpProjection(
+                $@"@addTagHelper *, TestAssembly
+<button>
+    @* Should NOT show warning *@
+    <div>
+        <option></option>
+    </div>
+</button>
+
+@* Should show warning *@
+<div>
+    <option></option>
+</div>",
+                projectedCSharpSource: string.Empty,
+                sourceMappings: Array.Empty<SourceMapping>(),
+                new[] {
+                    descriptor.Build()
+                });
+            var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
+            var diagnosticsEndpoint = new RazorDiagnosticsEndpoint(Dispatcher, documentResolver, DocumentVersionCache, MappingService, LoggerFactory);
+            var request = new RazorDiagnosticsParams()
+            {
+                Kind = RazorLanguageKind.Html,
+                Diagnostics = new[]
+                {
+                    new Diagnostic()
+                    {
+                        Code = new DiagnosticCode(HtmlErrorCodes.InvalidNestingErrorCode),
+                        Range = new Range(new Position(4, 8), new Position(4, 17))
+                    },
+                    new Diagnostic()
+                    {
+                        Code = new DiagnosticCode(HtmlErrorCodes.InvalidNestingErrorCode),
+                        Range = new Range(new Position(10, 4), new Position(10, 13))
+                    }
+                },
+                RazorDocumentUri = new Uri(documentPath),
+            };
+
+            // Act
+            var response = await Task.Run(() => diagnosticsEndpoint.Handle(request, default));
+
+            // Assert
+            var d = Assert.Single(response.Diagnostics);
+            Assert.Equal(HtmlErrorCodes.InvalidNestingErrorCode, d.Code);
+            Assert.Equal(10, d.Range.Start.Line);
+        }
+
+        private static TagHelperDescriptorBuilder GetButtonTagHelperDescriptor()
+        {
+            var descriptor = TagHelperDescriptorBuilder.Create("ButtonTagHelper", "TestAssembly");
+            descriptor.SetTypeName("TestNamespace.ButtonTagHelper");
+            descriptor.TagMatchingRule(builder => builder.RequireTagName("button"));
+            descriptor.BindAttribute(builder =>
+                builder
+                    .Name("onactivate")
+                    .PropertyName("onactivate")
+                    .TypeName(typeof(string).FullName));
+            return descriptor;
         }
 
         private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)

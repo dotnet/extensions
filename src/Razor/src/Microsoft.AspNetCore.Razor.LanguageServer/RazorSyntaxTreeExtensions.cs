@@ -6,8 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
+using Microsoft.CodeAnalysis.Text;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
+namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal static class RazorSyntaxTreeExtensions
     {
@@ -52,6 +56,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // We want all nodes that represent Razor C# statements, @{ ... }.
             var statements = syntaxTree.Root.DescendantNodes().OfType<CSharpStatementSyntax>().ToList();
             return statements;
+        }
+
+        public static SyntaxNode GetOwner(this RazorSyntaxTree syntaxTree, SourceText sourceText, Position position)
+        {
+            var absoluteIndex = position.GetAbsoluteIndex(sourceText);
+            var change = new SourceChange(absoluteIndex, 0, string.Empty);
+            var owner = syntaxTree.Root.LocateOwner(change);
+            return owner;
         }
     }
 }
