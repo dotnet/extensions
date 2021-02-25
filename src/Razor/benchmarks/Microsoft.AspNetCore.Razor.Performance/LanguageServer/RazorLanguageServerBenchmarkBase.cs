@@ -32,7 +32,12 @@ namespace Microsoft.AspNetCore.Razor.Performance.LanguageServer
             RazorLanguageServerTask = RazorLanguageServer.CreateAsync(memoryStream, memoryStream, Trace.Off, builder =>
             {
                 builder.Services.AddSingleton<ClientNotifierServiceBase, NoopClientNotifierService>();
+                Builder(builder);
             });
+        }
+
+        protected internal virtual void Builder(RazorLanguageServerBuilder builder)
+        {
         }
 
         protected string RepoRoot { get; }

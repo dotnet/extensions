@@ -84,6 +84,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 return null;
             }
 
+            var tokens = await GetSemanticTokensAsync(textDocumentIdentifier, documentSnapshot, documentVersion.Value, range, cancellationToken);
+
+            return tokens;
+        }
+
+        // Internal for testing
+        internal async Task<SemanticTokens?> GetSemanticTokensAsync(
+            TextDocumentIdentifier textDocumentIdentifier,
+            DocumentSnapshot documentSnapshot,
+            int documentVersion,
+            Range? range,
+            CancellationToken cancellationToken)
+        {
             var codeDocument = await GetRazorCodeDocumentAsync(documentSnapshot);
             if (codeDocument is null)
             {
@@ -138,6 +151,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 return null;
             }
 
+            return await GetSemanticTokensEditsAsync(
+                documentSnapshot,
+                documentVersion,
+                textDocumentIdentifier,
+                previousResultId,
+                cancellationToken);
+        }
+
+        // Internal for testing
+        internal async Task<SemanticTokensFullOrDelta?> GetSemanticTokensEditsAsync(
+            DocumentSnapshot  documentSnapshot,
+            int? documentVersion,
+            TextDocumentIdentifier textDocumentIdentifier,
+            string? previousResultId,
+            CancellationToken cancellationToken)
+        {
             var codeDocument = await GetRazorCodeDocumentAsync(documentSnapshot);
             if (codeDocument is null)
             {
@@ -234,7 +263,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             return newList;
         }
 
-        private async Task<IReadOnlyList<SemanticRange>?> GetCSharpSemanticRangesAsync(
+        // Internal and virtual for testing only
+        internal virtual async Task<IReadOnlyList<SemanticRange>?> GetCSharpSemanticRangesAsync(
             RazorCodeDocument codeDocument,
             TextDocumentIdentifier textDocumentIdentifier,
             Range? range,
