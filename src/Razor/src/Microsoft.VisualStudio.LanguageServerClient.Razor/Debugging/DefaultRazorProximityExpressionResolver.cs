@@ -96,8 +96,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, cancellationToken: cancellationToken);
             var proximityExpressions = RazorCSharpProximityExpressionResolverService.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex, cancellationToken);
 
-
-            return proximityExpressions.ToArray();
+            return proximityExpressions?.ToArray();
         }
     }
 }
