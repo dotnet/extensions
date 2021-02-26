@@ -4,7 +4,6 @@
 using System;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.VisualStudio.Editor.Razor.Documents

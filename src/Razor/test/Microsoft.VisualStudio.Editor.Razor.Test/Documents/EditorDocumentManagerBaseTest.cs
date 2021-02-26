@@ -6,7 +6,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
-using Moq;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor.Documents

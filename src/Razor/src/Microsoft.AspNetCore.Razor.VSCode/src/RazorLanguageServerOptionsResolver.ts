@@ -6,7 +6,6 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
 import { RazorLogger } from './RazorLogger';
 import { Trace } from './Trace';

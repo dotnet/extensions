@@ -176,7 +176,7 @@ describe('ReportIssueCreator', () => {
     });
 
     const omniSharpExtension: vscode.Extension<any> = {
-        id: 'ms-vscode.csharp',
+        id: 'ms-dotnettools.csharp',
         packageJSON: {
             name: 'OmniSharp',
             version: '1234',
@@ -184,7 +184,7 @@ describe('ReportIssueCreator', () => {
         },
     };
     const razorClientExtension: vscode.Extension<any> = {
-        id: 'ms-vscode.razor-vscode',
+        id: 'ms-dotnettools.razor-vscode',
         packageJSON: {
             name: 'Razor',
             version: '5678',

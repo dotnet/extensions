@@ -15,7 +15,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         protected static VisualStudioDocumentTracker CreateDocumentTracker(Func<ITextBuffer> bufferAccessor, ITextView focusedTextView)
         {
-            var tracker = new Mock<VisualStudioDocumentTracker>();
+            var tracker = new Mock<VisualStudioDocumentTracker>(MockBehavior.Strict);
             tracker.Setup(t => t.TextBuffer)
                 .Returns(bufferAccessor);
             tracker.Setup(t => t.GetFocusedTextView())
@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         protected static ITextView CreateFocusedTextView(Func<ITextBuffer> textBufferAccessor = null, ITextCaret caret = null)
         {
-            var focusedTextView = new Mock<ITextView>();
+            var focusedTextView = new Mock<ITextView>(MockBehavior.Strict);
             focusedTextView.Setup(textView => textView.HasAggregateFocus)
                 .Returns(true);
 
@@ -48,19 +48,20 @@ namespace Microsoft.VisualStudio.Editor.Razor
         protected static ITextCaret CreateCaretFrom(int position, ITextSnapshot snapshot)
         {
             var bufferPosition = new VirtualSnapshotPoint(snapshot, position);
-            var caret = new Mock<ITextCaret>();
+            var caret = new Mock<ITextCaret>(MockBehavior.Strict);
             caret.Setup(c => c.Position)
-                .Returns(new CaretPosition(bufferPosition, new Mock<IMappingPoint>().Object, PositionAffinity.Predecessor));
-            caret.Setup(c => c.MoveTo(It.IsAny<SnapshotPoint>()));
+                .Returns(new CaretPosition(bufferPosition, new Mock<IMappingPoint>(MockBehavior.Strict).Object, PositionAffinity.Predecessor));
+            caret.Setup(c => c.MoveTo(It.IsAny<SnapshotPoint>()))
+                .Returns<SnapshotPoint>(point => new CaretPosition(bufferPosition, new Mock<IMappingPoint>(MockBehavior.Strict).Object, PositionAffinity.Predecessor));
 
             return caret.Object;
         }
 
         protected static IEditorOperationsFactoryService CreateOperationsFactoryService()
         {
-            var editorOperations = new Mock<IEditorOperations>();
+            var editorOperations = new Mock<IEditorOperations>(MockBehavior.Strict);
             editorOperations.Setup(operations => operations.MoveToEndOfLine(false));
-            var editorOperationsFactory = new Mock<IEditorOperationsFactoryService>();
+            var editorOperationsFactory = new Mock<IEditorOperationsFactoryService>(MockBehavior.Strict);
             editorOperationsFactory.Setup(factory => factory.GetEditorOperations(It.IsAny<ITextView>()))
                 .Returns(editorOperations.Object);
 

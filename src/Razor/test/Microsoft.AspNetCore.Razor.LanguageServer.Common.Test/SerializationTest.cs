@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Common.Serialization;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Razor.Serialization;
+using Microsoft.CodeAnalysis.Razor.Workspaces.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;

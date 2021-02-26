@@ -1,8 +1,15 @@
 #
 # This file must be used by invoking ". .\activate.ps1" from the command line.
-# You cannot run it directly.
+# You cannot run it directly. See https://docs.microsoft.com/powershell/module/microsoft.powershell.core/about/about_scripts#script-scope-and-dot-sourcing
+#
 # To exit from the environment this creates, execute the 'deactivate' function.
 #
+
+if ($MyInvocation.CommandOrigin -eq 'runspace') {
+    Write-Host -f Red "This script cannot be invoked directly."
+    Write-Host -f Red "To function correctly, this script file must be 'dot sourced' by calling `". $PSCommandPath`" (notice the dot at the beginning)."
+    exit 1
+}
 
 function deactivate ([switch]$init) {
 
@@ -31,6 +38,7 @@ deactivate -init
 $_OLD_PATH = $env:PATH
 # Tell dotnet where to find itself
 $env:DOTNET_ROOT = "$PSScriptRoot\.dotnet"
+${env:DOTNET_ROOT(x86)} = "$PSScriptRoot\.dotnet\x86"
 # Tell dotnet not to look beyond the DOTNET_ROOT folder for more dotnet things
 $env:DOTNET_MULTILEVEL_LOOKUP = 0
 # Put dotnet first on PATH

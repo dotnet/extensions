@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
             var builder = new StringBuilder("Directive:{");
             builder.Append(node.DirectiveDescriptor.Directive);
-            builder.Append(";");
+            builder.Append(';');
             builder.Append(node.DirectiveDescriptor.Kind);
-            builder.Append(";");
+            builder.Append(';');
             builder.Append(node.DirectiveDescriptor.Usage);
-            builder.Append("}");
+            builder.Append('}');
 
             var diagnostics = node.GetDiagnostics();
             if (diagnostics.Length > 0)
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 builder.Append(" [");
                 var ids = string.Join(", ", diagnostics.Select(diagnostic => $"{diagnostic.Id}{diagnostic.Span}"));
                 builder.Append(ids);
-                builder.Append("]");
+                builder.Append(']');
             }
 
             WriteSeparator();

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
-using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor
@@ -1324,7 +1323,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             IEnumerable<KeyValuePair<string, string>> attributes = null,
             string tagHelperPrefix = "")
         {
-            attributes = attributes ?? Enumerable.Empty<KeyValuePair<string, string>>();
+            attributes ??= Enumerable.Empty<KeyValuePair<string, string>>();
             var documentContext = TagHelperDocumentContext.Create(tagHelperPrefix, descriptors);
             var completionContext = new AttributeCompletionContext(
                 documentContext,

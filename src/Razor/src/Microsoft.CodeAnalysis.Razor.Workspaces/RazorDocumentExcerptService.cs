@@ -9,126 +9,84 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Classification;
-using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    internal class RazorDocumentExcerptService : IDocumentExcerptService
+    internal class RazorDocumentExcerptService : DocumentExcerptServiceBase
     {
         private readonly DocumentSnapshot _document;
-        private readonly ISpanMappingService _mapper;
+        private readonly IRazorSpanMappingService _mappingService;
 
-        public RazorDocumentExcerptService(DocumentSnapshot document, ISpanMappingService mapper)
+        public RazorDocumentExcerptService(DocumentSnapshot document, IRazorSpanMappingService mappingService)
         {
-            if (mapper == null)
+            if (document is null)
             {
-                throw new ArgumentNullException(nameof(mapper));
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            if (mappingService is null)
+            {
+                throw new ArgumentNullException(nameof(mappingService));
             }
 
             _document = document;
-            _mapper = mapper;
+            _mappingService = mappingService;
         }
 
-        public async Task<ExcerptResult?> TryExcerptAsync(
-            Document document,
-            TextSpan span,
-            ExcerptMode mode,
-            CancellationToken cancellationToken)
-        {
-            var result = await TryGetExcerptInternalAsync(document, span, (ExcerptModeInternal)mode, cancellationToken).ConfigureAwait(false);
-            return result?.ToExcerptResult();
-        }
-
-        public async Task<ExcerptResultInternal?> TryGetExcerptInternalAsync(
+        internal override async Task<ExcerptResultInternal?> TryGetExcerptInternalAsync(
             Document document,
             TextSpan span,
             ExcerptModeInternal mode,
             CancellationToken cancellationToken)
         { 
-            if (_document == null)
+            if (_document is null)
             {
                 return null;
             }
 
-            var mapped = await _mapper.MapSpansAsync(document, new[] { span }, cancellationToken).ConfigureAwait(false);
-            if (mapped.Length == 0 || mapped[0].Equals(default(MappedSpanResult)))
+            var mappedSpans = await _mappingService.MapSpansAsync(document, new[] { span }, cancellationToken).ConfigureAwait(false);
+            if (mappedSpans.Length == 0 || mappedSpans[0].Equals(default(RazorMappedSpanResult)))
             {
                 return null;
             }
 
             var project = _document.Project;
-            var primaryDocument = project.GetDocument(mapped[0].FilePath);
-            if (primaryDocument == null)
+            var razorDocument = project.GetDocument(mappedSpans[0].FilePath);
+            if (razorDocument is null)
             {
                 return null;
             }
 
-            var primaryText = await primaryDocument.GetTextAsync().ConfigureAwait(false);
-            var primarySpan = primaryText.Lines.GetTextSpan(mapped[0].LinePositionSpan);
+            var razorDocumentText = await razorDocument.GetTextAsync().ConfigureAwait(false);
+            var razorDocumentSpan = razorDocumentText.Lines.GetTextSpan(mappedSpans[0].LinePositionSpan);
 
-            var secondaryDocument = document;
-            var secondarySpan = span;
+            var generatedDocument = document;
 
             // First compute the range of text we want to we to display relative to the primary document.
-            var excerptSpan = ChooseExcerptSpan(primaryText, primarySpan, mode);
+            var excerptSpan = ChooseExcerptSpan(razorDocumentText, razorDocumentSpan, mode);
 
             // Then we'll classify the spans based on the primary document, since that's the coordinate
             // space that our output mappings use.
             var output = await _document.GetGeneratedOutputAsync().ConfigureAwait(false);
             var mappings = output.GetCSharpDocument().SourceMappings;
             var classifiedSpans = await ClassifyPreviewAsync(
-                primaryText, 
                 excerptSpan, 
-                secondaryDocument, 
+                generatedDocument, 
                 mappings,
                 cancellationToken).ConfigureAwait(false);
 
-            // Now translate everything to be relative to the excerpt
-            var offset = 0 - excerptSpan.Start;
-            var excerptText = primaryText.GetSubText(excerptSpan);
-            excerptSpan = new TextSpan(0, excerptSpan.Length);
-            primarySpan = new TextSpan(primarySpan.Start + offset, primarySpan.Length);
 
-            for (var i = 0; i < classifiedSpans.Count; i++)
-            {
-                var classifiedSpan = classifiedSpans[i];
-                var updated = new TextSpan(classifiedSpan.TextSpan.Start + offset, classifiedSpan.TextSpan.Length);
-                Debug.Assert(excerptSpan.Contains(updated));
+            var excerptText = GetTranslatedExcerptText(razorDocumentText, ref razorDocumentSpan, ref excerptSpan, classifiedSpans);
 
-                classifiedSpans[i] = new ClassifiedSpan(classifiedSpan.ClassificationType, updated);
-            }
-
-            return new ExcerptResultInternal(excerptText, primarySpan, classifiedSpans.ToImmutable(), document, span);
-        }
-        
-        private TextSpan ChooseExcerptSpan(SourceText primaryText, TextSpan primarySpan, ExcerptModeInternal mode)
-        {
-            var startLine = primaryText.Lines.GetLineFromPosition(primarySpan.Start);
-            var endLine = primaryText.Lines.GetLineFromPosition(primarySpan.End);
-
-            // If we're showing a single line then this will do. Otherwise expand the range by 3 in
-            // each direction (if possible).
-            if (mode == ExcerptModeInternal.Tooltip)
-            {
-                var index = Math.Max(startLine.LineNumber - 3, 0);
-                startLine = primaryText.Lines[index];
-            }
-
-            if (mode == ExcerptModeInternal.Tooltip)
-            {
-                var index = Math.Min(endLine.LineNumber + 3, primaryText.Lines.Count - 1);
-                endLine = primaryText.Lines[index];
-            }
-
-            return new TextSpan(startLine.Start, endLine.End - startLine.Start);
+            return new ExcerptResultInternal(excerptText, razorDocumentSpan, classifiedSpans.ToImmutable(), document, span);
         }
 
         private async Task<ImmutableArray<ClassifiedSpan>.Builder> ClassifyPreviewAsync(
-            SourceText primaryText,
             TextSpan excerptSpan,
-            Document secondaryDocument,
+            Document generatedDocument,
             IReadOnlyList<SourceMapping> mappings,
             CancellationToken cancellationToken)
         {
@@ -138,7 +96,7 @@ namespace Microsoft.CodeAnalysis.Razor
             sorted.Sort((x, y) => x.OriginalSpan.AbsoluteIndex.CompareTo(y.OriginalSpan.AbsoluteIndex));
 
             // The algorithm here is to iterate through the source mappings (sorted) and use the C# classifier
-            // on the spans that are known to the C#. For the spans that are not known to be C# then 
+            // on the spans that are known to be C#. For the spans that are not known to be C# then 
             // we just treat them as text since we'd don't currently have our own classifications.
 
             var remainingSpan = excerptSpan;
@@ -170,10 +128,10 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 // We should be able to process this whole span as C#, so classify it.
                 //
-                // However, we'll have to translate it to the the secondary document's coordinates to do that.
+                // However, we'll have to translate it to the the generated document's coordinates to do that.
                 Debug.Assert(remainingSpan.Contains(primarySpan) && remainingSpan.Start == primarySpan.Start);
                 var classifiedSecondarySpans = await Classifier.GetClassifiedSpansAsync(
-                    secondaryDocument, 
+                    generatedDocument, 
                     secondarySpan, 
                     cancellationToken);
 
@@ -222,46 +180,6 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             return builder;
-        }
-
-        // We have IVT access to the Roslyn APIs for product code, but not for testing.
-        public enum ExcerptModeInternal
-        {
-            SingleLine = ExcerptMode.SingleLine,
-            Tooltip = ExcerptMode.Tooltip,
-        }
-
-        // We have IVT access to the Roslyn APIs for product code, but not for testing.
-        public readonly struct ExcerptResultInternal
-        {
-            public readonly SourceText Content;
-
-            public readonly TextSpan MappedSpan;
-
-            public readonly ImmutableArray<ClassifiedSpan> ClassifiedSpans;
-
-            public readonly Document Document;
-
-            public readonly TextSpan Span;
-
-            public ExcerptResultInternal(
-                SourceText content,
-                TextSpan mappedSpan,
-                ImmutableArray<ClassifiedSpan> classifiedSpans,
-                Document document,
-                TextSpan span)
-            {
-                Content = content;
-                MappedSpan = mappedSpan;
-                ClassifiedSpans = classifiedSpans;
-                Document = document;
-                Span = span;
-            }
-
-            public ExcerptResult ToExcerptResult()
-            {
-                return new ExcerptResult(Content, MappedSpan, ClassifiedSpans, Document, Span);
-            }
         }
     }
 }

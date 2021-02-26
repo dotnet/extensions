@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <CodeAnalysisRuleSet>..\..\src\Microsoft.VisualStudio.LiveShare.Razor\Microsoft.VisualStudio.LiveShare.Razor.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

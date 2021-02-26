@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
@@ -28,7 +28,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             HostProject1 = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
             HostProject2 = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.AnotherProject.RootNamespace);
 
-            DynamicFileInfoProvider = new RazorDynamicFileInfoProvider(new DefaultDocumentServiceProviderFactory());
+            var razorDocumentServiceProviderFactory = new DefaultRazorDocumentServiceProviderFactory();
+            var testLSPEnabledEditorFeatureDetector = Mock.Of<LSPEditorFeatureDetector>(detector => detector.IsLSPEditorFeatureEnabled() == true, MockBehavior.Strict);
+            DynamicFileInfoProvider = new DefaultRazorDynamicFileInfoProvider(razorDocumentServiceProviderFactory, testLSPEnabledEditorFeatureDetector);
         }
 
         private HostDocument[] Documents { get; }
@@ -37,7 +39,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private HostProject HostProject2 { get; }
 
-        private RazorDynamicFileInfoProvider DynamicFileInfoProvider { get; }
+        private DefaultRazorDynamicFileInfoProvider DynamicFileInfoProvider { get; }
 
         protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
@@ -51,7 +53,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
             projectManager.ProjectAdded(HostProject1);
 
-            var textLoader = new Mock<TextLoader>();
+            var textLoader = new Mock<TextLoader>(MockBehavior.Strict);
             textLoader.Setup(loader => loader.LoadTextAndVersionAsync(It.IsAny<Workspace>(), It.IsAny<DocumentId>(), It.IsAny<CancellationToken>()))
                 .Throws<FileNotFoundException>();
             projectManager.DocumentAdded(HostProject1, Documents[0], textLoader.Object);
@@ -82,7 +84,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var projectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
             projectManager.ProjectAdded(HostProject1);
 
-            var textLoader = new Mock<TextLoader>();
+            var textLoader = new Mock<TextLoader>(MockBehavior.Strict);
             textLoader.Setup(loader => loader.LoadTextAndVersionAsync(It.IsAny<Workspace>(), It.IsAny<DocumentId>(), It.IsAny<CancellationToken>()))
                 .Throws<UnauthorizedAccessException>();
             projectManager.DocumentAdded(HostProject1, Documents[0], textLoader.Object);
@@ -208,8 +210,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
         }
 
-        [ForegroundFact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/14805", FlakyOn.All)]
+        [ForegroundFact(Skip = "https://github.com/dotnet/aspnetcore/issues/14805")]
         public async Task DocumentChanged_ReparsesRelatedFiles()
         {
             // Arrange

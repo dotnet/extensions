@@ -1,0 +1,3 @@
+M:Moq.Mock`1.#ctor; Pass MockBehavior.Strict explicitly to the constructor for Mock<T>
+M:Moq.Mock.Of``1(); Pass MockBehavior.Strict explicitly to Mock.Of<T>
+M:Moq.Mock.Of``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}}); Pass MockBehavior.Strict explicitly to Mock.Of<T>

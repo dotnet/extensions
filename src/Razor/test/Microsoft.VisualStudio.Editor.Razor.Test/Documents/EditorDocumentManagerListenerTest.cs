@@ -58,7 +58,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
 
             var listener = new EditorDocumentManagerListener(editorDocumentManger.Object, changedOnDisk, changedInEditor, opened, closed);
 
-            var project = Mock.Of<ProjectSnapshot>(p => p.FilePath == "/Path/to/project.csproj");
+            var project = Mock.Of<ProjectSnapshot>(p => p.FilePath == "/Path/to/project.csproj", MockBehavior.Strict);
 
             // Act & Assert
             listener.ProjectManager_Changed(null, new ProjectChangeEventArgs(project, project, ProjectChangeKind.DocumentAdded));
@@ -78,7 +78,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
 
             var listener = new EditorDocumentManagerListener(editorDocumentManger.Object, onChangedOnDisk: null, onChangedInEditor: null, onOpened: opened, onClosed: null);
 
-            var project = Mock.Of<ProjectSnapshot>(p => p.FilePath == "/Path/to/project.csproj");
+            var project = Mock.Of<ProjectSnapshot>(p => p.FilePath == "/Path/to/project.csproj", MockBehavior.Strict);
 
             // Act
             listener.ProjectManager_Changed(null, new ProjectChangeEventArgs(project, project, ProjectChangeKind.DocumentAdded));
@@ -90,7 +90,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         private EditorDocument GetEditorDocument(bool isOpen = false)
         {
             var document = new EditorDocument(
-                Mock.Of<EditorDocumentManager>(),
+                Mock.Of<EditorDocumentManager>(MockBehavior.Strict),
                 ProjectFilePath,
                 DocumentFilePath,
                 TextLoader,

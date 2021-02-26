@@ -122,7 +122,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var syntaxTree = RazorSyntaxTree.Parse(sourceDocument, RazorParserOptions.Create(opt => opt.Directives.Add(FunctionsDirective.Directive)));
             var codeDocument = TestRazorCodeDocument.Create(content);
             codeDocument.SetSyntaxTree(syntaxTree);
-            var codeDocumentProvider = Mock.Of<TextBufferCodeDocumentProvider>(provider => provider.TryGetFromBuffer(It.IsAny<ITextBuffer>(), out codeDocument));
+            var codeDocumentProvider = Mock.Of<TextBufferCodeDocumentProvider>(provider => provider.TryGetFromBuffer(It.IsAny<ITextBuffer>(), out codeDocument), MockBehavior.Strict);
 
             return codeDocumentProvider;
         }

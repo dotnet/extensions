@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
@@ -39,7 +40,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             throw new NotImplementedException();
         }
 
-        [Obsolete]
         public override RazorProjectItem GetItem(string path)
         {
             return GetItem(path, fileKind: null);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var absolutePath = path;
             if (!FilePathRootedBy(absolutePath, _root))
             {
-                if (Path.IsPathRooted(absolutePath))
+                if (IsPathRootedForPlatform(absolutePath))
                 {
                     // Existing path is already rooted, can't translate from relative to absolute.
                     return absolutePath;
@@ -89,6 +89,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             absolutePath = _filePathNormalizer.Normalize(absolutePath);
             return absolutePath;
+
+            static bool IsPathRootedForPlatform(string path)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && path == "/")
+                {
+                    // We have to special case windows and "/" because for some reason Path.IsPathRooted returns true on windows for a single "/" path.
+                    return false;
+                }
+
+                if (!Path.IsPathRooted(path))
+                {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
         internal bool FilePathRootedBy(string path, string root)

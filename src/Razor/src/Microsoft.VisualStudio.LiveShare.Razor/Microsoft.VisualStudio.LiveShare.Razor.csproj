@@ -4,13 +4,12 @@
     <TargetFramework>net472</TargetFramework>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Visual Studio Live Share Razor infrastructure.</Description>
     <EnableApiCheck>false</EnableApiCheck>
-    <CodeAnalysisRuleSet>Microsoft.VisualStudio.LiveShare.Razor.ruleset</CodeAnalysisRuleSet>
-    <IsShipping>false</IsShipping>
+    <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\*.cs">
+    <Compile Include="..\Microsoft.CodeAnalysis.Remote.Razor\Serialization\*.cs">
       <Link>Serialization\%(FileName)%(Extension)</Link>
     </Compile>
   </ItemGroup>
@@ -20,11 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.LiveShare" Version="$(MicrosoftVisualStudioLiveSharePackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(VS_NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutablePackageVersion)" />
   </ItemGroup>
 
 </Project>
