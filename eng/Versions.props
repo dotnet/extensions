@@ -9,7 +9,7 @@
     <MajorVersion>3</MajorVersion>
     <MinorVersion>1</MinorVersion>
     <PatchVersion>14</PatchVersion>
-    <ValidateBasline>false</ValidateBasline>
+    <ValidateBaseline>false</ValidateBaseline>
     
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
