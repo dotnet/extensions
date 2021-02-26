@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 parentTagName = parentTagHelperElement.StartTag.Name.Content;
             }
 
-            var attributes = _tagHelperFactsService.StringifyAttributes(startTag.Attributes);
+            var attributes = _tagHelperFactsService.StringifyAttributes(startTag.Attributes).ToList();
 
             // Find all matching tag helpers
             var matching = new Dictionary<string, TagHelperPair>();
