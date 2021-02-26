@@ -14,7 +14,6 @@ using System.Xml;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Framework.XamlTypes;
-using Microsoft.VisualStudio.Composition;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Build;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
@@ -29,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public TestProjectSystemServices(string fullPath, params TestPropertyData[] data)
         {
             ProjectService = new TestProjectService();
-            ThreadingService = ProjectService.Services.TestThreadingPolicy;
+            ThreadingService = (TestThreadingService)ProjectService.Services.ThreadingPolicy;
 
             UnconfiguredProject = new TestUnconfiguredProject(ProjectService, fullPath);
             ProjectService.LoadedUnconfiguredProjects.Add(UnconfiguredProject);
@@ -44,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             TasksService = new TestProjectAsynchronousTasksService(ProjectService, UnconfiguredProject, ActiveConfiguredProject);
         }
 
-        public TestProjectServices Services { get; }
+        public ProjectServices Services { get; }
 
         public TestProjectService ProjectService { get; }
 
@@ -87,46 +86,21 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 dataSourceVersions: ImmutableDictionary<NamedIdentity, IComparable>.Empty);
         }
 
-        public class TestProjectServices : ProjectServices
-        {
-            public TestProjectServices(TestProjectService projectService)
-            {
-                TestProjectService = projectService;
-                TestThreadingPolicy = new TestThreadingService();
-            }
-
-            public TestProjectService TestProjectService { get; }
-
-            public TestThreadingService TestThreadingPolicy { get; }
-
-            public override IProjectService ProjectService => TestProjectService;
-
-            public override IProjectThreadingService ThreadingPolicy => TestThreadingPolicy;
-
-            public override ExportProvider ExportProvider => throw new NotImplementedException();
-
-            public override IProjectDataSourceRegistry DataSourceRegistry => throw new NotImplementedException();
-
-            public override IProjectCapabilitiesScope Capabilities => throw new NotImplementedException();
-
-            public override IProjectLockService ProjectLockService => throw new NotImplementedException();
-
-            public override IProjectFaultHandlerService FaultHandler => throw new NotImplementedException();
-
-            public override IProjectReloader ProjectReloader => throw new NotImplementedException();
-        }
-
         public class TestProjectService : IProjectService
         {
             public TestProjectService()
             {
                 LoadedUnconfiguredProjects = new List<TestUnconfiguredProject>();
-                Services = new TestProjectServices(this);
+
+                var services = new Mock<ProjectServices>(MockBehavior.Strict);
+                services.Setup(s => s.ProjectService).Returns(this);
+                services.Setup(s => s.ThreadingPolicy).Returns(new TestThreadingService());
+                Services = services.Object;
             }
 
             public List<TestUnconfiguredProject> LoadedUnconfiguredProjects { get; }
 
-            public TestProjectServices Services { get; }
+            public ProjectServices Services { get; }
 
             IEnumerable<UnconfiguredProject> IProjectService.LoadedUnconfiguredProjects => throw new NotImplementedException();
 
@@ -301,7 +275,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             public TestConfiguredProject(TestUnconfiguredProject unconfiguredProject, TestPropertyData[] data)
             {
                 UnconfiguredProject = unconfiguredProject;
-                Services = new TestConfiguredProjectServices(this, data);
+
+                var services = new Mock<ConfiguredProjectServices>(MockBehavior.Strict);
+                services.Setup(s => s.AdditionalRuleDefinitions).Returns(new TestAdditionalRuleDefinitionsService());
+                services.Setup(s => s.PropertyPagesCatalog).Returns(new TestPropertyPagesCatalogProvider(new TestPropertyPagesCatalog(data)));
+                services.Setup(s => s.ProjectService).Returns(UnconfiguredProject.ProjectService);
+                Services = services.Object;
 
                 ProjectConfiguration = new StandardProjectConfiguration(
                     "Debug|AnyCPU",
@@ -312,7 +291,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             public ProjectConfiguration ProjectConfiguration { get; }
 
-            public TestConfiguredProjectServices Services { get; }
+            public ConfiguredProjectServices Services { get; }
 
             IComparable ConfiguredProject.ProjectVersion => throw new NotImplementedException();
 
@@ -369,83 +348,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 throw new NotImplementedException();
             }
-        }
-
-        public class TestConfiguredProjectServices : ConfiguredProjectServices
-        {
-            public TestConfiguredProjectServices(TestConfiguredProject configuredProject, TestPropertyData[] data)
-            {
-                ConfiguredProject = configuredProject;
-
-                TestAdditionalRuleDefinitions = new TestAdditionalRuleDefinitionsService();
-                TestPropertyPagesCatalog = new TestPropertyPagesCatalogProvider(new TestPropertyPagesCatalog(data));
-            }
-
-            public TestConfiguredProject ConfiguredProject { get; }
-
-            public TestAdditionalRuleDefinitionsService TestAdditionalRuleDefinitions { get; }
-
-            public override IAdditionalRuleDefinitionsService AdditionalRuleDefinitions => TestAdditionalRuleDefinitions;
-
-            public TestPropertyPagesCatalogProvider TestPropertyPagesCatalog { get; }
-
-            public override IPropertyPagesCatalogProvider PropertyPagesCatalog => TestPropertyPagesCatalog;
-
-            public override IOutputGroupsService OutputGroups => throw new NotImplementedException();
-
-            public override IBuildProject Build => throw new NotImplementedException();
-
-            public override IBuildSupport BuildSupport => throw new NotImplementedException();
-
-            public override IAssemblyReferencesService AssemblyReferences => throw new NotImplementedException();
-
-            public override IComReferencesService ComReferences => throw new NotImplementedException();
-
-            public override ISdkReferencesService SdkReferences => throw new NotImplementedException();
-
-            public override IPackageReferencesService PackageReferences => throw new NotImplementedException();
-
-            public override IWinRTReferencesService WinRTReferences => throw new NotImplementedException();
-
-            public override IBuildDependencyProjectReferencesService ProjectReferences => throw new NotImplementedException();
-
-            public override IProjectItemProvider SourceItems => throw new NotImplementedException();
-
-            public override IProjectPropertiesProvider ProjectPropertiesProvider => throw new NotImplementedException();
-
-            public override IProjectPropertiesProvider UserPropertiesProvider => throw new NotImplementedException();
-
-            public override IProjectSubscriptionService ProjectSubscription => throw new NotImplementedException();
-
-            public override IProjectSnapshotService ProjectSnapshotService => throw new NotImplementedException();
-
-            public override IActiveConfiguredProjectSubscriptionService ActiveConfiguredProjectSubscription => throw new NotImplementedException();
-
-            public override IActiveConfiguredProjectProvider ActiveConfiguredProjectProvider => throw new NotImplementedException();
-
-            public override IProjectAsynchronousTasksService ProjectAsynchronousTasks => throw new NotImplementedException();
-
-            public override IProjectConfigurationsService ProjectConfigurationsService => throw new NotImplementedException();
-
-            public override object HostObject => throw new NotImplementedException();
-
-            public override IProjectCapabilitiesRequirementsService ProjectCapabilitiesRequirementsService => throw new NotImplementedException();
-
-            public override ExportProvider ExportProvider => throw new NotImplementedException();
-
-            public override IProjectDataSourceRegistry DataSourceRegistry => throw new NotImplementedException();
-
-            public override IProjectService ProjectService => ConfiguredProject.UnconfiguredProject.ProjectService;
-
-            public override IProjectCapabilitiesScope Capabilities => throw new NotImplementedException();
-
-            public override IProjectLockService ProjectLockService => throw new NotImplementedException();
-
-            public override IProjectThreadingService ThreadingPolicy => throw new NotImplementedException();
-
-            public override IProjectFaultHandlerService FaultHandler => throw new NotImplementedException();
-
-            public override IProjectReloader ProjectReloader => throw new NotImplementedException();
         }
 
         public class TestAdditionalRuleDefinitionsService : IAdditionalRuleDefinitionsService
