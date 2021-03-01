@@ -270,7 +270,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 var assemblyDefinition = metadataReader.GetAssemblyDefinition();
                 return assemblyDefinition.Version;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 // We're purposely silencing any kinds of I/O exceptions here, just in case something wacky is going on.
                 return null;
