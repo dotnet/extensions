@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
@@ -24,12 +25,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
         private readonly FileUriProvider _fileUriProvider;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
+        private readonly VisualStudioWorkspaceAccessor _workspaceAccessor;
 
         [ImportingConstructor]
         public DefaultRazorProximityExpressionResolver(
             FileUriProvider fileUriProvider,
             LSPDocumentManager documentManager,
-            LSPProjectionProvider projectionProvider)
+            LSPProjectionProvider projectionProvider,
+            VisualStudioWorkspaceAccessor workspaceAccessor)
         {
             if (fileUriProvider is null)
             {
@@ -46,9 +49,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
                 throw new ArgumentNullException(nameof(projectionProvider));
             }
 
+            if (workspaceAccessor is null)
+            {
+                throw new ArgumentNullException(nameof(workspaceAccessor));
+            }
+
             _fileUriProvider = fileUriProvider;
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
+            _workspaceAccessor = workspaceAccessor;
         }
 
         public override async Task<IReadOnlyList<string>> TryResolveProximityExpressionsAsync(ITextBuffer textBuffer, int lineIndex, int characterIndex, CancellationToken cancellationToken)
@@ -92,11 +101,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
                 return null;
             }
 
-            var sourceText = virtualDocument.Snapshot.AsText();
-            var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, cancellationToken: cancellationToken);
-            var proximityExpressions = RazorCSharpProximityExpressionResolverService.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex, cancellationToken);
+            _workspaceAccessor.TryGetWorkspace(textBuffer, out var workspace);
 
-            return proximityExpressions?.ToArray();
+            var syntaxTree = await virtualDocument.GetCSharpSyntaxTreeAsync(workspace, cancellationToken).ConfigureAwait(false);
+            var proximityExpressions = RazorCSharpProximityExpressionResolverService.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex, cancellationToken);
+            return proximityExpressions?.ToList();
         }
     }
 }

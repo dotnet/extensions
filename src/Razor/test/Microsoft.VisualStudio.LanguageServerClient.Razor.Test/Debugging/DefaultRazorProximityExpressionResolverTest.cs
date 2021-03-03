@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
@@ -190,10 +191,13 @@ $@"public class SomeRazorFile
                 Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
                     .Returns(Task.FromResult<ProjectionResult>(null));
             }
+            CodeAnalysis.Workspace workspace = null;
+            var workspaceAccessor = Mock.Of<VisualStudioWorkspaceAccessor>(accessor => accessor.TryGetWorkspace(It.IsAny<ITextBuffer>(), out workspace) == false, MockBehavior.Strict);
             var razorProximityExpressionResolver = new DefaultRazorProximityExpressionResolver(
                 uriProvider,
                 documentManager,
-                projectionProvider);
+                projectionProvider,
+                workspaceAccessor);
 
             return razorProximityExpressionResolver;
         }
