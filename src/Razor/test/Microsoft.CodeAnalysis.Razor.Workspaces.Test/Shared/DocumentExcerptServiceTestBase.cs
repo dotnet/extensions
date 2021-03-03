@@ -26,6 +26,11 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public (SourceText sourceText, TextSpan span) CreateText(string text)
         {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
             // Since we're using positions, normalize to Windows style
 #pragma warning disable CA1307 // Specify StringComparison
             text = text.Replace("\r", "").Replace("\n", "\r\n");
