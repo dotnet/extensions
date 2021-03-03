@@ -20,13 +20,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             public static readonly OptimizedCompletionListJsonConverter Instance = new OptimizedCompletionListJsonConverter();
             private static readonly ConcurrentDictionary<object, string> CommitCharactersRawJson;
-            private static readonly string TagHelperIconRawJson;
             private static readonly JsonSerializer DefaultSerializer;
 
             static OptimizedCompletionListJsonConverter()
             {
                 DefaultSerializer = JsonSerializer.CreateDefault();
-                TagHelperIconRawJson = JsonConvert.SerializeObject(VSLspCompletionItemIcons.TagHelper);
                 CommitCharactersRawJson = new ConcurrentDictionary<object, string>();
             }
 
@@ -79,19 +77,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 {
                     writer.WritePropertyName("label");
                     writer.WriteValue(label);
-                }
-
-                if (completionItem is VSLspCompletionItem lspCompletionItem && lspCompletionItem.Icon != null)
-                {
-                    writer.WritePropertyName("icon");
-                    if (lspCompletionItem.Icon == VSLspCompletionItemIcons.TagHelper)
-                    {
-                        writer.WriteRawValue(TagHelperIconRawJson);
-                    }
-                    else
-                    {
-                        serializer.Serialize(writer, lspCompletionItem.Icon);
-                    }
                 }
 
                 writer.WritePropertyName("kind");

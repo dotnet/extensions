@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 {
     public static class LanguageServerConstants
     {
+        public const int VSCompletionItemKindOffset = 118115;
+
         public const string ProjectConfigurationFile = "project.razor.json";
 
         // Semantic "Legacy" endpoints refer to an old LSP spec version, needed for now until VS reacts.

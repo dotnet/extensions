@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -24,6 +25,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     public class RazorCompletionEndpointTest : LanguageServerTestBase
     {
+        private readonly IReadOnlyList<ExtendedCompletionItemKinds> SupportedCompletionItemKinds = new[]
+        {
+            ExtendedCompletionItemKinds.Struct,
+            ExtendedCompletionItemKinds.Keyword,
+            ExtendedCompletionItemKinds.TagHelper,
+        };
+
         public RazorCompletionEndpointTest()
         {
             // Working around strong naming restriction.
@@ -56,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             completionItem.SetDirectiveCompletionDescription(new DirectiveCompletionDescription(description));
 
             // Act
-            var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            var result = RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Assert
             Assert.True(result);
@@ -75,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionItem = new RazorCompletionItem("testDisplay", "testInsert", RazorCompletionItemKind.Directive);
             var description = "Something";
             completionItem.SetDirectiveCompletionDescription(new DirectiveCompletionDescription(description));
-            RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Act & Assert
             JsonConvert.SerializeObject(converted);
@@ -86,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var completionItem = DirectiveAttributeTransitionCompletionItemProvider.TransitionCompletionItem;
-            RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Act & Assert
             JsonConvert.SerializeObject(converted);
@@ -99,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionItem = DirectiveAttributeTransitionCompletionItemProvider.TransitionCompletionItem;
 
             // Act
-            var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            var result = RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Assert
             Assert.True(result);
@@ -120,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionItem = MarkupTransitionCompletionItemProvider.MarkupTransitionCompletionItem;
 
             // Act
-            var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            var result = RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Assert
             Assert.True(result);
@@ -138,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         {
             // Arrange
             var completionItem = MarkupTransitionCompletionItemProvider.MarkupTransitionCompletionItem;
-            RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Act & Assert
             JsonConvert.SerializeObject(converted);
@@ -151,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionItem = new RazorCompletionItem("@testDisplay", "testInsert", RazorCompletionItemKind.DirectiveAttribute, new[] { "=", ":" });
 
             // Act
-            var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            var result = RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Assert
             Assert.True(result);
@@ -172,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionItem = new RazorCompletionItem("format", "format", RazorCompletionItemKind.DirectiveAttributeParameter);
 
             // Act
-            var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            var result = RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Assert
             Assert.True(result);
@@ -192,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionItem = new RazorCompletionItem("format", "format", RazorCompletionItemKind.TagHelperElement);
 
             // Act
-            var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            var result = RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Assert
             Assert.True(result);
@@ -212,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionItem = new RazorCompletionItem("format", "format", RazorCompletionItemKind.TagHelperAttribute);
 
             // Act
-            var result = RazorCompletionEndpoint.TryConvert(completionItem, out var converted);
+            var result = RazorCompletionEndpoint.TryConvert(completionItem, SupportedCompletionItemKinds, out var converted);
 
             // Assert
             Assert.True(result);
