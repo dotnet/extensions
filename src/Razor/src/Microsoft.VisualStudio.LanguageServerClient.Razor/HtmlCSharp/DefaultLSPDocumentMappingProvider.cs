@@ -25,8 +25,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         // The Document Manager is a more "Core Service" it depends on the ChangeTriggers which require the LSPDocumentMappingProvider
         // LSPDocumentManager => LSPDocumentMappingProvider => LSPDocumentManagerChangeTrigger => LSPDocumentManager
         private readonly Lazy<LSPDocumentManager> _lazyDocumentManager;
-        private Func<RazorMapToDocumentRangesParams, CancellationToken, Task<RazorMapToDocumentRangesResponse>> _inProcRangeMappingMethod;
-        private Func<RazorMapToDocumentEditsParams, CancellationToken, Task<RazorMapToDocumentEditsResponse>> _inProcEditMappingMethod;
 
         [ImportingConstructor]
         public DefaultLSPDocumentMappingProvider(LSPRequestInvoker requestInvoker, Lazy<LSPDocumentManager> lazyDocumentManager)
@@ -49,10 +47,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             => MapToDocumentRangesAsync(languageKind, razorDocumentUri, projectedRanges, LanguageServerMappingBehavior.Strict, cancellationToken);
 
         public async override Task<RazorMapToDocumentRangesResponse> MapToDocumentRangesAsync(
-            RazorLanguageKind languageKind,
-            Uri razorDocumentUri,
-            Range[] projectedRanges,
-            LanguageServerMappingBehavior mappingBehavior,
+            RazorLanguageKind languageKind, 
+            Uri razorDocumentUri, 
+            Range[] projectedRanges, 
+            LanguageServerMappingBehavior mappingBehavior, 
             CancellationToken cancellationToken)
         {
             if (razorDocumentUri is null)
@@ -73,20 +71,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 MappingBehavior = mappingBehavior,
             };
 
-            if (_inProcRangeMappingMethod != null)
-            {
-                var documentMappingResponse = await _inProcRangeMappingMethod.Invoke(mapToDocumentRangeParams, cancellationToken).ConfigureAwait(false);
-                return documentMappingResponse;
-            }
-            else
-            {
-                var documentMappingResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(
-                    LanguageServerConstants.RazorMapToDocumentRangesEndpoint,
-                    RazorLSPConstants.RazorLSPContentTypeName,
-                    mapToDocumentRangeParams,
-                    cancellationToken).ConfigureAwait(false);
-                return documentMappingResponse;
-            }
+            var documentMappingResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>(
+                LanguageServerConstants.RazorMapToDocumentRangesEndpoint,
+                RazorLSPConstants.RazorLSPContentTypeName,
+                mapToDocumentRangeParams,
+                cancellationToken).ConfigureAwait(false);
+
+            return documentMappingResponse;
         }
 
         public async override Task<Location[]> RemapLocationsAsync(Location[] locations, CancellationToken cancellationToken)
@@ -221,26 +212,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return workspaceEdit;
         }
 
-        public void UseInProcRangeMapping(Func<RazorMapToDocumentRangesParams, CancellationToken, Task<RazorMapToDocumentRangesResponse>> inProcRangeMappingMethod)
-        {
-            if (inProcRangeMappingMethod is null)
-            {
-                throw new ArgumentNullException(nameof(inProcRangeMappingMethod));
-            }
-
-            _inProcRangeMappingMethod = inProcRangeMappingMethod;
-        }
-
-        public void UseInProcEditMapping(Func<RazorMapToDocumentEditsParams, CancellationToken, Task<RazorMapToDocumentEditsResponse>> inProcEditMappingMethod)
-        {
-            if (inProcEditMappingMethod is null)
-            {
-                throw new ArgumentNullException(nameof(inProcEditMappingMethod));
-            }
-
-            _inProcEditMappingMethod = inProcEditMappingMethod;
-        }
-
         private bool TryGetDocumentChanges(WorkspaceEdit workspaceEdit, out TextDocumentEdit[] documentChanges)
         {
             documentChanges = null;
@@ -370,19 +341,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 FormattingOptions = formattingOptions
             };
 
-            RazorMapToDocumentEditsResponse mappingResult = null;
-            if (_inProcEditMappingMethod != null)
-            {
-                mappingResult = await _inProcEditMappingMethod(mapToDocumentEditsParams, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                mappingResult = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentEditsParams, RazorMapToDocumentEditsResponse>(
-                    LanguageServerConstants.RazorMapToDocumentEditsEndpoint,
-                    RazorLSPConstants.RazorLSPContentTypeName,
-                    mapToDocumentEditsParams,
-                    cancellationToken).ConfigureAwait(false);
-            }
+            var mappingResult = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorMapToDocumentEditsParams, RazorMapToDocumentEditsResponse>(
+                LanguageServerConstants.RazorMapToDocumentEditsEndpoint,
+                RazorLSPConstants.RazorLSPContentTypeName,
+                mapToDocumentEditsParams,
+                cancellationToken).ConfigureAwait(false);
 
             if (mappingResult == null ||
                 (_lazyDocumentManager.Value.TryGetDocument(razorDocumentUri, out var documentSnapshot) &&

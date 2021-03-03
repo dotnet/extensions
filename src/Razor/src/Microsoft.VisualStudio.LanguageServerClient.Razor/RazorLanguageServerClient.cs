@@ -38,8 +38,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
         private readonly RazorLanguageServerFeedbackFileLoggerProviderFactory _feedbackFileLoggerProviderFactory;
         private readonly VSLanguageServerFeatureOptions _vsLanguageServerFeatureOptions;
-        private readonly InProcLanguageServerAdapter _inProcLanguageServerAdapter;
-        
+
         private object _shutdownLock;
         private RazorLanguageServer _server;
         private IDisposable _serverShutdownDisposable;
@@ -53,8 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             LSPRequestInvoker requestInvoker,
             ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
             RazorLanguageServerFeedbackFileLoggerProviderFactory feedbackFileLoggerProviderFactory,
-            VSLanguageServerFeatureOptions vsLanguageServerFeatureOptions,
-            InProcLanguageServerAdapter inProcLanguageServerAdapter)
+            VSLanguageServerFeatureOptions vsLanguageServerFeatureOptions)
         {
             if (customTarget is null)
             {
@@ -86,18 +84,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(vsLanguageServerFeatureOptions));
             }
 
-            if (inProcLanguageServerAdapter is null)
-            {
-                throw new ArgumentNullException(nameof(inProcLanguageServerAdapter));
-            }
-
             _customMessageTarget = customTarget;
             _middleLayer = middleLayer;
             _requestInvoker = requestInvoker;
             _projectConfigurationFilePathStore = projectConfigurationFilePathStore;
             _feedbackFileLoggerProviderFactory = feedbackFileLoggerProviderFactory;
             _vsLanguageServerFeatureOptions = vsLanguageServerFeatureOptions;
-            _inProcLanguageServerAdapter = inProcLanguageServerAdapter;
+
             _shutdownLock = new object();
         }
 
@@ -133,8 +126,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var traceLevel = GetVerbosity();
             _server = await RazorLanguageServer.CreateAsync(serverStream, serverStream, traceLevel, ConfigureLanguageServer).ConfigureAwait(false);
-
-            _inProcLanguageServerAdapter.Bind(_server);
 
             // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize.
             _server.InitializedAsync(token).FileAndForget("RazorLanguageServerClient_ActivateAsync");

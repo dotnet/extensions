@@ -274,14 +274,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return Task.FromResult(razorLanguageServer);
         }
 
-        // Today we only extract services from the language server in scenarios we know are eventually going away.
-        // For instance, at the time of writing this comment we're extracting some endpoints from the server for
-        // perf concerns to avoid doing StreamJsonRpc hops to resolve things like an applicable language at a location.
-        // Eventually language queries will be done only at the language server layer at which point inproc/versus out
-        // of proc wont be a thing because it'll all be in one process.
-        [Obsolete("Do not use this API.")]
-        internal RazorLanguageEndpoint GetLanguageEndpoint() => _innerServer.Services.GetRequiredService<RazorLanguageEndpoint>();
-
         public void Dispose()
         {
             lock (_disposeLock)

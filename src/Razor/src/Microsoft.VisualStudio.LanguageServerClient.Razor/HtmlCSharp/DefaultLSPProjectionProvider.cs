@@ -18,7 +18,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentSynchronizer _documentSynchronizer;
         private readonly RazorLogger _logger;
-        private Func<RazorLanguageQueryParams, CancellationToken, Task<RazorLanguageQueryResponse>> _inProcLanguageQueryMethod;
 
         [ImportingConstructor]
         public DefaultLSPProjectionProvider(
@@ -26,34 +25,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             LSPDocumentSynchronizer documentSynchronizer,
             RazorLogger logger)
         {
-            if (requestInvoker is null)
-            {
-                throw new ArgumentNullException(nameof(requestInvoker));
-            }
-
-            if (documentSynchronizer is null)
-            {
-                throw new ArgumentNullException(nameof(documentSynchronizer));
-            }
-
-            if (logger is null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             _requestInvoker = requestInvoker;
             _documentSynchronizer = documentSynchronizer;
             _logger = logger;
-        }
-
-        public void UseInProcLanguageQueries(Func<RazorLanguageQueryParams, CancellationToken, Task<RazorLanguageQueryResponse>> inProcLanguageQueryMethod)
-        {
-            if (inProcLanguageQueryMethod is null)
-            {
-                throw new ArgumentNullException(nameof(inProcLanguageQueryMethod));
-            }
-
-            _inProcLanguageQueryMethod = inProcLanguageQueryMethod;
         }
 
         public override async Task<ProjectionResult> GetProjectionAsync(LSPDocumentSnapshot documentSnapshot, Position position, CancellationToken cancellationToken)
@@ -71,22 +45,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var languageQueryParams = new RazorLanguageQueryParams()
             {
                 Position = position,
-                Uri = documentSnapshot.Uri,
+                Uri = documentSnapshot.Uri
             };
 
-            RazorLanguageQueryResponse languageResponse = null;
-            if (_inProcLanguageQueryMethod != null)
-            {
-                languageResponse = await _inProcLanguageQueryMethod.Invoke(languageQueryParams, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                languageResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(
-                    LanguageServerConstants.RazorLanguageQueryEndpoint,
-                    RazorLSPConstants.RazorLSPContentTypeName,
-                    languageQueryParams,
-                    cancellationToken).ConfigureAwait(false);
-            }
+            var languageResponse = await _requestInvoker.ReinvokeRequestOnServerAsync<RazorLanguageQueryParams, RazorLanguageQueryResponse>(
+                LanguageServerConstants.RazorLanguageQueryEndpoint,
+                RazorLSPConstants.RazorLSPContentTypeName,
+                languageQueryParams,
+                cancellationToken).ConfigureAwait(false);
 
             if (languageResponse == null)
             {
