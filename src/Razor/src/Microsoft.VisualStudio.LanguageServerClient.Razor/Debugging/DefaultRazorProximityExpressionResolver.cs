@@ -8,9 +8,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
-using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -26,6 +25,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
         private readonly VisualStudioWorkspaceAccessor _workspaceAccessor;
+        private readonly MemoryCache<CacheKey, IReadOnlyList<string>> _cache;
 
         [ImportingConstructor]
         public DefaultRazorProximityExpressionResolver(
@@ -58,6 +58,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
             _workspaceAccessor = workspaceAccessor;
+
+            // 10 is a magic number where this effectively represents our ability to cache the last 10 "hit" breakpoint locations
+            // corresponding proximity expressions which enables us not to go "async" in those re-hit scenarios.
+            _cache = new MemoryCache<CacheKey, IReadOnlyList<string>>(sizeLimit: 10);
         }
 
         public override async Task<IReadOnlyList<string>> TryResolveProximityExpressionsAsync(ITextBuffer textBuffer, int lineIndex, int characterIndex, CancellationToken cancellationToken)
@@ -77,6 +81,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
             {
                 // No associated Razor document. Do not resolve expressions here. In practice this shouldn't happen, just being defensive.
                 return null;
+            }
+
+            var cacheKey = new CacheKey(documentSnapshot.Uri, documentSnapshot.Version, lineIndex, characterIndex);
+            if (_cache.TryGetValue(cacheKey, out var cachedExpressions))
+            {
+                // We've seen this request before, no need to go async.
+                return cachedExpressions;
             }
 
             var lspPosition = new Position(lineIndex, characterIndex);
@@ -104,8 +115,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
             _workspaceAccessor.TryGetWorkspace(textBuffer, out var workspace);
 
             var syntaxTree = await virtualDocument.GetCSharpSyntaxTreeAsync(workspace, cancellationToken).ConfigureAwait(false);
-            var proximityExpressions = RazorCSharpProximityExpressionResolverService.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex, cancellationToken);
-            return proximityExpressions?.ToList();
+            var proximityExpressions = RazorCSharpProximityExpressionResolverService.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex, cancellationToken)?.ToList();
+
+            // Cache range so if we're asked again for this document/line/character we don't have to go async.
+            _cache.Set(cacheKey, proximityExpressions);
+
+            return proximityExpressions;
         }
+
+        private record CacheKey(Uri DocumentUri, int DocumentVersion, int Line, int Character);
     }
 }
