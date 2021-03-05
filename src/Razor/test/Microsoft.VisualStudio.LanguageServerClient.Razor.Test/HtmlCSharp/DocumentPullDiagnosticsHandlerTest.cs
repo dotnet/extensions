@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 using Microsoft.VisualStudio.Text;
 using Moq;
 using Xunit;
@@ -99,11 +99,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var logger = new Mock<ILogger>(MockBehavior.Strict).Object;
             Mock.Get(logger).Setup(l => l.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception, string>>())).Verifiable();
-            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerFeedbackFileLoggerProvider>(l => l.CreateLogger(It.IsAny<string>()) == logger, MockBehavior.Strict);
+            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerLogHubLoggerProvider>(l => l.CreateLogger(It.IsAny<string>()) == logger, MockBehavior.Strict);
         }
 
         private Uri Uri { get; }
-        private HTMLCSharpLanguageServerFeedbackFileLoggerProvider LoggerProvider { get; }
+        private HTMLCSharpLanguageServerLogHubLoggerProvider LoggerProvider { get; }
 
         [Fact]
         public async Task HandleRequestAsync_DocumentNotFound_ReturnsNull()

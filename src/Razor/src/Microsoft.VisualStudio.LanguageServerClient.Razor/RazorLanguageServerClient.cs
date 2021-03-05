@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
-using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -36,12 +36,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly ILanguageClientMiddleLayer _middleLayer;
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly ProjectConfigurationFilePathStore _projectConfigurationFilePathStore;
-        private readonly RazorLanguageServerFeedbackFileLoggerProviderFactory _feedbackFileLoggerProviderFactory;
+        private readonly RazorLanguageServerLogHubLoggerProviderFactory _logHubLoggerProviderFactory;
         private readonly VSLanguageServerFeatureOptions _vsLanguageServerFeatureOptions;
 
         private object _shutdownLock;
         private RazorLanguageServer _server;
         private IDisposable _serverShutdownDisposable;
+        private LogHubLoggerProvider _loggerProvider;
 
         private const string RazorLSPLogLevel = "RAZOR_TRACE";
 
@@ -51,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             RazorLanguageClientMiddleLayer middleLayer,
             LSPRequestInvoker requestInvoker,
             ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
-            RazorLanguageServerFeedbackFileLoggerProviderFactory feedbackFileLoggerProviderFactory,
+            RazorLanguageServerLogHubLoggerProviderFactory logHubLoggerProviderFactory,
             VSLanguageServerFeatureOptions vsLanguageServerFeatureOptions)
         {
             if (customTarget is null)
@@ -74,9 +75,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(projectConfigurationFilePathStore));
             }
 
-            if (feedbackFileLoggerProviderFactory is null)
+            if (logHubLoggerProviderFactory is null)
             {
-                throw new ArgumentNullException(nameof(feedbackFileLoggerProviderFactory));
+                throw new ArgumentNullException(nameof(logHubLoggerProviderFactory));
             }
 
             if (vsLanguageServerFeatureOptions is null)
@@ -88,7 +89,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _middleLayer = middleLayer;
             _requestInvoker = requestInvoker;
             _projectConfigurationFilePathStore = projectConfigurationFilePathStore;
-            _feedbackFileLoggerProviderFactory = feedbackFileLoggerProviderFactory;
+            _logHubLoggerProviderFactory = logHubLoggerProviderFactory;
             _vsLanguageServerFeatureOptions = vsLanguageServerFeatureOptions;
 
             _shutdownLock = new object();
@@ -125,6 +126,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             await EnsureCleanedUpServerAsync(token).ConfigureAwait(false);
 
             var traceLevel = GetVerbosity();
+
+            // Initialize Logging Infrastructure
+            _loggerProvider = (LogHubLoggerProvider) await _logHubLoggerProviderFactory.GetOrCreateAsync(LogFileIdentifier, token).ConfigureAwait(false);
+
             _server = await RazorLanguageServer.CreateAsync(serverStream, serverStream, traceLevel, ConfigureLanguageServer).ConfigureAwait(false);
 
             // Fire and forget for Initialized. Need to allow the LSP infrastructure to run in order to actually Initialize.
@@ -144,9 +149,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var services = builder.Services;
             services.AddLogging(logging =>
             {
-                logging.AddFilter<FeedbackFileLoggerProvider>(level => true);
-                var loggerProvider = (FeedbackFileLoggerProvider)_feedbackFileLoggerProviderFactory.GetOrCreate(LogFileIdentifier);
-                logging.AddProvider(loggerProvider);
+                logging.AddFilter<LogHubLoggerProvider>(level => true);
+                logging.AddProvider(_loggerProvider);
             });
             services.AddSingleton<LanguageServerFeatureOptions>(_vsLanguageServerFeatureOptions);
         }

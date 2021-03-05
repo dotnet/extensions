@@ -6,8 +6,10 @@ using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
@@ -17,17 +19,42 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     {
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly LSPDocumentSynchronizer _documentSynchronizer;
-        private readonly RazorLogger _logger;
+        private readonly RazorLogger _activityLogger;
+        private readonly HTMLCSharpLanguageServerLogHubLoggerProvider _loggerProvider;
+
+        private ILogger _logHubLogger = null;
 
         [ImportingConstructor]
         public DefaultLSPProjectionProvider(
             LSPRequestInvoker requestInvoker,
             LSPDocumentSynchronizer documentSynchronizer,
-            RazorLogger logger)
+            RazorLogger razorLogger,
+            HTMLCSharpLanguageServerLogHubLoggerProvider loggerProvider)
         {
+            if (requestInvoker is null)
+            {
+                throw new ArgumentNullException(nameof(requestInvoker));
+            }
+
+            if (documentSynchronizer is null)
+            {
+                throw new ArgumentNullException(nameof(documentSynchronizer));
+            }
+
+            if (razorLogger is null)
+            {
+                throw new ArgumentNullException(nameof(razorLogger));
+            }
+
+            if (loggerProvider is null)
+            {
+                throw new ArgumentNullException(nameof(loggerProvider));
+            }
+
             _requestInvoker = requestInvoker;
             _documentSynchronizer = documentSynchronizer;
-            _logger = logger;
+            _activityLogger = razorLogger;
+            _loggerProvider = loggerProvider;
         }
 
         public override async Task<ProjectionResult> GetProjectionAsync(LSPDocumentSnapshot documentSnapshot, Position position, CancellationToken cancellationToken)
@@ -41,6 +68,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 throw new ArgumentNullException(nameof(position));
             }
+
+            // We initialize the logger here instead of the constructor as the projection provider is constructed
+            // *before* the language server. Thus, the log hub has yet to be initialized, thus we would be unable to
+            // create the logger at that time.
+            InitializeLogHubLogger();
 
             var languageQueryParams = new RazorLanguageQueryParams()
             {
@@ -56,7 +88,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             if (languageResponse == null)
             {
-                // The language server is still being spun up. Could not resolve the projection.
+                _logHubLogger.LogInformation("The language server is still being spun up. Could not resolve the projection.");
                 return null;
             }
 
@@ -73,6 +105,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
             else
             {
+                _logHubLogger.LogInformation($"Could not find projection for {languageResponse.Kind:G}.");
                 return null;
             }
 
@@ -80,14 +113,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 // There should always be a document version attached to an open document.
                 // Log it and move on as if it was synchronized.
-                _logger.LogVerbose($"Could not find a document version associated with the document '{documentSnapshot.Uri}'");
+                var message = $"Could not find a document version associated with the document '{documentSnapshot.Uri}'";
+                _activityLogger.LogVerbose(message);
+                _logHubLogger.LogWarning(message);
             }
             else
             {
                 var synchronized = await _documentSynchronizer.TrySynchronizeVirtualDocumentAsync(documentSnapshot.Version, virtualDocument, cancellationToken).ConfigureAwait(false);
                 if (!synchronized)
                 {
-                    // Could not synchronize
+                    _logHubLogger.LogInformation("Could not synchronize.");
                     return null;
                 }
             }
@@ -102,6 +137,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
 
             return result;
+        }
+
+        private void InitializeLogHubLogger()
+        {
+            if (_logHubLogger is null)
+            {
+                _logHubLogger = _loggerProvider.CreateLogger(nameof(DefaultLSPProjectionProvider));
+            }
         }
     }
 }

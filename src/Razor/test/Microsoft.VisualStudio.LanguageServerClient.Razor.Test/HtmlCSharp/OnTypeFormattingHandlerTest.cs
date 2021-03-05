@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    public class OnTypeFormattingHandlerTest
+    public class OnTypeFormattingHandlerTest : HandlerTestBase
     {
         public OnTypeFormattingHandlerTest()
         {
@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
             var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider, mappingProvider);
+            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider, mappingProvider, LoggerProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -61,7 +61,7 @@ public string _foo;
             Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
                 .Returns(Task.FromResult<ProjectionResult>(null));
             var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider, mappingProvider);
+            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider, mappingProvider, LoggerProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -95,7 +95,7 @@ public string _foo;
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
             var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider.Object, mappingProvider);
+            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider.Object, mappingProvider, LoggerProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -129,7 +129,7 @@ public string _foo;
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
             var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider.Object, mappingProvider);
+            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider.Object, mappingProvider, LoggerProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -163,7 +163,7 @@ public string _foo;
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
             var mappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider.Object, mappingProvider);
+            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker, projectionProvider.Object, mappingProvider, LoggerProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -211,7 +211,7 @@ public string _foo;
             var mappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict).Object;
             Mock.Get(mappingProvider).Setup(p => p.RemapFormattedTextEditsAsync(null, It.IsAny<TextEdit[]>(), It.IsAny<FormattingOptions>(), false, CancellationToken.None))
                 .Returns(Task.FromResult<TextEdit[]>(null));
-            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider.Object, mappingProvider);
+            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider.Object, mappingProvider, LoggerProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -264,7 +264,7 @@ public string _foo;
                 .Callback(() => { remapped = true; })
                 .Returns(Task.FromResult(new[] { remappedEdit }));
 
-            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider.Object, mappingProvider.Object);
+            var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider.Object, mappingProvider.Object, LoggerProvider);
             var formattingRequest = new DocumentOnTypeFormattingParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },

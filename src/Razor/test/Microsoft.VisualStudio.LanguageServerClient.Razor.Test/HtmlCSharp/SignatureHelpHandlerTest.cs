@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    public class SignatureHelpHandlerTest
+    public class SignatureHelpHandlerTest : HandlerTestBase
     {
         public SignatureHelpHandlerTest()
         {
@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentManager = new TestDocumentManager();
             var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
-            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker, documentManager, projectionProvider);
+            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker, documentManager, projectionProvider, LoggerProvider);
             var signatureHelpRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -52,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
             Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
                 .Returns(Task.FromResult<ProjectionResult>(null));
-            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker, documentManager, projectionProvider);
+            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker, documentManager, projectionProvider, LoggerProvider);
             var signatureHelpRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -94,7 +94,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker.Object, documentManager, projectionProvider.Object);
+            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker.Object, documentManager, projectionProvider.Object, LoggerProvider);
             var signatureHelpRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -137,7 +137,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker.Object, documentManager, projectionProvider.Object);
+            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker.Object, documentManager, projectionProvider.Object, LoggerProvider);
             var signatureHelpRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -170,7 +170,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
 
-            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker, documentManager, projectionProvider.Object);
+            var signatureHelpHandler = new SignatureHelpHandler(requestInvoker, documentManager, projectionProvider.Object, LoggerProvider);
             var signatureHelpRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },

@@ -15,7 +15,7 @@ using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    public class OnAutoInsertHandlerTest
+    public class OnAutoInsertHandlerTest : HandlerTestBase
     {
         public OnAutoInsertHandlerTest()
         {
@@ -44,7 +44,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
 
-            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider);
+            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, LoggerProvider);
             var request = new DocumentOnAutoInsertParams()
             {
                 Character = "?",
@@ -83,7 +83,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
 
-            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider);
+            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider, documentMappingProvider, LoggerProvider);
             var request = new DocumentOnAutoInsertParams()
             {
                 Character = ">",
@@ -128,7 +128,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
 
-            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider);
+            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider, LoggerProvider);
             var request = new DocumentOnAutoInsertParams()
             {
                 Character = ">",
@@ -181,7 +181,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Callback(() => { mappedTextEdits = true; })
                 .Returns(Task.FromResult(new[] { new TextEdit() }));
 
-            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object);
+            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object, LoggerProvider);
             var request = new DocumentOnAutoInsertParams()
             {
                 Character = "=",
@@ -234,7 +234,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 .Callback(() => { mappedTextEdits = true; })
                 .Returns(Task.FromResult(new[] { new TextEdit() { NewText = "mapped-sometext" } }));
 
-            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object);
+            var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object, LoggerProvider);
             var request = new DocumentOnAutoInsertParams()
             {
                 Character = "/",

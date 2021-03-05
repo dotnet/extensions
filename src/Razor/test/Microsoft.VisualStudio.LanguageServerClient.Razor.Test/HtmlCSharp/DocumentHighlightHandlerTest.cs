@@ -12,7 +12,7 @@ using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    public class DocumentHighlightHandlerTest
+    public class DocumentHighlightHandlerTest : HandlerTestBase
     {
         public DocumentHighlightHandlerTest()
         {
@@ -29,7 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var highlightRequest = new DocumentHighlightParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -54,7 +54,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
                 .Returns(Task.FromResult<ProjectionResult>(null));
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var highlightRequest = new DocumentHighlightParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -95,7 +95,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = GetDocumentMappingProvider(expectedHighlight.Range, 0, RazorLanguageKind.CSharp);
 
-            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var highlightRequest = new DocumentHighlightParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -138,7 +138,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = GetDocumentMappingProvider(expectedHighlight.Range, 0, RazorLanguageKind.Html);
 
-            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var highlightRequest = new DocumentHighlightParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -181,7 +181,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = GetDocumentMappingProvider(expectedHighlight.Range, 0 /* Different from document version (1) */, RazorLanguageKind.CSharp);
 
-            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var highlightRequest = new DocumentHighlightParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -225,7 +225,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Mock.Get(documentMappingProvider).Setup(p => p.MapToDocumentRangesAsync(RazorLanguageKind.CSharp, Uri, It.IsAny<Range[]>(), CancellationToken.None))
                 .Returns(Task.FromResult<RazorMapToDocumentRangesResponse>(null));
 
-            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var highlightHandler = new DocumentHighlightHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var highlightRequest = new DocumentHighlightParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },

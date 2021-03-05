@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
@@ -31,7 +31,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             LSPDocumentManager documentManager,
             LSPDocumentSynchronizer documentSynchronizer,
             LSPDiagnosticsTranslator diagnosticsProvider,
-            HTMLCSharpLanguageServerFeedbackFileLoggerProvider loggerProvider)
+            HTMLCSharpLanguageServerLogHubLoggerProvider loggerProvider)
         {
             if (requestInvoker is null)
             {
@@ -79,15 +79,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(clientCapabilities));
             }
 
+            _logger.LogInformation($"Starting request for {request.TextDocument.Uri}.");
+
             if (!_documentManager.TryGetDocument(request.TextDocument.Uri, out var documentSnapshot))
             {
-                _logger.LogInformation($"Failed to find document {request.TextDocument.Uri}.");
+                _logger.LogWarning($"Failed to find document {request.TextDocument.Uri}.");
                 return null;
             }
 
             if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDoc))
             {
-                _logger.LogInformation($"Failed to find virtual C# document for {request.TextDocument.Uri}.");
+                _logger.LogWarning($"Failed to find virtual C# document for {request.TextDocument.Uri}.");
                 return null;
             }
 
@@ -119,7 +121,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 PreviousResultId = request.PreviousResultId
             };
 
-            _logger.LogInformation($"Requesting document pull diagnostics for {csharpDoc.Uri} with previous result Id of {request.PreviousResultId}.");
+            _logger.LogInformation($"Requesting diagnostics for {csharpDoc.Uri} with previous result Id of {request.PreviousResultId}.");
 
             // End goal is to transition this from ReinvokeRequestOnMultipleServersAsync -> ReinvokeRequestOnServerAsync
             // We can't do this right now as we don't have the ability to specify the language client name we'd like to make the call out to

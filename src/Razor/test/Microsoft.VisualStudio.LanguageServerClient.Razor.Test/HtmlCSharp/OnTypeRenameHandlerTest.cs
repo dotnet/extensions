@@ -12,7 +12,7 @@ using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    public class OnTypeRenameHandlerTest
+    public class OnTypeRenameHandlerTest : HandlerTestBase
     {
         private static readonly Uri Uri = new Uri("C:/path/to/file.razor");
 
@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider);
+            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider, LoggerProvider);
             var onTypeRenameRequest = new DocumentOnTypeRenameParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -49,7 +49,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
                 .Returns(Task.FromResult<ProjectionResult>(null));
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider);
+            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider, LoggerProvider);
             var onTypeRenameRequest = new DocumentOnTypeRenameParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -78,7 +78,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             };
             var projectionProvider = GetProjectionProvider(projectionResult);
 
-            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider);
+            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider, LoggerProvider);
             var onTypeRenameRequest = new DocumentOnTypeRenameParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -119,7 +119,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = GetDocumentMappingProvider(expectedResponse.Ranges, 0, RazorLanguageKind.Html);
 
-            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider);
+            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider, LoggerProvider);
             var onTypeRenameRequest = new DocumentOnTypeRenameParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -164,7 +164,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var documentMappingProvider = GetDocumentMappingProvider(expectedResponse.Ranges, 0 /* Different from document version (1) */, RazorLanguageKind.Html);
 
-            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider);
+            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider, LoggerProvider);
             var onTypeRenameRequest = new DocumentOnTypeRenameParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -208,7 +208,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Mock.Get(documentMappingProvider).Setup(p => p.MapToDocumentRangesAsync(RazorLanguageKind.Html, Uri, It.IsAny<Range[]>(), CancellationToken.None))
                 .Returns(Task.FromResult<RazorMapToDocumentRangesResponse>(null));
 
-            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider);
+            var onTypeRenameHandler = new OnTypeRenameHandler(documentManager, requestInvoker, projectionProvider, documentMappingProvider, LoggerProvider);
             var onTypeRenameRequest = new DocumentOnTypeRenameParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },

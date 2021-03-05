@@ -13,7 +13,7 @@ using Range = Microsoft.VisualStudio.LanguageServer.Protocol.Range;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    public class GoToImplementationHandlerTest
+    public class GoToImplementationHandlerTest : HandlerTestBase
     {
         public GoToImplementationHandlerTest()
         {
@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var implementationHandler = new GoToImplementationHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var implementationHandler = new GoToImplementationHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var implementationRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
                 .Returns(Task.FromResult<ProjectionResult>(null));
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var implementationHandler = new GoToImplementationHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var implementationHandler = new GoToImplementationHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var implementationRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -109,7 +109,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 })
                 .Returns(Task.FromResult(Array.Empty<Location>()));
 
-            var implementationHandler = new GoToImplementationHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var implementationHandler = new GoToImplementationHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object, LoggerProvider);
             var implementationRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },
@@ -166,7 +166,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 })
                 .Returns(Task.FromResult(Array.Empty<Location>()));
 
-            var implementationHandler = new GoToImplementationHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object);
+            var implementationHandler = new GoToImplementationHandler(requestInvoker.Object, documentManager, projectionProvider.Object, documentMappingProvider.Object, LoggerProvider);
             var implementationRequest = new TextDocumentPositionParams()
             {
                 TextDocument = new TextDocumentIdentifier() { Uri = Uri },

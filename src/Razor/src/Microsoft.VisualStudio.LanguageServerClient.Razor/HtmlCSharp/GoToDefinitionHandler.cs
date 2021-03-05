@@ -5,8 +5,10 @@ using System;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
@@ -18,13 +20,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
+        private readonly ILogger _logger;
 
         [ImportingConstructor]
         public GoToDefinitionHandler(
             LSPRequestInvoker requestInvoker,
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
-            LSPDocumentMappingProvider documentMappingProvider)
+            LSPDocumentMappingProvider documentMappingProvider,
+            HTMLCSharpLanguageServerLogHubLoggerProvider loggerProvider)
         {
             if (requestInvoker is null)
             {
@@ -46,10 +50,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(documentMappingProvider));
             }
 
+            if (loggerProvider is null)
+            {
+                throw new ArgumentNullException(nameof(loggerProvider));
+            }
+
             _requestInvoker = requestInvoker;
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
             _documentMappingProvider = documentMappingProvider;
+
+            _logger = loggerProvider.CreateLogger(nameof(GoToDefinitionHandler));
         }
 
         public async Task<Location[]> HandleRequestAsync(TextDocumentPositionParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
@@ -64,12 +75,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(clientCapabilities));
             }
 
+            _logger.LogInformation($"Starting request for {request.TextDocument.Uri}.");
+
             if (!_documentManager.TryGetDocument(request.TextDocument.Uri, out var documentSnapshot))
             {
+                _logger.LogWarning($"Failed to find document {request.TextDocument.Uri}.");
                 return null;
             }
 
-            var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
+            var projectionResult = await _projectionProvider.GetProjectionAsync(
+                documentSnapshot,
+                request.Position,
+                cancellationToken).ConfigureAwait(false);
             if (projectionResult == null)
             {
                 return null;
@@ -86,20 +103,27 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
             };
 
-            var result = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(
+            _logger.LogInformation($"Requesting GoToDef for {projectionResult.Uri}.");
+
+            var locations = await _requestInvoker.ReinvokeRequestOnServerAsync<TextDocumentPositionParams, Location[]>(
                 Methods.TextDocumentDefinitionName,
                 projectionResult.LanguageKind.ToContainedLanguageContentType(),
                 textDocumentPositionParams,
                 cancellationToken).ConfigureAwait(false);
 
-            if (result == null || result.Length == 0)
+            if (locations == null || locations.Length == 0)
             {
-                return result;
+                _logger.LogInformation("Received no results.");
+                return locations;
             }
+
+            _logger.LogInformation($"Received {locations.Length} results, remapping.");
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var remappedLocations = await _documentMappingProvider.RemapLocationsAsync(result, cancellationToken).ConfigureAwait(false);
+            var remappedLocations = await _documentMappingProvider.RemapLocationsAsync(locations, cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation($"Returning {remappedLocations?.Length} definitions.");
             return remappedLocations;
         }
     }

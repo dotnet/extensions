@@ -5,8 +5,10 @@ using System;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
@@ -18,13 +20,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
+        private readonly ILogger _logger;
 
         [ImportingConstructor]
         public RenameHandler(
             LSPRequestInvoker requestInvoker,
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
-            LSPDocumentMappingProvider documentMappingProvider)
+            LSPDocumentMappingProvider documentMappingProvider,
+            HTMLCSharpLanguageServerLogHubLoggerProvider loggerProvider)
         {
             if (requestInvoker is null)
             {
@@ -46,10 +50,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(documentMappingProvider));
             }
 
+            if (loggerProvider is null)
+            {
+                throw new ArgumentNullException(nameof(loggerProvider));
+            }
+
             _requestInvoker = requestInvoker;
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
             _documentMappingProvider = documentMappingProvider;
+
+            _logger = loggerProvider.CreateLogger(nameof(RenameHandler));
         }
 
         public async Task<WorkspaceEdit> HandleRequestAsync(RenameParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
@@ -64,15 +75,20 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(clientCapabilities));
             }
 
+            _logger.LogInformation($"Starting request for {request.TextDocument.Uri}.");
+
             if (!_documentManager.TryGetDocument(request.TextDocument.Uri, out var documentSnapshot))
             {
+                _logger.LogWarning($"Failed to find document {request.TextDocument.Uri}.");
                 return null;
             }
 
-            var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
+            var projectionResult = await _projectionProvider.GetProjectionAsync(
+                documentSnapshot,
+                request.Position,
+                cancellationToken).ConfigureAwait(false);
             if (projectionResult == null)
             {
-                // We only support C# renames for now.
                 return null;
             }
 
@@ -88,6 +104,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 }
             };
 
+            _logger.LogInformation($"Requesting rename for {projectionResult.Uri}.");
+
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<RenameParams, WorkspaceEdit>(
                 Methods.TextDocumentRenameName,
                 projectionResult.LanguageKind.ToContainedLanguageContentType(),
@@ -96,13 +114,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             if (result == null)
             {
+                _logger.LogInformation("Received no result.");
                 return null;
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            _logger.LogInformation("Received result, remapping.");
+
             var remappedResult = await _documentMappingProvider.RemapWorkspaceEditAsync(result, cancellationToken).ConfigureAwait(false);
 
+            _logger.LogInformation("Returned rename result.");
             return remappedResult;
         }
     }

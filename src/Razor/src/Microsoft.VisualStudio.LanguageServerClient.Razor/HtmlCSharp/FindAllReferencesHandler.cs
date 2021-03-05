@@ -8,8 +8,10 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json.Linq;
@@ -27,6 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPProjectionProvider _projectionProvider;
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
         private readonly LSPProgressListener _lspProgressListener;
+        private readonly ILogger _logger;
 
         [ImportingConstructor]
         public FindAllReferencesHandler(
@@ -34,7 +37,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
             LSPDocumentMappingProvider documentMappingProvider,
-            LSPProgressListener lspProgressListener)
+            LSPProgressListener lspProgressListener,
+            HTMLCSharpLanguageServerLogHubLoggerProvider loggerProvider)
         {
             if (requestInvoker is null)
             {
@@ -61,11 +65,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(lspProgressListener));
             }
 
+            if (loggerProvider is null)
+            {
+                throw new ArgumentNullException(nameof(loggerProvider));
+            }
+
             _requestInvoker = requestInvoker;
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
             _documentMappingProvider = documentMappingProvider;
             _lspProgressListener = lspProgressListener;
+
+            _logger = loggerProvider.CreateLogger(nameof(FindAllReferencesHandler));
         }
 
         // Internal for testing
@@ -81,12 +92,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(clientCapabilities));
             }
 
+            _logger.LogInformation($"Starting request for {request.TextDocument.Uri}.");
+
             if (!_documentManager.TryGetDocument(request.TextDocument.Uri, out var documentSnapshot))
             {
+                _logger.LogWarning($"Failed to find document {request.TextDocument.Uri}.");
                 return null;
             }
 
-            var projectionResult = await _projectionProvider.GetProjectionAsync(documentSnapshot, request.Position, cancellationToken).ConfigureAwait(false);
+            var projectionResult = await _projectionProvider.GetProjectionAsync(
+                documentSnapshot,
+                request.Position,
+                cancellationToken).ConfigureAwait(false);
             if (projectionResult == null)
             {
                 return null;
@@ -105,6 +122,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 PartialResultToken = token // request.PartialResultToken
             };
 
+            _logger.LogInformation("Attaching to progress listener.");
+
             if (!_lspProgressListener.TryListenForProgress(
                 token,
                 onProgressNotifyAsync: (value, ct) => ProcessReferenceItemsAsync(value, request.PartialResultToken, ct),
@@ -112,8 +131,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 cancellationToken,
                 out var onCompleted))
             {
+                _logger.LogWarning("Failed to attach to progress listener.");
                 return null;
             }
+
+            _logger.LogInformation($"Requesting references for {projectionResult.Uri}.");
 
             var result = await _requestInvoker.ReinvokeRequestOnServerAsync<SerializableReferenceParams, VSReferenceItem[]>(
                 Methods.TextDocumentReferencesName,
@@ -123,10 +145,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             if (result == null)
             {
+                _logger.LogInformation("Received no results from initial request.");
                 return null;
             }
 
             cancellationToken.ThrowIfCancellationRequested();
+
+            _logger.LogInformation("Waiting on progress notifications.");
 
             // We must not return till we have received the progress notifications
             // and reported the results via the PartialResultToken
@@ -134,8 +159,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            _logger.LogInformation("Finished waiting, remapping results.");
+
             // Results returned through Progress notification
             var remappedResults = await RemapReferenceItemsAsync(result, cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation($"Returning {remappedResults.Length} results.");
+
             return remappedResults;
 
             // Local functions
@@ -163,11 +193,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             if (result == null || result.Length == 0)
             {
+                _logger.LogInformation("Received empty progress notification");
                 return;
             }
 
+            _logger.LogInformation($"Received {result.Length} references, remapping.");
             var remappedResults = await RemapReferenceItemsAsync(result, cancellationToken).ConfigureAwait(false);
 
+            _logger.LogInformation($"Reporting {remappedResults.Length} results.");
             progress.Report(remappedResults);
         }
 
@@ -225,7 +258,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return remappedLocations.ToArray();
         }
 
-        private object FilterReferenceDisplayText(object referenceText)
+        private static object FilterReferenceDisplayText(object referenceText)
         {
             const string codeBehindObjectPrefix = "__o = ";
             const string codeBehindBackingFieldSuffix = "k__BackingField";
@@ -252,7 +285,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return referenceText;
         }
 
-        private bool FilterReferenceClassifiedRuns(IReadOnlyList<ClassifiedTextRun> runs)
+        private static bool FilterReferenceClassifiedRuns(IReadOnlyList<ClassifiedTextRun> runs)
         {
             if (runs.Count < 5)
             {

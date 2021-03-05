@@ -8,20 +8,21 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
 {
     [Shared]
-    [Export(typeof(HTMLCSharpLanguageServerFeedbackFileLoggerProvider))]
-    internal class HTMLCSharpLanguageServerFeedbackFileLoggerProvider : ILoggerProvider
+    [Export(typeof(LegacyHTMLCSharpLanguageServerFeedbackFileLoggerProvider))]
+    [Obsolete("Use the LogHub logging infrastructure instead.")]
+    internal class LegacyHTMLCSharpLanguageServerFeedbackFileLoggerProvider : ILoggerProvider
     {
         private static readonly string LogFileIdentifier = "HTMLCSharpLanguageServer";
 
         private readonly FeedbackFileLoggerProvider _loggerProvider;
 
         // Internal for testing
-        internal HTMLCSharpLanguageServerFeedbackFileLoggerProvider()
+        internal LegacyHTMLCSharpLanguageServerFeedbackFileLoggerProvider()
         {
         }
 
         [ImportingConstructor]
-        public HTMLCSharpLanguageServerFeedbackFileLoggerProvider(
+        public LegacyHTMLCSharpLanguageServerFeedbackFileLoggerProvider(
             HTMLCSharpLanguageServerFeedbackFileLoggerProviderFactory loggerFactory)
         {
             if (loggerFactory == null)

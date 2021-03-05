@@ -6,8 +6,10 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
@@ -20,13 +22,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly LSPDocumentMappingProvider _documentMappingProvider;
         private readonly FormattingOptionsProvider _formattingOptionsProvider;
         private readonly CompletionRequestContextCache _completionRequestContextCache;
+        private readonly ILogger _logger;
 
         [ImportingConstructor]
         public CompletionResolveHandler(
             LSPRequestInvoker requestInvoker,
             LSPDocumentMappingProvider documentMappingProvider,
             FormattingOptionsProvider formattingOptionsProvider,
-            CompletionRequestContextCache completionRequestContextCache)
+            CompletionRequestContextCache completionRequestContextCache,
+            HTMLCSharpLanguageServerLogHubLoggerProvider loggerProvider)
         {
             if (requestInvoker is null)
             {
@@ -48,18 +52,28 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(completionRequestContextCache));
             }
 
+            if (loggerProvider is null)
+            {
+                throw new ArgumentNullException(nameof(loggerProvider));
+            }
+
             _requestInvoker = requestInvoker;
             _documentMappingProvider = documentMappingProvider;
             _formattingOptionsProvider = formattingOptionsProvider;
             _completionRequestContextCache = completionRequestContextCache;
+
+            _logger = loggerProvider.CreateLogger(nameof(CompletionResolveHandler));
         }
 
         public async Task<CompletionItem> HandleRequestAsync(CompletionItem request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
         {
             if (request?.Data == null)
             {
+                _logger.LogInformation("Received no completion resolve data.");
                 return request;
             }
+
+            _logger.LogInformation("Starting request to resolve completion.");
 
             CompletionResolveData resolveData;
             if (request.Data is CompletionResolveData data)
@@ -76,7 +90,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             if (!_completionRequestContextCache.TryGet(resolveData.ResultId, out var requestContext))
             {
-                // Could not find the associated request context.
+                _logger.LogInformation("Could not find the associated request context.");
                 return request;
             }
 
@@ -87,7 +101,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 request,
                 cancellationToken).ConfigureAwait(false);
 
+            _logger.LogInformation("Received result, post-processing.");
+
             result = await PostProcessCompletionItemAsync(request, result, requestContext, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("Returning resolved completion.");
             return result;
         }
 
@@ -104,9 +121,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var shouldRemapTextEdits = preResolveCompletionItem.InsertText == null && preResolveCompletionItem.TextEdit == null;
             if (!shouldRemapTextEdits)
             {
-                // Don't need to remap anything, return early.
+                _logger.LogInformation("No TextEdit remap required.");
                 return resolvedCompletionItem;
             }
+
+            _logger.LogInformation("Start formatting text edit.");
 
             var formattingOptions = _formattingOptionsProvider.GetOptions(requestContext.HostDocumentUri);
             if (resolvedCompletionItem.TextEdit != null)
@@ -122,6 +141,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 // We only passed in a single edit to be remapped
                 var remappedEdit = remappedEdits.Single();
                 resolvedCompletionItem.TextEdit = remappedEdit;
+
+                _logger.LogInformation("Formatted text edit.");
             }
 
             if (resolvedCompletionItem.AdditionalTextEdits != null)
@@ -134,6 +155,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     cancellationToken).ConfigureAwait(false);
 
                 resolvedCompletionItem.AdditionalTextEdits = remappedEdits;
+
+                _logger.LogInformation("Formatted additional text edit.");
             }
 
             return resolvedCompletionItem;

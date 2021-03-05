@@ -8,8 +8,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json;
 
@@ -59,12 +61,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly ILanguageServiceBroker2 _languageServiceBroker;
         private readonly List<(ILanguageClient Client, VSServerCapabilities Capabilities)> _serverCapabilities;
         private readonly JsonSerializer _serializer;
+        private readonly ILogger _logger;
 
         [ImportingConstructor]
         public InitializeHandler(
             JoinableTaskContext joinableTaskContext,
             ILanguageClientBroker languageClientBroker,
-            ILanguageServiceBroker2 languageServiceBroker)
+            ILanguageServiceBroker2 languageServiceBroker,
+            HTMLCSharpLanguageServerLogHubLoggerProvider loggerProvider)
         {
             if (joinableTaskContext is null)
             {
@@ -81,9 +85,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 throw new ArgumentNullException(nameof(languageServiceBroker));
             }
 
+            if (loggerProvider is null)
+            {
+                throw new ArgumentNullException(nameof(loggerProvider));
+            }
+
             _joinableTaskFactory = joinableTaskContext.Factory;
             _languageClientBroker = languageClientBroker;
             _languageServiceBroker = languageServiceBroker;
+
+            _logger = loggerProvider.CreateLogger(nameof(InitializeHandler));
 
             _serverCapabilities = new List<(ILanguageClient, VSServerCapabilities)>();
 
@@ -94,6 +105,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         public Task<InitializeResult> HandleRequestAsync(InitializeParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
         {
             VerifyMergedLanguageServerCapabilities();
+
+            _logger.LogInformation("Providing initialization configuration.");
 
             return Task.FromResult(InitializeResult);
         }

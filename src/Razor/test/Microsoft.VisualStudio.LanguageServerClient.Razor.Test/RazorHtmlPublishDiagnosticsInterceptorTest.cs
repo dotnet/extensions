@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
-using Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
+using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 using Microsoft.VisualStudio.Text;
 using Moq;
 using Newtonsoft.Json.Linq;
@@ -56,10 +56,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
             var logger = new Mock<ILogger>(MockBehavior.Strict).Object;
             Mock.Get(logger).Setup(l => l.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception, string>>())).Verifiable();
-            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerFeedbackFileLoggerProvider>(l => l.CreateLogger(It.IsAny<string>()) == logger, MockBehavior.Strict);
+            LoggerProvider = Mock.Of<HTMLCSharpLanguageServerLogHubLoggerProvider>(l =>
+                l.CreateLogger(It.IsAny<string>()) == logger &&
+                l.InitializeLoggerAsync(It.IsAny<CancellationToken>()) == Task.CompletedTask,
+                MockBehavior.Strict);
         }
 
-        private HTMLCSharpLanguageServerFeedbackFileLoggerProvider LoggerProvider { get; }
+        private HTMLCSharpLanguageServerLogHubLoggerProvider LoggerProvider { get; }
 
         [Fact]
         public async Task ApplyChangesAsync_InvalidParams_ThrowsException()
@@ -262,7 +265,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             Assert.True(result.ChangedDocumentUri);
         }
 
-        private TrackingLSPDocumentManager CreateDocumentManager(int hostDocumentVersion = 0)
+        private static TrackingLSPDocumentManager CreateDocumentManager(int hostDocumentVersion = 0)
         {
             var testVirtualDocUri = RazorVirtualHtmlUri;
             var testVirtualDocument = new TestVirtualDocumentSnapshot(RazorUri, hostDocumentVersion);

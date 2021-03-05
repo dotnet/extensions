@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
-    public class RenameHandlerTest
+    public class RenameHandlerTest : HandlerTestBase
     {
         public RenameHandlerTest()
         {
@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = Mock.Of<LSPRequestInvoker>(MockBehavior.Strict);
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var renameRequest = new RenameParams()
             {
                 Position = new Position(0, 1),
@@ -54,7 +54,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Mock.Get(projectionProvider).Setup(projectionProvider => projectionProvider.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), CancellationToken.None))
                 .Returns(Task.FromResult<ProjectionResult>(null));
             var documentMappingProvider = Mock.Of<LSPDocumentMappingProvider>(MockBehavior.Strict);
-            var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var renameRequest = new RenameParams()
             {
                 Position = new Position(0, 1),
@@ -90,7 +90,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = GetProjectionProvider(new ProjectionResult() { LanguageKind = RazorLanguageKind.Html });
             var documentMappingProvider = GetDocumentMappingProvider(expectedEdit);
 
-            var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var renameRequest = new RenameParams()
             {
                 Position = new Position(0, 1),
@@ -129,7 +129,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var projectionProvider = GetProjectionProvider(new ProjectionResult() { LanguageKind = RazorLanguageKind.CSharp });
             var documentMappingProvider = GetDocumentMappingProvider(expectedEdit);
 
-            var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider);
+            var renameHandler = new RenameHandler(requestInvoker, documentManager, projectionProvider, documentMappingProvider, LoggerProvider);
             var renameRequest = new RenameParams()
             {
                 Position = new Position(0, 1),
