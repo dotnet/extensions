@@ -3,8 +3,8 @@
     <MajorVersion>2</MajorVersion>
     <MinorVersion>1</MinorVersion>
     <PatchVersion>27</PatchVersion>
-    <ValidateBaseline>false</ValidateBaseline>
-    
+    <ValidateBaseline>true</ValidateBaseline>
+
     <PreReleaseLabel>servicing</PreReleaseLabel>
     <PreReleaseBrandingLabel></PreReleaseBrandingLabel>
     <OfficialBuildId Condition="'$(OfficialBuildId)' == ''">$(BUILD_BUILDNUMBER)</OfficialBuildId>
