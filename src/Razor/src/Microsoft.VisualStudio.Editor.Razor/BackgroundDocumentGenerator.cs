@@ -23,6 +23,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly RazorDynamicFileInfoProvider _infoProvider;
+        private readonly HashSet<string> _suppressedDocuments;
         private ProjectSnapshotManagerBase _projectManager;
         private Timer _timer;
 
@@ -41,6 +42,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             _foregroundDispatcher = foregroundDispatcher;
             _infoProvider = infoProvider;
+            _suppressedDocuments = new HashSet<string>(FilePathComparer.Instance);
 
             _work = new Dictionary<DocumentKey, (ProjectSnapshot project, DocumentSnapshot document)>();
         }
@@ -140,8 +142,8 @@ namespace Microsoft.CodeAnalysis.Razor
         protected virtual async Task ProcessDocumentAsync(ProjectSnapshot project, DocumentSnapshot document)
         {
             await document.GetGeneratedOutputAsync().ConfigureAwait(false);
-            var container = new DefaultDynamicDocumentContainer(document);
-            _infoProvider.UpdateFileInfo(project.FilePath, container);
+
+            UpdateFileInfo(project, document);
         }
 
         public void Enqueue(ProjectSnapshot project, DocumentSnapshot document)
@@ -160,9 +162,8 @@ namespace Microsoft.CodeAnalysis.Razor
 
             lock (_work)
             {
-                if (_projectManager.IsDocumentOpen(document.FilePath))
+                if (Suppressed(project, document))
                 {
-                    _infoProvider.SuppressDocument(project.FilePath, document.FilePath);
                     return;
                 }
 
@@ -271,6 +272,34 @@ namespace Microsoft.CodeAnalysis.Razor
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
+        }
+
+        private bool Suppressed(ProjectSnapshot project, DocumentSnapshot document)
+        {
+            lock (_suppressedDocuments)
+            {
+                if (_projectManager.IsDocumentOpen(document.FilePath))
+                {
+                    _suppressedDocuments.Add(document.FilePath);
+                    _infoProvider.SuppressDocument(project.FilePath, document.FilePath);
+                    return true;
+                }
+
+                _suppressedDocuments.Remove(document.FilePath);
+                return false;
+            }
+        }
+
+        private void UpdateFileInfo(ProjectSnapshot project, DocumentSnapshot document)
+        {
+            lock (_suppressedDocuments)
+            {
+                if (!_suppressedDocuments.Contains(document.FilePath))
+                {
+                    var container = new DefaultDynamicDocumentContainer(document);
+                    _infoProvider.UpdateFileInfo(project.FilePath, container);
+                }
+            }
         }
 
         private void ProjectManager_Changed(object sender, ProjectChangeEventArgs e)
