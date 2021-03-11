@@ -41,4 +41,13 @@
     <PackageReference Include="Microsoft.VisualStudio.LogHub" Version="$(MicrosoftVisualStudioLogHubPackageVersion)" />
   </ItemGroup>
 
+    <!-- Workaround for Microsoft.VisualStudio.SDK.EmbedInteropTypes not working correctly-->
+  <Target Name="_EmbeddedAssemblyWorkaround" DependsOnTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <ReferencePath Condition="'%(FileName)'=='Microsoft.VisualStudio.Shell.Interop.11.0'">
+        <EmbedInteropTypes>false</EmbedInteropTypes>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
+
 </Project>

@@ -10,10 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
+using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
         private readonly FileUriProvider _fileUriProvider;
         private readonly LSPDocumentManager _documentManager;
         private readonly LSPProjectionProvider _projectionProvider;
-        private readonly VisualStudioWorkspaceAccessor _workspaceAccessor;
+        private readonly CodeAnalysis.Workspace _workspace;
         private readonly MemoryCache<CacheKey, IReadOnlyList<string>> _cache;
 
         [ImportingConstructor]
@@ -32,7 +32,19 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
             FileUriProvider fileUriProvider,
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
-            VisualStudioWorkspaceAccessor workspaceAccessor)
+            VisualStudioWorkspace workspace) : this(fileUriProvider, documentManager, projectionProvider, (CodeAnalysis.Workspace)workspace)
+        {
+            if (workspace is null)
+            {
+                throw new ArgumentNullException(nameof(workspace));
+            }
+        }
+
+        private DefaultRazorProximityExpressionResolver(
+            FileUriProvider fileUriProvider,
+            LSPDocumentManager documentManager,
+            LSPProjectionProvider projectionProvider,
+            CodeAnalysis.Workspace workspace)
         {
             if (fileUriProvider is null)
             {
@@ -49,15 +61,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
                 throw new ArgumentNullException(nameof(projectionProvider));
             }
 
-            if (workspaceAccessor is null)
-            {
-                throw new ArgumentNullException(nameof(workspaceAccessor));
-            }
-
             _fileUriProvider = fileUriProvider;
             _documentManager = documentManager;
             _projectionProvider = projectionProvider;
-            _workspaceAccessor = workspaceAccessor;
+            _workspace = workspace;
 
             // 10 is a magic number where this effectively represents our ability to cache the last 10 "hit" breakpoint locations
             // corresponding proximity expressions which enables us not to go "async" in those re-hit scenarios.
@@ -112,9 +119,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
                 return null;
             }
 
-            _workspaceAccessor.TryGetWorkspace(textBuffer, out var workspace);
-
-            var syntaxTree = await virtualDocument.GetCSharpSyntaxTreeAsync(workspace, cancellationToken).ConfigureAwait(false);
+            var syntaxTree = await virtualDocument.GetCSharpSyntaxTreeAsync(_workspace, cancellationToken).ConfigureAwait(false);
             var proximityExpressions = RazorCSharpProximityExpressionResolverService.GetProximityExpressions(syntaxTree, projectionResult.PositionIndex, cancellationToken)?.ToList();
 
             // Cache range so if we're asked again for this document/line/character we don't have to go async.
@@ -122,6 +127,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
 
             return proximityExpressions;
         }
+
+        public static DefaultRazorProximityExpressionResolver CreateTestInstance(
+            FileUriProvider fileUriProvider,
+            LSPDocumentManager documentManager,
+            LSPProjectionProvider projectionProvider) => new DefaultRazorProximityExpressionResolver(fileUriProvider, documentManager, projectionProvider, (CodeAnalysis.Workspace)null);
 
         private record CacheKey(Uri DocumentUri, int DocumentVersion, int Line, int Character);
     }

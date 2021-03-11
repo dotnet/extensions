@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
@@ -248,14 +247,11 @@ $@"public class SomeRazorFile
                     .Returns(Task.FromResult<RazorMapToDocumentRangesResponse>(null));
             }
 
-            CodeAnalysis.Workspace workspace = null;
-            var workspaceAccessor = Mock.Of<VisualStudioWorkspaceAccessor>(accessor => accessor.TryGetWorkspace(It.IsAny<ITextBuffer>(), out workspace) == false, MockBehavior.Strict);
-            var razorBreakpointResolver = new DefaultRazorBreakpointResolver(
+            var razorBreakpointResolver = DefaultRazorBreakpointResolver.CreateTestInstance(
                 uriProvider,
                 documentManager,
                 projectionProvider,
-                documentMappingProvider,
-                workspaceAccessor);
+                documentMappingProvider);
 
             return razorBreakpointResolver;
         }
