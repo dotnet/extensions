@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using FormattingOptions = OmniSharp.Extensions.LanguageServer.Protocol.Models.FormattingOptions;
 
-namespace Microsoft.AspNetCore.Razor.Performance.LanguageServer
+namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
 {
     public class RazorCSharpFormattingBenchmark : RazorLanguageServerBenchmarkBase
     {

@@ -4,7 +4,7 @@
 using BenchmarkDotNet.Attributes;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
-namespace Microsoft.AspNetCore.Razor.Performance
+namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 {
     public class ProjectLoadBenchmark : ProjectSnapshotManagerBenchmarkBase
     {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
-namespace Microsoft.AspNetCore.Razor.Performance
+namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 {
     public class BackgroundCodeGenerationBenchmark : ProjectSnapshotManagerBenchmarkBase
     {

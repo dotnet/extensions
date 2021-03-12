@@ -15,7 +15,7 @@ using OmniSharp.Extensions.JsonRpc;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
-namespace Microsoft.AspNetCore.Razor.Performance.LanguageServer
+namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
 {
     public class RazorLanguageServerBenchmarkBase : ProjectSnapshotManagerBenchmarkBase
     {

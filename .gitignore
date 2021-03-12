@@ -145,8 +145,8 @@ out/
 src/Razor/test/OutOfWorkspaceFile.razor
 
 # Benchmark generated
-src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Performance/BenchmarkDotNet.Artifacts/results/*
-src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Performance/BenchmarkDotNet.Artifacts/*Benchmark.log
+src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Microbenchmarks/BenchmarkDotNet.Artifacts/results/*
+src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Microbenchmarks/BenchmarkDotNet.Artifacts/*Benchmark.log
 
 # Yarn Logs
 yarn-*.log

@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Serialization;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Razor.Performance
+namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 {
     public class TagHelperResolutionResultSerializationBenchmark
     {

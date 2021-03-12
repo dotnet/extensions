@@ -16,7 +16,7 @@ using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Razor.Performance
+namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 {
     public class ProjectSnapshotManagerBenchmarkBase
     {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
                 Documents[i] = new HostDocument(filePath, $"/Views/Home/View00{i}.cshtml", FileKinds.Legacy);
             }
 
-            var tagHelpers = Path.Combine(root.FullName, "src", "Razor", "benchmarks", "Microsoft.AspNetCore.Razor.Performance", "taghelpers.json");
+            var tagHelpers = Path.Combine(root.FullName, "src", "Razor", "benchmarks", "Microsoft.AspNetCore.Razor.Microbenchmarks", "taghelpers.json");
             TagHelperResolver = new StaticTagHelperResolver(ReadTagHelpers(tagHelpers));
         }
 

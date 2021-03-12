@@ -8,7 +8,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Razor.Language;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Razor.Performance
+namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 {
     public class TagHelperSerializationBenchmark : TagHelperBenchmarkBase
     {

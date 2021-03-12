@@ -36,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Mac.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Mac.LanguageServices.Razor.Test", "test\Microsoft.VisualStudio.Mac.LanguageServices.Razor.Test\Microsoft.VisualStudio.Mac.LanguageServices.Razor.Test.csproj", "{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Performance", "benchmarks\Microsoft.AspNetCore.Razor.Performance\Microsoft.AspNetCore.Razor.Performance.csproj", "{6205467F-E381-4C42-AEEC-763BD62B3D5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Microbenchmarks", "benchmarks\Microsoft.AspNetCore.Razor.Microbenchmarks\Microsoft.AspNetCore.Razor.Microbenchmarks.csproj", "{6205467F-E381-4C42-AEEC-763BD62B3D5E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{C2C98051-0F39-47F2-80B6-E72B29159F2C}"
 EndProject
