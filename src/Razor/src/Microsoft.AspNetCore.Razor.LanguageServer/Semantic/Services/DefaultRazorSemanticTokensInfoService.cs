@@ -167,13 +167,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             string? previousResultId,
             CancellationToken cancellationToken)
         {
-            var codeDocument = await GetRazorCodeDocumentAsync(documentSnapshot);
-            if (codeDocument is null)
-            {
-                throw new ArgumentNullException(nameof(codeDocument));
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-
             VersionStamp? cachedSemanticVersion = null;
             IReadOnlyList<int>? previousResults = null;
             if (previousResultId != null)
@@ -190,6 +183,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             // SemanticVersion is different if there's been any text edits to the razor file or ProjectVersion has changed.
             if (semanticVersion == default || cachedSemanticVersion != semanticVersion)
             {
+                var codeDocument = await GetRazorCodeDocumentAsync(documentSnapshot);
+                if (codeDocument is null)
+                {
+                    throw new ArgumentNullException(nameof(codeDocument));
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var razorSemanticRanges = TagHelperSemanticRangeVisitor.VisitAllNodes(codeDocument);
                 var csharpSemanticRanges = await GetCSharpSemanticRangesAsync(codeDocument, textDocumentIdentifier, range: null, documentVersion, cancellationToken);
 
