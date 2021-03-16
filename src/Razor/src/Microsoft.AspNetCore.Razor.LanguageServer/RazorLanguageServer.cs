@@ -134,25 +134,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                             .SetMinimumLevel(logLevel)
                             .AddLanguageProtocolLogging(logLevel));
 
-                        var filePathNormalizer = new FilePathNormalizer();
-                        services.AddSingleton<FilePathNormalizer>(filePathNormalizer);
+                        services.AddSingleton<FilePathNormalizer>();
+                        services.AddSingleton<ForegroundDispatcher, DefaultForegroundDispatcher>();
+                        services.AddSingleton<GeneratedDocumentPublisher, DefaultGeneratedDocumentPublisher>();
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>((services) => services.GetRequiredService<GeneratedDocumentPublisher>());
 
-                        var foregroundDispatcher = new DefaultForegroundDispatcher();
-                        services.AddSingleton<ForegroundDispatcher>(foregroundDispatcher);
+                        services.AddSingleton<DocumentVersionCache, DefaultDocumentVersionCache>();
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>((services) => services.GetRequiredService<DocumentVersionCache>());
 
-                        var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(foregroundDispatcher, new Lazy<OmniSharp.Extensions.LanguageServer.Protocol.Server.ILanguageServer>(() => server));
-                        services.AddSingleton<ProjectSnapshotChangeTrigger>(generatedDocumentPublisher);
-                        services.AddSingleton<GeneratedDocumentPublisher>(generatedDocumentPublisher);
-
-                        var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher);
-                        services.AddSingleton<DocumentVersionCache>(documentVersionCache);
-                        services.AddSingleton<ProjectSnapshotChangeTrigger>(documentVersionCache);
-                        var containerStore = new DefaultGeneratedDocumentContainerStore(
-                            foregroundDispatcher,
-                            documentVersionCache,
-                            generatedDocumentPublisher);
-                        services.AddSingleton<GeneratedDocumentContainerStore>(containerStore);
-                        services.AddSingleton<ProjectSnapshotChangeTrigger>(containerStore);
+                        services.AddSingleton<GeneratedDocumentContainerStore, DefaultGeneratedDocumentContainerStore>();
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>((services) => services.GetRequiredService<GeneratedDocumentContainerStore>());
 
                         services.AddSingleton<RemoteTextLoaderFactory, DefaultRemoteTextLoaderFactory>();
                         services.AddSingleton<ProjectResolver, DefaultProjectResolver>();

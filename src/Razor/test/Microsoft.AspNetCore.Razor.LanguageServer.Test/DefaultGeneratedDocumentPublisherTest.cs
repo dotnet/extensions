@@ -15,7 +15,6 @@ using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.JsonRpc;
-using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Progress;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public DefaultGeneratedDocumentPublisherTest()
         {
-            Server = new TestServer();
+            ServerClient = new TestClient();
             ProjectManager = TestProjectSnapshotManager.Create(Dispatcher);
             ProjectManager.AllowNotifyListeners = true;
             HostProject = new HostProject("/path/to/project.csproj", RazorConfiguration.Default, "TestRootNamespace");
@@ -37,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             ProjectManager.DocumentAdded(HostProject, HostDocument, new EmptyTextLoader(HostDocument.FilePath));
         }
 
-        private TestServer Server { get; }
+        private TestClient ServerClient { get; }
 
         private TestProjectSnapshotManager ProjectManager { get; }
 
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void PublishCSharp_FirstTime_PublishesEntireSourceText()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             var content = "// C# content";
             var sourceText = SourceText.From(content);
 
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishCSharp("/path/to/file.razor", sourceText, 123);
 
             // Assert
-            var updateRequest = Assert.Single(Server.UpdateRequests);
+            var updateRequest = Assert.Single(ServerClient.UpdateRequests);
             Assert.Equal("/path/to/file.razor", updateRequest.HostDocumentFilePath);
             var textChange = Assert.Single(updateRequest.Changes);
             Assert.Equal(content, textChange.NewText);
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void PublishHtml_FirstTime_PublishesEntireSourceText()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             var content = "HTML content";
             var sourceText = SourceText.From(content);
 
@@ -76,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishHtml("/path/to/file.razor", sourceText, 123);
 
             // Assert
-            var updateRequest = Assert.Single(Server.UpdateRequests);
+            var updateRequest = Assert.Single(ServerClient.UpdateRequests);
             Assert.Equal("/path/to/file.razor", updateRequest.HostDocumentFilePath);
             var textChange = Assert.Single(updateRequest.Changes);
             Assert.Equal(content, textChange.NewText);
@@ -87,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void PublishCSharp_SecondTime_PublishesSourceTextDifferences()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             var initialSourceText = SourceText.From("// Initial content\n");
             generatedDocumentPublisher.PublishCSharp("/path/to/file.razor", initialSourceText, 123);
             var change = new TextChange(
@@ -99,8 +98,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishCSharp("/path/to/file.razor", changedSourceText, 124);
 
             // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(2, ServerClient.UpdateRequests.Count);
+            var updateRequest = ServerClient.UpdateRequests.Last();
             Assert.Equal("/path/to/file.razor", updateRequest.HostDocumentFilePath);
             var textChange = Assert.Single(updateRequest.Changes);
             Assert.Equal(change, textChange);
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void PublishHtml_SecondTime_PublishesSourceTextDifferences()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             var initialSourceText = SourceText.From("HTML content\n");
             generatedDocumentPublisher.PublishHtml("/path/to/file.razor", initialSourceText, 123);
             var change = new TextChange(
@@ -123,8 +122,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishHtml("/path/to/file.razor", changedSourceText, 124);
 
             // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(2, ServerClient.UpdateRequests.Count);
+            var updateRequest = ServerClient.UpdateRequests.Last();
             Assert.Equal("/path/to/file.razor", updateRequest.HostDocumentFilePath);
             var textChange = Assert.Single(updateRequest.Changes);
             Assert.Equal(change, textChange);
@@ -135,7 +134,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void PublishCSharp_SecondTime_IdenticalContent_NoTextChanges()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             var sourceTextContent = "// The content";
             var initialSourceText = SourceText.From(sourceTextContent);
             generatedDocumentPublisher.PublishCSharp("/path/to/file.razor", initialSourceText, 123);
@@ -145,8 +144,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishCSharp("/path/to/file.razor", identicalSourceText, 124);
 
             // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(2, ServerClient.UpdateRequests.Count);
+            var updateRequest = ServerClient.UpdateRequests.Last();
             Assert.Equal("/path/to/file.razor", updateRequest.HostDocumentFilePath);
             Assert.Empty(updateRequest.Changes);
             Assert.Equal(124, updateRequest.HostDocumentVersion);
@@ -156,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void PublishHtml_SecondTime_IdenticalContent_NoTextChanges()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             var sourceTextContent = "HTMl content";
             var initialSourceText = SourceText.From(sourceTextContent);
             generatedDocumentPublisher.PublishHtml("/path/to/file.razor", initialSourceText, 123);
@@ -166,8 +165,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishHtml("/path/to/file.razor", identicalSourceText, 124);
 
             // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(2, ServerClient.UpdateRequests.Count);
+            var updateRequest = ServerClient.UpdateRequests.Last();
             Assert.Equal("/path/to/file.razor", updateRequest.HostDocumentFilePath);
             Assert.Empty(updateRequest.Changes);
             Assert.Equal(124, updateRequest.HostDocumentVersion);
@@ -177,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void PublishCSharp_DifferentFileSameContent_PublishesEverything()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             var sourceTextContent = "// The content";
             var initialSourceText = SourceText.From(sourceTextContent);
             generatedDocumentPublisher.PublishCSharp("/path/to/file1.razor", initialSourceText, 123);
@@ -187,8 +186,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishCSharp("/path/to/file2.razor", identicalSourceText, 123);
 
             // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(2, ServerClient.UpdateRequests.Count);
+            var updateRequest = ServerClient.UpdateRequests.Last();
             Assert.Equal("/path/to/file2.razor", updateRequest.HostDocumentFilePath);
             var textChange = Assert.Single(updateRequest.Changes);
             Assert.Equal(sourceTextContent, textChange.NewText);
@@ -199,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void PublishHtml_DifferentFileSameContent_PublishesEverything()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             var sourceTextContent = "HTML content";
             var initialSourceText = SourceText.From(sourceTextContent);
             generatedDocumentPublisher.PublishHtml("/path/to/file1.razor", initialSourceText, 123);
@@ -209,8 +208,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishHtml("/path/to/file2.razor", identicalSourceText, 123);
 
             // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(2, ServerClient.UpdateRequests.Count);
+            var updateRequest = ServerClient.UpdateRequests.Last();
             Assert.Equal("/path/to/file2.razor", updateRequest.HostDocumentFilePath);
             var textChange = Assert.Single(updateRequest.Changes);
             Assert.Equal(sourceTextContent, textChange.NewText);
@@ -221,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ProjectSnapshotManager_DocumentChanged_OpenDocument_PublishesEmptyTextChanges_CSharp()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             generatedDocumentPublisher.Initialize(ProjectManager);
             var sourceTextContent = "// The content";
             var initialSourceText = SourceText.From(sourceTextContent);
@@ -232,8 +231,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishCSharp(HostDocument.FilePath, initialSourceText, 124);
 
             // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(2, ServerClient.UpdateRequests.Count);
+            var updateRequest = ServerClient.UpdateRequests.Last();
             Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
             Assert.Empty(updateRequest.Changes);
             Assert.Equal(124, updateRequest.HostDocumentVersion);
@@ -243,7 +242,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ProjectSnapshotManager_DocumentChanged_OpenDocument_VersionEquivalent_Noops_CSharp()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             generatedDocumentPublisher.Initialize(ProjectManager);
             var sourceTextContent = "// The content";
             var initialSourceText = SourceText.From(sourceTextContent);
@@ -254,7 +253,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishCSharp(HostDocument.FilePath, initialSourceText, 123);
 
             // Assert
-            var updateRequest = Assert.Single(Server.UpdateRequests);
+            var updateRequest = Assert.Single(ServerClient.UpdateRequests);
             Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
             Assert.Equal(123, updateRequest.HostDocumentVersion);
         }
@@ -263,7 +262,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ProjectSnapshotManager_DocumentChanged_OpenDocument_PublishesEmptyTextChanges_Html()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             generatedDocumentPublisher.Initialize(ProjectManager);
             var sourceTextContent = "<!-- The content -->";
             var initialSourceText = SourceText.From(sourceTextContent);
@@ -274,8 +273,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishHtml(HostDocument.FilePath, initialSourceText, 124);
 
             // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(2, ServerClient.UpdateRequests.Count);
+            var updateRequest = ServerClient.UpdateRequests.Last();
             Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
             Assert.Empty(updateRequest.Changes);
             Assert.Equal(124, updateRequest.HostDocumentVersion);
@@ -285,7 +284,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ProjectSnapshotManager_DocumentChanged_OpenDocument_VersionEquivalent_Noops_Html()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             generatedDocumentPublisher.Initialize(ProjectManager);
             var sourceTextContent = "<!-- The content -->";
             var initialSourceText = SourceText.From(sourceTextContent);
@@ -296,7 +295,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishHtml(HostDocument.FilePath, initialSourceText, 123);
 
             // Assert
-            var updateRequest = Assert.Single(Server.UpdateRequests);
+            var updateRequest = Assert.Single(ServerClient.UpdateRequests);
             Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
             Assert.Equal(123, updateRequest.HostDocumentVersion);
         }
@@ -305,7 +304,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void ProjectSnapshotManager_DocumentChanged_ClosedDocument_RepublishesTextChanges()
         {
             // Arrange
-            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, new Lazy<ILanguageServer>(() => Server));
+            var generatedDocumentPublisher = new DefaultGeneratedDocumentPublisher(Dispatcher, ServerClient, LoggerFactory);
             generatedDocumentPublisher.Initialize(ProjectManager);
             var sourceTextContent = "// The content";
             var initialSourceText = SourceText.From(sourceTextContent);
@@ -317,42 +316,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             generatedDocumentPublisher.PublishCSharp(HostDocument.FilePath, initialSourceText, 123);
 
             // Assert
-            Assert.Equal(2, Server.UpdateRequests.Count);
-            var updateRequest = Server.UpdateRequests.Last();
+            Assert.Equal(2, ServerClient.UpdateRequests.Count);
+            var updateRequest = ServerClient.UpdateRequests.Last();
             Assert.Equal(HostDocument.FilePath, updateRequest.HostDocumentFilePath);
             var textChange = Assert.Single(updateRequest.Changes);
             Assert.Equal(sourceTextContent, textChange.NewText);
             Assert.Equal(123, updateRequest.HostDocumentVersion);
         }
 
-        private class TestServer : ILanguageServer
+        private class TestClient : IClientLanguageServer
         {
-            public TestServer()
-            {
-                var synchronizedDocuments = new List<UpdateBufferRequest>();
-                UpdateRequests = synchronizedDocuments;
-                Client = new TestClient(synchronizedDocuments);
-            }
+            private readonly List<UpdateBufferRequest> _updateRequests = new List<UpdateBufferRequest>();
 
-            public IReadOnlyList<UpdateBufferRequest> UpdateRequests { get; }
-
-            public ITextDocumentLanguageServer TextDocument => throw new NotImplementedException();
-
-            public IGeneralLanguageServer General => throw new NotImplementedException();
-
-            public IServiceProvider Services => throw new NotImplementedException();
-
-            public IObservable<InitializeResult> Start => throw new NotImplementedException();
-
-            public IObservable<bool> Shutdown => throw new NotImplementedException();
-
-            public IObservable<int> Exit => throw new NotImplementedException();
-
-            public Task<InitializeResult> WasStarted => throw new NotImplementedException();
-
-            public Task WasShutDown => throw new NotImplementedException();
-
-            public Task WaitForExit => throw new NotImplementedException();
+            public IReadOnlyList<UpdateBufferRequest> UpdateRequests => _updateRequests;
 
             public IProgressManager ProgressManager => throw new NotImplementedException();
 
@@ -364,48 +340,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             public InitializeResult ServerSettings => throw new NotImplementedException();
 
-            public IClientLanguageServer Client { get; }
-
-            public ILanguageServerWorkspaceFolderManager WorkspaceFolderManager => throw new NotImplementedException();
-
-            public IWindowLanguageServer Window => throw new NotImplementedException();
-
-            public IWorkspaceLanguageServer Workspace => throw new NotImplementedException();
-
-            public IDisposable AddHandler(string method, IJsonRpcHandler handler) => throw new NotImplementedException();
-
-            public IDisposable AddHandler(string method, Func<IServiceProvider, IJsonRpcHandler> handlerFunc) => throw new NotImplementedException();
-
-            public IDisposable AddHandler<T>() where T : IJsonRpcHandler => throw new NotImplementedException();
-
-            public IDisposable AddHandlers(params IJsonRpcHandler[] handlers) => throw new NotImplementedException();
-
-            public IDisposable AddTextDocumentIdentifier(params ITextDocumentIdentifier[] handlers) => throw new NotImplementedException();
-
-            public IDisposable AddTextDocumentIdentifier<T>() where T : ITextDocumentIdentifier => throw new NotImplementedException();
-
-            public void Dispose()
-            {
-                throw new NotImplementedException();
-            }
-
-            public TaskCompletionSource<JToken> GetRequest(long id) => throw new NotImplementedException();
-
-            public object GetService(Type serviceType)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task Initialize(CancellationToken token)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable Register(Action<ILanguageServerRegistry> registryAction)
-            {
-                throw new NotImplementedException();
-            }
-
             public void SendNotification(string method) => throw new NotImplementedException();
 
             public void SendNotification<T>(string method, T @params) => throw new NotImplementedException();
@@ -415,11 +349,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new NotImplementedException();
             }
 
-            public Task<TResponse> SendRequestAsync<T, TResponse>(string method, T @params) => throw new NotImplementedException();
+            IResponseRouterReturns IResponseRouter.SendRequest<T>(string method, T @params)
+            {
+                var updateRequest = @params as UpdateBufferRequest;
 
-            public Task<TResponse> SendRequestAsync<TResponse>(string method) => throw new NotImplementedException();
+                _updateRequests.Add(updateRequest);
 
-            public Task SendRequestAsync<T>(string method, T @params) => throw new NotImplementedException();
+                var mock = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
+                mock.Setup(r => r.ReturningVoid(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+                return mock.Object;
+            }
 
             public IResponseRouterReturns SendRequest(string method)
             {
@@ -431,79 +370,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new NotImplementedException();
             }
 
+            public object GetService(Type serviceType)
+            {
+                throw new NotImplementedException();
+            }
+
             public bool TryGetRequest(long id, [NotNullWhen(true)] out string method, [NotNullWhen(true)] out TaskCompletionSource<JToken> pendingTask)
             {
                 throw new NotImplementedException();
-            }
-
-            IResponseRouterReturns IResponseRouter.SendRequest<T>(string method, T @params)
-            {
-                throw new NotImplementedException();
-            }
-
-            private class TestClient : IClientLanguageServer
-            {
-                private readonly List<UpdateBufferRequest> _updateRequests;
-
-                public IProgressManager ProgressManager => throw new NotImplementedException();
-
-                public IServerWorkDoneManager WorkDoneManager => throw new NotImplementedException();
-
-                public ILanguageServerConfiguration Configuration => throw new NotImplementedException();
-
-                public InitializeParams ClientSettings => throw new NotImplementedException();
-
-                public InitializeResult ServerSettings => throw new NotImplementedException();
-
-                public TestClient(List<UpdateBufferRequest> updateRequests)
-                {
-                    if (updateRequests == null)
-                    {
-                        throw new ArgumentNullException(nameof(updateRequests));
-                    }
-
-                    _updateRequests = updateRequests;
-                }
-
-                public void SendNotification(string method) => throw new NotImplementedException();
-
-                public void SendNotification<T>(string method, T @params) => throw new NotImplementedException();
-
-                public void SendNotification(IRequest request)
-                {
-                    throw new NotImplementedException();
-                }
-
-                IResponseRouterReturns IResponseRouter.SendRequest<T>(string method, T @params)
-                {
-                    var updateRequest = @params as UpdateBufferRequest;
-
-                    _updateRequests.Add(updateRequest);
-
-                    var mock = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
-                    mock.Setup(r => r.ReturningVoid(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-                    return mock.Object;
-                }
-
-                public IResponseRouterReturns SendRequest(string method)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public object GetService(Type serviceType)
-                {
-                    throw new NotImplementedException();
-                }
-
-                public bool TryGetRequest(long id, [NotNullWhen(true)] out string method, [NotNullWhen(true)] out TaskCompletionSource<JToken> pendingTask)
-                {
-                    throw new NotImplementedException();
-                }
             }
         }
     }

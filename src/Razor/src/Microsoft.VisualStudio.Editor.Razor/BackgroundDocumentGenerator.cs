@@ -170,7 +170,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 // We only want to store the last 'seen' version of any given document. That way when we pick one to process
                 // it's always the best version to use.
                 _work[new DocumentKey(project.FilePath, document.FilePath)] = (project, document);
-
+                
                 StartWorker();
             }
         }
@@ -180,7 +180,6 @@ namespace Microsoft.CodeAnalysis.Razor
             // Access to the timer is protected by the lock in Enqueue and in Timer_Tick
             if (_timer == null)
             {
-
                 // Timer will fire after a fixed delay, but only once.
                 _timer = NonCapturingTimer.Create(state => ((BackgroundDocumentGenerator)state).Timer_Tick(), this, Delay, Timeout.InfiniteTimeSpan);
             }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -17,13 +18,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private readonly Dictionary<string, PublishData> _publishedCSharpData;
         private readonly Dictionary<string, PublishData> _publishedHtmlData;
-        private readonly Lazy<ILanguageServer> _server;
+        private readonly IClientLanguageServer _server;
+        private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private ProjectSnapshotManagerBase _projectSnapshotManager;
 
         public DefaultGeneratedDocumentPublisher(
             ForegroundDispatcher foregroundDispatcher,
-            Lazy<ILanguageServer> server)
+            IClientLanguageServer server,
+            ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher is null)
             {
@@ -35,8 +38,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(server));
             }
 
+            if (loggerFactory is null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _server = server;
+            _logger = loggerFactory.CreateLogger<DefaultGeneratedDocumentPublisher>();
             _publishedCSharpData = new Dictionary<string, PublishData>(FilePathComparer.Instance);
             _publishedHtmlData = new Dictionary<string, PublishData>(FilePathComparer.Instance);
         }
@@ -73,6 +82,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return;
             }
 
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                var previousDocumentLength = previouslyPublishedData.SourceText.Length;
+                var currentDocumentLength = sourceText.Length;
+                var documentLengthDelta = sourceText.Length - previousDocumentLength;
+                _logger.LogTrace(
+                    "Updating C# buffer of {0} to correspond with host document version {1}. {2} -> {3} = Change delta of {4} via {5} text changes.",
+                    filePath,
+                    hostDocumentVersion,
+                    previousDocumentLength,
+                    currentDocumentLength,
+                    documentLengthDelta,
+                    textChanges.Count);
+            }
+
             _publishedCSharpData[filePath] = new PublishData(sourceText, hostDocumentVersion);
 
             var request = new UpdateBufferRequest()
@@ -82,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 HostDocumentVersion = hostDocumentVersion,
             };
 
-            var result = _server.Value.Client.SendRequest(LanguageServerConstants.RazorUpdateCSharpBufferEndpoint, request);
+            var result = _server.SendRequest(LanguageServerConstants.RazorUpdateCSharpBufferEndpoint, request);
             // This is the call that actually makes the request, any SendRequest without a .Returning* after it will do nothing.
             _ = result.ReturningVoid(CancellationToken.None);
         }
@@ -113,6 +137,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return;
             }
 
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                var previousDocumentLength = previouslyPublishedData.SourceText.Length;
+                var currentDocumentLength = sourceText.Length;
+                var documentLengthDelta = sourceText.Length - previousDocumentLength;
+                _logger.LogTrace(
+                    "Updating HTML buffer of {0} to correspond with host document version {1}. {2} -> {3} = Change delta of {4} via {5} text changes.",
+                    filePath,
+                    hostDocumentVersion,
+                    previousDocumentLength,
+                    currentDocumentLength,
+                    documentLengthDelta,
+                    textChanges.Count);
+            }
+
             _publishedHtmlData[filePath] = new PublishData(sourceText, hostDocumentVersion);
 
             var request = new UpdateBufferRequest()
@@ -122,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 HostDocumentVersion = hostDocumentVersion,
             };
 
-            var result = _server.Value.Client.SendRequest(LanguageServerConstants.RazorUpdateHtmlBufferEndpoint, request);
+            var result = _server.SendRequest(LanguageServerConstants.RazorUpdateHtmlBufferEndpoint, request);
             _ = result.ReturningVoid(CancellationToken.None);
         }
 
