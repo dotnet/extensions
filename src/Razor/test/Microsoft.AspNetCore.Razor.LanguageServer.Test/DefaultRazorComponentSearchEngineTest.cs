@@ -20,6 +20,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         private static ProjectSnapshotManagerAccessor _projectSnapshotManager = CreateProjectSnapshotManagerAccessor();
 
         [Fact]
+        public async Task Handle_SearchFound_GenericComponent()
+        {
+            // Arrange
+            var tagHelperDescriptor1 = CreateRazorComponentTagHelperDescriptor("First", "First.Components", "Component1", typeName: "Component1<TItem>");
+            var tagHelperDescriptor2 = CreateRazorComponentTagHelperDescriptor("Second", "Second.Components", "Component3", typeName: "Component3<TItem>");
+            var searchEngine = new DefaultRazorComponentSearchEngine(Dispatcher, _projectSnapshotManager);
+
+            // Act
+            var documentSnapshot1 = await searchEngine.TryLocateComponentAsync(tagHelperDescriptor1).ConfigureAwait(false);
+            var documentSnapshot2 = await searchEngine.TryLocateComponentAsync(tagHelperDescriptor2).ConfigureAwait(false);
+
+            // Assert
+            Assert.NotNull(documentSnapshot1);
+            Assert.NotNull(documentSnapshot2);
+        }
+
+        [Fact]
         public async Task Handle_SearchFound()
         {
             // Arrange
@@ -92,9 +109,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             Assert.Null(documentSnapshot);
         }
 
-        internal static TagHelperDescriptor CreateRazorComponentTagHelperDescriptor(string assemblyName, string namespaceName, string tagName)
+        internal static TagHelperDescriptor CreateRazorComponentTagHelperDescriptor(string assemblyName, string namespaceName, string tagName, string typeName = null)
         {
-            var fullyQualifiedName = $"{namespaceName}.{tagName}";
+            typeName ??= tagName;
+            var fullyQualifiedName = $"{namespaceName}.{typeName}";
             var builder1 = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, fullyQualifiedName, assemblyName);
             builder1.TagMatchingRule(rule => rule.TagName = tagName);
             return builder1.Build();

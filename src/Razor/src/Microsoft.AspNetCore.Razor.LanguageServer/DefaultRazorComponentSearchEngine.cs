@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.TrySplitNamespaceAndType(tagHelper.Name, out var namespaceSpan, out var typeSpan);
             var namespaceName = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(namespaceSpan, tagHelper.Name);
             var typeName = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(typeSpan, tagHelper.Name);
+            var lookupSymbolName = RemoveGenericContent(typeName);
 
             var projects = await Task.Factory.StartNew(() =>
             {
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     var documentSnapshot = project.GetDocument(path);
 
                     // Rule out if not Razor component with correct name
-                    if (!IsPathCandidateForComponent(documentSnapshot, typeName))
+                    if (!IsPathCandidateForComponent(documentSnapshot, lookupSymbolName))
                     {
                         continue;
                     }
@@ -86,17 +87,29 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return null;
         }
 
-        public static bool IsPathCandidateForComponent(DocumentSnapshot documentSnapshot, string typeName)
+        private string RemoveGenericContent(string typeName)
+        {
+            var genericSeparatorStart = typeName.IndexOf('<');
+            if (genericSeparatorStart > 0)
+            {
+                var ungenericTypeName = typeName.Substring(0, genericSeparatorStart);
+                return ungenericTypeName;
+            }
+
+            return typeName;
+        }
+
+        private static bool IsPathCandidateForComponent(DocumentSnapshot documentSnapshot, string path)
         {
             if (documentSnapshot.FileKind != FileKinds.Component)
             {
                 return false;
             }
             var fileName = Path.GetFileNameWithoutExtension(documentSnapshot.FilePath);
-            return fileName.Equals(typeName, FilePathComparison.Instance);
+            return fileName.Equals(path, FilePathComparison.Instance);
         }
 
-        public static bool ComponentNamespaceMatchesFullyQualifiedName(RazorCodeDocument razorCodeDocument, string namespaceName)
+        private static bool ComponentNamespaceMatchesFullyQualifiedName(RazorCodeDocument razorCodeDocument, string namespaceName)
         {
             var namespaceNode = (NamespaceDeclarationIntermediateNode)razorCodeDocument
                 .GetDocumentIntermediateNode()
