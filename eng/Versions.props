@@ -48,13 +48,13 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftCodeAnalysisRazorPackageVersion>6.0.0-preview.3.21166.7</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>6.0.0-preview.3.21166.7</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>6.0.0-preview.3.21166.7</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>6.0.0-preview.3.21166.7</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>6.0.0-preview.3.21166.7</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>6.0.0-preview.3.21166.7</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>6.0.0-preview.3.21166.7</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>6.0.0-preview.3.21166.9</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>6.0.0-preview.3.21166.9</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>6.0.0-preview.3.21166.9</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>6.0.0-preview.3.21166.9</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>6.0.0-preview.3.21166.9</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>6.0.0-preview.3.21166.9</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>6.0.0-preview.3.21166.9</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0-preview.3.21164.8</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>6.0.0-preview.3.21164.8</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>6.0.0-preview.3.21164.8</MicrosoftExtensionsLoggingPackageVersion>
