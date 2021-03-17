@@ -22,27 +22,6 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[5.0.0, )" />
     <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.593, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.Extensions.Hosting.Systemd-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Systemd' ">
-    <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Systemd' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[5.0.0, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.Extensions.Hosting.WindowsServices-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.WindowsServices' ">
-    <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.WindowsServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="System.ServiceProcess.ServiceController" Version="[5.0.0, )" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.WindowsServices' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[5.0.0, )" />
-    <BaselinePackageReference Include="System.ServiceProcess.ServiceController" Version="[5.0.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.Extensions.Http.Polly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http.Polly' ">
     <BaselinePackageVersion>5.0.0</BaselinePackageVersion>
