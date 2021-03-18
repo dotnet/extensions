@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             queue.BlockBackgroundWorkStart.Set();
             queue.BlockBackgroundWorkCompleting.Set();
 
-            queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3));
+            Assert.True(queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
 
             Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
@@ -129,10 +129,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Allow the background work to start.
             queue.BlockBackgroundWorkStart.Set();
 
-            queue.NotifyBackgroundWorkStarting.Wait(TimeSpan.FromSeconds(1));
+            Assert.True(queue.NotifyBackgroundWorkStarting.Wait(TimeSpan.FromSeconds(1)));
             Assert.True(queue.IsScheduledOrRunning, "Worker should be processing now");
 
-            queue.NotifyBackgroundCapturedWorkload.Wait(TimeSpan.FromSeconds(1));
+            Assert.True(queue.NotifyBackgroundCapturedWorkload.Wait(TimeSpan.FromSeconds(1)));
             Assert.False(queue.HasPendingNotifications, "Worker should have taken all notifications");
 
             queue.Enqueue(project.GetDocument(Documents[1].FilePath));
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Allow work to complete, which should restart the timer.
             queue.BlockBackgroundWorkCompleting.Set();
 
-            queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3));
+            Assert.True(queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
             queue.NotifyBackgroundWorkCompleted.Reset();
 
             // It should start running again right away.
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             queue.BlockBackgroundWorkStart.Set();
 
             queue.BlockBackgroundWorkCompleting.Set();
-            queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3));
+            Assert.True(queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
 
             Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             queue.BlockBackgroundWorkStart.Set();
             queue.BlockBackgroundWorkCompleting.Set();
 
-            queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3));
+            Assert.True(queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
 
             Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             queue.BlockBackgroundWorkStart.Set();
             queue.BlockBackgroundWorkCompleting.Set();
 
-            queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3));
+            Assert.True(queue.NotifyBackgroundWorkCompleted.Wait(TimeSpan.FromSeconds(3)));
 
             Assert.False(queue.IsScheduledOrRunning, "Queue should not have restarted");
             Assert.False(queue.HasPendingNotifications, "Queue should have processed all notifications");

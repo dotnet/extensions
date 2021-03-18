@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -159,7 +160,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (_timer == null)
             {
                 // Timer will fire after a fixed delay, but only once.
-                _timer = new Timer(Timer_Tick, null, Delay, Timeout.InfiniteTimeSpan);
+                _timer = NonCapturingTimer.Create(Timer_Tick, null, Delay, Timeout.InfiniteTimeSpan);
             }
         }
 
