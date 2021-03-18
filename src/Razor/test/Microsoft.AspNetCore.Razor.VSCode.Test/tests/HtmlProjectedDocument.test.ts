@@ -19,7 +19,6 @@ describe('HtmlProjectedDocument', () => {
             newText: 'Hello World',
             span: {
                 start: 0,
-                end: 0,
                 length: 11,
             },
         };
