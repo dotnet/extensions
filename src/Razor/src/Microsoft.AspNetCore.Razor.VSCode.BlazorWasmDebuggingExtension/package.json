@@ -36,10 +36,12 @@
   "contributes": {},
   "scripts": {
     "vscode:prepublish": "yarn run compile",
+    "clean": "rimraf dist",
+    "build": "yarn run clean && yarn run lint && yarn run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
-    "lint": "eslint src --ext ts"
+    "lint": "tslint --project ./"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",
@@ -48,11 +50,12 @@
     "@types/vscode": "^1.52.0",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
-    "eslint": "^7.15.0",
+    "tslint": "^5.11.0",
     "extract-zip": "^2.0.1",
     "glob": "^7.1.6",
     "mocha": "^8.1.3",
     "node-fetch": "^2.6.1",
+    "rimraf": "2.6.3",
     "typescript": "^4.1.2",
     "vscode-test": "^1.4.1"
   }

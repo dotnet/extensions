@@ -26,12 +26,12 @@
       "args": [
         "${workspaceFolder}/src/Razor/test/testapps/",
         "--extensionDevelopmentPath=${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.Extension",
-        "--extensionDevelopmentPath=${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.BlazorWasmCompanionExtension",
+        "--extensionDevelopmentPath=${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.BlazorWasmDebuggingExtension",
         "--enable-proposed-api razor-vscode",
         "--enable-proposed-api ms-dotnettools.csharp"
       ],
       "outFiles": [
-        "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.BlazorWasmCompanionExtension/dist/**/*.js",
+        "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.BlazorWasmDebuggingExtension/dist/**/*.js",
         "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode.Extension/dist/**/*.js",
         "${workspaceFolder}/src/Razor/src/Microsoft.AspNetCore.Razor.VSCode/dist/**/*.js",
       ],

@@ -10,17 +10,17 @@ interface IDotnetAcquireResult {
 }
 
 export async function acquireDotnetInstall(outputChannel: vscode.OutputChannel): Promise<string> {
-    const extension = vscode.extensions.getExtension("ms-dotnettools.blazorwasm-companion");
-    const version = extension && extension.packageJSON ? extension.packageJSON.dotnetRuntimeVersion : "5.0";
-    const requestingExtensionId = "blazorwasm-companion";
+    const extension = vscode.extensions.getExtension('ms-dotnettools.blazorwasm-companion');
+    const version = extension && extension.packageJSON ? extension.packageJSON.dotnetRuntimeVersion : '5.0';
+    const requestingExtensionId = 'blazorwasm-companion';
 
     try {
         const dotnetResult = await vscode.commands.executeCommand<IDotnetAcquireResult>('dotnet.acquire', { version, requestingExtensionId });
         const dotnetPath = dotnetResult?.dotnetPath;
         if (!dotnetPath) {
-            throw new Error("Install step returned an undefined path.");
+            throw new Error('Install step returned an undefined path.');
         }
-        await vscode.commands.executeCommand('dotnet.ensureDotnetDependencies', { command: dotnetPath, arguments: "--info" });
+        await vscode.commands.executeCommand('dotnet.ensureDotnetDependencies', { command: dotnetPath, arguments: '--info' });
         return dotnetPath;
     } catch (err) {
         const message = err.msg;

@@ -14,6 +14,12 @@
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework"
       Private="false" />
+    <ProjectReference
+      Include="..\Microsoft.AspNetCore.Razor.VSCode.BlazorWasmDebuggingExtension\Microsoft.AspNetCore.Razor.VSCode.BlazorWasmDebuggingExtension.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false" />
   </ItemGroup>
 
   <ItemGroup>

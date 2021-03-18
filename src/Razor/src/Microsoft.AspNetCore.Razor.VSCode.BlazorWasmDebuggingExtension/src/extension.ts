@@ -3,13 +3,13 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import * as cp from 'child_process';
 import * as vscode from 'vscode';
-import { spawn } from 'child_process';
 import { acquireDotnetInstall } from './acquireDotnetInstall';
-import { getAvailablePort } from "./getAvailablePort";
+import { getAvailablePort } from './getAvailablePort';
 
 export function activate(context: vscode.ExtensionContext) {
-    const outputChannel = vscode.window.createOutputChannel("Blazor WASM Debug Proxy");
+    const outputChannel = vscode.window.createOutputChannel('Blazor WASM Debug Proxy');
     const pidsByUrl = new Map<string, number>();
 
     const launchDebugProxy = vscode.commands.registerCommand('blazorwasm-companion.launchDebugProxy', async () => {
@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
             const dotnet = await acquireDotnetInstall(outputChannel);
 
             outputChannel.appendLine(`Launching debugging proxy from ${debugProxyLocalPath}`);
-            const spawnedProxy = spawn(dotnet, spawnedProxyArgs);
+            const spawnedProxy = cp.spawn(dotnet, spawnedProxyArgs);
 
             let chunksProcessed = 0;
             for await (const output of spawnedProxy.stdout) {
@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
                 // back to the debugger so we extract the URL from stdout using a regex.
                 // The debug proxy will not exit until killed via the `killDebugProxy`
                 // method so parsing stdout is necessary to extract the URL.
-                const matchExpr = "Now listening on: (?<url>.*)";
+                const matchExpr = 'Now listening on: (?<url>.*)';
                 const found = `${output}`.match(matchExpr);
                 const url = found?.groups?.url;
                 if (url) {
@@ -46,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
                     pidsByUrl.set(url, spawnedProxy.pid);
                     return {
                         url,
-                        debuggingPort
+                        debuggingPort,
                     };
                 }
             }
