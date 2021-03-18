@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
                         services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
                         services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
-                        services.AddSingleton<ProjectSnapshotChangeTrigger, BackgroundDocumentGenerator>();
+                        services.AddSingleton<ProjectSnapshotChangeTrigger, OpenDocumentGenerator>();
                         services.AddSingleton<RazorDocumentMappingService, DefaultRazorDocumentMappingService>();
                         services.AddSingleton<RazorFileChangeDetectorManager>();
 
