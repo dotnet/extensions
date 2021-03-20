@@ -9,13 +9,13 @@ variables:
 trigger:
   branches:
     include:
-      - master
+      - main
 
 pr:
   autoCancel: true
   branches:
     include:
-    - master
+    - main
 
 stages:
 - stage: build

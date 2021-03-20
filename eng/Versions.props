@@ -44,7 +44,7 @@
     DO NOT UPDATE THESE MANUALLY. Use the `darc` command line tool to update this file so it stays in sync with
     Version.Details.xml.
 
-    See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
+    See https://github.com/dotnet/arcade/blob/main/Documentation/Darc.md for instructions on using darc.
 
   -->
   <PropertyGroup Label="Automated">

@@ -186,7 +186,7 @@
                     }
                   },
                   "browserConfig": {
-                    "description": "Options based to the underlying JavaScript debugger. For more info, see https://github.com/microsoft/vscode-js-debug/blob/master/OPTIONS.md.",
+                    "description": "Options based to the underlying JavaScript debugger. For more info, see https://github.com/microsoft/vscode-js-debug/blob/main/OPTIONS.md.",
                     "type": "object",
                     "required": [],
                     "default": {},

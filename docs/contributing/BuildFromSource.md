@@ -51,7 +51,7 @@ Before opening the `src/Razor/Razor.sln` file in Visual Studio or VS Code, you n
 
    This will download the required tools and build the entire repository once.
 
-   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master
+   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the main
    > branch, we regularly update the versions of .NET Core SDK required to build the repo.
    > You will need to restart Visual Studio every time we update the .NET Core SDK.
    > To allow executing the setup script, you may need to update the execution policy on your machine.

@@ -12,5 +12,5 @@ Sometimes it may be necessary to make changes in [`dotnet/roslyn`](https://githu
 
 ## Notes:
 - If you're familiar with _Visual Studio Hives_ the `dotnet/roslyn` project uses the `RoslynDev` root suffix .
-- [Building Roslyn on Windows](https://github.com/dotnet/roslyn/blob/master/docs/contributing/Building,%20Debugging,%20and%20Testing%20on%20Windows.md)
-- [Building Roslyn on Linux and Mac](https://github.com/dotnet/roslyn/blob/master/docs/infrastructure/cross-platform.md)
+- [Building Roslyn on Windows](https://github.com/dotnet/roslyn/blob/main/docs/contributing/Building,%20Debugging,%20and%20Testing%20on%20Windows.md)
+- [Building Roslyn on Linux and Mac](https://github.com/dotnet/roslyn/blob/main/docs/infrastructure/cross-platform.md)
