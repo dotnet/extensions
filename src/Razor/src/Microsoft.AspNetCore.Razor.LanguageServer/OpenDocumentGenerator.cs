@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     internal class OpenDocumentGenerator : ProjectSnapshotChangeTrigger
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly IEnumerable<DocumentProcessedListener> _documentProcessedListeners;
+        private readonly IReadOnlyList<DocumentProcessedListener> _documentProcessedListeners;
         private readonly Dictionary<string, DocumentSnapshot> _work;
         private ProjectSnapshotManagerBase _projectManager;
         private Timer _timer;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             _foregroundDispatcher = foregroundDispatcher;
-            _documentProcessedListeners = documentProcessedListeners;
+            _documentProcessedListeners = documentProcessedListeners.ToArray();
             _work = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
         }
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             _foregroundDispatcher = foregroundDispatcher;
             _work = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
-            _documentProcessedListeners = Enumerable.Empty<DocumentProcessedListener>();
+            _documentProcessedListeners = Array.Empty<DocumentProcessedListener>();
         }
 
         public bool HasPendingNotifications
@@ -198,14 +198,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 OnCompletingBackgroundWork();
 
-                await Task.Factory.StartNew(
-                    () =>
-                    {
-                        NotifyDocumentsProcessed(work);
-                    },
-                    CancellationToken.None,
-                    TaskCreationOptions.None,
-                    _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
+                if (_documentProcessedListeners.Count != 0)
+                {
+                    await Task.Factory.StartNew(
+                        () =>
+                        {
+                            NotifyDocumentsProcessed(work);
+                        },
+                        CancellationToken.None,
+                        TaskCreationOptions.None,
+                        _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
+                }
 
                 lock (_work)
                 {

@@ -29,8 +29,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             HostProject2 = new HostProject("c:/Test2/Test2.csproj", RazorConfiguration.Default, "TestRootNamespace");
         }
 
-        private IEnumerable<DocumentProcessedListener> Listeners => Enumerable.Empty<DocumentProcessedListener>();
-
         private HostDocument[] Documents { get; }
 
         private HostProject HostProject1 { get; }
