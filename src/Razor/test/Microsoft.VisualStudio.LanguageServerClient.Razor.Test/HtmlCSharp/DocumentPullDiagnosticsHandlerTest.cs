@@ -509,7 +509,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     });
 
                     bool CanDiagnosticBeFiltered(Diagnostic d) =>
-                        (diagnosticsToIgnore.Contains(d.Code) &&
+                        (diagnosticsToIgnore.Contains(d.Code.Value.Second) &&
                          d.Severity != DiagnosticSeverity.Error);
                 });
 

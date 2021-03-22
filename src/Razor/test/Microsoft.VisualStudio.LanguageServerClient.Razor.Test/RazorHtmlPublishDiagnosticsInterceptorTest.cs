@@ -311,8 +311,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                     });
 
                     bool CanDiagnosticBeFiltered(Diagnostic d) =>
-                        (diagnosticsToIgnore.Contains(d.Code) &&
-                         d.Severity != DiagnosticSeverity.Error);
+                         d.Code.HasValue &&
+                         diagnosticsToIgnore.Contains(d.Code.Value.Second) &&
+                         d.Severity != DiagnosticSeverity.Error;
                 });
 
             return diagnosticsProvider.Object;

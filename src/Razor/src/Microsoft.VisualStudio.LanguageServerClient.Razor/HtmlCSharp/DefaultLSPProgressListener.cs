@@ -33,7 +33,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             _languageServiceBroker = languageServiceBroker;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             _languageServiceBroker.ClientNotifyAsync += ClientNotifyAsyncListenerAsync;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override bool TryListenForProgress(
@@ -167,7 +169,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public void Dispose()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             _languageServiceBroker.ClientNotifyAsync -= ClientNotifyAsyncListenerAsync;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             foreach (var token in _activeRequests.Keys)
             {

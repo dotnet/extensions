@@ -83,12 +83,14 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             var serializedParams = JToken.FromObject(parameters);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var (_, resultToken) = await _languageServiceBroker.RequestAsync(
                 new[] { contentType },
                 capabilitiesFilter,
                 method,
                 serializedParams,
                 cancellationToken).ConfigureAwait(false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var result = resultToken != null ? resultToken.ToObject<TOut>(_serializer) : default;
             return result;
@@ -103,12 +105,14 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
             var serializedParams = JToken.FromObject(parameters);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var clientAndResultTokenPairs = await _languageServiceBroker.RequestMultipleAsync(
                 new[] { contentType },
                 capabilitiesFilter,
                 method,
                 serializedParams,
                 cancellationToken).ConfigureAwait(false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // a little ugly - tuple deconstruction in lambda arguments doesn't work - https://github.com/dotnet/csharplang/issues/258
             var results = clientAndResultTokenPairs.Select((clientAndResultToken) => clientAndResultToken.Item2 != null ? clientAndResultToken.Item2.ToObject<TOut>(_serializer) : default);

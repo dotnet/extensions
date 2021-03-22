@@ -15,7 +15,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Logging
     [Export(typeof(HTMLCSharpLanguageServerLogHubLoggerProvider))]
     internal class HTMLCSharpLanguageServerLogHubLoggerProvider : ILoggerProvider
     {
-        private static readonly string LogFileIdentifier = "HTMLCSharpLanguageServer";
+        private static readonly string LogFileIdentifier = "Razor.HTMLCSharpLanguageServerClient";
 
         private LogHubLoggerProvider _loggerProvider;
 

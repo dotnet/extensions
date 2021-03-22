@@ -140,7 +140,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         private VSServerCapabilities GetMergedServerCapabilities(List<ILanguageClient> relevantLanguageClients)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             foreach (var languageClientInstance in _languageServiceBroker.ActiveLanguageClients)
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 if (relevantLanguageClients.Contains(languageClientInstance.Client))
                 {
@@ -436,7 +438,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var relevantLanguageClients = new List<ILanguageClient>();
             var clientLoadTasks = new List<Task>();
 
+#pragma warning disable CS0618 // Type or member is obsolete
             foreach (var languageClientAndMetadata in _languageServiceBroker.LanguageClients)
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 if (!(languageClientAndMetadata.Metadata is ILanguageClientMetadata metadata))
                 {

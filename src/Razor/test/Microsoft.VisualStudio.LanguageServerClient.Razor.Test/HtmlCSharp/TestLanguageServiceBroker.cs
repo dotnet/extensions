@@ -77,8 +77,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         public IStreamingRequestBroker<WorkspaceDocumentDiagnosticsParams, WorkspaceDiagnosticReport[]> WorkspaceDiagnosticsBroker => throw new NotImplementedException();
 
-        IStreamingRequestBroker<SemanticTokensParams, SumType<ResolvableSemanticTokens, ResolvableSemanticTokensEdits>> ILanguageServiceBroker.SemanticTokensBroker => throw new NotImplementedException();
-
         public IRequestBroker<KindAndModifier, IconMapping> KindDescriptionResolveBroker => throw new NotImplementedException();
 
         public TestLanguageServiceBroker(Action<string, string> callback)

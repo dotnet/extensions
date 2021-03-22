@@ -50,7 +50,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.MessageInterce
             }
         }
 
-        public Task<JToken> HandleRequestAsync(string methodName, JToken methodParam, Func<JToken, Task<JToken>> sendRequest)
+        public Task<JToken?> HandleRequestAsync(string methodName, JToken methodParam, Func<JToken, Task<JToken?>> sendRequest)
         {
             // until we have a request operation that needs to support interception, just pass the request through
             return sendRequest(methodParam);
