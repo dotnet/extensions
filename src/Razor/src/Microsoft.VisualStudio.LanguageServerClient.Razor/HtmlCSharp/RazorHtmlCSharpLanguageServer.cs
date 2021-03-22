@@ -254,6 +254,17 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return ExecuteRequestAsync<DocumentDiagnosticsParams, DiagnosticReport[]>(MSLSPMethods.DocumentPullDiagnosticName, documentDiagnosticsParams, _clientCapabilities, cancellationToken);
         }
 
+        // Razor tooling doesn't utilize workspace pull diagnostics as it doesn't really make sense for our use case. 
+        // However, without the workspace pull diagnostics endpoint, a bunch of unnecessary exceptions are
+        // triggered. Thus we add the following no-op handler until a server capability is available.
+        // Having a server capability would reduce overhead of sending/receiving the request and the
+        // associated serialization/deserialization.
+        [JsonRpcMethod(MSLSPMethods.WorkspacePullDiagnosticName, UseSingleObjectParameterDeserialization = true)]
+        public static Task<WorkspaceDiagnosticReport> WorkspacePullDiagnosticsAsync(WorkspaceDocumentDiagnosticsParams workspaceDiagnosticsParams, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<WorkspaceDiagnosticReport>(null);
+        }
+
         // Internal for testing
         internal Task<ResponseType> ExecuteRequestAsync<RequestType, ResponseType>(
             string methodName,
