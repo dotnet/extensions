@@ -30,10 +30,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             _jsonRpc = CreateJsonRpc(outputStream, inputStream, target: this);
 
             // Facilitates activity based tracing for structured logging within LogHub
+            var traceSource = loggerProvider.GetTraceSource();
             _jsonRpc.ActivityTracingStrategy = new CorrelationManagerTracingStrategy
             {
-                TraceSource = loggerProvider.GetTraceSource()
+                TraceSource = traceSource
             };
+            _jsonRpc.TraceSource = traceSource;
 
             _jsonRpc.StartListening();
         }
