@@ -17,3 +17,4 @@ Sometimes it may be necessary to make changes in [`dotnet/aspnetcore`](https://g
 
 ## Notes:
 - ⚠️ Ensure you do not commit the changes to `aspnetcore-tooling/NuGet.config` & `aspnetcore-tooling/eng/Versions.props`!
+- If you're still seeing build errors after performing the above steps, you may have to temporarily modify `OldVersionUpperBound` and `NewVersion` of the first five assemblies in [AssemblyBindingRedirects.cs](https://github.com/dotnet/aspnetcore-tooling/blob/main/src/Razor/src/Microsoft.VisualStudio.RazorExtension/AssemblyBindingRedirects.cs) to match the assembly version of the aspnetcore packages above. You can find the assembly version by opening one of the packages with [ILSpy](https://github.com/icsharpcode/ILSpy/releases) or similar tool. 
