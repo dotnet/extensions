@@ -15,7 +15,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public ProjectSystemRazorConfiguration(
             RazorLanguageVersion languageVersion,
             string configurationName,
-            RazorExtension[] extensions)
+            RazorExtension[] extensions,
+            bool useConsolidatedMvcViews = false)
         {
             if (languageVersion == null)
             {
@@ -35,6 +36,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             LanguageVersion = languageVersion;
             ConfigurationName = configurationName;
             Extensions = extensions;
+            UseConsolidatedMvcViews = useConsolidatedMvcViews;
         }
 
         public override string ConfigurationName { get; }
@@ -42,5 +44,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public override IReadOnlyList<RazorExtension> Extensions { get; }
 
         public override RazorLanguageVersion LanguageVersion { get; }
+
+        public override bool UseConsolidatedMvcViews { get; }
     }
 }
