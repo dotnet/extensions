@@ -8,12 +8,11 @@ Sometimes it may be necessary to make changes in [`dotnet/aspnetcore`](https://g
 4. `./eng/build.cmd -pack`. The `-pack` option causes the creation of NuGet packages.
 5. You should see the generated packages in the `aspnetcore\artifacts\packages\Debug\NonShipping` directory. The packages should end with `x.0.0-dev.nupkg` where `x` is the current .NET version.
 6. Open `aspnetcore-tooling/NuGet.config` and add the local package sources:
-
-<add key="ASPNETCORE_SHIPPING" value="<PATH_TO_ASPNET_CORE_REPO>\artifacts\packages\Debug\Shipping\" />
-<add key="ASPNETCORE_NONSHIPPING" value="<PATH_TO_ASPNET_CORE_REPO>\artifacts\packages\Debug\NonShipping\" />
+- `<add key="ASPNETCORE_SHIPPING" value="<PATH_TO_ASPNET_CORE_REPO>\artifacts\packages\Debug\Shipping\" />`
+- `<add key="ASPNETCORE_NONSHIPPING" value="<PATH_TO_ASPNET_CORE_REPO>\artifacts\packages\Debug\NonShipping\" />`
 
 7. Open `aspnetcore-tooling/eng/Versions.props` and note the version for `MicrosoftCodeAnalysisRazorPackageVersion`. Ex. `5.0.0-rc.1.20380.7`.
-8. Do a find in `Versions.props` for the version in step 7 and replace with `x.0.0-dev.nupkg`.
+8. Do a find in `Versions.props` for the version in step 7 and replace with `x.0.0-dev`.
 
 ## Notes:
 - ⚠️ Ensure you do not commit the changes to `aspnetcore-tooling/NuGet.config` & `aspnetcore-tooling/eng/Versions.props`!
