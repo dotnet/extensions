@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 {
     [Shared]
     [ExportLspMethod(Methods.TextDocumentCompletionName)]
-    internal class CompletionHandler : IRequestHandler<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>
+    internal class CompletionHandler : IRequestHandler<CompletionParams, SumType<CompletionItem[], CompletionList>?>
     {
         private static readonly IReadOnlyList<string> RazorTriggerCharacters = new[] { "@" };
         private static readonly IReadOnlyList<string> CSharpTriggerCharacters = new[] { " ", "(", "=", "#", ".", "<", "[", "{", "\"", "/", ":", ">", "~" };
@@ -113,7 +113,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             _logger = loggerProvider.CreateLogger(nameof(CompletionHandler));
         }
 
-        public async Task<SumType<CompletionItem[], VSCompletionList>?> HandleRequestAsync(CompletionParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
+        public async Task<SumType<CompletionItem[], CompletionList>?> HandleRequestAsync(CompletionParams request, ClientCapabilities clientCapabilities, CancellationToken cancellationToken)
         {
             if (request is null)
             {
@@ -175,7 +175,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 _logger.LogInformation($"Requesting non-provisional completions for {projectionResult.Uri}.");
 
-                result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(
+                result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
                     Methods.TextDocumentCompletionName,
                     serverKind.ToContentType(),
                     completionParams,
@@ -200,19 +200,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 SetResolveData(resultId, completionList);
             }
 
-            if (completionList != null)
-            {
-                _logger.LogInformation("Returning completion list.");
-                completionList = new OptimizedVSCompletionList(completionList);
-            }
-            else
-            {
-                _logger.LogInformation("Returning a null completion list");
-            }
-
+            _logger.LogInformation("Returning completion list.");
             return completionList;
 
-            static bool TryConvertToCompletionList(SumType<CompletionItem[], VSCompletionList>? original, out VSCompletionList completionList)
+            static bool TryConvertToCompletionList(SumType<CompletionItem[], CompletionList>? original, out CompletionList completionList)
             {
                 if (!original.HasValue)
                 {
@@ -222,7 +213,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
                 if (original.Value.TryGetFirst(out var completionItems))
                 {
-                    completionList = new VSCompletionList()
+                    completionList = new CompletionList()
                     {
                         Items = completionItems,
                         IsIncomplete = false
@@ -250,11 +241,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         //    This isn't an applicable scenario for C# to provide the "for" keyword; however, Razor still wants that to be applicable because if you type out the full @for keyword it will generate the
         //    appropriate C# code.
         // 3. Remove Razor intrinsic design time items. Razor adds all sorts of C# helpers like __o, __builder etc. to aid in C# compilation/understanding; however, these aren't useful in regards to C# completion.
-        private VSCompletionList PostProcessCSharpCompletionList(
+        private CompletionList PostProcessCSharpCompletionList(
             CompletionParams request,
             LSPDocumentSnapshot documentSnapshot,
             TextExtent? wordExtent,
-            VSCompletionList completionList)
+            CompletionList completionList)
         {
             if (IsSimpleImplicitExpression(request, documentSnapshot, wordExtent))
             {
@@ -304,10 +295,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         // We should remove Razor design time helpers from C#'s completion list. If the current identifier being targeted does not start with a double
         // underscore, we trim out all items starting with "__" from the completion list. If the current identifier does start with a double underscore
         // (e.g. "__ab[||]"), we only trim out common design time helpers from the completion list.
-        private VSCompletionList RemoveDesignTimeItems(
+        private CompletionList RemoveDesignTimeItems(
             LSPDocumentSnapshot documentSnapshot,
             TextExtent? wordExtent,
-            VSCompletionList completionList)
+            CompletionList completionList)
         {
             var filteredItems = completionList.Items.Except(DesignTimeHelpersCompletionItems, CompletionItemComparer.Instance).ToArray();
 
@@ -390,13 +381,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return rewrittenContext;
         }
 
-        internal async Task<(bool, SumType<CompletionItem[], VSCompletionList>?)> TryGetProvisionalCompletionsAsync(
+        internal async Task<(bool, SumType<CompletionItem[], CompletionList>?)> TryGetProvisionalCompletionsAsync(
             CompletionParams request,
             LSPDocumentSnapshot documentSnapshot,
             ProjectionResult projection,
             CancellationToken cancellationToken)
         {
-            SumType<CompletionItem[], VSCompletionList>? result = null;
+            SumType<CompletionItem[], CompletionList>? result = null;
             if (projection.LanguageKind != RazorLanguageKind.Html ||
                 request.Context.TriggerKind != CompletionTriggerKind.TriggerCharacter ||
                 request.Context.TriggerCharacter != ".")
@@ -457,7 +448,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             _logger.LogInformation($"Requesting provisional completion for {previousCharacterProjection.Uri}.");
 
-            result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(
+            result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
                 Methods.TextDocumentCompletionName,
                 RazorLSPConstants.CSharpContentTypeName,
                 provisionalCompletionParams,
@@ -477,7 +468,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         // In cases like "@{" preselection can lead to unexpected behavior, so let's exclude it.
-        private VSCompletionList RemovePreselection(VSCompletionList completionList)
+        private CompletionList RemovePreselection(CompletionList completionList)
         {
             foreach (var item in completionList.Items)
             {
@@ -490,7 +481,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         // C# keywords were previously provided by snippets, but as of now C# LSP doesn't provide snippets.
         // We're providing these for now to improve the user experience (not having to ESC out of completions to finish),
         // but once C# starts providing them their completion will be offered instead, at which point we should be able to remove this step.
-        private VSCompletionList IncludeCSharpKeywords(VSCompletionList completionList)
+        private CompletionList IncludeCSharpKeywords(CompletionList completionList)
         {
             var newList = completionList.Items.Union(KeywordCompletionItems, CompletionItemComparer.Instance);
             completionList.Items = newList.ToArray();
@@ -504,11 +495,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         // The current logic takes the approach of assuming the original request's position (Razor doc) correlates directly to the positions
         // returned by the C#/HTML language servers. We use this assumption (+ math) to map from the virtual (projected) doc positions ->
         // Razor doc positions.
-        internal static VSCompletionList TranslateTextEdits(
+        internal static CompletionList TranslateTextEdits(
             Position hostDocumentPosition,
             Position projectedPosition,
             TextExtent? wordExtent,
-            VSCompletionList completionList)
+            CompletionList completionList)
         {
             var wordRange = wordExtent.HasValue && wordExtent.Value.IsSignificant ? wordExtent?.Span.AsRange() : null;
             var newItems = completionList.Items.Select(item => TranslateTextEdits(hostDocumentPosition, projectedPosition, wordRange, item)).ToArray();
@@ -572,7 +563,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             }
         }
 
-        internal static void SetResolveData(long resultId, VSCompletionList completionList)
+        internal static void SetResolveData(long resultId, CompletionList completionList)
         {
             for (var i = 0; i < completionList.Items.Length; i++)
             {
