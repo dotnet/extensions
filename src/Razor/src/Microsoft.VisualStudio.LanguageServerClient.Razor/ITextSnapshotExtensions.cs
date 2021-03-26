@@ -47,10 +47,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // the word we care about and not whitespace following it. For instance:
             //
             //      @Date|\r\n
-            //
-            // Will return the \r\n as the "word" which is incorrect; however, this is actually fixed in newer VS CoreEditor builds but is behind
-            // the "Use word pattern in LSP completion" preview feature. Once this preview feature flag is the default we can remove this -1.
-            var completionCharacterIndex = Math.Max(0, absoluteIndex - 1);
+            var completionCharacterIndex = Math.Max(0, absoluteIndex);
             var completionSnapshotPoint = new SnapshotPoint(snapshot, completionCharacterIndex);
             var wordExtent = navigator.GetExtentOfWord(completionSnapshotPoint);
 

@@ -142,6 +142,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 return null;
             }
 
+            var projectedPosition = projectionResult.Position;
+            var projectedDocumentUri = projectionResult.Uri;
             var serverKind = projectionResult.LanguageKind == RazorLanguageKind.CSharp ? LanguageServerKind.CSharp : LanguageServerKind.Html;
 
             var (succeeded, result) = await TryGetProvisionalCompletionsAsync(request, documentSnapshot, projectionResult, cancellationToken).ConfigureAwait(false);
@@ -150,6 +152,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 // This means the user has just typed a dot after some identifier such as (cursor is pipe): "DateTime.| "
                 // In this case Razor interprets after the dot as Html and before it as C#.
                 // We use this criteria to provide a better completion experience for what we call provisional changes.
+                serverKind = LanguageServerKind.CSharp;
+                if (documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpVirtualDocumentSnapshot))
+                {
+                    projectedDocumentUri = csharpVirtualDocumentSnapshot.Uri;
+                }
+                else
+                {
+                    _logger.LogError("Could not acquire C# virtual document snapshot after provisional completion.");
+                }
+
             }
             else if (!TriggerAppliesToProjection(request.Context, projectionResult.LanguageKind))
             {
@@ -166,14 +178,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 var completionParams = new CompletionParams()
                 {
                     Context = completionContext,
-                    Position = projectionResult.Position,
+                    Position = projectedPosition,
                     TextDocument = new TextDocumentIdentifier()
                     {
-                        Uri = projectionResult.Uri
+                        Uri = projectedDocumentUri
                     }
                 };
 
-                _logger.LogInformation($"Requesting non-provisional completions for {projectionResult.Uri}.");
+                _logger.LogInformation($"Requesting non-provisional completions for {projectedDocumentUri}.");
 
                 result = await _requestInvoker.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(
                     Methods.TextDocumentCompletionName,
@@ -193,9 +205,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     completionList = PostProcessCSharpCompletionList(request, documentSnapshot, wordExtent, completionList);
                 }
 
-                completionList = TranslateTextEdits(request.Position, projectionResult.Position, wordExtent, completionList);
+                completionList = TranslateTextEdits(request.Position, projectedPosition, wordExtent, completionList);
 
-                var requestContext = new CompletionRequestContext(documentSnapshot.Uri, projectionResult.Uri, serverKind);
+                var requestContext = new CompletionRequestContext(documentSnapshot.Uri, projectedDocumentUri, serverKind);
                 var resultId = _completionRequestContextCache.Set(requestContext);
                 SetResolveData(resultId, completionList);
             }

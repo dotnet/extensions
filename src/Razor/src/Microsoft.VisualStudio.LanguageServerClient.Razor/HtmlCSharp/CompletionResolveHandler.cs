@@ -101,6 +101,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 request,
                 cancellationToken).ConfigureAwait(false);
 
+            if (result == null)
+            {
+                // Could not resolve any additional information about the completion item, return early.
+                return request;
+            }
+
             _logger.LogInformation("Received result, post-processing.");
 
             result = await PostProcessCompletionItemAsync(request, result, requestContext, cancellationToken).ConfigureAwait(false);
