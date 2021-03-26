@@ -102,7 +102,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
@@ -111,7 +111,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(VSCompletionInvokeKind.Typing, vsCompletionContext.InvokeKind);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -149,7 +149,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
@@ -158,7 +158,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(VSCompletionInvokeKind.Explicit, vsCompletionContext.InvokeKind);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -196,14 +196,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new CompletionList
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new VSCompletionList
                 {
                     Items = new[] { expectedItem }
                 }));
@@ -223,7 +223,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Assert
             Assert.True(called);
             Assert.True(result.HasValue);
-            var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+            var _ = result.Value.Match<SumType<CompletionItem[], VSCompletionList>>(
                 array => throw new NotImplementedException(),
                 list =>
                 {
@@ -276,14 +276,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new CompletionList
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new VSCompletionList
                 {
                     Items = new[] { expectedItem }
                 }));
@@ -303,7 +303,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Assert
             Assert.True(called);
             Assert.True(result.HasValue);
-            var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+            var _ = result.Value.Match<SumType<CompletionItem[], VSCompletionList>>(
                 array => throw new NotImplementedException(),
                 list =>
                 {
@@ -338,14 +338,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new CompletionList
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new VSCompletionList
                 {
                     Items = new[] { expectedItem }
                 }));
@@ -365,7 +365,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Assert
             Assert.True(called);
             Assert.True(result.HasValue);
-            var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+            var _ = result.Value.Match<SumType<CompletionItem[], VSCompletionList>>(
                 array => throw new NotImplementedException(),
                 list =>
                 {
@@ -400,14 +400,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(expectedItems));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(expectedItems));
 
             var projectionResult = new ProjectionResult()
             {
@@ -424,7 +424,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Assert
             Assert.True(called);
             Assert.True(result.HasValue);
-            var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+            var _ = result.Value.Match<SumType<CompletionItem[], VSCompletionList>>(
                 array => throw new NotImplementedException(),
                 list =>
                 {
@@ -477,14 +477,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var navigatorSelector = BuildNavigatorSelector(wordRange);
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(expectedItems));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(expectedItems));
 
             var projectionResult = new ProjectionResult()
             {
@@ -501,7 +501,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Assert
             Assert.True(called);
             Assert.True(result.HasValue);
-            var _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+            var _ = result.Value.Match<SumType<CompletionItem[], VSCompletionList>>(
                 array => throw new NotImplementedException(),
                 list =>
                 {
@@ -549,14 +549,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var navigatorSelector = BuildNavigatorSelector(wordRange);
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(Array.Empty<CompletionItem>()));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(Array.Empty<CompletionItem>()));
 
             var projectionResult = new ProjectionResult()
             {
@@ -573,7 +573,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Assert
             Assert.True(called);
             Assert.True(result.HasValue);
-            _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+            _ = result.Value.Match<SumType<CompletionItem[], VSCompletionList>>(
                 array => throw new NotImplementedException(),
                 list =>
                 {
@@ -676,14 +676,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -722,7 +722,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
@@ -730,7 +730,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                     Assert.Equal(CompletionTriggerKind.Invoked, completionParams.Context.TriggerKind);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -777,14 +777,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(expectedItems));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(expectedItems));
 
             var projectionResult = new ProjectionResult()
             {
@@ -801,7 +801,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Assert
             Assert.True(called);
             Assert.True(result.HasValue);
-            _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+            _ = result.Value.Match<SumType<CompletionItem[], VSCompletionList>>(
                 array => throw new NotImplementedException(),
                 list =>
                 {
@@ -853,14 +853,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var navigatorSelector = BuildNavigatorSelector(wordRange);
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(expectedItems));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(expectedItems));
 
             var projectionResult = new ProjectionResult()
             {
@@ -877,7 +877,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Assert
             Assert.True(called);
             Assert.True(result.HasValue);
-            _ = result.Value.Match<SumType<CompletionItem[], CompletionList>>(
+            _ = result.Value.Match<SumType<CompletionItem[], VSCompletionList>>(
                 array => throw new NotImplementedException(),
                 list =>
                 {
@@ -904,14 +904,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.HtmlLSPContentTypeName, serverContentType);
                     called = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -940,7 +940,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             {
                 new CompletionItem() { InsertText = "Hello", Data = originalData }
             };
-            var completionList = new CompletionList()
+            var completionList = new VSCompletionList()
             {
                 Items = items,
             };
@@ -1137,14 +1137,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var expectedItem = new CompletionItem() { InsertText = "DateTime" };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), RazorLSPConstants.CSharpContentTypeName, It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), RazorLSPConstants.CSharpContentTypeName, It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     languageServerCalled = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
@@ -1197,14 +1197,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var expectedItem = new CompletionItem() { InsertText = "DateTime" };
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
-                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), RazorLSPConstants.CSharpContentTypeName, It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], VSCompletionList>?>(It.IsAny<string>(), RazorLSPConstants.CSharpContentTypeName, It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
                 .Callback<string, string, CompletionParams, CancellationToken>((method, serverContentType, completionParams, ct) =>
                 {
                     Assert.Equal(Methods.TextDocumentCompletionName, method);
                     Assert.Equal(RazorLSPConstants.CSharpContentTypeName, serverContentType);
                     languageServerCalled = true;
                 })
-                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(new[] { expectedItem }));
+                .Returns(Task.FromResult<SumType<CompletionItem[], VSCompletionList>?>(new[] { expectedItem }));
 
             var projectionResult = new ProjectionResult()
             {
