@@ -48,24 +48,24 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftCodeAnalysisRazorPackageVersion>6.0.0-preview.4.21177.3</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>6.0.0-preview.4.21177.3</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>6.0.0-preview.4.21177.3</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>6.0.0-preview.4.21177.3</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>6.0.0-preview.4.21177.3</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>6.0.0-preview.4.21177.3</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>6.0.0-preview.4.21177.3</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0-preview.4.21176.11</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>6.0.0-preview.4.21176.11</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>6.0.0-preview.4.21176.11</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>6.0.0-preview.4.21176.11</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-preview.4.21176.11</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>6.0.0-preview.4.21176.11</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>6.0.0-preview.4.21176.11</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>6.0.0-preview.4.21178.2</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>6.0.0-preview.4.21178.2</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>6.0.0-preview.4.21178.2</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>6.0.0-preview.4.21178.2</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>6.0.0-preview.4.21178.2</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>6.0.0-preview.4.21178.2</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>6.0.0-preview.4.21178.2</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0-preview.4.21177.4</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>6.0.0-preview.4.21177.4</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>6.0.0-preview.4.21177.4</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>6.0.0-preview.4.21177.4</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-preview.4.21177.4</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>6.0.0-preview.4.21177.4</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>6.0.0-preview.4.21177.4</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>6.0.0-alpha.1.21072.5</MicrosoftNETSdkRazorPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0-preview.4.21176.11</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemResourcesExtensionsPackageVersion>6.0.0-preview.4.21176.11</SystemResourcesExtensionsPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>6.0.0-preview.4.21176.11</SystemTextEncodingsWebPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0-preview.4.21177.4</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemResourcesExtensionsPackageVersion>6.0.0-preview.4.21177.4</SystemResourcesExtensionsPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>6.0.0-preview.4.21177.4</SystemTextEncodingsWebPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
