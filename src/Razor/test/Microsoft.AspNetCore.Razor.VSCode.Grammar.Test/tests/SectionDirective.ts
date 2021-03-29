@@ -13,6 +13,10 @@ export function RunSectionDirectiveSuite() {
             await assertMatchesSnapshot('@section');
         });
 
+        it('As C# local', async () => {
+            await assertMatchesSnapshot('@section.method()');
+        });
+
         it('No name, spaced', async () => {
             await assertMatchesSnapshot('@section                 ');
         });

@@ -13,6 +13,10 @@ export function RunUsingDirectiveSuite() {
             await assertMatchesSnapshot('@using');
         });
 
+        it('As C# local', async () => {
+            await assertMatchesSnapshot('@using.method()');
+        });
+
         it('Standard using, no namespace spaced', async () => {
             await assertMatchesSnapshot('@using              ');
         });

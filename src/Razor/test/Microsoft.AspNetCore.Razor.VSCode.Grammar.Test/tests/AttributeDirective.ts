@@ -13,6 +13,10 @@ export function RunAttributeDirectiveSuite() {
             await assertMatchesSnapshot('@attribute');
         });
 
+        it('As C# local', async () => {
+            await assertMatchesSnapshot('@attribute.method()');
+        });
+
         it('No attribute spaced', async () => {
             await assertMatchesSnapshot('@attribute              ');
         });

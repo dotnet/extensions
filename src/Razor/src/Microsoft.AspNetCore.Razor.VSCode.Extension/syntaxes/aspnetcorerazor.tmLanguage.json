@@ -844,7 +844,7 @@
     },
     "attribute-directive": {
       "name": "meta.directive.attribute.razor",
-      "begin": "(@)(attribute)\\b",
+      "begin": "(@)(attribute)\\b\\s+",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -866,7 +866,7 @@
     },
     "section-directive": {
       "name": "meta.directive.section.razor",
-      "begin": "(@)(section)\\b\\s*([_[:alpha:]][_[:alnum:]]*)?",
+      "begin": "(@)(section)\\b\\s+([_[:alpha:]][_[:alnum:]]*)?",
       "beginCaptures": {
         "1": {
           "patterns": [
@@ -911,7 +911,7 @@
     },
     "using-directive": {
       "name": "meta.directive.using.cshtml",
-      "match": "(@)(using)\\b\\s*(?!\\(|\\s)(.+?)?(;)?$",
+      "match": "(@)(using)\\b\\s+(?!\\(|\\s)(.+?)?(;)?$",
       "captures": {
         "1": {
           "patterns": [

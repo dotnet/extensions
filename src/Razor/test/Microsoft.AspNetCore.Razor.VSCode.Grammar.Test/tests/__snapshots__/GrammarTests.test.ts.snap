@@ -56,6 +56,17 @@ exports[`Grammar tests @addTagHelper directive Unquoted parameter 1`] = `
 "
 `;
 
+exports[`Grammar tests @attribute directive As C# local 1`] = `
+"Line: @attribute.method()
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 10 (attribute) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 10 to 11 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 11 to 17 (method) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, entity.name.function.cs
+ - token from 17 to 18 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 18 to 19 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+"
+`;
+
 exports[`Grammar tests @attribute directive Incomplete attribute, generic 1`] = `
 "Line: @attribute [CustomAttribute(info = typeof(GenericClass1<string
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.cshtml.transition
@@ -141,7 +152,7 @@ exports[`Grammar tests @attribute directive No attribute spaced 1`] = `
 "Line: @attribute              
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.cshtml.transition
  - token from 1 to 10 (attribute) with scopes text.aspnetcorerazor, meta.directive.attribute.razor, keyword.control.razor.directive.attribute
- - token from 10 to 24 (              ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
+ - token from 10 to 25 (              ) with scopes text.aspnetcorerazor, meta.directive.attribute.razor
 "
 `;
 
@@ -2226,6 +2237,17 @@ exports[`Grammar tests @removeTagHelper directive Unquoted parameter 1`] = `
 "
 `;
 
+exports[`Grammar tests @section directive As C# local 1`] = `
+"Line: @section.method()
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 8 (section) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 8 to 9 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 9 to 15 (method) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, entity.name.function.cs
+ - token from 15 to 16 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 16 to 17 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
+"
+`;
+
 exports[`Grammar tests @section directive Invalid name 1`] = `
 "Line: @section -$*&^
  - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.directive.section.razor, keyword.control.cshtml.transition
@@ -3038,6 +3060,17 @@ exports[`Grammar tests @using ( ... ) { ... } Single line 1`] = `
  - token from 55 to 56 (>) with scopes text.aspnetcorerazor, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, punctuation.definition.tag.end.html
  - token from 56 to 57 ( ) with scopes text.aspnetcorerazor, meta.statement.using.razor, meta.structure.razor.csharp.codeblock
  - token from 57 to 58 (}) with scopes text.aspnetcorerazor, meta.statement.using.razor, meta.structure.razor.csharp.codeblock, punctuation.curlybrace.close.cs
+"
+`;
+
+exports[`Grammar tests @using directive As C# local 1`] = `
+"Line: @using.method()
+ - token from 0 to 1 (@) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, keyword.control.cshtml.transition
+ - token from 1 to 6 (using) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, variable.other.object.cs
+ - token from 6 to 7 (.) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml
+ - token from 7 to 13 (method) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, entity.name.function.cs
+ - token from 13 to 14 (() with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.open.cs
+ - token from 14 to 15 ()) with scopes text.aspnetcorerazor, meta.expression.implicit.cshtml, razor.test.balanced.parenthesis, punctuation.parenthesis.close.cs
 "
 `;
 
