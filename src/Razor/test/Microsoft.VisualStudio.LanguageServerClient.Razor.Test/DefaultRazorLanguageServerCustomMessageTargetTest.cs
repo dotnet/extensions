@@ -77,8 +77,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
             var disposable = new Mock<IDisposable>(MockBehavior.Strict);
+            var clientOptionsMonitor = new Mock<RazorLSPClientOptionsMonitor>(MockBehavior.Strict);
 
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object, disposable.Object);
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(
+                documentManager, JoinableTaskContext, requestInvoker.Object,
+                uIContextManager.Object, disposable.Object, clientOptionsMonitor.Object);
 
             var request = new RazorDocumentRangeFormattingParams()
             {
@@ -109,8 +112,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
             var disposable = new Mock<IDisposable>(MockBehavior.Strict);
+            var clientOptionsMonitor = new Mock<RazorLSPClientOptionsMonitor>(MockBehavior.Strict);
 
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object, disposable.Object);
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(
+                documentManager, JoinableTaskContext, requestInvoker.Object,
+                uIContextManager.Object, disposable.Object, clientOptionsMonitor.Object);
 
             var request = new RazorDocumentRangeFormattingParams()
             {
@@ -156,8 +162,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
             var disposable = new Mock<IDisposable>(MockBehavior.Strict);
+            var clientOptionsMonitor = new Mock<RazorLSPClientOptionsMonitor>(MockBehavior.Strict);
 
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object, disposable.Object);
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(
+                documentManager.Object, JoinableTaskContext, requestInvoker.Object,
+                uIContextManager.Object, disposable.Object, clientOptionsMonitor.Object);
 
             var request = new RazorDocumentRangeFormattingParams()
             {
@@ -264,8 +273,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
             var disposable = new Mock<IDisposable>(MockBehavior.Strict);
+            var clientOptionsMonitor = new Mock<RazorLSPClientOptionsMonitor>(MockBehavior.Strict);
 
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object, disposable.Object);
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(
+                documentManager.Object, JoinableTaskContext, requestInvoker.Object,
+                uIContextManager.Object, disposable.Object, clientOptionsMonitor.Object);
             var request = new CodeActionParams()
             {
                 TextDocument = new LanguageServer.Protocol.TextDocumentIdentifier()
@@ -312,8 +324,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
             var disposable = new Mock<IDisposable>(MockBehavior.Strict);
+            var clientOptionsMonitor = new Mock<RazorLSPClientOptionsMonitor>(MockBehavior.Strict);
 
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object, disposable.Object);
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(
+                documentManager.Object, JoinableTaskContext, requestInvoker.Object,
+                uIContextManager.Object, disposable.Object, clientOptionsMonitor.Object);
             var request = new VSCodeAction()
             {
                 Title = "Something",
@@ -405,8 +420,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             var uIContextManager = new Mock<RazorUIContextManager>(MockBehavior.Strict);
             var disposable = new Mock<IDisposable>(MockBehavior.Strict);
+            var clientOptionsMonitor = new Mock<RazorLSPClientOptionsMonitor>(MockBehavior.Strict);
 
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object, disposable.Object);
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(
+                documentManager.Object, JoinableTaskContext, requestInvoker.Object,
+                uIContextManager.Object, disposable.Object, clientOptionsMonitor.Object);
             var request = new SemanticTokensParams()
             {
                 TextDocument = new TextDocumentIdentifier()
@@ -456,8 +474,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             disposable
                 .Setup(d => d.Dispose())
                 .Verifiable();
+            var clientOptionsMonitor = new Mock<RazorLSPClientOptionsMonitor>(MockBehavior.Strict);
 
-            var target = new DefaultRazorLanguageServerCustomMessageTarget(documentManager.Object, JoinableTaskContext, requestInvoker.Object, uIContextManager.Object, disposable.Object);
+            var target = new DefaultRazorLanguageServerCustomMessageTarget(
+                documentManager.Object, JoinableTaskContext, requestInvoker.Object,
+                uIContextManager.Object, disposable.Object, clientOptionsMonitor.Object);
 
             // Act
             await target.RazorServerReadyAsync(CancellationToken.None);

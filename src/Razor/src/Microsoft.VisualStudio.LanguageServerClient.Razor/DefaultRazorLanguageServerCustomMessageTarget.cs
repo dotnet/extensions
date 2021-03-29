@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics;
 using System.Linq;
@@ -15,7 +16,9 @@ using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp;
 using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json.Linq;
+using OmniSharpConfigurationParams = OmniSharp.Extensions.LanguageServer.Protocol.Models.ConfigurationParams;
 using SemanticTokens = OmniSharp.Extensions.LanguageServer.Protocol.Models.Proposals.SemanticTokens;
+using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
@@ -27,6 +30,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly LSPRequestInvoker _requestInvoker;
         private readonly RazorUIContextManager _uIContextManager;
         private readonly IDisposable _razorReadyListener;
+        private readonly RazorLSPClientOptionsMonitor _clientOptionsMonitor;
 
         private const string RazorReadyFeature = "Razor-Initialization";
 
@@ -36,13 +40,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             JoinableTaskContext joinableTaskContext,
             LSPRequestInvoker requestInvoker,
             RazorUIContextManager uIContextManager,
-            IRazorAsynchronousOperationListenerProviderAccessor asyncOpListenerProvider) :
+            IRazorAsynchronousOperationListenerProviderAccessor asyncOpListenerProvider,
+            RazorLSPClientOptionsMonitor clientOptionsMonitor) :
                 this(
                     documentManager,
                     joinableTaskContext,
                     requestInvoker,
                     uIContextManager,
-                    asyncOpListenerProvider.GetListener(RazorReadyFeature).BeginAsyncOperation(RazorReadyFeature))
+                    asyncOpListenerProvider.GetListener(RazorReadyFeature).BeginAsyncOperation(RazorReadyFeature),
+                    clientOptionsMonitor)
         {
         }
 
@@ -52,7 +58,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             JoinableTaskContext joinableTaskContext,
             LSPRequestInvoker requestInvoker,
             RazorUIContextManager uIContextManager,
-            IDisposable razorReadyListener)
+            IDisposable razorReadyListener,
+            RazorLSPClientOptionsMonitor clientOptionsMonitor)
         {
             if (documentManager is null)
             {
@@ -79,6 +86,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(razorReadyListener));
             }
 
+            if (clientOptionsMonitor is null)
+            {
+                throw new ArgumentNullException(nameof(clientOptionsMonitor));
+            }
+
             _documentManager = documentManager as TrackingLSPDocumentManager;
 
             if (_documentManager is null)
@@ -92,6 +104,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _requestInvoker = requestInvoker;
             _uIContextManager = uIContextManager;
             _razorReadyListener = razorReadyListener;
+            _clientOptionsMonitor = clientOptionsMonitor;
         }
 
         // Testing constructor
@@ -306,6 +319,31 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var resolvesCodeActions = serverCapabilities?.CodeActionsResolveProvider == true;
 
             return providesCodeActions && resolvesCodeActions;
+        }
+
+        // NOTE: This method is a polyfill for VS. We only intend to do it this way until VS formally
+        // supports sending workspace configuration requests.
+        public override Task<object[]> WorkspaceConfigurationAsync(
+            OmniSharpConfigurationParams configParams,
+            CancellationToken cancellationToken)
+        {
+            if (configParams is null)
+            {
+                throw new ArgumentNullException(nameof(configParams));
+            }
+
+            var result = new List<object>();
+            foreach (var item in configParams.Items)
+            {
+                // Right now in VS we only care about editor settings, but we should update this logic later if
+                // we want to support Razor and HTML settings as well.
+                var setting = item.Section == "vs.editor.razor"
+                    ? _clientOptionsMonitor.EditorSettings
+                    : new object();
+                result.Add(setting);
+            }
+
+            return Task.FromResult(result.ToArray());
         }
     }
 }

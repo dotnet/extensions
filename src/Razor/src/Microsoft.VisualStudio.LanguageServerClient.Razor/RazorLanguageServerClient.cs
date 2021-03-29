@@ -128,7 +128,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var traceLevel = GetVerbosity();
 
             // Initialize Logging Infrastructure
-            _loggerProvider = (LogHubLoggerProvider) await _logHubLoggerProviderFactory.GetOrCreateAsync(LogFileIdentifier, token).ConfigureAwait(false);
+            _loggerProvider = (LogHubLoggerProvider)await _logHubLoggerProviderFactory.GetOrCreateAsync(LogFileIdentifier, token).ConfigureAwait(false);
 
             _server = await RazorLanguageServer.CreateAsync(serverStream, serverStream, traceLevel, ConfigureLanguageServer).ConfigureAwait(false);
 

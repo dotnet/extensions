@@ -16,3 +16,23 @@
 "Value"=dword:00000000
 "Title"="Enable experimental Razor editor (requires restart)"
 "PreviewPaneChannels"="*"
+
+// Sets up Razor's default settings in Tools->Options.
+// Razor's default settings can be found in the VS repo at:
+//     src/VSCommonContent/profiles/General.vssettings
+[$RootKey$\AutomationProperties\TextEditor\RazorLSP]
+@="#110"
+"Description"="#112"
+"Name"="RazorLSP"
+"Package"="{f5e7e720-1401-11d1-883b-0000f87579d2}"
+"ResourcePackage"="{13b72f58-279e-49e0-a56d-296be02f0805}"
+"ProfileSave"=dword:00000001
+"VSSettingsMigration"=dword:00000001
+
+// Provides additional Tools->Options settings not covered
+// by the settings in General.vssettings.
+[$RootKey$\Languages\Language Services\RazorLSP]
+@="{4513FA64-5B72-4B58-9D4C-1D3C81996C2C}"
+"Package"="{13b72f58-279e-49e0-a56d-296be02f0805}"
+"ShowBraceCompletion"=dword:00000001
+"ShowSmartIndent"=dword:00000001

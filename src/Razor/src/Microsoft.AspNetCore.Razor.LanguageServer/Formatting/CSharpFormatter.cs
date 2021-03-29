@@ -179,12 +179,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             // Assuming the C# formatter did the right thing, let's extract the indentation offset from
             // the line containing trivia and token that has our attached annotations.
-            ExtractTriviaAnnotations();
-            ExtractTokenAnnotations();
+            ExtractTriviaAnnotations(context, formattedRoot, formattedText, desiredIndentationMap);
+            ExtractTokenAnnotations(context, formattedRoot, formattedText, indentationMap, desiredIndentationMap);
 
             return desiredIndentationMap;
 
-            void ExtractTriviaAnnotations()
+            static void ExtractTriviaAnnotations(
+                FormattingContext context,
+                SyntaxNode formattedRoot,
+                SourceText formattedText,
+                Dictionary<int, int> desiredIndentationMap)
             {
                 var formattedTriviaList = formattedRoot.GetAnnotatedTrivia(MarkerId);
                 foreach (var trivia in formattedTriviaList)
@@ -205,7 +209,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 }
             }
 
-            void ExtractTokenAnnotations()
+            static void ExtractTokenAnnotations(
+                FormattingContext context,
+                SyntaxNode formattedRoot,
+                SourceText formattedText,
+                Dictionary<int, IndentationMapData> indentationMap,
+                Dictionary<int, int> desiredIndentationMap)
             {
                 var formattedTokenList = formattedRoot.GetAnnotatedTokens(MarkerId);
                 foreach (var token in formattedTokenList)
@@ -317,7 +326,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return root;
         }
 
-        private int GetIndentationOffsetFromLine(FormattingContext context, TextLine line)
+        private static int GetIndentationOffsetFromLine(FormattingContext context, TextLine line)
         {
             var offset = line.GetFirstNonWhitespaceOffset() ?? 0;
             if (!context.Options.InsertSpaces)

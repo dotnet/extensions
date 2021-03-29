@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -17,13 +18,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly IEnumerable<ProjectSnapshotChangeTrigger> _changeTriggers;
         private readonly FilePathNormalizer _filePathNormalizer;
+        private readonly IOptionsMonitor<RazorLSPOptions> _optionsMonitor;
         private ProjectSnapshotManagerBase _instance;
         private bool _disposed;
 
         public DefaultProjectSnapshotManagerAccessor(
             ForegroundDispatcher foregroundDispatcher,
             IEnumerable<ProjectSnapshotChangeTrigger> changeTriggers,
-            FilePathNormalizer filePathNormalizer)
+            FilePathNormalizer filePathNormalizer,
+            IOptionsMonitor<RazorLSPOptions> optionsMonitor)
         {
             if (foregroundDispatcher == null)
             {
@@ -40,9 +43,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(filePathNormalizer));
             }
 
+            if (optionsMonitor is null)
+            {
+                throw new ArgumentNullException(nameof(optionsMonitor));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _changeTriggers = changeTriggers;
             _filePathNormalizer = filePathNormalizer;
+            _optionsMonitor = optionsMonitor;
         }
 
         public override ProjectSnapshotManagerBase Instance
@@ -54,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     var services = AdhocServices.Create(
                         workspaceServices: new[]
                         {
-                            new RemoteProjectSnapshotProjectEngineFactory(_filePathNormalizer)
+                            new RemoteProjectSnapshotProjectEngineFactory(_filePathNormalizer, _optionsMonitor)
                         },
                         razorLanguageServices: Enumerable.Empty<ILanguageService>());
                     var workspace = new AdhocWorkspace(services);

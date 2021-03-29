@@ -18,7 +18,7 @@ using Task = System.Threading.Tasks.Task;
 namespace Microsoft.VisualStudio.RazorExtension
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [AboutDialogInfo(PackageGuidString, "ASP.NET Core Razor Language Services", "#110", "#112", IconResourceID = "#400")]
+    [AboutDialogInfo(PackageGuidString, "Razor (ASP.NET Core)", "#110", "#112", IconResourceID = "#400")]
     [ProvideService(typeof(RazorLanguageService))]
     [ProvideLanguageService(typeof(RazorLanguageService), RazorLSPConstants.RazorLSPContentTypeName, 110)]
     [ProvideBrokeredServiceHubService("Microsoft.VisualStudio.Razor.TagHelperProvider", Audience = Shell.ServiceBroker.ServiceAudience.Local)]
