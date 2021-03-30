@@ -154,6 +154,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<RazorFileChangeDetectorManager>();
 
                         services.AddSingleton<ProjectSnapshotChangeTrigger, RazorServerReadyPublisher>();
+                        services.AddSingleton<ProjectSnapshotChangeTrigger, DocumentOutputReferenceCapturer>();
 
                         services.AddSingleton<ClientNotifierServiceBase, DefaultClientNotifierService>();
 
