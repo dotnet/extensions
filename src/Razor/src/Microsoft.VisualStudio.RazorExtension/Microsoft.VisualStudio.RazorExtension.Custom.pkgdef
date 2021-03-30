@@ -12,7 +12,7 @@
 "RazorLSP"="$PackageFolder$\language-configuration.json"
 
 [$RootKey$\FeatureFlags\Razor\LSP\Editor]
-"Description"="Enables the Razor Language Server Protocol powered editor experience for all Razor editors."
+"Description"="Enables the Razor Language Server Protocol powered editor experience for Razor (ASP.NET Core)."
 "Value"=dword:00000000
 "Title"="Enable experimental Razor editor (requires restart)"
 "PreviewPaneChannels"="*"
