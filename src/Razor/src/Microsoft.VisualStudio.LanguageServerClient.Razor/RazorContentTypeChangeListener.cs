@@ -22,6 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly LSPEditorFeatureDetector _lspEditorFeatureDetector;
         private readonly SVsServiceProvider _serviceProvider;
         private readonly IEditorOptionsFactoryService _editorOptionsFactory;
+        private readonly IFileToContentTypeService _fileToContentTypeService;
 
         [ImportingConstructor]
         public RazorContentTypeChangeListener(
@@ -29,7 +30,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             LSPDocumentManager lspDocumentManager,
             LSPEditorFeatureDetector lspEditorFeatureDetector,
             SVsServiceProvider serviceProvider,
-            IEditorOptionsFactoryService editorOptionsFactory)
+            IEditorOptionsFactoryService editorOptionsFactory,
+            IFileToContentTypeService fileToContentTypeService)
         {
             if (textDocumentFactory is null)
             {
@@ -56,6 +58,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(editorOptionsFactory));
             }
 
+            if (fileToContentTypeService is null)
+            {
+                throw new ArgumentNullException(nameof(fileToContentTypeService));
+            }
+
             _lspDocumentManager = lspDocumentManager as TrackingLSPDocumentManager;
 
             if (_lspDocumentManager is null)
@@ -69,6 +76,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             _lspEditorFeatureDetector = lspEditorFeatureDetector;
             _serviceProvider = serviceProvider;
             _editorOptionsFactory = editorOptionsFactory;
+            _fileToContentTypeService = fileToContentTypeService;
         }
 
         public void ContentTypeChanged(ITextBuffer textBuffer, IContentType oldContentType, IContentType newContentType)
@@ -144,8 +152,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             // Document was renamed, translate that rename into an untrack -> track to refresh state.
 
-            _lspDocumentManager.UntrackDocument(textBuffer);
-            _lspDocumentManager.TrackDocument(textBuffer);
+            RazorBufferDisposed(textBuffer);
+
+            // Normally we could just look at the buffer again to see if the content type was still Razor; however,
+            // there's a bug in the platform which prevents that from working:
+            // https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1161307/
+            // To counteract this we need to re-calculate the content type based off of the filepath.
+            var newContentType = _fileToContentTypeService.GetContentTypeForFilePath(textDocument.FilePath);
+            if (newContentType.IsOfType(RazorLSPConstants.RazorLSPContentTypeName))
+            {
+                // Renamed to another RazorLSP based document, lets treat it as a re-creation.
+                RazorBufferCreated(textBuffer);
+            }
         }
 
         private void MonitorDocumentForRenames(ITextBuffer textBuffer)
