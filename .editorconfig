@@ -73,3 +73,6 @@ csharp_style_unused_value_expression_statement_preference = discard_variable:non
 
 # IDE0065
 csharp_using_directive_placement = outside_namespace
+
+# xUnit1004: Test methods should not be skipped
+dotnet_diagnostic.xUnit1004.severity = none
