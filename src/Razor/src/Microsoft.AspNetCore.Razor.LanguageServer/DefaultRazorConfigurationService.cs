@@ -102,25 +102,32 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var html = result[1];
 
             trace = RazorLSPOptions.Default.Trace;
-            if (razor.TryGetValue("trace", out var parsedTrace))
-            {
-                trace = GetObjectOrDefault(parsedTrace, trace);
-            }
-
             enableFormatting = RazorLSPOptions.Default.EnableFormatting;
-            if (razor.TryGetValue("format", out var parsedFormat))
+            autoClosingTags = RazorLSPOptions.Default.AutoClosingTags;
+
+            if (razor != null)
             {
-                if (parsedFormat is JObject jObject &&
-                    jObject.TryGetValue("enable", out var parsedEnableFormatting))
+                if (razor.TryGetValue("trace", out var parsedTrace))
                 {
-                    enableFormatting = GetObjectOrDefault(parsedEnableFormatting, enableFormatting);
+                    trace = GetObjectOrDefault(parsedTrace, trace);
+                }
+
+                if (razor.TryGetValue("format", out var parsedFormat))
+                {
+                    if (parsedFormat is JObject jObject &&
+                        jObject.TryGetValue("enable", out var parsedEnableFormatting))
+                    {
+                        enableFormatting = GetObjectOrDefault(parsedEnableFormatting, enableFormatting);
+                    }
                 }
             }
 
-            autoClosingTags = RazorLSPOptions.Default.AutoClosingTags;
-            if (html.TryGetValue("autoClosingTags", out var parsedAutoClosingTags))
+            if (html != null)
             {
-                autoClosingTags = GetObjectOrDefault(parsedAutoClosingTags, autoClosingTags);
+                if (html.TryGetValue("autoClosingTags", out var parsedAutoClosingTags))
+                {
+                    autoClosingTags = GetObjectOrDefault(parsedAutoClosingTags, autoClosingTags);
+                }
             }
         }
 
@@ -132,12 +139,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var vsEditor = result[2];
 
             insertSpaces = RazorLSPOptions.Default.InsertSpaces;
+            tabSize = RazorLSPOptions.Default.TabSize;
+
+            if (vsEditor == null)
+            {
+                return;
+            }
+
             if (vsEditor.TryGetValue(nameof(EditorSettings.IndentWithTabs), out var parsedInsertTabs))
             {
                 insertSpaces = !GetObjectOrDefault(parsedInsertTabs, insertSpaces);
             }
 
-            tabSize = RazorLSPOptions.Default.TabSize;
             if (vsEditor.TryGetValue(nameof(EditorSettings.IndentSize), out var parsedTabSize))
             {
                 tabSize = GetObjectOrDefault(parsedTabSize, tabSize);

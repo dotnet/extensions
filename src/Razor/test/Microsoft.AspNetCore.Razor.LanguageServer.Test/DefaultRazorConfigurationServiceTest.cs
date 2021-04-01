@@ -157,6 +157,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(expectedOptions, options);
         }
 
+        [Fact]
+        public void BuildOptions_NullOptions()
+        {
+            // Arrange
+            var expectedOptions = RazorLSPOptions.Default;
+
+            // Act
+            var result = new JObject[] { null, null, null };
+            var languageServer = GetLanguageServer(new ResponseRouterReturns(result));
+            var configurationService = new DefaultRazorConfigurationService(languageServer, LoggerFactory);
+            var options = configurationService.BuildOptions(result);
+
+            // Assert
+            Assert.Equal(expectedOptions, options);
+        }
+
         private ClientNotifierServiceBase GetLanguageServer(IResponseRouterReturns result, bool shouldThrow = false)
         {
             var languageServer = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
