@@ -131,10 +131,16 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                     {
                         var virtualDocument = lspDocument.VirtualDocuments[i];
 
-                        Debug.Assert(_virtualDocumentContexts.ContainsKey(virtualDocument.Uri));
+                        if (!_virtualDocumentContexts.TryGetValue(virtualDocument.Uri, out var virtualDocumentContext))
+                        {
+                            Debug.Fail("Could not locate virtual document context, it should have been added.");
+                            continue;
+                        }
 
                         var virtualDocumentTextBuffer = virtualDocument.Snapshot.TextBuffer;
                         virtualDocumentTextBuffer.PostChanged -= VirtualDocumentBuffer_PostChanged;
+
+                        virtualDocumentContext.Dispose();
                         _virtualDocumentContexts.Remove(virtualDocument.Uri);
                     }
                 }
@@ -152,7 +158,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             }
         }
 
-        private class DocumentContext
+        private class DocumentContext : IDisposable
         {
             private readonly TimeSpan _synchronizingTimeout;
             private readonly List<DocumentSynchronizingContext> _synchronizingContexts;
@@ -218,6 +224,16 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                 return synchronizingContext.OnSynchronizedAsync;
             }
 
+            public void Dispose()
+            {
+                for (var i = _synchronizingContexts.Count - 1; i >= 0; i--)
+                {
+                    _synchronizingContexts[i].SetSynchronized(result: false);
+                }
+
+                _synchronizingContexts.Clear();
+            }
+
             private class DocumentSynchronizingContext
             {
                 private readonly TaskCompletionSource<bool> _onSynchronizedSource;
@@ -230,7 +246,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                     CancellationToken requestCancellationToken)
                 {
                     RequiredHostDocumentVersion = requiredHostDocumentVersion;
-                    _onSynchronizedSource = new TaskCompletionSource<bool>();
+                    _onSynchronizedSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                     _cts = CancellationTokenSource.CreateLinkedTokenSource(requestCancellationToken);
 
                     // This cancellation token is the one passed in from the call-site that needs to synchronize an LSP document with a virtual document.
@@ -253,8 +269,10 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                         }
 
                         _synchronizedSet = true;
-                        _onSynchronizedSource.SetResult(result);
                     }
+
+                    _cts.Dispose();
+                    _onSynchronizedSource.SetResult(result);
                 }
             }
         }

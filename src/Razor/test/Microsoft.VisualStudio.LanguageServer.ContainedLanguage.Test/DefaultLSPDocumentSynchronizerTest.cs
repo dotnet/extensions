@@ -157,6 +157,30 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         }
 
         [Fact]
+        public async Task TrySynchronizeVirtualDocumentAsync_DocumentRemoved_CancelsActiveRequests()
+        {
+            // Arrange
+            var (lspDocument, virtualDocument) = CreateDocuments(lspDocumentVersion: 124, virtualDocumentSyncVersion: 123);
+            var fileUriProvider = CreateUriProviderFor(VirtualDocumentTextBuffer, virtualDocument.Uri);
+            var synchronizer = new DefaultLSPDocumentSynchronizer(fileUriProvider)
+            {
+                _synchronizationTimeout = TimeSpan.FromMilliseconds(500)
+            };
+            NotifyLSPDocumentAdded(lspDocument, synchronizer);
+
+            var synchronizedTask = synchronizer.TrySynchronizeVirtualDocumentAsync(lspDocument.Version, virtualDocument, CancellationToken.None).ConfigureAwait(false);
+
+            // Act
+            NotifyLSPDocumentRemoved(lspDocument, synchronizer);
+            NotifyBufferVersionUpdated(VirtualDocumentTextBuffer, lspDocument.Version);
+
+            var result = await synchronizedTask;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
         public async Task TrySynchronizeVirtualDocumentAsync_Timeout_ReturnsFalse()
         {
             // Arrange
@@ -180,6 +204,12 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         private static void NotifyLSPDocumentAdded(LSPDocumentSnapshot lspDocument, DefaultLSPDocumentSynchronizer synchronizer)
         {
             var args = new LSPDocumentChangeEventArgs(old: null, @new: lspDocument, LSPDocumentChangeKind.Added);
+            synchronizer.DocumentManager_Changed(sender: null, args);
+        }
+
+        private static void NotifyLSPDocumentRemoved(LSPDocumentSnapshot lspDocument, DefaultLSPDocumentSynchronizer synchronizer)
+        {
+            var args = new LSPDocumentChangeEventArgs(old: lspDocument, @new: null, LSPDocumentChangeKind.Removed);
             synchronizer.DocumentManager_Changed(sender: null, args);
         }
 
