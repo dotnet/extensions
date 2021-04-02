@@ -11,21 +11,21 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal abstract class CSharpCodeActionProvider
     {
-        protected static readonly Task<IReadOnlyList<CodeAction>> EmptyResult =
-            Task.FromResult(Array.Empty<CodeAction>() as IReadOnlyList<CodeAction>);
+        protected static readonly Task<IReadOnlyList<RazorCodeAction>> EmptyResult =
+            Task.FromResult(Array.Empty<RazorCodeAction>() as IReadOnlyList<RazorCodeAction>);
 
-        public abstract Task<IReadOnlyList<CodeAction>> ProvideAsync(
+        public abstract Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
             RazorCodeActionContext context,
-            IEnumerable<CodeAction> codeActions,
+            IEnumerable<RazorCodeAction> codeActions,
             CancellationToken cancellationToken);
 
-        protected bool InFunctionsBlock(RazorCodeActionContext context)
+        protected static bool InFunctionsBlock(RazorCodeActionContext context)
         {
             var change = new SourceChange(context.Location.AbsoluteIndex, length: 0, newText: string.Empty);
             var syntaxTree = context.CodeDocument.GetSyntaxTree();

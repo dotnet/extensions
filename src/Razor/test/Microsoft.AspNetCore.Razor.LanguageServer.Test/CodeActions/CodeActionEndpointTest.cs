@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.Test.Common;
@@ -22,7 +21,7 @@ using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 using OmniSharp.Extensions.JsonRpc;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
+namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     public class CodeActionEndpointTest : LanguageServerTestBase
     {
@@ -433,12 +432,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
                 c =>
                 {
                     Assert.True(c.IsCodeAction);
-                    Assert.True(c.CodeAction is CodeAction);
+                    Assert.True(c.CodeAction is RazorCodeAction);
                 },
                 c =>
                 {
                     Assert.True(c.IsCodeAction);
-                    Assert.True(c.CodeAction is CodeAction);
+                    Assert.True(c.CodeAction is RazorCodeAction);
                 });
         }
 
@@ -665,7 +664,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
         private static ClientNotifierServiceBase CreateLanguageServer()
         {
             var response = Mock.Of<IResponseRouterReturns>(
-                r => r.Returning<CodeAction[]>(It.IsAny<CancellationToken>()) == Task.FromResult(new[] { new CodeAction() })
+                r => r.Returning<RazorCodeAction[]>(It.IsAny<CancellationToken>()) == Task.FromResult(new[]
+                {
+                    new RazorCodeAction() { Data = JToken.FromObject(new { CustomTags = new[] { "CodeActionName" } }) }
+                })
             , MockBehavior.Strict);
             var languageServer = Mock.Of<ClientNotifierServiceBase>(
                 l => l.SendRequestAsync(LanguageServerConstants.RazorProvideCodeActionsEndpoint, It.IsAny<CodeActionParams>()) == Task.FromResult(response)
@@ -699,47 +701,54 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
 
         private class MockRazorCodeActionProvider : RazorCodeActionProvider
         {
-            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
-                return Task.FromResult(new List<CodeAction>() { new CodeAction() } as IReadOnlyList<CodeAction>);
+                return Task.FromResult(new List<RazorCodeAction>() { new RazorCodeAction() } as IReadOnlyList<RazorCodeAction>);
             }
         }
 
         private class MockMultipleRazorCodeActionProvider : RazorCodeActionProvider
         {
-            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
-                return Task.FromResult(new List<CodeAction>() { new CodeAction(), new CodeAction() } as IReadOnlyList<CodeAction>);
+                return Task.FromResult(new List<RazorCodeAction>()
+                {
+                    new RazorCodeAction(),
+                    new RazorCodeAction()
+                } as IReadOnlyList<RazorCodeAction>);
             }
         }
 
         private class MockCSharpCodeActionProvider : CSharpCodeActionProvider
         {
-            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, IEnumerable<CodeAction> codeActions, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, IEnumerable<RazorCodeAction> codeActions, CancellationToken cancellationToken)
             {
-                return Task.FromResult(new List<CodeAction>() { new CodeAction() } as IReadOnlyList<CodeAction>);
+                return Task.FromResult(new List<RazorCodeAction>()
+                {
+                    new RazorCodeAction()
+                } as IReadOnlyList<RazorCodeAction>);
             }
         }
 
         private class MockRazorCommandProvider : RazorCodeActionProvider
         {
-            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
                 // O# Code Actions don't have `Data`, but `Commands` do
-                return Task.FromResult(new List<CodeAction>() {
-                    new CodeAction() {
+                return Task.FromResult(new List<RazorCodeAction>() {
+                    new RazorCodeAction() {
                         Title = "SomeTitle",
                         Data = JToken.FromObject(new AddUsingsCodeActionParams())
                     }
-                } as IReadOnlyList<CodeAction>);
+                } as IReadOnlyList<RazorCodeAction>);
             }
         }
 
         private class MockNullRazorCodeActionProvider : RazorCodeActionProvider
         {
-            public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+            public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
             {
-                return Task.FromResult<IReadOnlyList<CodeAction>>(null);
+                return Task.FromResult<IReadOnlyList<RazorCodeAction>>(null);
             }
         }
     }

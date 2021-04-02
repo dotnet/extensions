@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return namespaceName;
         }
 
-        internal static CodeAction CreateAddUsingCodeAction(string fullyQualifiedName, DocumentUri uri)
+        internal static RazorCodeAction CreateAddUsingCodeAction(string fullyQualifiedName, DocumentUri uri)
         {
             var @namespace = GetNamespaceFromFQN(fullyQualifiedName);
             if (string.IsNullOrEmpty(@namespace))
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 Data = actionParams,
             };
 
-            return new CodeAction()
+            return new RazorCodeAction()
             {
                 Title = $"@using {@namespace}",
                 Data = JToken.FromObject(resolutionParams)

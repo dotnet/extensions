@@ -6,9 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
@@ -29,9 +34,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             "IDE1007"
         };
 
-        public override Task<IReadOnlyList<CodeAction>> ProvideAsync(
+        public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
             RazorCodeActionContext context,
-            IEnumerable<CodeAction> codeActions,
+            IEnumerable<RazorCodeAction> codeActions,
             CancellationToken cancellationToken)
         {
             if (context is null)
@@ -54,6 +59,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return EmptyResult;
             }
 
+            var results = context.SupportsCodeActionResolve ?
+                ProcessCodeActionsVS(context, codeActions) :
+                ProcessCodeActionsVSCode(context, codeActions);
+
+            var orderedResults = results.OrderBy(codeAction => codeAction.Title).ToArray();
+            return Task.FromResult(orderedResults as IReadOnlyList<RazorCodeAction>);
+        }
+
+        private static IEnumerable<RazorCodeAction> ProcessCodeActionsVSCode(
+            RazorCodeActionContext context,
+            IEnumerable<RazorCodeAction> codeActions)
+        {
             var diagnostics = context.Request.Context.Diagnostics.Where(diagnostic =>
                 diagnostic.Severity == DiagnosticSeverity.Error &&
                 diagnostic.Code?.IsString == true &&
@@ -61,10 +78,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             if (diagnostics is null || !diagnostics.Any())
             {
-                return EmptyResult;
+                return Array.Empty<RazorCodeAction>();
             }
 
-            var results = new List<CodeAction>();
+            var typeAccessibilityCodeActions = new List<RazorCodeAction>();
 
             foreach (var diagnostic in diagnostics)
             {
@@ -80,143 +97,141 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
                 // Based on how we compute `Range.AsTextSpan` it's possible to have a span
                 // which goes beyond the end of the source text. Something likely changed
-                // between the capturing of the diagnostic (by the platform) and the retrieval of the 
+                // between the capturing of the diagnostic (by the platform) and the retrieval of the
                 // document snapshot / source text. In such a case, we skip processing of the diagnostic.
                 if (diagnosticSpan.End > context.SourceText.Length)
                 {
                     continue;
                 }
 
-                var associatedValue = context.SourceText.GetSubTextString(diagnosticSpan);
-
                 foreach (var codeAction in codeActions)
                 {
-                    if (TryProcessCodeAction(
-                            context,
-                            codeAction,
-                            diagnostic,
-                            associatedValue,
-                            out var typeAccessibilityCodeActions))
+                    if (!codeAction.Name.Equals("CodeActionFromVSCode", StringComparison.Ordinal))
                     {
-                        results.AddRange(typeAccessibilityCodeActions);
+                        continue;
+                    }
+
+                    var associatedValue = context.SourceText.GetSubTextString(diagnosticSpan);
+
+                    var fqn = string.Empty;
+
+                    // When there's only one FQN suggestion, code action title is of the form:
+                    // `System.Net.Dns`
+                    if (!codeAction.Title.Any(c => char.IsWhiteSpace(c)) &&
+                        codeAction.Title.EndsWith(associatedValue, StringComparison.OrdinalIgnoreCase))
+                    {
+                        fqn = codeAction.Title;
+                    }
+                    // When there are multiple FQN suggestions, the code action title is of the form:
+                    // `Fully qualify 'Dns' -> System.Net.Dns`
+                    else
+                    {
+                        var expectedCodeActionPrefix = $"Fully qualify '{associatedValue}' -> ";
+                        if (codeAction.Title.StartsWith(expectedCodeActionPrefix, StringComparison.OrdinalIgnoreCase))
+                        {
+                            fqn = codeAction.Title.Substring(expectedCodeActionPrefix.Length);
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(fqn))
+                    {
+                        continue;
+                    }
+
+                    var fqnCodeAction = CreateFQNCodeAction(context, diagnostic, codeAction, fqn);
+                    typeAccessibilityCodeActions.Add(fqnCodeAction);
+
+                    var addUsingCodeAction = AddUsingsCodeActionProviderFactory.CreateAddUsingCodeAction(fqn, context.Request.TextDocument.Uri);
+                    if (addUsingCodeAction != null)
+                    {
+                        typeAccessibilityCodeActions.Add(addUsingCodeAction);
                     }
                 }
             }
 
-            results.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.Ordinal));
-            return Task.FromResult(results as IReadOnlyList<CodeAction>);
+            return typeAccessibilityCodeActions;
         }
 
-        private static bool TryProcessCodeAction(
+        private static IEnumerable<RazorCodeAction> ProcessCodeActionsVS(
             RazorCodeActionContext context,
-            CodeAction codeAction,
-            Diagnostic diagnostic,
-            string associatedValue,
-            out ICollection<CodeAction> typeAccessibilityCodeActions)
+            IEnumerable<RazorCodeAction> codeActions)
         {
-            // VS & VSCode provide type accessibility code actions in different formats
-            // We must handle them seperately.
-            return context.SupportsCodeActionResolve ?
-                TryProcessCodeActionVS(context, codeAction, diagnostic, associatedValue, out typeAccessibilityCodeActions) :
-                TryProcessCodeActionVSCode(context, codeAction, diagnostic, associatedValue, out typeAccessibilityCodeActions);
-        }
+            var typeAccessibilityCodeActions = new List<RazorCodeAction>(1);
 
-        private static bool TryProcessCodeActionVSCode(
-            RazorCodeActionContext context,
-            CodeAction codeAction,
-            Diagnostic diagnostic,
-            string associatedValue,
-            out ICollection<CodeAction> typeAccessibilityCodeActions)
-        {
-            var fqn = string.Empty;
-
-            // When there's only one FQN suggestion, code action title is of the form:
-            // `System.Net.Dns`
-            if (!codeAction.Title.Any(c => char.IsWhiteSpace(c)) &&
-                codeAction.Title.EndsWith(associatedValue, StringComparison.OrdinalIgnoreCase))
+            foreach (var codeAction in codeActions)
             {
-                fqn = codeAction.Title;
-            }
-            // When there are multiple FQN suggestions, the code action title is of the form:
-            // `Fully qualify 'Dns' -> System.Net.Dns`
-            else
-            {
-                var expectedCodeActionPrefix = $"Fully qualify '{associatedValue}' -> ";
-                if (codeAction.Title.StartsWith(expectedCodeActionPrefix, StringComparison.OrdinalIgnoreCase))
+                if (codeAction.Name.Equals(RazorPredefinedCodeFixProviderNames.FullyQualify, StringComparison.Ordinal))
                 {
-                    fqn = codeAction.Title.Substring(expectedCodeActionPrefix.Length);
+                    var node = FindImplicitOrExplicitExpressionNode(context);
+                    string action;
+
+                    // The formatting pass of our Default code action resolver rejects
+                    // implicit/explicit expressions. So if we're in an implicit expression, 
+                    // we run the remapping resolver responsible for simply remapping 
+                    // (without formatting) the resolved code action. We do not support
+                    // explicit expressions due to issues with the remapping methodology
+                    // risking document corruption.
+                    if (node is null)
+                    {
+                        action = LanguageServerConstants.CodeActions.Default;
+                    }
+                    else if (node is CSharpImplicitExpressionSyntax)
+                    {
+                        action = LanguageServerConstants.CodeActions.UnformattedRemap;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    typeAccessibilityCodeActions.Add(codeAction.WrapResolvableCSharpCodeAction(context, action));
+                }
+                // For add using suggestions, the code action title is of the form:
+                // `using System.Net;`
+                else if (codeAction.Name.Equals(RazorPredefinedCodeFixProviderNames.AddImport, StringComparison.Ordinal) &&
+                    AddUsingsCodeActionProviderFactory.TryExtractNamespace(codeAction.Title, out var @namespace))
+                {
+                    codeAction.Title = $"@using {@namespace}";
+                    typeAccessibilityCodeActions.Add(codeAction.WrapResolvableCSharpCodeAction(context, LanguageServerConstants.CodeActions.AddUsing));
+                }
+                // Not a type accessibility code action
+                else
+                {
+                    continue;
                 }
             }
 
-            if (string.IsNullOrEmpty(fqn))
+            return typeAccessibilityCodeActions;
+
+            static SyntaxNode FindImplicitOrExplicitExpressionNode(RazorCodeActionContext context)
             {
-                typeAccessibilityCodeActions = default;
-                return false;
+                var change = new SourceChange(context.Location.AbsoluteIndex, length: 0, newText: string.Empty);
+                var syntaxTree = context.CodeDocument.GetSyntaxTree();
+                if (syntaxTree?.Root is null)
+                {
+                    return null;
+                }
+
+                var owner = syntaxTree.Root.LocateOwner(change);
+                if (owner == null)
+                {
+                    Debug.Fail("Owner should never be null.");
+                    return null;
+                }
+
+                // E.g, (| is position)
+                //
+                // `@|foo` - true
+                // `@(|foo)` - true
+                //
+                return owner.AncestorsAndSelf().FirstOrDefault(n => n is CSharpImplicitExpressionSyntax || n is CSharpExplicitExpressionSyntax);
             }
-
-            typeAccessibilityCodeActions = new List<CodeAction>();
-
-            var fqnCodeAction = CreateFQNCodeAction(context, diagnostic, codeAction, fqn);
-            typeAccessibilityCodeActions.Add(fqnCodeAction);
-
-            var addUsingCodeAction = AddUsingsCodeActionProviderFactory.CreateAddUsingCodeAction(fqn, context.Request.TextDocument.Uri);
-            if (addUsingCodeAction != null)
-            {
-                typeAccessibilityCodeActions.Add(addUsingCodeAction);
-            }
-
-            return true;
         }
 
-        private static bool TryProcessCodeActionVS(
-            RazorCodeActionContext context,
-            CodeAction codeAction,
-            Diagnostic diagnostic,
-            string associatedValue,
-            out ICollection<CodeAction> typeAccessibilityCodeActions)
-        {
-            CodeAction processedCodeAction = null;
-
-            // When there's only one FQN suggestion, code action title is of the form:
-            // `System.Net.Dns`
-            if (!codeAction.Title.Any(c => char.IsWhiteSpace(c)) &&
-                codeAction.Title.EndsWith(associatedValue, StringComparison.OrdinalIgnoreCase))
-            {
-                var fqn = codeAction.Title;
-                processedCodeAction = CreateFQNCodeAction(context, diagnostic, codeAction, fqn);
-            }
-            // When there are multiple FQN suggestions, the code action title is of the form:
-            // `Fully qualify 'Dns'`
-            else if (codeAction.Title.Equals($"Fully qualify '{associatedValue}'", StringComparison.OrdinalIgnoreCase))
-            {
-                // Not currently supported as we need O# CodeAction to support the CodeAction.Children field.
-                // processedCodeAction = codeAction.WrapResolvableCSharpCodeAction(context, LanguageServerConstants.CodeActions.FullyQualifyType);
-
-                typeAccessibilityCodeActions = Array.Empty<CodeAction>();
-                return false;
-            }
-            // For add using suggestions, the code action title is of the form:
-            // `using System.Net;`
-            else if (AddUsingsCodeActionProviderFactory.TryExtractNamespace(codeAction.Title, out var @namespace))
-            {
-                codeAction.Title = $"@using {@namespace}";
-                processedCodeAction = codeAction.WrapResolvableCSharpCodeAction(context, LanguageServerConstants.CodeActions.AddUsing);
-            }
-            // Not a type accessibility code action
-            else
-            {
-                typeAccessibilityCodeActions = Array.Empty<CodeAction>();
-                return false;
-            }
-
-            typeAccessibilityCodeActions = new[] { processedCodeAction };
-            return true;
-        }
-
-        private static CodeAction CreateFQNCodeAction(
+        private static RazorCodeAction CreateFQNCodeAction(
             RazorCodeActionContext context,
             Diagnostic fqnDiagnostic,
-            CodeAction codeAction,
+            RazorCodeAction codeAction,
             string fullyQualifiedName)
         {
             var codeDocumentIdentifier = new VersionedTextDocumentIdentifier() { Uri = context.Request.TextDocument.Uri };
@@ -238,7 +253,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 DocumentChanges = new[] { fqnWorkspaceEditDocumentChange }
             };
 
-            return new CodeAction()
+            return new RazorCodeAction()
             {
                 Title = codeAction.Title,
                 Edit = fqnWorkspaceEdit

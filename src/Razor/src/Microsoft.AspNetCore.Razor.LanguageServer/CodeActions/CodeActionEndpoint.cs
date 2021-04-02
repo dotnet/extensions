@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
@@ -32,6 +34,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
         internal bool _supportsCodeActionResolve = false;
 
+        private readonly IReadOnlyCollection<string> _allAvailableCodeActionNames;
+
         public CodeActionEndpoint(
             RazorDocumentMappingService documentMappingService,
             IEnumerable<RazorCodeActionProvider> razorCodeActionProviders,
@@ -48,6 +52,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             _documentResolver = documentResolver ?? throw new ArgumentNullException(nameof(documentResolver));
             _languageServer = languageServer ?? throw new ArgumentNullException(nameof(languageServer));
             _languageServerFeatureOptions = languageServerFeatureOptions ?? throw new ArgumentNullException(nameof(languageServerFeatureOptions));
+
+            _allAvailableCodeActionNames = GetAllAvailableCodeActionNames();
         }
 
         public CodeActionRegistrationOptions GetRegistrationOptions()
@@ -95,8 +101,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             cancellationToken.ThrowIfCancellationRequested();
 
             var codeActions = Enumerable.Concat(
-                razorCodeActions ?? Array.Empty<CodeAction>(),
-                csharpCodeActions ?? Array.Empty<CodeAction>());
+                razorCodeActions ?? Array.Empty<RazorCodeAction>(),
+                csharpCodeActions ?? Array.Empty<RazorCodeAction>());
 
             if (!codeActions.Any())
             {
@@ -173,7 +179,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return context;
         }
 
-        private async Task<IEnumerable<CodeAction>> GetCSharpCodeActionsAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RazorCodeAction>> GetCSharpCodeActionsAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
             var csharpCodeActions = await GetCSharpCodeActionsFromLanguageServerAsync(context, cancellationToken);
             if (csharpCodeActions is null || !csharpCodeActions.Any())
@@ -181,19 +187,52 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return null;
             }
 
-            var filteredCSharpCodeActions = await FilterCSharpCodeActionsAsync(context, csharpCodeActions, cancellationToken);
+            var csharpNamedCodeActions = ExtractCSharpCodeActionNamesFromData(csharpCodeActions);
+            var filteredCSharpCodeActions = await FilterCSharpCodeActionsAsync(context, csharpNamedCodeActions, cancellationToken);
             return filteredCSharpCodeActions;
         }
 
-        private async Task<IEnumerable<CodeAction>> FilterCSharpCodeActionsAsync(RazorCodeActionContext context, IEnumerable<CodeAction> csharpCodeActions, CancellationToken cancellationToken)
+        private IEnumerable<RazorCodeAction> ExtractCSharpCodeActionNamesFromData(IEnumerable<RazorCodeAction> codeActions)
+        {
+            return codeActions.Where(codeAction =>
+            {
+                // Note: we may see a perf benefit from using a JsonConverter
+                var tags = codeAction.Data["CustomTags"]?.ToObject<string[]>(); ;
+                if (tags is null || tags.Length == 0)
+                {
+                    return false;
+                }
+
+                foreach (var tag in tags)
+                {
+                    if (_allAvailableCodeActionNames.Contains(tag))
+                    {
+                        codeAction.Name = tag;
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(codeAction.Name))
+                {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        private async Task<IEnumerable<RazorCodeAction>> FilterCSharpCodeActionsAsync(
+            RazorCodeActionContext context,
+            IEnumerable<RazorCodeAction> codeActions,
+            CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var tasks = new List<Task<IReadOnlyList<CodeAction>>>();
+            var tasks = new List<Task<IReadOnlyList<RazorCodeAction>>>();
 
             foreach (var provider in _csharpCodeActionProviders)
             {
-                var result = provider.ProvideAsync(context, csharpCodeActions, cancellationToken);
+                var result = provider.ProvideAsync(context, codeActions, cancellationToken);
                 if (result != null)
                 {
                     tasks.Add(result);
@@ -204,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         // Internal for testing
-        internal async Task<IEnumerable<CodeAction>> GetCSharpCodeActionsFromLanguageServerAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+        internal async Task<IEnumerable<RazorCodeAction>> GetCSharpCodeActionsFromLanguageServerAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
             Range projectedRange = null;
             if (context.Request.Range != null &&
@@ -213,7 +252,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                     context.Request.Range,
                     out projectedRange))
             {
-                return Array.Empty<CodeAction>();
+                return Array.Empty<RazorCodeAction>();
             }
 
             context.Request.Range = projectedRange;
@@ -221,14 +260,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             cancellationToken.ThrowIfCancellationRequested();
 
             var response = await _languageServer.SendRequestAsync(LanguageServerConstants.RazorProvideCodeActionsEndpoint, context.Request);
-            return await response.Returning<CodeAction[]>(cancellationToken);
+            return await response.Returning<RazorCodeAction[]>(cancellationToken);
         }
 
-        private async Task<IEnumerable<CodeAction>> GetRazorCodeActionsAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RazorCodeAction>> GetRazorCodeActionsAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var tasks = new List<Task<IReadOnlyList<CodeAction>>>();
+            var tasks = new List<Task<IReadOnlyList<RazorCodeAction>>>();
 
             foreach (var provider in _razorCodeActionProviders)
             {
@@ -242,12 +281,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return await ConsolidateCodeActionsFromProvidersAsync(tasks, cancellationToken);
         }
 
-        private async Task<IEnumerable<CodeAction>> ConsolidateCodeActionsFromProvidersAsync(
-            List<Task<IReadOnlyList<CodeAction>>> tasks,
+        private static async Task<IEnumerable<RazorCodeAction>> ConsolidateCodeActionsFromProvidersAsync(
+            List<Task<IReadOnlyList<RazorCodeAction>>> tasks,
             CancellationToken cancellationToken)
         {
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-            var codeActions = new List<CodeAction>();
+            var codeActions = new List<RazorCodeAction>();
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -262,6 +301,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             return codeActions;
+        }
+
+        private static HashSet<string> GetAllAvailableCodeActionNames()
+        {
+            var availableCodeActionNames = new HashSet<string>();
+
+            var refactoringProviderNames = typeof(RazorPredefinedCodeRefactoringProviderNames)
+                .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public)
+                .Where(property => property.PropertyType == typeof(string))
+                .Select(property => property.GetValue(null) as string);
+            var codeFixProviderNames = typeof(RazorPredefinedCodeFixProviderNames)
+                .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public)
+                .Where(property => property.PropertyType == typeof(string))
+                .Select(property => property.GetValue(null) as string);
+
+            availableCodeActionNames.UnionWith(refactoringProviderNames);
+            availableCodeActionNames.UnionWith(codeFixProviderNames);
+
+            return availableCodeActionNames;
         }
     }
 }

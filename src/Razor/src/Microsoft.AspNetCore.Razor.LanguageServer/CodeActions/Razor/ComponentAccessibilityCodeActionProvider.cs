@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
     internal class ComponentAccessibilityCodeActionProvider : RazorCodeActionProvider
     {
         private static readonly string CreateComponentFromTagTitle = "Create component from tag";
-        private static readonly Task<IReadOnlyList<CodeAction>> EmptyResult = Task.FromResult<IReadOnlyList<CodeAction>>(null);
+        private static readonly Task<IReadOnlyList<RazorCodeAction>> EmptyResult = Task.FromResult<IReadOnlyList<RazorCodeAction>>(null);
 
         private readonly TagHelperFactsService _tagHelperFactsService;
         private readonly FilePathNormalizer _filePathNormalizer;
@@ -35,9 +35,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             _filePathNormalizer = filePathNormalizer ?? throw new ArgumentNullException(nameof(filePathNormalizer));
         }
 
-        public override Task<IReadOnlyList<CodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
+        public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(RazorCodeActionContext context, CancellationToken cancellationToken)
         {
-            var codeActions = new List<CodeAction>();
+            var codeActions = new List<RazorCodeAction>();
 
             // Locate cursor
             var change = new SourceChange(context.Location.AbsoluteIndex, length: 0, newText: string.Empty);
@@ -66,10 +66,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 AddCreateComponentFromTag(context, startTag, codeActions);
             }
 
-            return Task.FromResult(codeActions as IReadOnlyList<CodeAction>);
+            return Task.FromResult(codeActions as IReadOnlyList<RazorCodeAction>);
         }
 
-        private void AddCreateComponentFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<CodeAction> container)
+        private void AddCreateComponentFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<RazorCodeAction> container)
         {
             if (context is null)
             {
@@ -102,14 +102,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 Data = actionParams,
             };
 
-            container.Add(new CodeAction()
+            container.Add(new RazorCodeAction()
             {
                 Title = CreateComponentFromTagTitle,
                 Data = JToken.FromObject(resolutionParams)
             });
         }
 
-        private void AddComponentAccessFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<CodeAction> container)
+        private void AddComponentAccessFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<RazorCodeAction> container)
         {
             var matching = FindMatchingTagHelpers(context, startTag);
 
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 }
 
                 // Fully qualify
-                container.Add(new CodeAction()
+                container.Add(new RazorCodeAction()
                 {
                     Title = $"{fullyQualifiedName}",
                     Edit = CreateRenameTagEdit(context, startTag, fullyQualifiedName),
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             };
         }
 
-        private bool IsTagUnknown(MarkupStartTagSyntax startTag, RazorCodeActionContext context)
+        private static bool IsTagUnknown(MarkupStartTagSyntax startTag, RazorCodeActionContext context)
         {
             foreach (var diagnostic in context.CodeDocument.GetCSharpDocument().Diagnostics)
             {

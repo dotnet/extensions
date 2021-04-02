@@ -144,16 +144,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             throw new NotImplementedException();
         }
 
-        Diagnostic[] ILanguageServiceBroker.GetDiagnostics(Uri uri)
-        {
-            throw new NotImplementedException();
-        }
-
-        IEnumerable<(Uri, Diagnostic[])> ILanguageServiceBroker.GetAllDiagnostics()
-        {
-            throw new NotImplementedException();
-        }
-
         public Task LoadAsync(IContentTypeMetadata contentType, ILanguageClient client)
         {
             throw new NotImplementedException();

@@ -3,36 +3,36 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     internal class DefaultCSharpCodeActionProvider : CSharpCodeActionProvider
     {
-        private static readonly HashSet<Regex> RegexMatchCodeActions = new HashSet<Regex>()
+        // Internal for testing
+        internal static readonly HashSet<string> SupportedDefaultCodeActionNames = new HashSet<string>()
         {
-            // Supports generating the empty constructor `ClassName()`, as well as constructor with args `ClassName(int)`
-            new Regex(@"^Generate constructor '.+\(.*\)'$", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1)),
-
-            new Regex("^Create and assign (property|field) '.+'$", RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1))
+            RazorPredefinedCodeRefactoringProviderNames.GenerateEqualsAndGetHashCodeFromMembers,
+            RazorPredefinedCodeRefactoringProviderNames.AddAwait,
+            RazorPredefinedCodeRefactoringProviderNames.AddDebuggerDisplay,
+            RazorPredefinedCodeRefactoringProviderNames.InitializeMemberFromParameter, // Create and assign (property|field)
+            RazorPredefinedCodeRefactoringProviderNames.AddParameterCheck, // Add Null checks
+            RazorPredefinedCodeRefactoringProviderNames.AddConstructorParametersFromMembers,
+            RazorPredefinedCodeRefactoringProviderNames.GenerateDefaultConstructors,
+            RazorPredefinedCodeRefactoringProviderNames.GenerateConstructorFromMembers,
+            RazorPredefinedCodeRefactoringProviderNames.UseExpressionBody,
+            RazorPredefinedCodeFixProviderNames.ImplementAbstractClass,
+            RazorPredefinedCodeFixProviderNames.ImplementInterface,
+            RazorPredefinedCodeFixProviderNames.SpellCheck,
+            RazorPredefinedCodeFixProviderNames.RemoveUnusedVariable,
         };
 
-        private static readonly HashSet<string> StringMatchCodeActions = new HashSet<string>()
-        {
-            "Generate Equals and GetHashCode",
-            "Add null check",
-            "Add null checks for all parameters",
-            "Add 'DebuggerDisplay' attribute"
-        };
-
-        public override Task<IReadOnlyList<CodeAction>> ProvideAsync(
+        public override Task<IReadOnlyList<RazorCodeAction>> ProvideAsync(
             RazorCodeActionContext context,
-            IEnumerable<CodeAction> codeActions,
+            IEnumerable<RazorCodeAction> codeActions,
             CancellationToken cancellationToken)
         {
             if (context is null)
@@ -59,13 +59,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return EmptyResult;
             }
 
-            var results = codeActions.Where(codeAction =>
-                StringMatchCodeActions.Contains(codeAction.Title) ||
-                RegexMatchCodeActions.Any(pattern => pattern.Match(codeAction.Title).Success)
-            );
+            var results = new List<RazorCodeAction>();
 
-            var wrappedResults = results.Select(c => c.WrapResolvableCSharpCodeAction(context)).ToList();
-            return Task.FromResult(wrappedResults as IReadOnlyList<CodeAction>);
+            foreach (var codeAction in codeActions)
+            {
+                if (SupportedDefaultCodeActionNames.Contains(codeAction.Name))
+                {
+                    results.Add(codeAction.WrapResolvableCSharpCodeAction(context));
+                }
+            }
+
+            return Task.FromResult(results as IReadOnlyList<RazorCodeAction>);
         }
     }
 }

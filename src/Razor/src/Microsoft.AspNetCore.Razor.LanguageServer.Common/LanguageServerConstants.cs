@@ -63,6 +63,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
             public const string AddUsing = "AddUsing";
 
+            /// <summary>
+            /// Remaps without formatting the resolved code action edit
+            /// </summary>
+            public const string UnformattedRemap = "UnformattedRemap";
+
+            /// <summary>
+            /// Remaps and formats the resolved code action edit
+            /// </summary>
             public const string Default = "Default";
 
             public static class Languages

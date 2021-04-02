@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using Microsoft.AspNetCore.Razor.Test.Common;
+using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -18,29 +19,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     public class DefaultCSharpCodeActionProviderTest : LanguageServerTestBase
     {
-        private static readonly CodeAction[] SupportedCodeActions = new CodeAction[]
+        private readonly RazorCodeAction[] SupportedCodeActions;
+
+        public DefaultCSharpCodeActionProviderTest()
         {
-            new CodeAction()
-            {
-                Title = "Generate Equals and GetHashCode"
-            },
-            new CodeAction()
-            {
-                Title = "Add null check"
-            },
-            new CodeAction()
-            {
-                Title = "Add null checks for all parameters"
-            },
-            new CodeAction()
-            {
-                Title = "Add null checks for all parameters"
-            },
-            new CodeAction()
-            {
-                Title = "Generate constructor 'Counter(int)'"
-            }
-        };
+            SupportedCodeActions = DefaultCSharpCodeActionProvider
+                .SupportedDefaultCodeActionNames
+                .Select(name => new RazorCodeAction() { Name = name })
+                .ToArray();
+        }
 
         [Fact]
         public async Task ProvideAsync_ValidCodeActions_ReturnsProvidedCodeAction()
@@ -66,9 +53,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             // Assert
             Assert.Equal(SupportedCodeActions.Length, providedCodeActions.Count);
-            var providedTitles = providedCodeActions.Select(action => action.Title);
-            var expectedTitles = SupportedCodeActions.Select(action => action.Title);
-            Assert.Equal(expectedTitles, providedTitles);
+            var providedNames = providedCodeActions.Select(action => action.Name);
+            var expectedNames = SupportedCodeActions.Select(action => action.Name);
+            Assert.Equal(expectedNames, providedNames);
         }
 
         [Fact]
@@ -142,17 +129,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new DefaultCSharpCodeActionProvider();
 
-            var codeActions = new CodeAction[]
+            var codeActions = new RazorCodeAction[]
             {
-                new CodeAction()
-                {
-                    Title = "Do something not really supported in razor"
-                },
-                new CodeAction()
-                {
-                    // Invalid regex pattern shouldn't match
-                    Title = "Generate constructor 'Counter(int)' xyz"
-                }
+               new RazorCodeAction()
+               {
+                   Title = "Do something not really supported in razor",
+                   Name = "Non-existant name"
+               }
             };
 
             // Act
@@ -173,7 +156,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         {
             var tagHelpers = Array.Empty<TagHelperDescriptor>();
             var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
-            var projectEngine = RazorProjectEngine.Create(builder => {
+            var projectEngine = RazorProjectEngine.Create(builder =>
+            {
                 builder.AddTagHelpers(tagHelpers);
             });
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), tagHelpers);

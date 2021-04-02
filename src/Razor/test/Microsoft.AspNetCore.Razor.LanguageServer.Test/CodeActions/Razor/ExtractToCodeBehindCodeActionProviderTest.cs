@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -18,7 +17,7 @@ using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
+namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     public class ExtractToCodeBehindCodeActionProviderTest : LanguageServerTestBase
     {

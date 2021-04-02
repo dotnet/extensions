@@ -63,6 +63,6 @@ export class CodeActionsHandler {
     }
 
     private commandAsCodeAction(command: vscode.Command): RazorCodeAction {
-        return { title: command.title } as RazorCodeAction;
+        return { title: command.title, data: { CustomTags: [ 'CodeActionFromVSCode' ] } } as RazorCodeAction;
     }
 }

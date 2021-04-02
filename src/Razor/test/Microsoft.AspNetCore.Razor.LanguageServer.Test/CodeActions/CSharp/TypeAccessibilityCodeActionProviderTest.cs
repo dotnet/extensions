@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new CodeAction()
+                new RazorCodeAction()
                 {
                     Title = "System.Net.Dns"
                 }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         }
 
         [Fact]
-        public async Task Handle_InvalidDiagnostics_ReturnsEmpty()
+        public async Task Handle_InvalidDiagnostics_VSCode_ReturnsEmpty()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -91,12 +91,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             };
 
             var location = new SourceLocation(0, -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(0, 0));
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(0, 0), supportsCodeActionResolve: false);
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new CodeAction()
+                new RazorCodeAction()
                 {
                     Title = "System.Net.Dns"
                 }
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             context.CodeDocument.SetFileKind(FileKinds.Legacy);
 
             var provider = new TypeAccessibilityCodeActionProvider();
-            var csharpCodeActions = Array.Empty<CodeAction>();
+            var csharpCodeActions = Array.Empty<RazorCodeAction>();
 
             // Act
             var results = await provider.ProvideAsync(context, csharpCodeActions, default);
@@ -145,67 +145,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             Assert.Empty(results);
         }
 
-        [Fact]
-        public async Task Handle_ValidDiagnostic_InvalidCodeAction_ReturnsEmpty()
-        {
-            // Arrange
-            var documentPath = "c:/Test.razor";
-            var contents = "@code { Path; }";
-            var request = new CodeActionParams()
-            {
-                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
-                Range = new Range(),
-                Context = new CodeActionContext()
-                {
-                    Diagnostics = new Container<Diagnostic>(
-                        new Diagnostic()
-                        {
-                            Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0132")
-                        },
-                        new Diagnostic()
-                        {
-                            Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0246"),
-                            Range = new Range(
-                                new Position(0, 8),
-                                new Position(0, 12)
-                            )
-                        },
-                        new Diagnostic()
-                        {
-                            Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0183")
-                        }
-                    )
-                }
-            };
-
-            var location = new SourceLocation(0, -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
-            context.CodeDocument.SetFileKind(FileKinds.Legacy);
-
-            var provider = new TypeAccessibilityCodeActionProvider();
-
-            // A valid code actions is expected to end with `Path` as that's the `associatedText`
-            // indicated in the `Diagnostic.Range` for `CS0246` above.
-            var csharpCodeActions = new[] {
-                new CodeAction()
-                {
-                    Title = "System.IO.OneThing"
-                },
-                new CodeAction()
-                {
-                    Title = "System.IO.SomethingElse"
-                }
-            };
-
-            // Act
-            var results = await provider.ProvideAsync(context, csharpCodeActions, default);
-
-            // Assert
-            Assert.Empty(results);
-        }
 
         [Theory]
         [InlineData("CS0246")]
@@ -252,13 +191,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new CodeAction()
+                new RazorCodeAction()
                 {
-                    Title = "System.IO.Path"
+                    Title = "System.IO.Path",
+                    Name = "CodeActionFromVSCode"
                 },
-                new CodeAction()
+                new RazorCodeAction()
                 {
-                    Title = "System.IO.SomethingElse"
+                    Title = "System.IO.SomethingElse",
+                    Name = "CodeActionFromVSCode"
                 }
             };
 
@@ -267,14 +208,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             // Assert
             Assert.Collection(results,
-                r => {
+                r =>
+                {
                     Assert.Equal("@using System.IO", r.Title);
                     Assert.Null(r.Edit);
                     Assert.NotNull(r.Data);
                     var resolutionParams = (r.Data as JObject).ToObject<RazorCodeActionResolutionParams>();
                     Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
                 },
-                r => {
+                r =>
+                {
                     Assert.Equal("System.IO.Path", r.Title);
                     Assert.NotNull(r.Edit);
                     Assert.Null(r.Data);
@@ -282,11 +225,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             );
         }
 
-        [Theory]
-        [InlineData("CS0246")]
-        [InlineData("CS0103")]
-        [InlineData("IDE1007")]
-        public async Task Handle_ValidDiagnostic_ValidCodeAction_VS_ReturnsCodeActions(string errorCode)
+        [Fact]
+        public async Task Handle_ValidCodeAction_VS_ReturnsCodeActions()
         {
             // Arrange
             var documentPath = "c:/Test.razor";
@@ -297,27 +237,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 Range = new Range(),
                 Context = new CodeActionContext()
                 {
-                    Diagnostics = new Container<Diagnostic>(
-                        new Diagnostic()
-                        {
-                            Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0132")
-                        },
-                        new Diagnostic()
-                        {
-                            Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode(errorCode),
-                            Range = new Range(
-                                new Position(0, 8),
-                                new Position(0, 12)
-                            )
-                        },
-                        new Diagnostic()
-                        {
-                            Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0183")
-                        }
-                    )
+                    Diagnostics = new Container<Diagnostic>()
                 }
             };
 
@@ -327,17 +247,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new CodeAction()
+                new RazorCodeAction()
                 {
-                    Title = "System.IO.Path"
+                    Title = "System.IO.Path",
+                    Name = "FullyQualify"
                 },
-                new CodeAction()
+                new RazorCodeAction()
                 {
-                    Title = "using System.IO;"
-                },
-                new CodeAction()
-                {
-                    Title = "System.IO.SomethingElse"
+                    Title = "using System.IO;",
+                    Name = "AddImport"
                 }
             };
 
@@ -346,109 +264,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             // Assert
             Assert.Collection(results,
-                r => {
+                r =>
+                {
                     Assert.Equal("@using System.IO", r.Title);
                     Assert.Null(r.Edit);
                     Assert.NotNull(r.Data);
                     var resolutionParams = (r.Data as JObject).ToObject<RazorCodeActionResolutionParams>();
                     Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
                 },
-                r => {
+                r =>
+                {
                     Assert.Equal("System.IO.Path", r.Title);
-                    Assert.NotNull(r.Edit);
-                    Assert.Null(r.Data);
+                    Assert.Null(r.Edit);
+                    Assert.NotNull(r.Data);
                 }
             );
-        }
-
-        [Fact]
-        public async Task Handle_InvalidDiagnostic_EndOutOfRange_ValidCodeAction_ReturnsEmpty()
-        {
-            // Arrange
-            var documentPath = "c:/Test.razor";
-            var contents = "@code { Path; }";
-            var request = new CodeActionParams()
-            {
-                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
-                Range = new Range(),
-                Context = new CodeActionContext()
-                {
-                    Diagnostics = new Container<Diagnostic>(
-                        new Diagnostic()
-                        {
-                            Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0246"),
-                            Range = new Range(
-                                new Position(0, 8),
-                                new Position(0, 16)
-                            )
-                        }
-                    )
-                }
-            };
-
-            var location = new SourceLocation(0, -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
-            context.CodeDocument.SetFileKind(FileKinds.Legacy);
-
-            var provider = new TypeAccessibilityCodeActionProvider();
-            var csharpCodeActions = new[] {
-                new CodeAction()
-                {
-                    Title = "System.IO.Path"
-                }
-            };
-
-            // Act
-            var results = await provider.ProvideAsync(context, csharpCodeActions, default);
-
-            // Assert
-            Assert.Empty(results);
-        }
-
-        [Fact]
-        public async Task Handle_InvalidDiagnostic_StartOutOfRange_ValidCodeAction_ReturnsEmpty()
-        {
-            // Arrange
-            var documentPath = "c:/Test.razor";
-            var contents = "@code { \nPath; }";
-            var request = new CodeActionParams()
-            {
-                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
-                Range = new Range(),
-                Context = new CodeActionContext()
-                {
-                    Diagnostics = new Container<Diagnostic>(
-                        new Diagnostic()
-                        {
-                            Severity = DiagnosticSeverity.Error,
-                            Code = new DiagnosticCode("CS0246"),
-                            Range = new Range(
-                                new Position(0, 9),
-                                new Position(1, 12)
-                            )
-                        }
-                    )
-                }
-            };
-
-            var location = new SourceLocation(0, -1, -1);
-            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(8, 4));
-            context.CodeDocument.SetFileKind(FileKinds.Legacy);
-
-            var provider = new TypeAccessibilityCodeActionProvider();
-            var csharpCodeActions = new[] {
-                new CodeAction()
-                {
-                    Title = "System.IO.Path"
-                }
-            };
-
-            // Act
-            var results = await provider.ProvideAsync(context, csharpCodeActions, default);
-
-            // Assert
-            Assert.Empty(results);
         }
 
         [Fact]
@@ -493,13 +323,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             var provider = new TypeAccessibilityCodeActionProvider();
             var csharpCodeActions = new[] {
-                new CodeAction()
+                new RazorCodeAction()
                 {
-                    Title = "Fully qualify 'Path' -> System.IO.Path"
+                    Title = "Fully qualify 'Path' -> System.IO.Path",
+                    Name = "CodeActionFromVSCode"
                 },
-                new CodeAction()
+                new RazorCodeAction()
                 {
-                    Title = "Fully qualify 'Path' -> SuperSpecialNamespace.Path"
+                    Title = "Fully qualify 'Path' -> SuperSpecialNamespace.Path",
+                    Name = "CodeActionFromVSCode"
                 }
             };
 
@@ -508,26 +340,30 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             // Assert
             Assert.Collection(results,
-                r => {
+                r =>
+                {
                     Assert.Equal("@using SuperSpecialNamespace", r.Title);
                     Assert.Null(r.Edit);
                     Assert.NotNull(r.Data);
                     var resolutionParams = (r.Data as JObject).ToObject<RazorCodeActionResolutionParams>();
                     Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
                 },
-                r => {
+                r =>
+                {
                     Assert.Equal("@using System.IO", r.Title);
                     Assert.Null(r.Edit);
                     Assert.NotNull(r.Data);
                     var resolutionParams = (r.Data as JObject).ToObject<RazorCodeActionResolutionParams>();
                     Assert.Equal(LanguageServerConstants.CodeActions.AddUsing, resolutionParams.Action);
                 },
-                r => {
+                r =>
+                {
                     Assert.Equal("Fully qualify 'Path' -> SuperSpecialNamespace.Path", r.Title);
                     Assert.NotNull(r.Edit);
                     Assert.Null(r.Data);
                 },
-                r => {
+                r =>
+                {
                     Assert.Equal("Fully qualify 'Path' -> System.IO.Path", r.Title);
                     Assert.NotNull(r.Edit);
                     Assert.Null(r.Data);
@@ -552,7 +388,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var tagHelpers = new[] { shortComponent.Build(), fullyQualifiedComponent.Build() };
 
             var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
-            var projectEngine = RazorProjectEngine.Create(builder => {
+            var projectEngine = RazorProjectEngine.Create(builder =>
+            {
                 builder.AddTagHelpers(tagHelpers);
             });
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), tagHelpers);

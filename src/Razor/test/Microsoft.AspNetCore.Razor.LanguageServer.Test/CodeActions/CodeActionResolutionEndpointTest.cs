@@ -4,7 +4,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.Test.Common;
@@ -13,7 +12,7 @@ using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.CodeActions
+namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     public class CodeActionResolutionEndpointTest : LanguageServerTestBase
     {
