@@ -201,6 +201,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             Assert.True(mappedTextEdits);
             Assert.NotNull(response);
         }
+
         [Fact]
         public async Task HandleRequestAsync_InvokesCSharpServer_RemapsEdits()
         {

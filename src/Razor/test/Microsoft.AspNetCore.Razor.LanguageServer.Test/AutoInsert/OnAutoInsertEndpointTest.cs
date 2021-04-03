@@ -18,9 +18,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    public class OnTypeAutoInsertEndpointTest : LanguageServerTestBase
+    public class OnAutoInsertEndpointTest : LanguageServerTestBase
     {
-        public OnTypeAutoInsertEndpointTest()
+        public OnAutoInsertEndpointTest()
         {
             EmptyDocumentResolver = Mock.Of<DocumentResolver>(r => r.TryResolveDocument(It.IsAny<string>(), out It.Ref<DocumentSnapshot>.IsAny) == false, MockBehavior.Strict);
         }
