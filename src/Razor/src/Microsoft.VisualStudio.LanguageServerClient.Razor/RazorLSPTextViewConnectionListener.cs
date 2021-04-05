@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Threading;
 using MediatR;
 using Microsoft.AspNetCore.Razor.LanguageServer;
@@ -233,17 +234,28 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // options later when the server sends us a workspace/configuration request.
             _clientOptionsMonitor.UpdateOptions(settings);
 
-            // Make sure the server updates the settings on their side by sending a
-            // workspace/didChangeConfiguration request. This notifies the server that the user's
-            // settings have changed. The server will then query the client's options monitor (already
-            // updated via the line above) by sending a workspace/configuration request.
-            // NOTE: This flow uses polyfilling because VS doesn't yet support workspace configuration
-            // updates. Once they do, we can get rid of this extra logic.
-            await _requestInvoker.ReinvokeRequestOnServerAsync<DidChangeConfigurationParams, Unit>(
-                Methods.WorkspaceDidChangeConfigurationName,
-                RazorLSPConstants.RazorLSPContentTypeName,
-                new DidChangeConfigurationParams(),
-                CancellationToken.None);
+            try
+            {
+                // Make sure the server updates the settings on their side by sending a
+                // workspace/didChangeConfiguration request. This notifies the server that the user's
+                // settings have changed. The server will then query the client's options monitor (already
+                // updated via the line above) by sending a workspace/configuration request.
+                // NOTE: This flow uses polyfilling because VS doesn't yet support workspace configuration
+                // updates. Once they do, we can get rid of this extra logic.
+                await _requestInvoker.ReinvokeRequestOnServerAsync<DidChangeConfigurationParams, Unit>(
+                    Methods.WorkspaceDidChangeConfigurationName,
+                    RazorLSPConstants.RazorLSPContentTypeName,
+                    new DidChangeConfigurationParams(),
+                    CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                // This may happen if the TextView finishes attaching before the Razor language server is
+                // initialized. Ideally, the platform should be queuing requests until the language server
+                // is ready. However, we should catch any exceptions here just in case since VS will crash
+                // if an exception is hit in this method.
+                Debug.Fail($"Error executing workspace/didChangeConfiguration request: {ex.Message}");
+            }
         }
 
         private static EditorSettings GetRazorEditorOptions(IVsTextManager2 textManager)
