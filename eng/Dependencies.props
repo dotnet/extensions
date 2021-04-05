@@ -6,7 +6,7 @@
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto">
     <InternalAspNetCoreSdkPackageVersion>2.1.7-build-20200221.1</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>2.1.23</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.1.26</MicrosoftNETCoreAppPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <SystemDataSqlClientPackageVersion>4.5.3</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
@@ -17,7 +17,7 @@
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.3</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.2</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>4.5.0</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.5.0</SystemTextEncodingsWebPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.5.1</SystemTextEncodingsWebPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.4</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
   </PropertyGroup>
@@ -41,34 +41,34 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' " Label="MSBuild">
-    <LatestPackageReference Include="Microsoft.Build" Version="15.6.82" />
-    <LatestPackageReference Include="Microsoft.Build.Framework" Version="15.6.82" />
-    <LatestPackageReference Include="Microsoft.Build.Tasks.Core" Version="15.6.82" />
-    <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="15.6.82" />
+    <LatestPackageReference Include="Microsoft.Build" Version="15.6.85" />
+    <LatestPackageReference Include="Microsoft.Build.Framework" Version="15.6.85" />
+    <LatestPackageReference Include="Microsoft.Build.Tasks.Core" Version="15.6.85" />
+    <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="15.6.85" />
   </ItemGroup>
 
   <ItemGroup Label="External dependencies">
-    <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
+    <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.14" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="2.1.0" />
-    <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
+    <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
-    <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.1" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.8.0" />
+    <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.3" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.8.2" />
     <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
-    <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-    <LatestPackageReference Include="Moq" Version="4.10.0" />
+    <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.2" />
+    <LatestPackageReference Include="Moq" Version="4.10.1" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <LatestPackageReference Include="Polly.Extensions.Http" Version="2.0.1" />
     <LatestPackageReference Include="Polly" Version="6.0.1" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
     <LatestPackageReference Include="Serilog.Sinks.File" Version="3.2.0" />
-    <LatestPackageReference Include="StackExchange.Redis.StrongName" Version="1.2.4" />
-    <LatestPackageReference Include="xunit.abstractions" Version="2.0.1" />
+    <LatestPackageReference Include="StackExchange.Redis.StrongName" Version="1.2.8" />
+    <LatestPackageReference Include="xunit.abstractions" Version="2.0.3" />
     <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
-    <LatestPackageReference Include="xunit.assert" Version="2.3.1" />
-    <LatestPackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
-    <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
-    <LatestPackageReference Include="xunit" Version="2.4.0" />
+    <LatestPackageReference Include="xunit.assert" Version="2.4.1" />
+    <LatestPackageReference Include="xunit.extensibility.execution" Version="2.4.1" />
+    <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
+    <LatestPackageReference Include="xunit" Version="2.4.1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
