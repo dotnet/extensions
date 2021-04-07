@@ -23,6 +23,8 @@
     <IsPackable>false</IsPackable>
 
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+
+    <SetupProductArch>neutral</SetupProductArch>
   </PropertyGroup>
 
   <!-- Include Razor SDK design time assets in the VSIX -->
