@@ -2,8 +2,8 @@
   <PropertyGroup>
     <MajorVersion>2</MajorVersion>
     <MinorVersion>1</MinorVersion>
-    <PatchVersion>27</PatchVersion>
-    <ValidateBaseline>true</ValidateBaseline>
+    <PatchVersion>28</PatchVersion>
+    <ValidateBaseline>false</ValidateBaseline>
 
     <PreReleaseLabel>servicing</PreReleaseLabel>
     <PreReleaseBrandingLabel></PreReleaseBrandingLabel>
