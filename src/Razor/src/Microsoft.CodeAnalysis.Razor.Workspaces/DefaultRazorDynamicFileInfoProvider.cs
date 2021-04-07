@@ -63,17 +63,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             documentContainer.SupportsDiagnostics = true;
 
             var filePath = documentUri.GetAbsoluteOrUNCPath().Replace('/', '\\');
-            KeyValuePair<Key, Entry>? associatedKvp = null;
-            foreach (var entry in _entries)
-            {
-                if (FilePathComparer.Instance.Equals(filePath, entry.Key.FilePath))
-                {
-                    associatedKvp = entry;
-                    break;
-                }
-            }
-
-            if (associatedKvp == null)
+            if (!TryGetKeyAndEntry(filePath, out var associatedKvp))
             {
                 return;
             }
@@ -121,6 +111,64 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
 
                 Updated?.Invoke(this, documentContainer.FilePath);
             }
+        }
+
+        // Called by us to promote a background document (i.e. assign to a client name). Promoting a background
+        // document will allow it to be recognized by the C# server.
+        public void PromoteBackgroundDocument(Uri documentUri, IRazorDocumentPropertiesService propertiesService)
+        {
+            if (documentUri is null)
+            {
+                throw new ArgumentNullException(nameof(documentUri));
+            }
+
+            if (propertiesService is null)
+            {
+                throw new ArgumentNullException(nameof(propertiesService));
+            }
+
+            var filePath = documentUri.GetAbsoluteOrUNCPath().Replace('/', '\\');
+            if (!TryGetKeyAndEntry(filePath, out var associatedKvp))
+            {
+                return;
+            }
+
+            var associatedKey = associatedKvp.Value.Key;
+            var associatedEntry = associatedKvp.Value.Value;
+
+            var filename = associatedKey.FilePath + ".g.cs";
+
+            // To promote the background document, we just need to add the passed in properties service to
+            // the dynamic file info. The properties service contains the client name and allows the C#
+            // server to recognize the document.
+            var documentServiceProvider = associatedEntry.Current.DocumentServiceProvider;
+            var excerptService = documentServiceProvider.GetService<IRazorDocumentExcerptService>();
+            var mappingService = documentServiceProvider.GetService<IRazorSpanMappingService>();
+            var emptyContainer = new PromotedDynamicDocumentContainer(
+                documentUri, propertiesService, excerptService, mappingService, associatedEntry.Current.TextLoader);
+
+            lock (associatedEntry.Lock)
+            {
+                associatedEntry.Current = new RazorDynamicFileInfo(
+                    filename, associatedEntry.Current.SourceCodeKind, associatedEntry.Current.TextLoader, _factory.Create(emptyContainer));
+            }
+
+            Updated?.Invoke(this, filePath);
+        }
+
+        private bool TryGetKeyAndEntry(string filePath, out KeyValuePair<Key, Entry>? associatedKvp)
+        {
+            associatedKvp = null;
+            foreach (var entry in _entries)
+            {
+                if (FilePathComparer.Instance.Equals(filePath, entry.Key.FilePath))
+                {
+                    associatedKvp = entry;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // Called by us when a document opens in the editor
@@ -304,6 +352,57 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 // won't work for projects with Razor files.
                 return Task.FromResult(TextAndVersion.Create(SourceText.From("", Encoding.UTF8), _version, _filePath));
             }
+        }
+
+        private class PromotedDynamicDocumentContainer : DynamicDocumentContainer
+        {
+            private readonly Uri _documentUri;
+            private readonly IRazorDocumentPropertiesService _documentPropertiesService;
+            private readonly IRazorDocumentExcerptService _documentExcerptService;
+            private readonly IRazorSpanMappingService _spanMappingService;
+            private readonly TextLoader _textLoader;
+
+            public PromotedDynamicDocumentContainer(
+                Uri documentUri,
+                IRazorDocumentPropertiesService documentPropertiesService,
+                IRazorDocumentExcerptService documentExcerptService,
+                IRazorSpanMappingService spanMappingService,
+                TextLoader textLoader)
+            {
+                // It's valid for the excerpt service and span mapping service to be null in this class,
+                // so we purposefully don't null check them below.
+
+                if (documentUri is null)
+                {
+                    throw new ArgumentNullException(nameof(documentUri));
+                }
+
+                if (documentPropertiesService is null)
+                {
+                    throw new ArgumentNullException(nameof(documentPropertiesService));
+                }
+
+                if (textLoader is null)
+                {
+                    throw new ArgumentNullException(nameof(textLoader));
+                }
+
+                _documentUri = documentUri;
+                _documentPropertiesService = documentPropertiesService;
+                _documentExcerptService = documentExcerptService;
+                _spanMappingService = spanMappingService;
+                _textLoader = textLoader;
+            }
+
+            public override string FilePath => _documentUri.LocalPath;
+
+            public override IRazorDocumentPropertiesService GetDocumentPropertiesService() => _documentPropertiesService;
+
+            public override IRazorDocumentExcerptService GetExcerptService() => _documentExcerptService;
+
+            public override IRazorSpanMappingService GetMappingService() => _spanMappingService;
+
+            public override TextLoader GetTextLoader(string filePath) => _textLoader;
         }
     }
 }

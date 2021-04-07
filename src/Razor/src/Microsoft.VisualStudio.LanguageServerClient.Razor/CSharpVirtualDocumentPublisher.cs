@@ -31,6 +31,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(dynamicFileInfoProvider));
             }
 
+            if (lspDocumentMappingProvider is null)
+            {
+                throw new ArgumentNullException(nameof(lspDocumentMappingProvider));
+            }
+
             _dynamicFileInfoProvider = dynamicFileInfoProvider;
             _lspDocumentMappingProvider = lspDocumentMappingProvider;
         }
@@ -48,6 +53,18 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         // Internal for testing
         internal void DocumentManager_Changed(object sender, LSPDocumentChangeEventArgs args)
         {
+            // We need the below check to address a race condition between when a request is sent to the C# server
+            // for a generated document and when the C# server receives a document/didOpen notification. This race
+            // condition may occur when the Razor server finishes initializing before C# receives and processes the
+            // document open request.
+            // This workaround adds the Razor client name to the generated document so the C# server will recognize
+            // it, despite the document not being formally opened. Note this is meant to only be a temporary
+            // workaround until a longer-term solution is implemented in the future.
+            if (args.Kind == LSPDocumentChangeKind.Added && _dynamicFileInfoProvider is DefaultRazorDynamicFileInfoProvider defaultProvider)
+            {
+                defaultProvider.PromoteBackgroundDocument(args.New.Uri, CSharpDocumentPropertiesService.Instance);
+            }
+
             if (args.Kind != LSPDocumentChangeKind.VirtualDocumentChanged)
             {
                 return;
