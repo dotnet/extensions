@@ -69,36 +69,52 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
         public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
         {
-            AddSemanticRange(node.OpenAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
-            if (node.Bang != null)
+            if (node.IsMarkupTransition)
             {
-                AddSemanticRange(node.Bang, RazorSemanticTokensLegend.MarkupElement);
+                AddSemanticRange(node, RazorSemanticTokensLegend.RazorDirective);
             }
-
-            AddSemanticRange(node.Name, RazorSemanticTokensLegend.MarkupElement);
-
-            Visit(node.Attributes);
-            if (node.ForwardSlash != null)
+            else
             {
-                AddSemanticRange(node.ForwardSlash, RazorSemanticTokensLegend.MarkupTagDelimiter);
+                AddSemanticRange(node.OpenAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
+                if (node.Bang != null)
+                {
+                    AddSemanticRange(node.Bang, RazorSemanticTokensLegend.MarkupElement);
+                }
+
+                AddSemanticRange(node.Name, RazorSemanticTokensLegend.MarkupElement);
+
+                Visit(node.Attributes);
+                if (node.ForwardSlash != null)
+                {
+                    AddSemanticRange(node.ForwardSlash, RazorSemanticTokensLegend.MarkupTagDelimiter);
+                }
+                AddSemanticRange(node.CloseAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
             }
-            AddSemanticRange(node.CloseAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
         }
 
         public override void VisitMarkupEndTag(MarkupEndTagSyntax node)
         {
-            AddSemanticRange(node.OpenAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
-            if (node.Bang != null)
+            if (node.IsMarkupTransition)
             {
-                AddSemanticRange(node.Bang, RazorSemanticTokensLegend.MarkupElement);
+                AddSemanticRange(node, RazorSemanticTokensLegend.RazorDirective);
             }
+            else
+            {
+                AddSemanticRange(node.OpenAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
+                if (node.Bang != null)
+                {
+                    AddSemanticRange(node.Bang, RazorSemanticTokensLegend.MarkupElement);
+                }
 
-            if (node.ForwardSlash != null)
-            {
-                AddSemanticRange(node.ForwardSlash, RazorSemanticTokensLegend.MarkupTagDelimiter);
+                if (node.ForwardSlash != null)
+                {
+                    AddSemanticRange(node.ForwardSlash, RazorSemanticTokensLegend.MarkupTagDelimiter);
+                }
+
+                AddSemanticRange(node.Name, RazorSemanticTokensLegend.MarkupElement);
+
+                AddSemanticRange(node.CloseAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
             }
-            AddSemanticRange(node.Name, RazorSemanticTokensLegend.MarkupElement);
-            AddSemanticRange(node.CloseAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
         }
 
         public override void VisitMarkupCommentBlock(MarkupCommentBlockSyntax node)
@@ -130,29 +146,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         #endregion HTML
 
         #region C#
-        public override void VisitCSharpStatement(CSharpStatementSyntax node)
-        {
-            AddSemanticRange(node.Transition, RazorSemanticTokensLegend.RazorTransition);
-            Visit(node.Body);
-        }
 
         public override void VisitCSharpStatementBody(CSharpStatementBodySyntax node)
         {
             AddSemanticRange(node.OpenBrace, RazorSemanticTokensLegend.RazorTransition);
             Visit(node.CSharpCode);
             AddSemanticRange(node.CloseBrace, RazorSemanticTokensLegend.RazorTransition);
-        }
-
-        public override void VisitCSharpImplicitExpression(CSharpImplicitExpressionSyntax node)
-        {
-            AddSemanticRange(node.Transition, RazorSemanticTokensLegend.RazorTransition);
-            Visit(node.Body);
-        }
-
-        public override void VisitCSharpExplicitExpression(CSharpExplicitExpressionSyntax node)
-        {
-            AddSemanticRange(node.Transition, RazorSemanticTokensLegend.RazorTransition);
-            Visit(node.Body);
         }
 
         public override void VisitCSharpExplicitExpressionBody(CSharpExplicitExpressionBodySyntax node)
@@ -171,12 +170,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             AddSemanticRange(node.Comment, RazorSemanticTokensLegend.RazorComment);
             AddSemanticRange(node.EndCommentStar, RazorSemanticTokensLegend.RazorCommentStar);
             AddSemanticRange(node.EndCommentTransition, RazorSemanticTokensLegend.RazorCommentTransition);
-        }
-
-        public override void VisitRazorDirective(RazorDirectiveSyntax node)
-        {
-            AddSemanticRange(node.Transition, RazorSemanticTokensLegend.RazorTransition);
-            Visit(node.Body);
         }
 
         public override void VisitRazorMetaCode(RazorMetaCodeSyntax node)
@@ -303,7 +296,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         {
             if (node.TagHelperAttributeInfo.Bound)
             {
-                AddSemanticRange(node.Transition, RazorSemanticTokensLegend.RazorTransition);
+                Visit(node.Transition);
                 Visit(node.NamePrefix);
                 AddSemanticRange(node.Name, RazorSemanticTokensLegend.RazorDirectiveAttribute);
                 Visit(node.NameSuffix);
@@ -343,6 +336,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                     AddSemanticRange(node.ParameterName, RazorSemanticTokensLegend.RazorDirectiveAttribute);
                 }
             }
+        }
+
+        public override void VisitCSharpTransition(CSharpTransitionSyntax node)
+        {
+            AddSemanticRange(node, RazorSemanticTokensLegend.RazorTransition);
+        }
+
+        public override void VisitMarkupTransition(MarkupTransitionSyntax node)
+        {
+            AddSemanticRange(node, RazorSemanticTokensLegend.RazorTransition);
         }
         #endregion Razor
 

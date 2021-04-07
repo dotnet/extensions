@@ -167,7 +167,7 @@
           <key>vsclassificationtype</key>
           <string>class name</string>
         </dict>
-      </dict> -->
+      </dict>
 
       <dict>
         <key>scope</key>
@@ -179,9 +179,7 @@
         </dict>
       </dict>
 
-      <!-- Temporarily removed because in VS TextMate sometimes superceeds Semantic tokens
-        and this is a common offender -->
-      <!-- <dict>
+      <dict>
         <key>scope</key>
         <string>variable.other.object.cs, entity.name.variable.local.cs</string>
         <key>settings</key>

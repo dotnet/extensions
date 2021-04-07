@@ -563,6 +563,36 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Semantic
 
             await AssertSemanticTokensAsync(txt, isRazor: true);
         }
+
+        [Fact]
+        public async Task GetSemanticTokens_Razor_NestedTextDirectives()
+        {
+            var txt = @$"@functions {{
+                private void BidsByShipment(string generatedId, int bids)
+                {{
+                    if (bids > 0)
+                    {{
+                        <a class=""Thing"">
+                            @if(bids > 0)
+                            {{
+                                <text>@DateTime.Now</text>
+                            }}
+                        </a>
+                    }}
+                }}";
+
+            await AssertSemanticTokensAsync(txt, isRazor: false);
+        }
+
+        [Fact]
+        public async Task GetSemanticTokens_Razor_NestedTransitions()
+        {
+            var txt = @$"@functions {{
+                Action<object> abc = @<span></span>;
+            }}";
+
+            await AssertSemanticTokensAsync(txt, isRazor: true);
+        }
         #endregion
 
         [Fact]
