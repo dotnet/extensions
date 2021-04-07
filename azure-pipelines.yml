@@ -88,7 +88,7 @@ stages:
           image: centos:7
           options: --init # This ensures all the stray defunct processes are reaped.
         pool:
-          vmImage: ubuntu-16.04
+          vmImage: ubuntu-18.04
         variables:
         - DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
         - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
@@ -309,7 +309,7 @@ stages:
           image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
           options: --init # This ensures all the stray defunct processes are reaped.
         pool:
-          vmImage: ubuntu-16.04
+          vmImage: ubuntu-18.04
         strategy:
           matrix:
             debug:
