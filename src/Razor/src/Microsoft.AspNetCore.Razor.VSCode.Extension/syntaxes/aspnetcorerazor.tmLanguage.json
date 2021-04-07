@@ -1,9 +1,0 @@
-{
-	"name": "ASP.NET Razor",
-	"scopeName": "text.aspnetcorerazor",
-	"patterns": [
-		{
-			"include": "text.html.cshtml"
-		}
-	]
-}
