@@ -170,6 +170,7 @@ stages:
         - task: PublishBuildArtifacts@1
           displayName: Upload package artifacts
           condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+          continueOnError: true
           inputs:
             pathtoPublish: artifacts/packages/
             artifactName: artifacts
