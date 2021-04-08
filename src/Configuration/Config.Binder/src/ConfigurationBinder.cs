@@ -167,10 +167,11 @@ namespace Microsoft.Extensions.Configuration
         /// <returns>The converted value.</returns>
         public static object GetValue(this IConfiguration configuration, Type type, string key, object defaultValue)
         {
-            var value = configuration.GetSection(key).Value;
+            var section = configuration.GetSection(key);
+            var value = section.Value;
             if (value != null)
             {
-                return ConvertValue(type, value);
+                return ConvertValue(type, value, section.Path);
             }
             return defaultValue;
         }
@@ -292,7 +293,7 @@ namespace Microsoft.Extensions.Configuration
             var configValue = section?.Value;
             object convertedValue;
             Exception error;
-            if (configValue != null && TryConvertValue(type, configValue, out convertedValue, out error))
+            if (configValue != null && TryConvertValue(type, configValue, section.Path, out convertedValue, out error))
             {
                 if (error != null)
                 {
@@ -308,7 +309,7 @@ namespace Microsoft.Extensions.Configuration
                 // If we don't have an instance, try to create one
                 if (instance == null)
                 {
-                    // We are alrady done if binding to a new collection instance worked
+                    // We are already done if binding to a new collection instance worked
                     instance = AttemptBindToCollectionInterfaces(type, config, options);
                     if (instance != null)
                     {
@@ -414,7 +415,7 @@ namespace Microsoft.Extensions.Configuration
                     }
                     else if (keyTypeIsEnum)
                     {
-                        var key = Convert.ToInt32(Enum.Parse(keyType, child.Key));
+                        var key = Enum.Parse(keyType, child.Key);
                         setter.SetValue(dictionary, item, new object[] { key });
                     }
                 }
@@ -484,7 +485,7 @@ namespace Microsoft.Extensions.Configuration
             return newArray;
         }
 
-        private static bool TryConvertValue(Type type, string value, out object result, out Exception error)
+        private static bool TryConvertValue(Type type, string value, string path, out object result, out Exception error)
         {
             error = null;
             result = null;
@@ -493,16 +494,16 @@ namespace Microsoft.Extensions.Configuration
                 result = value;
                 return true;
             }
-  
+
             if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 if (string.IsNullOrEmpty(value))
                 {
                     return true;
                 }
-                return TryConvertValue(Nullable.GetUnderlyingType(type), value, out result, out error);
+                return TryConvertValue(Nullable.GetUnderlyingType(type), value, path, out result, out error);
             }
-  
+
             var converter = TypeDescriptor.GetConverter(type);
             if (converter.CanConvertFrom(typeof(string)))
             {
@@ -512,19 +513,19 @@ namespace Microsoft.Extensions.Configuration
                 }
                 catch (Exception ex)
                 {
-                    error = new InvalidOperationException(Resources.FormatError_FailedBinding(type), ex);
+                    error = new InvalidOperationException(Resources.FormatError_FailedBinding(path, type), ex);
                 }
                 return true;
             }
-  
+
             return false;
         }
 
-        private static object ConvertValue(Type type, string value)
+        private static object ConvertValue(Type type, string value, string path)
         {
             object result;
             Exception error;
-            TryConvertValue(type, value, out result, out error);
+            TryConvertValue(type, value, path, out result, out error);
             if (error != null)
             {
                 throw error;
@@ -535,12 +536,12 @@ namespace Microsoft.Extensions.Configuration
         private static Type FindOpenGenericInterface(Type expected, Type actual)
         {
             var actualTypeInfo = actual.GetTypeInfo();
-            if(actualTypeInfo.IsGenericType && 
+            if(actualTypeInfo.IsGenericType &&
                 actual.GetGenericTypeDefinition() == expected)
             {
                 return actual;
-            } 
-             
+            }
+
             var interfaces = actualTypeInfo.ImplementedInterfaces;
             foreach (var interfaceType in interfaces)
             {

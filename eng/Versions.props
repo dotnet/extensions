@@ -1,0 +1,126 @@
+<!--
+
+  This file defines the versions of external dependencies used by this repo.
+  This file might be updated by automation.
+
+-->
+<Project>
+  <PropertyGroup Label="Version settings">
+    <MajorVersion>3</MajorVersion>
+    <MinorVersion>1</MinorVersion>
+    <PatchVersion>15</PatchVersion>
+    <ValidateBaseline>false</ValidateBaseline>
+    <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
+    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
+    <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
+    <!-- Blazor WASM packages will not RTM with 3.1 -->
+    <BlazorWASMPreReleaseVersionLabel>preview4</BlazorWASMPreReleaseVersionLabel>
+    <!--
+      We do not support changing reference assemblies in a patch. This ignores
+      the patch version number to ensure assembly version of ref assemblies stays constant
+      throughout major.minor.
+    -->
+    <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
+    <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
+    <!--
+      Until package baselines are updated (see aspnet/AspNetCore#12702), ignore them. This also
+      gives us time to build the entire repo and settle the infrastructure. Do _not_ do this when stabilizing versions.
+    -->
+    <DisableServicingFeatures Condition=" '$(DisableServicingFeatures)' == '' AND '$(StabilizePackageVersion)' != 'true' ">true</DisableServicingFeatures>
+    <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
+    <IsServicingBuild Condition=" '$(DisableServicingFeatures)' != 'true' AND '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
+    <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->
+    <PreviousExtensionsReleaseVersion Condition=" '$(PatchVersion)' != '0' ">$(MajorVersion).$(MinorVersion).$([MSBuild]::Subtract($(PatchVersion), 1))</PreviousExtensionsReleaseVersion>
+    <!--
+        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
+    -->
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+  </PropertyGroup>
+  <PropertyGroup Label="Arcade settings">
+    <!-- Disable Arcade's Xliff tools -->
+    <UsingToolXliff>false</UsingToolXliff>
+    <!-- Using .NET framework assemblies from a package. -->
+    <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
+  </PropertyGroup>
+  <!--
+
+    These versions should ONLY be updated by automation.
+
+    DO NOT UPDATE THESE MANUALLY. Use the `darc` command line tool to update this file so it stays in sync with
+    Version.Details.xml.
+
+    See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
+
+  -->
+  <PropertyGroup Label="Automated">
+    <!-- Packages from dotnet/core-setup -->
+    <MicrosoftDotNetPlatformAbstractionsPackageVersion>3.1.6</MicrosoftDotNetPlatformAbstractionsPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.13</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.13-servicing.21116.2</MicrosoftNETCoreAppInternalPackageVersion>
+    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
+    <!-- Packages from dotnet/corefx -->
+    <MicrosoftBclAsyncInterfacesPackageVersion>1.1.1</MicrosoftBclAsyncInterfacesPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.1.6</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.7.0</MicrosoftWin32RegistryPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.7.0</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.7.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.7.0</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.7.4</SystemIOPipelinesPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.7.2</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.7.1</SystemNetWebSocketsWebSocketProtocolPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.8.1</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.7.1</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.7.0</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.7.0</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>4.7.0</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.7.2</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>4.7.2</SystemTextJsonPackageVersion>
+    <SystemThreadingChannelsPackageVersion>4.7.1</SystemThreadingChannelsPackageVersion>
+    <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
+    <MicrosoftNETCorePlatformsPackageVersion>3.1.5</MicrosoftNETCorePlatformsPackageVersion>
+    <!-- Packages from dotnet/arcade -->
+    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.21158.9</MicrosoftDotNetGenAPIPackageVersion>
+    <!-- Packages from dotnet/roslyn -->
+    <MicrosoftNetCompilersToolsetVersion>3.4.1-beta4-20127-10</MicrosoftNetCompilersToolsetVersion>
+  </PropertyGroup>
+  <!-- For the targeting pack, always use packages with PatchVersion=0 -->
+  <PropertyGroup Condition=" '$(MSBuildProjectName)' == 'Microsoft.Internal.Extensions.Refs' OR '$(IsReferenceAssemblyProject)' == 'true' ">
+    <SystemDiagnosticsEventLogPackageVersion>$(SystemDiagnosticsEventLogPackageVersion.Split('.')[0]).$(SystemDiagnosticsEventLogPackageVersion.Split('.')[1]).0</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>$(SystemIOPipelinesPackageVersion.Split('.')[0]).$(SystemIOPipelinesPackageVersion.Split('.')[1]).0</SystemIOPipelinesPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[0]).$(SystemSecurityCryptographyXmlPackageVersion.Split('.')[1]).0</SystemSecurityCryptographyXmlPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="Dependency version settings">
+    <!--
+      Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
+      All Runtime.$rid packages should have the same version.
+    -->
+    <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimeVersion>
+  </PropertyGroup>
+  <!--
+
+    ^^^^^^^^^^
+    SEE NOTE ABOVE.
+
+    Versions above this comment are updated automatically. Don't change them manually.
+
+    Versions below this comment are not managed by automation and can be changed as needed.
+  -->
+  <PropertyGroup Label="Manual">
+    <!-- Stable MSBuild task dependencies -->
+    <MicrosoftBuildFrameworkPackageVersion>15.8.166</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
+    <!-- Used for building and testing analyzers -->
+    <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
+    <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
+    <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
+    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.4</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
+  </PropertyGroup>
+</Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Azure.KeyVault;
@@ -12,6 +12,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     /// </summary>
     public class DefaultKeyVaultSecretManager : IKeyVaultSecretManager
     {
+        internal static IKeyVaultSecretManager Instance { get; } = new DefaultKeyVaultSecretManager();
+
         /// <inheritdoc />
         public virtual string GetKey(SecretBundle secret)
         {
