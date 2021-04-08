@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             private void AssertEqual(ClassifiedSpanInternal span, string expected, string actual)
             {
-                if (string.Equals(expected, actual))
+                if (string.Equals(expected, actual, StringComparison.Ordinal))
                 {
                     return;
                 }

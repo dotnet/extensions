@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <IsShipping>false</IsShipping>
+    <IsApiShim>true</IsApiShim>
   </PropertyGroup>
 
 </Project>

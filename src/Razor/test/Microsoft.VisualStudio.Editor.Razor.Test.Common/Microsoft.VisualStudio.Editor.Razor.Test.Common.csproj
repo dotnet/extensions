@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

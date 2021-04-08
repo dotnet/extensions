@@ -5,5 +5,12 @@
     "*.props": "xml",
     "*.targets": "xml",
     "*.tasks": "xml"
-  }
+  },
+  "[yaml]": {
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.tabSize": 2
+  },
+  "omnisharp.defaultLaunchSolution": "Razor.sln"
 }

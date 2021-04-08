@@ -37,17 +37,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         [ImportingConstructor]
         public FallbackRazorProjectHost(
             IUnconfiguredProjectCommonServices commonServices,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
-            : base(commonServices, workspace)
+            [Import(typeof(VisualStudioWorkspace))] Workspace workspace,
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore)
+            : base(commonServices, workspace, projectConfigurationFilePathStore)
         {
         }
 
-        // Internal for testing
         internal FallbackRazorProjectHost(
             IUnconfiguredProjectCommonServices commonServices,
-             Workspace workspace,
-             ProjectSnapshotManagerBase projectManager)
-            : base(commonServices, workspace, projectManager)
+            Workspace workspace,
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
+            ProjectSnapshotManagerBase projectManager)
+            : base(commonServices, workspace, projectConfigurationFilePathStore, projectManager)
         {
         }
 
@@ -59,7 +60,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // to the UI thread to push our updates.
             //
             // Just subscribe and handle the notification later.
-            var receiver = new ActionBlock<IProjectVersionedValue<IProjectSubscriptionUpdate>>(OnProjectChanged);
+            var receiver = new ActionBlock<IProjectVersionedValue<IProjectSubscriptionUpdate>>(OnProjectChangedAsync);
             _subscription = CommonServices.ActiveConfiguredProjectSubscription.JointRuleSource.SourceBlock.LinkTo(
                 receiver,
                 initialDataAsNew: true,
@@ -84,7 +85,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         // Internal for testing
-        internal async Task OnProjectChanged(IProjectVersionedValue<IProjectSubscriptionUpdate> update)
+        internal async Task OnProjectChangedAsync(IProjectVersionedValue<IProjectSubscriptionUpdate> update)
         {
             if (IsDisposing || IsDisposed)
             {
@@ -93,7 +94,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             await CommonServices.TasksService.LoadedProjectAsync(async () =>
             {
-                await ExecuteWithLock(async () =>
+                await ExecuteWithLockAsync(async () =>
                 {
                     string mvcReferenceFullPath = null;
                     if (update.Value.CurrentState.ContainsKey(ResolvedCompilationReference.SchemaName))
@@ -124,9 +125,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                         return;
                     }
 
-                    var configuration = FallbackRazorConfiguration.SelectConfiguration(version);
-                    var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration, rootNamespace: null);
-
                     // We need to deal with the case where the project was uninitialized, but now
                     // is valid for Razor. In that case we might have previously seen all of the documents
                     // but ignored them because the project wasn't active.
@@ -139,6 +137,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                     await UpdateAsync(() =>
                     {
+                        var configuration = FallbackRazorConfiguration.SelectConfiguration(version);
+                        var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration, rootNamespace: null);
+
+                        if (TryGetIntermediateOutputPath(update.Value.CurrentState, out var intermediatePath))
+                        {
+                            var projectRazorJson = Path.Combine(intermediatePath, "project.razor.json");
+                            _projectConfigurationFilePathStore.Set(hostProject.FilePath, projectRazorJson);
+                        }
+
                         UpdateProjectUnsafe(hostProject);
 
                         for (var i = 0; i < changedDocuments.Length; i++)
@@ -256,16 +263,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             try
             {
-                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
-                using (var reader = new PEReader(stream))
-                {
-                    var metadataReader = reader.GetMetadataReader();
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var reader = new PEReader(stream);
+                var metadataReader = reader.GetMetadataReader();
 
-                    var assemblyDefinition = metadataReader.GetAssemblyDefinition();
-                    return assemblyDefinition.Version;
-                }
+                var assemblyDefinition = metadataReader.GetAssemblyDefinition();
+                return assemblyDefinition.Version;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 // We're purposely silencing any kinds of I/O exceptions here, just in case something wacky is going on.
                 return null;

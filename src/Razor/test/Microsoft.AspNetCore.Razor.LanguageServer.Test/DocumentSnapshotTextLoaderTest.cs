@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var expectedSourceText = SourceText.From("Hello World");
             var result = Task.FromResult(expectedSourceText);
-            var snapshot = Mock.Of<DocumentSnapshot>(doc => doc.GetTextAsync() == result);
+            var snapshot = Mock.Of<DocumentSnapshot>(doc => doc.GetTextAsync() == result, MockBehavior.Strict);
             var textLoader = new DocumentSnapshotTextLoader(snapshot);
 
             // Act

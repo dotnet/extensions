@@ -1,0 +1,449 @@
+{
+    "name": "razor-vscode",
+    "private": true,
+    "displayName": "Razor",
+    "description": "Razor VS Code extension bootstrapper. This extension attempts to replicate what O# does to bootstrap Razor's VSCode extension library. ",
+    "version": "0.0.1",
+    "defaults": {
+        "razor": "0.0.1"
+    },
+    "publisher": "ms-dotnettools",
+    "engines": {
+        "vscode": "^1.45.1"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onWebviewPanel:razorReportIssue",
+        "onDebugInitialConfigurations",
+        "onDebugResolve:blazorwasm",
+        "onDebugResolve:coreclr",
+        "onDebugResolve:clr",
+        "onLanguage:csharp",
+        "onLanguage:aspnetcorerazor",
+        "onCommand:o.restart",
+        "onCommand:o.pickProjectAndStart",
+        "onCommand:o.showOutput",
+        "onCommand:dotnet.restore.project",
+        "onCommand:dotnet.restore.all",
+        "onCommand:dotnet.generateAssets",
+        "onCommand:csharp.downloadDebugger",
+        "onCommand:csharp.listProcess",
+        "onCommand:csharp.listRemoteProcess",
+        "onCommand:extension.configureRazorDevMode",
+        "onCommand:extension.resetRazorDevModeConfiguration",
+        "onCommand:extension.razorActivated",
+        "workspaceContains:project.json",
+        "workspaceContains:*.csproj",
+        "workspaceContains:*.sln",
+        "workspaceContains:*.csx",
+        "workspaceContains:*.cake",
+        "workspaceContains:**/*.csproj",
+        "workspaceContains:**/*.sln",
+        "workspaceContains:**/*.csx",
+        "workspaceContains:**/*.cake"
+    ],
+    "main": "./dist/extension",
+    "contributes": {
+        "breakpoints": [
+          {
+            "language": "aspnetcorerazor"
+          },
+          {
+            "language": "csharp"
+          }
+        ],
+        "debuggers": [
+          {
+            "type": "blazorwasm",
+            "label": "Blazor WebAssembly Debug",
+            "initialConfigurations": [
+              {
+                "type": "blazorwasm",
+                "name": "Launch and Debug Blazor WebAssembly Application",
+                "request": "launch"
+              }
+            ],
+            "configurationAttributes": {
+              "launch": {
+                "properties": {
+                  "cwd": {
+                    "type": "string",
+                    "description": "The directory of the Blazor WebAssembly app, defaults to the workspace folder.",
+                    "default": "${workspaceFolder}"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "The URL of the application",
+                    "default": "https://localhost:5001"
+                  },
+                  "browser": {
+                    "type": "string",
+                    "description": "The debugging browser to launch (Edge or Chrome)",
+                    "default": "chrome",
+                    "enum": ["chrome", "edge"]
+                  },
+                  "trace": {
+                    "type": ["boolean", "string"],
+                    "default": "true",
+                    "enum": ["verbose", true],
+                    "description": "If true, verbose logs from JS debugger are sent to log file. If 'verbose', send logs to console."
+                  },
+                  "hosted": {
+                    "type": "boolean",
+                    "default": "false",
+                    "description": "True if the app is a hosted Blazor WebAssembly app, false otherwise."
+                  },
+                  "webRoot": {
+                    "type": "string",
+                    "default": "${workspaceFolder}",
+                    "description": "Specifies the absolute path to the webserver root."
+                  },
+                  "timeout": {
+                    "type": "number",
+                    "default": 30000,
+                    "description": "Retry for this number of milliseconds to connect to browser."
+                  },
+                  "program": {
+                    "type": "string",
+                    "default": "${workspaceFolder}/Server/bin/Debug/<target-framework>/<target-dll>",
+                    "description": "The path of the DLL to execute when launching a hosted server app"
+                  },
+                  "env": {
+                    "type": "object",
+                    "description": "Environment variables passed to dotnet. Only valid for hosted apps."
+                  },
+                  "dotNetConfig": {
+                    "description": "Options passed to the underlying .NET debugger. For more info, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger.md.",
+                    "type": "object",
+                    "required": [],
+                    "default": {},
+                    "properties": {
+                      "justMyCode": {
+                        "type": "boolean",
+                        "description": "Optional flag to only show user code.",
+                        "default": true
+                      },
+                      "sourceFileMap": {
+                        "type": "object",
+                        "description": "Optional source file mappings passed to the debug engine. Example: '{ \"C:\\foo\":\"/home/user/foo\" }'",
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "default": {
+                          "<insert-source-path-here>": "<insert-target-path-here>"
+                        }
+                      },
+                      "logging": {
+                        "description": "Optional flags to determine what types of messages should be logged to the output window.",
+                        "type": "object",
+                        "required": [],
+                        "default": {},
+                        "properties": {
+                          "exceptions": {
+                            "type": "boolean",
+                            "description": "Optional flag to determine whether exception messages should be logged to the output window.",
+                            "default": true
+                          },
+                          "moduleLoad": {
+                            "type": "boolean",
+                            "description": "Optional flag to determine whether module load events should be logged to the output window.",
+                            "default": true
+                          },
+                          "programOutput": {
+                            "type": "boolean",
+                            "description": "Optional flag to determine whether program output should be logged to the output window when not using an external console.",
+                            "default": true
+                          },
+                          "engineLogging": {
+                            "type": "boolean",
+                            "description": "Optional flag to determine whether diagnostic engine logs should be logged to the output window.",
+                            "default": false
+                          },
+                          "browserStdOut": {
+                            "type": "boolean",
+                            "description": "Optional flag to determine if stdout text from the launching the web browser should be logged to the output window.",
+                            "default": true
+                          },
+                          "elapsedTiming": {
+                            "type": "boolean",
+                            "description": "If true, engine logging will include `adapterElapsedTime` and `engineElapsedTime` properties to indicate the amount of time, in microseconds, that a request took.",
+                            "default": false
+                          },
+                          "threadExit": {
+                            "type": "boolean",
+                            "description": "Controls if a message is logged when a thread in the target process exits. Default: `false`.",
+                            "default": false
+                          },
+                          "processExit": {
+                            "type": "boolean",
+                            "description": "Controls if a message is logged when the target process exits, or debugging is stopped. Default: `true`.",
+                            "default": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "browserConfig": {
+                    "description": "Options based to the underlying JavaScript debugger. For more info, see https://github.com/microsoft/vscode-js-debug/blob/main/OPTIONS.md.",
+                    "type": "object",
+                    "required": [],
+                    "default": {},
+                    "properties": {
+                      "outputCapture": {
+                        "enum": [
+                          "console",
+                          "std"
+                        ],
+                        "description": "From where to capture output messages: the default debug API if set to `console`, or stdout/stderr streams if set to `std`.",
+                        "default": "console"
+                      }
+                    }
+                  }
+                }
+              },
+              "attach": {
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The URL of the application",
+                    "default": "https://localhost:5001"
+                  },
+                  "cwd": {
+                    "type": "string",
+                    "description": "The directory of the Blazor WebAssembly app, defaults to the workspace folder.",
+                    "default": "${workspaceFolder}"
+                  },
+                  "browser": {
+                    "type": "string",
+                    "description": "The debugging browser to launch (Edge or Chrome)",
+                    "default": "chrome",
+                    "enum": ["chrome", "edge"]
+                  },
+                  "trace": {
+                    "type": ["boolean", "string"],
+                    "default": "true",
+                    "enum": ["verbose", true],
+                    "description": "If true, verbose logs from JS debugger are sent to log file. If 'verbose', send logs to console."
+                  },
+                  "webRoot": {
+                    "type": "string",
+                    "default": "${workspaceFolder}",
+                    "description": "Specifies the absolute path to the webserver root."
+                  },
+                  "timeout": {
+                    "type": "number",
+                    "default": 30000,
+                    "description": "Retry for this number of milliseconds to connect to browser."
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "semanticTokenTypes": [
+          {
+            "id": "razorTagHelperElement",
+            "description": "A Razor TagHelper Element"
+          },
+          {
+            "id": "razorTagHelperAttribute",
+            "description": "A Razor TagHelper Attribute"
+          },
+          {
+            "id": "razorTransition",
+            "description": "A Razor transition"
+          },
+          {
+            "id": "razorDirectiveAttribute",
+            "description": "A Razor Directive Attribute"
+          },
+          {
+            "id": "razorDirectiveColon",
+            "description": "A colon between directive attribute parameters"
+          },
+          {
+            "id": "razorDirective",
+            "description": "A Razor directive such as 'code' or 'function'"
+          },
+          {
+            "id": "razorComment",
+            "description": "A Razor comment"
+          },
+          {
+            "id": "markupCommentPunctuation",
+            "description": "The '@' or '*' of a Razor comment."
+          },
+          {
+            "id": "markupTagDelimiter",
+            "description": "Markup delimiters like '<', '>', and '/'."
+          },
+          {
+            "id": "markupOperator",
+            "description": "Delimiter for Markup Attribute Key-Value pairs."
+          },
+          {
+            "id": "markupElement",
+            "description": "The name of a Markup element."
+          },
+          {
+            "id": "markupAttribute",
+            "description": "The name of a Markup attribute."
+          },
+          {
+            "id": "markupComment",
+            "description": "The contents of a Markup comment."
+          },
+          {
+            "id": "markupCommentPunctuation",
+            "description": "The begining or ending punctuation of a Markup comment."
+          }
+        ],
+        "semanticTokenScopes": [
+          {
+            "scopes": {
+              "razorTagHelperElement": [ "entity.name.class.element.taghelper" ],
+              "razorTagHelperAttribute": [ "entity.name.class.attribute.taghelper" ],
+              "razorTransition": [ "keyword.control.razor.transition" ],
+              "razorDirectiveAttribute": [ "keyword.control.razor.directive.attribute", "keyword.control.cshtml.directive.attribute" ],
+              "razorDirectiveColon": [ "keyword.control.razor.directive.colon", "keyword.control.cshtml.directive.colon" ],
+              "razorDirective": [ "keyword.control.razor.directive", "keyword.control.cshtml.directive" ],
+              "razorComment": [ "comment.block.razor"],
+              "razorCommentTransition": [ "meta.comment.razor", "keyword.control.cshtml.transition" ],
+              "razorCommentStar": [ "keyword.control.razor.comment.star", "meta.comment.razor" ],
+              "angleBracket": [ "punctuation.definition.tag" ],
+              "forwardSlash": [ "punctuation.definition.tag" ],
+              "equals": [ "punctuation.separator.key-value.html" ],
+              "markupElement": [ "entity.name.tag.html" ],
+              "markupAttribute": [ "entity.other.attribute-name.html" ],
+              "markupComment": [ "comment.block.html" ],
+              "markupCommentPunctuation": [ "punctuation.definition.comment.html", "comment.block.html" ]
+            }
+          }
+        ],
+        "languages": [
+            {
+                "id": "aspnetcorerazor",
+                "extensions": [
+                    ".cshtml",
+                    ".razor"
+                ],
+                "mimetypes": [
+                    "text/x-cshtml"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "aspnetcorerazor",
+                "scopeName": "text.aspnetcorerazor",
+                "path": "./syntaxes/aspnetcorerazor.tmLanguage.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "extension.showRazorCSharpWindow",
+                "title": "Show Razor CSharp",
+                "category": "Razor"
+            },
+            {
+                "command": "extension.showRazorHtmlWindow",
+                "title": "Show Razor Html",
+                "category": "Razor"
+            },
+            {
+                "command": "razor.reportIssue",
+                "title": "Report a Razor issue",
+                "category": "Razor"
+            },
+            {
+                "command": "extension.configureRazorDevMode",
+                "title": "Configure workspace for Razor extension development",
+                "category": "Razor"
+            },
+            {
+                "command": "extension.resetRazorDevModeConfiguration",
+                "title": "Reset workspace Razor dev mode configuration",
+                "category": "Razor"
+            },
+            {
+                "command": "extension.razorActivated",
+                "title": "Force activation of Razor extension",
+                "category": "Razor"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "extension.showRazorCSharpWindow",
+                    "when": "resourceLangId == aspnetcorerazor"
+                },
+                {
+                    "command": "extension.showRazorHtmlWindow",
+                    "when": "resourceLangId == aspnetcorerazor"
+                },
+                {
+                    "command": "razor.reportIssue",
+                    "when": "resourceLangId == aspnetcorerazor"
+                },
+                {
+                    "command": "extension.configureRazorDevMode"
+                },
+                {
+                    "command": "extension.resetRazorDevModeConfiguration"
+                },
+                {
+                    "command": "extension.razorActivated"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Razor Configuration",
+            "properties": {
+                "razor.plugin.path": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null,
+                    "description": "Overrides the path to the Razor plugin dll."
+                },
+                "razor.languageServer.debug": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Specifies whether to wait for debug attach when launching the language server."
+                },
+                "razor.format.enable": {
+                    "type": "boolean",
+                    "scope": "window",
+                    "default": true,
+                    "description": "Enable/disable default Razor formatter."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run compile",
+        "clean": "rimraf dist",
+        "build": "yarn run clean && yarn run lint && tsc -p ./ && yarn run compile:TextMate",
+        "lint": "tslint --project ./",
+        "watch": "yarn run clean && yarn run lint && tsc -watch -p ./",
+        "compile:TextMate": "npx js-yaml syntaxes/aspnetcorerazor.tmLanguage.yml > syntaxes/aspnetcorerazor.tmLanguage.json"
+    },
+    "devDependencies": {
+        "@types/node": "9.4.7",
+        "@types/vscode": "1.45.1",
+        "cross-env": "^5.2.0",
+        "js-yaml": ">=3.13.1",
+        "rimraf": "2.6.3",
+        "ts-node": "^7.0.1",
+        "tslint": "^5.11.0",
+        "typescript": "3.3.4000"
+    },
+    "dependencies": {
+        "diff": ">=3.5.0",
+        "microsoft.aspnetcore.razor.vscode": "link:../Microsoft.AspNetCore.Razor.VSCode"
+    }
+}

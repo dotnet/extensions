@@ -4,15 +4,19 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
+    [JsonConverter(typeof(RazorConfigurationJsonConverter))]
     internal class ProjectSystemRazorConfiguration : RazorConfiguration
     {
         public ProjectSystemRazorConfiguration(
             RazorLanguageVersion languageVersion,
             string configurationName,
-            RazorExtension[] extensions)
+            RazorExtension[] extensions,
+            bool useConsolidatedMvcViews = false)
         {
             if (languageVersion == null)
             {
@@ -32,6 +36,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             LanguageVersion = languageVersion;
             ConfigurationName = configurationName;
             Extensions = extensions;
+            UseConsolidatedMvcViews = useConsolidatedMvcViews;
         }
 
         public override string ConfigurationName { get; }
@@ -39,5 +44,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public override IReadOnlyList<RazorExtension> Extensions { get; }
 
         public override RazorLanguageVersion LanguageVersion { get; }
+
+        public override bool UseConsolidatedMvcViews { get; }
     }
 }

@@ -81,7 +81,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
                     Workspace.Services,
                     new HostProject(expectedPath, RazorConfiguration.Default, "Project")));
 
-            var projectManager = new Mock<ProjectSnapshotManagerBase>();
+            var projectManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
                 .Setup(p => p.GetLoadedProject(expectedPath))
@@ -104,7 +104,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 
             var args = new BuildEventArgs(monitor: null, success: true);
 
-            var projectManager = new Mock<ProjectSnapshotManagerBase>();
+            var projectManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectManager.SetupGet(p => p.Workspace).Returns(Workspace);
             projectManager
                 .Setup(p => p.GetLoadedProject(SomeProject.FilePath))
@@ -124,9 +124,9 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
         {
             // Arrange
             var args = new BuildEventArgs(monitor: null, success: false);
-            var projectService = new Mock<TextBufferProjectService>();
+            var projectService = new Mock<TextBufferProjectService>(MockBehavior.Strict);
             projectService.Setup(p => p.IsSupportedProject(null)).Throws<InvalidOperationException>();
-            var projectManager = new Mock<ProjectSnapshotManagerBase>();
+            var projectManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectManager.SetupGet(p => p.Workspace).Throws<InvalidOperationException>();
             var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
             var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService.Object, workspaceStateGenerator, projectManager.Object);
@@ -143,9 +143,9 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
         {
             // Arrange
             var args = new BuildEventArgs(monitor: null, success: true);
-            var projectService = new Mock<TextBufferProjectService>();
+            var projectService = new Mock<TextBufferProjectService>(MockBehavior.Strict);
             projectService.Setup(p => p.IsSupportedProject(null)).Returns(false);
-            var projectManager = new Mock<ProjectSnapshotManagerBase>();
+            var projectManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectManager.SetupGet(p => p.Workspace).Throws<InvalidOperationException>();
             var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
             var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService.Object, workspaceStateGenerator, projectManager.Object);
@@ -159,7 +159,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 
         private static TextBufferProjectService CreateProjectService(string projectPath)
         {
-            var projectService = new Mock<TextBufferProjectService>();
+            var projectService = new Mock<TextBufferProjectService>(MockBehavior.Strict);
             projectService.Setup(p => p.GetProjectPath(null)).Returns(projectPath);
             projectService.Setup(p => p.IsSupportedProject(null)).Returns(true);
             return projectService.Object;

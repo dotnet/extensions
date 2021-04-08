@@ -30,6 +30,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private readonly Dictionary<string, Entry> _projects;
         private readonly HashSet<string> _openDocuments;
 
+        // We have a queue for changes because if one change results in another change aka, add -> open we want to make sure the "add" finishes running first before "open" is notified.
+        private readonly Queue<ProjectChangeEventArgs> _notificationWork;
+
         public DefaultProjectSnapshotManager(
             ForegroundDispatcher foregroundDispatcher,
             ErrorReporter errorReporter,
@@ -58,11 +61,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             _foregroundDispatcher = foregroundDispatcher;
             _errorReporter = errorReporter;
-            _triggers = triggers.ToArray();
+            _triggers = triggers.OrderByDescending(trigger => trigger.InitializePriority).ToArray();
             Workspace = workspace;
 
             _projects = new Dictionary<string, Entry>(FilePathComparer.Instance);
             _openDocuments = new HashSet<string>(FilePathComparer.Instance);
+            _notificationWork = new Queue<ProjectChangeEventArgs>();
 
             for (var i = 0; i < _triggers.Length; i++)
             {
@@ -76,7 +80,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 _foregroundDispatcher.AssertForegroundThread();
 
-
                 var i = 0;
                 var projects = new ProjectSnapshot[_projects.Count];
                 foreach (var entry in _projects)
@@ -85,6 +88,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
 
                 return projects;
+            }
+        }
+
+        public override IReadOnlyCollection<string> OpenDocuments
+        {
+            get
+            {
+                _foregroundDispatcher.AssertForegroundThread();
+
+                return _openDocuments;
             }
         }
 
@@ -506,11 +519,28 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             _foregroundDispatcher.AssertForegroundThread();
 
-            var handler = Changed;
-            if (handler != null)
+            _notificationWork.Enqueue(e);
+
+            if (_notificationWork.Count == 1)
             {
-                handler(this, e);
+                // Only one notification, go ahead and start notifying. In the situation where Count > 1 it means an event was triggered as a response to another event.
+                // To ensure order we wont immediately re-invoke Changed here, we'll wait for the stack to unwind to notify others. This process still happens synchronously
+                // it just ensures that events happen in the correct order. For instance lets take the situation where a document is added to a project. That document will be
+                // added and then opened. However, if the result of "adding" causes an "open" to triger we want to ensure that "add" finishes prior to "open" being notified.
+
+
+                // Start unwinding the notification queue
+                do
+                {
+                    // Don't dequeue yet, we want the notification to sit in the queue until we've finished notifying to ensure other calls to NotifyListeners know there's a currently running event loop.
+                    var args = _notificationWork.Peek();
+                    Changed?.Invoke(this, args);
+
+                    _notificationWork.Dequeue();
+                }
+                while (_notificationWork.Count > 0);
             }
+
         }
 
         private class Entry
@@ -525,7 +555,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             public ProjectSnapshot GetSnapshot()
             {
-                return SnapshotUnsafe ?? (SnapshotUnsafe = new DefaultProjectSnapshot(State));
+                return SnapshotUnsafe ??= new DefaultProjectSnapshot(State);
             }
         }
     }

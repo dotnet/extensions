@@ -3,44 +3,46 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
+using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Completion;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
-using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal class RazorCompletionEndpoint : ICompletionHandler, ICompletionResolveHandler
     {
-        private static readonly Container<string> DirectiveAttributeCommitCharacters = new Container<string>(" ");
         private CompletionCapability _capability;
         private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RazorCompletionFactsService _completionFactsService;
-        private readonly TagHelperCompletionService _tagHelperCompletionService;
-        private readonly TagHelperDescriptionFactory _tagHelperDescriptionFactory;
+        private readonly TagHelperTooltipFactory _tagHelperTooltipFactory;
+        private readonly CompletionListCache _completionListCache;
         private static readonly Command RetriggerCompletionCommand = new Command()
         {
             Name = "editor.action.triggerSuggest",
             Title = "Re-trigger completions...",
         };
 
+        private IReadOnlyList<ExtendedCompletionItemKinds> _supportedItemKinds;
+
         public RazorCompletionEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             RazorCompletionFactsService completionFactsService,
-            TagHelperCompletionService tagHelperCompletionService,
-            TagHelperDescriptionFactory tagHelperDescriptionFactory,
+            TagHelperTooltipFactory tagHelperTooltipFactory,
             ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
@@ -58,14 +60,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 throw new ArgumentNullException(nameof(completionFactsService));
             }
 
-            if (tagHelperCompletionService == null)
+            if (tagHelperTooltipFactory == null)
             {
-                throw new ArgumentNullException(nameof(tagHelperCompletionService));
-            }
-
-            if (tagHelperDescriptionFactory == null)
-            {
-                throw new ArgumentNullException(nameof(tagHelperDescriptionFactory));
+                throw new ArgumentNullException(nameof(tagHelperTooltipFactory));
             }
 
             if (loggerFactory == null)
@@ -76,14 +73,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _completionFactsService = completionFactsService;
-            _tagHelperCompletionService = tagHelperCompletionService;
-            _tagHelperDescriptionFactory = tagHelperDescriptionFactory;
+            _tagHelperTooltipFactory = tagHelperTooltipFactory;
             _logger = loggerFactory.CreateLogger<RazorCompletionEndpoint>();
+            _completionListCache = new CompletionListCache();
         }
 
         public void SetCapability(CompletionCapability capability)
         {
             _capability = capability;
+            _supportedItemKinds = _capability.CompletionItemKind.ValueSet.Cast<ExtendedCompletionItemKinds>().ToList();
         }
 
         public async Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
@@ -92,10 +90,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
             var document = await Task.Factory.StartNew(() =>
             {
-                _documentResolver.TryResolveDocument(request.TextDocument.Uri.AbsolutePath, out var documentSnapshot);
+                _documentResolver.TryResolveDocument(request.TextDocument.Uri.GetAbsoluteOrUNCPath(), out var documentSnapshot);
 
                 return documentSnapshot;
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+
+            if (document is null || cancellationToken.IsCancellationRequested)
+            {
+                return new CompletionList(isIncomplete: false);
+            }
 
             var codeDocument = await document.GetGeneratedOutputAsync();
             if (codeDocument.IsUnsupported())
@@ -111,36 +114,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var hostDocumentIndex = sourceText.Lines.GetPosition(linePosition);
             var location = new SourceSpan(hostDocumentIndex, 0);
 
-            var directiveCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, tagHelperDocumentContext, location);
+            var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, tagHelperDocumentContext, location);
 
-            _logger.LogTrace($"Found {directiveCompletionItems.Count} directive completion items.");
+            _logger.LogTrace($"Resolved {razorCompletionItems.Count} completion items.");
 
-            var completionItems = new List<CompletionItem>();
-            foreach (var razorCompletionItem in directiveCompletionItems)
-            {
-                if (TryConvert(razorCompletionItem, out var completionItem))
-                {
-                    completionItems.Add(completionItem);
-                }
-            }
-
-            var parameterCompletions = completionItems.Where(completionItem => completionItem.TryGetRazorCompletionKind(out var completionKind) && completionKind == RazorCompletionItemKind.DirectiveAttributeParameter);
-            if (parameterCompletions.Any())
-            {
-                // Parameters are present in the completion list, even though TagHelpers are technically valid we shouldn't flood the completion list
-                // with non parameter completions. Filter out the rest.
-                completionItems = parameterCompletions.ToList();
-            }
-            else
-            {
-                var tagHelperCompletionItems = _tagHelperCompletionService.GetCompletionsAt(location, codeDocument);
-
-                _logger.LogTrace($"Found {tagHelperCompletionItems.Count} TagHelper completion items.");
-
-                completionItems.AddRange(tagHelperCompletionItems);
-            }
-
-            var completionList = new CompletionList(completionItems, isIncomplete: false);
+            var completionList = CreateLSPCompletionList(razorCompletionItems);
 
             return completionList;
         }
@@ -152,70 +130,69 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 DocumentSelector = RazorDefaults.Selector,
                 ResolveProvider = true,
                 TriggerCharacters = new Container<string>("@", "<", ":"),
+
+                // NOTE: This property is *NOT* processed in O# versions < 0.16
+                // https://github.com/OmniSharp/csharp-language-server-protocol/blame/bdec4c73240be52fbb25a81f6ad7d409f77b5215/src/Protocol/Server/Capabilities/CompletionOptions.cs#L35-L44
+                AllCommitCharacters = new Container<string>(":", ">", " ", "="),
             };
-        }
-
-        public bool CanResolve(CompletionItem completionItem)
-        {
-            if (completionItem.TryGetRazorCompletionKind(out var completionItemKind))
-            {
-                switch (completionItemKind)
-                {
-                    case RazorCompletionItemKind.DirectiveAttribute:
-                    case RazorCompletionItemKind.DirectiveAttributeParameter:
-                        return true;
-                }
-
-                return false;
-            }
-
-            if (completionItem.IsTagHelperElementCompletion() ||
-                completionItem.IsTagHelperAttributeCompletion())
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public Task<CompletionItem> Handle(CompletionItem completionItem, CancellationToken cancellationToken)
         {
-            string markdown = null;
-            if (completionItem.TryGetRazorCompletionKind(out var completionItemKind))
-            {
-                switch (completionItemKind)
-                {
-                    case RazorCompletionItemKind.DirectiveAttribute:
-                    case RazorCompletionItemKind.DirectiveAttributeParameter:
-                        var descriptionInfo = completionItem.GetAttributeDescriptionInfo();
-                        _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
-                        break;
-                }
-            }
-            else
-            {
-                if (completionItem.IsTagHelperElementCompletion())
-                {
-                    var descriptionInfo = completionItem.GetElementDescriptionInfo();
-                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
-                }
+            MarkupContent tagHelperTooltip = null;
 
-                if (completionItem.IsTagHelperAttributeCompletion())
-                {
-                    var descriptionInfo = completionItem.GetTagHelperAttributeDescriptionInfo();
-                    _tagHelperDescriptionFactory.TryCreateDescription(descriptionInfo, out markdown);
-                }
+            if (!completionItem.TryGetCompletionListResultId(out var resultId))
+            {
+                // Couldn't resolve.
+                return Task.FromResult(completionItem);
             }
 
-
-            if (markdown != null)
+            if (!_completionListCache.TryGet(resultId, out var cachedCompletionItems))
             {
-                var documentation = new StringOrMarkupContent(
-                    new MarkupContent()
+                return Task.FromResult(completionItem);
+            }
+
+            var labelQuery = completionItem.Label;
+            var associatedRazorCompletion = cachedCompletionItems.FirstOrDefault(completion => string.Equals(labelQuery, completion.DisplayText, StringComparison.Ordinal));
+            if (associatedRazorCompletion == null)
+            {
+                Debug.Fail("Could not find an associated razor completion item. This should never happen since we were able to look up the cached completion list.");
+                return Task.FromResult(completionItem);
+            }
+
+            switch (associatedRazorCompletion.Kind)
+            {
+                case RazorCompletionItemKind.Directive:
                     {
-                        Kind = MarkupKind.Markdown,
-                        Value = markdown,
-                    });
+                        var descriptionInfo = associatedRazorCompletion.GetDirectiveCompletionDescription();
+                        completionItem.Documentation = descriptionInfo.Description;
+                        break;
+                    }
+                case RazorCompletionItemKind.MarkupTransition:
+                    {
+                        var descriptionInfo = associatedRazorCompletion.GetMarkupTransitionCompletionDescription();
+                        completionItem.Documentation = descriptionInfo.Description;
+                        break;
+                    }
+                case RazorCompletionItemKind.DirectiveAttribute:
+                case RazorCompletionItemKind.DirectiveAttributeParameter:
+                case RazorCompletionItemKind.TagHelperAttribute:
+                    {
+                        var descriptionInfo = associatedRazorCompletion.GetAttributeCompletionDescription();
+                        _tagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperTooltip);
+                        break;
+                    }
+                case RazorCompletionItemKind.TagHelperElement:
+                    {
+                        var descriptionInfo = associatedRazorCompletion.GetTagHelperElementDescriptionInfo();
+                        _tagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperTooltip);
+                        break;
+                    }
+            }
+
+            if (tagHelperTooltip != null)
+            {
+                var documentation = new StringOrMarkupContent(tagHelperTooltip);
                 completionItem.Documentation = documentation;
             }
 
@@ -223,112 +200,171 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         // Internal for testing
-        internal static bool TryConvert(RazorCompletionItem razorCompletionItem, out CompletionItem completionItem)
+        internal CompletionList CreateLSPCompletionList(IReadOnlyList<RazorCompletionItem> razorCompletionItems) => CreateLSPCompletionList(razorCompletionItems, _completionListCache, _supportedItemKinds);
+
+        // Internal for benchmarking and testing
+        internal static CompletionList CreateLSPCompletionList(
+            IReadOnlyList<RazorCompletionItem> razorCompletionItems,
+            CompletionListCache completionListCache,
+            IReadOnlyList<ExtendedCompletionItemKinds> supportedItemKinds)
         {
+            var resultId = completionListCache.Set(razorCompletionItems);
+            var completionItems = new List<CompletionItem>();
+            foreach (var razorCompletionItem in razorCompletionItems)
+            {
+                if (TryConvert(razorCompletionItem, supportedItemKinds, out var completionItem))
+                {
+                    // The completion items are cached and can be retrieved via this result id to enable the "resolve" completion functionality.
+                    completionItem.SetCompletionListResultId(resultId);
+                    completionItems.Add(completionItem);
+                }
+            }
+
+            var completionList = new CompletionList(completionItems, isIncomplete: false);
+
+            // We wrap the pre-existing completion list with an optimized completion list to better control serialization/deserialization
+            var optimizedCompletionList = new OptimizedCompletionList(completionList);
+            return optimizedCompletionList;
+        }
+
+        // Internal for testing
+        internal static bool TryConvert(
+            RazorCompletionItem razorCompletionItem,
+            IReadOnlyList<ExtendedCompletionItemKinds> supportedItemKinds,
+            out CompletionItem completionItem)
+        {
+            if (razorCompletionItem is null)
+            {
+                throw new ArgumentNullException(nameof(razorCompletionItem));
+            }
+
+            var tagHelperCompletionItemKind = CompletionItemKind.TypeParameter;
+            if (supportedItemKinds?.Contains(ExtendedCompletionItemKinds.TagHelper) == true)
+            {
+                tagHelperCompletionItemKind = (CompletionItemKind)ExtendedCompletionItemKinds.TagHelper;
+            }
+
             switch (razorCompletionItem.Kind)
             {
                 case RazorCompletionItemKind.Directive:
                     {
-                        // There's not a lot of calculation needed for Directives, go ahead and store the documentation/detail
-                        // on the completion item.
-                        var descriptionInfo = razorCompletionItem.GetDirectiveCompletionDescription();
                         var directiveCompletionItem = new CompletionItem()
                         {
                             Label = razorCompletionItem.DisplayText,
                             InsertText = razorCompletionItem.InsertText,
                             FilterText = razorCompletionItem.DisplayText,
                             SortText = razorCompletionItem.DisplayText,
-                            Detail = descriptionInfo.Description,
-                            Documentation = descriptionInfo.Description,
                             Kind = CompletionItemKind.Struct,
                         };
+
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
+                        {
+                            directiveCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
+                        }
 
                         if (razorCompletionItem == DirectiveAttributeTransitionCompletionItemProvider.TransitionCompletionItem)
                         {
                             directiveCompletionItem.Command = RetriggerCompletionCommand;
-                            directiveCompletionItem.Kind = CompletionItemKind.TypeParameter;
-                            directiveCompletionItem.Preselect = true;
+                            directiveCompletionItem.Kind = tagHelperCompletionItemKind;
                         }
 
-                        directiveCompletionItem.SetRazorCompletionKind(razorCompletionItem.Kind);
                         completionItem = directiveCompletionItem;
                         return true;
                     }
                 case RazorCompletionItemKind.DirectiveAttribute:
                     {
-                        var descriptionInfo = razorCompletionItem.GetAttributeCompletionDescription();
-
                         var directiveAttributeCompletionItem = new CompletionItem()
                         {
                             Label = razorCompletionItem.DisplayText,
                             InsertText = razorCompletionItem.InsertText,
                             FilterText = razorCompletionItem.InsertText,
                             SortText = razorCompletionItem.InsertText,
-                            Kind = CompletionItemKind.TypeParameter,
+                            Kind = tagHelperCompletionItemKind,
                         };
 
-                        var indexerCompletion = razorCompletionItem.DisplayText.EndsWith("...");
-                        if (TryResolveDirectiveAttributeInsertionSnippet(razorCompletionItem.InsertText, indexerCompletion, descriptionInfo, out var snippetText))
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
                         {
-                            directiveAttributeCompletionItem.InsertText = snippetText;
-                            directiveAttributeCompletionItem.InsertTextFormat = InsertTextFormat.Snippet;
+                            directiveAttributeCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
                         }
 
-                        directiveAttributeCompletionItem.SetDescriptionInfo(descriptionInfo);
-                        directiveAttributeCompletionItem.SetRazorCompletionKind(razorCompletionItem.Kind);
                         completionItem = directiveAttributeCompletionItem;
                         return true;
                     }
                 case RazorCompletionItemKind.DirectiveAttributeParameter:
                     {
-                        var descriptionInfo = razorCompletionItem.GetAttributeCompletionDescription();
                         var parameterCompletionItem = new CompletionItem()
                         {
                             Label = razorCompletionItem.DisplayText,
                             InsertText = razorCompletionItem.InsertText,
                             FilterText = razorCompletionItem.InsertText,
                             SortText = razorCompletionItem.InsertText,
-                            Kind = CompletionItemKind.TypeParameter,
+                            Kind = tagHelperCompletionItemKind,
                         };
 
-                        parameterCompletionItem.SetDescriptionInfo(descriptionInfo);
-                        parameterCompletionItem.SetRazorCompletionKind(razorCompletionItem.Kind);
                         completionItem = parameterCompletionItem;
+                        return true;
+                    }
+                case RazorCompletionItemKind.MarkupTransition:
+                    {
+                        var markupTransitionCompletionItem = new CompletionItem()
+                        {
+                            Label = razorCompletionItem.DisplayText,
+                            InsertText = razorCompletionItem.InsertText,
+                            FilterText = razorCompletionItem.DisplayText,
+                            SortText = razorCompletionItem.DisplayText,
+                            Kind = tagHelperCompletionItemKind,
+                        };
+
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
+                        {
+                            markupTransitionCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
+                        }
+
+                        completionItem = markupTransitionCompletionItem;
+                        return true;
+                    }
+                case RazorCompletionItemKind.TagHelperElement:
+                    {
+                        var tagHelperElementCompletionItem = new CompletionItem()
+                        {
+                            Label = razorCompletionItem.DisplayText,
+                            InsertText = razorCompletionItem.InsertText,
+                            FilterText = razorCompletionItem.InsertText,
+                            SortText = razorCompletionItem.InsertText,
+                            Kind = tagHelperCompletionItemKind,
+                        };
+
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
+                        {
+                            tagHelperElementCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
+                        }
+
+                        completionItem = tagHelperElementCompletionItem;
+                        return true;
+                    }
+                case RazorCompletionItemKind.TagHelperAttribute:
+                    {
+                        var tagHelperAttributeCompletionItem = new CompletionItem()
+                        {
+                            Label = razorCompletionItem.DisplayText,
+                            InsertText = razorCompletionItem.InsertText,
+                            FilterText = razorCompletionItem.InsertText,
+                            SortText = razorCompletionItem.InsertText,
+                            Kind = tagHelperCompletionItemKind,
+                        };
+
+                        if (razorCompletionItem.CommitCharacters != null && razorCompletionItem.CommitCharacters.Count > 0)
+                        {
+                            tagHelperAttributeCompletionItem.CommitCharacters = new Container<string>(razorCompletionItem.CommitCharacters);
+                        }
+
+                        completionItem = tagHelperAttributeCompletionItem;
                         return true;
                     }
             }
 
             completionItem = null;
             return false;
-        }
-
-        private static bool TryResolveDirectiveAttributeInsertionSnippet(
-            string insertText,
-            bool indexerCompletion,
-            AttributeCompletionDescription attributeCompletionDescription,
-            out string snippetText)
-        {
-            const string BoolTypeName = "System.Boolean";
-            var attributeInfos = attributeCompletionDescription.DescriptionInfos;
-
-            // Boolean returning bound attribute, auto-complete to just the attribute name.
-            if (attributeInfos.All(info => info.ReturnTypeName == BoolTypeName))
-            {
-                snippetText = null;
-                return false;
-            }
-
-            if (indexerCompletion)
-            {
-                // Indexer completion
-                snippetText = string.Concat(insertText, "$1=\"$2\"$0");
-            }
-            else
-            {
-                snippetText = string.Concat(insertText, "=\"$1\"$0");
-            }
-
-            return true;
         }
     }
 }

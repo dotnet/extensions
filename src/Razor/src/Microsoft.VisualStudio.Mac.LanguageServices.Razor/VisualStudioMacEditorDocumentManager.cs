@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Editor.Razor.Documents;
 using Microsoft.VisualStudio.Text;
+using MonoDevelop.Ide;
 
 namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 {
@@ -26,8 +27,8 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            // VS for Mac doesn't currently support find all references support yet.
-            return null;
+            var document = IdeApp.Workbench.GetDocument(filePath);
+            return document?.GetContent<ITextBuffer>();
         }
 
         protected override void OnDocumentOpened(EditorDocument document)

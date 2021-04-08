@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// </summary>
     public abstract class ReadOnlyTagHelperAttributeList : ReadOnlyCollection<TagHelperAttribute>
     {
-        private static readonly IReadOnlyList<TagHelperAttribute> EmptyList = new TagHelperAttribute[0];
+        private static readonly IReadOnlyList<TagHelperAttribute> EmptyList = Array.Empty<TagHelperAttribute>();
 
         /// <summary>
         /// Instantiates a new instance of <see cref="ReadOnlyTagHelperAttributeList"/> with an empty

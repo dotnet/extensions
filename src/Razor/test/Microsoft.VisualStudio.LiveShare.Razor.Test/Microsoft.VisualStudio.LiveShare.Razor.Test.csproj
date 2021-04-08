@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <CodeAnalysisRuleSet>..\..\src\Microsoft.VisualStudio.LiveShare.Razor\Microsoft.VisualStudio.LiveShare.Razor.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.RpcContracts" Version="$(MicrosoftVisualStudioRpcContractsPackageVersion)" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
   </ItemGroup>
 

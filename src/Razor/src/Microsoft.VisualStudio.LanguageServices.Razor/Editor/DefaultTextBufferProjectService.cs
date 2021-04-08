@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 return null;
             }
 
-            _documentTable.FindDocument(textDocument.FilePath, out var hierarchy, out uint itemId, out uint cookie);
+            _documentTable.FindDocument(textDocument.FilePath, out var hierarchy, out _, out _);
 
             // We don't currently try to look a Roslyn ProjectId at this point, we just want to know some
             // basic things.

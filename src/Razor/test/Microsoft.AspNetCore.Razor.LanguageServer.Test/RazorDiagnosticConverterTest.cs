@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Assert
             Assert.Equal(razorDiagnostic.Id, diagnostic.Code);
-            Assert.Equal(razorDiagnostic.GetMessage(), diagnostic.Message);
+            Assert.Equal(razorDiagnostic.GetMessage(CultureInfo.InvariantCulture), diagnostic.Message);
             Assert.Null(diagnostic.Range);
             Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
         }

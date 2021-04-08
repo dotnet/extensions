@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             builder
                 .AppendLine(location.ToString())
-                .Append("|");
+                .Append('|');
 
             for (var i = 0; i < location.Length; i++)
             {

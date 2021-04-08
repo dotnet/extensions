@@ -1,72 +1,48 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.CodeAnalysis.Razor.Tooltip;
+using Moq;
+using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
 {
     public class DefaultTagHelperDescriptionFactoryTest
     {
-        [Fact]
-        public void ResolveTagHelperTypeName_ExtractsTypeName_SimpleReturnType()
+        internal ClientNotifierServiceBase LanguageServer
         {
-            // Arrange
-            var info = new TagHelperAttributeDescriptionInfo(
-                displayName: "string SomeTypeName.SomePropertyName",
-                propertyName: "SomePropertyName",
-                returnTypeName: "System.String",
-                documentation: string.Empty);
+            get
+            {
+                var initializeParams = new InitializeParams
+                {
+                    Capabilities = new ClientCapabilities
+                    {
+                        TextDocument = new TextDocumentClientCapabilities
+                        {
+                            Completion = new Supports<CompletionCapability>
+                            {
+                                Value = new CompletionCapability
+                                {
+                                    CompletionItem = new CompletionItemCapabilityOptions
+                                    {
+                                        SnippetSupport = true,
+                                        DocumentationFormat = new Container<MarkupKind>(MarkupKind.Markdown)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
 
-            // Act
-            var typeName = DefaultTagHelperDescriptionFactory.ResolveTagHelperTypeName(info);
+                var languageServer = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
+                languageServer.SetupGet(server => server.ClientSettings)
+                    .Returns(initializeParams);
 
-            // Assert
-            Assert.Equal("SomeTypeName", typeName);
-        }
-
-        [Fact]
-        public void ResolveTagHelperTypeName_ExtractsTypeName_ComplexReturnType()
-        {
-            // Arrange
-            var info = new TagHelperAttributeDescriptionInfo(
-                displayName: "SomeReturnTypeName SomeTypeName.SomePropertyName",
-                propertyName: "SomePropertyName",
-                returnTypeName: "SomeReturnTypeName",
-                documentation: string.Empty);
-
-            // Act
-            var typeName = DefaultTagHelperDescriptionFactory.ResolveTagHelperTypeName(info);
-
-            // Assert
-            Assert.Equal("SomeTypeName", typeName);
-        }
-
-        [Fact]
-        public void GetSimpleName_NoopsForNonPrimitiveType()
-        {
-            // Arrange
-            var typeName = "Microsoft.AspNetCore.SomeType";
-
-            // Act
-            var result = DefaultTagHelperDescriptionFactory.GetSimpleName(typeName);
-
-            // Assert
-            Assert.Equal(typeName, result);
-        }
-
-        [Theory]
-        [InlineData("System.Int32", "int")]
-        [InlineData("System.Boolean", "bool")]
-        [InlineData("System.String", "string")]
-        public void GetSimpleName_SimplifiesPrimitiveTypes(string typeName, string expectedTypeName)
-        {
-            // Arrange
-
-            // Act
-            var result = DefaultTagHelperDescriptionFactory.GetSimpleName(typeName);
-
-            // Assert
-            Assert.Equal(expectedTypeName, result);
+                return languageServer.Object;
+            }
         }
 
         [Fact]
@@ -76,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "Microsoft.AspNetCore.SomeTagHelpers.SomeTypeName";
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceTypeName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceTypeName(content);
 
             // Assert
             Assert.Equal("SomeTypeName", reduced);
@@ -89,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "System.Collections.Generic.List<System.String>";
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceTypeName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceTypeName(content);
 
             // Assert
             Assert.Equal("List<System.String>", reduced);
@@ -102,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "System.Collections.Generic.List{System.String}";
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceTypeName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceTypeName(content);
 
             // Assert
             Assert.Equal("List{System.String}", reduced);
@@ -115,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "Microsoft.AspNetCore.SometTagHelpers.SomeType<Foo.Bar<Baz.Phi>>";
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceTypeName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceTypeName(content);
 
             // Assert
             Assert.Equal("SomeType<Foo.Bar<Baz.Phi>>", reduced);
@@ -129,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             // Arrange
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceTypeName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceTypeName(content);
 
             // Assert
             Assert.Equal(content, reduced);
@@ -142,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "Microsoft.AspNetCore.SometTagHelpers.SomeType.SomeProperty";
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceMemberName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceMemberName(content);
 
             // Assert
             Assert.Equal("SomeType.SomeProperty", reduced);
@@ -155,7 +131,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "Microsoft.AspNetCore.SometTagHelpers.SomeType<Foo.Bar>.SomeProperty<Foo.Bar>";
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceMemberName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceMemberName(content);
 
             // Assert
             Assert.Equal("SomeType<Foo.Bar>.SomeProperty<Foo.Bar>", reduced);
@@ -168,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "Microsoft.AspNetCore.SometTagHelpers.SomeType{Foo.Bar}.SomeProperty{Foo.Bar}";
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceMemberName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceMemberName(content);
 
             // Assert
             Assert.Equal("SomeType{Foo.Bar}.SomeProperty{Foo.Bar}", reduced);
@@ -181,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "Microsoft.AspNetCore.SometTagHelpers.SomeType<Foo.Bar<Baz,Fi>>.SomeMethod(Foo.Bar<System.String>,Baz<Something>.Fi)";
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceMemberName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceMemberName(content);
 
             // Assert
             Assert.Equal("SomeType<Foo.Bar<Baz,Fi>>.SomeMethod(Foo.Bar<System.String>,Baz<Something>.Fi)", reduced);
@@ -197,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             // Arrange
 
             // Act
-            var reduced = DefaultTagHelperDescriptionFactory.ReduceMemberName(content);
+            var reduced = DefaultTagHelperTooltipFactory.ReduceMemberName(content);
 
             // Assert
             Assert.Equal(content, reduced);
@@ -210,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "T:";
 
             // Act
-            var value = DefaultTagHelperDescriptionFactory.ReduceCrefValue(content);
+            var value = DefaultTagHelperTooltipFactory.ReduceCrefValue(content);
 
             // Assert
             Assert.Equal(string.Empty, value);
@@ -223,7 +199,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "X:";
 
             // Act
-            var value = DefaultTagHelperDescriptionFactory.ReduceCrefValue(content);
+            var value = DefaultTagHelperTooltipFactory.ReduceCrefValue(content);
 
             // Assert
             Assert.Equal(string.Empty, value);
@@ -236,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "T:Microsoft.AspNetCore.SometTagHelpers.SomeType";
 
             // Act
-            var value = DefaultTagHelperDescriptionFactory.ReduceCrefValue(content);
+            var value = DefaultTagHelperTooltipFactory.ReduceCrefValue(content);
 
             // Assert
             Assert.Equal("SomeType", value);
@@ -249,7 +225,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "P:Microsoft.AspNetCore.SometTagHelpers.SomeType.SomeProperty";
 
             // Act
-            var value = DefaultTagHelperDescriptionFactory.ReduceCrefValue(content);
+            var value = DefaultTagHelperTooltipFactory.ReduceCrefValue(content);
 
             // Assert
             Assert.Equal("SomeType.SomeProperty", value);
@@ -262,10 +238,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var content = "P:Microsoft.AspNetCore.SometTagHelpers.SomeType.SomeMember";
 
             // Act
-            var value = DefaultTagHelperDescriptionFactory.ReduceCrefValue(content);
+            var value = DefaultTagHelperTooltipFactory.ReduceCrefValue(content);
 
             // Assert
             Assert.Equal("SomeType.SomeMember", value);
+        }
+
+        [Fact]
+        public void TryExtractSummary_Null_ReturnsFalse()
+        {
+            // Arrange & Act
+            var result = DefaultTagHelperTooltipFactory.TryExtractSummary(documentation: null, out var summary);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(summary);
         }
 
         [Fact]
@@ -282,7 +269,7 @@ Prefixed invalid content
 Suffixed invalid content";
 
             // Act
-            var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
+            var result = DefaultTagHelperTooltipFactory.TryExtractSummary(documentation, out var summary);
 
             // Assert
             Assert.True(result);
@@ -302,15 +289,20 @@ Prefixed invalid content
 Suffixed invalid content";
 
             // Act
-            var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
+            var result = DefaultTagHelperTooltipFactory.TryExtractSummary(documentation, out var summary);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(summary);
+            Assert.True(result);
+            Assert.Equal(@"Prefixed invalid content
+
+
+</summary>
+
+Suffixed invalid content", summary);
         }
 
         [Fact]
-        public void TryExtractSummary_NoEndSummary_ReturnsFalse()
+        public void TryExtractSummary_NoEndSummary_ReturnsTrue()
         {
             // Arrange
             var documentation = @"
@@ -322,11 +314,49 @@ Prefixed invalid content
 Suffixed invalid content";
 
             // Act
-            var result = DefaultTagHelperDescriptionFactory.TryExtractSummary(documentation, out var summary);
+            var result = DefaultTagHelperTooltipFactory.TryExtractSummary(documentation, out var summary);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(@"Prefixed invalid content
+
+
+<summary>
+
+Suffixed invalid content", summary);
+        }
+
+        [Fact]
+        public void TryExtractSummary_XMLButNoSummary_ReturnsFalse()
+        {
+            // Arrange
+            var documentation = @"
+<param type=""stuff"">param1</param>
+<return>Result</return>
+";
+
+            // Act
+            var result = DefaultTagHelperTooltipFactory.TryExtractSummary(documentation, out var summary);
 
             // Assert
             Assert.False(result);
             Assert.Null(summary);
+        }
+
+        [Fact]
+        public void TryExtractSummary_NoXml_ReturnsTrue()
+        {
+            // Arrange
+            var documentation = @"
+There is no xml, but I got you this < and the >.
+";
+
+            // Act
+            var result = DefaultTagHelperTooltipFactory.TryExtractSummary(documentation, out var summary);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("There is no xml, but I got you this < and the >.", summary);
         }
 
         [Fact]
@@ -336,7 +366,7 @@ Suffixed invalid content";
             var summary = "Accepts <see cref=\"T:System.Collections.List{System.String}\" />s";
 
             // Act
-            var cleanedSummary = DefaultTagHelperDescriptionFactory.CleanSummaryContent(summary);
+            var cleanedSummary = DefaultTagHelperTooltipFactory.CleanSummaryContent(summary);
 
             // Assert
             Assert.Equal("Accepts `List<System.String>`s", cleanedSummary);
@@ -349,7 +379,7 @@ Suffixed invalid content";
             var summary = "Accepts <seealso cref=\"T:System.Collections.List{System.String}\" />s";
 
             // Act
-            var cleanedSummary = DefaultTagHelperDescriptionFactory.CleanSummaryContent(summary);
+            var cleanedSummary = DefaultTagHelperTooltipFactory.CleanSummaryContent(summary);
 
             // Assert
             Assert.Equal("Accepts `List<System.String>`s", cleanedSummary);
@@ -363,28 +393,27 @@ Suffixed invalid content";
             Hello
 
     World
+
 ";
 
             // Act
-            var cleanedSummary = DefaultTagHelperDescriptionFactory.CleanSummaryContent(summary);
+            var cleanedSummary = DefaultTagHelperTooltipFactory.CleanSummaryContent(summary);
 
             // Assert
-            Assert.Equal(@"
-Hello
+            Assert.Equal(@"Hello
 
-World
-", cleanedSummary);
+World", cleanedSummary);
         }
 
         [Fact]
-        public void TryCreateDescription_NoAssociatedTagHelperDescriptions_ReturnsFalse()
+        public void TryCreateTooltip_NoAssociatedTagHelperDescriptions_ReturnsFalse()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
-            var elementDescription = ElementDescriptionInfo.Default;
+            var descriptionFactory = new DefaultTagHelperTooltipFactory(LanguageServer);
+            var elementDescription = AggregateBoundElementDescription.Default;
 
             // Act
-            var result = descriptionFactory.TryCreateDescription(elementDescription, out var markdown);
+            var result = descriptionFactory.TryCreateTooltip(elementDescription, out var markdown);
 
             // Assert
             Assert.False(result);
@@ -392,115 +421,187 @@ World
         }
 
         [Fact]
-        public void TryCreateDescription_Element_SingleAssociatedTagHelper_ReturnsTrue()
+        public void TryCreateTooltip_Element_SingleAssociatedTagHelper_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var descriptionFactory = new DefaultTagHelperTooltipFactory(LanguageServer);
             var associatedTagHelperInfos = new[]
             {
-                new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+                new BoundElementDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
             };
-            var elementDescription = new ElementDescriptionInfo(associatedTagHelperInfos);
-
+            var elementDescription = new AggregateBoundElementDescription(associatedTagHelperInfos);
             // Act
-            var result = descriptionFactory.TryCreateDescription(elementDescription, out var markdown);
+            var result = descriptionFactory.TryCreateTooltip(elementDescription, out var markdown);
 
             // Assert
             Assert.True(result);
             Assert.Equal(@"**SomeTagHelper**
 
-Uses `List<System.String>`s
-", markdown);
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
         }
 
         [Fact]
-        public void TryCreateDescription_Element_MultipleAssociatedTagHelpers_ReturnsTrue()
+        public void TryCreateTooltip_Element_PlainText_NoBold()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var languageServer = LanguageServer;
+            languageServer.ClientSettings.Capabilities.TextDocument.Completion.Value.CompletionItem.DocumentationFormat = new Container<MarkupKind>(MarkupKind.PlainText);
+            var descriptionFactory = new DefaultTagHelperTooltipFactory(languageServer);
             var associatedTagHelperInfos = new[]
             {
-                new TagHelperDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
-                new TagHelperDescriptionInfo("Microsoft.AspNetCore.OtherTagHelper", "<summary>Also uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+                new BoundElementDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
             };
-            var elementDescription = new ElementDescriptionInfo(associatedTagHelperInfos);
+            var elementDescription = new AggregateBoundElementDescription(associatedTagHelperInfos);
 
             // Act
-            var result = descriptionFactory.TryCreateDescription(elementDescription, out var markdown);
+            var result = descriptionFactory.TryCreateTooltip(elementDescription, out var markdown);
+
+            // Assert
+            Assert.True(result, "TryCreateTooltip should have succeeded");
+            Assert.Equal(@"SomeTagHelper
+
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.PlainText, markdown.Kind);
+        }
+
+        [Fact]
+        public void TryCreateTooltip_Attribute_PlainText_NoBold()
+        {
+            // Arrange
+            var languageServer = LanguageServer;
+            languageServer.ClientSettings.Capabilities.TextDocument.Completion.Value.CompletionItem.DocumentationFormat = new Container<MarkupKind>(MarkupKind.PlainText);
+            var descriptionFactory = new DefaultTagHelperTooltipFactory(languageServer);
+            var associatedAttributeDescriptions = new[]
+            {
+                new BoundAttributeDescriptionInfo(
+                    returnTypeName: "System.String",
+                    typeName: "Microsoft.AspNetCore.SomeTagHelpers.SomeTypeName",
+                    propertyName: "SomeProperty",
+                    documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>")
+            };
+            var attributeDescription = new AggregateBoundAttributeDescription(associatedAttributeDescriptions);
+
+            // Act
+            var result = descriptionFactory.TryCreateTooltip(attributeDescription, out var markdown);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(@"string SomeTypeName.SomeProperty
+
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.PlainText, markdown.Kind);
+        }
+        [Fact]
+        public void TryCreateTooltip_Element_BothPlainTextAndMarkdown_IsBold()
+        {
+            // Arrange
+            var languageServer = LanguageServer;
+            languageServer.ClientSettings.Capabilities.TextDocument.Completion.Value.CompletionItem.DocumentationFormat = new Container<MarkupKind>(MarkupKind.PlainText, MarkupKind.Markdown);
+            var descriptionFactory = new DefaultTagHelperTooltipFactory(languageServer);
+            var associatedTagHelperInfos = new[]
+            {
+                new BoundElementDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+            };
+            var elementDescription = new AggregateBoundElementDescription(associatedTagHelperInfos);
+
+            // Act
+            var result = descriptionFactory.TryCreateTooltip(elementDescription, out var markdown);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(@"**SomeTagHelper**
+
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
+        }
+
+        [Fact]
+        public void TryCreateTooltip_Element_MultipleAssociatedTagHelpers_ReturnsTrue()
+        {
+            // Arrange
+            var descriptionFactory = new DefaultTagHelperTooltipFactory(LanguageServer);
+            var associatedTagHelperInfos = new[]
+            {
+                new BoundElementDescriptionInfo("Microsoft.AspNetCore.SomeTagHelper", "<summary>\nUses <see cref=\"T:System.Collections.List{System.String}\" />s\n</summary>"),
+                new BoundElementDescriptionInfo("Microsoft.AspNetCore.OtherTagHelper", "<summary>\nAlso uses <see cref=\"T:System.Collections.List{System.String}\" />s\n\r\n\r\r</summary>"),
+            };
+            var elementDescription = new AggregateBoundElementDescription(associatedTagHelperInfos);
+
+            // Act
+            var result = descriptionFactory.TryCreateTooltip(elementDescription, out var markdown);
 
             // Assert
             Assert.True(result);
             Assert.Equal(@"**SomeTagHelper**
 
 Uses `List<System.String>`s
-
 ---
 **OtherTagHelper**
 
-Also uses `List<System.String>`s
-", markdown);
+Also uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
         }
 
         [Fact]
-        public void TryCreateDescription_Attribute_SingleAssociatedAttribute_ReturnsTrue()
+        public void TryCreateTooltip_Attribute_SingleAssociatedAttribute_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var descriptionFactory = new DefaultTagHelperTooltipFactory(LanguageServer);
             var associatedAttributeDescriptions = new[]
             {
-                new TagHelperAttributeDescriptionInfo(
-                    displayName: "string Microsoft.AspNetCore.SomeTagHelpers.SomeTypeName.SomeProperty",
-                    propertyName: "SomeProperty",
+                new BoundAttributeDescriptionInfo(
                     returnTypeName: "System.String",
+                    typeName: "Microsoft.AspNetCore.SomeTagHelpers.SomeTypeName",
+                    propertyName: "SomeProperty",
                     documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>")
             };
-            var attributeDescription = new AttributeDescriptionInfo(associatedAttributeDescriptions);
+            var attributeDescription = new AggregateBoundAttributeDescription(associatedAttributeDescriptions);
 
             // Act
-            var result = descriptionFactory.TryCreateDescription(attributeDescription, out var markdown);
+            var result = descriptionFactory.TryCreateTooltip(attributeDescription, out var markdown);
 
             // Assert
             Assert.True(result);
             Assert.Equal(@"**string** SomeTypeName.**SomeProperty**
 
-Uses `List<System.String>`s
-", markdown);
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
         }
 
         [Fact]
-        public void TryCreateDescription_Attribute_MultipleAssociatedAttributes_ReturnsTrue()
+        public void TryCreateTooltip_Attribute_MultipleAssociatedAttributes_ReturnsTrue()
         {
             // Arrange
-            var descriptionFactory = new DefaultTagHelperDescriptionFactory();
+            var descriptionFactory = new DefaultTagHelperTooltipFactory(LanguageServer);
             var associatedAttributeDescriptions = new[]
             {
-                new TagHelperAttributeDescriptionInfo(
-                    displayName: "string Microsoft.AspNetCore.SomeTagHelpers.SomeTypeName.SomeProperty",
-                    propertyName: "SomeProperty",
+                new BoundAttributeDescriptionInfo(
                     returnTypeName: "System.String",
+                    typeName: "Microsoft.AspNetCore.SomeTagHelpers.SomeTypeName",
+                    propertyName: "SomeProperty",
                     documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
-                new TagHelperAttributeDescriptionInfo(
-                    displayName: "System.Boolean? Microsoft.AspNetCore.SomeTagHelpers.AnotherTypeName.AnotherProperty",
+                new BoundAttributeDescriptionInfo(
                     propertyName: "AnotherProperty",
+                    typeName: "Microsoft.AspNetCore.SomeTagHelpers.AnotherTypeName",
                     returnTypeName: "System.Boolean?",
-                    documentation: "<summary>Uses <see cref=\"T:System.Collections.List{System.String}\" />s</summary>"),
+                    documentation: "<summary>\nUses <see cref=\"T:System.Collections.List{System.String}\" />s\n</summary>"),
             };
-            var attributeDescription = new AttributeDescriptionInfo(associatedAttributeDescriptions);
+            var attributeDescription = new AggregateBoundAttributeDescription(associatedAttributeDescriptions);
 
             // Act
-            var result = descriptionFactory.TryCreateDescription(attributeDescription, out var markdown);
+            var result = descriptionFactory.TryCreateTooltip(attributeDescription, out var markdown);
 
             // Assert
             Assert.True(result);
             Assert.Equal(@"**string** SomeTypeName.**SomeProperty**
 
 Uses `List<System.String>`s
-
 ---
 **Boolean?** AnotherTypeName.**AnotherProperty**
 
-Uses `List<System.String>`s
-", markdown);
+Uses `List<System.String>`s", markdown.Value);
+            Assert.Equal(MarkupKind.Markdown, markdown.Kind);
         }
     }
 }
