@@ -11,7 +11,8 @@
 0 1 6 18 0 //string
 0 6 1 36 0 //punctuation
 0 1 1 36 0 //punctuation
-0 3 1 80 0 //markupTagDelimiter
+0 2 1 73 0 //razorTransition
+0 1 1 80 0 //markupTagDelimiter
 0 1 1 81 0 //markupElement
 0 1 1 80 0 //markupTagDelimiter
 0 1 1 80 0 //markupTagDelimiter
