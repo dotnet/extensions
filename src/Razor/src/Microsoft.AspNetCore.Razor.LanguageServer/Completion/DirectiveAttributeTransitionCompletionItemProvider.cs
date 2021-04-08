@@ -20,7 +20,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             {
                 if (_transitionCompletionItem == null)
                 {
-                    _transitionCompletionItem = new RazorCompletionItem("@...", "@", RazorCompletionItemKind.Directive);
+                    _transitionCompletionItem = new RazorCompletionItem(
+                        displayText: "@...",
+                        insertText: "@",
+                        kind: RazorCompletionItemKind.Directive,
+
+                        // We specify these three commit characters to work around a Visual Studio interaction where
+                        // completion items that get "soft selected" will cause completion to re-trigger if a user
+                        // types one of the soft-selected completion item's commit characters.
+                        // In practice this happens in the `<button |` scenario where the "space" results in completions
+                        // where this directive attribute transition character ("@...") gets provided and then typing
+                        // `@` should re-trigger OR typing `/` should re-trigger.
+                        commitCharacters: new[] { "@", "/", ">" });
                     _transitionCompletionItem.SetDirectiveCompletionDescription(new DirectiveCompletionDescription("Blazor directive attributes"));
                 }
 
