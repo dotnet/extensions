@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
                 foreach (var codeAction in codeActions)
                 {
-                    if (!codeAction.Name.Equals("CodeActionFromVSCode", StringComparison.Ordinal))
+                    if (!codeAction.Name.Equals(LanguageServerConstants.CodeActions.CodeActionFromVSCode, StringComparison.Ordinal))
                     {
                         continue;
                     }
@@ -166,8 +166,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                     string action;
 
                     // The formatting pass of our Default code action resolver rejects
-                    // implicit/explicit expressions. So if we're in an implicit expression, 
-                    // we run the remapping resolver responsible for simply remapping 
+                    // implicit/explicit expressions. So if we're in an implicit expression,
+                    // we run the remapping resolver responsible for simply remapping
                     // (without formatting) the resolved code action. We do not support
                     // explicit expressions due to issues with the remapping methodology
                     // risking document corruption.

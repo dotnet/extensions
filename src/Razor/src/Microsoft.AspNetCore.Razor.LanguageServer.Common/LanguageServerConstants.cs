@@ -63,6 +63,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
 
             public const string AddUsing = "AddUsing";
 
+            public const string CodeActionFromVSCode = "CodeActionFromVSCode";
+
             /// <summary>
             /// Remaps without formatting the resolved code action edit
             /// </summary>

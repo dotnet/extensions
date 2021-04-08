@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 }
 
                 return true;
-            });
+            }).ToArray();
         }
 
         private async Task<IEnumerable<RazorCodeAction>> FilterCSharpCodeActionsAsync(
@@ -318,6 +318,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 
             availableCodeActionNames.UnionWith(refactoringProviderNames);
             availableCodeActionNames.UnionWith(codeFixProviderNames);
+            availableCodeActionNames.Add(LanguageServerConstants.CodeActions.CodeActionFromVSCode);
 
             return availableCodeActionNames;
         }
