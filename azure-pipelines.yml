@@ -90,6 +90,9 @@ stages:
         pool:
           vmImage: ubuntu-18.04
         variables:
+        - LC_ALL: 'en_US.UTF-8'
+        - LANG: 'en_US.UTF-8'
+        - LANGUAGE: 'en_US.UTF-8'
         - DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
         - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
         - _BuildConfig: Release
@@ -310,6 +313,10 @@ stages:
           options: --init # This ensures all the stray defunct processes are reaped.
         pool:
           vmImage: ubuntu-18.04
+        variables:
+        - LC_ALL: 'en_US.UTF-8'
+        - LANG: 'en_US.UTF-8'
+        - LANGUAGE: 'en_US.UTF-8'
         strategy:
           matrix:
             debug:
