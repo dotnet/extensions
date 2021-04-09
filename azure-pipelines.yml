@@ -167,11 +167,14 @@ stages:
             artifactType: Container
             parallel: true
 
-      - job: Ubuntu_16_04
-        displayName: 'Ubuntu 16.04'
+      - job: Ubuntu_18_04
+        displayName: 'Ubuntu 18.04'
         pool:
-          vmImage: ubuntu-16.04
+          vmImage: ubuntu-18.04
         variables:
+        - LC_ALL: 'en_US.UTF-8'
+        - LANG: 'en_US.UTF-8'
+        - LANGUAGE: 'en_US.UTF-8'
         # Only enable publishing in official builds.
         - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           - name: _OfficialBuildArgs
@@ -303,8 +306,11 @@ stages:
     displayName: 'Test: Linux Source Build'
     container: centos:7
     pool:
-      vmImage: 'ubuntu-16.04'
+      vmImage: 'ubuntu-18.04'
     variables:
+      LC_ALL: 'en_US.UTF-8'
+      LANG: 'en_US.UTF-8'
+      LANGUAGE: 'en_US.UTF-8'
       DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
     steps:
