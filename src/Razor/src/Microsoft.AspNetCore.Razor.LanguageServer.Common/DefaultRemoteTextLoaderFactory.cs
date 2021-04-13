@@ -72,10 +72,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                         throw new IOException($"File was externally modified: {_filePath}");
                     }
                 }
-                catch (IOException e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
+                catch (IOException)
                 {
                     // This can typically occur when a file is renamed. What happens is the client "closes" the old file before any file system "rename" event makes it to us. Resulting
                     // in us trying to refresh the "closed" files buffer with what's on disk; however, there's nothing actually on disk because the file was renamed.
+                    //
+                    // Can also occur when a file is in the middle of being copied resulting in a generic IO exception for the resource not being ready.
                     textAndVersion = TextAndVersion.Create(SourceText.From(string.Empty), VersionStamp.Default, filePath: _filePath);
                 }
 
