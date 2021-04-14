@@ -53,8 +53,10 @@ namespace Microsoft.CodeAnalysis.Razor
                 return trimmedExcerptSpan;
             }
 
-            static TextSpan CreateTextSpan(TextLine startLine, TextLine endLine) =>
-                new TextSpan(startLine.Start, endLine.End - startLine.Start);
+            static TextSpan CreateTextSpan(TextLine startLine, TextLine endLine)
+            {
+                return new TextSpan(startLine.Start, endLine.End - startLine.Start);
+            }
         }
 
         protected SourceText GetTranslatedExcerptText(

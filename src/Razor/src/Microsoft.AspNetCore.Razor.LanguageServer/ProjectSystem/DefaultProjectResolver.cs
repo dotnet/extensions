@@ -83,8 +83,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             projectSnapshot = null;
             return false;
 
-            static bool IsDocumentInProject(ProjectSnapshot projectSnapshot, string documentFilePath) =>
-                projectSnapshot.GetDocument(documentFilePath) != null;
+            static bool IsDocumentInProject(ProjectSnapshot projectSnapshot, string documentFilePath)
+            {
+                return projectSnapshot.GetDocument(documentFilePath) != null;
+            }
         }
 
         public override ProjectSnapshot GetMiscellaneousProject()

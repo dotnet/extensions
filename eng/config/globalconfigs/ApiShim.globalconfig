@@ -11,6 +11,9 @@ dotnet_diagnostic.CA1822.severity = none
 # CA2227: Change 'Member' to be read-only by removing the property setter
 dotnet_diagnostic.CA2227.severity = none
 
+# CA2231: Implement the equality operators and make their behavior identical to that of the Equals method
+dotnet_diagnostic.CA2231.severity = none
+
 # IDE0044: Add readonly modifier
 dotnet_diagnostic.IDE0044.severity = none
 

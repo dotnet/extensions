@@ -176,7 +176,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return response;
             }
 
-            await _joinableTaskFactory.SwitchToMainThreadAsync();
+            await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             var hostDocumentUri = new Uri(request.HostDocumentFilePath);
             if (!_documentManager.TryGetDocument(hostDocumentUri, out var documentSnapshot))

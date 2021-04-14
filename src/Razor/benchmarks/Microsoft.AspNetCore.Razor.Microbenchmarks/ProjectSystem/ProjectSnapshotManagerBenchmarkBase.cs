@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 
             public StaticTagHelperResolver(IReadOnlyList<TagHelperDescriptor> tagHelpers)
             {
-                this._tagHelpers = tagHelpers;
+                _tagHelpers = tagHelpers;
             }
 
             public override Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken = default)
