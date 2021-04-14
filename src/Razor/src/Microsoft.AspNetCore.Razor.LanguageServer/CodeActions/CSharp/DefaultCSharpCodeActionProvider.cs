@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             RazorPredefinedCodeRefactoringProviderNames.UseExpressionBody,
             RazorPredefinedCodeFixProviderNames.ImplementAbstractClass,
             RazorPredefinedCodeFixProviderNames.ImplementInterface,
-            RazorPredefinedCodeFixProviderNames.SpellCheck,
             RazorPredefinedCodeFixProviderNames.RemoveUnusedVariable,
         };
 
