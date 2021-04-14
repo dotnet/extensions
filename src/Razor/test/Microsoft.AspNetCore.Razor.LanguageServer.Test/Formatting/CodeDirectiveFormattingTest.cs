@@ -487,7 +487,7 @@ tabSize: 8,
 insertSpaces: false);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/18996")]
+        [Fact]
         public async Task CodeBlockDirective_WithTabSize3()
         {
             await RunFormattingTestAsync(
@@ -498,8 +498,7 @@ input: @"
 }
 }
 ",
-expected: @"
-@code {
+expected: @"@code {
    public class Foo { }
    void Method()
    {
@@ -530,7 +529,7 @@ expected: @"@code {
 tabSize: 8);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/18996")]
+        [Fact]
         public async Task CodeBlockDirective_WithTabSize12()
         {
             await RunFormattingTestAsync(
@@ -541,8 +540,7 @@ input: @"
 }
 }
 ",
-expected: @"
-@code {
+expected: @"@code {
             public class Foo { }
             void Method()
             {
