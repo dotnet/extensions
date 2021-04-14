@@ -447,7 +447,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // completion items for moments when a user has typed a '.' that's typically interpreted as Html.
             var addProvisionalDot = new VisualStudioTextChange(previousCharacterProjection.PositionIndex, 0, ".");
 
-            await _joinableTaskFactory.SwitchToMainThreadAsync();
+            await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             _logger.LogInformation("Adding provisional dot.");
             trackingDocumentManager.UpdateVirtualDocument<CSharpVirtualDocument>(

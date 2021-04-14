@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 return Task.FromResult(TagHelperResolutionResult.Empty);
             }
 
-            return GetTagHelpersAsync(workspaceProject, projectSnapshot.GetProjectEngine());
+            return GetTagHelpersAsync(workspaceProject, projectSnapshot.GetProjectEngine(), cancellationToken);
         }
     }
 }

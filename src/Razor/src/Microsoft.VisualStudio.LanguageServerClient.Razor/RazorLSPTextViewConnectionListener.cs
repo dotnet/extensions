@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Threading;
 using MediatR;
 using Microsoft.AspNetCore.Razor.LanguageServer;

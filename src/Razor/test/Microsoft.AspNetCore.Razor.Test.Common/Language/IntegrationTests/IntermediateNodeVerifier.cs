@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     throw new IntermediateNodeBaselineException(node, Ancestors.ToArray(), expected, actual, message);
                 }
 
-                int charsVerified = 0;
+                var charsVerified = 0;
                 AssertNestingEqual(node, ancestors, expected, actual, ref charsVerified);
                 AssertNameEqual(node, ancestors, expected, actual, ref charsVerified);
                 AssertDelimiter(node, expected, actual, true, ref charsVerified);

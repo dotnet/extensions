@@ -284,8 +284,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
             public async override Task<TextAndVersion> LoadTextAndVersionAsync(Workspace workspace, DocumentId documentId, CancellationToken cancellationToken)
             {
-                var sourceText = await _document.GetTextAsync();
-                var textVersion = await _document.GetTextVersionAsync();
+                var sourceText = await _document.GetTextAsync(cancellationToken);
+                var textVersion = await _document.GetTextVersionAsync(cancellationToken);
                 var textAndVersion = TextAndVersion.Create(sourceText, textVersion);
                 return textAndVersion;
             }

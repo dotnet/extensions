@@ -15,11 +15,11 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
         }
 
         public Span OldSpan { get; }
-        public int OldPosition => this.OldSpan.Start;
-        public int OldEnd => this.OldSpan.End;
-        public int OldLength => this.OldSpan.Length;
+        public int OldPosition => OldSpan.Start;
+        public int OldEnd => OldSpan.End;
+        public int OldLength => OldSpan.Length;
         public string NewText { get; }
-        public int NewLength => this.NewText.Length;
+        public int NewLength => NewText.Length;
 
         public Span NewSpan => throw new NotImplementedException();
 
@@ -31,7 +31,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 
         public override string ToString()
         {
-            return this.OldSpan.ToString() + "->" + this.NewText;
+            return OldSpan.ToString() + "->" + NewText;
         }
     }
 }

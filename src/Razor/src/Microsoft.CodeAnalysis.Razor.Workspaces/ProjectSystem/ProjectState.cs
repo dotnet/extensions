@@ -185,7 +185,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 {
                     if (_projectEngine == null)
                     {
-                        _projectEngine = this.CreateProjectEngine();
+                        _projectEngine = CreateProjectEngine();
                     }
                 }
 

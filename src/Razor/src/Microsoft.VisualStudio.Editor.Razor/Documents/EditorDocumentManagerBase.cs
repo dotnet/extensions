@@ -15,8 +15,6 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
     internal abstract class EditorDocumentManagerBase : EditorDocumentManager
     {
         private readonly FileChangeTrackerFactory _fileChangeTrackerFactory;
-        private readonly ForegroundDispatcher _foregroundDispatcher;
-
         private readonly Dictionary<DocumentKey, EditorDocument> _documents;
         private readonly Dictionary<string, List<DocumentKey>> _documentsByFilePath;
         protected readonly object _lock;
@@ -35,7 +33,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 throw new ArgumentNullException(nameof(fileChangeTrackerFactory));
             }
 
-            _foregroundDispatcher = foregroundDispatcher;
+            ForegroundDispatcher = foregroundDispatcher;
             _fileChangeTrackerFactory = fileChangeTrackerFactory;
 
             _documents = new Dictionary<DocumentKey, EditorDocument>();
@@ -43,7 +41,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             _lock = new object();
         }
 
-        protected ForegroundDispatcher ForegroundDispatcher => _foregroundDispatcher;
+        protected ForegroundDispatcher ForegroundDispatcher { get; }
 
         protected abstract ITextBuffer GetTextBufferForOpenDocument(string filePath);
 
@@ -53,7 +51,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
 
         public sealed override bool TryGetDocument(DocumentKey key, out EditorDocument document)
         {
-            _foregroundDispatcher.AssertForegroundThread();
+            ForegroundDispatcher.AssertForegroundThread();
 
             lock (_lock)
             {
@@ -63,7 +61,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
 
         public sealed override bool TryGetMatchingDocuments(string filePath, out EditorDocument[] documents)
         {
-            _foregroundDispatcher.AssertForegroundThread();
+            ForegroundDispatcher.AssertForegroundThread();
 
             lock (_lock)
             {
@@ -90,7 +88,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             EventHandler opened,
             EventHandler closed)
         {
-            _foregroundDispatcher.AssertForegroundThread();
+            ForegroundDispatcher.AssertForegroundThread();
 
             EditorDocument document;
 
@@ -149,7 +147,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
-            _foregroundDispatcher.AssertForegroundThread();
+            ForegroundDispatcher.AssertForegroundThread();
 
             lock (_lock)
             {
@@ -173,7 +171,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            _foregroundDispatcher.AssertForegroundThread();
+            ForegroundDispatcher.AssertForegroundThread();
 
             lock (_lock)
             {
@@ -197,7 +195,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 throw new ArgumentNullException(nameof(document));
             }
 
-            _foregroundDispatcher.AssertForegroundThread();
+            ForegroundDispatcher.AssertForegroundThread();
 
             var key = new DocumentKey(document.ProjectFilePath, document.DocumentFilePath);
             if (_documentsByFilePath.TryGetValue(document.DocumentFilePath, out var documents))

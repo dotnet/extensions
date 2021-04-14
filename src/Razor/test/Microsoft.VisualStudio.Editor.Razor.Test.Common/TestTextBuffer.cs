@@ -10,13 +10,12 @@ namespace Microsoft.VisualStudio.Test
 {
     public class TestTextBuffer : ITextBuffer
     {
-        private ITextSnapshot _currentSnapshot;
         private List<EventHandler<TextContentChangedEventArgs>> _attachedChangedEvents;
 
         public TestTextBuffer(ITextSnapshot initialSnapshot)
         {
-            _currentSnapshot = initialSnapshot;
-            if (_currentSnapshot is StringTextSnapshot testSnapshot)
+            CurrentSnapshot = initialSnapshot;
+            if (CurrentSnapshot is StringTextSnapshot testSnapshot)
             {
                 testSnapshot.TextBuffer = this;
             }
@@ -50,8 +49,8 @@ namespace Microsoft.VisualStudio.Test
                 args.Changes.Add(new TestTextChange(edit.Change));
             }
 
-            _currentSnapshot = edits[edits.Length - 1].NewSnapshot;
-            if (_currentSnapshot is StringTextSnapshot testSnapshot)
+            CurrentSnapshot = edits[edits.Length - 1].NewSnapshot;
+            if (CurrentSnapshot is StringTextSnapshot testSnapshot)
             {
                 testSnapshot.TextBuffer = this;
             }
@@ -72,7 +71,7 @@ namespace Microsoft.VisualStudio.Test
 
         public IReadOnlyList<EventHandler<TextContentChangedEventArgs>> AttachedChangedEvents => _attachedChangedEvents;
 
-        public ITextSnapshot CurrentSnapshot => _currentSnapshot;
+        public ITextSnapshot CurrentSnapshot { get; private set; }
 
         public PropertyCollection Properties { get; }
 
