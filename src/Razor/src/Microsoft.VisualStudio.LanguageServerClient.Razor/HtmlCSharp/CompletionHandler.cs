@@ -212,6 +212,15 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 SetResolveData(resultId, completionList);
             }
 
+            if (completionList is VSCompletionList vsCompletionList)
+            {
+                completionList = new OptimizedVSCompletionList(vsCompletionList);
+            }
+            else
+            {
+                completionList = new OptimizedVSCompletionList(completionList);
+            }
+
             _logger.LogInformation("Returning completion list.");
             return completionList;
 
