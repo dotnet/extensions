@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,12 +16,12 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 {
-    public class ProjectSnapshotSynchronizationServiceTest : WorkspaceTestBase
+    public class ProjectSnapshotSynchronizationServiceTest : WorkspaceTestBase, IDisposable
     {
         public ProjectSnapshotSynchronizationServiceTest()
         {
-            var joinableTaskContext = new JoinableTaskContextNode(new JoinableTaskContext());
-            JoinableTaskFactory = new JoinableTaskFactory(joinableTaskContext.Context);
+            JoinableTaskContext = new JoinableTaskContext();
+            JoinableTaskFactory = new JoinableTaskFactory(JoinableTaskContext);
 
             SessionContext = new TestCollaborationSession(isHost: false);
 
@@ -33,6 +34,8 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         }
 
         private JoinableTaskFactory JoinableTaskFactory { get; }
+
+        private JoinableTaskContext JoinableTaskContext { get; }
 
         private CollaborationSession SessionContext { get; }
 
@@ -51,7 +54,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
                 ProjectWorkspaceStateWithTagHelpers);
             var state = new ProjectSnapshotManagerProxyState(new[] { projectHandle });
             var hostProjectManagerProxy = Mock.Of<IProjectSnapshotManagerProxy>(
-                proxy => proxy.GetProjectManagerStateAsync(It.IsAny<CancellationToken>()) == Task.FromResult(state));
+                proxy => proxy.GetProjectManagerStateAsync(It.IsAny<CancellationToken>()) == Task.FromResult(state), MockBehavior.Strict);
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
@@ -80,7 +83,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
-                Mock.Of<IProjectSnapshotManagerProxy>(),
+                Mock.Of<IProjectSnapshotManagerProxy>(MockBehavior.Strict),
                 ProjectSnapshotManager);
             var args = new ProjectChangeEventProxyArgs(older: null, newHandle, ProjectProxyChangeKind.ProjectAdded);
 
@@ -106,7 +109,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
-                Mock.Of<IProjectSnapshotManagerProxy>(),
+                Mock.Of<IProjectSnapshotManagerProxy>(MockBehavior.Strict),
                 ProjectSnapshotManager);
             var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default, "project");
             ProjectSnapshotManager.ProjectAdded(hostProject);
@@ -137,7 +140,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
-                Mock.Of<IProjectSnapshotManagerProxy>(),
+                Mock.Of<IProjectSnapshotManagerProxy>(MockBehavior.Strict),
                 ProjectSnapshotManager);
             var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default, "project");
             ProjectSnapshotManager.ProjectAdded(hostProject);
@@ -172,7 +175,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             var synchronizationService = new ProjectSnapshotSynchronizationService(
                 JoinableTaskFactory,
                 SessionContext,
-                Mock.Of<IProjectSnapshotManagerProxy>(),
+                Mock.Of<IProjectSnapshotManagerProxy>(MockBehavior.Strict),
                 ProjectSnapshotManager);
             var hostProject = new HostProject("/guest/path/project.csproj", RazorConfiguration.Default, "project");
             ProjectSnapshotManager.ProjectAdded(hostProject);
@@ -187,6 +190,12 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             Assert.Equal("/guest/path/project.csproj", project.FilePath);
             Assert.Same(RazorConfiguration.Default, project.Configuration);
             Assert.Same(newProjectWorkspaceState.TagHelpers, project.TagHelpers);
+        }
+
+        [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "https://github.com/dotnet/roslyn-analyzers/issues/4801")]
+        public virtual void Dispose()
+        {
+            JoinableTaskContext.Dispose();
         }
     }
 }

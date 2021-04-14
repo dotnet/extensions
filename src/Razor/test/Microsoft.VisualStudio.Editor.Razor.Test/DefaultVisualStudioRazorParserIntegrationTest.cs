@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -18,6 +16,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Moq;
 using Xunit;
+using SystemDebugger = System.Diagnostics.Debugger;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -223,7 +222,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        [ForegroundFact(Skip = "https://github.com/aspnet/AspNetCore/issues/17234")]
+        [ForegroundFact(Skip = "https://github.com/dotnet/aspnetcore/issues/17234")]
         public async Task ImpExprProvisionallyAcceptsDCIAfterIdentifiers_CompletesSyntaxTreeRequest()
         {
             var original = new StringTextSnapshot("foo @DateTime baz", versionNumber: 0);
@@ -523,7 +522,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 // Verify if the syntax tree represents the expected input.
                 var syntaxTreeContent = manager.PartialParsingSyntaxTreeRoot.ToFullString();
-                Assert.Contains(expectedCode, syntaxTreeContent);
+                Assert.Contains(expectedCode, syntaxTreeContent, StringComparison.Ordinal);
             }
 
             var sourceDocument = TestRazorSourceDocument.Create(content);
@@ -612,7 +611,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private static void DoWithTimeoutIfNotDebugging(Func<int, bool> withTimeout)
         {
 #if DEBUG
-            if (Debugger.IsAttached)
+            if (SystemDebugger.IsAttached)
             {
                 withTimeout(Timeout.Infinite);
             }
@@ -627,14 +626,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private VisualStudioDocumentTracker CreateDocumentTracker(Text.ITextBuffer textBuffer, string filePath = TestLinePragmaFileName)
         {
-            var focusedTextView = Mock.Of<ITextView>(textView => textView.HasAggregateFocus == true);
+            var focusedTextView = Mock.Of<ITextView>(textView => textView.HasAggregateFocus == true, MockBehavior.Strict);
             var documentTracker = Mock.Of<VisualStudioDocumentTracker>(tracker =>
                 tracker.TextBuffer == textBuffer &&
                 tracker.TextViews == new[] { focusedTextView } &&
                 tracker.FilePath == filePath &&
                 tracker.ProjectPath == TestProjectPath &&
                 tracker.ProjectSnapshot == ProjectSnapshot &&
-                tracker.IsSupportedProject == true);
+                tracker.IsSupportedProject == true, MockBehavior.Strict);
             textBuffer.Properties.AddProperty(typeof(VisualStudioDocumentTracker), documentTracker);
 
             return documentTracker;
@@ -745,6 +744,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             public void Dispose()
             {
                 _parser.Dispose();
+                _parserComplete.Dispose();
+                _reparseComplete.Dispose();
             }
         }
 

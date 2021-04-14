@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
-using Microsoft.CodeAnalysis.Razor.Completion;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.Core.Imaging;
 using Microsoft.VisualStudio.Text.Adornments;
 
@@ -48,7 +48,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         private static readonly ClassifiedTextRun SpaceLiteral = new ClassifiedTextRun(PredefinedClassificationNames.Literal, " ");
         private static readonly ClassifiedTextRun DotLiteral = new ClassifiedTextRun(PredefinedClassificationNames.Literal, ".");
 
-        public override ContainerElement CreateClassifiedDescription(AttributeCompletionDescription completionDescription)
+        public override ContainerElement CreateClassifiedDescription(AggregateBoundAttributeDescription completionDescription)
         {
             if (completionDescription is null)
             {
@@ -64,7 +64,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
                 }
 
                 var returnTypeClassification = PredefinedClassificationNames.Type;
-                if (KeywordTypeNameLookups.TryGetValue(descriptionInfo.ReturnTypeName, out var returnTypeName))
+                if (TypeNameStringResolver.TryGetSimpleName(descriptionInfo.ReturnTypeName, out var returnTypeName))
                 {
                     returnTypeClassification = PredefinedClassificationNames.Keyword;
                 }

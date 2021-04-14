@@ -1,12 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Razor.Completion;
+using Microsoft.CodeAnalysis.Razor.Tooltip;
 using Microsoft.VisualStudio.Text.Adornments;
 using Xunit;
 
@@ -19,9 +15,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var factory = new DefaultVisualStudioDescriptionFactory();
-            var description = new AttributeCompletionDescription(new[]
+            var description = new AggregateBoundAttributeDescription(new[]
             {
-                new AttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
+                new BoundAttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
             });
 
             // Act
@@ -36,10 +32,10 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var factory = new DefaultVisualStudioDescriptionFactory();
-            var description = new AttributeCompletionDescription(new[]
+            var description = new AggregateBoundAttributeDescription(new[]
             {
-                new AttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
-                new AttributeDescriptionInfo("TheReturnType2", "TheTypeName2", "ThePropertyName2", "The documentation2"),
+                new BoundAttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
+                new BoundAttributeDescriptionInfo("TheReturnType2", "TheTypeName2", "ThePropertyName2", "The documentation2"),
             });
 
             // Act
@@ -54,9 +50,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var factory = new DefaultVisualStudioDescriptionFactory();
-            var description = new AttributeCompletionDescription(new[]
+            var description = new AggregateBoundAttributeDescription(new[]
             {
-                new AttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
+                new BoundAttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
             });
 
             // Act
@@ -72,9 +68,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var factory = new DefaultVisualStudioDescriptionFactory();
-            var description = new AttributeCompletionDescription(new[]
+            var description = new AggregateBoundAttributeDescription(new[]
             {
-                new AttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
+                new BoundAttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
             });
 
             // Act
@@ -90,9 +86,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var factory = new DefaultVisualStudioDescriptionFactory();
-            var description = new AttributeCompletionDescription(new[]
+            var description = new AggregateBoundAttributeDescription(new[]
             {
-                new AttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
+                new BoundAttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
             });
 
             // Act
@@ -108,9 +104,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var factory = new DefaultVisualStudioDescriptionFactory();
-            var description = new AttributeCompletionDescription(new[]
+            var description = new AggregateBoundAttributeDescription(new[]
             {
-                new AttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
+                new BoundAttributeDescriptionInfo("TheReturnType", "TheTypeName", "ThePropertyName", "The documentation"),
             });
 
             // Act
@@ -126,9 +122,9 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var factory = new DefaultVisualStudioDescriptionFactory();
-            var description = new AttributeCompletionDescription(new[]
+            var description = new AggregateBoundAttributeDescription(new[]
             {
-                new AttributeDescriptionInfo("System.String", "TheTypeName", "ThePropertyName", "The documentation"),
+                new BoundAttributeDescriptionInfo("System.String", "TheTypeName", "ThePropertyName", "The documentation"),
             });
 
             // Act
@@ -145,10 +141,10 @@ namespace Microsoft.VisualStudio.Editor.Razor.Completion
         {
             // Arrange
             var factory = new DefaultVisualStudioDescriptionFactory();
-            var description = new AttributeCompletionDescription(new[]
+            var description = new AggregateBoundAttributeDescription(new[]
             {
-                new AttributeDescriptionInfo("System.String", "TheTypeName", "ThePropertyName", "The documentation"),
-                new AttributeDescriptionInfo("System.Int32", "TheSecondTypeName", "TheSecondPropertyName", "The second documentation"),
+                new BoundAttributeDescriptionInfo("System.String", "TheTypeName", "ThePropertyName", "The documentation"),
+                new BoundAttributeDescriptionInfo("System.Int32", "TheSecondTypeName", "TheSecondPropertyName", "The second documentation"),
             });
 
             // Act

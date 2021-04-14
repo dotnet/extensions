@@ -7,8 +7,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal abstract class DocumentVersionCache : ProjectSnapshotChangeTrigger
     {
-        public abstract bool TryGetDocumentVersion(DocumentSnapshot documentSnapshot, out long version);
+        public abstract bool TryGetDocumentVersion(DocumentSnapshot documentSnapshot, out int? version);
 
-        public abstract void TrackDocumentVersion(DocumentSnapshot documentSnapshot, long version);
+        public abstract void TrackDocumentVersion(DocumentSnapshot documentSnapshot, int version);
     }
 }

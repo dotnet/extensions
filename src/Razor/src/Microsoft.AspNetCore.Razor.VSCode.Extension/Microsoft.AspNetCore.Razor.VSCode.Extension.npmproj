@@ -1,0 +1,31 @@
+﻿<Project DefaultTargets="Build">
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="..\Microsoft.AspNetCore.Razor.VSCode\Microsoft.AspNetCore.Razor.VSCode.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false" />
+    <ProjectReference
+      Include="..\Microsoft.AspNetCore.Razor.VSCode.BlazorWasmDebuggingExtension\Microsoft.AspNetCore.Razor.VSCode.BlazorWasmDebuggingExtension.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BuildOutputFiles Include="dist\extension.js" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+</Project>

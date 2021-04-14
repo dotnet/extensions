@@ -18,6 +18,7 @@
 
   <PropertyGroup Label="Build Settings">
     <LangVersion>8.0</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
@@ -25,6 +26,8 @@
     <GenerateResxSource>true</GenerateResxSource>
     <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
     <ExcludeFromSourceBuild Condition="'$(IsUnitTestProject)' == 'true'">true</ExcludeFromSourceBuild>
+
+    <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
 
     <!-- Embed source files that are not tracked by the source control manager in the PDB. -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -35,6 +38,17 @@
     <!-- Working around https://github.com/microsoft/msbuild/pull/4764 -->
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)" NoWarn="NU1608" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="$(Tooling_MicrosoftCodeAnalysisNetAnalyzersPackageVersion)" NoWarn="NU1608" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(Tooling_MicrosoftCodeAnalysisBannedApiAnalyzersPackageVersion)" />
+    <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="$(Tooling_RoslynDiagnosticsAnalyzersPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)eng\BannedSymbols.txt" />
+  </ItemGroup>
 
   <PropertyGroup Label="Package and Assembly Metadata">
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

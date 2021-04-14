@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public bool Equals(ProjectWorkspaceState other)
         {
-            if (object.ReferenceEquals(other, null))
+            if (other is null)
             {
                 return false;
             }

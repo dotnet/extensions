@@ -9,7 +9,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     public class EmptyTextLoaderTest
     {
-        // See https://github.com/aspnet/AspNetCore/issues/7997
+        // See https://github.com/dotnet/aspnetcore/issues/7997
         [Fact]
         public async Task LoadAsync_SpecifiesEncoding()
         {

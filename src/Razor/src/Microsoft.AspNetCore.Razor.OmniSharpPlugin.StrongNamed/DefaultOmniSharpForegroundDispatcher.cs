@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
     {
         public DefaultOmniSharpForegroundDispatcher()
         {
-            InternalDispatcher = new VSCodeForegroundDispatcher();
+            InternalDispatcher = new DefaultForegroundDispatcher();
         }
 
         public override bool IsForegroundThread => InternalDispatcher.IsForegroundThread;

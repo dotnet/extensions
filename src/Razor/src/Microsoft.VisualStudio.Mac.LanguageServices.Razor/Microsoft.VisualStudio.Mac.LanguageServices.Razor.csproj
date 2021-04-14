@@ -7,11 +7,10 @@
     <NoWarn>$(NoWarn);MSB3277</NoWarn>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-    <IsShipping>false</IsShipping>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingPackageVersion)" />
     <PackageReference Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(VSMAC_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>

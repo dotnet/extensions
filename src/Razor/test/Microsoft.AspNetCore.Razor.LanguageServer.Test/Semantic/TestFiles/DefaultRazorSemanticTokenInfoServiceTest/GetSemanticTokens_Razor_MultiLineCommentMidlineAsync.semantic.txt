@@ -1,0 +1,12 @@
+//line,characterPos,length,tokenType,modifier
+0 0 1 80 0 //markupTagDelimiter
+0 1 1 81 0 //markupElement
+0 2 1 80 0 //markupTagDelimiter
+0 1 1 80 0 //markupTagDelimiter
+0 1 1 78 0 //razorCommentTransition
+0 1 1 79 0 //razorCommentStar
+0 1 4 77 0 //razorComment
+1 0 6 77 0 //razorComment
+1 0 3 77 0 //razorComment
+0 3 1 79 0 //razorCommentStar
+0 1 1 78 0 //razorCommentTransition

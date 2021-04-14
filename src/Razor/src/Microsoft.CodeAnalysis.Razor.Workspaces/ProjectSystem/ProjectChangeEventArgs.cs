@@ -45,5 +45,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public string DocumentFilePath { get; }
 
         public ProjectChangeKind Kind { get; }
+
+        public static ProjectChangeEventArgs CreateTestInstance(ProjectSnapshot older, ProjectSnapshot newer, string documentFilePath, ProjectChangeKind kind) =>
+            new ProjectChangeEventArgs(older, newer, documentFilePath, kind);
     }
 }

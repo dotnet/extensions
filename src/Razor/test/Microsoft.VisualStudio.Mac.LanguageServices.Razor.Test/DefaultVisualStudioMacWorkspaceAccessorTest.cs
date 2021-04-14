@@ -14,8 +14,10 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
         public void TryGetWorkspace_NoHostProject_ReturnsFalse()
         {
             // Arrange
-            var workspaceAccessor = new DefaultVisualStudioMacWorkspaceAccessor(Mock.Of<TextBufferProjectService>());
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var textBufferProjectService = new Mock<TextBufferProjectService>(MockBehavior.Strict);
+            textBufferProjectService.Setup(s => s.GetHostProject(It.IsAny<ITextBuffer>())).Returns(value: null);
+            var workspaceAccessor = new DefaultVisualStudioMacWorkspaceAccessor(textBufferProjectService.Object);
+            var textBuffer = Mock.Of<ITextBuffer>(MockBehavior.Strict);
 
             // Act
             var result = workspaceAccessor.TryGetWorkspace(textBuffer, out var workspace);

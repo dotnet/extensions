@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var diagnostic = new Diagnostic()
             {
-                Message = razorDiagnostic.GetMessage(),
+                Message = razorDiagnostic.GetMessage(CultureInfo.InvariantCulture),
                 Code = razorDiagnostic.Id,
                 Severity = ConvertSeverity(razorDiagnostic.Severity),
                 Range = ConvertSpanToRange(razorDiagnostic.Span, sourceText),
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 if (index >= sourceText.Length)
                 {
-                    // Span start index is past the end of the document. Roslyn and VSCode don't support 
+                    // Span start index is past the end of the document. Roslyn and VSCode don't support
                     // virtual positions that don't exist on the document; normalize to the last character.
                     index = sourceText.Length - 1;
                 }

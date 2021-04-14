@@ -20,7 +20,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             {
                 if (_transitionCompletionItem == null)
                 {
-                    _transitionCompletionItem = new RazorCompletionItem("@...", "@", RazorCompletionItemKind.Directive);
+                    _transitionCompletionItem = new RazorCompletionItem(
+                        displayText: "@...",
+                        insertText: "@",
+                        kind: RazorCompletionItemKind.Directive,
+
+                        // We specify these three commit characters to work around a Visual Studio interaction where
+                        // completion items that get "soft selected" will cause completion to re-trigger if a user
+                        // types one of the soft-selected completion item's commit characters.
+                        // In practice this happens in the `<button |` scenario where the "space" results in completions
+                        // where this directive attribute transition character ("@...") gets provided and then typing
+                        // `@` should re-trigger OR typing `/` should re-trigger.
+                        commitCharacters: new[] { "@", "/", ">" });
                     _transitionCompletionItem.SetDirectiveCompletionDescription(new DirectiveCompletionDescription("Blazor directive attributes"));
                 }
 
@@ -47,31 +58,62 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             }
 
             var attribute = owner.Parent;
-            if (attribute is MarkupMiscAttributeContentSyntax)
+            if (attribute is MarkupMiscAttributeContentSyntax && attribute.ContainsOnlyWhitespace())
             {
                 // This represents a tag when there's no attribute content <InputText | />.
                 return Completions;
             }
 
-            if (!TryGetAttributeInfo(attribute, out var name, out var nameLocation, out _, out _))
+            if (!TryGetAttributeInfo(owner, out var prefixLocation, out var attributeName, out var attributeNameLocation, out _, out _))
             {
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (name.StartsWith("@"))
+            if (attributeNameLocation.IntersectsWith(location.AbsoluteIndex) && attributeName.StartsWith("@", StringComparison.Ordinal))
             {
-                // The transition is already provided
+                // The transition is already provided for the attribute name
                 return Array.Empty<RazorCompletionItem>();
             }
 
-            if (!nameLocation.IntersectsWith(location.AbsoluteIndex))
+            if (!IsValidCompletionPoint(location, prefixLocation, attributeNameLocation))
             {
-                // Not operating in the name section
+                // Not operating in the attribute name area
                 return Array.Empty<RazorCompletionItem>();
             }
 
             // This represents a tag when there's no attribute content <InputText | />.
             return Completions;
+        }
+
+        // Internal for testing
+        internal static bool IsValidCompletionPoint(SourceSpan location, TextSpan? prefixLocation, TextSpan attributeNameLocation)
+        {
+            if (location.AbsoluteIndex == (prefixLocation?.Start ?? -1))
+            {
+                // <input| class="test" />
+                // Starts of prefix locations belong to the previous SyntaxNode. It could be the end of an attribute value, the tag name, C# etc.
+                return false;
+            }
+
+            if (attributeNameLocation.Start == location.AbsoluteIndex)
+            {
+                // <input |class="test" />
+                return false;
+            }
+
+            if (prefixLocation?.IntersectsWith(location.AbsoluteIndex) ?? false)
+            {
+                // <input   |  class="test" />
+                return true;
+            }
+
+            if (attributeNameLocation.IntersectsWith(location.AbsoluteIndex))
+            {
+                // <input cla|ss="test" />
+                return false;
+            }
+
+            return false;
         }
     }
 }
