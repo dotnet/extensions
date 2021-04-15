@@ -89,7 +89,8 @@
     <Tooling_HtmlEditorPackageVersion>16.10.57-preview1</Tooling_HtmlEditorPackageVersion>
     <!-- Several packages share the MS.CA.Testing version -->
     <Tooling_MicrosoftCodeAnalysisTestingVersion>1.0.1-beta1.21103.2</Tooling_MicrosoftCodeAnalysisTestingVersion>
-    <MicrosoftVisualStudioShellPackagesVersion>16.9.31102.107</MicrosoftVisualStudioShellPackagesVersion>
+    <MicrosoftVisualStudioShellPackagesVersion>17.0.0-preview-1-31204-1114</MicrosoftVisualStudioShellPackagesVersion>
+    <MicrosoftVisualStudioPackagesVersion>17.0.28-g439d20ddd3</MicrosoftVisualStudioPackagesVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>5.0.0-preview.4.20205.1</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
@@ -97,36 +98,29 @@
     <MicrosoftBuildFrameworkPackageVersion>16.8.0</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildLocatorPackageVersion>1.2.6</MicrosoftBuildLocatorPackageVersion>
     <MicrosoftBuildPackageVersion>16.8.0</MicrosoftBuildPackageVersion>
-    <MicrosoftInternalVisualStudioShellInterop140DesignTimeVersion>$(MicrosoftVisualStudioShellPackagesVersion)</MicrosoftInternalVisualStudioShellInterop140DesignTimeVersion>
-    <MicrosoftInternalVisualStudioShellEmbeddablePackageVersion>$(MicrosoftVisualStudioShellPackagesVersion)</MicrosoftInternalVisualStudioShellEmbeddablePackageVersion>
+    <MicrosoftInternalVisualStudioShellEmbeddablePackageVersion>17.0.0-preview-1-30928-1111</MicrosoftInternalVisualStudioShellEmbeddablePackageVersion>
     <MicrosoftNETCoreApp50PackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreApp50PackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftCodeAnalysisAnalyzerTestingPackageVersion>$(Tooling_MicrosoftCodeAnalysisTestingVersion)</MicrosoftCodeAnalysisAnalyzerTestingPackageVersion>
     <MicrosoftCodeAnalysisTestingVerifiersXunitPackageVersion>$(Tooling_MicrosoftCodeAnalysisTestingVersion)</MicrosoftCodeAnalysisTestingVerifiersXunitPackageVersion>
     <MicrosoftNetCompilersToolsetPackageVersion>3.9.0-2.20573.10</MicrosoftNetCompilersToolsetPackageVersion>
-    <MicrosoftServiceHubFrameworkPackageVersion>2.7.454</MicrosoftServiceHubFrameworkPackageVersion>
-    <MicrosoftVisualStudioCoreUtilityPackageVersion>16.10.44</MicrosoftVisualStudioCoreUtilityPackageVersion>
-    <MicrosoftVisualStudioComponentModelHostPackageVersion>16.10.8</MicrosoftVisualStudioComponentModelHostPackageVersion>
+    <MicrosoftServiceHubFrameworkPackageVersion>2.7.2466</MicrosoftServiceHubFrameworkPackageVersion>
+    <MicrosoftVisualStudioComponentModelHostPackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioComponentModelHostPackageVersion>
     <MicrosoftVisualStudioImageCatalogPackageVersion>$(MicrosoftVisualStudioShellPackagesVersion)</MicrosoftVisualStudioImageCatalogPackageVersion>
-    <MicrosoftVisualStudioEditorPackageVersion>16.10.8</MicrosoftVisualStudioEditorPackageVersion>
-    <MicrosoftVisualStudioLanguagePackageVersion>16.10.8</MicrosoftVisualStudioLanguagePackageVersion>
-    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>16.10.8</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
-    <MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>16.10.170-g435581052d</MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>
-    <MicrosoftVisualStudioPackageLanguageService150PackageVersion>16.7.30204.53-pre</MicrosoftVisualStudioPackageLanguageService150PackageVersion>
+    <MicrosoftVisualStudioEditorPackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioEditorPackageVersion>
+    <MicrosoftVisualStudioLanguagePackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioLanguagePackageVersion>
+    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
+    <MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>17.0.15-g324ff7f36e</MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>
+    <MicrosoftVisualStudioUtilitiesPackageVersion>$(MicrosoftVisualStudioShellPackagesVersion)</MicrosoftVisualStudioUtilitiesPackageVersion>
     <MicrosoftVisualStudioLiveSharePackageVersion>0.3.1074</MicrosoftVisualStudioLiveSharePackageVersion>
-    <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6071</MicrosoftVisualStudioOLEInteropPackageVersion>
-    <MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>16.8.1-beta1-10222-04</MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>
     <MicrosoftVisualStudioProjectSystemSDKPackageVersion>16.10.81-pre</MicrosoftVisualStudioProjectSystemSDKPackageVersion>
     <MicrosoftVisualStudioRpcContractsPackageVersion>16.10.14-alpha</MicrosoftVisualStudioRpcContractsPackageVersion>
-    <MicrosoftVisualStudioSDKAnalyzersVersion>16.7.9</MicrosoftVisualStudioSDKAnalyzersVersion>
-    <MicrosoftVisualStudioShellInterop163DesignTimePackageVersion>$(MicrosoftVisualStudioShellPackagesVersion)</MicrosoftVisualStudioShellInterop163DesignTimePackageVersion>
-    <MicrosoftVisualStudioShell150PackageVersion>$(MicrosoftVisualStudioShellPackagesVersion)</MicrosoftVisualStudioShell150PackageVersion>
-    <MicrosoftVisualStudioShellInteropPackageVersion>$(MicrosoftVisualStudioShellPackagesVersion)</MicrosoftVisualStudioShellInteropPackageVersion>
-    <MicrosoftVisualStudioTextDataPackageVersion>16.10.44</MicrosoftVisualStudioTextDataPackageVersion>
-    <MicrosoftVisualStudioTextImplementationPackageVersion>16.10.8</MicrosoftVisualStudioTextImplementationPackageVersion>
-    <MicrosoftVisualStudioTextLogicPackageVersion>16.10.8</MicrosoftVisualStudioTextLogicPackageVersion>
-    <MicrosoftVisualStudioTextUIPackageVersion>16.10.8</MicrosoftVisualStudioTextUIPackageVersion>
-    <MicrosoftVisualStudioThreadingPackageVersion>16.10.5-alpha</MicrosoftVisualStudioThreadingPackageVersion>
+    <MicrosoftVisualStudioShell150PackageVersion>17.0.0-preview-1-30928-1112</MicrosoftVisualStudioShell150PackageVersion>
+    <MicrosoftVisualStudioInteropPackageVersion>17.0.0-preview-1-31207-1111</MicrosoftVisualStudioInteropPackageVersion>
+    <MicrosoftVisualStudioTextDataPackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioTextDataPackageVersion>
+    <MicrosoftVisualStudioTextImplementationPackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioTextImplementationPackageVersion>
+    <MicrosoftVisualStudioTextLogicPackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioTextLogicPackageVersion>
+    <MicrosoftVisualStudioThreadingPackageVersion>16.9.45-alpha</MicrosoftVisualStudioThreadingPackageVersion>
     <MicrosoftVisualStudioWebPackageVersion>16.10.0-preview-1-31008-014</MicrosoftVisualStudioWebPackageVersion>
     <MicrosoftVisualStudioValidationPackageVersion>16.10.22-alpha</MicrosoftVisualStudioValidationPackageVersion>
     <MicrosoftWebToolsLanguagesHtmlPackageVersion>$(Tooling_HtmlEditorPackageVersion)</MicrosoftWebToolsLanguagesHtmlPackageVersion>
@@ -146,7 +140,6 @@
     <SystemCompositionPackageVersion>1.0.31.0</SystemCompositionPackageVersion>
     <SystemCollectionsImmutablePackageVersion>5.0.0</SystemCollectionsImmutablePackageVersion>
     <SystemIOPipelinesPackageVersion>5.0.1</SystemIOPipelinesPackageVersion>
-    <VS_NewtonsoftJsonPackageVersion>12.0.2</VS_NewtonsoftJsonPackageVersion>
     <VSMAC_NewtonsoftJsonPackageVersion>12.0.2</VSMAC_NewtonsoftJsonPackageVersion>
     <Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion>3.3.2</Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion>
     <Tooling_MicrosoftCodeAnalysisNetAnalyzersPackageVersion>6.0.0-preview3.21158.1</Tooling_MicrosoftCodeAnalysisNetAnalyzersPackageVersion>
@@ -167,5 +160,10 @@
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitCombinatorialPackageVersion>1.4.1</XunitCombinatorialPackageVersion>
     <XunitVersion>2.4.1</XunitVersion>
+
+    <!-- Temporary hack to workaround package restrictions for dev17 -->
+    <MicrosoftVisualStudioProjectAggregatorPackageVersion>17.0.0-preview-1-31205-065</MicrosoftVisualStudioProjectAggregatorPackageVersion>
+    <MicrosoftVisualStudioImagingInterop140DesignTimePackageVersion>17.0.0-preview-1-31205-065</MicrosoftVisualStudioImagingInterop140DesignTimePackageVersion>
+    <MicrosoftVisualStudioShellFrameworkPackageVersion>17.0.0-preview-1-31204-1114</MicrosoftVisualStudioShellFrameworkPackageVersion>
   </PropertyGroup>
 </Project>
