@@ -46,6 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
                     pidsByUrl.set(url, spawnedProxy.pid);
                     return {
                         url,
+                        inspectUri: `${url}{browserInspectUriPath}`,
                         debuggingPort,
                     };
                 }
@@ -53,6 +54,9 @@ export function activate(context: vscode.ExtensionContext) {
 
             for await (const error of spawnedProxy.stderr) {
                 outputChannel.appendLine(`ERROR: ${error}`);
+                return {
+                    inspectUri: '{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}',
+                };
             }
 
             return;

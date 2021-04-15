@@ -25,10 +25,11 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
 
         const result = await vscode.commands.executeCommand<{
             url: string,
+            inspectUri: string,
             debuggingPort: number,
         } | undefined>('blazorwasm-companion.launchDebugProxy');
         if (result) {
-            await this.launchBrowser(folder, configuration, result.url, result.debuggingPort);
+            await this.launchBrowser(folder, configuration, result.inspectUri, result.debuggingPort);
         }
 
         const terminateDebugProxy = this.vscodeType.debug.onDidTerminateDebugSession(async event => {
@@ -87,8 +88,7 @@ export class BlazorDebugConfigurationProvider implements vscode.DebugConfigurati
         }
     }
 
-    private async launchBrowser(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration, wsAddress?: string, debuggingPort?: number) {
-        const inspectUri = `${wsAddress}{browserInspectUriPath}`;
+    private async launchBrowser(folder: vscode.WorkspaceFolder | undefined, configuration: vscode.DebugConfiguration, inspectUri?: string, debuggingPort?: number) {
         const browser = {
             name: JS_DEBUG_NAME,
             type: configuration.browser === 'edge' ? 'pwa-msedge' : 'pwa-chrome',
