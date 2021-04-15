@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -134,9 +135,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         public void SetOutput(
-            DefaultDocumentSnapshot document, 
-            RazorCSharpDocument outputCSharp,
-            RazorHtmlDocument outputHtml,
+            DefaultDocumentSnapshot document,
+            RazorCodeDocument codeDocument,
             VersionStamp inputVersion,
             VersionStamp outputCSharpVersion,
             VersionStamp outputHtmlVersion)
@@ -161,11 +161,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 _inputVersion = inputVersion;
                 _outputCSharpVersion = outputCSharpVersion;
                 _outputHtmlVersion = outputHtmlVersion;
-                _outputCSharp = outputCSharp;
-                _outputHtml = outputHtml;
+                _outputCSharp = codeDocument.GetCSharpDocument();
+                _outputHtml = codeDocument.GetHtmlDocument();
                 _latestDocument = document;
-                _csharpTextContainer.SetText(SourceText.From(_outputCSharp.GeneratedCode));
-                _htmlTextContainer.SetText(SourceText.From(_outputHtml.GeneratedHtml));
+                var csharpSourceText = codeDocument.GetCSharpSourceText();
+                _csharpTextContainer.SetText(csharpSourceText);
+                var htmlSourceText = codeDocument.GetHtmlSourceText();
+                _htmlTextContainer.SetText(htmlSourceText);
             }
         }
 
