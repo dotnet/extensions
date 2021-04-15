@@ -21,10 +21,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             FileSystem = RazorProjectFileSystem.Create(Path.GetDirectoryName(ProjectPath));
             ProjectEngine = RazorProjectEngine.Create(FallbackRazorConfiguration.MVC_2_1, FileSystem, b =>
-            {
                 // These tests rely on MVC's import behavior.
-                Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorExtensions.Register(b);
-            });
+                Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorExtensions.Register(b));
         }
 
         private string ProjectPath { get; }

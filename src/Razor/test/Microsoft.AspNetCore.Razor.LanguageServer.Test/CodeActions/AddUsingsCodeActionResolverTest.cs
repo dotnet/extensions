@@ -356,10 +356,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var fileName = "Test.razor";
             var filePath = $"c:/{fileName}";
             var projectItem = new TestRazorProjectItem(filePath, filePath, fileName) { Content = text };
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) =>
-            {
-                PageDirective.Register(builder);
-            });
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) => PageDirective.Register(builder));
             var codeDocument = projectEngine.Process(projectItem);
             codeDocument.SetFileKind(FileKinds.Component);
             return codeDocument;

@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             Assert.Equal(expected, actual);
         }
 
-        private SourceText ApplyEdit(SourceText source, TextEdit edit)
+        private static SourceText ApplyEdit(SourceText source, TextEdit edit)
         {
             var change = edit.AsTextChange(source);
             return source.WithChanges(change);

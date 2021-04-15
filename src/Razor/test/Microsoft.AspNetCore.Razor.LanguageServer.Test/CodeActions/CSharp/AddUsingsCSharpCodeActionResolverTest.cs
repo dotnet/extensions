@@ -14,7 +14,6 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 using OmniSharp.Extensions.JsonRpc;
 using System.Threading;
-using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
@@ -174,8 +173,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             out CSharpCodeActionParams codeActionParams,
             out AddUsingsCSharpCodeActionResolver addUsingResolver,
             ClientNotifierServiceBase languageServer = null,
-            DocumentVersionCache documentVersionCache = null,
-            RazorFormattingService razorFormattingService = null)
+            DocumentVersionCache documentVersionCache = null)
         {
             var documentPath = "c:/Test.razor";
             var documentUri = new Uri(documentPath);
@@ -205,7 +203,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return documentVersionCache;
         }
 
-        private ClientNotifierServiceBase CreateLanguageServer(CodeAction resolvedCodeAction = null)
+        private static ClientNotifierServiceBase CreateLanguageServer(CodeAction resolvedCodeAction = null)
         {
             var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
             responseRouterReturns
@@ -238,10 +236,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private static RazorCodeDocument CreateCodeDocument(string text, string documentPath)
         {
             var projectItem = new TestRazorProjectItem(documentPath) { Content = text };
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) =>
-            {
-                PageDirective.Register(builder);
-            });
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) => PageDirective.Register(builder));
             var codeDocument = projectEngine.Process(projectItem);
             codeDocument.SetFileKind(FileKinds.Component);
             return codeDocument;

@@ -11,7 +11,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
     {
         private const string RoslynRazorLanguageServerClientName = "RazorCSharp";
 
-        public static readonly CSharpDocumentPropertiesService Instance = new CSharpDocumentPropertiesService();
+        public static readonly CSharpDocumentPropertiesService Instance = new();
 
         private CSharpDocumentPropertiesService()
         {

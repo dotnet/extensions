@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(expectedOptions, options);
         }
 
-        private ClientNotifierServiceBase GetLanguageServer(IResponseRouterReturns result, bool shouldThrow = false)
+        private static ClientNotifierServiceBase GetLanguageServer(IResponseRouterReturns result, bool shouldThrow = false)
         {
             var languageServer = new Mock<ClientNotifierServiceBase>(MockBehavior.Strict);
 
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private class ResponseRouterReturns : IResponseRouterReturns
         {
-            private object _result;
+            private readonly object _result;
 
             public ResponseRouterReturns(object result)
             {

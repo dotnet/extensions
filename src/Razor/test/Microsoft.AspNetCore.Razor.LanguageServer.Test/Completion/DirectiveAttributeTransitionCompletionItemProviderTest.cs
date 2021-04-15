@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         private DirectiveAttributeTransitionCompletionItemProvider Provider { get; }
 
-        private RazorCompletionItem TransitionCompletionItem => DirectiveAttributeTransitionCompletionItemProvider.TransitionCompletionItem;
+        private static RazorCompletionItem TransitionCompletionItem => DirectiveAttributeTransitionCompletionItemProvider.TransitionCompletionItem;
 
 
         [Fact]

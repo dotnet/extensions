@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 
         private readonly OmniSharpForegroundDispatcher _foregroundDispatcher;
         private readonly OmniSharpWorkspace _workspace;
-        private ILogger _logger;
+        private readonly ILogger _logger;
         private OmniSharpProjectSnapshotManager _projectManager;
-        private object _workspaceChangedLock;
+        private readonly object _workspaceChangedLock;
 
         [ImportingConstructor]
         public BackgroundDocumentProcessedPublisher(

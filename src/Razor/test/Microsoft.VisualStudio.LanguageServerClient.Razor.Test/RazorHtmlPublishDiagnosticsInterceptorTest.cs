@@ -310,10 +310,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                         HostDocumentVersion = 0
                     });
 
-                    bool CanDiagnosticBeFiltered(Diagnostic d) =>
-                         d.Code.HasValue &&
-                         diagnosticsToIgnore.Contains(d.Code.Value.Second) &&
-                         d.Severity != DiagnosticSeverity.Error;
+                    bool CanDiagnosticBeFiltered(Diagnostic d)
+                    {
+                        return d.Code.HasValue &&
+                            diagnosticsToIgnore.Contains(d.Code.Value.Second) &&
+                            d.Severity != DiagnosticSeverity.Error;
+                    }
                 });
 
             return diagnosticsProvider.Object;

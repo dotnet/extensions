@@ -40,10 +40,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         public void GetDirectiveCompletionItems_ReturnsCustomDirectivesAsCompletionItems()
         {
             // Arrange
-            var customDirective = DirectiveDescriptor.CreateSingleLineDirective("custom", builder =>
-            {
-                builder.Description = "My Custom Directive.";
-            });
+            var customDirective = DirectiveDescriptor.CreateSingleLineDirective("custom", builder => builder.Description = "My Custom Directive.");
             var syntaxTree = CreateSyntaxTree("@addTag", customDirective);
 
             // Act

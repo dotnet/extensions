@@ -71,8 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks.LanguageServer
 
             var secondVersion = 2;
             await UpdateDocumentAsync(secondVersion, UpdatedDocumentSnapshot).ConfigureAwait(false);
-
-            var editResult = await RazorSemanticTokenService.GetSemanticTokensEditsAsync(UpdatedDocumentSnapshot, secondVersion, textDocumentIdentifier, fullResult.ResultId, cancellationToken).ConfigureAwait(false);
+            _ = await RazorSemanticTokenService.GetSemanticTokensEditsAsync(UpdatedDocumentSnapshot, secondVersion, textDocumentIdentifier, fullResult.ResultId, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task UpdateDocumentAsync(int newVersion, DocumentSnapshot documentSnapshot)

@@ -38,13 +38,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         // Internal for testing
         internal static DiagnosticSeverity ConvertSeverity(RazorDiagnosticSeverity severity)
         {
-            switch (severity)
+            return severity switch
             {
-                case RazorDiagnosticSeverity.Error:
-                    return DiagnosticSeverity.Error;
-                default:
-                    return DiagnosticSeverity.Information;
-            }
+                RazorDiagnosticSeverity.Error => DiagnosticSeverity.Error,
+                _ => DiagnosticSeverity.Information,
+            };
         }
 
         // Internal for testing

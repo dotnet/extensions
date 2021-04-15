@@ -212,14 +212,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 SetResolveData(resultId, completionList);
             }
 
-            if (completionList is VSCompletionList vsCompletionList)
-            {
-                completionList = new OptimizedVSCompletionList(vsCompletionList);
-            }
-            else
-            {
-                completionList = new OptimizedVSCompletionList(completionList);
-            }
+            completionList = completionList is VSCompletionList vsCompletionList
+                ? new OptimizedVSCompletionList(vsCompletionList)
+                : new OptimizedVSCompletionList(completionList);
 
             _logger.LogInformation("Returning completion list.");
             return completionList;
@@ -652,7 +647,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         private class CompletionItemComparer : IEqualityComparer<CompletionItem>
         {
-            public static CompletionItemComparer Instance = new CompletionItemComparer();
+            public static CompletionItemComparer Instance = new();
 
             public bool Equals(CompletionItem x, CompletionItem y)
             {

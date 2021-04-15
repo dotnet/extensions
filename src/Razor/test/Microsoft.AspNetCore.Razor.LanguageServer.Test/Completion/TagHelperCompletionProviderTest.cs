@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     public class TagHelperCompletionProviderTest : TagHelperServiceTestBase
     {
-        protected ILanguageServer LanguageServer
+        protected static ILanguageServer LanguageServer
         {
             get
             {
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             {
                 attribute.Name = "bool-val";
                 attribute.SetPropertyName("BoolVal");
-                attribute.TypeName = ("System.Collections.Generic.IDictionary<System.String, System.Boolean>");
+                attribute.TypeName = "System.Collections.Generic.IDictionary<System.String, System.Boolean>";
                 attribute.AsDictionary("bool-val-", typeof(bool).FullName);
             });
             var service = new TagHelperCompletionProvider(RazorTagHelperCompletionService, HtmlFactsService, TagHelperFactsService);
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             {
                 attribute.Name = "int-val";
                 attribute.SetPropertyName("IntVal");
-                attribute.TypeName = ("System.Collections.Generic.IDictionary<System.String, System.Int32>");
+                attribute.TypeName = "System.Collections.Generic.IDictionary<System.String, System.Int32>";
                 attribute.AsDictionary("int-val-", typeof(int).FullName);
             });
             var service = new TagHelperCompletionProvider(RazorTagHelperCompletionService, HtmlFactsService, TagHelperFactsService);

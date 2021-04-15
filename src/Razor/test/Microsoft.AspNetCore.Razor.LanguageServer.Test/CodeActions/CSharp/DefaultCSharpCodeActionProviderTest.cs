@@ -156,10 +156,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         {
             var tagHelpers = Array.Empty<TagHelperDescriptor>();
             var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
-            var projectEngine = RazorProjectEngine.Create(builder =>
-            {
-                builder.AddTagHelpers(tagHelpers);
-            });
+            var projectEngine = RazorProjectEngine.Create(builder => builder.AddTagHelpers(tagHelpers));
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), tagHelpers);
 
             var cSharpDocument = codeDocument.GetCSharpDocument();

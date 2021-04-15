@@ -10,7 +10,7 @@ namespace Microsoft.VisualStudio.Test
 {
     public class TestTextBuffer : ITextBuffer
     {
-        private List<EventHandler<TextContentChangedEventArgs>> _attachedChangedEvents;
+        private readonly List<EventHandler<TextContentChangedEventArgs>> _attachedChangedEvents;
 
         public TestTextBuffer(ITextSnapshot initialSnapshot)
         {
@@ -163,7 +163,7 @@ namespace Microsoft.VisualStudio.Test
                 var initialSnapshot = _editSnapshot;
                 var newText = initialSnapshot.Content.Insert(position, text);
                 var changedSnapshot = new StringTextSnapshot(newText);
-                var edit = new TestEdit(position, 0, initialSnapshot, text.Length, changedSnapshot, text);
+                var edit = new TestEdit(position, 0, initialSnapshot, changedSnapshot, text);
                 _edits.Add(edit);
 
                 _editSnapshot = changedSnapshot;
@@ -192,7 +192,7 @@ namespace Microsoft.VisualStudio.Test
                 var postText = initialSnapshot.Content.Substring(startPosition + charsToReplace);
                 var newText = preText + replaceWith + postText;
                 var changedSnapshot = new StringTextSnapshot(newText);
-                var edit = new TestEdit(startPosition, charsToReplace, initialSnapshot, replaceWith.Length, changedSnapshot, replaceWith);
+                var edit = new TestEdit(startPosition, charsToReplace, initialSnapshot, changedSnapshot, replaceWith);
                 _edits.Add(edit);
 
                 _editSnapshot = changedSnapshot;

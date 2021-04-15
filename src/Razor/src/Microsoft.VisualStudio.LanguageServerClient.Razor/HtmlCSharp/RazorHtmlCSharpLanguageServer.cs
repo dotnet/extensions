@@ -312,7 +312,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return jsonRpc;
 
             // Can be removed for serializer.AddVSExtensionConverters() once we are able to update to a newer LSP protocol Extensions version.
-            void AddVSExtensionConverters(JsonSerializer serializer)
+            static void AddVSExtensionConverters(JsonSerializer serializer)
             {
                 serializer.Converters.Add(new VSExtensionConverter<ClientCapabilities, VSClientCapabilities>());
                 serializer.Converters.Add(new VSExtensionConverter<CodeAction, VSCodeAction>());

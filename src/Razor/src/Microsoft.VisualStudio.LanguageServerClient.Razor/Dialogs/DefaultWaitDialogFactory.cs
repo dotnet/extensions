@@ -52,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs
                 return null;
             }
 
-            if (!(dialog2 is IVsThreadedWaitDialog4 dialog4))
+            if (dialog2 is not IVsThreadedWaitDialog4 dialog4)
             {
                 Debug.Fail("This is unexpected, the dialog should always be an IVsThreadedWaitDialog4");
                 return null;

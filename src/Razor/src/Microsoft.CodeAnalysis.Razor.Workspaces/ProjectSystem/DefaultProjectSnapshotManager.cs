@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -160,10 +159,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             if (_projects.TryGetValue(hostProject.FilePath, out var entry))
             {
-                var loader = textLoader == null ? DocumentState.EmptyLoader : (Func<Task<TextAndVersion>>)(() =>
-                {
-                    return textLoader.LoadTextAndVersionAsync(Workspace, null, CancellationToken.None);
-                });
+                var loader = textLoader == null
+                    ? DocumentState.EmptyLoader
+                    : (() => textLoader.LoadTextAndVersionAsync(Workspace, null, CancellationToken.None));
                 var state = entry.State.WithAddedHostDocument(document, loader);
 
                 // Document updates can no-op.
@@ -281,10 +279,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             if (_projects.TryGetValue(projectFilePath, out var entry) &&
                 entry.State.Documents.TryGetValue(documentFilePath, out var older))
             {
-                var state = entry.State.WithChangedHostDocument(older.HostDocument, async () =>
-                {
-                    return await textLoader.LoadTextAndVersionAsync(Workspace, default, default);
-                });
+                var state = entry.State.WithChangedHostDocument(
+                    older.HostDocument,
+                    async () => await textLoader.LoadTextAndVersionAsync(Workspace, default, default));
 
                 _openDocuments.Remove(documentFilePath);
 
@@ -373,13 +370,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             if (_projects.TryGetValue(projectFilePath, out var entry) &&
                 entry.State.Documents.TryGetValue(documentFilePath, out var older))
             {
-                var state = entry.State.WithChangedHostDocument(older.HostDocument, async () =>
-                {
-                    return await textLoader.LoadTextAndVersionAsync(Workspace, default, default);
-                });
+                var state = entry.State.WithChangedHostDocument(
+                    older.HostDocument,
+                    async () => await textLoader.LoadTextAndVersionAsync(Workspace, default, default));
 
                 // Document updates can no-op.
-                if (!object.ReferenceEquals(state, entry.State))
+                if (!ReferenceEquals(state, entry.State))
                 {
                     var oldSnapshot = entry.GetSnapshot();
                     entry = new Entry(state);

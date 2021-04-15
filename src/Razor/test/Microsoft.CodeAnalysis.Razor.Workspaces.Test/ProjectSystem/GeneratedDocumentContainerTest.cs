@@ -100,8 +100,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var container = new GeneratedDocumentContainer();
             var csharpChanged = false;
             var htmlChanged = false;
-            container.GeneratedCSharpChanged += (o, a) => { csharpChanged = true; };
-            container.GeneratedHtmlChanged += (o, a) => { htmlChanged = true; };
+            container.GeneratedCSharpChanged += (o, a) => csharpChanged = true;
+            container.GeneratedHtmlChanged += (o, a) => htmlChanged = true;
 
             // Act
             container.SetOutput(document, codeDocument, version, version, version);

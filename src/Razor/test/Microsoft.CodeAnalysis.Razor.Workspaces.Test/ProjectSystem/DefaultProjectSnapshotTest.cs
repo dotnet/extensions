@@ -16,17 +16,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             TagHelperResolver = new TestTagHelperResolver();
 
             HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0, TestProjectData.SomeProject.RootNamespace);
-            HostProjectWithConfigurationChange = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
             ProjectWorkspaceState = new ProjectWorkspaceState(new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
             },
             default);
-
-            SomeTagHelpers = new List<TagHelperDescriptor>
-            {
-                TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build()
-            };
 
             Documents = new HostDocument[]
             {
@@ -42,13 +36,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private HostProject HostProject { get; }
 
-        private HostProject HostProjectWithConfigurationChange { get; }
-
         private ProjectWorkspaceState ProjectWorkspaceState { get; }
 
         private TestTagHelperResolver TagHelperResolver { get; }
 
-        private List<TagHelperDescriptor> SomeTagHelpers { get; }
         protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
             services.Add(TagHelperResolver);

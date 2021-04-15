@@ -508,9 +508,11 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                         HostDocumentVersion = 0
                     });
 
-                    bool CanDiagnosticBeFiltered(Diagnostic d) =>
-                        (diagnosticsToIgnore.Contains(d.Code.Value.Second) &&
-                         d.Severity != DiagnosticSeverity.Error);
+                    bool CanDiagnosticBeFiltered(Diagnostic d)
+                    {
+                        return diagnosticsToIgnore.Contains(d.Code.Value.Second) &&
+d.Severity != DiagnosticSeverity.Error;
+                    }
                 });
 
             return diagnosticsProvider.Object;

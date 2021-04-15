@@ -47,10 +47,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var configService = Mock.Of<RazorConfigurationService>(f => f.GetLatestOptionsAsync(CancellationToken.None) == Task.FromResult(expectedOptions), MockBehavior.Strict);
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;
-            var onChangeToken = optionsMonitor.OnChange(options =>
-            {
-                called = true;
-            });
+            var onChangeToken = optionsMonitor.OnChange(options => called = true);
 
             // Act 1
             await optionsMonitor.UpdateAsync(CancellationToken.None);
@@ -75,10 +72,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Mock.Get(configService).Setup(s => s.GetLatestOptionsAsync(CancellationToken.None)).ReturnsAsync(value: null);
             var optionsMonitor = new RazorLSPOptionsMonitor(configService, Cache);
             var called = false;
-            var onChangeToken = optionsMonitor.OnChange(options =>
-            {
-                called = true;
-            });
+            var onChangeToken = optionsMonitor.OnChange(options => called = true);
 
             // Act
             await optionsMonitor.UpdateAsync(CancellationToken.None);

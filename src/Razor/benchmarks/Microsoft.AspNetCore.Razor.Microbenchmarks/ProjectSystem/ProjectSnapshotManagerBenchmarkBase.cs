@@ -144,10 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 
             public override RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
             {
-                return RazorProjectEngine.Create(configuration, fileSystem, b =>
-                {
-                    RazorExtensions.Register(b);
-                });
+                return RazorProjectEngine.Create(configuration, fileSystem, b => RazorExtensions.Register(b));
             }
         }
     }

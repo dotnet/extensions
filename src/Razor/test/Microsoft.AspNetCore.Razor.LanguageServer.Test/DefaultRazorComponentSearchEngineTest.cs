@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 {
     public class DefaultRazorComponentSearchEngineTest : LanguageServerTestBase
     {
-        private static ProjectSnapshotManagerAccessor _projectSnapshotManager = CreateProjectSnapshotManagerAccessor();
+        private static readonly ProjectSnapshotManagerAccessor _projectSnapshotManager = CreateProjectSnapshotManagerAccessor();
 
         [Fact]
         public async Task Handle_SearchFound_GenericComponent()
@@ -121,9 +121,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
         internal static DocumentSnapshot CreateRazorDocumentSnapshot(string text, string filePath, string rootNamespaceName)
         {
             var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, builder => {
-                builder.AddDirective(NamespaceDirective.Directive);
-            });
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, builder => builder.AddDirective(NamespaceDirective.Directive));
             var codeDocument = projectEngine.Process(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), Array.Empty<TagHelperDescriptor>());
 
             var namespaceNode = (NamespaceDeclarationIntermediateNode)codeDocument

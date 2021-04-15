@@ -75,15 +75,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
             _logger.LogInformation("Starting request to resolve completion.");
 
-            CompletionResolveData resolveData;
-            if (request.Data is CompletionResolveData data)
-            {
-                resolveData = data;
-            }
-            else
-            {
-                resolveData = ((JToken)request.Data).ToObject<CompletionResolveData>();
-            }
+            var resolveData = request.Data is CompletionResolveData data ? data : ((JToken)request.Data).ToObject<CompletionResolveData>();
 
             // Set the original resolve data back so the language server deserializes it correctly.
             request.Data = resolveData.OriginalData;

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
 {
     public class DefaultTagHelperDescriptionFactoryTest
     {
-        internal ClientNotifierServiceBase LanguageServer
+        internal static ClientNotifierServiceBase LanguageServer
         {
             get
             {

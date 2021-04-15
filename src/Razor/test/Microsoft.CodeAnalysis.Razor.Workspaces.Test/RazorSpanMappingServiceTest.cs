@@ -38,10 +38,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var project = new DefaultProjectSnapshot(
                 ProjectState.Create(Workspace.Services, HostProject)
-                .WithAddedHostDocument(HostDocument, () =>
-                {
-                    return Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()));
-                }));
+                .WithAddedHostDocument(HostDocument, () => Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()))));
 
             var document = project.GetDocument(HostDocument.FilePath);
             var service = new RazorSpanMappingService(document);
@@ -73,10 +70,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var project = new DefaultProjectSnapshot(
                 ProjectState.Create(Workspace.Services, HostProject)
-                .WithAddedHostDocument(HostDocument, () =>
-                {
-                    return Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()));
-                }));
+                .WithAddedHostDocument(HostDocument, () => Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()))));
 
             var document = project.GetDocument(HostDocument.FilePath);
             var service = new RazorSpanMappingService(document);
@@ -109,10 +103,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var project = new DefaultProjectSnapshot(
                 ProjectState.Create(Workspace.Services, HostProject)
-                .WithAddedHostDocument(HostDocument, () =>
-                {
-                    return Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()));
-                }));
+                .WithAddedHostDocument(HostDocument, () => Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()))));
 
             var document = project.GetDocument(HostDocument.FilePath);
             var service = new RazorSpanMappingService(document);
@@ -144,10 +135,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var project = new DefaultProjectSnapshot(
                 ProjectState.Create(Workspace.Services, HostProject)
-                .WithAddedHostDocument(HostDocument, () =>
-                {
-                    return Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()));
-                }));
+                .WithAddedHostDocument(HostDocument, () => Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()))));
 
             var document = project.GetDocument(HostDocument.FilePath);
             var service = new RazorSpanMappingService(document);

@@ -131,7 +131,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
         public static DefaultRazorProximityExpressionResolver CreateTestInstance(
             FileUriProvider fileUriProvider,
             LSPDocumentManager documentManager,
-            LSPProjectionProvider projectionProvider) => new DefaultRazorProximityExpressionResolver(fileUriProvider, documentManager, projectionProvider, (CodeAnalysis.Workspace)null);
+            LSPProjectionProvider projectionProvider) => new(fileUriProvider, documentManager, projectionProvider, (CodeAnalysis.Workspace)null);
 
         private record CacheKey(Uri DocumentUri, int DocumentVersion, int Line, int Character);
     }

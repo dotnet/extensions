@@ -167,7 +167,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
             FileUriProvider fileUriProvider,
             LSPDocumentManager documentManager,
             LSPProjectionProvider projectionProvider,
-            LSPDocumentMappingProvider documentMappingProvider) => new DefaultRazorBreakpointResolver(fileUriProvider, documentManager, projectionProvider, documentMappingProvider, (CodeAnalysis.Workspace)null);
+            LSPDocumentMappingProvider documentMappingProvider) => new(fileUriProvider, documentManager, projectionProvider, documentMappingProvider, (CodeAnalysis.Workspace)null);
 
         private record CacheKey(Uri DocumentUri, int DocumentVersion, int Line, int Character);
     }

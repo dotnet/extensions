@@ -32,7 +32,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         internal abstract Task<TResult> HandleRequestAsync(TParams request, ClientCapabilities clientCapabilities, string token, CancellationToken cancellationToken);
 
         internal TestAccessor GetTestAccessor()
-            => new TestAccessor(this);
+            => new(this);
 
         internal readonly struct TestAccessor
         {

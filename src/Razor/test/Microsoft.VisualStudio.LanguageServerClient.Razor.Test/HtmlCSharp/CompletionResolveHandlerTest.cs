@@ -217,10 +217,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionItem, CompletionItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionItem>(), It.IsAny<CancellationToken>()))
-                .Callback<string, string, CompletionItem, CancellationToken>((method, serverContentType, completionItem, ct) =>
-                {
-                    response = reinvokeCallback(method, serverContentType, completionItem);
-                })
+                .Callback<string, string, CompletionItem, CancellationToken>((method, serverContentType, completionItem, ct) => response = reinvokeCallback(method, serverContentType, completionItem))
                 .Returns(() => Task.FromResult(response));
 
             return requestInvoker.Object;

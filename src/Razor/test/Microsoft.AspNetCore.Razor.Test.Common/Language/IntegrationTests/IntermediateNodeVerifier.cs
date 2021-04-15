@@ -79,9 +79,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 var charsVerified = 0;
                 AssertNestingEqual(node, ancestors, expected, actual, ref charsVerified);
                 AssertNameEqual(node, ancestors, expected, actual, ref charsVerified);
-                AssertDelimiter(node, expected, actual, true, ref charsVerified);
+                AssertDelimiter(expected, actual, true, ref charsVerified);
                 AssertLocationEqual(node, ancestors, expected, actual, ref charsVerified);
-                AssertDelimiter(node, expected, actual, false, ref charsVerified);
+                AssertDelimiter(expected, actual, false, ref charsVerified);
                 AssertContentEqual(node, ancestors, expected, actual, ref charsVerified);
 
                 throw new InvalidOperationException("We can't figure out HOW these two things are different. This is a bug.");
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
 
             // Either both strings need to have a delimiter next or neither should.
-            private void AssertDelimiter(IntermediateNode node, string expected, string actual, bool required, ref int charsVerified)
+            private void AssertDelimiter(string expected, string actual, bool required, ref int charsVerified)
             {
                 if (charsVerified == expected.Length && required)
                 {
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             private class IntermediateNodeBaselineException : XunitException
             {
                 public IntermediateNodeBaselineException(IntermediateNode node, IntermediateNode[] ancestors, string expected, string actual, string userMessage)
-                    : base(Format(node, ancestors, expected, actual, userMessage))
+                    : base(Format(ancestors, expected, actual, userMessage))
                 {
                     Node = node;
                     Expected = expected;
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 public string Expected { get; }
 
-                private static string Format(IntermediateNode node, IntermediateNode[] ancestors, string expected, string actual, string userMessage)
+                private static string Format(IntermediateNode[] ancestors, string expected, string actual, string userMessage)
                 {
                     var builder = new StringBuilder();
                     builder.AppendLine(userMessage);

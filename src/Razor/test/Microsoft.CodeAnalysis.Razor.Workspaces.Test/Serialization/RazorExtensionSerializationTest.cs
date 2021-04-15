@@ -14,8 +14,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
     {
         public RazorExtensionSerializationTest()
         {
-            var converters = new JsonConverterCollection();
-            converters.Add(RazorExtensionJsonConverter.Instance);
+            var converters = new JsonConverterCollection
+            {
+                RazorExtensionJsonConverter.Instance
+            };
             Converters = converters.ToArray();
         }
 

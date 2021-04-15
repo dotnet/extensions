@@ -69,10 +69,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var provider = new RazorDynamicDocumentInfoProvider(Factory, InnerDynamicDocumentInfoProvider);
             DocumentInfo documentInfo = null;
-            provider.Updated += (info) =>
-            {
-                documentInfo = info;
-            };
+            provider.Updated += (info) => documentInfo = info;
 
             // Populate the providers understanding of our project/document
             provider.GetDynamicDocumentInfo(ProjectId.CreateNewId(), ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
@@ -119,10 +116,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var provider = new RazorDynamicDocumentInfoProvider(Factory, InnerDynamicDocumentInfoProvider);
             DocumentInfo documentInfo = null;
-            provider.Updated += (info) =>
-            {
-                documentInfo = info;
-            };
+            provider.Updated += (info) => documentInfo = info;
 
             // Populate the providers understanding of our project/document
             provider.GetDynamicDocumentInfo(ProjectId.CreateNewId(), ProjectSnapshot.FilePath, DocumentSnapshot.FilePath);
