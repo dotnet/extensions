@@ -24,9 +24,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
             }, default);
 
-            SomeTagHelpers = new List<TagHelperDescriptor>();
-            SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
-
             HostDocument = TestProjectData.SomeProjectFile1;
 
             Text = SourceText.From("Hello, world!");
@@ -42,8 +39,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private ProjectWorkspaceState ProjectWorkspaceState { get; }
 
         private TestTagHelperResolver TagHelperResolver { get; }
-
-        private List<TagHelperDescriptor> SomeTagHelpers { get; }
 
         private Func<Task<TextAndVersion>> TextLoader { get; }
 

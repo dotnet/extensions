@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var change = Environment.NewLine;
             var initialSnapshot = new StringTextSnapshot("@{ }");
             var afterChangeSnapshot = new StringTextSnapshot("@{ " + change + "}");
-            var edit = new TestEdit(3, 0, initialSnapshot, change.Length, afterChangeSnapshot, change);
+            var edit = new TestEdit(3, 0, initialSnapshot, afterChangeSnapshot, change);
             var expectedIndentResult = "@{ " + change + change + "}";
 
             var caret = CreateCaretFrom(3 + change.Length, afterChangeSnapshot);
@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
             var codeDocumentProvider = CreateCodeDocumentProvider(initialSnapshot.Content);
             var editorOperationsFactory = CreateOperationsFactoryService();
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory);
+            using var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory);
 
             // Act
             textBuffer.ApplyEdit(edit);
@@ -46,7 +46,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var change = "\r";
             var initialSnapshot = new StringTextSnapshot("    @{ }");
             var afterChangeSnapshot = new StringTextSnapshot("    @{ " + change + "}");
-            var edit = new TestEdit(7, 0, initialSnapshot, change.Length, afterChangeSnapshot, change);
+            var edit = new TestEdit(7, 0, initialSnapshot, afterChangeSnapshot, change);
             var expectedIndentResult = "    @{ " + change + change + "    }";
 
             var caret = CreateCaretFrom(7 + change.Length, afterChangeSnapshot);
@@ -56,7 +56,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
             var codeDocumentProvider = CreateCodeDocumentProvider(initialSnapshot.Content);
             var editorOperationsFactory = CreateOperationsFactoryService();
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory);
+            using var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory);
 
             // Act
             textBuffer.ApplyEdit(edit);
@@ -72,7 +72,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var change = Environment.NewLine;
             var initialSnapshot = new StringTextSnapshot("    @functions {}");
             var afterChangeSnapshot = new StringTextSnapshot("    @functions {" + change + "}");
-            var edit = new TestEdit(16, 0, initialSnapshot, change.Length, afterChangeSnapshot, change);
+            var edit = new TestEdit(16, 0, initialSnapshot, afterChangeSnapshot, change);
             var expectedIndentResult = "    @functions {" + change + change + "    }";
 
             var caret = CreateCaretFrom(16 + change.Length, afterChangeSnapshot);
@@ -82,7 +82,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
             var codeDocumentProvider = CreateCodeDocumentProvider(initialSnapshot.Content);
             var editorOperationsFactory = CreateOperationsFactoryService();
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory);
+            using var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory);
 
             // Act
             textBuffer.ApplyEdit(edit);
@@ -98,7 +98,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var change = Environment.NewLine;
             var initialSnapshot = new StringTextSnapshot("    <script>function foo() {}</script>");
             var afterChangeSnapshot = new StringTextSnapshot("    <script>function foo() {" + change + "}</script>");
-            var edit = new TestEdit(28, 0, initialSnapshot, change.Length, afterChangeSnapshot, change);
+            var edit = new TestEdit(28, 0, initialSnapshot, afterChangeSnapshot, change);
 
             var caret = CreateCaretFrom(28 + change.Length, afterChangeSnapshot);
             TestTextBuffer textBuffer = null;
@@ -107,7 +107,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
             var codeDocumentProvider = CreateCodeDocumentProvider(initialSnapshot.Content);
             var editorOperationsFactory = CreateOperationsFactoryService();
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory);
+            using var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, codeDocumentProvider, editorOperationsFactory);
 
             // Act
             textBuffer.ApplyEdit(edit);
@@ -116,7 +116,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             Assert.Equal(afterChangeSnapshot.Content, ((StringTextSnapshot)textBuffer.CurrentSnapshot).Content);
         }
 
-        private TextBufferCodeDocumentProvider CreateCodeDocumentProvider(string content)
+        private static TextBufferCodeDocumentProvider CreateCodeDocumentProvider(string content)
         {
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var syntaxTree = RazorSyntaxTree.Parse(sourceDocument, RazorParserOptions.Create(opt => opt.Directives.Add(FunctionsDirective.Directive)));

@@ -69,11 +69,11 @@ namespace Microsoft.CodeAnalysis.Razor
             //
             // This will stop a crash from happening in this case (misconfigured project), but will still make
             // it obvious to the user that something is wrong.
-            var factory = CreateFactory(configuration, factoryTypeName) ?? _fallbackFactory;
+            var factory = CreateFactory(factoryTypeName) ?? _fallbackFactory;
             return factory.Create(configuration, RazorProjectFileSystem.Empty, b => { });
         }
 
-        private IProjectEngineFactory? CreateFactory(RazorConfiguration configuration, string factoryTypeName)
+        private static IProjectEngineFactory? CreateFactory(string factoryTypeName)
         {
             if (factoryTypeName == null)
             {

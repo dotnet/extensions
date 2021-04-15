@@ -69,7 +69,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         {
             // Arrange
             var called = false;
-            var opened = new EventHandler((o, args) => { called = true; });
+            var opened = new EventHandler((o, args) => called = true);
 
             var editorDocumentManger = new Mock<EditorDocumentManager>(MockBehavior.Strict);
             editorDocumentManger

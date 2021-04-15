@@ -11,7 +11,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Test
 {
     internal class TestProjectWorkspaceStateGenerator : ProjectWorkspaceStateGenerator
     {
-        private List<(Project workspaceProject, ProjectSnapshot projectSnapshot)> _updates;
+        private readonly List<(Project workspaceProject, ProjectSnapshot projectSnapshot)> _updates;
 
         public TestProjectWorkspaceStateGenerator()
         {

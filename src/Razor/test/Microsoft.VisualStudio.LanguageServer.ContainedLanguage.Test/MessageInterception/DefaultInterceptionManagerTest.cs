@@ -182,7 +182,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage.Test.MessageIn
             Assert.Null(result);
         }
 
-        private IEnumerable<Lazy<MessageInterceptor, IInterceptMethodMetadata>> GenerateLazyInterceptors(params (MessageInterceptor, string)[] fakeInterceptors)
+        private static IEnumerable<Lazy<MessageInterceptor, IInterceptMethodMetadata>> GenerateLazyInterceptors(params (MessageInterceptor, string)[] fakeInterceptors)
         {
             var result = new List<Lazy<MessageInterceptor, IInterceptMethodMetadata>>();
 

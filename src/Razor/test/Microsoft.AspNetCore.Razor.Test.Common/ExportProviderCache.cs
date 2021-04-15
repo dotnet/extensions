@@ -23,13 +23,10 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
 
         private static readonly TestComposition s_defaultHostExportProviderComposition = TestComposition.Empty
             .AddAssemblies(MefHostServices.DefaultAssemblies);
-
-        private static bool _enabled;
-
         private static readonly ConcurrentDictionary<string, Scope> _scopes = new ConcurrentDictionary<string, Scope>();
         private static readonly string DefaultScope = "default";
 
-        internal static bool Enabled => _enabled;
+        internal static bool Enabled { get; private set; }
 
         internal static ExportProvider[] ExportProvidersForCleanup
         {
@@ -49,8 +46,8 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
 
         internal static void SetEnabled_OnlyUseExportProviderAttributeCanCall(bool value)
         {
-            _enabled = value;
-            if (!_enabled)
+            Enabled = value;
+            if (!Enabled)
             {
                 foreach (var scope in _scopes.Values.ToArray())
                 {

@@ -23,7 +23,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private ComputedStateTracker _computedState;
 
-        private Func<Task<TextAndVersion>> _loader;
+        private readonly Func<Task<TextAndVersion>> _loader;
         private Task<TextAndVersion> _loaderTask;
         private SourceText _sourceText;
         private VersionStamp? _version;
@@ -355,7 +355,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 var configurationVersion = project.State.ConfigurationVersion;
                 var projectWorkspaceStateVersion = project.State.ProjectWorkspaceStateVersion;
                 var documentCollectionVersion = project.State.DocumentCollectionVersion;
-                var imports = await GetImportsAsync(project, document).ConfigureAwait(false);
+                var imports = await GetImportsAsync(document).ConfigureAwait(false);
                 var documentVersion = await document.GetTextVersionAsync().ConfigureAwait(false);
 
                 // OK now that have the previous output and all of the versions, we can see if anything
@@ -386,12 +386,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
 
                 RazorCodeDocument olderOutput = null;
-                var olderInputVersion = default(VersionStamp);
                 var olderCSharpOutputVersion = default(VersionStamp);
                 var olderHtmlOutputVersion = default(VersionStamp);
                 if (_older?.TaskUnsafeReference != null &&
                     _older.TaskUnsafeReference.TryGetTarget(out var taskUnsafe))
                 {
+                    VersionStamp olderInputVersion;
                     (olderOutput, olderInputVersion, olderCSharpOutputVersion, olderHtmlOutputVersion) = await taskUnsafe.ConfigureAwait(false);
                     if (inputVersion.GetNewerVersion(olderInputVersion) == olderInputVersion)
                     {
@@ -477,13 +477,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 return (codeDocument, inputVersion, outputCSharpVersion, outputHtmlVersion);
             }
 
-            private async Task<RazorSourceDocument> GetRazorSourceDocumentAsync(DocumentSnapshot document, RazorProjectItem projectItem)
+            private static async Task<RazorSourceDocument> GetRazorSourceDocumentAsync(DocumentSnapshot document, RazorProjectItem projectItem)
             {
                 var sourceText = await document.GetTextAsync();
                 return sourceText.GetRazorSourceDocument(document.FilePath, projectItem?.RelativePhysicalPath);
             }
 
-            private async Task<IReadOnlyList<ImportItem>> GetImportsAsync(ProjectSnapshot project, DocumentSnapshot document)
+            private static async Task<IReadOnlyList<ImportItem>> GetImportsAsync(DocumentSnapshot document)
             {
                 var imports = new List<ImportItem>();
                 foreach (var snapshot in document.GetImports())

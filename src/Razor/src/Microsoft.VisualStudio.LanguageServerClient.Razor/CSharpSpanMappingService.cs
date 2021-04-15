@@ -54,11 +54,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             IEnumerable<TextSpan> spans,
             CancellationToken cancellationToken)
         {
-            return await MapSpansAsync(document, spans, _textSnapshot.AsText(), _documentSnapshot.Snapshot.AsText(), cancellationToken).ConfigureAwait(false);
+            return await MapSpansAsync(spans, _textSnapshot.AsText(), _documentSnapshot.Snapshot.AsText(), cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<ImmutableArray<RazorMappedSpanResult>> MapSpansAsync(
-            Document document,
             IEnumerable<TextSpan> spans,
             SourceText sourceTextGenerated,
             SourceText sourceTextRazor,
@@ -105,7 +104,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             SourceText sourceTextGenerated,
             SourceText sourceTextRazor)
         {
-            var result = await MapSpansAsync(document: null, spans, sourceTextGenerated, sourceTextRazor, cancellationToken: default).ConfigureAwait(false);
+            var result = await MapSpansAsync(spans, sourceTextGenerated, sourceTextRazor, cancellationToken: default).ConfigureAwait(false);
             return result.Select(mappedResult => (mappedResult.FilePath, mappedResult.LinePositionSpan, mappedResult.Span));
         }
     }

@@ -256,13 +256,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 {
                     codeDocument = projectEngine.ProcessDeclarationOnly(projectItem);
                 }
-                else if (DesignTime)
-                {
-                    codeDocument = projectEngine.ProcessDesignTime(projectItem);
-                }
                 else
                 {
-                    codeDocument = projectEngine.Process(projectItem);
+                    codeDocument = DesignTime ? projectEngine.ProcessDesignTime(projectItem) : projectEngine.Process(projectItem);
                 }
 
                 return new CompileToCSharpResult
@@ -465,7 +461,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         private class TestImportProjectFeature : IImportProjectFeature
         {
-            private List<RazorProjectItem> _imports;
+            private readonly List<RazorProjectItem> _imports;
 
             public TestImportProjectFeature(List<RazorProjectItem> imports)
             {

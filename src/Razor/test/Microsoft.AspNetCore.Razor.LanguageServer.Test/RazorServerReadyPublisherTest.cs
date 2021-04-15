@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             responseRouterReturns.Verify(r => r.ReturningVoid(It.IsAny<CancellationToken>()), Times.Once);
         }
 
-        private ProjectWorkspaceState CreateProjectWorkspace()
+        private static ProjectWorkspaceState CreateProjectWorkspace()
         {
             var tagHelpers = new List<TagHelperDescriptor>();
 

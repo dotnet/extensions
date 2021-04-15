@@ -522,11 +522,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 var rule = new Mock<IRule>(MockBehavior.Strict);
                 rule
                     .Setup(o => o.GetProperty(It.IsAny<string>()))
-                    .Returns((string propertyName) =>
-                    {
-
-                        return properties.FirstOrDefault(p => p.Name == propertyName);
-                    });
+                    .Returns((string propertyName) => properties.FirstOrDefault(p => p.Name == propertyName));
 
                 return rule.Object;
             }
@@ -749,7 +745,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             public T ExecuteSynchronously<T>(Func<Task<T>> asyncAction)
             {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                 return asyncAction().GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
             }
 
             public void Fork(

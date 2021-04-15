@@ -8,7 +8,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
 {
     public class TestVirtualDocumentSnapshot : VirtualDocumentSnapshot
     {
-        private long? _hostDocumentSyncVersion;
+        private readonly long? _hostDocumentSyncVersion;
 
         public TestVirtualDocumentSnapshot(Uri uri, long? hostDocumentVersion) : this(uri, hostDocumentVersion, snapshot: null)
         {

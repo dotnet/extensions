@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
 using Moq;
@@ -33,10 +32,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             editorSettingsManager.SetupGet(m => m.Current).Returns((EditorSettings)null);
             var manager = new DefaultWorkspaceEditorSettings(Dispatcher, editorSettingsManager.Object);
             var called = false;
-            manager.Changed += (caller, args) =>
-            {
-                called = true;
-            };
+            manager.Changed += (caller, args) => called = true;
 
             // Act
             manager.OnChanged(null, null);
@@ -64,8 +60,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var manager = new TestEditorSettingsManagerInternal(Dispatcher);
-            EventHandler<EditorSettingsChangedEventArgs> listener1 = (caller, args) => { };
-            EventHandler<EditorSettingsChangedEventArgs> listener2 = (caller, args) => { };
+            static void listener1(object caller, EditorSettingsChangedEventArgs args) { }
+            static void listener2(object caller, EditorSettingsChangedEventArgs args) { }
             manager.Changed += listener1;
             manager.Changed += listener2;
 

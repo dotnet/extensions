@@ -67,7 +67,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var manager = CreateParserManager(original))
             {
                 var changed = new StringTextSnapshot("Foo @bap Daz");
-                var edit = new TestEdit(7, 3, original, 3, changed, "p D");
+                var edit = new TestEdit(7, 3, original, changed, "p D");
 
                 await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
 
@@ -93,7 +93,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             using (var manager = CreateParserManager(original))
             {
                 var changed = new StringTextSnapshot("foo @await Html. baz");
-                var edit = new TestEdit(15, 0, original, 1, changed, ".");
+                var edit = new TestEdit(15, 0, original, changed, ".");
                 await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
 
                 // Act
@@ -116,7 +116,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                                             + "    @DateTime" + Environment.NewLine
                                             + "}");
 
-            var edit = new TestEdit(15 + Environment.NewLine.Length, 0, original, 1, changed, ".");
+            var edit = new TestEdit(15 + Environment.NewLine.Length, 0, original, changed, ".");
             using (var manager = CreateParserManager(original))
             {
                 void ApplyAndVerifyPartialChange(TestEdit testEdit, string expectedCode)
@@ -136,7 +136,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 changed = new StringTextSnapshot("@{" + Environment.NewLine
                                                 + "    @DateTime.." + Environment.NewLine
                                                 + "}");
-                edit = new TestEdit(16 + Environment.NewLine.Length, 0, original, 1, changed, ".");
+                edit = new TestEdit(16 + Environment.NewLine.Length, 0, original, changed, ".");
 
                 ApplyAndVerifyPartialChange(edit, "DateTime..");
 
@@ -144,7 +144,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 changed = new StringTextSnapshot("@{" + Environment.NewLine
                                                 + "    @DateTime.Now." + Environment.NewLine
                                                 + "}");
-                edit = new TestEdit(16 + Environment.NewLine.Length, 0, original, 3, changed, "Now");
+                edit = new TestEdit(16 + Environment.NewLine.Length, 0, original, changed, "Now");
 
                 ApplyAndVerifyPartialChange(edit, "DateTime.Now.");
             }
@@ -161,7 +161,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                                             + "    @DateT" + Environment.NewLine
                                             + "}");
 
-            var edit = new TestEdit(12 + Environment.NewLine.Length, 0, original, 1, changed, ".");
+            var edit = new TestEdit(12 + Environment.NewLine.Length, 0, original, changed, ".");
             using (var manager = CreateParserManager(original))
             {
                 void ApplyAndVerifyPartialChange(TestEdit testEdit, string expectedCode)
@@ -180,7 +180,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 changed = new StringTextSnapshot("@{" + Environment.NewLine
                                                 + "    @DateTime." + Environment.NewLine
                                                 + "}");
-                edit = new TestEdit(12 + Environment.NewLine.Length, 0, original, 3, changed, "ime");
+                edit = new TestEdit(12 + Environment.NewLine.Length, 0, original, changed, "ime");
 
                 ApplyAndVerifyPartialChange(edit, "DateTime.");
             }
@@ -192,7 +192,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // ImpExprProvisionallyAcceptsDotlessCommitInsertions
             var changed = new StringTextSnapshot("foo @DateT. baz");
             var original = new StringTextSnapshot("foo @DateT baz");
-            var edit = new TestEdit(10, 0, original, 1, changed, ".");
+            var edit = new TestEdit(10, 0, original, changed, ".");
             using (var manager = CreateParserManager(original))
             {
                 void ApplyAndVerifyPartialChange(TestEdit testEdit, string expectedCode)
@@ -210,7 +210,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 original = changed;
                 changed = new StringTextSnapshot("foo @DateTime. baz");
-                edit = new TestEdit(10, 0, original, 3, changed, "ime");
+                edit = new TestEdit(10, 0, original, changed, "ime");
 
                 ApplyAndVerifyPartialChange(edit, "DateTime.");
 
@@ -227,7 +227,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var original = new StringTextSnapshot("foo @DateTime baz", versionNumber: 0);
             var changed = new StringTextSnapshot("foo @DateTime. baz", versionNumber: 1);
-            var edit = new TestEdit(13, 0, original, 1, changed, ".");
+            var edit = new TestEdit(13, 0, original, changed, ".");
             using (var manager = CreateParserManager(original))
             {
                 void ApplyAndVerifyPartialChange(TestEdit testEdit, string expectedCode)
@@ -256,7 +256,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertionsAfterIdentifiers
             var changed = new StringTextSnapshot("foo @DateTime. baz");
             var original = new StringTextSnapshot("foo @DateTime baz");
-            var edit = new TestEdit(13, 0, original, 1, changed, ".");
+            var edit = new TestEdit(13, 0, original, changed, ".");
             using (var manager = CreateParserManager(original))
             {
                 void ApplyAndVerifyPartialChange(TestEdit testEdit, string expectedCode)
@@ -274,13 +274,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 original = changed;
                 changed = new StringTextSnapshot("foo @DateTime.. baz");
-                edit = new TestEdit(14, 0, original, 1, changed, ".");
+                edit = new TestEdit(14, 0, original, changed, ".");
 
                 ApplyAndVerifyPartialChange(edit, "DateTime..");
 
                 original = changed;
                 changed = new StringTextSnapshot("foo @DateTime.Now. baz");
-                edit = new TestEdit(14, 0, original, 3, changed, "Now");
+                edit = new TestEdit(14, 0, original, changed, "Now");
 
                 ApplyAndVerifyPartialChange(edit, "DateTime.Now.");
 
@@ -298,7 +298,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // ImplicitExpressionProvisionallyAcceptsCaseInsensitiveDotlessCommitInsertions_NewRoslynIntegration
             var original = new StringTextSnapshot("foo @date baz");
             var changed = new StringTextSnapshot("foo @date. baz");
-            var edit = new TestEdit(9, 0, original, 1, changed, ".");
+            var edit = new TestEdit(9, 0, original, changed, ".");
             using (var manager = CreateParserManager(original))
             {
                 void ApplyAndVerifyPartialChange(Action applyEdit, string expectedCode)
@@ -318,21 +318,21 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 original = changed;
                 changed = new StringTextSnapshot("foo @date baz");
-                edit = new TestEdit(9, 1, original, 0, changed, "");
+                edit = new TestEdit(9, 1, original, changed, "");
 
                 // @date. => @date
                 ApplyAndVerifyPartialChange(() => manager.ApplyEdit(edit), "date");
 
                 original = changed;
                 changed = new StringTextSnapshot("foo @DateTime baz");
-                edit = new TestEdit(5, 4, original, 8, changed, "DateTime");
+                edit = new TestEdit(5, 4, original, changed, "DateTime");
 
                 // @date => @DateTime
                 ApplyAndVerifyPartialChange(() => manager.ApplyEdit(edit), "DateTime");
 
                 original = changed;
                 changed = new StringTextSnapshot("foo @DateTime. baz");
-                edit = new TestEdit(13, 0, original, 1, changed, ".");
+                edit = new TestEdit(13, 0, original, changed, ".");
 
                 // @DateTime => @DateTime.
                 ApplyAndVerifyPartialChange(() => manager.ApplyEdit(edit), "DateTime.");
@@ -350,8 +350,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // ImplicitExpressionRejectsChangeWhichWouldHaveBeenAcceptedIfLastChangeWasProvisionallyAcceptedOnDifferentSpan
             // Arrange
-            var dotTyped = new TestEdit(8, 0, new StringTextSnapshot("foo @foo @bar"), 1, new StringTextSnapshot("foo @foo. @bar"), ".");
-            var charTyped = new TestEdit(14, 0, new StringTextSnapshot("foo @foo. @bar"), 1, new StringTextSnapshot("foo @foo. @barb"), "b");
+            var dotTyped = new TestEdit(8, 0, new StringTextSnapshot("foo @foo @bar"), new StringTextSnapshot("foo @foo. @bar"), ".");
+            var charTyped = new TestEdit(14, 0, new StringTextSnapshot("foo @foo. @bar"), new StringTextSnapshot("foo @foo. @barb"), "b");
             using (var manager = CreateParserManager(dotTyped.OldSnapshot))
             {
                 await manager.InitializeWithDocumentAsync(dotTyped.OldSnapshot);
@@ -373,8 +373,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // ImplicitExpressionAcceptsIdentifierTypedAfterDotIfLastChangeWasProvisionalAcceptanceOfDot
             // Arrange
-            var dotTyped = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), 1, new StringTextSnapshot("foo @foo. bar"), ".");
-            var charTyped = new TestEdit(9, 0, new StringTextSnapshot("foo @foo. bar"), 1, new StringTextSnapshot("foo @foo.b bar"), "b");
+            var dotTyped = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), new StringTextSnapshot("foo @foo. bar"), ".");
+            var charTyped = new TestEdit(9, 0, new StringTextSnapshot("foo @foo. bar"), new StringTextSnapshot("foo @foo.b bar"), "b");
             using (var manager = CreateParserManager(dotTyped.OldSnapshot))
             {
                 await manager.InitializeWithDocumentAsync(dotTyped.OldSnapshot);
@@ -395,7 +395,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public async Task ImpExpr_AcceptsParenthesisAtEnd_SingleEdit()
         {
             // Arrange
-            var edit = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), 2, new StringTextSnapshot("foo @foo() bar"), "()");
+            var edit = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), new StringTextSnapshot("foo @foo() bar"), "()");
 
             using (var manager = CreateParserManager(edit.OldSnapshot))
             {
@@ -414,8 +414,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public async Task ImpExpr_AcceptsParenthesisAtEnd_TwoEdits()
         {
             // Arrange
-            var edit1 = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), 1, new StringTextSnapshot("foo @foo( bar"), "(");
-            var edit2 = new TestEdit(9, 0, new StringTextSnapshot("foo @foo( bar"), 1, new StringTextSnapshot("foo @foo() bar"), ")");
+            var edit1 = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), new StringTextSnapshot("foo @foo( bar"), "(");
+            var edit2 = new TestEdit(9, 0, new StringTextSnapshot("foo @foo( bar"), new StringTextSnapshot("foo @foo() bar"), ")");
             using (var manager = CreateParserManager(edit1.OldSnapshot))
             {
                 await manager.InitializeWithDocumentAsync(edit1.OldSnapshot);
@@ -564,9 +564,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return CreateParserManager(documentTracker);
         }
 
-        private static ProjectSnapshotProjectEngineFactory CreateProjectEngineFactory(
-            string path = TestLinePragmaFileName,
-            IEnumerable<TagHelperDescriptor> tagHelpers = null)
+        private static ProjectSnapshotProjectEngineFactory CreateProjectEngineFactory(IEnumerable<TagHelperDescriptor> tagHelpers = null)
         {
             var fileSystem = new TestRazorProjectFileSystem();
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
@@ -707,10 +705,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             public async Task WaitForParseAsync()
             {
                 // Get off of the foreground thread so we can wait for the document structure changed event to fire
-                await Task.Run(() =>
-                {
-                    DoWithTimeoutIfNotDebugging(_parserComplete.Wait);
-                });
+                await Task.Run(() => DoWithTimeoutIfNotDebugging(_parserComplete.Wait));
 
                 _parserComplete.Reset();
             }
@@ -723,18 +718,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 _parser.BlockBackgroundIdleWork.Set();
 
                 // Get off of the foreground thread so we can wait for the idle timer to fire
-                await Task.Run(() =>
-                {
-                    DoWithTimeoutIfNotDebugging(_parser.NotifyForegroundIdleStart.Wait);
-                });
+                await Task.Run(() => DoWithTimeoutIfNotDebugging(_parser.NotifyForegroundIdleStart.Wait));
 
                 Assert.Null(_parser._idleTimer);
 
                 // Get off of the foreground thread so we can wait for the document structure changed event to fire for reparse
-                await Task.Run(() =>
-                {
-                    DoWithTimeoutIfNotDebugging(_reparseComplete.Wait);
-                });
+                await Task.Run(() => DoWithTimeoutIfNotDebugging(_reparseComplete.Wait));
 
                 _reparseComplete.Reset();
                 _parser.BlockBackgroundIdleWork.Reset();

@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             new XUnitVerifier().EqualOrDiff(expected, actual);
         }
 
-        private (RazorLanguageKind, TextEdit[]) GetFormattedEdits(RazorCodeDocument codeDocument, string expected, int positionBeforeTriggerChar)
+        private static (RazorLanguageKind, TextEdit[]) GetFormattedEdits(RazorCodeDocument codeDocument, string expected, int positionBeforeTriggerChar)
         {
             var mappingService = new DefaultRazorDocumentMappingService();
             var languageKind = mappingService.GetLanguageKind(codeDocument, positionBeforeTriggerChar);
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         {
             var mappingService = new DefaultRazorDocumentMappingService();
 
-            var client = new FormattingLanguageServerClient(TestProjectPath, FileName);
+            var client = new FormattingLanguageServerClient();
             client.AddCodeDocument(codeDocument);
             var passes = new List<IFormattingPass>()
             {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return new DefaultRazorFormattingService(passes, LoggerFactory);
         }
 
-        private SourceText ApplyEdits(SourceText source, TextEdit[] edits)
+        private static SourceText ApplyEdits(SourceText source, TextEdit[] edits)
         {
             var changes = edits.Select(e => e.AsTextChange(source));
             return source.WithChanges(changes);
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             fileKind ??= FileKinds.Component;
             tagHelpers ??= Array.Empty<TagHelperDescriptor>();
             var sourceDocument = text.GetRazorSourceDocument(path, path);
-            var projectEngine = RazorProjectEngine.Create(builder => { builder.SetRootNamespace("Test"); });
+            var projectEngine = RazorProjectEngine.Create(builder => builder.SetRootNamespace("Test"));
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), tagHelpers);
 
             var documentSnapshot = new Mock<DocumentSnapshot>(MockBehavior.Strict);

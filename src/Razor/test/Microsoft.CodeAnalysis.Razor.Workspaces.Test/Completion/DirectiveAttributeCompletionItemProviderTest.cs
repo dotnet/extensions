@@ -307,25 +307,19 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         {
             displayText ??= insertText;
 
-            Assert.Contains(completions, completion =>
-            {
-                return insertText == completion.InsertText &&
+            Assert.Contains(completions, completion => insertText == completion.InsertText &&
                     displayText == completion.DisplayText &&
                     commitCharacters.SequenceEqual(completion.CommitCharacters) &&
-                    RazorCompletionItemKind.DirectiveAttribute == completion.Kind;
-            });
+                    RazorCompletionItemKind.DirectiveAttribute == completion.Kind);
         }
 
         private static void AssertDoesNotContain(IReadOnlyList<RazorCompletionItem> completions, string insertText, string displayText)
         {
             displayText ??= insertText;
 
-            Assert.DoesNotContain(completions, completion =>
-            {
-                return insertText == completion.InsertText &&
+            Assert.DoesNotContain(completions, completion => insertText == completion.InsertText &&
                    displayText == completion.DisplayText &&
-                   RazorCompletionItemKind.DirectiveAttribute == completion.Kind;
-            });
+                   RazorCompletionItemKind.DirectiveAttribute == completion.Kind);
         }
     }
 }

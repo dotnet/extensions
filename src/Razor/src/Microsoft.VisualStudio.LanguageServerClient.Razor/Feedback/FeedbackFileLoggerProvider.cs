@@ -70,7 +70,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
 
             private class Scope : IDisposable
             {
-                public static readonly Scope Instance = new Scope();
+                public static readonly Scope Instance = new();
 
                 public void Dispose()
                 {

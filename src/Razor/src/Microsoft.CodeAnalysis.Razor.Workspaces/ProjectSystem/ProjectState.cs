@@ -401,14 +401,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 if (importsToRelatedDocuments.TryGetValue(importTargetPath, out var relatedDocuments))
                 {
                     relatedDocuments = relatedDocuments.Remove(hostDocument.FilePath);
-                    if (relatedDocuments.Length > 0)
-                    {
-                        importsToRelatedDocuments = importsToRelatedDocuments.SetItem(importTargetPath, relatedDocuments);
-                    }
-                    else
-                    {
-                        importsToRelatedDocuments = importsToRelatedDocuments.Remove(importTargetPath);
-                    }
+                    importsToRelatedDocuments = relatedDocuments.Length > 0
+                        ? importsToRelatedDocuments.SetItem(importTargetPath, relatedDocuments)
+                        : importsToRelatedDocuments.Remove(importTargetPath);
                 }
             }
 

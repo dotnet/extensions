@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             Workspace.TryApplyChanges(solution);
         }
 
-        public TimeSpan WaitDelay
+        public static TimeSpan WaitDelay
         {
             get
             {
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         {
             // Arrange
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
-            var mre = new ManualResetEventSlim(initialState: false);
+            using var mre = new ManualResetEventSlim(initialState: false);
             var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) => mre.Set());
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         {
             // Arrange
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
-            var mre = new ManualResetEventSlim(initialState: false);
+            using var mre = new ManualResetEventSlim(initialState: false);
             var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) =>
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         {
             // Arrange
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
-            var mre = new ManualResetEventSlim(initialState: false);
+            using var mre = new ManualResetEventSlim(initialState: false);
             var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) => mre.Set());
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         {
             // Arrange
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
-            var mre = new ManualResetEventSlim(initialState: false);
+            using var mre = new ManualResetEventSlim(initialState: false);
             var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);
             workspaceStateGenerator.Setup(generator => generator.Update(It.IsAny<Project>(), It.IsAny<OmniSharpProjectSnapshot>()))
                 .Callback<Project, OmniSharpProjectSnapshot>((_, __) =>
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public async Task UpdateAfterDelayAsync_NoWorkspaceProject_Noops()
         {
             // Arrange
-            var workspace = TestWorkspace.Create();
+            using var workspace = TestWorkspace.Create();
             var projectManager = CreateProjectSnapshotManager();
             await RunOnForegroundAsync(() => ProjectManager.ProjectAdded(Project1));
             var workspaceStateGenerator = new Mock<OmniSharpProjectWorkspaceStateGenerator>(MockBehavior.Strict);

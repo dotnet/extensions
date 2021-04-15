@@ -100,10 +100,7 @@ namespace Microsoft.CodeAnalysis.Razor.Test
         {
             var cache = new TestMemoryCache();
 
-            Assert.Throws<ArgumentNullException>(() =>
-            {
-                cache.TryGetValue(key: null, out var result);
-            });
+            Assert.Throws<ArgumentNullException>(() => cache.TryGetValue(key: null, out var result));
         }
 
         private static string GetKey()

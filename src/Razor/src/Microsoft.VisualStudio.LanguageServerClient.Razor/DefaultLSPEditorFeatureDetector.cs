@@ -176,7 +176,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 if (ErrorHandler.Succeeded(result))
                 {
                     // VSSPROPID_ShellMode is set to VSSM_Server when /server is used in devenv command
-                    _isVSServer = ((int)mode == (int)__VSShellMode.VSSM_Server);
+                    _isVSServer = (int)mode == (int)__VSShellMode.VSSM_Server;
                 }
                 else
                 {

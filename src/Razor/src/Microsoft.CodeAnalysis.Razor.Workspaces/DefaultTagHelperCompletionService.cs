@@ -229,7 +229,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 foreach (var completionTagName in elementCompletions.Keys)
                 {
                     if (elementCompletions[completionTagName].Count > 0 ||
-                        !string.IsNullOrEmpty(prefix) && completionTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        (!string.IsNullOrEmpty(prefix) && completionTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                     {
                         // The current completion either has other TagHelper's associated with it or is prefixed with a non-empty
                         // TagHelper prefix.

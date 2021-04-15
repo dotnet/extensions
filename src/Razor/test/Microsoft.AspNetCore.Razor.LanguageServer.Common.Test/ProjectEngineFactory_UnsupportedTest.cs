@@ -17,10 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
             var factory = new ProjectEngineFactory_Unsupported();
 
             // Act & Assert
-            factory.Create(UnsupportedRazorConfiguration.Instance, RazorProjectFileSystem.Empty, (builder) =>
-            {
-                throw new XunitException("There should not be an opportunity to configure the project engine in the unsupported scenario.");
-            });
+            factory.Create(UnsupportedRazorConfiguration.Instance, RazorProjectFileSystem.Empty, (builder) => throw new XunitException("There should not be an opportunity to configure the project engine in the unsupported scenario."));
         }
 
         // This is more of an integration test to validate that all the pieces work together

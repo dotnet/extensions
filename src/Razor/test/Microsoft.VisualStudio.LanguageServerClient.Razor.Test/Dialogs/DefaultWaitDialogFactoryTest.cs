@@ -20,8 +20,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Dialogs
 
         private JoinableTaskContext JoinableTaskContext { get; }
 
-        private JoinableTaskFactory JoinableTaskFactory => JoinableTaskContext.Factory;
-
         [Fact]
         public void TryCreateWaitDialog_Cancelled()
         {

@@ -201,10 +201,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 if (_documentProcessedListeners.Count != 0)
                 {
                     await Task.Factory.StartNew(
-                        () =>
-                        {
-                            NotifyDocumentsProcessed(work);
-                        },
+                        () => NotifyDocumentsProcessed(work),
                         CancellationToken.None,
                         TaskCreationOptions.None,
                         _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);

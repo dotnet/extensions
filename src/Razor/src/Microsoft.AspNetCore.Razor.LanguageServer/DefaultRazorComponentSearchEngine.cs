@@ -47,10 +47,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var typeName = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(typeSpan, tagHelper.Name);
             var lookupSymbolName = RemoveGenericContent(typeName);
 
-            var projects = await Task.Factory.StartNew(() =>
-            {
-                return _projectSnapshotManager.Projects.ToArray();
-            }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
+            var projects = await Task.Factory.StartNew(
+                () => _projectSnapshotManager.Projects.ToArray(),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
 
             foreach (var project in projects)
             {

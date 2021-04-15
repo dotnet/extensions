@@ -15,8 +15,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
         {
             // Rewrite the assembly name into a full name just like this one, but with the name of the MVC design time assembly.
-            var assemblyName = new AssemblyName(typeof(RazorProjectEngine).Assembly.FullName);
-            assemblyName.Name = AssemblyName;
+            var assemblyName = new AssemblyName(typeof(RazorProjectEngine).Assembly.FullName)
+            {
+                Name = AssemblyName
+            };
 
             var extension = new AssemblyExtension(configuration.ConfigurationName, Assembly.Load(assemblyName));
             var initializer = extension.CreateInitializer();

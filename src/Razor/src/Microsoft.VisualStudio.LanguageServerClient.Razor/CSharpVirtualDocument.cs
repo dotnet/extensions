@@ -13,6 +13,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         {
         }
 
-        protected override CSharpVirtualDocumentSnapshot GetUpdatedSnapshot() => new CSharpVirtualDocumentSnapshot(Uri, TextBuffer.CurrentSnapshot, HostDocumentVersion);
+        protected override CSharpVirtualDocumentSnapshot GetUpdatedSnapshot() => new(Uri, TextBuffer.CurrentSnapshot, HostDocumentVersion);
     }
 }

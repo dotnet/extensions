@@ -204,11 +204,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             _foregroundDispatcher.AssertForegroundThread();
 
-            var handler = ContextChanged;
-            if (handler != null)
-            {
-                handler(this, new ContextChangeEventArgs(kind));
-            }
+            ContextChanged?.Invoke(this, new ContextChangeEventArgs(kind));
         }
 
         // Internal for testing

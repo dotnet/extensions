@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     // ensuring that no requests are sent before the client is ready.
     internal class DefaultClientNotifierService : ClientNotifierServiceBase
     {
-        private TaskCompletionSource<bool> _initializedCompletionSource;
-        private IClientLanguageServer _languageServer;
+        private readonly TaskCompletionSource<bool> _initializedCompletionSource;
+        private readonly IClientLanguageServer _languageServer;
 
         public DefaultClientNotifierService(IClientLanguageServer languageServer)
         {
