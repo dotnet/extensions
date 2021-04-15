@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             // Normalize and re-map the C# edits.
             var codeDocument = context.CodeDocument;
-            var csharpText = SourceText.From(codeDocument.GetCSharpDocument().GeneratedCode);
+            var csharpText = codeDocument.GetCSharpSourceText();
             var normalizedEdits = NormalizeTextEdits(csharpText, result.Edits);
             var mappedEdits = RemapTextEdits(codeDocument, normalizedEdits, result.Kind);
             var filteredEdits = FilterCSharpTextEdits(context, mappedEdits);

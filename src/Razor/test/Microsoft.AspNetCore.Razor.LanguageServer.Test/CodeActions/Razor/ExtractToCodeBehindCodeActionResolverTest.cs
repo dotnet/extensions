@@ -15,6 +15,7 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
