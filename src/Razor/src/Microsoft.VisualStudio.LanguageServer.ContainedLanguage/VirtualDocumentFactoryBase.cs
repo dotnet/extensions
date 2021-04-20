@@ -12,6 +12,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
     {
         /// <summary>
         /// This marker is understood by LiveShare in order to ensure that virtual documents are not serialized to disk.
+        /// Also used in roslyn to filter out text buffer operations on virtual documents.
         /// </summary>
         private const string ContainedLanguageMarker = "ContainedLanguageMarker";
 

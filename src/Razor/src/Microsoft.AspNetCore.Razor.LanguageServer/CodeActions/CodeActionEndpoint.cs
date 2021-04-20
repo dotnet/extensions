@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         {
             _capability = capability;
 
-            var extendableClientCapabilities = _languageServer.ClientSettings?.Capabilities as ExtendableClientCapabilities;
+            var extendableClientCapabilities = _languageServer.ClientSettings?.Capabilities as PlatformAgnosticClientCapabilities;
             _supportsCodeActionResolve = extendableClientCapabilities?.SupportsCodeActionResolve ?? false;
         }
 
