@@ -21,6 +21,30 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
     public class ComponentAccessibilityCodeActionProviderTest : LanguageServerTestBase
     {
         [Fact]
+        public async Task Handle_NoTagName_DoesNotProvideLightBulb()
+        {
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "<";
+            var request = new RazorCodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(new Position(0, 1), new Position(0, 1)),
+            };
+
+            var location = new SourceLocation(1, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(0, 1));
+
+            var provider = new ComponentAccessibilityCodeActionProvider(new DefaultTagHelperFactsService(), FilePathNormalizer);
+
+            // Act
+            var commandOrCodeActionContainer = await provider.ProvideAsync(context, default);
+
+            // Assert
+            Assert.Null(commandOrCodeActionContainer);
+        }
+
+        [Fact]
         public async Task Handle_InvalidSyntaxTree_NoStartNode()
         {
             // Arrange
