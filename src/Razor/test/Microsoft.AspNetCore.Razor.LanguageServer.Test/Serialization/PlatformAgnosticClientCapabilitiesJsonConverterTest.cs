@@ -3,14 +3,13 @@
 
 using System.IO;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.LanguageServer.Serialization;
 using Newtonsoft.Json;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
 {
-    public class ExtendableClientCapabilitiesJsonConverterTest
+    public class PlatformAgnosticClientCapabilitiesJsonConverterTest
     {
         [Fact]
         public void ReadJson_ReadsValues()
@@ -78,10 +77,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
 }";
             var stringReader = new StringReader(rawJson);
             var serializer = OmniSharp.Extensions.LanguageServer.Protocol.Serialization.Serializer.Instance.JsonSerializer;
-            serializer.Converters.Add(ExtendableClientCapabilitiesJsonConverter.Instance);
+            serializer.Converters.Add(PlatformAgnosticClientCapabilities.JsonConverter);
 
             // Act
-            var capabilities = serializer.Deserialize<ExtendableClientCapabilities>(new JsonTextReader(stringReader));
+            var capabilities = serializer.Deserialize<PlatformAgnosticClientCapabilities>(new JsonTextReader(stringReader));
 
             // Assert
             Assert.True(capabilities.SupportsCodeActionResolve);
