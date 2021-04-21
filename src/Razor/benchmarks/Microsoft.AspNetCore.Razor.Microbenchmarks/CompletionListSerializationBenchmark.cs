@@ -5,7 +5,6 @@ using System.IO;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
 using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.VisualStudio.Editor.Razor;
@@ -91,6 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
                     VSCompletionList = new VSCompletionListCapability()
                     {
                         CommitCharacters = true,
+                        Data = true,
                     }
                 });
             return completionList;

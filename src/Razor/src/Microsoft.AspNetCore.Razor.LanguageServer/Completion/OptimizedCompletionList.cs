@@ -59,7 +59,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                             continue;
                         }
 
-                        WriteCompletionItem(writer, completionItem, serializer);
+                        // HACK: O# will automatically inject data objects on serialization start; however, VS already captures
+                        // this for us if the Data field on the completion list is unempty. In future O# versions (0.19+)we can
+                        // remove this hack because O# will no longer inject serialization items when not required.
+                        var suppressData = (completionList as VSCompletionList).Data != null;
+                        WriteCompletionItem(writer, completionItem, serializer, suppressData);
                     }
                     writer.WriteEndArray();
                 }
@@ -73,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 writer.WriteValue(completionList.IsIncomplete);
             }
 
-            private void WriteCompletionItem(JsonWriter writer, CompletionItem completionItem, JsonSerializer serializer)
+            private void WriteCompletionItem(JsonWriter writer, CompletionItem completionItem, JsonSerializer serializer, bool suppressData)
             {
                 writer.WriteStartObject();
 
@@ -161,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                     serializer.Serialize(writer, completionItem.Command);
                 }
 
-                if (completionItem.Data != null)
+                if (!suppressData && completionItem.Data != null)
                 {
                     writer.WritePropertyName("data");
                     serializer.Serialize(writer, completionItem.Data);

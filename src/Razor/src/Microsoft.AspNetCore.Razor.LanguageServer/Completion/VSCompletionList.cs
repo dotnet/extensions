@@ -2,17 +2,29 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
+    /// <summary>
+    /// A subclass of the LSP protocol <see cref="CompletionList"/> that contains extensions specific to Visual Studio.
+    /// </summary>
     internal class VSCompletionList : CompletionList
     {
         protected VSCompletionList(CompletionList innerCompletionList) : base (innerCompletionList.Items, innerCompletionList.IsIncomplete)
         {
         }
 
+        /// <summary>
+        /// Gets or sets the default <see cref="CompletionItem.CommitCharacters"/> used for completion items.
+        /// </summary>
         public Container<string> CommitCharacters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default <see cref="CompletionItem.Data"/> used for completion items.
+        /// </summary>
+        public object Data { get; set; }
 
         public static VSCompletionList Convert(CompletionList completionList, VSCompletionListCapability vsCompletionListCapability)
         {
@@ -20,6 +32,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             if (vsCompletionListCapability.CommitCharacters)
             {
                 PromoteCommonCommitCharactersOntoList(vsCompletionList);
+            }
+
+            if (vsCompletionListCapability.Data)
+            {
+                PromotedDataOntoList(vsCompletionList);
             }
 
             return vsCompletionList;
@@ -59,6 +76,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 {
                     completionItem.CommitCharacters = null;
                 }
+            }
+        }
+
+        private static void PromotedDataOntoList(VSCompletionList completionList)
+        {
+            // This piece makes a massive assumption that all completion items will have a resultId associated with them and their
+            // data properties will all be the same. Therefore, we can inspect the first item and empty out the rest.
+            var commonDataItem = completionList.FirstOrDefault();
+            if (commonDataItem is null)
+            {
+                // Empty list
+                return;
+            }
+
+            completionList.Data = commonDataItem.Data;
+            foreach (var completionItem in completionList.Items)
+            {
+                completionItem.Data = null;
             }
         }
     }
