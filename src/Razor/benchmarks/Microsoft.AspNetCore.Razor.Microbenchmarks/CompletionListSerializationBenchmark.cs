@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.LanguageServer;
 using Microsoft.AspNetCore.Razor.LanguageServer.Completion;
 using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.VisualStudio.Editor.Razor;
@@ -81,7 +82,17 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 
             var completionQueryLocation = new SourceSpan(queryIndex, length: 0);
             var razorCompletionItems = componentCompletionProvider.GetCompletionItems(syntaxTree, tagHelperDocumentContext, completionQueryLocation);
-            var completionList = RazorCompletionEndpoint.CreateLSPCompletionList(razorCompletionItems, new CompletionListCache(), new[] { ExtendedCompletionItemKinds.TagHelper });
+            var completionList = RazorCompletionEndpoint.CreateLSPCompletionList(
+                razorCompletionItems,
+                new CompletionListCache(),
+                new[] { ExtendedCompletionItemKinds.TagHelper },
+                new PlatformAgnosticCompletionCapability()
+                {
+                    VSCompletionList = new VSCompletionListCapability()
+                    {
+                        CommitCharacters = true,
+                    }
+                });
             return completionList;
         }
 

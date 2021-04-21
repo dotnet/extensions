@@ -45,8 +45,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
                 writer.WriteStartObject();
 
-                writer.WritePropertyName("isIncomplete");
-                writer.WriteValue(completionList.IsIncomplete);
+                WriteCompletionListProperties(writer, completionList, serializer);
 
                 if (completionList.Items != null)
                 {
@@ -66,6 +65,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 }
 
                 writer.WriteEndObject();
+            }
+
+            protected virtual void WriteCompletionListProperties(JsonWriter writer, CompletionList completionList, JsonSerializer serializer)
+            {
+                writer.WritePropertyName("isIncomplete");
+                writer.WriteValue(completionList.IsIncomplete);
             }
 
             private void WriteCompletionItem(JsonWriter writer, CompletionItem completionItem, JsonSerializer serializer)
