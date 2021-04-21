@@ -48,6 +48,15 @@
     <EditorConfigFiles Condition="'$(IsApiShim)' == 'true'" Include="$(RepositoryEngineeringDir)config\globalconfigs\ApiShim.globalconfig" />
   </ItemGroup>
 
+  <!--
+    Where necessary, do not pretend we support iOS or Android. This file is imported after project
+    has a chance to set $(RemoveDevicePlatformSupport) and long after @(SupportedPlatforms) is initialized.
+  -->
+  <ItemGroup Condition=" '$(RemoveDevicePlatformSupport)' == 'true' ">
+    <SupportedPlatform Remove="Android" />
+    <SupportedPlatform Remove="iOS" />
+  </ItemGroup>
+
   <Target Name="GetCustomAssemblyAttributes"
           BeforeTargets="GetAssemblyAttributes"
           Condition=" '$(MSBuildProjectExtension)' == '.csproj' "
