@@ -7,6 +7,7 @@ using System.Composition;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -178,6 +179,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var catchAllDescriptors = new HashSet<TagHelperDescriptor>();
             var prefix = completionContext.DocumentContext.Prefix ?? string.Empty;
             var possibleChildDescriptors = _tagHelperFactsService.GetTagHelpersGivenParent(completionContext.DocumentContext, completionContext.ContainingTagName);
+            possibleChildDescriptors = FilterFullyQualifiedCompletions(possibleChildDescriptors);
             foreach (var possibleDescriptor in possibleChildDescriptors)
             {
                 var addRuleCompletions = false;
@@ -315,6 +317,78 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     existingRuleDescriptors.UnionWith(descriptors);
                 }
             }
+        }
+
+        private static IReadOnlyList<TagHelperDescriptor> FilterFullyQualifiedCompletions(IReadOnlyList<TagHelperDescriptor> possibleChildDescriptors)
+        {
+            // Iterate once through the list to tease apart fully qualified and short name TagHelpers
+            var fullyQualifiedTagHelpers = new List<TagHelperDescriptor>();
+            var shortNameTagHelpers = new HashSet<TagHelperDescriptor>(ShortNameToFullyQualifiedComparer.Instance);
+            for (var i = 0; i < possibleChildDescriptors.Count; i++)
+            {
+                var descriptor = possibleChildDescriptors[i];
+
+                if (descriptor.IsComponentFullyQualifiedNameMatch())
+                {
+                    fullyQualifiedTagHelpers.Add(descriptor);
+                }
+                else
+                {
+                    shortNameTagHelpers.Add(descriptor);
+                }
+            }
+
+            // Re-combine the short named & fully qualified TagHelpers but filter out any fully qualified TagHelpers that have a short
+            // named representation already.
+            var filteredList = new List<TagHelperDescriptor>(shortNameTagHelpers);
+            for (var i = 0; i < fullyQualifiedTagHelpers.Count; i++)
+            {
+                var fullyQualifiedTagHelper = fullyQualifiedTagHelpers[i];
+
+                if (!shortNameTagHelpers.Contains(fullyQualifiedTagHelper))
+                {
+                    // Unimported completion item that isn't represented in a short named form.
+                    filteredList.Add(fullyQualifiedTagHelper);
+                }
+                else
+                {
+                    // There's already a shortname variant of this item, don't include it.
+                }
+            }
+
+            return filteredList;
+        }
+
+        private class ShortNameToFullyQualifiedComparer : IEqualityComparer<TagHelperDescriptor>
+        {
+            public static readonly ShortNameToFullyQualifiedComparer Instance = new ShortNameToFullyQualifiedComparer();
+
+            public bool Equals(TagHelperDescriptor x, TagHelperDescriptor y)
+            {
+                if (object.ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                if (!string.Equals(x.Name, y.Name, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                if (!string.Equals(x.AssemblyName, y.AssemblyName, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public int GetHashCode(TagHelperDescriptor obj) => obj.Name.GetHashCode();
         }
     }
 }
