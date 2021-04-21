@@ -134,6 +134,43 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
+        public async Task HandleRequestAsync_NoCompletions()
+        {
+            // Arrange
+            var completionRequest = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier() { Uri = Uri },
+                Context = new VSCompletionContext() { TriggerKind = CompletionTriggerKind.TriggerCharacter, TriggerCharacter = "<", InvokeKind = VSCompletionInvokeKind.Typing },
+                Position = new Position(0, 1)
+            };
+
+            var documentManager = new TestDocumentManager();
+            documentManager.AddDocument(Uri, new TestLSPDocumentSnapshot(new Uri("C:/path/file.razor"), 0));
+
+            var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
+            requestInvoker
+                .Setup(r => r.ReinvokeRequestOnServerAsync<CompletionParams, SumType<CompletionItem[], CompletionList>?>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CompletionParams>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<SumType<CompletionItem[], CompletionList>?>(null))
+                .Verifiable();
+
+            var projectionResult = new ProjectionResult()
+            {
+                LanguageKind = RazorLanguageKind.Html,
+            };
+            var projectionProvider = new Mock<LSPProjectionProvider>(MockBehavior.Strict);
+            projectionProvider.Setup(p => p.GetProjectionAsync(It.IsAny<LSPDocumentSnapshot>(), It.IsAny<Position>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(projectionResult));
+
+            var completionHandler = new CompletionHandler(JoinableTaskContext, requestInvoker.Object, documentManager, projectionProvider.Object, TextStructureNavigatorSelectorService, CompletionRequestContextCache, LoggerProvider);
+
+            // Act
+            var result = await completionHandler.HandleRequestAsync(completionRequest, new ClientCapabilities(), CancellationToken.None).ConfigureAwait(false);
+
+            // Assert
+            requestInvoker.VerifyAll();
+            Assert.Null(result.Value.Value);
+        }
+
+        [Fact]
         public async Task HandleRequestAsync_CSharpProjection_InvokesCSharpLanguageServer()
         {
             // Arrange
