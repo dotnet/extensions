@@ -15,8 +15,8 @@ Microsoft.Extensions APIs can then be added to the project using the [NuGet Pack
 Some of the best ways to contribute are to try things out, file issues, join in design conversations,
 and make pull-requests.
 
-* [Download our latest daily builds](./docs/daily-builds.md)
-* [Build .NET Extensions from source code](./docs/build-from-source.md)
+* [Download our latest daily builds](./docs/DailyBuilds.md)
+* [Build .NET Extensions from source code](./docs/BuildFromSource.md)
 * Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
 ## Reporting security issues and bugs

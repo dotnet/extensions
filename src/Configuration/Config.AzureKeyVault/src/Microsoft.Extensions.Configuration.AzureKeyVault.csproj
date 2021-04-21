@@ -11,7 +11,13 @@
     </Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);azure;keyvault</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Configuration.AzureKeyVault.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Azure.KeyVault" />

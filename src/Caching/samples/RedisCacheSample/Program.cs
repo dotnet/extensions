@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Redis;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 
 namespace RedisCacheSample
 {
@@ -21,7 +21,7 @@ namespace RedisCacheSample
         /// Install this chocolatey package: http://chocolatey.org/packages/redis-64/
         /// run "redis-server" from command prompt.
         /// </summary>
-        /// <param name="args"></param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public static async Task RunSampleAsync()
         {
             var key = "myKey";

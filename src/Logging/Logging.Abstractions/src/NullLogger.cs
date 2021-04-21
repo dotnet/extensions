@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Logging.Abstractions.Internal;
 
 namespace Microsoft.Extensions.Logging.Abstractions
 {
@@ -11,6 +10,9 @@ namespace Microsoft.Extensions.Logging.Abstractions
     /// </summary>
     public class NullLogger : ILogger
     {
+        /// <summary>
+        /// Returns the shared instance of <see cref="NullLogger"/>.
+        /// </summary>
         public static NullLogger Instance { get; } = new NullLogger();
 
         private NullLogger()

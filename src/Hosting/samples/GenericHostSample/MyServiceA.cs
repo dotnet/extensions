@@ -1,26 +1,34 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace GenericHostSample
 {
     public class MyServiceA : BackgroundService
     {
+        public MyServiceA(ILoggerFactory loggerFactory)
+        {
+            Logger = loggerFactory.CreateLogger<MyServiceA>();
+        }
+
+        public ILogger Logger { get; }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Console.WriteLine("MyServiceA is starting.");
+            Logger.LogInformation("MyServiceA is starting.");
 
-            stoppingToken.Register(() => Console.WriteLine("MyServiceA is stopping."));
+            stoppingToken.Register(() => Logger.LogInformation("MyServiceA is stopping."));
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                Console.WriteLine("MyServiceA is doing background work.");
+                Logger.LogInformation("MyServiceA is doing background work.");
 
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
 
-            Console.WriteLine("MyServiceA background task is stopping.");
+            Logger.LogInformation("MyServiceA background task is stopping.");
         }
     }
 }

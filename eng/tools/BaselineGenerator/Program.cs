@@ -152,6 +152,7 @@ namespace PackageBaselineGenerator
                 OmitXmlDeclaration = true,
                 Encoding = Encoding.UTF8,
                 Indent = true,
+                NewLineChars = "\n", // The files use LF, not CRLF.
             };
 
             using (var writer = XmlWriter.Create(output, settings))
@@ -212,6 +213,7 @@ namespace PackageBaselineGenerator
                     NewLineOnAttributes = false,
                     OmitXmlDeclaration = true,
                     WriteEndDocumentOnClose = true,
+                    NewLineChars = "\n", // The file uses LF, not CRLF!
                 };
 
                 using (var stream = File.OpenWrite(documentPath))
