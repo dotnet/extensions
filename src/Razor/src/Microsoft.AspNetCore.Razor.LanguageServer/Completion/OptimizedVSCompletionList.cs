@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         public OptimizedVSCompletionList(VSCompletionList completionList) : base(completionList)
         {
             CommitCharacters = completionList.CommitCharacters;
+            Data = completionList.Data;
         }
 
         public class OptimizedVSCompletionListJsonConverter : OptimizedCompletionList.OptimizedCompletionListJsonConverter
@@ -30,6 +31,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 {
                     writer.WritePropertyName("_vsext_commitCharacters");
                     serializer.Serialize(writer, vsCompletionList.CommitCharacters);
+                }
+
+                if (vsCompletionList.Data != null)
+                {
+                    writer.WritePropertyName("_vsext_data");
+                    serializer.Serialize(writer, vsCompletionList.Data);
                 }
 
                 base.WriteCompletionListProperties(writer, completionList, serializer);
