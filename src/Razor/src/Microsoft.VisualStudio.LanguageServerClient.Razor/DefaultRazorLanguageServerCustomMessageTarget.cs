@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Semantic;
+using Microsoft.AspNetCore.Razor.LanguageServer.Semantic.Models;
 using Microsoft.CodeAnalysis.ExternalAccess.Razor;
 using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
@@ -299,6 +300,60 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var result = new ProvideSemanticTokensResponse(csharpResults, csharpDoc.HostDocumentSyncVersion);
 
             return result;
+        }
+
+        [Obsolete]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+        public override async Task<ProvideSemanticTokensEditsResponse> ProvideSemanticTokensEditsAsync(
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+            SemanticTokensEditsParams semanticTokensEditsParams,
+            CancellationToken cancellationToken)
+        {
+            if (semanticTokensEditsParams is null)
+            {
+                throw new ArgumentNullException(nameof(semanticTokensEditsParams));
+            }
+
+            if (!_documentManager.TryGetDocument(semanticTokensEditsParams.TextDocument.Uri, out var documentSnapshot))
+            {
+                return null;
+            }
+
+            if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDoc))
+            {
+                return null;
+            }
+
+            semanticTokensEditsParams.TextDocument.Uri = csharpDoc.Uri;
+
+            var csharpResults = await _requestInvoker.ReinvokeRequestOnServerAsync<SemanticTokensEditsParams, SumType<LanguageServer.Protocol.SemanticTokens, SemanticTokensEdits>>(
+                LanguageServerConstants.LegacyRazorSemanticTokensEditEndpoint,
+                LanguageServerKind.CSharp.ToContentType(),
+                semanticTokensEditsParams,
+                cancellationToken).ConfigureAwait(false);
+
+            // Converting from LSP to O# types
+            if (csharpResults.Value is LanguageServer.Protocol.SemanticTokens tokens)
+            {
+                var response = new ProvideSemanticTokensEditsResponse(tokens.Data, edits: null, tokens.ResultId, csharpDoc.HostDocumentSyncVersion);
+                return response;
+            }
+            else if (csharpResults.Value is SemanticTokensEdits edits)
+            {
+                var results = new RazorSemanticTokensEdit[edits.Edits.Length];
+                for (var i = 0; i < edits.Edits.Length; i++)
+                {
+                    var currentEdit = edits.Edits[i];
+                    results[i] = new RazorSemanticTokensEdit(currentEdit.Start, currentEdit.DeleteCount, currentEdit.Data);
+                }
+
+                var response = new ProvideSemanticTokensEditsResponse(tokens: null, results, edits.ResultId, csharpDoc.HostDocumentSyncVersion);
+                return response;
+            }
+            else
+            {
+                throw new ArgumentException("Returned tokens should be of type SemanticTokens or SemanticTokensEdits.");
+            }
         }
 
         public override async Task RazorServerReadyAsync(CancellationToken cancellationToken)

@@ -58,6 +58,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
                 case Methods.TextDocumentDocumentHighlightName:
                     return CheckHighlightCapabilities;
                 case "textDocument/semanticTokens":
+                case "textDocument/semanticTokens/edits":
                     return CheckSemanticTokensCapabilities;
 
                 // VS LSP Expansion capabilities
