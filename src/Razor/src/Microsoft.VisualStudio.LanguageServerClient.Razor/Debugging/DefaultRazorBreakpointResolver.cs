@@ -99,6 +99,21 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
                 return null;
             }
 
+            if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var virtualDocument))
+            {
+                Debug.Fail($"Some how there's no C# document associated with the host Razor document {documentUri.OriginalString} when validating breakpoint locations.");
+                return null;
+            }
+
+            if (virtualDocument.HostDocumentSyncVersion != documentSnapshot.Version)
+            {
+                // C# document isn't up-to-date with the Razor document. Because VS' debugging tech is synchronous on the UI thread we have to bail. Ideally we'd wait
+                // for the C# document to become "updated"; however, that'd require the UI thread to see that the C# buffer is updated. Because this call path blocks
+                // the UI thread the C# document will never update until this path has exited. This means as a user types around the point of interest data may get stale
+                // but will re-adjust later.
+                return null;
+            }
+
             var cacheKey = new CacheKey(documentSnapshot.Uri, documentSnapshot.Version, lineIndex, characterIndex);
             if (_cache.TryGetValue(cacheKey, out var cachedRange))
             {
@@ -119,12 +134,6 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
             if (projectionResult.LanguageKind != RazorLanguageKind.CSharp)
             {
                 // We only allow breakpoints in C#
-                return null;
-            }
-
-            if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var virtualDocument))
-            {
-                Debug.Fail($"Some how there's no C# document associated with the host Razor document {documentUri.OriginalString} when validating breakpoint locations.");
                 return null;
             }
 
