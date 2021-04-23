@@ -1,0 +1,16 @@
+﻿//line,characterPos,length,tokenType,modifier
+0 0 4 15 0 //keyword
+0 5 1 30 0 //method name
+0 1 1 36 0 //punctuation
+0 1 1 36 0 //punctuation
+1 0 1 36 0 //puncutation
+1 4 3 15 0 //keyword
+0 4 1 29 0 //local name
+0 2 1 21 0 //operator
+0 2 1 19 0 //number
+0 1 1 36 0 //punctuation
+1 4 1 30 0 //method name
+0 1 1 36 0 //punctuation
+0 1 1 36 0 //punctuation
+0 1 1 36 0 //punctuation
+1 0 1 36 0 // punctuation

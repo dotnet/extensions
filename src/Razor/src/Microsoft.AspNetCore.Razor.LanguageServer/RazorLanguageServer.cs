@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorFormattingEndpoint>()
                     .WithHandler<RazorSemanticTokensEndpoint>()
                     .AddHandlerLink(LanguageServerConstants.RazorSemanticTokensEditEndpoint, LanguageServerConstants.LegacyRazorSemanticTokensEditEndpoint)
-                    .AddHandlerLink(LanguageServerConstants.RazorSemanticTokensEndpoint , LanguageServerConstants.LegacyRazorSemanticTokensEndpoint)
+                    .AddHandlerLink(LanguageServerConstants.RazorSemanticTokensEndpoint, LanguageServerConstants.LegacyRazorSemanticTokensEndpoint)
                     .WithHandler<RazorSemanticTokensLegendEndpoint>()
                     .WithHandler<OnAutoInsertEndpoint>()
                     .WithHandler<CodeActionEndpoint>()

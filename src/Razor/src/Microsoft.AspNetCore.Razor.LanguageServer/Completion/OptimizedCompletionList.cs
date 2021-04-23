@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                         // HACK: O# will automatically inject data objects on serialization start; however, VS already captures
                         // this for us if the Data field on the completion list is unempty. In future O# versions (0.19+)we can
                         // remove this hack because O# will no longer inject serialization items when not required.
-                        var suppressData = (completionList as VSCompletionList).Data != null;
+                        var suppressData = (completionList as VSCompletionList)?.Data != null;
                         WriteCompletionItem(writer, completionItem, serializer, suppressData);
                     }
                     writer.WriteEndArray();
