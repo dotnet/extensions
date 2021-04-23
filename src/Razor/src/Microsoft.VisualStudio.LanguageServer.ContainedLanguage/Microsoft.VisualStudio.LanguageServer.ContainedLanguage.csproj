@@ -13,9 +13,4 @@
     <PackageReference Include="Microsoft.VisualStudio.LanguageServer.Client.Implementation" Version="$(MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- These package references are temporary and are only included as workarounds -->
-    <PackageReference Include="Microsoft.VisualStudio.ProjectAggregator" Version="$(MicrosoftVisualStudioProjectAggregatorPackageVersion)" />
-  </ItemGroup>
-
 </Project>
