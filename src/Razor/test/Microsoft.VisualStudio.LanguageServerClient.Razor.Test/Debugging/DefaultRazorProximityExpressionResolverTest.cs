@@ -20,6 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Debugging
         public DefaultRazorProximityExpressionResolverTest()
         {
             DocumentUri = new Uri("file://C:/path/to/file.razor", UriKind.Absolute);
+            CSharpDocumentUri = new Uri(DocumentUri.OriginalString + ".g.cs", UriKind.Absolute);
 
             ValidProximityExpressionRoot = "var abc = 123;";
             InvalidProximityExpressionRoot = "private int bar;";
@@ -47,6 +48,8 @@ $@"public class SomeRazorFile
         private ITextBuffer CSharpTextBuffer { get; }
 
         private Uri DocumentUri { get; }
+
+        private Uri CSharpDocumentUri { get; }
 
         private ITextBuffer HostTextbuffer { get; }
 
@@ -77,6 +80,23 @@ $@"public class SomeRazorFile
 
             // Assert
             Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task TryResolveProximityExpressionsAsync_UnsynchronizedCSharpDocument_ReturnsNull()
+        {
+            // Arrange
+            var documentManager = new TestDocumentManager();
+            var testCSharpDocument = new CSharpVirtualDocumentSnapshot(CSharpDocumentUri, CSharpTextBuffer.CurrentSnapshot, hostDocumentSyncVersion: 1);
+            var document = new TestLSPDocumentSnapshot(DocumentUri, version: (int)(testCSharpDocument.HostDocumentSyncVersion.Value + 1), testCSharpDocument);
+            documentManager.AddDocument(document.Uri, document);
+            var resolver = CreateResolverWith(documentManager: documentManager);
+
+            // Act
+            var expressions = await resolver.TryResolveProximityExpressionsAsync(HostTextbuffer, lineIndex: 0, characterIndex: 1, CancellationToken.None);
+
+            // Assert
+            Assert.Null(expressions);
         }
 
         [Fact]
@@ -180,8 +200,7 @@ $@"public class SomeRazorFile
         {
             var documentUri = DocumentUri;
             uriProvider ??= Mock.Of<FileUriProvider>(provider => provider.TryGet(HostTextbuffer, out documentUri) == true && provider.TryGet(It.IsNotIn(HostTextbuffer), out It.Ref<Uri>.IsAny) == false, MockBehavior.Strict);
-            var csharpDocumentUri = new Uri(DocumentUri.OriginalString + ".g.cs", UriKind.Absolute);
-            var csharpVirtualDocumentSnapshot = new CSharpVirtualDocumentSnapshot(csharpDocumentUri, CSharpTextBuffer.CurrentSnapshot, hostDocumentSyncVersion: 0);
+            var csharpVirtualDocumentSnapshot = new CSharpVirtualDocumentSnapshot(CSharpDocumentUri, CSharpTextBuffer.CurrentSnapshot, hostDocumentSyncVersion: 0);
             LSPDocumentSnapshot documentSnapshot = new TestLSPDocumentSnapshot(DocumentUri, 0, csharpVirtualDocumentSnapshot);
             documentManager ??= Mock.Of<LSPDocumentManager>(manager => manager.TryGetDocument(DocumentUri, out documentSnapshot) == true, MockBehavior.Strict);
             if (projectionProvider is null)
