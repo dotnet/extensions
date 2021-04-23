@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.LanguageServerClient.Razor.Logging;
 using Moq;
@@ -14,7 +16,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         {
             var logger = new TestLogger();
             LoggerProvider = Mock.Of<HTMLCSharpLanguageServerLogHubLoggerProvider>(l =>
-                l.CreateLogger(It.IsAny<string>()) == logger, MockBehavior.Strict);
+                l.CreateLogger(It.IsAny<string>()) == logger && l.InitializeLoggerAsync(It.IsAny<CancellationToken>()) == Task.CompletedTask,
+                MockBehavior.Strict);
         }
 
         internal HTMLCSharpLanguageServerLogHubLoggerProvider LoggerProvider { get; }
