@@ -72,7 +72,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // We initialize the logger here instead of the constructor as the projection provider is constructed
             // *before* the language server. Thus, the log hub has yet to be initialized, thus we would be unable to
             // create the logger at that time.
-            InitializeLogHubLogger();
+            await InitializeLogHubLoggerAsync(cancellationToken).ConfigureAwait(false);
 
             var languageQueryParams = new RazorLanguageQueryParams()
             {
@@ -139,10 +139,14 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             return result;
         }
 
-        private void InitializeLogHubLogger()
+        private async Task InitializeLogHubLoggerAsync(CancellationToken cancellationToken)
         {
             if (_logHubLogger is null)
             {
+                await _loggerProvider.InitializeLoggerAsync(cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 _logHubLogger = _loggerProvider.CreateLogger(nameof(DefaultLSPProjectionProvider));
             }
         }
