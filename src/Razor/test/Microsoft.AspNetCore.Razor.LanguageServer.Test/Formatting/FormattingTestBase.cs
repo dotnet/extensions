@@ -159,6 +159,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 new HtmlFormattingPass(mappingService, FilePathNormalizer, client, LoggerFactory),
                 new CSharpFormattingPass(mappingService, FilePathNormalizer, client, LoggerFactory),
                 new CSharpOnTypeFormattingPass(mappingService, FilePathNormalizer, client, LoggerFactory),
+                new RazorFormattingPass(mappingService, FilePathNormalizer, client, LoggerFactory),
                 new FormattingDiagnosticValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory),
                 new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory),
             };

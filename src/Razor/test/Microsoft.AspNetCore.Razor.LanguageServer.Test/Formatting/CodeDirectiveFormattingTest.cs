@@ -292,7 +292,7 @@ expected: @"Hello World
     }
 }
 
-@functions{
+@functions {
 
     public class Bar { }
 }
@@ -411,7 +411,7 @@ void Method(){
 }
 ",
 expected: @"@using System.Buffers
-@functions{
+@functions {
     public class Foo
     {
         public Foo()
