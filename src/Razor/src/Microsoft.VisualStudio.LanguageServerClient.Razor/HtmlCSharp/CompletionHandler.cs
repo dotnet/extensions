@@ -584,15 +584,29 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
 
         internal static void SetResolveData(long resultId, CompletionList completionList)
         {
-            for (var i = 0; i < completionList.Items.Length; i++)
+            if (completionList is VSCompletionList vsCompletionList && vsCompletionList.Data != null)
             {
-                var item = completionList.Items[i];
+                // Provided completion list is already wrapping completion list data, lets wrap that instead of each completion item.
+
                 var data = new CompletionResolveData()
                 {
                     ResultId = resultId,
-                    OriginalData = item.Data,
+                    OriginalData = vsCompletionList.Data,
                 };
-                item.Data = data;
+                vsCompletionList.Data = data;
+            }
+            else
+            {
+                for (var i = 0; i < completionList.Items.Length; i++)
+                {
+                    var item = completionList.Items[i];
+                    var data = new CompletionResolveData()
+                    {
+                        ResultId = resultId,
+                        OriginalData = item.Data,
+                    };
+                    item.Data = data;
+                }
             }
         }
 

@@ -997,6 +997,31 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         }
 
         [Fact]
+        public void SetResolveData_RewritesCompletionListData()
+        {
+            // Arrange
+            var originalData = new object();
+            var completionList = new VSCompletionList()
+            {
+                Items = new[]
+                {
+                    new CompletionItem() { InsertText = "Hello" }
+                },
+                Data = originalData
+            };
+            _ = new TestDocumentManager();
+            _ = new Mock<LSPRequestInvoker>(MockBehavior.Strict).Object;
+            _ = new Mock<LSPProjectionProvider>(MockBehavior.Strict).Object;
+
+            // Act
+            CompletionHandler.SetResolveData(123, completionList);
+
+            // Assert
+            var newData = Assert.IsType<CompletionResolveData>(completionList.Data);
+            Assert.Same(originalData, newData.OriginalData);
+        }
+
+        [Fact]
         public async Task HandleRequestAsync_ProvisionalCompletion()
         {
             // Arrange
