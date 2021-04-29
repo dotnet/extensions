@@ -14,14 +14,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             FilePath = filePath;
             PhysicalPath = physicalPath;
             FileKind = fileKind ?? FileKinds.GetFileKindFromFilePath(FilePath);
-            if (FilePath.StartsWith("/", StringComparison.Ordinal))
-            {
-                RelativePhysicalPath = FilePath.Substring(1);
-            }
-            else
-            {
-                RelativePhysicalPath = FilePath;
-            }
+            RelativePhysicalPath = FilePath.StartsWith("/", StringComparison.Ordinal)
+                ? FilePath.Substring(1)
+                : FilePath;
         }
 
         public override string BasePath => "/";

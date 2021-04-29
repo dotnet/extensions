@@ -243,13 +243,10 @@ namespace Microsoft.CodeAnalysis.Remote.Razor.Test
                             .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch))
                         .RequireParentTag("parent-name"),
                 },
-                configureAction: builder =>
-                {
-                    builder.AllowChildTag("allowed-child-one")
+                configureAction: builder => builder.AllowChildTag("allowed-child-one")
                         .AddMetadata("foo", "bar")
                         .AddDiagnostic(RazorDiagnostic.Create(
-                            new RazorDiagnosticDescriptor("id", () => "Test Message", RazorDiagnosticSeverity.Error), new SourceSpan(null, 10, 20, 30, 40)));
-                });
+                            new RazorDiagnosticDescriptor("id", () => "Test Message", RazorDiagnosticSeverity.Error), new SourceSpan(null, 10, 20, 30, 40))));
 
             var expectedResult = new TagHelperResolutionResult(new[] { descriptor }, Array.Empty<RazorDiagnostic>());
 
@@ -291,13 +288,10 @@ namespace Microsoft.CodeAnalysis.Remote.Razor.Test
                             .Name("required-attribute-one")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch))
                 },
-                configureAction: builder =>
-                {
-                    builder
+                configureAction: builder => builder
                         .AllowChildTag("allowed-child-one")
                         .AddMetadata("foo", "bar")
-                        .TagOutputHint("Hint");
-                });
+                        .TagOutputHint("Hint"));
 
             var expectedResult = new TagHelperResolutionResult(new[] { descriptor }, Array.Empty<RazorDiagnostic>());
 

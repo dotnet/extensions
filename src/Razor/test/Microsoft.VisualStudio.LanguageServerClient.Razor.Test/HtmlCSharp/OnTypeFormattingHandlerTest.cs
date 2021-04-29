@@ -261,7 +261,7 @@ public string _foo;
             var mappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             mappingProvider
                 .Setup(m => m.RemapFormattedTextEditsAsync(It.IsAny<Uri>(), It.IsAny<TextEdit[]>(), It.IsAny<FormattingOptions>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
-                .Callback(() => { remapped = true; })
+                .Callback(() => remapped = true)
                 .Returns(Task.FromResult(new[] { remappedEdit }));
 
             var formatOnTypeHandler = new OnTypeFormattingHandler(documentManager, requestInvoker.Object, projectionProvider.Object, mappingProvider.Object, LoggerProvider);

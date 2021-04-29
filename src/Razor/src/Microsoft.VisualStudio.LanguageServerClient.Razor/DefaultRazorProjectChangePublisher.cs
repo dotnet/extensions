@@ -38,7 +38,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly Dictionary<string, ProjectSnapshot> _pendingProjectPublishes;
         private readonly object _publishLock;
 
-        private readonly JsonSerializer _serializer = new JsonSerializer();
+        private readonly JsonSerializer _serializer = new();
         private ProjectSnapshotManagerBase _projectSnapshotManager;
 
         [ImportingConstructor]

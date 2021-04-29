@@ -16,15 +16,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public override IReadOnlyList<ClassifiedSpan> GetClassifiedSpans(RazorSyntaxTree syntaxTree)
         {
             var result = syntaxTree.GetClassifiedSpans();
-            return result.Select(item =>
-            {
-                return new ClassifiedSpan(
+            return result.Select(item => new ClassifiedSpan(
                     item.Span,
                     item.BlockSpan,
                     (SpanKind)item.SpanKind,
                     (BlockKind)item.BlockKind,
-                    (AcceptedCharacters)item.AcceptedCharacters);
-            }).ToArray();
+                    (AcceptedCharacters)item.AcceptedCharacters)).ToArray();
         }
 
         public override IReadOnlyList<TagHelperSpan> GetTagHelperSpans(RazorSyntaxTree syntaxTree)

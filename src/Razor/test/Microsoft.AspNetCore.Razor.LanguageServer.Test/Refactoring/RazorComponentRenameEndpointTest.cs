@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Refactoring.Test
             };
         }
 
-        private DocumentSnapshot CreateRazorDocumentSnapshot(RazorProjectEngine projectEngine, TestRazorProjectItem item, string rootNamespaceName, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        private static DocumentSnapshot CreateRazorDocumentSnapshot(RazorProjectEngine projectEngine, TestRazorProjectItem item, string rootNamespaceName, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
             var codeDocument = projectEngine.ProcessDesignTime(item);
             

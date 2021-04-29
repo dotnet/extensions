@@ -142,10 +142,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Force project instance evaluation to ensure that all Razor specific targets have run.
             projectInstance = _projectInstanceEvaluator.Evaluate(projectInstance);
 
-            await Task.Factory.StartNew(() =>
-            {
-                UpdateProjectState(projectInstance);
-            },
+            await Task.Factory.StartNew(() => UpdateProjectState(projectInstance),
             CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
         }
 
@@ -271,7 +268,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             return null;
         }
 
-        private void HandleDebug(ProjectInstance projectInstance)
+        private static void HandleDebug(ProjectInstance projectInstance)
         {
             var debugPlugin = projectInstance.GetPropertyValue(DebugRazorOmnisharpPluginPropertyName);
             if (!string.IsNullOrEmpty(debugPlugin) && string.Equals(debugPlugin, "true", StringComparison.OrdinalIgnoreCase))

@@ -21,16 +21,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             SomeProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
             SomeOtherProject = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_2_0, TestProjectData.AnotherProject.RootNamespace);
 
-            Workspace = TestWorkspace.Create(w =>
-            {
-                SomeWorkspaceProject = w.AddProject(ProjectInfo.Create(
+            Workspace = TestWorkspace.Create(w => SomeWorkspaceProject = w.AddProject(ProjectInfo.Create(
                     ProjectId.CreateNewId(),
                     VersionStamp.Create(),
                     "SomeProject",
                     "SomeProject",
                     LanguageNames.CSharp,
-                    filePath: SomeProject.FilePath));
-            });
+                    filePath: SomeProject.FilePath)));
         }
 
         private HostProject SomeProject { get; }
@@ -105,9 +102,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             trigger.UpdateProjectCfg_Done(Mock.Of<IVsHierarchy>(MockBehavior.Strict), Mock.Of<IVsCfg>(MockBehavior.Strict), Mock.Of<IVsCfg>(MockBehavior.Strict), 0, 0, 0);
 
             // Assert
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, SomeWorkspaceProject.Id);
-            Assert.Same(update.projectSnapshot, projectSnapshots[0]);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, SomeWorkspaceProject.Id);
+            Assert.Same(projectSnapshot, projectSnapshots[0]);
         }
 
         [Fact]

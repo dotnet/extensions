@@ -27,14 +27,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     public class Foo { }
 }
 ");
-            var context = CreateFormattingContext(source);
+            using var context = CreateFormattingContext(source);
             var badEdit = new TextEdit()
             {
                 NewText = "@ ",
                 Range = new Range(new Position(0, 0), new Position(0, 0))
             };
             var input = new FormattingResult(new[] { badEdit }, RazorLanguageKind.CSharp);
-            var pass = GetPass(context.CodeDocument);
+            var pass = GetPass();
 
             // Act
             var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
@@ -52,14 +52,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     public class Foo { }
 }
 ");
-            var context = CreateFormattingContext(source);
+            using var context = CreateFormattingContext(source);
             var badEdit = new TextEdit()
             {
                 NewText = "@ ",
                 Range = new Range(new Position(0, 0), new Position(0, 0))
             };
             var input = new FormattingResult(new[] { badEdit }, RazorLanguageKind.Html);
-            var pass = GetPass(context.CodeDocument);
+            var pass = GetPass();
 
             // Act
             var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 public class Foo { }
 }
 ");
-            var context = CreateFormattingContext(source);
+            using var context = CreateFormattingContext(source);
             var edits = new[]
             {
                 new TextEdit()
@@ -87,7 +87,7 @@ public class Foo { }
                 }
             };
             var input = new FormattingResult(edits, RazorLanguageKind.Razor);
-            var pass = GetPass(context.CodeDocument);
+            var pass = GetPass();
 
             // Act
             var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
@@ -105,14 +105,14 @@ public class Foo { }
 public class Foo { }
 }
 ");
-            var context = CreateFormattingContext(source);
+            using var context = CreateFormattingContext(source);
             var badEdit = new TextEdit()
             {
                 NewText = "@ ", // Creates a diagnostic
                 Range = new Range(new Position(0, 0), new Position(0, 0))
             };
             var input = new FormattingResult(new[] { badEdit }, RazorLanguageKind.Razor);
-            var pass = GetPass(context.CodeDocument);
+            var pass = GetPass();
 
             // Act
             var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
@@ -121,18 +121,20 @@ public class Foo { }
             Assert.Empty(result.Edits);
         }
 
-        private FormattingDiagnosticValidationPass GetPass(RazorCodeDocument codeDocument)
+        private FormattingDiagnosticValidationPass GetPass()
         {
             var mappingService = new DefaultRazorDocumentMappingService();
 
             var client = Mock.Of<ClientNotifierServiceBase>(MockBehavior.Strict);
-            var pass = new FormattingDiagnosticValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory);
-            pass.DebugAssertsEnabled = false;
+            var pass = new FormattingDiagnosticValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory)
+            {
+                DebugAssertsEnabled = false
+            };
 
             return pass;
         }
 
-        private FormattingContext CreateFormattingContext(SourceText source, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
+        private static FormattingContext CreateFormattingContext(SourceText source, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
         {
             var path = "file:///path/to/document.razor";
             var uri = new Uri(path);
@@ -152,7 +154,7 @@ public class Foo { }
             fileKind ??= FileKinds.Component;
             tagHelpers ??= Array.Empty<TagHelperDescriptor>();
             var sourceDocument = text.GetRazorSourceDocument(path, path);
-            var projectEngine = RazorProjectEngine.Create(builder => { builder.SetRootNamespace("Test"); });
+            var projectEngine = RazorProjectEngine.Create(builder => builder.SetRootNamespace("Test"));
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), tagHelpers);
 
             var documentSnapshot = new Mock<DocumentSnapshot>(MockBehavior.Strict);

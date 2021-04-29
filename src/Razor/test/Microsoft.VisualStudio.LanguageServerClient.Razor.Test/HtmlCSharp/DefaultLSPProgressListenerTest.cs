@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Act
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1).ConfigureAwait(false); },
+                onProgressNotifyAsync: async (value, ct) => await Task.Delay(1).ConfigureAwait(false),
                 delayAfterLastNotifyAsync: cancellationToken => Task.Delay(NotificationTimeout, cancellationToken),
                 cts.Token,
                 out var onCompleted);
@@ -60,13 +60,13 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             // Act
             _ = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1).ConfigureAwait(false); },
+                onProgressNotifyAsync: async (value, ct) => await Task.Delay(1).ConfigureAwait(false),
                 delayAfterLastNotifyAsync: cancellationToken => Task.Delay(NotificationTimeout, cancellationToken),
                 cts.Token,
                 out _);
             var listenerAdded = lspProgressListener.TryListenForProgress(
                 token,
-                onProgressNotifyAsync: async (value, ct) => { await Task.Delay(1).ConfigureAwait(false); },
+                onProgressNotifyAsync: async (value, ct) => await Task.Delay(1).ConfigureAwait(false),
                 delayAfterLastNotifyAsync: cancellationToken => Task.Delay(NotificationTimeout, cancellationToken),
                 cts.Token,
                 out var onCompleted);
@@ -233,10 +233,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
                 cts.Token,
                 out var onCompleted);
 
-            Parallel.ForEach(parameterTokens, parameterToken =>
-            {
-                _ = lspProgressListener.ProcessProgressNotificationAsync(Methods.ProgressNotificationName, parameterToken);
-            });
+            Parallel.ForEach(parameterTokens, parameterToken => _ = lspProgressListener.ProcessProgressNotificationAsync(Methods.ProgressNotificationName, parameterToken));
             await onCompleted.ConfigureAwait(false);
 
             // Assert

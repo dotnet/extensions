@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             Assert.NotEmpty(path);
         }
 
-        private ProjectInstanceEvaluator CreateProjectInstanceEvaluator()
+        private static ProjectInstanceEvaluator CreateProjectInstanceEvaluator()
         {
             var projectInstanceEvaluator = new Mock<ProjectInstanceEvaluator>(MockBehavior.Strict);
             projectInstanceEvaluator.Setup(instance => instance.Evaluate(It.IsAny<ProjectInstance>()))

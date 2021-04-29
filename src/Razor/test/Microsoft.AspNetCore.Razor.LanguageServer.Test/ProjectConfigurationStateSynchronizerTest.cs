@@ -330,10 +330,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (hasTask)
             {
                 var kvp = Assert.Single(synchronizer._projectInfoMap);
-                await Task.Factory.StartNew(() =>
-                {
-                    kvp.Value.ProjectUpdateTask.Wait();
-                }, CancellationToken.None, TaskCreationOptions.None, Dispatcher.ForegroundScheduler);
+                await Task.Factory.StartNew(() => kvp.Value.ProjectUpdateTask.Wait(), CancellationToken.None, TaskCreationOptions.None, Dispatcher.ForegroundScheduler);
             }
             else
             {
@@ -349,7 +346,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return synchronizer;
         }
 
-        private JsonFileDeserializer CreateJsonFileDeserializer(FullProjectSnapshotHandle deserializedHandle)
+        private static JsonFileDeserializer CreateJsonFileDeserializer(FullProjectSnapshotHandle deserializedHandle)
         {
             var deserializer = new Mock<JsonFileDeserializer>(MockBehavior.Strict);
             deserializer.Setup(deserializer => deserializer.Deserialize<FullProjectSnapshotHandle>(It.IsAny<string>()))

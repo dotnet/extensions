@@ -20,13 +20,10 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         private const string ProjectChangedHint = "References";
 
         private bool _batchingProjectChanges;
-        private readonly DotNetProject _dotNetProject;
-        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectSnapshotManagerBase _projectSnapshotManager;
         private readonly AsyncSemaphore _onProjectChangedInnerSemaphore;
         private readonly AsyncSemaphore _projectChangedSemaphore;
         private readonly Dictionary<string, HostDocument> _currentDocuments;
-        private HostProject _currentHostProject;
 
         public RazorProjectHostBase(
             DotNetProject project,
@@ -48,8 +45,8 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(projectSnapshotManager));
             }
 
-            _dotNetProject = project;
-            _foregroundDispatcher = foregroundDispatcher;
+            DotNetProject = project;
+            ForegroundDispatcher = foregroundDispatcher;
             _projectSnapshotManager = projectSnapshotManager;
             _onProjectChangedInnerSemaphore = new AsyncSemaphore(initialCount: 1);
             _projectChangedSemaphore = new AsyncSemaphore(initialCount: 1);
@@ -58,15 +55,15 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
             AttachToProject();
         }
 
-        public DotNetProject DotNetProject => _dotNetProject;
+        public DotNetProject DotNetProject { get; }
 
-        public HostProject HostProject => _currentHostProject;
+        public HostProject HostProject { get; private set; }
 
-        protected ForegroundDispatcher ForegroundDispatcher => _foregroundDispatcher;
+        protected ForegroundDispatcher ForegroundDispatcher { get; }
 
         public void Detach()
         {
-            _foregroundDispatcher.AssertForegroundThread();
+            ForegroundDispatcher.AssertForegroundThread();
 
             DotNetProject.Modified -= DotNetProject_Modified;
 
@@ -90,7 +87,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
         // Must be called inside the lock.
         protected async Task UpdateHostProjectUnsafeAsync(HostProject newHostProject)
         {
-            _foregroundDispatcher.AssertBackgroundThread();
+            ForegroundDispatcher.AssertBackgroundThread();
 
             await Task.Factory.StartNew(UpdateHostProjectForeground, newHostProject, CancellationToken.None, TaskCreationOptions.None, ForegroundDispatcher.ForegroundScheduler);
         }
@@ -146,19 +143,19 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
 
         private void UpdateHostProjectForeground(object state)
         {
-            _foregroundDispatcher.AssertForegroundThread();
+            ForegroundDispatcher.AssertForegroundThread();
 
             var newHostProject = (HostProject)state;
 
-            if (_currentHostProject == null && newHostProject == null)
+            if (HostProject == null && newHostProject == null)
             {
                 // This is a no-op. This project isn't using Razor.
             }
-            else if (_currentHostProject == null && newHostProject != null)
+            else if (HostProject == null && newHostProject != null)
             {
                 _projectSnapshotManager.ProjectAdded(newHostProject);
             }
-            else if (_currentHostProject != null && newHostProject == null)
+            else if (HostProject != null && newHostProject == null)
             {
                 _projectSnapshotManager.ProjectRemoved(HostProject);
             }
@@ -167,12 +164,12 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
                 _projectSnapshotManager.ProjectConfigurationChanged(newHostProject);
             }
 
-            _currentHostProject = newHostProject;
+            HostProject = newHostProject;
         }
 
         protected void AddDocument(HostProject hostProject, string filePath, string relativeFilePath)
         {
-            _foregroundDispatcher.AssertForegroundThread();
+            ForegroundDispatcher.AssertForegroundThread();
 
             if (_currentDocuments.ContainsKey(filePath))
             {

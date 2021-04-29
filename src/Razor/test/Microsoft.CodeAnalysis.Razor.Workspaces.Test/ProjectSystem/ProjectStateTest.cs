@@ -25,8 +25,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
             }, default);
 
-            SomeTagHelpers = new List<TagHelperDescriptor>();
-            SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
+            SomeTagHelpers = new List<TagHelperDescriptor>
+            {
+                TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build()
+            };
 
             Documents = new HostDocument[]
             {

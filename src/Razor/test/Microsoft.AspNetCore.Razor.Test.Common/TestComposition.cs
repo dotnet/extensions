@@ -49,13 +49,13 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
                 var hashCode = -744873704;
 
                 foreach (var assembly in _assemblies)
-                    hashCode = hashCode * -1521134295 + assembly.GetHashCode();
+                    hashCode = (hashCode * -1521134295) + assembly.GetHashCode();
 
                 foreach (var part in _parts)
-                    hashCode = hashCode * -1521134295 + part.GetHashCode();
+                    hashCode = (hashCode * -1521134295) + part.GetHashCode();
 
                 foreach (var excludedPartType in _excludedPartTypes)
-                    hashCode = hashCode * -1521134295 + excludedPartType.GetHashCode();
+                    hashCode = (hashCode * -1521134295) + excludedPartType.GetHashCode();
 
                 return hashCode;
             }

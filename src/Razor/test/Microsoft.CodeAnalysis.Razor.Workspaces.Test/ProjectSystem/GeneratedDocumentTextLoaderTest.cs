@@ -26,10 +26,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var project = new DefaultProjectSnapshot(
                 ProjectState.Create(Workspace.Services, HostProject)
-                .WithAddedHostDocument(HostDocument, () =>
-                {
-                    return Task.FromResult(TextAndVersion.Create(SourceText.From(""), VersionStamp.Create()));
-                }));
+                .WithAddedHostDocument(HostDocument, () => Task.FromResult(TextAndVersion.Create(SourceText.From(""), VersionStamp.Create()))));
 
             var document = project.GetDocument(HostDocument.FilePath);
 

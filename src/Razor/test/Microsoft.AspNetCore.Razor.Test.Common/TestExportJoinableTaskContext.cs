@@ -87,10 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
             {
                 SynchronizationContext? innerSynchronizationContext = null;
                 asyncTestSyncContext.Send(
-                    _ =>
-                    {
-                        innerSynchronizationContext = SynchronizationContext.Current;
-                    },
+                    _ => innerSynchronizationContext = SynchronizationContext.Current,
                     null);
 
                 return innerSynchronizationContext;

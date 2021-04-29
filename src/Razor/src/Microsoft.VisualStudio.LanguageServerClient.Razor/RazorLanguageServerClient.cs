@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         private readonly RazorLanguageServerLogHubLoggerProviderFactory _logHubLoggerProviderFactory;
         private readonly VSLanguageServerFeatureOptions _vsLanguageServerFeatureOptions;
 
-        private object _shutdownLock;
+        private readonly object _shutdownLock;
         private RazorLanguageServer _server;
         private IDisposable _serverShutdownDisposable;
         private LogHubLoggerProvider _loggerProvider;
@@ -167,14 +167,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             else
             {
                 var logString = Environment.GetEnvironmentVariable(RazorLSPLogLevel);
-                if (Enum.TryParse<Trace>(logString, out var parsedTrace))
-                {
-                    result = parsedTrace;
-                }
-                else
-                {
-                    result = Trace.Off;
-                }
+                result = Enum.TryParse<Trace>(logString, out var parsedTrace) ? parsedTrace : Trace.Off;
             }
 
             return result;
@@ -188,16 +181,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var shell = AsyncPackage.GetGlobalService(typeof(SVsShell)) as IVsShell;
             var result = shell.GetProperty((int)__VSSPROPID11.VSSPROPID_ShellMode, out var mode);
 
-            bool isVSServer;
-            if (ErrorHandler.Succeeded(result))
-            {
-                isVSServer = ((int)mode == (int)__VSShellMode.VSSM_Server);
-            }
-            else
-            {
-                isVSServer = false;
-            }
-
+            var isVSServer = ErrorHandler.Succeeded(result) ? (int)mode == (int)__VSShellMode.VSSM_Server : false;
             return isVSServer;
         }
 

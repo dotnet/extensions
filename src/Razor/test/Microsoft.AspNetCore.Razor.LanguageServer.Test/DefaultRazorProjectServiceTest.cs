@@ -179,10 +179,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 .Returns(ownerProject);
             projectSnapshotManager.Setup(manager => manager.ProjectWorkspaceStateChanged(It.IsAny<string>(), It.IsAny<ProjectWorkspaceState>()));
             projectSnapshotManager.Setup(manager => manager.ProjectConfigurationChanged(It.IsAny<HostProject>()))
-                .Callback<HostProject>((hostProject) =>
-                {
-                    Assert.Equal(expectedRootNamespace, hostProject.RootNamespace);
-                });
+                .Callback<HostProject>((hostProject) => Assert.Equal(expectedRootNamespace, hostProject.RootNamespace));
             var projectService = CreateProjectService(Mock.Of<ProjectResolver>(MockBehavior.Strict), projectSnapshotManager.Object);
 
             // Act
@@ -775,10 +772,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
                 .Returns(ownerProject);
             projectSnapshotManager.Setup(manager => manager.ProjectRemoved(ownerProject.HostProject))
-                .Callback<HostProject>((hostProject) =>
-                {
-                    Assert.Equal(projectFilePath, hostProject.FilePath);
-                });
+                .Callback<HostProject>((hostProject) => Assert.Equal(projectFilePath, hostProject.FilePath));
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
 
             // Act

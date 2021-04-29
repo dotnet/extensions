@@ -15,6 +15,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
 using Newtonsoft.Json.Linq;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
@@ -388,10 +389,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var tagHelpers = new[] { shortComponent.Build(), fullyQualifiedComponent.Build() };
 
             var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
-            var projectEngine = RazorProjectEngine.Create(builder =>
-            {
-                builder.AddTagHelpers(tagHelpers);
-            });
+            var projectEngine = RazorProjectEngine.Create(builder => builder.AddTagHelpers(tagHelpers));
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), tagHelpers);
 
             var cSharpDocument = codeDocument.GetCSharpDocument();

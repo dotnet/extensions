@@ -45,10 +45,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             var project = new DefaultProjectSnapshot(
                 ProjectState.Create(Workspace.Services, HostProject)
-                .WithAddedHostDocument(HostDocument, () =>
-                {
-                    return Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()));
-                }));
+                .WithAddedHostDocument(HostDocument, () => Task.FromResult(TextAndVersion.Create(sourceText, VersionStamp.Create()))));
 
             var primary = project.GetDocument(HostDocument.FilePath);
 

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var trace = Trace.Messages;
             for (var i = 0; i < args.Length; i++)
             {
-                if (args[i].IndexOf("debug", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (args[i].Contains("debug", StringComparison.OrdinalIgnoreCase))
                 {
                     while (!Debugger.IsAttached)
                     {

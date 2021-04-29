@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     var distanceIntoOriginalSpan = absoluteIndex - originalAbsoluteIndex;
                     if (distanceIntoOriginalSpan <= originalSpan.Length)
                     {
-                        var generatedSource = SourceText.From(csharpDoc.GeneratedCode);
+                        var generatedSource = codeDocument.GetCSharpSourceText();
                         projectedIndex = mapping.GeneratedSpan.AbsoluteIndex + distanceIntoOriginalSpan;
                         var generatedLinePosition = generatedSource.Lines.GetLinePosition(projectedIndex);
                         projectedPosition = new Position(generatedLinePosition.Line, generatedLinePosition.Character);
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             originalRange = default;
 
-            var csharpSourceText = SourceText.From(codeDocument.GetCSharpDocument().GeneratedCode);
+            var csharpSourceText = codeDocument.GetCSharpSourceText();
             var range = projectedRange;
             var startIndex = range.Start.GetAbsoluteIndex(csharpSourceText);
             if (!TryMapFromProjectedDocumentPosition(codeDocument, startIndex, out var hostDocumentStart, out _))
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             originalRange = default;
 
             var csharpDoc = codeDocument.GetCSharpDocument();
-            var csharpSourceText = SourceText.From(csharpDoc.GeneratedCode);
+            var csharpSourceText = codeDocument.GetCSharpSourceText();
             var projectedRangeAsSpan = projectedRange.AsTextSpan(csharpSourceText);
             var range = projectedRange;
             var startIndex = projectedRangeAsSpan.Start;

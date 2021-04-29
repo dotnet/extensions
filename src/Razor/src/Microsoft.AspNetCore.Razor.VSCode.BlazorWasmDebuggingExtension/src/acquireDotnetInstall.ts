@@ -20,7 +20,7 @@ export async function acquireDotnetInstall(outputChannel: vscode.OutputChannel):
         if (!dotnetPath) {
             throw new Error('Install step returned an undefined path.');
         }
-        await vscode.commands.executeCommand('dotnet.ensureDotnetDependencies', { command: dotnetPath, arguments: '--info' });
+        await vscode.commands.executeCommand('dotnet.ensureDotnetDependencies', { command: dotnetPath, arguments: ['--info'] });
         return dotnetPath;
     } catch (err) {
         const message = err.msg;

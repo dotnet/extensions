@@ -12,10 +12,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class DefaultImportDocumentSnapshot : DocumentSnapshot
     {
-        private ProjectSnapshot _project;
-        private RazorProjectItem _importItem;
+        private readonly ProjectSnapshot _project;
+        private readonly RazorProjectItem _importItem;
         private SourceText _sourceText;
-        private VersionStamp _version;
+        private readonly VersionStamp _version;
 
         public DefaultImportDocumentSnapshot(ProjectSnapshot project, RazorProjectItem item)
         {

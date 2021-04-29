@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             var change = new SourceChange(absoluteIndex, 0, string.Empty);
             var owner = syntaxTree.Root.LocateOwner(change);
 
-            if (!IsAtEnterRuleLocation(context, owner))
+            if (!IsAtEnterRuleLocation(owner))
             {
                 format = default;
                 edit = default;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.AutoInsert
             return true;
         }
 
-        private static bool IsAtEnterRuleLocation(FormattingContext context, SyntaxNode owner)
+        private static bool IsAtEnterRuleLocation(SyntaxNode owner)
         {
             if (owner == null)
             {

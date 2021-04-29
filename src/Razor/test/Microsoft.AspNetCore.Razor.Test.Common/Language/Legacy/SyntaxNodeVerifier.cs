@@ -97,18 +97,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     throw new SyntaxNodeBaselineException(node, Ancestors.ToArray(), expected, actual, message);
                 }
 
-                int charsVerified = 0;
+                var charsVerified = 0;
                 AssertNestingEqual(node, ancestors, expected, actual, ref charsVerified);
                 AssertNameEqual(node, ancestors, expected, actual, ref charsVerified);
-                AssertDelimiter(node, expected, actual, true, ref charsVerified);
+                AssertDelimiter(expected, actual, true, ref charsVerified);
                 AssertLocationEqual(node, ancestors, expected, actual, ref charsVerified);
-                AssertDelimiter(node, expected, actual, false, ref charsVerified);
+                AssertDelimiter(expected, actual, false, ref charsVerified);
                 AssertContentEqual(node, ancestors, expected, actual, ref charsVerified);
 
                 throw new InvalidOperationException("We can't figure out HOW these two things are different. This is a bug.");
             }
 
-            private void AssertNestingEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
+            private static void AssertNestingEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var i = 0;
                 for (; i < expected.Length; i++)
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 charsVerified = j;
             }
 
-            private void AssertNameEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
+            private static void AssertNameEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var expectedName = GetName(expected, charsVerified);
                 var actualName = GetName(actual, charsVerified);
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Either both strings need to have a delimiter next or neither should.
-            private void AssertDelimiter(SyntaxNode node, string expected, string actual, bool required, ref int charsVerified)
+            private static void AssertDelimiter(string expected, string actual, bool required, ref int charsVerified)
             {
                 if (charsVerified == expected.Length && required)
                 {
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 charsVerified += 3;
             }
 
-            private void AssertLocationEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
+            private static void AssertLocationEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var expectedLocation = GetLocation(expected, charsVerified);
                 var actualLocation = GetLocation(actual, charsVerified);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 charsVerified += expectedLocation.Length;
             }
 
-            private void AssertContentEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
+            private static void AssertContentEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var expectedContent = GetContent(expected, charsVerified);
                 var actualContent = GetContent(actual, charsVerified);
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 charsVerified += expectedContent.Length;
             }
 
-            private string GetName(string text, int start)
+            private static string GetName(string text, int start)
             {
                 var delimiter = text.IndexOf(" - ", start, StringComparison.Ordinal);
                 if (delimiter == -1)
@@ -232,13 +232,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return text.Substring(start, delimiter - start);
             }
 
-            private string GetLocation(string text, int start)
+            private static string GetLocation(string text, int start)
             {
                 var delimiter = text.IndexOf(" - ", start, StringComparison.Ordinal);
                 return delimiter == -1 ? text.Substring(start) : text.Substring(start, delimiter - start);
             }
 
-            private string GetContent(string text, int start)
+            private static string GetContent(string text, int start)
             {
                 return start == text.Length ? string.Empty : text.Substring(start);
             }
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             private class SyntaxNodeBaselineException : XunitException
             {
                 public SyntaxNodeBaselineException(SyntaxNode node, SyntaxNode[] ancestors, string expected, string actual, string userMessage)
-                    : base(Format(node, ancestors, expected, actual, userMessage))
+                    : base(Format(ancestors, expected, actual, userMessage))
                 {
                     Node = node;
                     Expected = expected;
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 public string Expected { get; }
 
-                private static string Format(SyntaxNode node, SyntaxNode[] ancestors, string expected, string actual, string userMessage)
+                private static string Format(SyntaxNode[] ancestors, string expected, string actual, string userMessage)
                 {
                     var builder = new StringBuilder();
                     builder.AppendLine(userMessage);

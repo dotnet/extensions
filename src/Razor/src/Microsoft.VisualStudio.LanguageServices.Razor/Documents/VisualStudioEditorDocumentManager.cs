@@ -20,7 +20,6 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         private readonly IVsEditorAdaptersFactoryService _editorAdaptersFactory;
 
         private readonly IVsRunningDocumentTable4 _runningDocumentTable;
-        private readonly uint _rdtCookie;
 
         private readonly Dictionary<uint, List<DocumentKey>> _documentsByCookie;
         private readonly Dictionary<DocumentKey, uint> _cookiesByDocument;
@@ -55,7 +54,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             _runningDocumentTable = (IVsRunningDocumentTable4)runningDocumentTable;
             _editorAdaptersFactory = editorAdaptersFactory;
             
-            var hr = runningDocumentTable.AdviseRunningDocTableEvents(new RunningDocumentTableEventSink(this), out _rdtCookie);
+            var hr = runningDocumentTable.AdviseRunningDocTableEvents(new RunningDocumentTableEventSink(this), out _);
             Marshal.ThrowExceptionForHR(hr);
 
             _documentsByCookie = new Dictionary<uint, List<DocumentKey>>();
@@ -70,14 +69,14 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             }
 
             // Check if the document is already open and initialized, and associate a buffer if possible.
-            var cookie = VSConstants.VSCOOKIE_NIL;
-            ITextBuffer textBuffer = null;
+            uint cookie;
             if (_runningDocumentTable.IsMonikerValid(filePath) &&
                 ((cookie = _runningDocumentTable.GetDocumentCookie(filePath)) != VSConstants.VSCOOKIE_NIL) &&
                 (_runningDocumentTable.GetDocumentFlags(cookie) & (uint)_VSRDTFLAGS4.RDT_PendingInitialization) == 0)
             {
-                var vsTextBuffer = ((object)_runningDocumentTable.GetDocumentData(cookie)) as VsTextBuffer;
-                textBuffer = vsTextBuffer == null ? null : _editorAdaptersFactory.GetDocumentBuffer(vsTextBuffer);
+                var textBuffer = !(((object)_runningDocumentTable.GetDocumentData(cookie)) is VsTextBuffer vsTextBuffer)
+                    ? null
+                    : _editorAdaptersFactory.GetDocumentBuffer(vsTextBuffer);
                 return textBuffer;
             }
 
@@ -109,7 +108,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             lock (_lock)
             {
                 // Casts avoid dynamic
-                if ((object)(_runningDocumentTable.GetDocumentData(cookie)) is IVsTextBuffer vsTextBuffer)
+                if ((object)_runningDocumentTable.GetDocumentData(cookie) is IVsTextBuffer vsTextBuffer)
                 {
                     var filePath = _runningDocumentTable.GetDocumentMoniker(cookie);
                     if (!TryGetMatchingDocuments(filePath, out var documents))
@@ -122,10 +121,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                     if (textBuffer == null)
                     {
                         // The text buffer has not been created yet, register to be notified when it is.
-                        VsTextBufferDataEventsSink.Subscribe(vsTextBuffer, () =>
-                        {
-                            BufferLoaded(vsTextBuffer, filePath);
-                        });
+                        VsTextBufferDataEventsSink.Subscribe(vsTextBuffer, () => BufferLoaded(vsTextBuffer, filePath));
 
                         return;
                     }

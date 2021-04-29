@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Hover
 {
     public class DefaultRazorHoverInfoServiceTest : TagHelperServiceTestBase
     {
-        internal ClientNotifierServiceBase LanguageServer
+        internal static ClientNotifierServiceBase LanguageServer
         {
             get
             {

@@ -81,6 +81,7 @@ stages:
           - powershell: ./restore.cmd -msbuildEngine dotnet -ci $(_InternalRuntimeDownloadArgs); ./eng/scripts/CodeCheck.ps1 -ci
             displayName: Run eng/scripts/CodeCheck.ps1
 
+
   # Three jobs for each of the three OSes we want to run on
   - template: /eng/common/templates/jobs/jobs.yml
     parameters:
@@ -309,6 +310,10 @@ stages:
           options: --init # This ensures all the stray defunct processes are reaped.
         pool:
           vmImage: ubuntu-18.04
+        variables:
+        - LC_ALL: 'en_US.UTF-8'
+        - LANG: 'en_US.UTF-8'
+        - LANGUAGE: 'en_US.UTF-8'
         strategy:
           matrix:
             debug:

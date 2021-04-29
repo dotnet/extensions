@@ -169,7 +169,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             public override bool Equals(object obj)
             {
-                return obj is Key other ? Equals(other) : false;
+                return obj is Key other && Equals(other);
             }
 
             public override int GetHashCode()

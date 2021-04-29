@@ -13,6 +13,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public object Value { get; set; }
 
-        public List<object> SetValues { get; set; }
+        public List<object> SetValues { get; }
     }
 }

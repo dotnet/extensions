@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private DocumentSnapshot OpenedDocument { get; }
 
-        private RazorDiagnostic[] EmptyDiagnostics => Array.Empty<RazorDiagnostic>();
+        private static RazorDiagnostic[] EmptyDiagnostics => Array.Empty<RazorDiagnostic>();
 
-        private RazorDiagnostic[] SingleDiagnosticCollection => new RazorDiagnostic[]
+        private static RazorDiagnostic[] SingleDiagnosticCollection => new RazorDiagnostic[]
         {
             RazorDiagnosticFactory.CreateDirective_BlockDirectiveCannotBeImported("test")
         };
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var codeDocument = CreateCodeDocument(SingleDiagnosticCollection);
             processedOpenDocument.With(codeDocument);
             var languageServer = new Mock<ITextDocumentLanguageServer>(MockBehavior.Strict);
-            languageServer.Setup(server => server.SendNotification((It.IsAny<IRequest>()))).Callback<IRequest>((@params) =>
+            languageServer.Setup(server => server.SendNotification(It.IsAny<IRequest>())).Callback<IRequest>((@params) =>
             {
                 var diagnosticParams = (PublishDiagnosticsParams)@params;
                 Assert.Equal(processedOpenDocument.FilePath.TrimStart('/'), diagnosticParams.Uri.ToUri().AbsolutePath);
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var codeDocument = CreateCodeDocument(SingleDiagnosticCollection);
             processedOpenDocument.With(codeDocument);
             var languageServer = new Mock<ITextDocumentLanguageServer>(MockBehavior.Strict);
-            languageServer.Setup(server => server.SendNotification((It.IsAny<IRequest>()))).Callback<IRequest>((@params) =>
+            languageServer.Setup(server => server.SendNotification(It.IsAny<IRequest>())).Callback<IRequest>((@params) =>
                 {
                     var diagnosticParams = (PublishDiagnosticsParams)@params;
                     Assert.Equal(processedOpenDocument.FilePath.TrimStart('/'), diagnosticParams.Uri.ToUri().AbsolutePath);

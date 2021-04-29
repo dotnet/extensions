@@ -66,8 +66,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                     sharedContainer.SetOutput(
                         latestDocument,
-                        codeDocument.GetCSharpDocument(),
-                        codeDocument.GetHtmlDocument(),
+                        codeDocument,
                         container.InputVersion,
                         container.OutputCSharpVersion,
                         container.OutputHtmlVersion);

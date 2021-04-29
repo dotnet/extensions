@@ -44,7 +44,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(pathOfFileInProject));
             }
 
-            await _joinableTaskFactory.SwitchToMainThreadAsync();
+            await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             var hostPathOfFileInProject = _session.ConvertSharedUriToLocalPath(pathOfFileInProject);
             var vsUIShellOpenDocument = ServiceProvider.GlobalProvider.GetService(typeof(SVsUIShellOpenDocument)) as IVsUIShellOpenDocument;
@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 return false;
             }
 
-            var hr = vsUIShellOpenDocument.IsDocumentInAProject(hostPathOfFileInProject, out IVsUIHierarchy hierarchy, out _, out _, out _);
+            var hr = vsUIShellOpenDocument.IsDocumentInAProject(hostPathOfFileInProject, out var hierarchy, out _, out _, out _);
             if (!ErrorHandler.Succeeded(hr) || hierarchy == null)
             {
                 return false;

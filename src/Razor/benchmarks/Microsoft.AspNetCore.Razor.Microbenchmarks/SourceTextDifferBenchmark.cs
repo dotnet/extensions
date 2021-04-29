@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 {
     public class SourceTextDifferBenchmark
     {
-        private SourceText _largeFileOriginal;
-        private SourceText _largeFileMinimalChanges;
-        private SourceText _largeFileSignificantChanges;
+        private readonly SourceText _largeFileOriginal;
+        private readonly SourceText _largeFileMinimalChanges;
+        private readonly SourceText _largeFileSignificantChanges;
 
         public SourceTextDifferBenchmark()
         {

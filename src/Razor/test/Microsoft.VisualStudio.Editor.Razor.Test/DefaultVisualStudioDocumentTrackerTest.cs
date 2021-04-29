@@ -111,10 +111,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var callCount = 0;
-            DocumentTracker.ContextChanged += (sender, args) =>
-            {
-                callCount++;
-            };
+            DocumentTracker.ContextChanged += (sender, args) => callCount++;
             DocumentTracker.Subscribe();
 
             // Act
@@ -130,10 +127,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var callCount = 0;
             DocumentTracker.Subscribe();
-            DocumentTracker.ContextChanged += (sender, args) =>
-            {
-                callCount++;
-            };
+            DocumentTracker.ContextChanged += (sender, args) => callCount++;
             DocumentTracker.Unsubscribe();
 
             // Act
@@ -150,10 +144,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var callCount = 0;
             DocumentTracker.Subscribe();
             DocumentTracker.Subscribe();
-            DocumentTracker.ContextChanged += (sender, args) =>
-            {
-                callCount++;
-            };
+            DocumentTracker.ContextChanged += (sender, args) => callCount++;
 
             // Act - 1
             DocumentTracker.Unsubscribe();
@@ -269,10 +260,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var e = new ProjectChangeEventArgs(null, ProjectManager.GetLoadedProject(OtherHostProject.FilePath), ProjectChangeKind.ProjectChanged);
 
             var called = false;
-            DocumentTracker.ContextChanged += (sender, args) =>
-            {
-                called = true;
-            };
+            DocumentTracker.ContextChanged += (sender, args) => called = true;
 
             // Act
             DocumentTracker.ProjectManager_Changed(ProjectManager, e);
@@ -305,10 +293,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void Import_Changed_UnrelatedImport_DoesNothing()
         {
             // Arrange
-            DocumentTracker.ContextChanged += (sender, args) =>
-            {
-                throw new InvalidOperationException();
-            };
+            DocumentTracker.ContextChanged += (sender, args) => throw new InvalidOperationException();
 
             var importChangedArgs = new ImportChangedEventArgs("path/to/import", FileChangeKind.Changed, new[] { "path/to/differentfile" });
 
@@ -321,10 +306,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var called = false;
-            DocumentTracker.ContextChanged += (sender, args) =>
-            {
-                called = true; // This will trigger both ContextChanged and TagHelprsChanged
-            };
+            DocumentTracker.ContextChanged += (sender, args) => called = true;
 
             // Act
             DocumentTracker.Subscribe();
@@ -487,7 +469,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             DocumentTracker.Subscribe();
 
             var args = new List<ContextChangeEventArgs>();
-            DocumentTracker.ContextChanged += (sender, e) => { args.Add(e); };
+            DocumentTracker.ContextChanged += (sender, e) => args.Add(e);
             
             // Act
             ProjectManager.ProjectConfigurationChanged(UpdatedHostProject);
@@ -511,7 +493,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             DocumentTracker.Subscribe();
 
             var args = new List<ContextChangeEventArgs>();
-            DocumentTracker.ContextChanged += (sender, e) => { args.Add(e); };
+            DocumentTracker.ContextChanged += (sender, e) => args.Add(e);
 
             // Act
             ProjectManager.ProjectRemoved(HostProject);

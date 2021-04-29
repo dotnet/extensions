@@ -125,7 +125,7 @@ tagHelpers: TagHelpers);
             return provider;
         }
 
-        TagHelperDescriptor[] TagHelpers
+        static TagHelperDescriptor[] TagHelpers
         {
             get
             {

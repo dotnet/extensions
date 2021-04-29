@@ -16,7 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Feedback
     internal class DefaultFeedbackLogDirectoryProvider : FeedbackLogDirectoryProvider
     {
         private const string FeedbackDirectoryName = "RazorVSFeedbackLogs";
-        private readonly object _accessLock = new object();
+        private readonly object _accessLock = new();
         private string _baseLogDirectory;
         private string _logDirectory;
 
