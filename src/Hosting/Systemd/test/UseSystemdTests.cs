@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Hosting
 {
     public class UseSystemdTests
     {
-        [Fact]
+        [Fact(Skip = "Product issue fixed by https://github.com/dotnet/extensions/pull/2734. This change won't be backported unless requested.")]
         public void DefaultsToOffOutsideOfService()
         {
             var host = new HostBuilder()
