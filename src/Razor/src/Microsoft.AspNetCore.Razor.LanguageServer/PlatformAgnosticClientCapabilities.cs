@@ -14,5 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public static readonly PlatformExtensionConverter<ClientCapabilities, PlatformAgnosticClientCapabilities> JsonConverter = new PlatformExtensionConverter<ClientCapabilities, PlatformAgnosticClientCapabilities>();
 
         public bool SupportsCodeActionResolve { get; set; } = false;
+
+        public bool SupportsVisualStudioExtensions { get; set; } = false;
     }
 }

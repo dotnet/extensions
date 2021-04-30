@@ -21,13 +21,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Hover
     internal class DefaultRazorHoverInfoService : RazorHoverInfoService
     {
         private readonly TagHelperFactsService _tagHelperFactsService;
-        private readonly TagHelperTooltipFactory _tagHelperTooltipFactory;
+        private readonly DefaultLSPTagHelperTooltipFactory _tagHelperTooltipFactory;
         private readonly HtmlFactsService _htmlFactsService;
 
         [ImportingConstructor]
         public DefaultRazorHoverInfoService(
             TagHelperFactsService tagHelperFactsService,
-            TagHelperTooltipFactory tagHelperTooltipFactory,
+            DefaultLSPTagHelperTooltipFactory tagHelperTooltipFactory,
             HtmlFactsService htmlFactsService)
         {
             if (tagHelperFactsService is null)
