@@ -6,10 +6,10 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
 {
-    internal abstract class TagHelperTooltipFactory
+    internal abstract class LSPTagHelperTooltipFactory : TagHelperTooltipFactoryBase
     {
-        public abstract bool TryCreateTooltip(AggregateBoundElementDescription descriptionInfos, out MarkupContent markupContent);
+        public abstract bool TryCreateTooltip(AggregateBoundElementDescription descriptionInfos, out MarkupContent tooltipContent);
 
-        public abstract bool TryCreateTooltip(AggregateBoundAttributeDescription descriptionInfos, out MarkupContent markupContent);
+        public abstract bool TryCreateTooltip(AggregateBoundAttributeDescription descriptionInfos, out MarkupContent tooltipContent);
     }
 }

@@ -182,7 +182,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
                         services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
                         services.AddSingleton<TagHelperFactsService, DefaultTagHelperFactsService>();
-                        services.AddSingleton<TagHelperTooltipFactory, DefaultTagHelperTooltipFactory>();
+                        services.AddSingleton<LSPTagHelperTooltipFactory, DefaultLSPTagHelperTooltipFactory>();
+                        services.AddSingleton<VSLSPTagHelperTooltipFactory, DefaultVSLSPTagHelperTooltipFactory>();
 
                         // Completion
                         services.AddSingleton<TagHelperCompletionService, DefaultTagHelperCompletionService>();
