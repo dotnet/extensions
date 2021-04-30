@@ -35,10 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
-                {
-                    invokedServer = true;
-                })
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) => invokedServer = true)
                 .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() }));
 
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
@@ -74,10 +71,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
-                {
-                    invokedServer = true;
-                })
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) => invokedServer = true)
                 .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() }));
 
             var projectionProvider = Mock.Of<LSPProjectionProvider>(MockBehavior.Strict);
@@ -114,10 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
-                {
-                    invokedServer = true;
-                })
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) => invokedServer = true)
                 .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() }));
 
             var projectionResult = new ProjectionResult()
@@ -160,10 +151,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(MSLSPMethods.OnAutoInsertName, It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
-                {
-                    invokedServer = true;
-                })
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) => invokedServer = true)
                 .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() { Range = new Range(), NewText = "sometext" }, TextEditFormat = InsertTextFormat.Snippet }));
 
             var projectionUri = new Uri(Uri.AbsoluteUri + "__virtual.html");
@@ -178,7 +166,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider
                 .Setup(d => d.RemapFormattedTextEditsAsync(projectionUri, It.IsAny<TextEdit[]>(), It.IsAny<FormattingOptions>(), /*containsSnippet*/ true, It.IsAny<CancellationToken>()))
-                .Callback(() => { mappedTextEdits = true; })
+                .Callback(() => mappedTextEdits = true)
                 .Returns(Task.FromResult(new[] { new TextEdit() }));
 
             var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object, LoggerProvider);
@@ -214,10 +202,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var requestInvoker = new Mock<LSPRequestInvoker>(MockBehavior.Strict);
             requestInvoker
                 .Setup(r => r.ReinvokeRequestOnServerAsync<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>(MSLSPMethods.OnAutoInsertName, It.IsAny<string>(), It.IsAny<DocumentOnAutoInsertParams>(), It.IsAny<CancellationToken>()))
-                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) =>
-                {
-                    invokedServer = true;
-                })
+                .Callback<string, string, DocumentOnAutoInsertParams, CancellationToken>((method, serverContentType, formattingParams, ct) => invokedServer = true)
                 .Returns(Task.FromResult(new DocumentOnAutoInsertResponseItem() { TextEdit = new TextEdit() { Range = new Range(), NewText = "sometext" }, TextEditFormat = InsertTextFormat.Snippet }));
 
             var projectionUri = new Uri(Uri.AbsoluteUri + "__virtual.html");
@@ -232,7 +217,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var documentMappingProvider = new Mock<LSPDocumentMappingProvider>(MockBehavior.Strict);
             documentMappingProvider
                 .Setup(d => d.RemapFormattedTextEditsAsync(projectionUri, It.IsAny<TextEdit[]>(), It.IsAny<FormattingOptions>(), /*containsSnippet*/ true, It.IsAny<CancellationToken>()))
-                .Callback(() => { mappedTextEdits = true; })
+                .Callback(() => mappedTextEdits = true)
                 .Returns(Task.FromResult(new[] { new TextEdit() { NewText = "mapped-sometext" } }));
 
             var handler = new OnAutoInsertHandler(documentManager, requestInvoker.Object, projectionProvider.Object, documentMappingProvider.Object, LoggerProvider);

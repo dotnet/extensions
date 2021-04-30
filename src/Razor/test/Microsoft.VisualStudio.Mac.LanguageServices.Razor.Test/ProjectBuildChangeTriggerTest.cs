@@ -22,16 +22,13 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             SomeProject = new HostProject("c:\\SomeProject\\SomeProject.csproj", FallbackRazorConfiguration.MVC_1_0, "SomeProject");
             SomeOtherProject = new HostProject("c:\\SomeOtherProject\\SomeOtherProject.csproj", FallbackRazorConfiguration.MVC_2_0, "SomeOtherProject");
 
-            Workspace = TestWorkspace.Create(w =>
-            {
-                SomeWorkspaceProject = w.AddProject(ProjectInfo.Create(
+            Workspace = TestWorkspace.Create(w => SomeWorkspaceProject = w.AddProject(ProjectInfo.Create(
                     ProjectId.CreateNewId(),
                     VersionStamp.Create(),
                     "SomeProject",
                     "SomeProject",
                     LanguageNames.CSharp,
-                    filePath: SomeProject.FilePath));
-            });
+                    filePath: SomeProject.FilePath)));
         }
 
         private HostProject SomeProject { get; }

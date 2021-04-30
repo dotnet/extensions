@@ -17,8 +17,8 @@
     <MajorVersion>6</MajorVersion>
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
-    <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>5</PreReleaseVersionIteration>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
@@ -49,24 +49,24 @@
 
   -->
   <PropertyGroup Label="Automated">
-    <MicrosoftCodeAnalysisRazorPackageVersion>6.0.0-preview.4.21214.8</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>6.0.0-preview.4.21214.8</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>6.0.0-preview.4.21214.8</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>6.0.0-preview.4.21214.8</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>6.0.0-preview.4.21214.8</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>6.0.0-preview.4.21214.8</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>6.0.0-preview.4.21214.8</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0-preview.4.21211.7</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>6.0.0-preview.4.21211.7</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>6.0.0-preview.4.21211.7</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>6.0.0-preview.4.21211.7</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-preview.4.21211.7</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>6.0.0-preview.4.21211.7</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>6.0.0-preview.4.21211.7</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>6.0.0-preview.5.21229.1</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftAspNetCoreRazorInternalTransportPackageVersion>6.0.0-preview.5.21229.1</MicrosoftAspNetCoreRazorInternalTransportPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>6.0.0-preview.5.21229.1</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>6.0.0-preview.5.21229.1</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>6.0.0-preview.5.21229.1</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>6.0.0-preview.5.21229.1</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>6.0.0-preview.5.21229.1</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>6.0.0-preview.5.21227.7</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>6.0.0-preview.5.21227.7</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>6.0.0-preview.5.21227.7</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>6.0.0-preview.5.21227.7</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-preview.5.21227.7</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>6.0.0-preview.5.21227.7</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>6.0.0-preview.5.21227.7</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>6.0.0-alpha.1.21072.5</MicrosoftNETSdkRazorPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0-preview.4.21211.7</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemResourcesExtensionsPackageVersion>6.0.0-preview.4.21211.7</SystemResourcesExtensionsPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>6.0.0-preview.4.21211.7</SystemTextEncodingsWebPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>6.0.0-preview.5.21227.7</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemResourcesExtensionsPackageVersion>6.0.0-preview.5.21227.7</SystemResourcesExtensionsPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>6.0.0-preview.5.21227.7</SystemTextEncodingsWebPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Dependency version settings">
     <!--
@@ -89,12 +89,12 @@
     <Tooling_HtmlEditorPackageVersion>16.10.57-preview1</Tooling_HtmlEditorPackageVersion>
     <!-- Several packages share the MS.CA.Testing version -->
     <Tooling_MicrosoftCodeAnalysisTestingVersion>1.0.1-beta1.21103.2</Tooling_MicrosoftCodeAnalysisTestingVersion>
-    <MicrosoftVisualStudioShellPackagesVersion>17.0.0-preview-2-31221-277</MicrosoftVisualStudioShellPackagesVersion>
+    <MicrosoftVisualStudioShellPackagesVersion>17.0.0-preview-2-31228-438</MicrosoftVisualStudioShellPackagesVersion>
     <MicrosoftVisualStudioPackagesVersion>17.0.28-g439d20ddd3</MicrosoftVisualStudioPackagesVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>5.0.0-preview.4.20205.1</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
-    <BenchmarkDotNetPackageVersion>0.12.1</BenchmarkDotNetPackageVersion>
+    <BenchmarkDotNetPackageVersion>0.12.1.1466</BenchmarkDotNetPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>16.8.0</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildLocatorPackageVersion>1.2.6</MicrosoftBuildLocatorPackageVersion>
     <MicrosoftBuildPackageVersion>16.8.0</MicrosoftBuildPackageVersion>
@@ -109,7 +109,7 @@
     <MicrosoftVisualStudioEditorPackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioEditorPackageVersion>
     <MicrosoftVisualStudioLanguagePackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioLanguagePackageVersion>
     <MicrosoftVisualStudioLanguageIntellisensePackageVersion>$(MicrosoftVisualStudioPackagesVersion)</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
-    <MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>17.0.15-g324ff7f36e</MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>
+    <MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>17.0.1023-g6bffc2ffdf</MicrosoftVisualStudioLanguageServerClientImplementationPackageVersion>
     <MicrosoftVisualStudioUtilitiesPackageVersion>$(MicrosoftVisualStudioShellPackagesVersion)</MicrosoftVisualStudioUtilitiesPackageVersion>
     <MicrosoftVisualStudioLiveSharePackageVersion>0.3.1074</MicrosoftVisualStudioLiveSharePackageVersion>
     <MicrosoftVisualStudioProjectSystemSDKPackageVersion>16.10.81-pre</MicrosoftVisualStudioProjectSystemSDKPackageVersion>
@@ -134,7 +134,7 @@
     <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <OmniSharpExtensionsLanguageServerPackageVersion>0.18.1</OmniSharpExtensionsLanguageServerPackageVersion>
     <OmniSharpMSBuildPackageVersion>1.33.0</OmniSharpMSBuildPackageVersion>
-    <StreamJsonRpcPackageVersion>2.7.72</StreamJsonRpcPackageVersion>
+    <StreamJsonRpcPackageVersion>2.8.21</StreamJsonRpcPackageVersion>
     <SystemPrivateUriPackageVersion>4.3.2</SystemPrivateUriPackageVersion>
     <SystemCompositionPackageVersion>1.0.31.0</SystemCompositionPackageVersion>
     <SystemCollectionsImmutablePackageVersion>5.0.0</SystemCollectionsImmutablePackageVersion>

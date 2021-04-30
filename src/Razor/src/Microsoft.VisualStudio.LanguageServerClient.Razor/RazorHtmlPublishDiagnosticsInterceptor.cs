@@ -133,8 +133,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             return CreateResponse(diagnosticParams);
 
 
-            static InterceptionResult CreateDefaultResponse(JToken token) =>
-                new(token, changedDocumentUri: false);
+            static InterceptionResult CreateDefaultResponse(JToken token)
+            {
+                return new(token, changedDocumentUri: false);
+            }
 
             static InterceptionResult CreateEmptyDiagnosticsResponse(VSPublishDiagnosticParams diagnosticParams)
             {

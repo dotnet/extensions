@@ -17,8 +17,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public DefaultProjectSnapshotManagerTest()
         {
-            var someTagHelpers = new List<TagHelperDescriptor>();
-            someTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
+            var someTagHelpers = new List<TagHelperDescriptor>
+            {
+                TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build()
+            };
             TagHelperResolver = new TestTagHelperResolver()
             {
                 TagHelpers = someTagHelpers,
@@ -617,10 +619,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     ProjectManager.DocumentRemoved(HostProject, Documents[0]);
                 }
             };
-            ProjectManager.Changed += (sender, args) =>
-            {
-                listenerNotifications.Add(args.Kind);
-            };
+            ProjectManager.Changed += (sender, args) => listenerNotifications.Add(args.Kind);
             ProjectManager.NotifyChangedEvents = true;
 
             // Act

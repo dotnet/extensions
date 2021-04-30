@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class RazorDocumentSynchronizationEndpointTest : LanguageServerTestBase
     {
-        private DocumentResolver DocumentResolver => Mock.Of<DocumentResolver>(MockBehavior.Strict);
+        private static DocumentResolver DocumentResolver => Mock.Of<DocumentResolver>(MockBehavior.Strict);
 
-        private RazorProjectService ProjectService => Mock.Of<RazorProjectService>(MockBehavior.Strict);
+        private static RazorProjectService ProjectService => Mock.Of<RazorProjectService>(MockBehavior.Strict);
 
         [Fact]
         public void ApplyContentChanges_SingleChange()
@@ -169,10 +169,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
             projectService.Setup(service => service.CloseDocument(It.IsAny<string>()))
-                .Callback<string>((path) =>
-                {
-                    Assert.Equal(documentPath, path);
-                });
+                .Callback<string>((path) => Assert.Equal(documentPath, path));
             var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, projectService.Object, LoggerFactory);
             var request = new DidCloseTextDocumentParams()
             {
@@ -189,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectService.VerifyAll();
         }
 
-        private string GetString(SourceText sourceText)
+        private static string GetString(SourceText sourceText)
         {
             var sourceChars = new char[sourceText.Length];
             sourceText.CopyTo(0, sourceChars, 0, sourceText.Length);

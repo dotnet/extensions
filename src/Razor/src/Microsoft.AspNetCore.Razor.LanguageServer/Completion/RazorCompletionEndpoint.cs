@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 {
     internal class RazorCompletionEndpoint : ICompletionHandler, ICompletionResolveHandler
     {
-        private CompletionCapability _capability;
+        private PlatformAgnosticCompletionCapability _capability;
         private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
 
         public void SetCapability(CompletionCapability capability)
         {
-            _capability = capability;
+            _capability = (PlatformAgnosticCompletionCapability)capability;
             _supportedItemKinds = _capability.CompletionItemKind.ValueSet.Cast<ExtendedCompletionItemKinds>().ToList();
         }
 
@@ -200,13 +200,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
         }
 
         // Internal for testing
-        internal CompletionList CreateLSPCompletionList(IReadOnlyList<RazorCompletionItem> razorCompletionItems) => CreateLSPCompletionList(razorCompletionItems, _completionListCache, _supportedItemKinds);
+        internal CompletionList CreateLSPCompletionList(IReadOnlyList<RazorCompletionItem> razorCompletionItems) => CreateLSPCompletionList(razorCompletionItems, _completionListCache, _supportedItemKinds, _capability);
 
         // Internal for benchmarking and testing
         internal static CompletionList CreateLSPCompletionList(
             IReadOnlyList<RazorCompletionItem> razorCompletionItems,
             CompletionListCache completionListCache,
-            IReadOnlyList<ExtendedCompletionItemKinds> supportedItemKinds)
+            IReadOnlyList<ExtendedCompletionItemKinds> supportedItemKinds,
+            PlatformAgnosticCompletionCapability completionCapability)
         {
             var resultId = completionListCache.Set(razorCompletionItems);
             var completionItems = new List<CompletionItem>();
@@ -223,7 +224,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             var completionList = new CompletionList(completionItems, isIncomplete: false);
 
             // We wrap the pre-existing completion list with an optimized completion list to better control serialization/deserialization
-            var optimizedCompletionList = new OptimizedCompletionList(completionList);
+            CompletionList optimizedCompletionList;
+
+            if (completionCapability?.VSCompletionList != null)
+            {
+                // We're operating in VS, lets make a VS specific optimized completion list
+
+                var vsCompletionList = VSCompletionList.Convert(completionList, completionCapability.VSCompletionList);
+                optimizedCompletionList = new OptimizedVSCompletionList(vsCompletionList);
+            }
+            else
+            {
+                optimizedCompletionList = new OptimizedCompletionList(completionList);
+            }
+
             return optimizedCompletionList;
         }
 

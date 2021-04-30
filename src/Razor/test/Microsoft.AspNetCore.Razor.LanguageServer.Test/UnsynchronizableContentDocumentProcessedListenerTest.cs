@@ -53,9 +53,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             });
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
             var htmlDocument = RazorHtmlDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault());
+            var codeDocument = CreateCodeDocument(csharpDocument, htmlDocument);
 
             // Force the state to already be up-to-date
-            document.State.HostDocument.GeneratedDocumentContainer.SetOutput(document, csharpDocument, htmlDocument, documentVersion.GetNewerVersion(), VersionStamp.Default, VersionStamp.Default);
+            document.State.HostDocument.GeneratedDocumentContainer.SetOutput(document, codeDocument, documentVersion.GetNewerVersion(), VersionStamp.Default, VersionStamp.Default);
 
             var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, generatedDocumentPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
@@ -79,9 +80,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             });
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
             var htmlDocument = RazorHtmlDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault());
+            var codeDocument = CreateCodeDocument(csharpDocument, htmlDocument);
 
             // Force the state to already be up-to-date
-            oldDocument.State.HostDocument.GeneratedDocumentContainer.SetOutput(lastDocument, csharpDocument, htmlDocument, lastVersion, VersionStamp.Default, VersionStamp.Default);
+            oldDocument.State.HostDocument.GeneratedDocumentContainer.SetOutput(lastDocument, codeDocument, lastVersion, VersionStamp.Default, VersionStamp.Default);
 
             var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, generatedDocumentPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
@@ -105,9 +107,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             });
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
             var htmlDocument = RazorHtmlDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault());
+            var codeDocument = CreateCodeDocument(csharpDocument, htmlDocument);
 
             // Force the state to already be up-to-date
-            document.State.HostDocument.GeneratedDocumentContainer.SetOutput(lastDocument, csharpDocument, htmlDocument, lastVersion, VersionStamp.Default, VersionStamp.Default);
+            document.State.HostDocument.GeneratedDocumentContainer.SetOutput(lastDocument, codeDocument, lastVersion, VersionStamp.Default, VersionStamp.Default);
 
             var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, generatedDocumentPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
@@ -145,9 +148,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             });
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
             var htmlDocument = RazorHtmlDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault());
+            var codeDocument = CreateCodeDocument(csharpDocument, htmlDocument);
 
             // Force the state to already be up-to-date
-            document.State.HostDocument.GeneratedDocumentContainer.SetOutput(lastDocument, csharpDocument, htmlDocument, lastVersion, VersionStamp.Default, VersionStamp.Default);
+            document.State.HostDocument.GeneratedDocumentContainer.SetOutput(lastDocument, codeDocument, lastVersion, VersionStamp.Default, VersionStamp.Default);
 
             var listener = new UnsynchronizableContentDocumentProcessedListener(Dispatcher, cache, generatedDocumentPublisher.Object);
             listener.Initialize(ProjectSnapshotManager);
@@ -157,6 +161,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Assert
             generatedDocumentPublisher.VerifyAll();
+        }
+
+        private static RazorCodeDocument CreateCodeDocument(RazorCSharpDocument csharpDocument, RazorHtmlDocument htmlDocument)
+        {
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+            codeDocument.SetCSharpDocument(csharpDocument);
+            codeDocument.Items[typeof(RazorHtmlDocument)] = htmlDocument;
+            return codeDocument;
         }
 
         private class TestDocumentVersionCache : DocumentVersionCache

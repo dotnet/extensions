@@ -185,23 +185,17 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
         private static void AssertContains(IReadOnlyList<RazorCompletionItem> completions, string insertText)
         {
-            Assert.Contains(completions, completion =>
-            {
-                return insertText == completion.InsertText &&
+            Assert.Contains(completions, completion => insertText == completion.InsertText &&
                     insertText == completion.DisplayText &&
-                    RazorCompletionItemKind.DirectiveAttributeParameter == completion.Kind;
-            });
+                    RazorCompletionItemKind.DirectiveAttributeParameter == completion.Kind);
         }
 
         private static void AssertDoesNotContain(IReadOnlyList<RazorCompletionItem> completions, string insertText)
         {
 
-            Assert.DoesNotContain(completions, completion =>
-            {
-                return insertText == completion.InsertText &&
+            Assert.DoesNotContain(completions, completion => insertText == completion.InsertText &&
                    insertText == completion.DisplayText &&
-                   RazorCompletionItemKind.DirectiveAttributeParameter == completion.Kind;
-            });
+                   RazorCompletionItemKind.DirectiveAttributeParameter == completion.Kind);
         }
     }
 }

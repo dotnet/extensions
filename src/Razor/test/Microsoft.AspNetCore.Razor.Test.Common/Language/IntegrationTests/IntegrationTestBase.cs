@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         protected CompiledAssembly CompileToAssembly(string text, string path = "test.cshtml", bool? designTime = null, bool throwOnFailure = true)
         {
             var compiled = CompileToCSharp(text, path, designTime);
-            return CompileToAssembly(compiled);
+            return CompileToAssembly(compiled, throwOnFailure);
         }
 
         protected CompiledAssembly CompileToAssembly(RazorProjectItem projectItem, bool? designTime = null, bool throwOnFailure = true)

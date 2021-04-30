@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Razor.Test.Common;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
-using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Editor.Razor;
@@ -15,11 +14,36 @@ using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
     public class ComponentAccessibilityCodeActionProviderTest : LanguageServerTestBase
     {
+        [Fact]
+        public async Task Handle_NoTagName_DoesNotProvideLightBulb()
+        {
+            // Arrange
+            var documentPath = "c:/Test.razor";
+            var contents = "<";
+            var request = new RazorCodeActionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Range = new Range(new Position(0, 1), new Position(0, 1)),
+            };
+
+            var location = new SourceLocation(1, -1, -1);
+            var context = CreateRazorCodeActionContext(request, location, documentPath, contents, new SourceSpan(0, 1));
+
+            var provider = new ComponentAccessibilityCodeActionProvider(new DefaultTagHelperFactsService(), FilePathNormalizer);
+
+            // Act
+            var commandOrCodeActionContainer = await provider.ProvideAsync(context, default);
+
+            // Assert
+            Assert.Null(commandOrCodeActionContainer);
+        }
+
         [Fact]
         public async Task Handle_InvalidSyntaxTree_NoStartNode()
         {
@@ -210,9 +234,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             var tagHelpers = new[] { shortComponent.Build(), fullyQualifiedComponent.Build() };
 
             var sourceDocument = TestRazorSourceDocument.Create(text, filePath: filePath, relativePath: filePath);
-            var projectEngine = RazorProjectEngine.Create(builder => {
-                builder.AddTagHelpers(tagHelpers);
-            });
+            var projectEngine = RazorProjectEngine.Create(builder => builder.AddTagHelpers(tagHelpers));
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, FileKinds.Component, Array.Empty<RazorSourceDocument>(), tagHelpers);
 
             var cSharpDocument = codeDocument.GetCSharpDocument();

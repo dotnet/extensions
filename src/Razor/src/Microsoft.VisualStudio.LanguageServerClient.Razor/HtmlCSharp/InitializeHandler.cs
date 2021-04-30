@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ExportLspMethod(Methods.InitializeName)]
     internal class InitializeHandler : IRequestHandler<InitializeParams, InitializeResult>
     {
-        private static readonly InitializeResult InitializeResult = new InitializeResult
+        private static readonly InitializeResult InitializeResult = new()
         {
             Capabilities = new VSServerCapabilities
             {
@@ -420,8 +420,10 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             var mergedTriggerChars = new HashSet<string>(filteredMergedTriggerCharacters);
 
             var razorOnTypeFormattingOptions = InitializeResult.Capabilities.DocumentOnTypeFormattingProvider;
-            var razorTriggerCharacters = new HashSet<string>();
-            razorTriggerCharacters.Add(razorOnTypeFormattingOptions.FirstTriggerCharacter);
+            var razorTriggerCharacters = new HashSet<string>
+            {
+                razorOnTypeFormattingOptions.FirstTriggerCharacter
+            };
             razorTriggerCharacters.UnionWith(razorOnTypeFormattingOptions.MoreTriggerCharacter);
 
             if (!mergedTriggerChars.SetEquals(razorTriggerCharacters))
@@ -442,7 +444,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
             foreach (var languageClientAndMetadata in _languageServiceBroker.LanguageClients)
 #pragma warning restore CS0618 // Type or member is obsolete
             {
-                if (!(languageClientAndMetadata.Metadata is ILanguageClientMetadata metadata))
+                if (languageClientAndMetadata.Metadata is not ILanguageClientMetadata metadata)
                 {
                     continue;
                 }

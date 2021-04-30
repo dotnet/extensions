@@ -96,10 +96,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             // Arrange
             var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
             var changedCalled = false;
-            manager.Changed += (sender, args) =>
-            {
-                changedCalled = true;
-            };
+            manager.Changed += (sender, args) => changedCalled = true;
             var changes = new[] { new VisualStudioTextChange(1, 1, string.Empty) };
 
             // Act
@@ -116,10 +113,7 @@ namespace Microsoft.VisualStudio.LanguageServer.ContainedLanguage
             var manager = new DefaultLSPDocumentManager(JoinableTaskContext, UriProvider, LSPDocumentFactory, ChangeTriggers);
             manager.TrackDocument(TextBuffer);
             var changedCalled = false;
-            manager.Changed += (sender, args) =>
-            {
-                changedCalled = true;
-            };
+            manager.Changed += (sender, args) => changedCalled = true;
             var changes = Array.Empty<ITextChange>();
 
             // Act

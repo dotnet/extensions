@@ -39,10 +39,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             var configurationFilePath = "C:/project/obj/project.razor.json";
             store.Set(projectFilePath, configurationFilePath);
             var called = false;
-            store.Changed += (sender, args) =>
-            {
-                called = true;
-            };
+            store.Changed += (sender, args) => called = true;
 
             // Act
             store.Set(projectFilePath, configurationFilePath);
@@ -150,10 +147,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             // Arrange
             var store = new DefaultProjectConfigurationFilePathStore();
             var called = false;
-            store.Changed += (sender, args) =>
-            {
-                called = true;
-            };
+            store.Changed += (sender, args) => called = true;
 
             // Act
             store.Remove("C:/project.csproj");

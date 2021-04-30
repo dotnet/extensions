@@ -230,13 +230,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                             .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch))
                         .RequireParentTag("parent-name"),
                 },
-                configureAction: builder =>
-                {
-                    builder.AllowChildTag("allowed-child-one")
+                configureAction: builder => builder.AllowChildTag("allowed-child-one")
                         .AddMetadata("foo", "bar")
                         .AddDiagnostic(RazorDiagnostic.Create(
-                            new RazorDiagnosticDescriptor("id", () => "Test Message", RazorDiagnosticSeverity.Error), new SourceSpan(null, 10, 20, 30, 40)));
-                });
+                            new RazorDiagnosticDescriptor("id", () => "Test Message", RazorDiagnosticSeverity.Error), new SourceSpan(null, 10, 20, 30, 40))));
 
             // Act
             var serializedDescriptor = JsonConvert.SerializeObject(expectedDescriptor, TagHelperDescriptorJsonConverter.Instance, RazorDiagnosticJsonConverter.Instance);
@@ -276,13 +273,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                             .Name("required-attribute-one")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch))
                 },
-                configureAction: builder =>
-                {
-                    builder
+                configureAction: builder => builder
                         .AllowChildTag("allowed-child-one")
                         .AddMetadata("foo", "bar")
-                        .TagOutputHint("Hint");
-                });
+                        .TagOutputHint("Hint"));
 
             // Act
             var serializedDescriptor = JsonConvert.SerializeObject(expectedDescriptor, TagHelperDescriptorJsonConverter.Instance, RazorDiagnosticJsonConverter.Instance);

@@ -59,13 +59,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 GenerateSemanticBaseline(actual, baselineFileName);
             }
 
-            var semanticFile = TestFile.Create(baselineFileName, GetType().GetTypeInfo().Assembly);
-            if (!semanticFile.Exists())
-            {
-                throw new XunitException($"The resource {baselineFileName} was not found.");
-            }
-            var semanticIntStr = semanticFile.ReadAllText();
-            var semanticArray = ParseSemanticBaseline(semanticIntStr);
+            var semanticArray = GetBaselineTokens(baselineFileName);
 
             if (semanticArray is null && actual is null)
             {
@@ -87,6 +81,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         }
 
 #pragma warning disable CS0618 // Type or member is obsolete
+        internal void GetAllBaselineTokens(out int[]? baselineOriginal, out int[]? baselineExpected, out SemanticTokensFullOrDelta? baselineDelta)
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            baselineOriginal = GetBaselineTokens(FileName + ".semanticoriginal.txt");
+            baselineExpected = GetBaselineTokens(FileName + ".semanticexpected.txt");
+            baselineDelta = GetBaselineDeltaTokens(FileName + ".semanticedit.txt");
+        }
+
+        internal int[]? GetBaselineTokens(string baselineFileName)
+        {
+            var semanticFile = TestFile.Create(baselineFileName, GetType().GetTypeInfo().Assembly);
+            if (!semanticFile.Exists())
+            {
+                throw new XunitException($"The resource {baselineFileName} was not found.");
+            }
+            var semanticIntStr = semanticFile.ReadAllText();
+            var semanticArray = ParseSemanticBaseline(semanticIntStr);
+            return semanticArray;
+        }
+
+#pragma warning disable CS0618 // Type or member is obsolete
         internal void AssertSemanticTokensEditsMatchesBaseline(SemanticTokensFullOrDelta edits)
 #pragma warning restore CS0618 // Type or member is obsolete
         {
@@ -105,13 +120,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 GenerateSemanticEditBaseline(edits, baselineFileName);
             }
 
-            var semanticEditFile = TestFile.Create(baselineFileName, GetType().GetTypeInfo().Assembly);
-            if (!semanticEditFile.Exists())
-            {
-                throw new XunitException($"The resource {baselineFileName} was not found.");
-            }
-            var semanticEditStr = semanticEditFile.ReadAllText();
-            var semanticEdits = ParseSemanticEditBaseline(semanticEditStr);
+            var semanticEdits = GetBaselineDeltaTokens(baselineFileName);
 
             if (semanticEdits!.Value.IsDelta && edits.IsDelta)
             {
@@ -129,7 +138,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
         }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-        private static void GenerateSemanticEditBaseline(SemanticTokensFullOrDelta edits, string baselineFileName)
+        internal SemanticTokensFullOrDelta? GetBaselineDeltaTokens(string baselineFileName)
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var semanticEditFile = TestFile.Create(baselineFileName, GetType().GetTypeInfo().Assembly);
+            if (!semanticEditFile.Exists())
+            {
+                throw new XunitException($"The resource {baselineFileName} was not found.");
+            }
+            var semanticEditStr = semanticEditFile.ReadAllText();
+            var semanticEdits = ParseSemanticEditBaseline(semanticEditStr);
+            return semanticEdits;
+        }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        internal static RazorSemanticTokensEdit[] GetRazorEdits(SemanticTokensFullOrDelta? baselineDelta)
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var edits = baselineDelta!.Value.Delta!.Edits.ToArray();
+            var razorSemanticTokenEdits = new RazorSemanticTokensEdit[edits.Length];
+            for (var i = 0; i < edits.Length; i++)
+            {
+                razorSemanticTokenEdits[i] = new RazorSemanticTokensEdit(edits[i].Start, edits[i].DeleteCount, edits[i].Data?.ToArray());
+            }
+
+            return razorSemanticTokenEdits;
+        }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        internal static void GenerateSemanticEditBaseline(SemanticTokensFullOrDelta edits, string baselineFileName)
 #pragma warning restore CS0618 // Type or member is obsolete
         {
             var builder = new StringBuilder();
@@ -200,8 +237,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                     continue;
                 }
 
-                var intResult = int.Parse(str, Thread.CurrentThread.CurrentCulture);
-                results.Add(intResult);
+                if (int.TryParse(str, System.Globalization.NumberStyles.Integer, Thread.CurrentThread.CurrentCulture, out var intResult))
+                {
+                    results.Add(intResult);
+                }
             }
 
             return results.ToArray();

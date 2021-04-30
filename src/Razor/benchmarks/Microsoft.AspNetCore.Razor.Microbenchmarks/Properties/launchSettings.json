@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LanguageServer.Protocol.Extensions.Performance": {
+      "commandName": "Project",
+      "commandLineArgs": "--config profile"
+    }
+  }
+}

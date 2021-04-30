@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             return documentVersionCache;
         }
 
-        private ClientNotifierServiceBase CreateLanguageServer(CodeAction resolvedCodeAction = null)
+        private static ClientNotifierServiceBase CreateLanguageServer(CodeAction resolvedCodeAction = null)
         {
             var responseRouterReturns = new Mock<IResponseRouterReturns>(MockBehavior.Strict);
             responseRouterReturns
@@ -264,10 +264,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private static RazorCodeDocument CreateCodeDocument(string text, string documentPath)
         {
             var projectItem = new TestRazorProjectItem(documentPath) { Content = text };
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) =>
-            {
-                PageDirective.Register(builder);
-            });
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) => PageDirective.Register(builder));
             var codeDocument = projectEngine.Process(projectItem);
             codeDocument.SetFileKind(FileKinds.Component);
             return codeDocument;

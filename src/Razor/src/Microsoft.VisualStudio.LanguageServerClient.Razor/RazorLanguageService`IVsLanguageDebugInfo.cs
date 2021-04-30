@@ -73,7 +73,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 message: "Razor Debugger",
                 async (context) =>
                 {
-                    var proximityExpressions = await _proximityExpressionResolver.TryResolveProximityExpressionsAsync(textBuffer, iLine, iCol, context.CancellationToken);
+                    var proximityExpressions = await _proximityExpressionResolver.TryResolveProximityExpressionsAsync(textBuffer, iLine, iCol, context.CancellationToken).ConfigureAwait(false);
                     return proximityExpressions;
                 });
 
@@ -121,7 +121,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 message: "Razor Debugger",
                 async (context) =>
                 {
-                    var breakpointRange = await _breakpointResolver.TryResolveBreakpointRangeAsync(textBuffer, iLine, iCol, context.CancellationToken);
+                    var breakpointRange = await _breakpointResolver.TryResolveBreakpointRangeAsync(textBuffer, iLine, iCol, context.CancellationToken).ConfigureAwait(false);
                     if (breakpointRange == null)
                     {
                         // No applicable breakpoint location.

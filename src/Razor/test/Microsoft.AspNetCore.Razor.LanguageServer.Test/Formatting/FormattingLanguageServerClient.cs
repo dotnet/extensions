@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Threading;
@@ -40,14 +41,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         private readonly FilePathNormalizer _filePathNormalizer = new FilePathNormalizer();
         private readonly Dictionary<string, RazorCodeDocument> _documents = new Dictionary<string, RazorCodeDocument>();
-        private readonly string _projectPath;
-        private readonly string _baselineFileName;
-
-        public FormattingLanguageServerClient(string projectPath, string fileName)
-        {
-            _projectPath = projectPath;
-            _baselineFileName = fileName;
-        }
 
         public IProgressManager ProgressManager => throw new NotImplementedException();
 
@@ -202,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         private class ResponseRouterReturns : IResponseRouterReturns
         {
-            private object _response;
+            private readonly object _response;
 
             public ResponseRouterReturns(object response)
             {
@@ -258,7 +251,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             throw new NotImplementedException();
         }
 
+#pragma warning disable IDE0060 // Remove unused parameter
         public bool TryGetRequest(long id, [NotNullWhen(true)] out string method, [NotNullWhen(true)] out TaskCompletionSource<JToken> pendingTask)
+#pragma warning restore IDE0060 // Remove unused parameter
         {
             throw new NotImplementedException();
         }

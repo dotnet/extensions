@@ -193,10 +193,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
                 OnCompletingBackgroundWork();
 
                 await Task.Factory.StartNew(
-                    () =>
-                    {
-                        NotifyDocumentsProcessed(work);
-                    },
+                    () => NotifyDocumentsProcessed(work),
                     CancellationToken.None,
                     TaskCreationOptions.None,
                     _foregroundDispatcher.ForegroundScheduler);

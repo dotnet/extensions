@@ -67,28 +67,27 @@ $@"Could not locate Syntax Node owner at position '{i}':
 
         private class Verifier : SyntaxWalker
         {
-            private readonly SourceLocationTracker _tracker;
             private readonly RazorSourceDocument _source;
 
             public Verifier(RazorSourceDocument source)
             {
-                _tracker = new SourceLocationTracker(new SourceLocation(source.FilePath, 0, 0, 0));
+                SourceLocationTracker = new SourceLocationTracker(new SourceLocation(source.FilePath, 0, 0, 0));
                 _source = source;
             }
 
-            public SourceLocationTracker SourceLocationTracker => _tracker;
+            public SourceLocationTracker SourceLocationTracker { get; private set; }
 
             public override void VisitToken(SyntaxToken token)
             {
                 if (token != null && !token.IsMissing && token.Kind != SyntaxKind.Marker)
                 {
                     var start = token.GetSourceLocation(_source);
-                    if (!start.Equals(_tracker.CurrentLocation))
+                    if (!start.Equals(SourceLocationTracker.CurrentLocation))
                     {
-                        throw new InvalidOperationException($"Token starting at {start} should start at {_tracker.CurrentLocation} - {token} ");
+                        throw new InvalidOperationException($"Token starting at {start} should start at {SourceLocationTracker.CurrentLocation} - {token} ");
                     }
 
-                    _tracker.UpdateLocation(token.Content);
+                    SourceLocationTracker.UpdateLocation(token.Content);
                 }
 
                 base.VisitToken(token);

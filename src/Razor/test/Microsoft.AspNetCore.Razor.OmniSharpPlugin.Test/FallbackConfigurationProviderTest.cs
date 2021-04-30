@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             Assert.Empty(projectConfiguration.Documents);
         }
 
-        private ProjectConfigurationProviderContext BuildContext(params string[] referencePaths)
+        private static ProjectConfigurationProviderContext BuildContext(params string[] referencePaths)
         {
             var projectCapabilities = new[] { CoreProjectConfigurationProvider.DotNetCoreRazorCapability };
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());

@@ -18,8 +18,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     [ExportLspMethod(MSLSPMethods.OnAutoInsertName)]
     internal class OnAutoInsertHandler : IRequestHandler<DocumentOnAutoInsertParams, DocumentOnAutoInsertResponseItem>
     {
-        private static readonly HashSet<string> HTMLAllowedTriggerCharacters = new HashSet<string> { ">", "=", "-" };
-        private static readonly HashSet<string> CSharpAllowedTriggerCharacters = new HashSet<string> { "'", "/", "\n" };
+        private static readonly HashSet<string> HTMLAllowedTriggerCharacters = new() { ">", "=", "-" };
+        private static readonly HashSet<string> CSharpAllowedTriggerCharacters = new() { "'", "/", "\n" };
         private static readonly HashSet<string> AllAllowedTriggerCharacters = HTMLAllowedTriggerCharacters
             .Concat(CSharpAllowedTriggerCharacters)
             .ToHashSet();

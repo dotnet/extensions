@@ -65,7 +65,7 @@ namespace Microsoft.CodeAnalysis
                 syntaxTrees = new[] { syntaxTree };
             }
 
-            if (!_referenceCache.TryGetValue(assembly, out IEnumerable<MetadataReference> metadataReferences))
+            if (!_referenceCache.TryGetValue(assembly, out var metadataReferences))
             {
                 metadataReferences = GetMetadataReferences(assembly);
                 _referenceCache.TryAdd(assembly, metadataReferences);

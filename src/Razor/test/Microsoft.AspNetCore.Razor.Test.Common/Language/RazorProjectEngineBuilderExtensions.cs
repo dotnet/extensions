@@ -42,10 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             feature.ConfigureClass.Clear();
             feature.ConfigureMethod.Clear();
 
-            feature.ConfigureNamespace.Add((RazorCodeDocument codeDocument, NamespaceDeclarationIntermediateNode node) =>
-            {
-                node.Content = "Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles";
-            });
+            feature.ConfigureNamespace.Add((RazorCodeDocument codeDocument, NamespaceDeclarationIntermediateNode node) => node.Content = "Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles");
 
             feature.ConfigureClass.Add((RazorCodeDocument codeDocument, ClassDeclarationIntermediateNode node) =>
             {

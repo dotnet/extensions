@@ -64,7 +64,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Host
 
         public async Task<ProjectSnapshotManagerProxyState> GetProjectManagerStateAsync(CancellationToken cancellationToken)
         {
-            using (await _latestStateSemaphore.EnterAsync().ConfigureAwait(false))
+            using (await _latestStateSemaphore.EnterAsync(cancellationToken).ConfigureAwait(false))
             {
                 if (_latestState != null)
                 {

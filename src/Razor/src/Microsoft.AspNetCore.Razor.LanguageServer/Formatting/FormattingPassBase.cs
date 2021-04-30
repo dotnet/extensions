@@ -471,7 +471,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         private static string PrependLines(string text, string newLine, int count)
         {
-            var builder = new StringBuilder(newLine.Length * count + text.Length);
+            var builder = new StringBuilder((newLine.Length * count) + text.Length);
             for (var i = 0; i < count; i++)
             {
                 builder.Append(newLine);

@@ -186,9 +186,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             await detector._deferredUpdates.Single().Value.Task;
 
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
-            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
@@ -222,9 +222,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             await detector._deferredUpdates.Single().Value.Task;
 
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
-            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
@@ -258,9 +258,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             await detector._deferredUpdates.Single().Value.Task;
 
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
-            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
@@ -294,9 +294,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             await detector._deferredUpdates.Single().Value.Task;
 
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
-            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -347,9 +347,9 @@ namespace Microsoft.AspNetCore.Components
 
             await detector._deferredUpdates.Single().Value.Task;
 
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
-            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Components
 $@"
 public partial class TestComponent{{}}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -436,7 +436,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -516,7 +516,7 @@ namespace Microsoft.AspNetCore.Components
             var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
             var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator);
             var sourceText = SourceText.From(string.Empty);
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -587,7 +587,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);

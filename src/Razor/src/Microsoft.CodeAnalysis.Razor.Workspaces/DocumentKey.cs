@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public override bool Equals(object obj)
         {
-            return obj is DocumentKey key ? Equals(key) : false;
+            return obj is DocumentKey key && Equals(key);
         }
 
         public override int GetHashCode()

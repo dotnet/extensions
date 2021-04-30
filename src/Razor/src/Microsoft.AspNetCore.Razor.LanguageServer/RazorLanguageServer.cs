@@ -29,7 +29,6 @@ using OmniSharp.Extensions.LanguageServer.Server;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.LanguageServer.Refactoring;
 using Microsoft.AspNetCore.Razor.LanguageServer.Definition;
-using Microsoft.AspNetCore.Razor.LanguageServer.Serialization;
 using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Razor.LanguageServer.Tooltip;
@@ -63,8 +62,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             Serializer.Instance.JsonSerializer.Converters.RegisterRazorConverters();
 
-            // Custom ClientCapabilities deserializer to extract experimental capabilities
-            Serializer.Instance.JsonSerializer.Converters.Add(ExtendableClientCapabilitiesJsonConverter.Instance);
+            // Custom ClientCapabilities deserializer to extract platform specific capabilities
+            Serializer.Instance.JsonSerializer.Converters.Add(PlatformAgnosticClientCapabilities.JsonConverter);
+            Serializer.Instance.JsonSerializer.Converters.Add(PlatformAgnosticCompletionCapability.JsonConverter);
 
             ILanguageServer server = null;
             var logLevel = RazorLSPOptions.GetLogLevelForTrace(trace);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorFormattingEndpoint>()
                     .WithHandler<RazorSemanticTokensEndpoint>()
                     .AddHandlerLink(LanguageServerConstants.RazorSemanticTokensEditEndpoint, LanguageServerConstants.LegacyRazorSemanticTokensEditEndpoint)
-                    .AddHandlerLink(LanguageServerConstants.RazorSemanticTokensEndpoint , LanguageServerConstants.LegacyRazorSemanticTokensEndpoint)
+                    .AddHandlerLink(LanguageServerConstants.RazorSemanticTokensEndpoint, LanguageServerConstants.LegacyRazorSemanticTokensEndpoint)
                     .WithHandler<RazorSemanticTokensLegendEndpoint>()
                     .WithHandler<OnAutoInsertEndpoint>()
                     .WithHandler<CodeActionEndpoint>()
@@ -209,6 +209,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<IFormattingPass, CSharpOnTypeFormattingPass>();
                         services.AddSingleton<IFormattingPass, FormattingDiagnosticValidationPass>();
                         services.AddSingleton<IFormattingPass, FormattingContentValidationPass>();
+                        services.AddSingleton<IFormattingPass, RazorFormattingPass>();
 
                         // Razor Code actions
                         services.AddSingleton<RazorCodeActionProvider, ExtractToCodeBehindCodeActionProvider>();

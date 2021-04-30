@@ -60,6 +60,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
                 return EmptyResult;
             }
 
+            if (!IsApplicableTag(startTag))
+            {
+                return EmptyResult;
+            }
+
             if (IsTagUnknown(startTag, context))
             {
                 AddComponentAccessFromTag(context, startTag, codeActions);
@@ -67,6 +72,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
             }
 
             return Task.FromResult(codeActions as IReadOnlyList<RazorCodeAction>);
+        }
+
+        private static bool IsApplicableTag(MarkupStartTagSyntax startTag)
+        {
+            if (startTag.Name.FullWidth == 0)
+            {
+                // Empty tag name, we shouldn't show a light bulb just to create an empty file.
+                return false;
+            }
+
+            return true;
         }
 
         private void AddCreateComponentFromTag(RazorCodeActionContext context, MarkupStartTagSyntax startTag, List<RazorCodeAction> container)

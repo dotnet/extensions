@@ -26,9 +26,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     public class Foo { }
 }
 ");
-            var context = CreateFormattingContext(source);
+            using var context = CreateFormattingContext(source);
             var input = new FormattingResult(Array.Empty<TextEdit>(), RazorLanguageKind.CSharp);
-            var pass = GetPass(context.CodeDocument);
+            var pass = GetPass();
 
             // Act
             var result = pass.Execute(context, input);
@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     public class Foo { }
 }
 ");
-            var context = CreateFormattingContext(source);
+            using var context = CreateFormattingContext(source);
             var input = new FormattingResult(Array.Empty<TextEdit>(), RazorLanguageKind.Html);
-            var pass = GetPass(context.CodeDocument);
+            var pass = GetPass();
 
             // Act
             var result = pass.Execute(context, input);
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 public class Foo { }
 }
 ");
-            var context = CreateFormattingContext(source);
+            using var context = CreateFormattingContext(source);
             var edits = new[]
             {
                 new TextEdit()
@@ -76,7 +76,7 @@ public class Foo { }
                 }
             };
             var input = new FormattingResult(edits, RazorLanguageKind.Razor);
-            var pass = GetPass(context.CodeDocument);
+            var pass = GetPass();
 
             // Act
             var result = pass.Execute(context, input);
@@ -94,7 +94,7 @@ public class Foo { }
 public class Foo { }
 }
 ");
-            var context = CreateFormattingContext(source);
+            using var context = CreateFormattingContext(source);
             var edits = new[]
             {
                 new TextEdit()
@@ -104,7 +104,7 @@ public class Foo { }
                 }
             };
             var input = new FormattingResult(edits, RazorLanguageKind.Razor);
-            var pass = GetPass(context.CodeDocument);
+            var pass = GetPass();
 
             // Act
             var result = pass.Execute(context, input);
@@ -113,18 +113,20 @@ public class Foo { }
             Assert.Empty(result.Edits);
         }
 
-        private FormattingContentValidationPass GetPass(RazorCodeDocument codeDocument)
+        private FormattingContentValidationPass GetPass()
         {
             var mappingService = new DefaultRazorDocumentMappingService();
 
             var client = Mock.Of<ClientNotifierServiceBase>(MockBehavior.Strict);
-            var pass = new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory);
-            pass.DebugAssertsEnabled = false;
+            var pass = new FormattingContentValidationPass(mappingService, FilePathNormalizer, client, LoggerFactory)
+            {
+                DebugAssertsEnabled = false
+            };
 
             return pass;
         }
 
-        private FormattingContext CreateFormattingContext(SourceText source, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
+        private static FormattingContext CreateFormattingContext(SourceText source, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
         {
             var path = "file:///path/to/document.razor";
             var uri = new Uri(path);
@@ -144,7 +146,7 @@ public class Foo { }
             fileKind ??= FileKinds.Component;
             tagHelpers ??= Array.Empty<TagHelperDescriptor>();
             var sourceDocument = text.GetRazorSourceDocument(path, path);
-            var projectEngine = RazorProjectEngine.Create(builder => { builder.SetRootNamespace("Test"); });
+            var projectEngine = RazorProjectEngine.Create(builder => builder.SetRootNamespace("Test"));
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), tagHelpers);
 
             var documentSnapshot = new Mock<DocumentSnapshot>(MockBehavior.Strict);

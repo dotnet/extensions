@@ -61,8 +61,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private void KeepAlive(DocumentSnapshot snapshot)
         {
-            var defaultSnapshot = snapshot as DefaultDocumentSnapshot;
-            if (defaultSnapshot == null)
+            if (!(snapshot is DefaultDocumentSnapshot defaultSnapshot))
             {
                 return;
             }

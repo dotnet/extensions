@@ -15,14 +15,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     {
         private const string HtmlTagName = "html";
 
-        private RazorSourceDocument _source;
-        private List<FormattingSpan> _spans;
+        private readonly RazorSourceDocument _source;
+        private readonly List<FormattingSpan> _spans;
         private FormattingBlockKind _currentBlockKind;
         private SyntaxNode _currentBlock;
         private int _currentHtmlIndentationLevel = 0;
         private int _currentRazorIndentationLevel = 0;
         private bool _isInClassBody = false;
-        private Stack<MarkupTagHelperElementSyntax> _componentTracker;
+        private readonly Stack<MarkupTagHelperElementSyntax> _componentTracker;
 
         public FormattingVisitor(RazorSourceDocument source)
         {
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             Visit(node.EndTag);
 
-            bool IsComponentTagHelperNode(MarkupTagHelperElementSyntax node)
+            static bool IsComponentTagHelperNode(MarkupTagHelperElementSyntax node)
             {
                 return node.TagHelperInfo?.BindingResult?.Descriptors?.Any(
                     d => d.IsComponentOrChildContentTagHelper()) ?? false;

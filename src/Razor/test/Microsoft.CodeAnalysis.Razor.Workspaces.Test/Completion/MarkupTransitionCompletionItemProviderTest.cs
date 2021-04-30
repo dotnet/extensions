@@ -132,7 +132,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 {
     <
 })");
-            var location = new SourceSpan(121 + Environment.NewLine.Length * 9, 0);
+            var location = new SourceSpan(121 + (Environment.NewLine.Length * 9), 0);
 
             // Act
             var completionItems = Provider.GetCompletionItems(syntaxTree, null, location);
@@ -149,7 +149,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
     @* @: Here's some Markup | <-- You shouldn't get a <text> tag completion here. *@
     @: Here's some markup <
 }");
-            var location = new SourceSpan(114 + Environment.NewLine.Length * 2, 0);
+            var location = new SourceSpan(114 + (Environment.NewLine.Length * 2), 0);
 
             // Act
             var completionItems = Provider.GetCompletionItems(syntaxTree, null, location);
@@ -168,7 +168,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
   < @* Should get text completion here *@
 }
 </div>");
-            var location = new SourceSpan(19 + Environment.NewLine.Length * 3, 0);
+            var location = new SourceSpan(19 + (Environment.NewLine.Length * 3), 0);
 
             // Act
             var completionItems = Provider.GetCompletionItems(syntaxTree, null, location);
@@ -187,7 +187,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
   < @* Shouldn't get text completion here *@
 </div>
 }");
-            var location = new SourceSpan(19 + Environment.NewLine.Length * 3, 0);
+            var location = new SourceSpan(19 + (Environment.NewLine.Length * 3), 0);
 
             // Act
             var completionItems = Provider.GetCompletionItems(syntaxTree, null, location);
@@ -208,7 +208,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
 
     private bool _collapseNavMenu => true;
 }", FunctionsDirective.Directive);
-            var location = new SourceSpan(59 + Environment.NewLine.Length * 3, 0);
+            var location = new SourceSpan(59 + (Environment.NewLine.Length * 3), 0);
 
             // Act
             var completionItems = Provider.GetCompletionItems(syntaxTree, null, location);

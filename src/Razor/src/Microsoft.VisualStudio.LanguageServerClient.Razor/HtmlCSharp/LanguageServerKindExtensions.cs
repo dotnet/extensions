@@ -7,15 +7,12 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
     {
         public static string ToContentType(this LanguageServerKind languageServerKind)
         {
-            switch (languageServerKind)
+            return languageServerKind switch
             {
-                case LanguageServerKind.CSharp:
-                    return RazorLSPConstants.CSharpContentTypeName;
-                case LanguageServerKind.Html:
-                    return RazorLSPConstants.HtmlLSPContentTypeName;
-                default:
-                    return RazorLSPConstants.RazorLSPContentTypeName;
-            }
+                LanguageServerKind.CSharp => RazorLSPConstants.CSharpContentTypeName,
+                LanguageServerKind.Html => RazorLSPConstants.HtmlLSPContentTypeName,
+                _ => RazorLSPConstants.RazorLSPContentTypeName,
+            };
         }
     }
 }

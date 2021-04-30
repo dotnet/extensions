@@ -138,7 +138,9 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             }
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void HostProxyProjectManager_Changed(object sender, ProjectChangeEventProxyArgs args)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             if (args == null)
             {

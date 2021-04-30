@@ -507,27 +507,19 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
 
         private class TestMSBuildItem : IMSBuildItemEvaluated
         {
-            private readonly MSBuildPropertyGroup _metadata;
-            private readonly string _name;
-            private string _include;
-
             public TestMSBuildItem(string name)
             {
-                _name = name;
-                _metadata = new MSBuildPropertyGroup();
+                Name = name;
+                TestMetadata = new MSBuildPropertyGroup();
             }
 
-            public string Name => _name;
+            public string Name { get; }
 
-            public string Include
-            {
-                get => _include;
-                set => _include = value;
-            }
+            public string Include { get; set; }
 
-            public MSBuildPropertyGroup TestMetadata => _metadata;
+            public MSBuildPropertyGroup TestMetadata { get; }
 
-            public IMSBuildPropertyGroupEvaluated Metadata => _metadata;
+            public IMSBuildPropertyGroupEvaluated Metadata => TestMetadata;
 
             public string Condition => throw new NotImplementedException();
 

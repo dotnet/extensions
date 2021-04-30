@@ -15,6 +15,7 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Microsoft.AspNetCore.Razor.LanguageServer.CodeActions.Models;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
 {
@@ -255,10 +256,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.CodeActions
         private static RazorCodeDocument CreateCodeDocument(string text)
         {
             var projectItem = new TestRazorProjectItem("c:/Test.razor", "c:/Test.razor", "Test.razor") { Content = text };
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) =>
-            {
-                builder.SetRootNamespace("test.Pages");
-            });
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, (builder) => builder.SetRootNamespace("test.Pages"));
 
             var codeDocument = projectEngine.Process(projectItem);
             codeDocument.SetFileKind(FileKinds.Component);

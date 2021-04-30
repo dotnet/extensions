@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 
             public StaticTagHelperResolver(IReadOnlyList<TagHelperDescriptor> tagHelpers)
             {
-                this._tagHelpers = tagHelpers;
+                _tagHelpers = tagHelpers;
             }
 
             public override Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken = default)
@@ -144,10 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Microbenchmarks
 
             public override RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
             {
-                return RazorProjectEngine.Create(configuration, fileSystem, b =>
-                {
-                    RazorExtensions.Register(b);
-                });
+                return RazorProjectEngine.Create(configuration, fileSystem, b => RazorExtensions.Register(b));
             }
         }
     }

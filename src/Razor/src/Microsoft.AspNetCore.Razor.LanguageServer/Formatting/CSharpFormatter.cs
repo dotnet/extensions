@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Razor.Workspaces;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Range = OmniSharp.Extensions.LanguageServer.Protocol.Models.Range;
@@ -71,16 +72,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 return Array.Empty<TextEdit>();
             }
 
-            TextEdit[] edits;
-            if (formatOnClient)
-            {
-                edits = await FormatOnClientAsync(context, projectedRange, cancellationToken);
-            }
-            else
-            {
-                edits = await FormatOnServerAsync(context, projectedRange, cancellationToken);
-            }
-
+            var edits = formatOnClient
+                ? await FormatOnClientAsync(context, projectedRange, cancellationToken)
+                : await FormatOnServerAsync(context, projectedRange, cancellationToken);
             var mappedEdits = MapEditsToHostDocument(context.CodeDocument, edits);
             return mappedEdits;
         }

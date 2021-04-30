@@ -15,7 +15,7 @@ namespace Microsoft.VisualStudio.Test
             NewSnapshot = newSnapshot;
         }
 
-        public TestEdit(int position, int oldLength, ITextSnapshot oldSnapshot, int newLength, ITextSnapshot newSnapshot, string newText)
+        public TestEdit(int position, int oldLength, ITextSnapshot oldSnapshot, ITextSnapshot newSnapshot, string newText)
         {
             Change = new SourceChange(position, oldLength, newText);
             OldSnapshot = oldSnapshot;

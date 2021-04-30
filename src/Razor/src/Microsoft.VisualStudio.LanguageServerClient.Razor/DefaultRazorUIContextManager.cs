@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
         public override async Task SetUIContextAsync(Guid uiContextGuid, bool isActive, CancellationToken cancellationToken)
         {
-            await _joinableTaskFactory.SwitchToMainThreadAsync();
+            await _joinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             var monitorSelection = _serviceProvider.GetService(typeof(SVsShellMonitorSelection)) as IVsMonitorSelection;
             Assumes.Present(monitorSelection);

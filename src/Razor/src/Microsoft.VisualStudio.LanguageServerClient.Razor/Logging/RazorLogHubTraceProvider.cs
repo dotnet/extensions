@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.Logging
                     return true;
                 }
 
-                if (!(VSShell.Package.GetGlobalService(typeof(VSShell.Interop.SAsyncServiceProvider)) is VSShell.IAsyncServiceProvider serviceProvider))
+                if (VSShell.Package.GetGlobalService(typeof(VSShell.Interop.SAsyncServiceProvider)) is not VSShell.IAsyncServiceProvider serviceProvider)
                 {
                     return false;
                 }

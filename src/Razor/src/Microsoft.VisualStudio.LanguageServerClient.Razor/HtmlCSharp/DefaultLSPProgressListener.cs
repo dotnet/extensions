@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor.HtmlCSharp
         private readonly ILanguageServiceBroker2 _languageServiceBroker;
 
         private readonly ConcurrentDictionary<string, ProgressRequest> _activeRequests
-            = new ConcurrentDictionary<string, ProgressRequest>();
+            = new();
 
         [ImportingConstructor]
         public DefaultLSPProgressListener(ILanguageServiceBroker2 languageServiceBroker)

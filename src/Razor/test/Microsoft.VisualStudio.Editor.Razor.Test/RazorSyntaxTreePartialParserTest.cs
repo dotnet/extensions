@@ -141,7 +141,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                                                 + "}");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(17, 0, old, 1, changed, "."));
+            RunPartialParseTest(new TestEdit(17, 0, old, changed, "."));
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var old = new StringTextSnapshot("foo @DateTime.Now baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(13, 0, old, 1, changed, "."), additionalFlags: PartialParseResultInternal.Provisional);
+            RunPartialParseTest(new TestEdit(13, 0, old, changed, "."), additionalFlags: PartialParseResultInternal.Provisional);
         }
 
         [Fact]
@@ -163,7 +163,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var changed = new StringTextSnapshot("foo @DateTime baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(5, 4, old, 8, changed, "DateTime"));
+            RunPartialParseTest(new TestEdit(5, 4, old, changed, "DateTime"));
         }
 
         [Fact]
@@ -172,7 +172,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var old = new StringTextSnapshot("foo @date baz");
             var changed = new StringTextSnapshot("foo @if baz");
-            var edit = new TestEdit(5, 4, old, 2, changed, "if");
+            var edit = new TestEdit(5, 4, old, changed, "if");
 
             // Act & Assert
             RunPartialParseRejectionTest(edit);
@@ -184,7 +184,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var old = new StringTextSnapshot("foo @date baz");
             var changed = new StringTextSnapshot("foo @inherits baz");
-            var edit = new TestEdit(5, 4, old, 8, changed, "inherits");
+            var edit = new TestEdit(5, 4, old, changed, "inherits");
 
             // Act & Assert
             RunPartialParseRejectionTest(edit, PartialParseResultInternal.SpanContextChanged);
@@ -198,7 +198,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var changed = new StringTextSnapshot("foo @DateTime baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(5, 1, old, 4, changed, "Date"));
+            RunPartialParseTest(new TestEdit(5, 1, old, changed, "Date"));
         }
 
         [Fact]
@@ -209,7 +209,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var changed = new StringTextSnapshot("foo @DateTime.Now baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(5, 1, old, 4, changed, "Date"));
+            RunPartialParseTest(new TestEdit(5, 1, old, changed, "Date"));
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var changed = new StringTextSnapshot("foo @DateTime baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(9, 1, old, 4, changed, "Time"));
+            RunPartialParseTest(new TestEdit(9, 1, old, changed, "Time"));
         }
 
         [Fact]
@@ -231,7 +231,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var changed = new StringTextSnapshot("foo @DateTime.Now baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(14, 1, old, 3, changed, "Now"));
+            RunPartialParseTest(new TestEdit(14, 1, old, changed, "Now"));
         }
 
         [Fact]
@@ -242,7 +242,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var changed = new StringTextSnapshot("foo @DateTime.Now.ToString() baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(14, 1, old, 3, changed, "Now"));
+            RunPartialParseTest(new TestEdit(14, 1, old, changed, "Now"));
         }
 
         [Fact]
@@ -250,7 +250,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var changed = new StringTextSnapshot("foo @User. baz");
             var old = new StringTextSnapshot("foo @User.Name baz");
-            RunPartialParseTest(new TestEdit(10, 4, old, 0, changed, string.Empty),
+            RunPartialParseTest(new TestEdit(10, 4, old, changed, string.Empty),
                 additionalFlags: PartialParseResultInternal.Provisional);
         }
 
@@ -259,7 +259,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var changed = new StringTextSnapshot("foo @Us baz");
             var old = new StringTextSnapshot("foo @User baz");
-            RunPartialParseTest(new TestEdit(7, 2, old, 0, changed, string.Empty));
+            RunPartialParseTest(new TestEdit(7, 2, old, changed, string.Empty));
         }
 
         [Fact]
@@ -268,7 +268,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // ImpExprProvisionallyAcceptsMultipleInsertionIfItCausesIdentifierExpansionAndTrailingDot
             var changed = new StringTextSnapshot("foo @User. baz");
             var old = new StringTextSnapshot("foo @U baz");
-            RunPartialParseTest(new TestEdit(6, 0, old, 4, changed, "ser."),
+            RunPartialParseTest(new TestEdit(6, 0, old, changed, "ser."),
                 additionalFlags: PartialParseResultInternal.Provisional);
         }
 
@@ -277,7 +277,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var changed = new StringTextSnapshot("foo @barbiz baz");
             var old = new StringTextSnapshot("foo @bar baz");
-            RunPartialParseTest(new TestEdit(8, 0, old, 3, changed, "biz"));
+            RunPartialParseTest(new TestEdit(8, 0, old, changed, "biz"));
         }
 
         [Fact]
@@ -289,7 +289,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var old = new StringTextSnapshot("@{" + NewLine
                                                 + "    @foo" + NewLine
                                                 + "}");
-            RunPartialParseTest(new TestEdit(10 + NewLine.Length, 0, old, 1, changed, "d"));
+            RunPartialParseTest(new TestEdit(10 + NewLine.Length, 0, old, changed, "d"));
         }
 
         [Fact]
@@ -301,7 +301,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var old = new StringTextSnapshot("@{" + NewLine
                                                 + "    @foo." + NewLine
                                                 + "}");
-            RunPartialParseTest(new TestEdit(11 + NewLine.Length, 0, old, 1, changed, "d"));
+            RunPartialParseTest(new TestEdit(11 + NewLine.Length, 0, old, changed, "d"));
         }
 
         [Fact]
@@ -313,7 +313,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var old = new StringTextSnapshot("@{" + NewLine
                                                 + "    @foo" + NewLine
                                                 + "}");
-            RunPartialParseTest(new TestEdit(10 + NewLine.Length, 0, old, 1, changed, "."));
+            RunPartialParseTest(new TestEdit(10 + NewLine.Length, 0, old, changed, "."));
         }
 
         [Fact]
@@ -321,7 +321,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var changed = new StringTextSnapshot("foo @foo. bar");
             var old = new StringTextSnapshot("foo @foo bar");
-            RunPartialParseTest(new TestEdit(8, 0, old, 1, changed, "."),
+            RunPartialParseTest(new TestEdit(8, 0, old, changed, "."),
                 additionalFlags: PartialParseResultInternal.Provisional);
         }
 
@@ -330,7 +330,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var changed = new StringTextSnapshot("foo @foob bar");
             var old = new StringTextSnapshot("foo @foo bar");
-            RunPartialParseTest(new TestEdit(8, 0, old, 1, changed, "b"));
+            RunPartialParseTest(new TestEdit(8, 0, old, changed, "b"));
         }
 
         [Fact]
@@ -338,7 +338,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var changed = new StringTextSnapshot("@{@foo.b}");
             var old = new StringTextSnapshot("@{@foo.}");
-            RunPartialParseTest(new TestEdit(7, 0, old, 1, changed, "b"));
+            RunPartialParseTest(new TestEdit(7, 0, old, changed, "b"));
         }
 
         [Fact]
@@ -346,10 +346,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var changed = new StringTextSnapshot("@{@foo.}");
             var old = new StringTextSnapshot("@{@foo}");
-            RunPartialParseTest(new TestEdit(6, 0, old, 1, changed, "."));
+            RunPartialParseTest(new TestEdit(6, 0, old, changed, "."));
         }
 
-        private void RunPartialParseRejectionTest(TestEdit edit, PartialParseResultInternal additionalFlags = 0)
+        private static void RunPartialParseRejectionTest(TestEdit edit, PartialParseResultInternal additionalFlags = 0)
         {
             var templateEngine = CreateProjectEngine();
             var document = TestRazorCodeDocument.Create(edit.OldSnapshot.GetText());
@@ -387,7 +387,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         private static RazorProjectEngine CreateProjectEngine(
-            string path = "C:\\This\\Path\\Is\\Just\\For\\Line\\Pragmas.cshtml",
             IEnumerable<TagHelperDescriptor> tagHelpers = null)
         {
             var fileSystem = new TestRazorProjectFileSystem();
