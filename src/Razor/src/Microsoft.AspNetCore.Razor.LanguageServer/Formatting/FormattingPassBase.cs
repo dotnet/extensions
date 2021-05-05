@@ -339,6 +339,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                         razorDesiredIndentation = context.Indentations[i].ExistingIndentation;
                     }
                 }
+
                 var effectiveDesiredIndentation = razorDesiredIndentation + effectiveCSharpDesiredIndentation;
 
                 // This will now contain the indentation we ultimately want to apply to this line.
@@ -588,7 +589,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 return true;
             }
 
+            // special case: If we're formatting implicit statements, we want to treat the `@attribute` directive as one
+            // so that the C# definition of the attribute is formatted as C#
+            if (allowImplicitStatements &&
+                IsAttributeDirective())
+            {
+                return true;
+            }
+
+
             if (IsInHtmlTag() ||
+                IsInDirectiveWithNoKind() ||
                 IsInSingleLineDirective() ||
                 IsImplicitOrExplicitExpression() ||
                 IsInSectionDirective() ||
@@ -630,16 +641,37 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     n => n is MarkupStartTagSyntax || n is MarkupTagHelperStartTagSyntax || n is MarkupEndTagSyntax || n is MarkupTagHelperEndTagSyntax);
             }
 
+            bool IsInDirectiveWithNoKind()
+            {
+                // E.g, (| is position)
+                //
+                // `@using |System;
+                //
+                return owner.AncestorsAndSelf().Any(
+                    n => n is RazorDirectiveSyntax directive && directive.DirectiveDescriptor == null);
+            }
+
+            bool IsAttributeDirective()
+            {
+                // E.g, (| is position)
+                //
+                // `@attribute |[System.Obsolete]
+                //
+                return owner.AncestorsAndSelf().Any(
+                    n => n is RazorDirectiveSyntax directive &&
+                        directive.DirectiveDescriptor != null &&
+                        directive.DirectiveDescriptor.Kind == DirectiveKind.SingleLine &&
+                        directive.DirectiveDescriptor.Directive.Equals(AttributeDirective.Directive.Directive, StringComparison.Ordinal));
+            }
+
             bool IsInSingleLineDirective()
             {
                 // E.g, (| is position)
                 //
                 // `@inject |SomeType SomeName` - true
                 //
-                // Note: @using directives don't have a descriptor associated with them, hence the extra null check.
-                //
                 return owner.AncestorsAndSelf().Any(
-                    n => n is RazorDirectiveSyntax directive && (directive.DirectiveDescriptor == null || directive.DirectiveDescriptor.Kind == DirectiveKind.SingleLine));
+                    n => n is RazorDirectiveSyntax directive && directive.DirectiveDescriptor.Kind == DirectiveKind.SingleLine);
             }
 
             bool IsImplicitOrExplicitExpression()

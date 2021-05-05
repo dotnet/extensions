@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal static class SyntaxNodeExtensions
     {
-        public static bool ContainsOnlyWhitespace(this SyntaxNode node)
+        public static bool ContainsOnlyWhitespace(this SyntaxNode node, bool includingNewLines = true)
         {
             if (node is null)
             {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             for (var i = 0; i < tokens.Count; i++)
             {
                 var tokenKind = tokens[i].Kind;
-                if (tokenKind != SyntaxKind.Whitespace && tokenKind != SyntaxKind.NewLine)
+                if (tokenKind != SyntaxKind.Whitespace && (tokenKind != SyntaxKind.NewLine || !includingNewLines))
                 {
                     return false;
                 }
