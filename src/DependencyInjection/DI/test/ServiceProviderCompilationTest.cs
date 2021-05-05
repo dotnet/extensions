@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
     public class ServiceProviderCompilationTest
     {
         [Theory]
+        [InlineData(ServiceProviderMode.Default, typeof(I999))]
         [InlineData(ServiceProviderMode.Dynamic, typeof(I999))]
         [InlineData(ServiceProviderMode.Runtime, typeof(I999))]
         [InlineData(ServiceProviderMode.ILEmit, typeof(I999))]

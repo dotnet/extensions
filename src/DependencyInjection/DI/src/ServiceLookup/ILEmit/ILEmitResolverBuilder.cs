@@ -151,7 +151,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             foreach (var parameterCallSite in constructorCallSite.ParameterCallSites)
             {
                 VisitCallSite(parameterCallSite, argument);
+                if (parameterCallSite.ServiceType.IsValueType)
+                {
+                    argument.Generator.Emit(OpCodes.Unbox_Any, parameterCallSite.ServiceType);
+                }
             }
+
             argument.Generator.Emit(OpCodes.Newobj, constructorCallSite.ConstructorInfo);
             return null;
         }
@@ -225,7 +230,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     // push index
                     argument.Generator.Emit(OpCodes.Ldc_I4, i);
                     // create parameter
-                    VisitCallSite(enumerableCallSite.ServiceCallSites[i], argument);
+                    ServiceCallSite parameterCallSite = enumerableCallSite.ServiceCallSites[i];
+                    VisitCallSite(parameterCallSite, argument);
+                    if (parameterCallSite.ServiceType.IsValueType)
+                    {
+                        argument.Generator.Emit(OpCodes.Unbox_Any, parameterCallSite.ServiceType);
+                    }
+
                     // store
                     argument.Generator.Emit(OpCodes.Stelem, enumerableCallSite.ItemType);
                 }
