@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 using RazorSyntaxList = Microsoft.AspNetCore.Razor.Language.Syntax.SyntaxList<Microsoft.AspNetCore.Razor.Language.Syntax.SyntaxNode>;
@@ -13,80 +14,90 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
         // Internal for testing
         internal static bool TryGetAttributeInfo(
             RazorSyntaxNode attributeLeafOwner,
-            out string name,
-            out TextSpan nameLocation,
+            out TextSpan? prefixLocation,
+            out string attributeName,
+            out TextSpan attributeNameLocation,
             out string parameterName,
             out TextSpan parameterLocation)
         {
             var attribute = attributeLeafOwner.Parent;
 
+            // The null check on the `NamePrefix` field is required for cases like:
+            // `<svg xml:base=""x| ></svg>` where there's no `NamePrefix` available.
             switch (attribute)
             {
                 case MarkupMinimizedAttributeBlockSyntax minimizedMarkupAttribute:
+                    prefixLocation = minimizedMarkupAttribute.NamePrefix?.Span;
                     TryExtractIncompleteDirectiveAttribute(
                         minimizedMarkupAttribute.Name.GetContent(),
                         minimizedMarkupAttribute.Name.Span,
-                        out name,
-                        out nameLocation,
+                        out attributeName,
+                        out attributeNameLocation,
                         out parameterName,
                         out parameterLocation);
 
                     return true;
                 case MarkupAttributeBlockSyntax markupAttribute:
+                    prefixLocation = markupAttribute.NamePrefix?.Span;
                     TryExtractIncompleteDirectiveAttribute(
                         markupAttribute.Name.GetContent(),
                         markupAttribute.Name.Span,
-                        out name,
-                        out nameLocation,
+                        out attributeName,
+                        out attributeNameLocation,
                         out parameterName,
                         out parameterLocation);
                     return true;
                 case MarkupMinimizedTagHelperAttributeSyntax minimizedTagHelperAttribute:
+                    prefixLocation = minimizedTagHelperAttribute.NamePrefix?.Span;
                     TryExtractIncompleteDirectiveAttribute(
                         minimizedTagHelperAttribute.Name.GetContent(),
                         minimizedTagHelperAttribute.Name.Span,
-                        out name,
-                        out nameLocation,
+                        out attributeName,
+                        out attributeNameLocation,
                         out parameterName,
                         out parameterLocation);
                     return true;
                 case MarkupTagHelperAttributeSyntax tagHelperAttribute:
+                    prefixLocation = tagHelperAttribute.NamePrefix?.Span;
                     TryExtractIncompleteDirectiveAttribute(
                         tagHelperAttribute.Name.GetContent(),
                         tagHelperAttribute.Name.Span,
-                        out name,
-                        out nameLocation,
+                        out attributeName,
+                        out attributeNameLocation,
                         out parameterName,
                         out parameterLocation);
                     return true;
                 case MarkupTagHelperDirectiveAttributeSyntax directiveAttribute:
                     {
-                        var attributeName = directiveAttribute.Name;
+                        var attributeNameNode = directiveAttribute.Name;
                         var directiveAttributeTransition = directiveAttribute.Transition;
-                        var nameStart = directiveAttributeTransition?.SpanStart ?? attributeName.SpanStart;
-                        var nameEnd = attributeName?.Span.End ?? directiveAttributeTransition.Span.End;
-                        name = string.Concat(directiveAttributeTransition?.GetContent(), attributeName?.GetContent());
-                        nameLocation = new TextSpan(nameStart, nameEnd - nameStart);
+                        var nameStart = directiveAttributeTransition?.SpanStart ?? attributeNameNode.SpanStart;
+                        var nameEnd = attributeNameNode?.Span.End ?? directiveAttributeTransition.Span.End;
+                        prefixLocation = directiveAttribute.NamePrefix?.Span;
+                        attributeName = string.Concat(directiveAttributeTransition?.GetContent(), attributeNameNode?.GetContent());
+                        attributeNameLocation = new TextSpan(nameStart, nameEnd - nameStart);
                         parameterName = directiveAttribute.ParameterName?.GetContent();
                         parameterLocation = directiveAttribute.ParameterName?.Span ?? default;
                         return true;
                     }
                 case MarkupMinimizedTagHelperDirectiveAttributeSyntax minimizedDirectiveAttribute:
                     {
-                        var attributeName = minimizedDirectiveAttribute.Name;
+                        var attributeNameNode = minimizedDirectiveAttribute.Name;
                         var directiveAttributeTransition = minimizedDirectiveAttribute.Transition;
-                        var nameStart = directiveAttributeTransition?.SpanStart ?? attributeName.SpanStart;
-                        var nameEnd = attributeName?.Span.End ?? directiveAttributeTransition.Span.End;
-                        name = string.Concat(directiveAttributeTransition?.GetContent(), attributeName?.GetContent());
-                        nameLocation = new TextSpan(nameStart, nameEnd - nameStart);
+                        var nameStart = directiveAttributeTransition?.SpanStart ?? attributeNameNode.SpanStart;
+                        var nameEnd = attributeNameNode?.Span.End ?? directiveAttributeTransition.Span.End;
+                        prefixLocation = minimizedDirectiveAttribute.NamePrefix?.Span;
+                        attributeName = string.Concat(directiveAttributeTransition?.GetContent(), attributeNameNode?.GetContent());
+                        attributeNameLocation = new TextSpan(nameStart, nameEnd - nameStart);
                         parameterName = minimizedDirectiveAttribute.ParameterName?.GetContent();
                         parameterLocation = minimizedDirectiveAttribute.ParameterName?.Span ?? default;
                         return true;
                     }
             }
 
-            name = null;
-            nameLocation = default;
+            prefixLocation = default;
+            attributeName = null;
+            attributeNameLocation = default;
             parameterName = null;
             parameterLocation = default;
             return false;
@@ -172,7 +183,7 @@ namespace Microsoft.CodeAnalysis.Razor.Completion
             // It's possible that the attribute looks like a directive attribute but is incomplete. 
             // We should try and extract out the transition and parameter.
 
-            if (!attributeName.StartsWith("@"))
+            if (!attributeName.StartsWith("@", StringComparison.Ordinal))
             {
                 // Doesn't look like a directive attribute. Not an incomplete directive attribute.
                 return;

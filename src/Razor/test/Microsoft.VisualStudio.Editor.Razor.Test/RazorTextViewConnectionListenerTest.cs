@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.ObjectModel;
-using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Moq;
@@ -16,7 +15,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void SubjectBuffersConnected_CallsRazorDocumentManager_OnTextViewOpened()
         {
             // Arrange
-            var textView = Mock.Of<ITextView>();
+            var textView = Mock.Of<ITextView>(MockBehavior.Strict);
             var buffers = new Collection<ITextBuffer>();
             var documentManager = new Mock<RazorDocumentManager>(MockBehavior.Strict);
             documentManager.Setup(d => d.OnTextViewOpened(textView, buffers)).Verifiable();
@@ -34,7 +33,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void SubjectBuffersDisonnected_CallsRazorDocumentManager_OnTextViewClosed()
         {
             // Arrange
-            var textView = Mock.Of<ITextView>();
+            var textView = Mock.Of<ITextView>(MockBehavior.Strict);
             var buffers = new Collection<ITextBuffer>();
             var documentManager = new Mock<RazorDocumentManager>(MockBehavior.Strict);
             documentManager.Setup(d => d.OnTextViewClosed(textView, buffers)).Verifiable();

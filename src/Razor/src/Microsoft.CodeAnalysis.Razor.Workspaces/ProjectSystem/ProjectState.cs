@@ -185,7 +185,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 {
                     if (_projectEngine == null)
                     {
-                        _projectEngine = this.CreateProjectEngine();
+                        _projectEngine = CreateProjectEngine();
                     }
                 }
 
@@ -333,7 +333,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(hostProject));
             }
 
-            if (HostProject.Configuration.Equals(hostProject.Configuration))
+            if (HostProject.Configuration.Equals(hostProject.Configuration) &&
+                HostProject.RootNamespace == hostProject.RootNamespace)
             {
                 return this;
             }
@@ -355,8 +356,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public ProjectState WithProjectWorkspaceState(ProjectWorkspaceState projectWorkspaceState)
         {
-            var difference = ProjectDifference.ProjectWorkspaceStateChanged;
+            if (ProjectWorkspaceState == projectWorkspaceState)
+            {
+                return this;
+            }
 
+            if (ProjectWorkspaceState != null && ProjectWorkspaceState.Equals(projectWorkspaceState))
+            {
+                return this;
+            }
+
+            var difference = ProjectDifference.ProjectWorkspaceStateChanged;
             var documents = Documents.ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value.WithProjectWorkspaceStateChange(), FilePathComparer.Instance);
             var state = new ProjectState(this, difference, HostProject, projectWorkspaceState, documents, ImportsToRelatedDocuments);
             return state;
@@ -391,14 +401,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 if (importsToRelatedDocuments.TryGetValue(importTargetPath, out var relatedDocuments))
                 {
                     relatedDocuments = relatedDocuments.Remove(hostDocument.FilePath);
-                    if (relatedDocuments.Length > 0)
-                    {
-                        importsToRelatedDocuments = importsToRelatedDocuments.SetItem(importTargetPath, relatedDocuments);
-                    }
-                    else
-                    {
-                        importsToRelatedDocuments = importsToRelatedDocuments.Remove(importTargetPath);
-                    }
+                    importsToRelatedDocuments = relatedDocuments.Length > 0
+                        ? importsToRelatedDocuments.SetItem(importTargetPath, relatedDocuments)
+                        : importsToRelatedDocuments.Remove(importTargetPath);
                 }
             }
 
@@ -430,6 +435,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             foreach (var importItem in importItems)
             {
                 var itemTargetPath = importItem.FilePath.Replace('/', '\\').TrimStart('\\');
+
+                if (FilePathComparer.Instance.Equals(itemTargetPath, hostDocument.TargetPath))
+                {
+                    // We've normalized the original importItem.FilePath into the HostDocument.TargetPath. For instance, if the HostDocument.TargetPath
+                    // was '/_Imports.razor' it'd be normalized down into '_Imports.razor'. The purpose of this method is to get the associated document
+                    // paths for a given import file (_Imports.razor / _ViewImports.cshtml); therefore, an import importing itself doesn't make sense.
+                    continue;
+                }
+
                 targetPaths.Add(itemTargetPath);
             }
 

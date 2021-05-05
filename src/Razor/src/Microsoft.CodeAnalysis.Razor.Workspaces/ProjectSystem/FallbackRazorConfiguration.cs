@@ -34,6 +34,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
              "MVC-3.0",
              new[] { new FallbackRazorExtension("MVC-3.0"), });
 
+        public static readonly RazorConfiguration MVC_5_0 = new FallbackRazorConfiguration(
+             RazorLanguageVersion.Version_5_0,
+             // Razor 5.0 uses MVC 3.0 Razor configuration.
+             "MVC-3.0",
+             new[] { new FallbackRazorExtension("MVC-3.0"), });
+
         public static readonly RazorConfiguration Latest = MVC_3_0;
 
         public static RazorConfiguration SelectConfiguration(Version version)
@@ -58,6 +64,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 return MVC_3_0;
             }
+            else if (version.Major == 5 && version.Minor == 0)
+            {
+                return MVC_5_0;
+            }
             else
             {
                 return Latest;
@@ -67,7 +77,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public FallbackRazorConfiguration(
             RazorLanguageVersion languageVersion,
             string configurationName,
-            RazorExtension[] extensions)
+            RazorExtension[] extensions,
+            bool useConsolidatedMvcViews = false)
         {
             if (languageVersion == null)
             {
@@ -87,6 +98,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             LanguageVersion = languageVersion;
             ConfigurationName = configurationName;
             Extensions = extensions;
+            UseConsolidatedMvcViews = useConsolidatedMvcViews;
         }
 
         public override string ConfigurationName { get; }
@@ -94,5 +106,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public override IReadOnlyList<RazorExtension> Extensions { get; }
 
         public override RazorLanguageVersion LanguageVersion { get; }
+
+        public override bool UseConsolidatedMvcViews { get; }
     }
 }

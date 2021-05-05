@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
@@ -16,7 +15,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
     {
         public EditorDocumentTest()
         {
-            DocumentManager = Mock.Of<EditorDocumentManager>();
+            DocumentManager = new Mock<EditorDocumentManager>(MockBehavior.Strict).Object;
+            Mock.Get(DocumentManager).Setup(m => m.RemoveDocument(It.IsAny<EditorDocument>())).Verifiable();
             ProjectFilePath = TestProjectData.SomeProject.FilePath;
             DocumentFilePath = TestProjectData.SomeProjectFile1.FilePath;
             TextLoader = TextLoader.From(TextAndVersion.Create(SourceText.From("FILE"), VersionStamp.Default));

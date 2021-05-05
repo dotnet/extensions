@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
-            var session = new Mock<CollaborationSession>();
+            var session = new Mock<CollaborationSession>(MockBehavior.Strict);
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(Array.Empty<Uri>()))
                 .Verifiable();
@@ -43,26 +43,28 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
-            var session = new Mock<CollaborationSession>();
+            var session = new Mock<CollaborationSession>(MockBehavior.Strict);
+            using var disposedServiceGate = new ManualResetEventSlim();
             var disposedService = false;
             IDisposable sessionService = null;
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))
-                .Returns<CancellationToken>((cancellationToken) =>
-                {
-                    return Task.Run(() =>
+                .Returns<CancellationToken>((cancellationToken) => Task.Run(() =>
                     {
-                        cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(3));
+                        cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5));
+
+                        // Make sure we don't assert the value of 'disposedService' before we know it was set
+                        disposedServiceGate.Wait();
 
                         Assert.True(disposedService);
                         return Array.Empty<Uri>();
-                    });
-                })
+                    }))
                 .Verifiable();
             sessionService = (IDisposable)await service.CreateServiceAsync(session.Object, default);
 
             // Act
             sessionService.Dispose();
             disposedService = true;
+            disposedServiceGate.Set();
 
             // Assert
             Assert.NotNull(service._viewImportsCopyTask);
@@ -76,20 +78,17 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
-            var session = new Mock<CollaborationSession>();
-            var cts = new CancellationTokenSource();
+            var session = new Mock<CollaborationSession>(MockBehavior.Strict);
+            using var cts = new CancellationTokenSource();
             IDisposable sessionService = null;
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))
-                .Returns<CancellationToken>((cancellationToken) =>
-                {
-                    return Task.Run(() =>
+                .Returns<CancellationToken>((cancellationToken) => Task.Run(() =>
                     {
                         cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(3));
 
                         Assert.True(cts.IsCancellationRequested);
                         return Array.Empty<Uri>();
-                    });
-                })
+                    }))
                 .Verifiable();
             sessionService = (IDisposable)await service.CreateServiceAsync(session.Object, cts.Token);
 
@@ -108,21 +107,18 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         {
             // Arrange
             var service = new RazorGuestInitializationService(LiveShareSessionAccessor);
-            var session = new Mock<CollaborationSession>();
-            var cts = new CancellationTokenSource();
+            var session = new Mock<CollaborationSession>(MockBehavior.Strict);
+            using var cts = new CancellationTokenSource();
             IDisposable sessionService = null;
             session.Setup(s => s.ListRootsAsync(It.IsAny<CancellationToken>()))
-                .Returns<CancellationToken>((cancellationToken) =>
-                {
-                    return Task.Run(() =>
+                .Returns<CancellationToken>((cancellationToken) => Task.Run(() =>
                     {
                         cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(3));
 
                         cancellationToken.ThrowIfCancellationRequested();
 
                         return Array.Empty<Uri>();
-                    });
-                })
+                    }))
                 .Verifiable();
             sessionService = (IDisposable)await service.CreateServiceAsync(session.Object, cts.Token);
 

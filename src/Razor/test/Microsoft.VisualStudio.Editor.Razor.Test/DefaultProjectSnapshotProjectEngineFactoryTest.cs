@@ -110,10 +110,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var factory = new DefaultProjectSnapshotProjectEngineFactory(FallbackFactory, CustomFactories);
 
             // Act
-            var engine = factory.Create(snapshot, b =>
-            {
-                b.Features.Add(new MyCoolNewFeature());
-            });
+            var engine = factory.Create(snapshot, b => b.Features.Add(new MyCoolNewFeature()));
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
@@ -131,10 +128,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var factory = new DefaultProjectSnapshotProjectEngineFactory(FallbackFactory, CustomFactories);
 
             // Act
-            var engine = factory.Create(snapshot, b =>
-            {
-                b.Features.Add(new MyCoolNewFeature());
-            });
+            var engine = factory.Create(snapshot, b => b.Features.Add(new MyCoolNewFeature()));
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
@@ -154,10 +148,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var factory = new DefaultProjectSnapshotProjectEngineFactory(FallbackFactory, CustomFactories);
 
             // Act
-            var engine = factory.Create(snapshot, b =>
-            {
-                b.Features.Add(new MyCoolNewFeature());
-            });
+            var engine = factory.Create(snapshot, b => b.Features.Add(new MyCoolNewFeature()));
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
@@ -175,10 +166,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var factory = new DefaultProjectSnapshotProjectEngineFactory(FallbackFactory, CustomFactories);
 
             // Act
-            var engine = factory.Create(snapshot, b =>
-            {
-                b.Features.Add(new MyCoolNewFeature());
-            });
+            var engine = factory.Create(snapshot, b => b.Features.Add(new MyCoolNewFeature()));
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
@@ -196,10 +184,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var factory = new DefaultProjectSnapshotProjectEngineFactory(FallbackFactory, CustomFactories);
 
             // Act
-            var engine = factory.Create(snapshot, b =>
-            {
-                b.Features.Add(new MyCoolNewFeature());
-            });
+            var engine = factory.Create(snapshot, b => b.Features.Add(new MyCoolNewFeature()));
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
@@ -225,10 +210,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var factory = new DefaultProjectSnapshotProjectEngineFactory(FallbackFactory, CustomFactories);
 
             // Act
-            var engine = factory.Create(snapshot, b =>
-            {
-                b.Features.Add(new MyCoolNewFeature());
-            });
+            var engine = factory.Create(snapshot, b => b.Features.Add(new MyCoolNewFeature()));
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());

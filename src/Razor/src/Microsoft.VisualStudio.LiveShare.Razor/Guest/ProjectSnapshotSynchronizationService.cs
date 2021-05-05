@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Threading;
+using IAsyncDisposable = Microsoft.VisualStudio.Threading.IAsyncDisposable;
 
 namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
 {
@@ -137,7 +138,9 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
             }
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void HostProxyProjectManager_Changed(object sender, ProjectChangeEventProxyArgs args)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             if (args == null)
             {

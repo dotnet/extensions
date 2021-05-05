@@ -1,0 +1,6 @@
+//line,characterPos,length,tokenType,modifier
+0 0 1 78 0 //razorCommentTransition
+0 1 1 79 0 //razorCommentStar
+0 1 11 77 0 //razorComment
+0 11 1 79 0 //razorCommentStar
+0 1 1 78 0 //razorCommentTransition

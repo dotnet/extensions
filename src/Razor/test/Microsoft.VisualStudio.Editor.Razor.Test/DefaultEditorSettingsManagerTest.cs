@@ -24,10 +24,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var manager = new DefaultEditorSettingsManager(Dispatcher);
             var called = false;
-            manager.Changed += (caller, args) =>
-            {
-                called = true;
-            };
+            manager.Changed += (caller, args) => called = true;
             var settings = new EditorSettings(indentWithTabs: true, indentSize: 7);
 
             // Act
@@ -44,10 +41,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var manager = new DefaultEditorSettingsManager(Dispatcher);
             var called = false;
-            manager.Changed += (caller, args) =>
-            {
-                called = true;
-            };
+            manager.Changed += (caller, args) => called = true;
             var originalSettings = manager.Current;
 
             // Act

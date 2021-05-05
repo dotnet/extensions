@@ -120,7 +120,4 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or an empty string.</value>
   </data>
-  <data name="UnexpectedException" xml:space="preserve">
-    <value>An unexpected exception occurred when invoking '{0}.{1}' on the Razor language service.</value>
-  </data>
 </root>

@@ -13,7 +13,7 @@ namespace Microsoft.VisualStudio.LiveShare.Razor.Guest
         public void GetProjectHierarchyProxy_Caches()
         {
             // Arrange
-            var proxy = Mock.Of<IProjectHierarchyProxy>();
+            var proxy = Mock.Of<IProjectHierarchyProxy>(MockBehavior.Strict);
             var proxyAccessor = new TestProxyAccessor<IProjectHierarchyProxy>(proxy);
 
             // Act

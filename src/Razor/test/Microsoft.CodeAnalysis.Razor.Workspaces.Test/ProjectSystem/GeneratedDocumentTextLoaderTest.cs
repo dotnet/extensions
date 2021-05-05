@@ -19,17 +19,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private HostProject HostProject { get; }
         private HostDocument HostDocument { get; }
 
-        // See https://github.com/aspnet/AspNetCore/issues/7997
+        // See https://github.com/dotnet/aspnetcore/issues/7997
         [Fact]
         public async Task LoadAsync_SpecifiesEncoding()
         {
             // Arrange
             var project = new DefaultProjectSnapshot(
                 ProjectState.Create(Workspace.Services, HostProject)
-                .WithAddedHostDocument(HostDocument, () =>
-                {
-                    return Task.FromResult(TextAndVersion.Create(SourceText.From(""), VersionStamp.Create()));
-                }));
+                .WithAddedHostDocument(HostDocument, () => Task.FromResult(TextAndVersion.Create(SourceText.From(""), VersionStamp.Create()))));
 
             var document = project.GetDocument(HostDocument.FilePath);
 

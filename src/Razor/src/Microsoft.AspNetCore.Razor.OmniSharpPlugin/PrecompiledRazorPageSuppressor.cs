@@ -33,7 +33,8 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             _workspace.WorkspaceChanged += Workspace_WorkspaceChanged;
         }
 
-        private void Workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs args)
+        // Internal for testing
+        internal void Workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs args)
         {
             switch (args.Kind)
             {
@@ -60,17 +61,13 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
                         !document.FilePath.EndsWith(".razor.g.cs", StringComparison.Ordinal) &&
 
                         // 2.2 only extension for generated Razor files
-                        !document.FilePath.EndsWith("g.cshtml.cs", StringComparison.Ordinal))
+                        !document.FilePath.EndsWith(".g.cshtml.cs", StringComparison.Ordinal))
                     {
                         break;
                     }
 
-                    if (!document.FilePath.Contains("RazorDeclaration"))
-                    {
-                        // Razor output file that is not a declaration file.
-                        _workspace.RemoveDocument(document.Id);
-                        break;
-                    }
+                    // Razor output file
+                    _workspace.RemoveDocument(document.Id);
 
                     break;
             }

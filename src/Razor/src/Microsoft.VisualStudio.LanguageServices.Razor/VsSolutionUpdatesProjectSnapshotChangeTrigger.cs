@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
@@ -52,11 +53,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             _projectManager = projectManager;
 
             // Attach the event sink to solution update events.
-            var solutionBuildManager = _services.GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager;
-            if (solutionBuildManager != null)
+            if (_services.GetService(typeof(SVsSolutionBuildManager)) is IVsSolutionBuildManager solutionBuildManager)
             {
                 // We expect this to be called only once. So we don't need to Unadvise.
-                var hr = solutionBuildManager.AdviseUpdateSolutionEvents(this, out var cookie);
+                var hr = solutionBuildManager.AdviseUpdateSolutionEvents(this, out _);
                 Marshal.ThrowExceptionForHR(hr);
             }
         }
@@ -104,7 +104,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     // Trigger a tag helper update by forcing the project manager to see the workspace Project
                     // from the current solution.
-                    _workspaceStateGenerator.Update(workspaceProject, projectSnapshot);
+                    _workspaceStateGenerator.Update(workspaceProject, projectSnapshot, CancellationToken.None);
                 }
             }
 

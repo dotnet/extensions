@@ -1,0 +1,58 @@
+#
+# See https://docs.microsoft.com/azure/devops/pipelines/yaml-schema for reference.
+#
+
+variables:
+- name: Build.Repository.Clean
+  value: true
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - main
+
+stages:
+- stage: build
+  displayName: Build
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      helixRepo: dotnet/aspnetcore-tooling
+      helixType: build.product/
+      enableRichCodeNavigation: true
+      richCodeNavigationEnvironment: 'production'
+      richCodeNavigationLanguage: 'csharp,typescript'
+      jobs:
+      - job: Windows
+        pool:
+          name: NetCorePublic-Pool
+          queue: buildpool.windows.10.amd64.vs2019.pre.open
+
+        steps:
+        - task: NodeTool@0
+          displayName: Install Node 10.x
+          inputs:
+            versionSpec: 10.x
+        - powershell: npm install -g yarn
+          displayName: Install yarn
+          condition: succeeded()
+        - task: NuGetCommand@2
+          displayName: 'Clear NuGet caches'
+          condition: succeeded()
+          inputs:
+            command: custom
+            arguments: 'locals all -clear'
+
+        - script: eng\common\cibuild.cmd
+            -configuration Debug
+            -msbuildEngine dotnet
+            -prepareMachine
+          name: Build
+          displayName: Build
+          condition: succeeded()

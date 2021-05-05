@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <IsShipping>false</IsShipping>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\Serialization\*.cs">
+      <Link>Serialization\%(FileName)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestServices.cs">
+      <Link>TestServices\%(FileName)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestWorkspace.cs">
+      <Link>TestServices\%(FileName)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestLanguageServices.cs">
+      <Link>TestServices\%(FileName)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestWorkspaceServices.cs">
+      <Link>TestServices\%(FileName)%(Extension)</Link>
+    </Compile>
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+
+    <None Include="MSN.cshtml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="taghelpers.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="ProjectSystem\project.razor.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
+  </ItemGroup>
+
+</Project>

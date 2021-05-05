@@ -8,7 +8,12 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
     // A noop implementation for non-ide cases
     internal class DefaultFileChangeTracker : FileChangeTracker
     {
-        public override event EventHandler<FileChangeEventArgs> Changed;
+        public override event EventHandler<FileChangeEventArgs> Changed
+        {
+            // Do nothing (the handlers would never be used anyway)
+            add { }
+            remove { }
+        }
 
         public DefaultFileChangeTracker(string filePath)
         {
@@ -18,8 +23,6 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             }
 
             FilePath = filePath;
-
-            GC.KeepAlive(Changed);
         }
 
         public override string FilePath { get; }

@@ -9,6 +9,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Common
     internal static class RazorCodeDocumentExtensions
     {
         private static readonly object UnsupportedKey = new object();
+        private static readonly object SourceTextKey = new object();
+        private static readonly object CSharpSourceTextKey = new object();
+        private static readonly object HtmlSourceTextKey = new object();
 
         public static bool IsUnsupported(this RazorCodeDocument document)
         {

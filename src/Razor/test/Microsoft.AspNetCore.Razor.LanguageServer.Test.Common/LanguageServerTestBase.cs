@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -17,10 +18,16 @@ namespace Microsoft.AspNetCore.Razor.Test.Common
         public LanguageServerTestBase()
         {
             Dispatcher = new SingleThreadedForegroundDispatcher();
-            LoggerFactory = Mock.Of<ILoggerFactory>(factory => factory.CreateLogger(It.IsAny<string>()) == Mock.Of<ILogger>());
+            FilePathNormalizer = new FilePathNormalizer();
+            var logger = new Mock<ILogger>(MockBehavior.Strict).Object;
+            Mock.Get(logger).Setup(l => l.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception, string>>())).Verifiable();
+            Mock.Get(logger).Setup(l => l.IsEnabled(It.IsAny<LogLevel>())).Returns(false);
+            LoggerFactory = Mock.Of<ILoggerFactory>(factory => factory.CreateLogger(It.IsAny<string>()) == logger, MockBehavior.Strict);
         }
 
         internal ForegroundDispatcher Dispatcher { get; }
+
+        internal FilePathNormalizer FilePathNormalizer { get; }
 
         protected ILoggerFactory LoggerFactory { get; }
 

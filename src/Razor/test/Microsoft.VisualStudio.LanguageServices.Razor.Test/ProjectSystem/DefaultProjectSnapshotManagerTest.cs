@@ -17,7 +17,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public DefaultProjectSnapshotManagerTest()
         {
-            TagHelperResolver = new TestTagHelperResolver();
+            var someTagHelpers = new List<TagHelperDescriptor>
+            {
+                TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build()
+            };
+            TagHelperResolver = new TestTagHelperResolver()
+            {
+                TagHelpers = someTagHelpers,
+            };
 
             Documents = new HostDocument[]
             {
@@ -57,7 +64,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         protected override void ConfigureWorkspaceServices(List<IWorkspaceService> services)
         {
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.Add(TagHelperResolver);
+        }
+
+        [ForegroundFact]
+        public void Initialize_DoneInCorrectOrderBasedOnInitializePriorityPriority()
+        {
+            // Arrange
+            var initializedOrder = new List<string>();
+            var highPriorityTrigger = new InitializeInspectionTrigger(() => initializedOrder.Add("highPriority"), 100);
+            var defaultPriorityTrigger = new InitializeInspectionTrigger(() => initializedOrder.Add("lowPriority"), 0);
+
+            // Building this list in the wrong order so we can verify priority matters
+            var triggers = new[] { defaultPriorityTrigger, highPriorityTrigger };
+
+            // Act
+            var projectManager = new TestProjectSnapshotManager(Dispatcher, triggers, Workspace);
+
+            // Assert
+            Assert.Equal(new[] { "highPriority", "lowPriority" }, initializedOrder);
         }
 
         [ForegroundFact]
@@ -322,7 +352,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             snapshot = ProjectManager.GetSnapshot(HostProject);
             Assert.Same(projectEngine, snapshot.GetProjectEngine());
         }
-       [ForegroundFact]
+        [ForegroundFact]
         public async Task DocumentOpened_UpdatesDocument()
         {
             // Arrange
@@ -460,7 +490,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.ProjectConfigurationChanged(HostProjectWithConfigurationChange);
 
             // Assert
-            var snapshot = ProjectManager.GetSnapshot(HostProjectWithConfigurationChange);
             Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
         }
 
@@ -570,14 +599,46 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Equal(ProjectChangeKind.ProjectChanged, ProjectManager.ListenersNotifiedOf);
         }
 
+        [ForegroundFact]
+        public void NestedNotifications_NotifiesListenersInCorrectOrder()
+        {
+            // Arrange
+            var listenerNotifications = new List<ProjectChangeKind>();
+            ProjectManager.ProjectAdded(HostProject);
+            ProjectManager.Reset();
+            ProjectManager.Changed += (sender, args) =>
+            {
+                // These conditions will result in a triply nested change notification of Add -> Change -> Remove all within the .Change chain.
+
+                if (args.Kind == ProjectChangeKind.DocumentAdded)
+                {
+                    ProjectManager.DocumentOpened(HostProject.FilePath, Documents[0].FilePath, SourceText);
+                }
+                else if (args.Kind == ProjectChangeKind.DocumentChanged)
+                {
+                    ProjectManager.DocumentRemoved(HostProject, Documents[0]);
+                }
+            };
+            ProjectManager.Changed += (sender, args) => listenerNotifications.Add(args.Kind);
+            ProjectManager.NotifyChangedEvents = true;
+
+            // Act
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+
+            // Assert
+            Assert.Equal(new[] { ProjectChangeKind.DocumentAdded, ProjectChangeKind.DocumentChanged, ProjectChangeKind.DocumentRemoved }, listenerNotifications);
+        }
+
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace)
-                : base(dispatcher, Mock.Of<ErrorReporter>(), triggers, workspace)
+                : base(dispatcher, Mock.Of<ErrorReporter>(MockBehavior.Strict), triggers, workspace)
             {
             }
 
             public ProjectChangeKind? ListenersNotifiedOf { get; private set; }
+
+            public bool NotifyChangedEvents { get; set; }
 
             public DefaultProjectSnapshot GetSnapshot(HostProject hostProject)
             {
@@ -597,6 +658,29 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             protected override void NotifyListeners(ProjectChangeEventArgs e)
             {
                 ListenersNotifiedOf = e.Kind;
+
+                if (NotifyChangedEvents)
+                {
+                    base.NotifyListeners(e);
+                }
+            }
+        }
+
+        private class InitializeInspectionTrigger : ProjectSnapshotChangeTrigger
+        {
+            private readonly Action _initializeNotification;
+
+            public InitializeInspectionTrigger(Action initializeNotification, int initializePriority)
+            {
+                _initializeNotification = initializeNotification;
+                InitializePriority = initializePriority;
+            }
+
+            public override int InitializePriority { get; }
+
+            public override void Initialize(ProjectSnapshotManagerBase projectManager)
+            {
+                _initializeNotification();
             }
         }
     }

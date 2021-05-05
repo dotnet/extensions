@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,12 +12,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
         [Fact]
         public void IsTagHelperSpan_ReturnsTrue()
         {
-            // Arrange
-            var syntaxTree = GetSyntaxTree(
+            var str =
 @"<div>
     <taghelper />
-</div>");
-            var location = new SourceSpan(9 + Environment.NewLine.Length, 13);
+</div>";
+
+            // Arrange
+            var syntaxTree = GetSyntaxTree(str);
+
+            var location = new SourceSpan(str.IndexOf("tag", StringComparison.Ordinal) - 1, 13);
             var service = new DefaultRazorSyntaxFactsService();
 
             // Act
@@ -82,7 +85,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private class DesignTimeOptionsFeature : IConfigureRazorParserOptionsFeature, IConfigureRazorCodeGenerationOptionsFeature
         {
-            private bool _designTime;
+            private readonly bool _designTime;
 
             public DesignTimeOptionsFeature(bool designTime)
             {

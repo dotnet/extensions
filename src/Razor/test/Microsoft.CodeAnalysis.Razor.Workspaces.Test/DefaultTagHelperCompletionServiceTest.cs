@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
-using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor
@@ -623,6 +622,44 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var completionContext = BuildElementCompletionContext(
                 documentDescriptors,
                 existingCompletions,
+                containingTagName: "body",
+                containingParentTagName: null);
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetElementCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetElementCompletions_FiltersFullyQualifiedElementsIfShortNameExists()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("Test"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("TestAssembly.Test"))
+                    .AddMetadata(ComponentMetadata.Component.NameMatchKey, ComponentMetadata.Component.FullyQualifiedNameMatch)
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("Test2TagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("Test2Assembly.Test"))
+                    .AddMetadata(ComponentMetadata.Component.NameMatchKey, ComponentMetadata.Component.FullyQualifiedNameMatch)
+                    .Build(),
+            };
+            var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
+            {
+                ["Test"] = new HashSet<TagHelperDescriptor>() { documentDescriptors[0] },
+                ["Test2Assembly.Test"] = new HashSet<TagHelperDescriptor>() { documentDescriptors[2] },
+            });
+
+            var completionContext = BuildElementCompletionContext(
+                documentDescriptors,
+                Array.Empty<string>(),
                 containingTagName: "body",
                 containingParentTagName: null);
             var service = CreateTagHelperCompletionFactsService();
@@ -1324,7 +1361,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             IEnumerable<KeyValuePair<string, string>> attributes = null,
             string tagHelperPrefix = "")
         {
-            attributes = attributes ?? Enumerable.Empty<KeyValuePair<string, string>>();
+            attributes ??= Enumerable.Empty<KeyValuePair<string, string>>();
             var documentContext = TagHelperDocumentContext.Create(tagHelperPrefix, descriptors);
             var completionContext = new AttributeCompletionContext(
                 documentContext,

@@ -9,10 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Execution;
 using Microsoft.Extensions.Logging;
-using OmniSharp;
 using OmniSharp.MSBuild.Notification;
 
 namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         // Internal for testing
         internal const string IntermediateOutputPathPropertyName = "IntermediateOutputPath";
         internal const string MSBuildProjectDirectoryPropertyName = "MSBuildProjectDirectory";
-        internal const string RazorConfigurationFileName = "project.razor.json";
         internal const string ProjectCapabilityItemType = "ProjectCapability";
 
         private const string MSBuildProjectFullPathPropertyName = "MSBuildProjectFullPath";
@@ -88,7 +87,9 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             _projectManager = projectManager;
         }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
         public async void ProjectLoaded(ProjectLoadedEventArgs args)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             try
             {
@@ -110,11 +111,11 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 // When documents get added or removed we need to refresh project state to properly reflect the host documents in the project.
 
                 var evaluatedProjectInstance = _projectInstanceEvaluator.Evaluate(args.UnevaluatedProjectInstance);
-                Task.Factory.StartNew(
+                _ = Task.Factory.StartNew(
                     () => UpdateProjectState(evaluatedProjectInstance),
                     CancellationToken.None,
                     TaskCreationOptions.None,
-                    _foregroundDispatcher.ForegroundScheduler);
+                    _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
             }
         }
 
@@ -141,10 +142,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             // Force project instance evaluation to ensure that all Razor specific targets have run.
             projectInstance = _projectInstanceEvaluator.Evaluate(projectInstance);
 
-            await Task.Factory.StartNew(() =>
-            {
-                UpdateProjectState(projectInstance);
-            },
+            await Task.Factory.StartNew(() => UpdateProjectState(projectInstance),
             CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
         }
 
@@ -270,7 +268,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             return null;
         }
 
-        private void HandleDebug(ProjectInstance projectInstance)
+        private static void HandleDebug(ProjectInstance projectInstance)
         {
             var debugPlugin = projectInstance.GetPropertyValue(DebugRazorOmnisharpPluginPropertyName);
             if (!string.IsNullOrEmpty(debugPlugin) && string.Equals(debugPlugin, "true", StringComparison.OrdinalIgnoreCase))
@@ -311,7 +309,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             intermediateOutputPath = intermediateOutputPath
                 .Replace('\\', Path.DirectorySeparatorChar)
                 .Replace('/', Path.DirectorySeparatorChar);
-            path = Path.Combine(intermediateOutputPath, RazorConfigurationFileName);
+            path = Path.Combine(intermediateOutputPath, LanguageServerConstants.ProjectConfigurationFile);
             return true;
         }
     }

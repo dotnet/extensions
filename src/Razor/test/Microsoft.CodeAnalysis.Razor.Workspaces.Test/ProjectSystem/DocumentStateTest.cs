@@ -16,16 +16,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public DocumentStateTest()
         {
             TagHelperResolver = new TestTagHelperResolver();
-            
+
             HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0, TestProjectData.SomeProject.RootNamespace);
             HostProjectWithConfigurationChange = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0, TestProjectData.SomeProject.RootNamespace);
             ProjectWorkspaceState = new ProjectWorkspaceState(new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
             }, default);
-
-            SomeTagHelpers = new List<TagHelperDescriptor>();
-            SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
 
             HostDocument = TestProjectData.SomeProjectFile1;
 
@@ -43,8 +40,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private TestTagHelperResolver TagHelperResolver { get; }
 
-        private List<TagHelperDescriptor> SomeTagHelpers { get; }
-
         private Func<Task<TextAndVersion>> TextLoader { get; }
 
         private SourceText Text { get; }
@@ -59,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange & Act
             var state = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader);
-            
+
             // Assert
             var text = await state.GetTextAsync();
             Assert.Equal(0, text.Length);

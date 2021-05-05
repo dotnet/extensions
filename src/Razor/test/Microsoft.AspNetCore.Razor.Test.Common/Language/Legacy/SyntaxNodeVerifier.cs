@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             private void AssertNodeEquals(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual)
             {
-                if (string.Equals(expected, actual))
+                if (string.Equals(expected, actual, StringComparison.Ordinal))
                 {
                     // YAY!!! everything is great.
                     return;
@@ -97,18 +97,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     throw new SyntaxNodeBaselineException(node, Ancestors.ToArray(), expected, actual, message);
                 }
 
-                int charsVerified = 0;
+                var charsVerified = 0;
                 AssertNestingEqual(node, ancestors, expected, actual, ref charsVerified);
                 AssertNameEqual(node, ancestors, expected, actual, ref charsVerified);
-                AssertDelimiter(node, expected, actual, true, ref charsVerified);
+                AssertDelimiter(expected, actual, true, ref charsVerified);
                 AssertLocationEqual(node, ancestors, expected, actual, ref charsVerified);
-                AssertDelimiter(node, expected, actual, false, ref charsVerified);
+                AssertDelimiter(expected, actual, false, ref charsVerified);
                 AssertContentEqual(node, ancestors, expected, actual, ref charsVerified);
 
                 throw new InvalidOperationException("We can't figure out HOW these two things are different. This is a bug.");
             }
 
-            private void AssertNestingEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
+            private static void AssertNestingEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var i = 0;
                 for (; i < expected.Length; i++)
@@ -144,12 +144,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 charsVerified = j;
             }
 
-            private void AssertNameEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
+            private static void AssertNameEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var expectedName = GetName(expected, charsVerified);
                 var actualName = GetName(actual, charsVerified);
 
-                if (!string.Equals(expectedName, actualName))
+                if (!string.Equals(expectedName, actualName, StringComparison.Ordinal))
                 {
                     var message = $"Node names are not equal.";
                     throw new SyntaxNodeBaselineException(node, ancestors.ToArray(), expected, actual, message);
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Either both strings need to have a delimiter next or neither should.
-            private void AssertDelimiter(SyntaxNode node, string expected, string actual, bool required, ref int charsVerified)
+            private static void AssertDelimiter(string expected, string actual, bool required, ref int charsVerified)
             {
                 if (charsVerified == expected.Length && required)
                 {
@@ -176,13 +176,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return;
                 }
 
-                var expectedDelimiter = expected.IndexOf(" - ", charsVerified);
+                var expectedDelimiter = expected.IndexOf(" - ", charsVerified, StringComparison.Ordinal);
                 if (expectedDelimiter != charsVerified && expectedDelimiter != -1)
                 {
                     throw new InvalidOperationException($"Baseline text is not well-formed: '{actual}'.");
                 }
 
-                var actualDelimiter = actual.IndexOf(" - ", charsVerified);
+                var actualDelimiter = actual.IndexOf(" - ", charsVerified, StringComparison.Ordinal);
                 if (actualDelimiter != charsVerified && actualDelimiter != -1)
                 {
                     throw new InvalidOperationException($"Baseline text is not well-formed: '{actual}'.");
@@ -193,12 +193,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 charsVerified += 3;
             }
 
-            private void AssertLocationEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
+            private static void AssertLocationEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var expectedLocation = GetLocation(expected, charsVerified);
                 var actualLocation = GetLocation(actual, charsVerified);
 
-                if (!string.Equals(expectedLocation, actualLocation))
+                if (!string.Equals(expectedLocation, actualLocation, StringComparison.Ordinal))
                 {
                     var message = $"Locations are not equal.";
                     throw new SyntaxNodeBaselineException(node, ancestors.ToArray(), expected, actual, message);
@@ -207,12 +207,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 charsVerified += expectedLocation.Length;
             }
 
-            private void AssertContentEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
+            private static void AssertContentEqual(SyntaxNode node, IEnumerable<SyntaxNode> ancestors, string expected, string actual, ref int charsVerified)
             {
                 var expectedContent = GetContent(expected, charsVerified);
                 var actualContent = GetContent(actual, charsVerified);
 
-                if (!string.Equals(expectedContent, actualContent))
+                if (!string.Equals(expectedContent, actualContent, StringComparison.Ordinal))
                 {
                     var message = $"Contents are not equal.";
                     throw new SyntaxNodeBaselineException(node, ancestors.ToArray(), expected, actual, message);
@@ -221,9 +221,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 charsVerified += expectedContent.Length;
             }
 
-            private string GetName(string text, int start)
+            private static string GetName(string text, int start)
             {
-                var delimiter = text.IndexOf(" - ", start);
+                var delimiter = text.IndexOf(" - ", start, StringComparison.Ordinal);
                 if (delimiter == -1)
                 {
                     throw new InvalidOperationException($"Baseline text is not well-formed: '{text}'.");
@@ -232,13 +232,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return text.Substring(start, delimiter - start);
             }
 
-            private string GetLocation(string text, int start)
+            private static string GetLocation(string text, int start)
             {
-                var delimiter = text.IndexOf(" - ", start);
+                var delimiter = text.IndexOf(" - ", start, StringComparison.Ordinal);
                 return delimiter == -1 ? text.Substring(start) : text.Substring(start, delimiter - start);
             }
 
-            private string GetContent(string text, int start)
+            private static string GetContent(string text, int start)
             {
                 return start == text.Length ? string.Empty : text.Substring(start);
             }
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             private class SyntaxNodeBaselineException : XunitException
             {
                 public SyntaxNodeBaselineException(SyntaxNode node, SyntaxNode[] ancestors, string expected, string actual, string userMessage)
-                    : base(Format(node, ancestors, expected, actual, userMessage))
+                    : base(Format(ancestors, expected, actual, userMessage))
                 {
                     Node = node;
                     Expected = expected;
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 public string Expected { get; }
 
-                private static string Format(SyntaxNode node, SyntaxNode[] ancestors, string expected, string actual, string userMessage)
+                private static string Format(SyntaxNode[] ancestors, string expected, string actual, string userMessage)
                 {
                     var builder = new StringBuilder();
                     builder.AppendLine(userMessage);

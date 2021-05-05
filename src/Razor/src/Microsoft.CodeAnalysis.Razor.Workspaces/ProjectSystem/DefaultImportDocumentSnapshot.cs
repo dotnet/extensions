@@ -12,10 +12,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class DefaultImportDocumentSnapshot : DocumentSnapshot
     {
-        private ProjectSnapshot _project;
-        private RazorProjectItem _importItem;
+        private readonly ProjectSnapshot _project;
+        private readonly RazorProjectItem _importItem;
         private SourceText _sourceText;
-        private VersionStamp _version;
+        private readonly VersionStamp _version;
 
         public DefaultImportDocumentSnapshot(ProjectSnapshot project, RazorProjectItem item)
         {
@@ -39,7 +39,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             throw new NotSupportedException();
         }
 
-        public override Task<VersionStamp> GetGeneratedOutputVersionAsync()
+        public override Task<VersionStamp> GetGeneratedCSharpOutputVersionAsync()
+        {
+            throw new NotSupportedException();
+        }
+
+        public override Task<VersionStamp> GetGeneratedHtmlOutputVersionAsync()
         {
             throw new NotSupportedException();
         }
@@ -89,7 +94,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             throw new NotSupportedException();
         }
 
-        public override bool TryGetGeneratedOutputVersionAsync(out VersionStamp result)
+        public override bool TryGetGeneratedCSharpOutputVersion(out VersionStamp result)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override bool TryGetGeneratedHtmlOutputVersion(out VersionStamp result)
         {
             throw new NotSupportedException();
         }

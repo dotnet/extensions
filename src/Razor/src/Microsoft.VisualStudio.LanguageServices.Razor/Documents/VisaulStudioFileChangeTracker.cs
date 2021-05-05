@@ -82,14 +82,17 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             {
                 try
                 {
-                    return await _fileChangeService.AdviseFileChangeAsync(FilePath, FileChangeFlags, this);
+                    return await _fileChangeService.AdviseFileChangeAsync(FilePath, FileChangeFlags, this).ConfigureAwait(true);
                 }
                 catch (PathTooLongException)
                 {
                     // Don't report PathTooLongExceptions but don't fault either.
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception exception)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
+                    // Don't explode on actual exceptions, just report gracefully.
                     _errorReporter.ReportError(exception);
                 }
 
@@ -120,15 +123,18 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                         return;
                     }
 
-                    await _fileChangeService.UnadviseFileChangeAsync(fileChangeCookie);
+                    await _fileChangeService.UnadviseFileChangeAsync(fileChangeCookie).ConfigureAwait(true);
                     _fileChangeAdviseTask = null;
                 }
                 catch (PathTooLongException)
                 {
                     // Don't report PathTooLongExceptions but don't fault either.
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception exception)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
+                    // Don't explode on actual exceptions, just report gracefully.
                     _errorReporter.ReportError(exception);
                 }
             });

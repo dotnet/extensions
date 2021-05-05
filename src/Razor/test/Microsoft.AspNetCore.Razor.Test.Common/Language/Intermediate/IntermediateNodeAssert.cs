@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
 using Xunit.Sdk;
 
@@ -421,13 +420,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         private class IntermediateNodeAssertException : XunitException
         {
             public IntermediateNodeAssertException(IntermediateNode node, string userMessage)
-                : base(Format(node, null, null, userMessage))
+                : base(Format(null, null, userMessage))
             {
                 Node = node;
             }
 
             public IntermediateNodeAssertException(IntermediateNode node, IEnumerable<IntermediateNode> nodes, string userMessage)
-                : base(Format(node, null, nodes, userMessage))
+                : base(Format(null, nodes, userMessage))
             {
                 Node = node;
                 Nodes = nodes;
@@ -438,7 +437,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 IEnumerable<IntermediateNode> nodes,
                 string userMessage,
                 Exception innerException)
-                : base(Format(node, null, nodes, userMessage), innerException)
+                : base(Format(null, nodes, userMessage), innerException)
             {
             }
 
@@ -448,7 +447,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 IEnumerable<IntermediateNode> nodes,
                 string userMessage,
                 Exception innerException)
-                : base(Format(node, ancestors, nodes, userMessage), innerException)
+                : base(Format(ancestors, nodes, userMessage), innerException)
             {
             }
 
@@ -456,7 +455,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             public IEnumerable<IntermediateNode> Nodes { get; }
 
-            private static string Format(IntermediateNode node, IntermediateNode[] ancestors, IEnumerable<IntermediateNode> nodes, string userMessage)
+            private static string Format(IntermediateNode[] ancestors, IEnumerable<IntermediateNode> nodes, string userMessage)
             {
                 var builder = new StringBuilder();
                 builder.AppendLine(userMessage);

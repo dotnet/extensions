@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             Assert.Same(UnsupportedRazorConfiguration.Instance, projectConfiguration.Configuration);
         }
 
-        private ProjectConfigurationProviderContext BuildContext(params string[] referencePaths)
+        private static ProjectConfigurationProviderContext BuildContext(params string[] referencePaths)
         {
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             foreach (var path in referencePaths)

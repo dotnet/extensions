@@ -7,17 +7,13 @@ using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Components;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
-using Microsoft.VisualStudio.TextManager.Interop;
 using Item = System.Collections.Generic.KeyValuePair<string, System.Collections.Immutable.IImmutableDictionary<string, string>>;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -30,24 +26,26 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     [Export(ExportContractNames.Scopes.UnconfiguredProject, typeof(IProjectDynamicLoadComponent))]
     internal class DefaultRazorProjectHost : RazorProjectHostBase
     {
-        private const string ConfigurationGeneralSchemaName = "ConfigurationGeneral";
-        private const string RootNamespaceProperty = "RootNamespace";
         private IDisposable _subscription;
+
+        private const string RootNamespaceProperty = "RootNamespace";
 
         [ImportingConstructor]
         public DefaultRazorProjectHost(
             IUnconfiguredProjectCommonServices commonServices,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
-            : base(commonServices, workspace)
+            [Import(typeof(VisualStudioWorkspace))] Workspace workspace,
+            ProjectConfigurationFilePathStore projectConfigurationFilePathStore)
+            : base(commonServices, workspace, projectConfigurationFilePathStore)
         {
         }
 
         // Internal for testing
         internal DefaultRazorProjectHost(
             IUnconfiguredProjectCommonServices commonServices,
-             Workspace workspace,
-             ProjectSnapshotManagerBase projectManager)
-            : base(commonServices, workspace, projectManager)
+                Workspace workspace,
+                ProjectConfigurationFilePathStore projectConfigurationFilePathStore,
+                ProjectSnapshotManagerBase projectManager)
+        : base(commonServices, workspace, projectConfigurationFilePathStore, projectManager)
         {
         }
 
@@ -59,11 +57,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // to the UI thread to push our updates.
             //
             // Just subscribe and handle the notification later.
-            // Don't try to evaluate any properties here since the project is still loading and we require access
-            // to the UI thread to push our updates.
-            //
-            // Just subscribe and handle the notification later.
-            var receiver = new ActionBlock<IProjectVersionedValue<IProjectSubscriptionUpdate>>(OnProjectChanged);
+            var receiver = new ActionBlock<IProjectVersionedValue<IProjectSubscriptionUpdate>>(OnProjectChangedAsync);
             _subscription = CommonServices.ActiveConfiguredProjectSubscription.JointRuleSource.SourceBlock.LinkTo(
                 receiver,
                 initialDataAsNew: true,
@@ -83,63 +77,69 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             await base.DisposeCoreAsync(initialized).ConfigureAwait(false);
 
-            if (initialized)
+            if (initialized && _subscription != null)
             {
                 _subscription.Dispose();
             }
         }
 
         // Internal for testing
-        internal async Task OnProjectChanged(IProjectVersionedValue<IProjectSubscriptionUpdate> update)
+        internal async Task OnProjectChangedAsync(IProjectVersionedValue<IProjectSubscriptionUpdate> update)
         {
             if (IsDisposing || IsDisposed)
             {
                 return;
             }
 
-            await CommonServices.TasksService.LoadedProjectAsync(async () =>
+            await CommonServices.TasksService.LoadedProjectAsync(async () => await ExecuteWithLockAsync(async () =>
             {
-                await ExecuteWithLock(async () =>
+                if (TryGetConfiguration(update.Value.CurrentState, out var configuration))
                 {
-                    if (TryGetConfiguration(update.Value.CurrentState, out var configuration))
+                    TryGetRootNamespace(update.Value.CurrentState, out var rootNamespace);
+
+                    // We need to deal with the case where the project was uninitialized, but now
+                    // is valid for Razor. In that case we might have previously seen all of the documents
+                    // but ignored them because the project wasn't active.
+                    //
+                    // So what we do to deal with this, is that we 'remove' all changed and removed items
+                    // and then we 'add' all current items. This allows minimal churn to the PSM, but still
+                    // makes us up to date.
+                    var documents = GetCurrentDocuments(update.Value);
+                    var changedDocuments = GetChangedAndRemovedDocuments(update.Value);
+
+                    await UpdateAsync(() =>
                     {
-                        TryGetRootNamespace(update.Value.CurrentState, out var rootNamespace);
                         var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration, rootNamespace);
 
-                        // We need to deal with the case where the project was uninitialized, but now
-                        // is valid for Razor. In that case we might have previously seen all of the documents
-                        // but ignored them because the project wasn't active.
-                        //
-                        // So what we do to deal with this, is that we 'remove' all changed and removed items
-                        // and then we 'add' all current items. This allows minimal churn to the PSM, but still
-                        // makes us up to date.
-                        var documents = GetCurrentDocuments(update.Value);
-                        var changedDocuments = GetChangedAndRemovedDocuments(update.Value);
-
-                        await UpdateAsync(() =>
+                        if (TryGetIntermediateOutputPath(update.Value.CurrentState, out var intermediatePath))
                         {
-                            UpdateProjectUnsafe(hostProject);
+                            var projectRazorJson = Path.Combine(intermediatePath, "project.razor.json");
+                            _projectConfigurationFilePathStore.Set(hostProject.FilePath, projectRazorJson);
+                        }
 
-                            for (var i = 0; i < changedDocuments.Length; i++)
-                            {
-                                RemoveDocumentUnsafe(changedDocuments[i]);
-                            }
+                        UpdateProjectUnsafe(hostProject);
 
-                            for (var i = 0; i < documents.Length; i++)
-                            {
-                                AddDocumentUnsafe(documents[i]);
-                            }
-                        }).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        // Ok we can't find a configuration. Let's assume this project isn't using Razor then.
-                        await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
-                    }
-                }).ConfigureAwait(false);
-            }, registerFaultHandler: true);
+                        for (var i = 0; i < changedDocuments.Length; i++)
+                        {
+                            RemoveDocumentUnsafe(changedDocuments[i]);
+                        }
+
+                        for (var i = 0; i < documents.Length; i++)
+                        {
+                            AddDocumentUnsafe(documents[i]);
+                        }
+                    }).ConfigureAwait(false);
+                }
+                else
+                {
+                    // Ok we can't find a configuration. Let's assume this project isn't using Razor then.
+                    await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
+                }
+            }).ConfigureAwait(false), registerFaultHandler: true);
         }
 
+
+        #region Configuration Helpers
         // Internal for testing
         internal static bool TryGetConfiguration(
             IImmutableDictionary<string, IProjectRuleSnapshot> state,
@@ -173,7 +173,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             configuration = new ProjectSystemRazorConfiguration(languageVersion, configurationItem.Key, extensions);
             return true;
         }
-
 
         // Internal for testing
         internal static bool TryGetDefaultConfiguration(
@@ -240,7 +239,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             if (!state.TryGetValue(Rules.RazorConfiguration.PrimaryDataSourceItemType, out var configurationState))
             {
-                configurationItem = default(Item);
+                configurationItem = default;
                 return false;
             }
 
@@ -254,7 +253,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
             }
 
-            configurationItem = default(Item);
+            configurationItem = default;
             return false;
         }
 
@@ -274,7 +273,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         // Internal for testing
         internal static bool TryGetExtensions(
             string[] extensionNames,
-            IImmutableDictionary<string, IProjectRuleSnapshot> state, 
+            IImmutableDictionary<string, IProjectRuleSnapshot> state,
             out ProjectSystemRazorExtension[] extensions)
         {
             // The list of extensions might not be present, because the configuration may not have any.
@@ -321,13 +320,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             rootNamespace = rootNamespaceValue;
             return true;
         }
-        
+        #endregion Configuration Helpers
+
         private HostDocument[] GetCurrentDocuments(IProjectSubscriptionUpdate update)
         {
-            IProjectRuleSnapshot rule = null;
-
             var documents = new List<HostDocument>();
-            if (update.CurrentState.TryGetValue(Rules.RazorComponentWithTargetPath.SchemaName, out rule))
+            if (update.CurrentState.TryGetValue(Rules.RazorComponentWithTargetPath.SchemaName, out var rule))
             {
                 foreach (var kvp in rule.Items)
                 {
@@ -362,10 +360,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private HostDocument[] GetChangedAndRemovedDocuments(IProjectSubscriptionUpdate update)
         {
-            IProjectChangeDescription rule = null;
-
             var documents = new List<HostDocument>();
-            if (update.ProjectChanges.TryGetValue(Rules.RazorComponentWithTargetPath.SchemaName, out rule))
+            if (update.ProjectChanges.TryGetValue(Rules.RazorComponentWithTargetPath.SchemaName, out var rule))
             {
                 foreach (var key in rule.Difference.RemovedItems.Concat(rule.Difference.ChangedItems))
                 {

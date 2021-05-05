@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -16,12 +14,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class BackgroundParser : IDisposable
     {
-        private MainThreadState _main;
-        private BackgroundThread _bg;
+        private readonly MainThreadState _main;
+        private readonly BackgroundThread _bg;
 
         public BackgroundParser(RazorProjectEngine projectEngine, string filePath, string projectDirectory, string fileKind)
         {
-            _main = new MainThreadState(filePath);
+            _main = new MainThreadState();
             _bg = new BackgroundThread(_main, projectEngine, filePath, projectDirectory, fileKind);
 
             _main.ResultsReady += (sender, args) => OnResultsReady(args);
@@ -57,6 +55,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void Dispose()
         {
             _main.Cancel();
+            _main.Dispose();
         }
 
         public IDisposable SynchronizeMainThreadState()
@@ -94,7 +93,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
 #if DEBUG
                 Debug.Assert(_id != -1, "SetThreadId was never called!");
-                Debug.Assert(Thread.CurrentThread.ManagedThreadId == _id, "Called from an unexpected thread!");
+                Debug.Assert(Environment.CurrentManagedThreadId == _id, "Called from an unexpected thread!");
 #endif
             }
 
@@ -103,7 +102,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
 #if DEBUG
                 Debug.Assert(_id != -1, "SetThreadId was never called!");
-                Debug.Assert(Thread.CurrentThread.ManagedThreadId != _id, "Called from an unexpected thread!");
+                Debug.Assert(Environment.CurrentManagedThreadId != _id, "Called from an unexpected thread!");
 #endif
             }
         }
@@ -111,18 +110,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private class MainThreadState : ThreadStateBase, IDisposable
         {
             private readonly CancellationTokenSource _cancelSource = new CancellationTokenSource();
-            private readonly ManualResetEventSlim _hasParcel = new ManualResetEventSlim(false);
+            private ManualResetEventSlim _hasParcel = new ManualResetEventSlim(false);
             private CancellationTokenSource _currentParcelCancelSource;
 
-            private string _fileName;
+            private readonly object _disposeLock = new object();
             private readonly object _stateLock = new object();
             private IList<ChangeReference> _changes = new List<ChangeReference>();
+            private bool _disposed;
 
-            public MainThreadState(string fileName)
+            public MainThreadState()
             {
-                _fileName = fileName;
-
-                SetThreadId(Thread.CurrentThread.ManagedThreadId);
+                SetThreadId(Environment.CurrentManagedThreadId);
             }
 
             public event EventHandler<BackgroundParserResultsReadyEventArgs> ResultsReady;
@@ -175,16 +173,49 @@ namespace Microsoft.VisualStudio.Editor.Razor
             public WorkParcel GetParcel()
             {
                 EnsureNotOnThread(); // Only the background thread can get a parcel
-                _hasParcel.Wait(_cancelSource.Token);
-                _hasParcel.Reset();
-                lock (_stateLock)
-                {
-                    // Create a cancellation source for this parcel
-                    _currentParcelCancelSource = new CancellationTokenSource();
 
-                    var changes = _changes;
-                    _changes = new List<ChangeReference>();
-                    return new WorkParcel(changes, _currentParcelCancelSource.Token);
+                lock (_disposeLock)
+                {
+                    if (_disposed)
+                    {
+                        return WorkParcel.Empty;
+                    }
+                }
+
+                try
+                {
+                    _hasParcel?.Wait(_cancelSource.Token);
+                }
+                catch (Exception)
+                {
+                    // Swallow any exceptions caused by waiting on the parcel to avoid crashing VS.
+                }
+
+                lock (_disposeLock)
+                {
+                    if (_disposed)
+                    {
+                        return WorkParcel.Empty;
+                    }
+
+                    try
+                    {
+                        _hasParcel.Reset();
+                    }
+                    catch (Exception)
+                    {
+                        // Swallow any exceptions caused by resetting the parcel switch to avoid crashing VS.
+                    }
+
+                    lock (_stateLock)
+                    {
+                        // Create a cancellation source for this parcel
+                        _currentParcelCancelSource = new CancellationTokenSource();
+
+                        var changes = _changes;
+                        _changes = new List<ChangeReference>();
+                        return new WorkParcel(changes, _currentParcelCancelSource.Token);
+                    }
                 }
             }
 
@@ -205,11 +236,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         return;
                     }
                 }
-                var handler = ResultsReady;
-                if (handler != null)
-                {
-                    handler(this, args);
-                }
+                ResultsReady?.Invoke(this, args);
             }
 
             public void Dispose()
@@ -222,13 +249,24 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 if (disposing)
                 {
-                    if (_currentParcelCancelSource != null)
+                    lock (_disposeLock)
                     {
-                        _currentParcelCancelSource.Dispose();
-                        _currentParcelCancelSource = null;
+                        if (_disposed)
+                        {
+                            return;
+                        }
+
+                        _disposed = true;
+
+                        if (_currentParcelCancelSource != null)
+                        {
+                            _currentParcelCancelSource.Dispose();
+                            _currentParcelCancelSource = null;
+                        }
+                        _cancelSource.Dispose();
+                        _hasParcel.Dispose();
+                        _hasParcel = null;
                     }
-                    _cancelSource.Dispose();
-                    _hasParcel.Dispose();
                 }
             }
         }
@@ -239,10 +277,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             private readonly string _relativeFilePath;
             private readonly string _projectDirectory;
             private readonly string _fileKind;
-            private MainThreadState _main;
-            private Thread _backgroundThread;
+            private readonly MainThreadState _main;
+            private readonly Thread _backgroundThread;
             private CancellationToken _shutdownToken;
-            private RazorProjectEngine _projectEngine;
+            private readonly RazorProjectEngine _projectEngine;
             private RazorSyntaxTree _currentSyntaxTree;
             private IList<ChangeReference> _previouslyDiscarded = new List<ChangeReference>();
 
@@ -292,17 +330,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                                     if (!linkedCancel.IsCancellationRequested)
                                     {
                                         // Collect ALL changes
-                                        List<ChangeReference> allChanges;
-
-                                        if (_previouslyDiscarded != null)
-                                        {
-                                            allChanges = Enumerable.Concat(_previouslyDiscarded, parcel.Changes).ToList();
-                                        }
-                                        else
-                                        {
-                                            allChanges = parcel.Changes.ToList();
-                                        }
-
+                                        var allChanges = _previouslyDiscarded != null
+                                            ? Enumerable.Concat(_previouslyDiscarded, parcel.Changes).ToList()
+                                            : parcel.Changes.ToList();
                                         var finalChange = allChanges.Last();
 
                                         var results = ParseChange(finalChange.Snapshot, linkedCancel.Token);
@@ -360,7 +390,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return codeDocument;
             }
 
-            private string GetNormalizedRelativeFilePath(string filePath, string projectDirectory)
+            private static string GetNormalizedRelativeFilePath(string filePath, string projectDirectory)
             {
                 if (filePath.StartsWith(projectDirectory, StringComparison.OrdinalIgnoreCase))
                 {
@@ -383,6 +413,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private class WorkParcel
         {
+            public static readonly WorkParcel Empty = new WorkParcel(Array.Empty<ChangeReference>(), CancellationToken.None);
+
             public WorkParcel(IList<ChangeReference> changes, CancellationToken cancelToken)
             {
                 Changes = changes;

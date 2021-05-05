@@ -28,6 +28,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var cshtmlDocumentInfo = DocumentInfo.Create(CshtmlDocumentId, "Test", filePath: "file.cshtml.g.cs");
             RazorDocumentId = DocumentId.CreateNewId(projectId1);
             var razorDocumentInfo = DocumentInfo.Create(RazorDocumentId, "Test", filePath: "file.razor.g.cs");
+            BackgroundVirtualCSharpDocumentId = DocumentId.CreateNewId(projectId1);
+            var backgroundDocumentInfo = DocumentInfo.Create(BackgroundVirtualCSharpDocumentId, "Test", filePath: "file.razor__bg__virtual.cs");
             PartialComponentClassDocumentId = DocumentId.CreateNewId(projectId1);
             var partialComponentClassDocumentInfo = DocumentInfo.Create(PartialComponentClassDocumentId, "Test", filePath: "file.razor.cs");
 
@@ -39,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     "One",
                     LanguageNames.CSharp,
                     filePath: "One.csproj",
-                    documents: new[] { cshtmlDocumentInfo, razorDocumentInfo, partialComponentClassDocumentInfo }))
+                    documents: new[] { cshtmlDocumentInfo, razorDocumentInfo, partialComponentClassDocumentInfo, backgroundDocumentInfo }))
                 .AddProject(ProjectInfo.Create(
                     projectId2,
                     VersionStamp.Default,
@@ -87,6 +89,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public DocumentId CshtmlDocumentId { get; }
 
         public DocumentId RazorDocumentId { get; }
+
+        public DocumentId BackgroundVirtualCSharpDocumentId { get; }
 
         public DocumentId PartialComponentClassDocumentId { get; }
 
@@ -151,7 +155,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 p => Assert.Equal(ProjectNumberTwo.Id, p.workspaceProject.Id));
         }
 
-        [ForegroundTheory]
+        [ForegroundTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/29994")]
         [InlineData(WorkspaceChangeKind.ProjectChanged)]
         [InlineData(WorkspaceChangeKind.ProjectReloaded)]
         public async Task WorkspaceChanged_ProjectChangeEvents_UpdatesProjectState_AfterDelay(WorkspaceChangeKind kind)
@@ -180,11 +184,47 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
-            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
+        }
+
+        [ForegroundFact]
+        public async Task WorkspaceChanged_DocumentChanged_BackgroundVirtualCS_UpdatesProjectState_AfterDelay()
+        {
+            // Arrange
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator)
+            {
+                EnqueueDelay = 1,
+                BlockDelayedUpdateWorkEnqueue = new ManualResetEventSlim(initialState: false),
+            };
+
+            Workspace.TryApplyChanges(SolutionWithTwoProjects);
+            var projectManager = new TestProjectSnapshotManager(new[] { detector }, Workspace);
+            projectManager.ProjectAdded(HostProjectOne);
+            workspaceStateGenerator.ClearQueue();
+
+            var solution = SolutionWithTwoProjects.WithDocumentText(BackgroundVirtualCSharpDocumentId, SourceText.From("public class Foo{}"));
+            var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.DocumentChanged, oldSolution: SolutionWithTwoProjects, newSolution: solution, projectId: ProjectNumberOne.Id, BackgroundVirtualCSharpDocumentId);
+
+            // Act
+            detector.Workspace_WorkspaceChanged(Workspace, e);
+
+            // Assert
+            //
+            // The change hasn't come through yet.
+            Assert.Empty(workspaceStateGenerator.UpdateQueue);
+
+            detector.BlockDelayedUpdateWorkEnqueue.Set();
+
+            await detector._deferredUpdates.Single().Value.Task;
+
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
@@ -216,11 +256,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
-            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
@@ -252,11 +292,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
-            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
@@ -283,7 +323,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -305,11 +345,11 @@ namespace Microsoft.AspNetCore.Components
 
             detector.BlockDelayedUpdateWorkEnqueue.Set();
 
-            await detector._deferredUpdates.Single().Value;
+            await detector._deferredUpdates.Single().Value.Task;
 
-            var update = Assert.Single(workspaceStateGenerator.UpdateQueue);
-            Assert.Equal(update.workspaceProject.Id, ProjectNumberOne.Id);
-            Assert.Equal(update.projectSnapshot.FilePath, HostProjectOne.FilePath);
+            var (workspaceProject, projectSnapshot) = Assert.Single(workspaceStateGenerator.UpdateQueue);
+            Assert.Equal(workspaceProject.Id, ProjectNumberOne.Id);
+            Assert.Equal(projectSnapshot.FilePath, HostProjectOne.FilePath);
         }
 
         [ForegroundFact]
@@ -356,6 +396,33 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public async Task IsPartialComponentClass_NoIComponent_ReturnsFalse()
+        {
+            // Arrange
+            var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
+            var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator);
+            var sourceText = SourceText.From(
+$@"
+public partial class TestComponent{{}}
+");
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
+            var solution = SolutionWithTwoProjects
+                .WithDocumentText(PartialComponentClassDocumentId, sourceText)
+                .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
+            var document = solution.GetDocument(PartialComponentClassDocumentId);
+
+            // Initialize document
+            await document.GetSyntaxRootAsync();
+            await document.GetSemanticModelAsync();
+
+            // Act
+            var result = detector.IsPartialComponentClass(document);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
         public async Task IsPartialComponentClass_InitializedDocument_ReturnsTrue()
         {
             // Arrange
@@ -369,7 +436,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -427,7 +494,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -449,7 +516,7 @@ namespace Microsoft.AspNetCore.Components
             var workspaceStateGenerator = new TestProjectWorkspaceStateGenerator();
             var detector = new WorkspaceProjectStateChangeDetector(workspaceStateGenerator);
             var sourceText = SourceText.From(string.Empty);
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -485,7 +552,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -520,7 +587,7 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent {{}}
 }}
 ");
-            var syntaxTreeRoot = CSharpSyntaxTree.ParseText(sourceText).GetRoot();
+            var syntaxTreeRoot = await CSharpSyntaxTree.ParseText(sourceText).GetRootAsync();
             var solution = SolutionWithTwoProjects
                 .WithDocumentText(PartialComponentClassDocumentId, sourceText)
                 .WithDocumentSyntaxRoot(PartialComponentClassDocumentId, syntaxTreeRoot, PreservationMode.PreserveIdentity);
@@ -540,8 +607,15 @@ namespace Microsoft.AspNetCore.Components
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace)
-                : base(Mock.Of<ForegroundDispatcher>(), Mock.Of<ErrorReporter>(), triggers, workspace)
+                : base(CreateForegroundDispatcher(), Mock.Of<ErrorReporter>(MockBehavior.Strict), triggers, workspace)
             {
+            }
+
+            private static ForegroundDispatcher CreateForegroundDispatcher()
+            {
+                var dispatcher = new Mock<ForegroundDispatcher>(MockBehavior.Strict);
+                dispatcher.Setup(d => d.AssertForegroundThread(It.IsAny<string>())).Verifiable();
+                return dispatcher.Object;
             }
         }
     }
