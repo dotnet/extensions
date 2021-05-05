@@ -7,8 +7,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
 {
     internal abstract class VSLSPTagHelperTooltipFactory : TagHelperTooltipFactoryBase
     {
-        public abstract bool TryCreateTooltip(AggregateBoundElementDescription descriptionInfos, out VSClassifiedTextElement tooltipContent);
+        public abstract bool TryCreateTooltip(AggregateBoundElementDescription elementDescriptionInfo, out VSContainerElement tooltipContent);
 
-        public abstract bool TryCreateTooltip(AggregateBoundAttributeDescription descriptionInfos, out VSClassifiedTextElement tooltipContent);
+        public abstract bool TryCreateTooltip(AggregateBoundAttributeDescription attributeDescriptionInfo, out VSContainerElement tooltipContent);
+
+        public abstract bool TryCreateTooltip(AggregateBoundElementDescription elementDescriptionInfo, out VSClassifiedTextElement tooltipContent);
+
+        public abstract bool TryCreateTooltip(AggregateBoundAttributeDescription attributeDescriptionInfo, out VSClassifiedTextElement tooltipContent);
     }
 }

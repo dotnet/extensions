@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
 
         public ClientNotifierServiceBase LanguageServer;
 
-        public override bool TryCreateTooltip(AggregateBoundElementDescription elementDescriptionInfo, out MarkupContent tagHelperDescription)
+        public override bool TryCreateTooltip(AggregateBoundElementDescription elementDescriptionInfo, out MarkupContent tooltipContent)
         {
             if (elementDescriptionInfo is null)
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
             var associatedTagHelperInfos = elementDescriptionInfo.AssociatedTagHelperDescriptions;
             if (associatedTagHelperInfos.Count == 0)
             {
-                tagHelperDescription = null;
+                tooltipContent = null;
                 return false;
             }
 
@@ -75,26 +75,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
                 descriptionBuilder.Append(finalSummaryContent);
             }
 
-            tagHelperDescription = new MarkupContent
+            tooltipContent = new MarkupContent
             {
                 Kind = GetMarkupKind()
             };
 
-            tagHelperDescription.Value = descriptionBuilder.ToString();
+            tooltipContent.Value = descriptionBuilder.ToString();
             return true;
         }
 
-        public override bool TryCreateTooltip(AggregateBoundAttributeDescription descriptionInfos, out MarkupContent tagHelperDescription)
+        public override bool TryCreateTooltip(AggregateBoundAttributeDescription attributeDescriptionInfo, out MarkupContent tooltipContent)
         {
-            if (descriptionInfos is null)
+            if (attributeDescriptionInfo is null)
             {
-                throw new ArgumentNullException(nameof(descriptionInfos));
+                throw new ArgumentNullException(nameof(attributeDescriptionInfo));
             }
 
-            var associatedAttributeInfos = descriptionInfos.DescriptionInfos;
+            var associatedAttributeInfos = attributeDescriptionInfo.DescriptionInfos;
             if (associatedAttributeInfos.Count == 0)
             {
-                tagHelperDescription = null;
+                tooltipContent = null;
                 return false;
             }
 
@@ -145,12 +145,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
                 descriptionBuilder.Append(finalSummaryContent);
             }
 
-            tagHelperDescription = new MarkupContent
+            tooltipContent = new MarkupContent
             {
                 Kind = GetMarkupKind()
             };
 
-            tagHelperDescription.Value = descriptionBuilder.ToString();
+            tooltipContent.Value = descriptionBuilder.ToString();
             return true;
         }
 
