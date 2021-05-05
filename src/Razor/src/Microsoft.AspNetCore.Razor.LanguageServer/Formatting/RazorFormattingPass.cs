@@ -79,57 +79,65 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             foreach (var node in syntaxTree.Root.DescendantNodes())
             {
-                // Disclaimer: CSharpCodeBlockSyntax is used a _lot_ in razor so I'm being overly careful to only try to
-                // format syntax forms we care about.
-                //
-                // We're looking for a code block like this:
-                //
-                // @code {
-                //    var x = 1;
-                // }
-                //
-                // The nodes will be a grandchild of a RazorDirective (the "@code") and we expect there to be
-                // at least three children, being:
-                // 1. Optional whitespace
-                // 2. The opening brace
-                // 3. The C# code
-                // 4. The closing brace
-                if (node is CSharpCodeBlockSyntax code &&
-                    node.Parent?.Parent is RazorDirectiveSyntax directive &&
-                    !directive.ContainsDiagnostics &&
-                    directive.DirectiveDescriptor?.Kind == DirectiveKind.CodeBlock)
-                {
-                    var children = code.Children;
-                    if (TryGetLeadingWhitespace(children, out var whitespace))
-                    {
-                        // For whitespace we normalize it differently depending on if its multi-line or not
-                        FormatWhitespaceBetweenDirectiveAndBrace(whitespace, directive, edits, source, context);
-                    }
-                    else if (TryGetOpenBrace(children, out var brace))
-                    {
-                        // If there is no whitespace at all we normalize to a single space
-                        var start = brace.GetRange(source).Start;
-                        var edit = new TextEdit
-                        {
-                            Range = new Range(start, start),
-                            NewText = " "
-                        };
-                        edits.Add(edit);
-                    }
-                }
+                // Disclaimer: CSharpCodeBlockSyntax is used a _lot_ in razor so these methods are probably
+                // being overly careful to only try to format syntax forms they care about.
+                TryFormatCSharpCodeBlock(context, edits, source, node);
+                TryFormatSingleLineDirective(context, edits, source, node);
             }
 
             return edits;
+        }
+
+        private static void TryFormatCSharpCodeBlock(FormattingContext context, List<TextEdit> edits, RazorSourceDocument source, SyntaxNode node)
+        {
+            // We're looking for a code block like this:
+            //
+            // @code {
+            //    var x = 1;
+            // }
+            //
+            // The nodes will be a grandchild of a RazorDirective (the "@code") and we expect there to be
+            // at least three children, being:
+            // 1. Optional whitespace
+            // 2. The opening brace
+            // 3. The C# code
+            // 4. The closing brace
+            if (node is CSharpCodeBlockSyntax code &&
+                node.Parent?.Parent is RazorDirectiveSyntax directive &&
+                !directive.ContainsDiagnostics &&
+                directive.DirectiveDescriptor?.Kind == DirectiveKind.CodeBlock)
+            {
+                var children = code.Children;
+                if (TryGetLeadingWhitespace(children, out var whitespace))
+                {
+                    // For whitespace we normalize it differently depending on if its multi-line or not
+                    FormatWhitespaceBetweenDirectiveAndBrace(whitespace, directive, edits, source, context);
+                }
+                else if (TryGetOpenBrace(children, out var brace))
+                {
+                    // If there is no whitespace at all we normalize to a single space
+                    var start = brace.GetRange(source).Start;
+                    var edit = new TextEdit
+                    {
+                        Range = new Range(start, start),
+                        NewText = " "
+                    };
+                    edits.Add(edit);
+                }
+            }
 
             static bool TryGetLeadingWhitespace(SyntaxList<RazorSyntaxNode> children, out UnclassifiedTextLiteralSyntax whitespace)
             {
                 // If there is whitespace between the directive and the brace, it will be in the first child
                 // of the 4 total children
                 whitespace = null;
-                if (children.Count == 4 && children[0] is UnclassifiedTextLiteralSyntax literal)
+                if (children.Count == 4 &&
+                    children[0] is UnclassifiedTextLiteralSyntax literal &&
+                    literal.ContainsOnlyWhitespace())
                 {
                     whitespace = literal;
                 }
+
                 return whitespace != null;
             }
 
@@ -142,36 +150,65 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 {
                     brace = metaCode.MetaCode.SingleOrDefault(m => m.Kind == SyntaxKind.LeftBrace);
                 }
+
                 return brace != null;
             }
         }
 
-        private static void FormatWhitespaceBetweenDirectiveAndBrace(UnclassifiedTextLiteralSyntax literal, RazorDirectiveSyntax directive, List<TextEdit> edits, RazorSourceDocument source, FormattingContext context)
+        private static void TryFormatSingleLineDirective(FormattingContext context, List<TextEdit> edits, RazorSourceDocument source, SyntaxNode node)
         {
-            if (literal.LiteralTokens.Any(t => t.Kind == SyntaxKind.NewLine))
+            // Looking for single line directives like
+            //
+            // @attribute [Obsolete("old")]
+            //
+            // The CSharpCodeBlockSyntax covers everything from the end of "attribute" to the end of the line
+            if (node is CSharpCodeBlockSyntax content &&
+                node.Parent?.Parent is RazorDirectiveSyntax directive &&
+                directive.DirectiveDescriptor?.Kind == DirectiveKind.SingleLine)
+            {
+                // Shrink any block of C# that only has whitespace down to a single space.
+                // In the @attribute case above this would only be the whitespace between the directive and code
+                // but for @inject its also between the type and the field name.
+                foreach (var child in content.Children)
+                {
+                    if (child.ContainsOnlyWhitespace(includingNewLines: false))
+                    {
+                        ShrinkToSingleSpace(child, edits, source);
+                    }
+                }
+            }
+        }
+
+        private static void FormatWhitespaceBetweenDirectiveAndBrace(SyntaxNode node, RazorDirectiveSyntax directive, List<TextEdit> edits, RazorSourceDocument source, FormattingContext context)
+        {
+            if (node.ContainsOnlyWhitespace(includingNewLines: false))
+            {
+                ShrinkToSingleSpace(node, edits, source);
+            }
+            else
             {
                 // If there is a newline then we want to have just one newline after the directive
                 // and indent the { to match the @
                 var edit = new TextEdit
                 {
-                    Range = literal.GetRange(source),
+                    Range = node.GetRange(source),
                     NewText = context.NewLineString + context.GetIndentationString(directive.GetLinePositionSpan(source).Start.Character)
                 };
                 edits.Add(edit);
             }
-            else if (literal.Width > 1 ||
-                literal.LiteralTokens[0].Content.Equals("\t"))
+        }
+
+        private static void ShrinkToSingleSpace(SyntaxNode node, List<TextEdit> edits, RazorSourceDocument source)
+        {
+            // If there is anything other than one single space then we replace with one space between directive and brace.
+            //
+            // ie, "@code     {" will become "@code {"
+            var edit = new TextEdit
             {
-                // If there is anything other than one single space then we replace with one space between directive and brace.
-                //
-                // ie, "@code     {" will become "@code {"
-                var edit = new TextEdit
-                {
-                    Range = literal.GetRange(source),
-                    NewText = " "
-                };
-                edits.Add(edit);
-            }
+                Range = node.GetRange(source),
+                NewText = " "
+            };
+            edits.Add(edit);
         }
     }
 }

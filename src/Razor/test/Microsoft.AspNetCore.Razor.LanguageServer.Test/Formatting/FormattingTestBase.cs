@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var source = SourceText.From(input);
             var range = span.AsRange(source);
 
-            var path = "file:///path/to/document.razor";
+            var path = "file:///path/to/document." + fileKind;
             var uri = new Uri(path);
             var (codeDocument, documentSnapshot) = CreateCodeDocumentAndSnapshot(source, uri.AbsolutePath, tagHelpers, fileKind);
             var options = new FormattingOptions()
@@ -178,7 +179,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             fileKind ??= FileKinds.Component;
             tagHelpers ??= Array.Empty<TagHelperDescriptor>();
             var sourceDocument = text.GetRazorSourceDocument(path, path);
-            var projectEngine = RazorProjectEngine.Create(builder => builder.SetRootNamespace("Test"));
+            var projectEngine = RazorProjectEngine.Create(builder =>
+            {
+                builder.SetRootNamespace("Test");
+                RazorExtensions.Register(builder);
+            });
             var codeDocument = projectEngine.ProcessDesignTime(sourceDocument, fileKind, Array.Empty<RazorSourceDocument>(), tagHelpers);
 
             var documentSnapshot = new Mock<DocumentSnapshot>(MockBehavior.Strict);

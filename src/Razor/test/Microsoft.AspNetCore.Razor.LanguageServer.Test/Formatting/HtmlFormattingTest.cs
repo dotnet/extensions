@@ -4,11 +4,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.Formatting;
 using Microsoft.AspNetCore.Razor.Test.Common;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Formatting
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
     public class HtmlFormattingTest : FormattingTestBase
     {
