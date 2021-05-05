@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Tooltip
 {
     internal abstract class LSPTagHelperTooltipFactory : TagHelperTooltipFactoryBase
     {
-        public abstract bool TryCreateTooltip(AggregateBoundElementDescription descriptionInfos, out MarkupContent tooltipContent);
+        public abstract bool TryCreateTooltip(AggregateBoundElementDescription elementDescriptionInfo, out MarkupContent tooltipContent);
 
-        public abstract bool TryCreateTooltip(AggregateBoundAttributeDescription descriptionInfos, out MarkupContent tooltipContent);
+        public abstract bool TryCreateTooltip(AggregateBoundAttributeDescription attributeDescriptionInfo, out MarkupContent tooltipContent);
     }
 }

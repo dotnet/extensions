@@ -200,11 +200,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 case RazorCompletionItemKind.TagHelperAttribute:
                     {
                         var descriptionInfo = associatedRazorCompletion.GetAttributeCompletionDescription();
-                        _lspTagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperMarkupTooltip);
-
                         if (useDescriptionProperty)
                         {
                             _vsLspTagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperClassifiedTextTooltip);
+                        }
+                        else
+                        {
+                            _lspTagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperMarkupTooltip);
                         }
 
                         break;
@@ -212,11 +214,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
                 case RazorCompletionItemKind.TagHelperElement:
                     {
                         var descriptionInfo = associatedRazorCompletion.GetTagHelperElementDescriptionInfo();
-                        _lspTagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperMarkupTooltip);
-
                         if (useDescriptionProperty)
                         {
                             _vsLspTagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperClassifiedTextTooltip);
+                        }
+                        else
+                        {
+                            _lspTagHelperTooltipFactory.TryCreateTooltip(descriptionInfo, out tagHelperMarkupTooltip);
                         }
 
                         break;
@@ -232,6 +236,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Completion
             if (tagHelperClassifiedTextTooltip != null)
             {
                 var vsCompletionItem = completionItem.ToVSCompletionItem();
+                vsCompletionItem.Documentation = string.Empty;
                 vsCompletionItem.Description = tagHelperClassifiedTextTooltip;
                 return Task.FromResult<CompletionItem>(vsCompletionItem);
             }
