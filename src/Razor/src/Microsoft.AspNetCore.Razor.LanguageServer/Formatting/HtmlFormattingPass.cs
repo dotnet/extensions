@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     // Instead, we should just add to the existing indentation.
                     //
                     var razorDesiredIndentationString = context.GetIndentationLevelString(razorDesiredIndentationLevel);
-                    var existingIndentationString = context.GetIndentationString(context.Indentations[i].ExistingIndentation);
+                    var existingIndentationString = context.GetIndentationString(context.Indentations[i].ExistingIndentationSize);
                     var desiredIndentationString = existingIndentationString + razorDesiredIndentationString;
                     var spanToReplace = new TextSpan(line.Start, context.Indentations[i].ExistingIndentation);
                     var change = new TextChange(spanToReplace, desiredIndentationString);

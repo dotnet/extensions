@@ -40,7 +40,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 TextDocument = new TextDocumentIdentifier(uri),
                 Character = ">",
-                Options = new FormattingOptions(),
+                Options = new FormattingOptions
+                {
+                    TabSize = 4,
+                    InsertSpaces = true
+                },
             };
 
             // Act
@@ -71,7 +75,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 TextDocument = new TextDocumentIdentifier(uri),
                 Character = ">",
-                Options = new FormattingOptions(),
+                Options = new FormattingOptions
+                {
+                    TabSize = 4,
+                    InsertSpaces = true
+                },
             };
 
             // Act
@@ -104,7 +112,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 TextDocument = new TextDocumentIdentifier(uri),
                 Character = ">",
-                Options = new FormattingOptions(),
+                Options = new FormattingOptions
+                {
+                    TabSize = 4,
+                    InsertSpaces = true
+                },
             };
 
             // Act
@@ -131,7 +143,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 TextDocument = new TextDocumentIdentifier(uri),
                 Character = "!",
-                Options = new FormattingOptions(),
+                Options = new FormattingOptions
+                {
+                    TabSize = 4,
+                    InsertSpaces = true
+                },
             };
 
             // Act
@@ -154,7 +170,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 TextDocument = new TextDocumentIdentifier(uri),
                 Character = ">",
-                Options = new FormattingOptions(),
+                Options = new FormattingOptions
+                {
+                    TabSize = 4,
+                    InsertSpaces = true
+                },
             };
 
             // Act
@@ -179,7 +199,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 TextDocument = new TextDocumentIdentifier(uri),
                 Character = ">",
-                Options = new FormattingOptions(),
+                Options = new FormattingOptions
+                {
+                    TabSize = 4,
+                    InsertSpaces = true
+                },
             };
 
             // Act
@@ -203,7 +227,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             {
                 TextDocument = new TextDocumentIdentifier(uri),
                 Character = ">",
-                Options = new FormattingOptions(),
+                Options = new FormattingOptions
+                {
+                    TabSize = 4,
+                    InsertSpaces = true
+                },
             };
 
             // Act
