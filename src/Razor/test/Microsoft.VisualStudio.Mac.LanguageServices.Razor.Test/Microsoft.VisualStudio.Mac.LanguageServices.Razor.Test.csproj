@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(VSMAC_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
 </Project>

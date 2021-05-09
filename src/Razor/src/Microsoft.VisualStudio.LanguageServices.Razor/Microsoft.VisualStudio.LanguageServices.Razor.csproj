@@ -10,21 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(Tooling_MicrosoftCodeAnalysisPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(Tooling_MicrosoftCodeAnalysisCommonPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(Tooling_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="$(Tooling_MicrosoftCodeAnalysisFeaturesPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" IncludeAssets="None" PrivateAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.VisualStudio.Editor" Version="$(MicrosoftVisualStudioEditorPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(Tooling_MicrosoftVisualStudioLanguageServicesPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="$(MicrosoftVisualStudioProjectSystemSDKPackageVersion)" />
-    <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
-    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutablePackageVersion)" />
-    <PackageReference Include="System.Private.Uri" Version="$(SystemPrivateUriPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Interop" Version="$(MicrosoftVisualStudioInteropPackageVersion)" />
   </ItemGroup>
 
@@ -35,15 +24,6 @@
   <ItemGroup>
     <Reference Include="System.Xaml" />
   </ItemGroup>
-
-  <!-- Workaround for Microsoft.VisualStudio.SDK.EmbedInteropTypes not working correctly-->
-  <Target Name="_EmbeddedAssemblyWorkaround" DependsOnTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences">
-    <ItemGroup>
-      <ReferencePath Condition="'%(FileName)'=='Microsoft.VisualStudio.Shell.Interop.11.0'">
-        <EmbedInteropTypes>false</EmbedInteropTypes>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>
 
   <!--
     The ProjectSystem.SDK tasks that handle XamlPropertyRule don't work on the dotnet core version

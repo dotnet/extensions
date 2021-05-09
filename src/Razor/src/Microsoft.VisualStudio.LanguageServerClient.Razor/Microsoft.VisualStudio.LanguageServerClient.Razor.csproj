@@ -17,24 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
-    <PackageReference Include="System.Composition" Version="$(SystemCompositionPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(Tooling_MicrosoftCodeAnalysisAnalyzersPackageVersion)" NoWarn="NU1608" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" />
-    <PackageReference Include="Microsoft.ServiceHub.Framework" Version="$(MicrosoftServiceHubFrameworkPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="$(MicrosoftVisualStudioProjectSystemSDKPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="$(MicrosoftVisualStudioUtilitiesPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Interop" Version="$(MicrosoftVisualStudioInteropPackageVersion)" />
     <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(MicrosoftInternalVisualStudioShellFrameworkPackageVersion)" />
   </ItemGroup>
-
-    <!-- Workaround for Microsoft.VisualStudio.SDK.EmbedInteropTypes not working correctly-->
-  <Target Name="_EmbeddedAssemblyWorkaround" DependsOnTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences">
-    <ItemGroup>
-      <ReferencePath Condition="'%(FileName)'=='Microsoft.VisualStudio.Shell.Interop.11.0'">
-        <EmbedInteropTypes>false</EmbedInteropTypes>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>
 
 </Project>
