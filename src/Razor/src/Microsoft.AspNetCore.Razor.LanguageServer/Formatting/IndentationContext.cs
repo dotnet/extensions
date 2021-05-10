@@ -15,6 +15,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         public int RelativeIndentationLevel { get; set; }
 
+        /// <summary>
+        /// The number of characters of indentation there are on this line
+        /// </summary>
         public int ExistingIndentation { get; set; }
 
         public FormattingSpan FirstSpan { get; set; }
@@ -28,6 +31,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         public bool StartsInRazorContext => !StartsInHtmlContext && !StartsInCSharpContext;
 
         public int MinCSharpIndentLevel => FirstSpan.MinCSharpIndentLevel;
+
+        /// <summary>
+        /// The amount of visual indentation there is on this line, taking into account tab size
+        /// </summary>
+        public int ExistingIndentationSize { get; internal set; }
 
         public override string ToString()
         {

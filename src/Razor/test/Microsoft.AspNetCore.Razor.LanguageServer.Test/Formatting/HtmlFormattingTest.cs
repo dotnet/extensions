@@ -416,6 +416,123 @@ expected: @"@code {
 ");
         }
 
+        [Fact]
+        [WorkItem("https://github.com/dotnet/aspnetcore/issues/26836")]
+        public async Task FormatNestedBlock_Tabs()
+        {
+            await RunFormattingTestAsync(
+input: @"@code {
+    public string DoSomething()
+    {
+        <strong>
+            @DateTime.Now.ToString()
+        </strong>
+
+        return String.Empty;
+    }
+}
+",
+expected: @"@code {
+	public string DoSomething()
+	{
+		<strong>
+			@DateTime.Now.ToString()
+		</strong>
+
+		return String.Empty;
+	}
+}
+",
+tabSize: 4, // Due to a bug in the HTML formatter, this needs to be 4
+insertSpaces: false);
+        }
+
+        [Fact]
+        [WorkItem("https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1273468/")]
+        public async Task FormatHtmlWithTabs1()
+        {
+            await RunFormattingTestAsync(
+input: @"
+@page ""/""  
+@{
+ ViewData[""Title""] = ""Create"";
+ <hr />
+ <div class=""row"">
+  <div class=""col-md-4"">
+   <form method=""post"">
+    <div class=""form-group"">
+     <label asp-for=""Movie.Title"" class=""control-label""></label>
+     <input asp-for=""Movie.Title"" class=""form-control"" />
+     <span asp-validation-for=""Movie.Title"" class=""text-danger""></span>
+    </div>
+   </form>
+  </div>
+ </div>
+}
+",
+expected: @"@page ""/""
+@{
+	ViewData[""Title""] = ""Create"";
+	<hr />
+	<div class=""row"">
+		<div class=""col-md-4"">
+			<form method=""post"">
+				<div class=""form-group"">
+					<label asp-for=""Movie.Title"" class=""control-label""></label>
+					<input asp-for=""Movie.Title"" class=""form-control"" />
+					<span asp-validation-for=""Movie.Title"" class=""text-danger""></span>
+				</div>
+			</form>
+		</div>
+	</div>
+}
+",
+tabSize: 4, // Due to a bug in the HTML formatter, this needs to be 4
+insertSpaces: false,
+fileKind: FileKinds.Legacy);
+        }
+
+        [Fact]
+        [WorkItem("https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1273468/")]
+        public async Task FormatHtmlWithTabs2()
+        {
+            await RunFormattingTestAsync(
+input: @"
+@page ""/""  
+
+ <hr />
+ <div class=""row"">
+  <div class=""col-md-4"">
+   <form method=""post"">
+    <div class=""form-group"">
+     <label asp-for=""Movie.Title"" class=""control-label""></label>
+     <input asp-for=""Movie.Title"" class=""form-control"" />
+     <span asp-validation-for=""Movie.Title"" class=""text-danger""></span>
+    </div>
+   </form>
+  </div>
+ </div>
+",
+expected: @"@page ""/""
+
+<hr />
+<div class=""row"">
+	<div class=""col-md-4"">
+		<form method=""post"">
+			<div class=""form-group"">
+				<label asp-for=""Movie.Title"" class=""control-label""></label>
+				<input asp-for=""Movie.Title"" class=""form-control"" />
+				<span asp-validation-for=""Movie.Title"" class=""text-danger""></span>
+			</div>
+		</form>
+	</div>
+</div>
+",
+tabSize: 4, // Due to a bug in the HTML formatter, this needs to be 4
+insertSpaces: false,
+fileKind: FileKinds.Legacy);
+        }
+
         private IReadOnlyList<TagHelperDescriptor> GetComponents()
         {
             AdditionalSyntaxTrees.Add(Parse(@"

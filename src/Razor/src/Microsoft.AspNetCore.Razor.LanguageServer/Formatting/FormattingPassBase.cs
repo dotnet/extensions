@@ -336,7 +336,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     {
                         // Given that the HTML formatter ran before this, we can assume
                         // HTML is already correctly formatted. So we can use the existing indentation as is.
-                        razorDesiredIndentation = context.Indentations[i].ExistingIndentation;
+                        // We need to make sure to use the indentation size, as this will get passed to
+                        // GetIndentationString eventually.
+                        razorDesiredIndentation = context.Indentations[i].ExistingIndentationSize;
                     }
                 }
 

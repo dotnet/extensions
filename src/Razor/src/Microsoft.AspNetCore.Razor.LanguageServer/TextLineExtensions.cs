@@ -14,6 +14,31 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return line.ToString().GetLeadingWhitespace();
         }
 
+        public static int GetIndentationSize(this TextLine line, long tabSize)
+        {
+            var text = line.Text;
+
+            var indentation = 0;
+            for (var i = line.Start; i < line.End; i++)
+            {
+                var c = text[i];
+                if (c == '\t')
+                {
+                    indentation += (int)tabSize;
+                }
+                else if (char.IsWhiteSpace(c))
+                {
+                    indentation++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return indentation;
+        }
+
         public static int? GetFirstNonWhitespacePosition(this TextLine line)
         {
             var firstNonWhitespaceOffset = line.GetFirstNonWhitespaceOffset();
