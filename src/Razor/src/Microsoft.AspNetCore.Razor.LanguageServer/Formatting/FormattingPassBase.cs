@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             DocumentMappingService = documentMappingService;
-            HtmlFormatter = new HtmlFormatter(server, filePathNormalizer);
         }
 
         public abstract bool IsValidationPass { get; }
@@ -54,7 +53,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         protected RazorDocumentMappingService DocumentMappingService { get; }
 
 
-        protected HtmlFormatter HtmlFormatter { get; }
 
         public virtual Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {
