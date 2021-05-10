@@ -220,6 +220,28 @@ expected: @"@inherits MyBaseClass
         }
 
         [Fact]
+        public async Task Implements()
+        {
+            await RunFormattingTestAsync(
+input: @"
+@implements    IDisposable
+",
+expected: @"@implements IDisposable
+");
+        }
+
+        [Fact]
+        public async Task PreserveWhitespace()
+        {
+            await RunFormattingTestAsync(
+input: @"
+@preservewhitespace    true
+",
+expected: @"@preservewhitespace true
+");
+        }
+
+        [Fact]
         public async Task Inject()
         {
             await RunFormattingTestAsync(
