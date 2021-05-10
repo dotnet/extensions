@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -37,12 +39,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         // Internal for testing.
         internal bool DebugAssertsEnabled { get; set; } = true;
 
-        public override FormattingResult Execute(FormattingContext context, FormattingResult result)
+        public override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {
             if (result.Kind != RazorLanguageKind.Razor)
             {
                 // We don't care about changes to projected documents here.
-                return result;
+                return Task.FromResult(result);
             }
 
             var text = context.SourceText;
@@ -60,10 +62,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                     Debug.Fail("A formatting result was rejected because it was going to change non-whitespace content in the document.");
                 }
 
-                return new FormattingResult(Array.Empty<TextEdit>());
+                return Task.FromResult(new FormattingResult(Array.Empty<TextEdit>()));
             }
 
-            return result;
+            return Task.FromResult(result);
         }
     }
 }
