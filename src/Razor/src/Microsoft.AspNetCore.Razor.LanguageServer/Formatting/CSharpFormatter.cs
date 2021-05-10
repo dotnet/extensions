@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var workspace = context.CSharpWorkspace;
 
             // Formatting options will already be set in the workspace.
-            var changes = CodeAnalysis.Formatting.Formatter.GetFormattedTextChanges(root, spanToFormat, workspace);
+            var changes = CodeAnalysis.Formatting.Formatter.GetFormattedTextChanges(root, spanToFormat, workspace, cancellationToken: cancellationToken);
 
             var edits = changes.Select(c => c.AsTextEdit(csharpSourceText)).ToArray();
             return edits;
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             // At this point, we have added all the necessary markers and attached annotations.
             // Let's invoke the C# formatter and hope for the best.
-            var formattedRoot = CodeAnalysis.Formatting.Formatter.Format(root, context.CSharpWorkspace);
+            var formattedRoot = CodeAnalysis.Formatting.Formatter.Format(root, context.CSharpWorkspace, cancellationToken: cancellationToken);
             var formattedText = formattedRoot.GetText();
 
             var desiredIndentationMap = new Dictionary<int, int>();
