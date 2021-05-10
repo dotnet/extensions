@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Test.Common;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
     public class FormattingContentValidationPassTest : LanguageServerTestBase
     {
         [Fact]
-        public void Execute_LanguageKindCSharp_Noops()
+        public async Task Execute_LanguageKindCSharp_Noops()
         {
             // Arrange
             var source = SourceText.From(@"
@@ -31,14 +32,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var pass = GetPass();
 
             // Act
-            var result = pass.Execute(context, input);
+            var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
 
             // Assert
             Assert.Equal(input, result);
         }
 
         [Fact]
-        public void Execute_LanguageKindHtml_Noops()
+        public async Task Execute_LanguageKindHtml_Noops()
         {
             // Arrange
             var source = SourceText.From(@"
@@ -51,14 +52,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var pass = GetPass();
 
             // Act
-            var result = pass.Execute(context, input);
+            var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
 
             // Assert
             Assert.Equal(input, result);
         }
 
         [Fact]
-        public void Execute_NonDestructiveEdit_Allowed()
+        public async Task Execute_NonDestructiveEdit_Allowed()
         {
             // Arrange
             var source = SourceText.From(@"
@@ -79,14 +80,14 @@ public class Foo { }
             var pass = GetPass();
 
             // Act
-            var result = pass.Execute(context, input);
+            var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
 
             // Assert
             Assert.Equal(input, result);
         }
 
         [Fact]
-        public void Execute_DestructiveEdit_Rejected()
+        public async Task Execute_DestructiveEdit_Rejected()
         {
             // Arrange
             var source = SourceText.From(@"
@@ -107,7 +108,7 @@ public class Foo { }
             var pass = GetPass();
 
             // Act
-            var result = pass.Execute(context, input);
+            var result = await pass.ExecuteAsync(context, input, CancellationToken.None);
 
             // Assert
             Assert.Empty(result.Edits);
