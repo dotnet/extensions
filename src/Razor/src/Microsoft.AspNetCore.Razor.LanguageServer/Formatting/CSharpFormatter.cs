@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return mappedEdits;
         }
 
-        public async Task<IReadOnlyDictionary<int, int>> GetCSharpIndentationAsync(
+        public static async Task<IReadOnlyDictionary<int, int>> GetCSharpIndentationAsync(
             FormattingContext context,
             IReadOnlyCollection<int> projectedDocumentLocations,
             CancellationToken cancellationToken)
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return result?.Edits ?? Array.Empty<TextEdit>();
         }
 
-        private async Task<TextEdit[]> FormatOnServerAsync(
+        private static async Task<TextEdit[]> FormatOnServerAsync(
             FormattingContext context,
             Range projectedRange,
             CancellationToken cancellationToken)
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return edits;
         }
 
-        private async Task<Dictionary<int, int>> GetCSharpIndentationCoreAsync(FormattingContext context, List<int> projectedDocumentLocations, CancellationToken cancellationToken)
+        private static async Task<Dictionary<int, int>> GetCSharpIndentationCoreAsync(FormattingContext context, List<int> projectedDocumentLocations, CancellationToken cancellationToken)
         {
             var (indentationMap, syntaxTree) = InitializeIndentationData(context, projectedDocumentLocations, cancellationToken);
 
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
         }
 
-        private (Dictionary<int, IndentationMapData>, SyntaxTree) InitializeIndentationData(
+        private static (Dictionary<int, IndentationMapData>, SyntaxTree) InitializeIndentationData(
             FormattingContext context,
             IEnumerable<int> projectedDocumentLocations,
             CancellationToken cancellationToken)
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return (indentationMap, syntaxTree);
         }
 
-        private SyntaxNode AttachAnnotations(
+        private static SyntaxNode AttachAnnotations(
             Dictionary<int, IndentationMapData> indentationMap,
             IEnumerable<int> projectedDocumentLocations,
             SyntaxNode root)

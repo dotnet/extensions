@@ -116,6 +116,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
                 sourceMappingIndentations[originalLocation] = indentation;
             }
+
             var sourceMappingIndentationScopes = sourceMappingIndentations.Keys.ToArray();
 
             // Build lineStart indentation map.
@@ -248,7 +249,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return changes;
         }
 
-        protected List<TextChange> CleanupDocument(FormattingContext context, Range range = null)
+        protected static List<TextChange> CleanupDocument(FormattingContext context, Range range = null)
         {
             var text = context.SourceText;
             range ??= TextSpan.FromBounds(0, text.Length).AsRange(text);
@@ -273,7 +274,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return changes;
         }
 
-        private void CleanupSourceMappingStart(FormattingContext context, Range sourceMappingRange, List<TextChange> changes)
+        private static void CleanupSourceMappingStart(FormattingContext context, Range sourceMappingRange, List<TextChange> changes)
         {
             //
             // We look through every source mapping that intersects with the affected range and
@@ -367,7 +368,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return builder.ToString();
         }
 
-        private void CleanupSourceMappingEnd(FormattingContext context, Range sourceMappingRange, List<TextChange> changes)
+        private static void CleanupSourceMappingEnd(FormattingContext context, Range sourceMappingRange, List<TextChange> changes)
         {
             //
             // We look through every source mapping that intersects with the affected range and
@@ -443,7 +444,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             changes.Add(change);
         }
 
-        protected bool ShouldFormat(FormattingContext context, TextSpan mappingSpan, bool allowImplicitStatements)
+        protected static bool ShouldFormat(FormattingContext context, TextSpan mappingSpan, bool allowImplicitStatements)
         {
             // We should be called with the range of various C# SourceMappings.
 
