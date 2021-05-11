@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return mappedEdits;
         }
 
-        public async Task<IReadOnlyDictionary<int, int>> GetCSharpIndentationAsync(
+        public static async Task<IReadOnlyDictionary<int, int>> GetCSharpIndentationAsync(
             FormattingContext context,
             IReadOnlyCollection<int> projectedDocumentLocations,
             CancellationToken cancellationToken)
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return result?.Edits ?? Array.Empty<TextEdit>();
         }
 
-        private async Task<TextEdit[]> FormatOnServerAsync(
+        private static async Task<TextEdit[]> FormatOnServerAsync(
             FormattingContext context,
             Range projectedRange,
             CancellationToken cancellationToken)
@@ -150,13 +150,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var workspace = context.CSharpWorkspace;
 
             // Formatting options will already be set in the workspace.
-            var changes = CodeAnalysis.Formatting.Formatter.GetFormattedTextChanges(root, spanToFormat, workspace);
+            var changes = CodeAnalysis.Formatting.Formatter.GetFormattedTextChanges(root, spanToFormat, workspace, cancellationToken: cancellationToken);
 
             var edits = changes.Select(c => c.AsTextEdit(csharpSourceText)).ToArray();
             return edits;
         }
 
-        private async Task<Dictionary<int, int>> GetCSharpIndentationCoreAsync(FormattingContext context, List<int> projectedDocumentLocations, CancellationToken cancellationToken)
+        private static async Task<Dictionary<int, int>> GetCSharpIndentationCoreAsync(FormattingContext context, List<int> projectedDocumentLocations, CancellationToken cancellationToken)
         {
             var (indentationMap, syntaxTree) = InitializeIndentationData(context, projectedDocumentLocations, cancellationToken);
 
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             // At this point, we have added all the necessary markers and attached annotations.
             // Let's invoke the C# formatter and hope for the best.
-            var formattedRoot = CodeAnalysis.Formatting.Formatter.Format(root, context.CSharpWorkspace);
+            var formattedRoot = CodeAnalysis.Formatting.Formatter.Format(root, context.CSharpWorkspace, cancellationToken: cancellationToken);
             var formattedText = formattedRoot.GetText();
 
             var desiredIndentationMap = new Dictionary<int, int>();
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
         }
 
-        private (Dictionary<int, IndentationMapData>, SyntaxTree) InitializeIndentationData(
+        private static (Dictionary<int, IndentationMapData>, SyntaxTree) InitializeIndentationData(
             FormattingContext context,
             IEnumerable<int> projectedDocumentLocations,
             CancellationToken cancellationToken)
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             return (indentationMap, syntaxTree);
         }
 
-        private SyntaxNode AttachAnnotations(
+        private static SyntaxNode AttachAnnotations(
             Dictionary<int, IndentationMapData> indentationMap,
             IEnumerable<int> projectedDocumentLocations,
             SyntaxNode root)

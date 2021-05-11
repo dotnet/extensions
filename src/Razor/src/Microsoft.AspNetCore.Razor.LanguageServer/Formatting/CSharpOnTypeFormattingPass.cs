@@ -15,7 +15,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    internal class CSharpOnTypeFormattingPass : FormattingPassBase
+    internal class CSharpOnTypeFormattingPass : CSharpFormattingPassBase
     {
         private readonly ILogger _logger;
 
@@ -33,8 +33,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             _logger = loggerFactory.CreateLogger<CSharpOnTypeFormattingPass>();
         }
-
-        public override bool IsValidationPass => false;
 
         public async override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {

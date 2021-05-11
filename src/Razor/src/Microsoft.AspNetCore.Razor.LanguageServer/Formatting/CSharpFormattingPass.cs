@@ -14,7 +14,7 @@ using TextSpan = Microsoft.CodeAnalysis.Text.TextSpan;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 {
-    internal class CSharpFormattingPass : FormattingPassBase
+    internal class CSharpFormattingPass : CSharpFormattingPassBase
     {
         private readonly ILogger _logger;
 
@@ -35,8 +35,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
         // Run after the HTML formatter pass.
         public override int Order => DefaultOrder - 4;
-
-        public override bool IsValidationPass => false;
 
         public async override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {

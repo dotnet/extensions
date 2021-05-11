@@ -33,12 +33,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             }
 
             _logger = loggerFactory.CreateLogger<HtmlFormattingPass>();
+
+            HtmlFormatter = new HtmlFormatter(server, filePathNormalizer);
         }
 
         // We want this to run first because it uses the client HTML formatter.
         public override int Order => DefaultOrder - 5;
 
         public override bool IsValidationPass => false;
+
+        protected HtmlFormatter HtmlFormatter { get; }
 
         public async override Task<FormattingResult> ExecuteAsync(FormattingContext context, FormattingResult result, CancellationToken cancellationToken)
         {
