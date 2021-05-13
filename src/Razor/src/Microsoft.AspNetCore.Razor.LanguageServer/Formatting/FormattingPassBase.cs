@@ -108,25 +108,5 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var cleanEdits = cleanChanges.Select(c => c.AsTextEdit(originalText)).ToArray();
             return cleanEdits;
         }
-
-        // Returns the minimal TextSpan that encompasses all the differences between the old and the new text.
-        protected static void TrackEncompassingChange(SourceText oldText, IEnumerable<TextChange> changes, out TextSpan spanBeforeChange, out TextSpan spanAfterChange)
-        {
-            if (oldText is null)
-            {
-                throw new ArgumentNullException(nameof(oldText));
-            }
-
-            if (changes is null)
-            {
-                throw new ArgumentNullException(nameof(changes));
-            }
-
-            var newText = oldText.WithChanges(changes);
-            var affectedRange = newText.GetEncompassingTextChangeRange(oldText);
-
-            spanBeforeChange = affectedRange.Span;
-            spanAfterChange = new TextSpan(spanBeforeChange.Start, affectedRange.NewLength);
-        }
     }
 }
