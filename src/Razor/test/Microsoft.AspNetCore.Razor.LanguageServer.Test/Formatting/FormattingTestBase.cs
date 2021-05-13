@@ -226,6 +226,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
                 {
                     return fileInfo.DirectoryName;
                 }
+
                 directoryInfo = directoryInfo.Parent;
             }
             while (directoryInfo.Parent != null);
