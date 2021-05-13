@@ -127,7 +127,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 if (_mappingService == null)
                 {
-                    _mappingService = new CSharpSpanMappingService(_lspDocumentMappingProvider, _documentSnapshot, _textSnapshot);
+                    _mappingService = new RazorLSPSpanMappingService(_lspDocumentMappingProvider, _documentSnapshot, _textSnapshot);
                 }
 
                 return _mappingService;

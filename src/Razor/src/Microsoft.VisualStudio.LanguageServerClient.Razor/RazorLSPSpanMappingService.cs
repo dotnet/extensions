@@ -16,14 +16,14 @@ using System.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
-    internal sealed class CSharpSpanMappingService : IRazorSpanMappingService
+    internal sealed class RazorLSPSpanMappingService : IRazorSpanMappingService
     {
         private readonly LSPDocumentMappingProvider _lspDocumentMappingProvider;
 
         private readonly ITextSnapshot _textSnapshot;
         private readonly LSPDocumentSnapshot _documentSnapshot;
 
-        public CSharpSpanMappingService(
+        public RazorLSPSpanMappingService(
             LSPDocumentMappingProvider lspDocumentMappingProvider,
             LSPDocumentSnapshot documentSnapshot,
             ITextSnapshot textSnapshot)
@@ -78,6 +78,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            var mappedSpanResults = GetMappedSpanResults(_documentSnapshot, sourceTextRazor, mappedResult);
+            return mappedSpanResults;
+        }
+
+        // Internal for testing
+        internal static ImmutableArray<RazorMappedSpanResult> GetMappedSpanResults(
+            LSPDocumentSnapshot documentSnapshot,
+            SourceText sourceTextRazor,
+            RazorMapToDocumentRangesResponse mappedResult)
+        {
             var results = ImmutableArray.CreateBuilder<RazorMappedSpanResult>();
 
             if (mappedResult is null)
@@ -87,9 +97,16 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 
             foreach (var mappedRange in mappedResult.Ranges)
             {
+                if (RangeExtensions.IsUndefined(mappedRange))
+                {
+                    // Couldn't remap the range correctly. Add default placeholder to indicate to C# that there were issues.
+                    results.Add(new RazorMappedSpanResult());
+                    continue;
+                }
+
                 var mappedSpan = mappedRange.AsTextSpan(sourceTextRazor);
                 var linePositionSpan = sourceTextRazor.Lines.GetLinePositionSpan(mappedSpan);
-                var filePath = _documentSnapshot.Uri.LocalPath;
+                var filePath = documentSnapshot.Uri.LocalPath;
                 results.Add(new RazorMappedSpanResult(filePath, linePositionSpan, mappedSpan));
             }
 
