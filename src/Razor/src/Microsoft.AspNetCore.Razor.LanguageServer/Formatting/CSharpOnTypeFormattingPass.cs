@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
                 // The number of lines added/removed will be,
                 // the number of lines added by the change  - the number of lines the change span represents
-                delta +=  newLineCount - (range.End.Line - range.Start.Line);
+                delta += newLineCount - (range.End.Line - range.Start.Line);
             }
 
             return delta;
