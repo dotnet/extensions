@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             // We only want to adjust the range that was affected.
             // We need to take into account the lines affected by formatting as well as cleanup.
-            var cleanupLineDelta = LineDelta(formattedText, cleanupChanges);
+            var lineDelta = LineDelta(formattedText, cleanupChanges);
 
             // Okay hear me out, I know this looks lazy, but it totally makes sense.
             // This method is called with edits that the C# formatter wants to make, and from those edits we work out which
@@ -95,9 +95,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             //
             // We'll happy format lines 1 and 2, and ignore the closing brace altogether. So, by looking one line further
             // we won't have that problem.
-            cleanupLineDelta++;
+            if (rangeAfterFormatting.End.Line + lineDelta < cleanedText.Lines.Count)
+            {
+                lineDelta++;
+            }
 
-            var rangeToAdjust = new Range(rangeAfterFormatting.Start, new Position(rangeAfterFormatting.End.Line + cleanupLineDelta, 0));
+            var rangeToAdjust = new Range(rangeAfterFormatting.Start, new Position(rangeAfterFormatting.End.Line + lineDelta, 0));
             Debug.Assert(rangeToAdjust.End.IsValid(cleanedText), "Invalid range. This is unexpected.");
 
             var indentationChanges = await AdjustIndentationAsync(changedContext, cancellationToken, rangeToAdjust);
