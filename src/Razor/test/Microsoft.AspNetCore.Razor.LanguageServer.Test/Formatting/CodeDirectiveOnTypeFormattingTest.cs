@@ -235,7 +235,7 @@ expected: @"@implements IDisposable
         }
 
         [Fact]
-        public async Task ClosingBrace_NestedIf()
+        public async Task ClosingBrace_MatchesCSharpIndentation()
         {
             await RunOnTypeFormattingTestAsync(
 input: @"
