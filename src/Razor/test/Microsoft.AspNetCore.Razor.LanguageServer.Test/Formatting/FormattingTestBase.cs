@@ -92,7 +92,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             new XUnitVerifier().EqualOrDiff(expected, actual);
         }
 
-        protected async Task RunOnTypeFormattingTestAsync(string input, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
+        protected Task RunOnTypeFormattingTestAsync(string input, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
+        {
+            return RunOnTypeFormattingTestAsync(input, expected, expected, tabSize, insertSpaces, fileKind);
+        }
+
+        protected async Task RunOnTypeFormattingTestAsync(string input, string afterCSharpFormatting, string expected, int tabSize = 4, bool insertSpaces = true, string fileKind = null)
         {
             // Arrange
             fileKind ??= FileKinds.Component;
@@ -111,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             };
 
             var formattingService = CreateFormattingService(codeDocument);
-            var (kind, projectedEdits) = GetFormattedEdits(codeDocument, expected, beforeTrigger);
+            var (kind, projectedEdits) = GetFormattedEdits(codeDocument, afterCSharpFormatting, beforeTrigger);
 
             // Act
             var edits = await formattingService.ApplyFormattedEditsAsync(uri, documentSnapshot, kind, projectedEdits, options, CancellationToken.None);
