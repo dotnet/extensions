@@ -78,6 +78,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             // We only want to adjust the range that was affected.
             // We need to take into account the lines affected by formatting as well as cleanup.
             var cleanupLineDelta = LineDelta(formattedText, cleanupChanges);
+
+            // Okay hear me out, I know this looks lazy, but it totally makes sense.
+            // This method is called with edits that the C# formatter wants to make, and from those edits we work out which
+            // other edits to apply etc. Fine, all good so far. BUT its totally possible that the user typed a closing brace
+            // in the same position as the C# formatter thought it should be, on the line _after_ the code that the C# formatter
+            // reformatted.
+            //
+            // For example, given:
+            // if (true){
+            //     }
+            //
+            // If the C# formatter is happy with the placement of that close brace then this method will get two edits:
+            //  * On line 1 to indent the if by 4 spaces
+            //  * On line 1 to add a newline and 4 spaces in front of the opening brace
+            //
+            // We'll happy format lines 1 and 2, and ignore the closing brace altogether. So, by looking one line further
+            // we won't have that problem.
+            cleanupLineDelta++;
+
             var rangeToAdjust = new Range(rangeAfterFormatting.Start, new Position(rangeAfterFormatting.End.Line + cleanupLineDelta, 0));
             Debug.Assert(rangeToAdjust.End.IsValid(cleanedText), "Invalid range. This is unexpected.");
 
