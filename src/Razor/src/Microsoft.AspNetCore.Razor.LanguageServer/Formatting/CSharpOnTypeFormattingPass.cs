@@ -59,9 +59,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var changes = filteredEdits.Select(e => e.AsTextChange(originalText));
 
             // Apply the format on type edits sent over by the client.
-            var formattedText = originalText.WithChanges(changes);
+            var formattedText = ApplyChangesAndTrackChange(originalText, changes, out _, out var spanAfterFormatting);
             var changedContext = await context.WithTextAsync(formattedText);
-            TrackEncompassingChange(originalText, changes, out _, out var spanAfterFormatting);
             var rangeAfterFormatting = spanAfterFormatting.AsRange(formattedText);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -97,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
         }
 
         // Returns the minimal TextSpan that encompasses all the differences between the old and the new text.
-        private static void TrackEncompassingChange(SourceText oldText, IEnumerable<TextChange> changes, out TextSpan spanBeforeChange, out TextSpan spanAfterChange)
+        private static SourceText ApplyChangesAndTrackChange(SourceText oldText, IEnumerable<TextChange> changes, out TextSpan spanBeforeChange, out TextSpan spanAfterChange)
         {
             if (oldText is null)
             {
@@ -114,6 +113,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             spanBeforeChange = affectedRange.Span;
             spanAfterChange = new TextSpan(spanBeforeChange.Start, affectedRange.NewLength);
+
+            return newText;
         }
 
         private TextEdit[] FilterCSharpTextEdits(FormattingContext context, TextEdit[] edits)
