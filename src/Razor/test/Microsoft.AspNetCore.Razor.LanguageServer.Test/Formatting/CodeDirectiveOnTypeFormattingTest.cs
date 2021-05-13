@@ -303,5 +303,75 @@ expected: @"
 }
 ");
         }
+
+        [Fact]
+        public async Task ClosingBrace_DoesntMatchCSharpIndentation()
+        {
+            await RunOnTypeFormattingTestAsync(
+input: @"
+@page ""/counter""
+
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class=""btn btn-primary"" @onclick=""IncrementCount"">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+        if (true){
+                $$}
+    }
+}
+",
+            // Without access to the Roslyn formatting APIs we need to provide what the document would look like
+            // after C# formatting, before we've followed up. This is used to simulate the Roslyn formatting request
+afterCSharpFormatting: @"
+@page ""/counter""
+
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class=""btn btn-primary"" @onclick=""IncrementCount"">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+            if (true)
+            {
+            }
+    }
+}
+",
+expected: @"
+@page ""/counter""
+
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class=""btn btn-primary"" @onclick=""IncrementCount"">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+        if (true)
+        {
+        }
+    }
+}
+");
+        }
     }
 }
