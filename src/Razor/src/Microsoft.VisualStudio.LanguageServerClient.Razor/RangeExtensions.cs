@@ -8,7 +8,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
 {
     internal static class RangeExtensions
     {
-        private static readonly Range UndefinedRange = new()
+        // Internal for testing only
+        internal static readonly Range UndefinedRange = new()
         {
             Start = new Position(-1, -1),
             End = new Position(-1, -1)
