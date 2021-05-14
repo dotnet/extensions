@@ -59,9 +59,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var changes = filteredEdits.Select(e => e.AsTextChange(originalText));
 
             // Apply the format on type edits sent over by the client.
-            var formattedText = originalText.WithChanges(changes);
+            var formattedText = ApplyChangesAndTrackChange(originalText, changes, out _, out var spanAfterFormatting);
             var changedContext = await context.WithTextAsync(formattedText);
-            TrackEncompassingChange(originalText, changes, out _, out var spanAfterFormatting);
             var rangeAfterFormatting = spanAfterFormatting.AsRange(formattedText);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -78,8 +77,30 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
             // We only want to adjust the range that was affected.
             // We need to take into account the lines affected by formatting as well as cleanup.
-            var cleanupLineDelta = LineDelta(formattedText, cleanupChanges);
-            var rangeToAdjust = new Range(rangeAfterFormatting.Start, new Position(rangeAfterFormatting.End.Line + cleanupLineDelta, 0));
+            var lineDelta = LineDelta(formattedText, cleanupChanges);
+
+            // Okay hear me out, I know this looks lazy, but it totally makes sense.
+            // This method is called with edits that the C# formatter wants to make, and from those edits we work out which
+            // other edits to apply etc. Fine, all good so far. BUT its totally possible that the user typed a closing brace
+            // in the same position as the C# formatter thought it should be, on the line _after_ the code that the C# formatter
+            // reformatted.
+            //
+            // For example, given:
+            // if (true){
+            //     }
+            //
+            // If the C# formatter is happy with the placement of that close brace then this method will get two edits:
+            //  * On line 1 to indent the if by 4 spaces
+            //  * On line 1 to add a newline and 4 spaces in front of the opening brace
+            //
+            // We'll happy format lines 1 and 2, and ignore the closing brace altogether. So, by looking one line further
+            // we won't have that problem.
+            if (rangeAfterFormatting.End.Line + lineDelta < cleanedText.Lines.Count)
+            {
+                lineDelta++;
+            }
+
+            var rangeToAdjust = new Range(rangeAfterFormatting.Start, new Position(rangeAfterFormatting.End.Line + lineDelta, 0));
             Debug.Assert(rangeToAdjust.End.IsValid(cleanedText), "Invalid range. This is unexpected.");
 
             var indentationChanges = await AdjustIndentationAsync(changedContext, cancellationToken, rangeToAdjust);
@@ -94,6 +115,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
             var finalEdits = finalChanges.Select(f => f.AsTextEdit(originalText)).ToArray();
 
             return new FormattingResult(finalEdits);
+        }
+
+        // Returns the minimal TextSpan that encompasses all the differences between the old and the new text.
+        private static SourceText ApplyChangesAndTrackChange(SourceText oldText, IEnumerable<TextChange> changes, out TextSpan spanBeforeChange, out TextSpan spanAfterChange)
+        {
+            if (oldText is null)
+            {
+                throw new ArgumentNullException(nameof(oldText));
+            }
+
+            if (changes is null)
+            {
+                throw new ArgumentNullException(nameof(changes));
+            }
+
+            var newText = oldText.WithChanges(changes);
+            var affectedRange = newText.GetEncompassingTextChangeRange(oldText);
+
+            spanBeforeChange = affectedRange.Span;
+            spanAfterChange = new TextSpan(spanBeforeChange.Start, affectedRange.NewLength);
+
+            return newText;
         }
 
         private TextEdit[] FilterCSharpTextEdits(FormattingContext context, TextEdit[] edits)
@@ -121,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Formatting
 
                 // The number of lines added/removed will be,
                 // the number of lines added by the change  - the number of lines the change span represents
-                delta +=  newLineCount - (range.End.Line - range.Start.Line);
+                delta += newLineCount - (range.End.Line - range.Start.Line);
             }
 
             return delta;
