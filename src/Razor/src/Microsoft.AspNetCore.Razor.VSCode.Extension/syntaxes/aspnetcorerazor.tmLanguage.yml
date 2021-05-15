@@ -34,6 +34,7 @@ repository:
     beginCaptures:
       1: { patterns: [ include: '#transition' ] }
       2: { name: 'keyword.control.razor.directive.codeblock.open' }
+    contentName: 'source.cs'
     patterns:
       - include: '#razor-codeblock-body'
     end: '(\})'
@@ -162,6 +163,7 @@ repository:
 
   implicit-expression:
     name: 'meta.expression.implicit.cshtml'
+    contentName: 'source.cs'
     begin: '(?<![[:alpha:][:alnum:]])(@)'
     beginCaptures:
       1: { patterns: [ include: '#transition' ] }
@@ -301,6 +303,7 @@ repository:
     beginCaptures:
       1: { name: 'keyword.control.razor.directive.codeblock.open' }
     name: 'meta.structure.razor.directive.codeblock'
+    contentName: 'source.cs'
     patterns:
       - include: 'source.cs'
     end: '(\})'

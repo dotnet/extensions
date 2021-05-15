@@ -11,6 +11,12 @@
 [$RootKey$\TextMate\LanguageConfiguration\ContentTypeMapping]
 "RazorLSP"="$PackageFolder$\language-configuration.json"
 
+[$RootKey$\TextMate\LanguageConfiguration\GrammarMapping]
+"text.html.basic"="$PackageFolder$\html-language-configuration.json"
+"source.js"="$PackageFolder$\javascript-language-configuration.json"
+"source.css"="$PackageFolder$\css-language-configuration.json"
+"source.cs"="$PackageFolder$\csharp-language-configuration.json"
+
 [$RootKey$\FeatureFlags\Razor\LSP\Editor]
 "Description"="Enables the Razor Language Server Protocol powered editor experience for Razor (ASP.NET Core)."
 "Value"=dword:00000000
