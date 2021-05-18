@@ -34,16 +34,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(Tooling_MicrosoftCodeAnalysisCommonPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(Tooling_MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(Tooling_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(Tooling_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(Tooling_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(Tooling_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" Version="$(MicrosoftVisualStudioImageCatalogPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.RpcContracts" Version="$(MicrosoftVisualStudioRpcContractsPackageVersion)" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
-    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutablePackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Package changes to enable dev17 builds that have incoherent versions -->
+    <PackageReference Include="Microsoft.IO.Redist" Version="4.7.1"/>
   </ItemGroup>
 </Project>

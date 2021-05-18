@@ -65,8 +65,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var host = new TestFallbackRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
             var changes = new TestProjectChangeDescription[]
             {
-                afterChangeContentItems.ToChange(ContentItems.ToSnapshot()),
-                afterChangeNoneItems.ToChange(NoneItems.ToSnapshot()),
+                 afterChangeContentItems.ToChange(ContentItems.ToSnapshot()),
+                 afterChangeNoneItems.ToChange(NoneItems.ToSnapshot()),
             };
             var update = services.CreateUpdate(changes).Value;
 
@@ -107,8 +107,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var host = new TestFallbackRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
             var changes = new TestProjectChangeDescription[]
             {
-                ContentItems.ToChange(),
-                NoneItems.ToChange(),
+                 ContentItems.ToChange(),
+                 NoneItems.ToChange(),
             };
             var update = services.CreateUpdate(changes).Value;
 
@@ -150,8 +150,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var host = new TestFallbackRazorProjectHost(services, Workspace, ProjectConfigurationFilePathStore, ProjectManager);
             var changes = new TestProjectChangeDescription[]
             {
-                ContentItems.ToChange(),
-                NoneItems.ToChange(),
+                 ContentItems.ToChange(),
+                 NoneItems.ToChange(),
             };
             var update = services.CreateUpdate(changes).Value;
 
@@ -365,9 +365,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var changes = new TestProjectChangeDescription[]
             {
-                ReferenceItems.ToChange(),
-                ContentItems.ToChange(),
-                NoneItems.ToChange(),
+                 ReferenceItems.ToChange(),
+                 ContentItems.ToChange(),
+                 NoneItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("C:\\Path\\Test.csproj");
@@ -403,7 +403,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var changes = new TestProjectChangeDescription[]
             {
-                ReferenceItems.ToChange(),
+                 ReferenceItems.ToChange(),
             };
             var services = new TestProjectSystemServices("Test.csproj");
 
@@ -430,7 +430,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var changes = new TestProjectChangeDescription[]
             {
-                ReferenceItems.ToChange(),
+                 ReferenceItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("Test.csproj");
@@ -463,13 +463,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var initialChanges = new TestProjectChangeDescription[]
             {
-                ReferenceItems.ToChange(),
-                ContentItems.ToChange(),
+                 ReferenceItems.ToChange(),
+                 ContentItems.ToChange(),
             };
             var changes = new TestProjectChangeDescription[]
             {
-                ReferenceItems.ToChange(),
-                afterChangeContentItems.ToChange(ContentItems.ToSnapshot()),
+                 ReferenceItems.ToChange(),
+                 afterChangeContentItems.ToChange(ContentItems.ToSnapshot()),
             };
 
             var services = new TestProjectSystemServices("C:\\Path\\Test.csproj");
@@ -514,7 +514,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var changes = new TestProjectChangeDescription[]
             {
-                ReferenceItems.ToChange(),
+                 ReferenceItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("Test.csproj");
@@ -558,8 +558,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var changes = new TestProjectChangeDescription[]
             {
-                ReferenceItems.ToChange(),
-                ContentItems.ToChange(),
+                 ReferenceItems.ToChange(),
+                 ContentItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("C:\\Path\\Test.csproj");
@@ -604,7 +604,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var changes = new TestProjectChangeDescription[]
             {
-                ReferenceItems.ToChange(),
+                 ReferenceItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices("Test.csproj");

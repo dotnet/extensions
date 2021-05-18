@@ -41,7 +41,6 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
   </ItemGroup>
 

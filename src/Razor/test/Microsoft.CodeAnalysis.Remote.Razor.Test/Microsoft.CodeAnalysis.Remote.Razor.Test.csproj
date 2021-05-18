@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
-    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
