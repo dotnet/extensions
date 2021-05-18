@@ -339,7 +339,13 @@
             {
                 "language": "aspnetcorerazor",
                 "scopeName": "text.aspnetcorerazor",
-                "path": "./syntaxes/aspnetcorerazor.tmLanguage.json"
+                "path": "./syntaxes/aspnetcorerazor.tmLanguage.json",
+                "embeddedLanguages": {
+                  "source.cs": "csharp",
+                  "text.html.basic": "html",
+                  "source.js": "javascript",
+                  "source.css": "css"
+                }
             }
         ],
         "commands": [
