@@ -62,6 +62,9 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         } catch (error) {
             outputChannel.appendLine(`ERROR: ${error}`);
+            return {
+                inspectUri: '{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}',
+            };
         }
     });
 
