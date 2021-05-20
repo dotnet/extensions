@@ -396,9 +396,9 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
         public async Task ProvideSemanticTokensAsync_ReturnsSemanticTokensAsync()
         {
             // Arrange
-            var testDocUri = new Uri("C:/path/to/file.razor");
-            var testVirtualDocUri = new Uri("C:/path/to/file2.razor.g");
-            var testCSharpDocUri = new Uri("C:/path/to/file.razor.g.cs");
+            var testDocUri = new Uri("C:/path/to - project/file.razor");
+            var testVirtualDocUri = new Uri("C:/path/to - project/file2.razor.g");
+            var testCSharpDocUri = new Uri("C:/path/to - project/file.razor.g.cs");
 
             var documentVersion = 0;
             var testVirtualDocument = new TestVirtualDocumentSnapshot(testVirtualDocUri, 0);
@@ -406,7 +406,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             LSPDocumentSnapshot testDocument = new TestLSPDocumentSnapshot(testDocUri, documentVersion, testVirtualDocument, csharpVirtualDocument);
 
             var documentManager = new Mock<TrackingLSPDocumentManager>(MockBehavior.Strict);
-            documentManager.Setup(manager => manager.TryGetDocument(It.IsAny<Uri>(), out testDocument))
+            documentManager.Setup(manager => manager.TryGetDocument(testDocUri, out testDocument))
                 .Returns(true);
 
             var expectedcSharpResults = new OmniSharp.Extensions.LanguageServer.Protocol.Models.Proposals.SemanticTokens();
@@ -429,7 +429,7 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 TextDocument = new TextDocumentIdentifier()
                 {
-                    Uri = testDocUri
+                    Uri = new Uri("C:/path/to%20-%20project/file.razor")
                 }
             };
             var expectedResults = new ProvideSemanticTokensResponse(expectedcSharpResults, documentVersion);

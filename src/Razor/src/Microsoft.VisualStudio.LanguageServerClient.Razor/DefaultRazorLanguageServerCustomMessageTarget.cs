@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Common;
@@ -279,12 +280,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(semanticTokensParams));
             }
 
-            if (!_documentManager.TryGetDocument(semanticTokensParams.TextDocument.Uri, out var documentSnapshot))
-            {
-                return null;
-            }
-
-            if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDoc))
+            var csharpDoc = GetCSharpDocumentSnapshsot(semanticTokensParams.TextDocument.Uri);
+            if (csharpDoc is null)
             {
                 return null;
             }
@@ -314,12 +311,8 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
                 throw new ArgumentNullException(nameof(semanticTokensEditsParams));
             }
 
-            if (!_documentManager.TryGetDocument(semanticTokensEditsParams.TextDocument.Uri, out var documentSnapshot))
-            {
-                return null;
-            }
-
-            if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDoc))
+            var csharpDoc = GetCSharpDocumentSnapshsot(semanticTokensEditsParams.TextDocument.Uri);
+            if (csharpDoc is null)
             {
                 return null;
             }
@@ -354,6 +347,24 @@ namespace Microsoft.VisualStudio.LanguageServerClient.Razor
             {
                 throw new ArgumentException("Returned tokens should be of type SemanticTokens or SemanticTokensEdits.");
             }
+        }
+
+        private CSharpVirtualDocumentSnapshot GetCSharpDocumentSnapshsot(Uri uri)
+        {
+            var normalizedString = uri.GetAbsoluteOrUNCPath();
+            var normalizedUri = new Uri(WebUtility.UrlDecode(normalizedString));
+
+            if (!_documentManager.TryGetDocument(normalizedUri, out var documentSnapshot))
+            {
+                return null;
+            }
+
+            if (!documentSnapshot.TryGetVirtualDocument<CSharpVirtualDocumentSnapshot>(out var csharpDoc))
+            {
+                return null;
+            }
+
+            return csharpDoc;
         }
 
         public override async Task RazorServerReadyAsync(CancellationToken cancellationToken)
