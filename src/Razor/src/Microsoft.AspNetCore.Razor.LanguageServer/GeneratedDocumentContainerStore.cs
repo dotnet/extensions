@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal abstract class GeneratedDocumentContainerStore : ProjectSnapshotChangeTrigger
     {
-        public abstract GeneratedDocumentContainer Get(string physicalFilePath);
+        public abstract ReferenceOutputCapturingContainer Get(string physicalFilePath);
     }
 }

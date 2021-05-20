@@ -466,7 +466,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 if (document is DefaultDocumentSnapshot defaultDocument)
                 {
-                    defaultDocument.State.HostDocument.GeneratedDocumentContainer.SetOutput(
+                    defaultDocument.State.HostDocument.GeneratedDocumentContainer.TrySetOutput(
                         defaultDocument,
                         codeDocument,
                         inputVersion,

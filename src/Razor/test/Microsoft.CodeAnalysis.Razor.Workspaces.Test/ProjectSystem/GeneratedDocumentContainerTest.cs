@@ -14,7 +14,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
 
         [Fact]
-        public void SetOutput_AcceptsSameVersionedDocuments()
+        public void TrySetOutput_AcceptsSameVersionedDocuments()
         {
             // Arrange
             using var workspace = TestWorkspace.Create();
@@ -37,17 +37,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var version = VersionStamp.Create();
             var container = new GeneratedDocumentContainer();
-            container.SetOutput(document, codeDocument, version, version, version);
+            var initialResult = container.TrySetOutput(document, codeDocument, version, version, version);
 
             // Act
-            container.SetOutput(newDocument, codeDocument, version, version, version);
+            var result = container.TrySetOutput(newDocument, codeDocument, version, version, version);
 
             // Assert
             Assert.Same(newDocument, container.LatestDocument);
+            Assert.True(initialResult);
+            Assert.True(result);
         }
 
         [Fact]
-        public void SetOutput_AcceptsInitialOutput()
+        public void TrySetOutput_AcceptsInitialOutput()
         {
             // Arrange
             using var workspace = TestWorkspace.Create();
@@ -70,14 +72,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var container = new GeneratedDocumentContainer();
 
             // Act
-            container.SetOutput(document, codeDocument, version, version, version);
+            var result = container.TrySetOutput(document, codeDocument, version, version, version);
 
             // Assert
             Assert.NotNull(container.LatestDocument);
+            Assert.True(result);
         }
 
         [Fact]
-        public void SetOutput_InvokesChangedEvent()
+        public void TrySetOutput_InvokesChangedEvent()
         {
             // Arrange
             using var workspace = TestWorkspace.Create();
@@ -104,12 +107,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             container.GeneratedHtmlChanged += (o, a) => htmlChanged = true;
 
             // Act
-            container.SetOutput(document, codeDocument, version, version, version);
+            var result = container.TrySetOutput(document, codeDocument, version, version, version);
 
             // Assert
             Assert.NotNull(container.LatestDocument);
             Assert.True(csharpChanged);
             Assert.True(htmlChanged);
+            Assert.True(result);
         }
 
         private static RazorCodeDocument CreateCodeDocument(RazorCSharpDocument csharpDocument, RazorHtmlDocument htmlDocument)

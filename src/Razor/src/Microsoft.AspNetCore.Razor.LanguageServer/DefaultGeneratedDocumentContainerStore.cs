@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultGeneratedDocumentContainerStore : GeneratedDocumentContainerStore
     {
-        private readonly ConcurrentDictionary<string, GeneratedDocumentContainer> _store;
+        private readonly ConcurrentDictionary<string, ReferenceOutputCapturingContainer> _store;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentVersionCache _documentVersionCache;
         private readonly GeneratedDocumentPublisher _generatedDocumentPublisher;
@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _foregroundDispatcher = foregroundDispatcher;
             _documentVersionCache = documentVersionCache;
             _generatedDocumentPublisher = generatedDocumentPublisher;
-            _store = new ConcurrentDictionary<string, GeneratedDocumentContainer>(FilePathComparer.Instance);
+            _store = new ConcurrentDictionary<string, ReferenceOutputCapturingContainer>(FilePathComparer.Instance);
         }
 
-        public override GeneratedDocumentContainer Get(string physicalFilePath)
+        public override ReferenceOutputCapturingContainer Get(string physicalFilePath)
         {
             if (physicalFilePath == null)
             {
@@ -86,9 +86,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
-        private GeneratedDocumentContainer Create(string filePath)
+        private ReferenceOutputCapturingContainer Create(string filePath)
         {
-            var documentContainer = new GeneratedDocumentContainer();
+            var documentContainer = new ReferenceOutputCapturingContainer();
             documentContainer.GeneratedCSharpChanged += (sender, args) =>
             {
                 var generatedDocumentContainer = (GeneratedDocumentContainer)sender;

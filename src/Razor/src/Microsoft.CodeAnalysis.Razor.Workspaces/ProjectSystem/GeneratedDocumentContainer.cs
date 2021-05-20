@@ -134,7 +134,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public void SetOutput(
+        public bool TrySetOutput(
             DefaultDocumentSnapshot document,
             RazorCodeDocument codeDocument,
             VersionStamp inputVersion,
@@ -144,17 +144,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             lock (_setOutputLock)
             {
                 if (_inputVersion.HasValue &&
-                    _inputVersion != inputVersion &&
+                    _inputVersion.Value != inputVersion &&
                     _inputVersion == _inputVersion.Value.GetNewerVersion(inputVersion))
                 {
                     // Latest document is newer than the provided document.
-                    return;
+                    return false;
                 }
 
                 if (!document.TryGetText(out var source))
                 {
                     Debug.Fail("The text should have already been evaluated.");
-                    return;
+                    return false;
                 }
 
                 _source = source;
@@ -168,6 +168,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 _csharpTextContainer.SetText(csharpSourceText);
                 var htmlSourceText = codeDocument.GetHtmlSourceText();
                 _htmlTextContainer.SetText(htmlSourceText);
+
+                return true;
             }
         }
 
