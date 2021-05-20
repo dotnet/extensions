@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 AddSemanticRange(node.OpenAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
                 if (node.Bang != null)
                 {
-                    AddSemanticRange(node.Bang, RazorSemanticTokensLegend.MarkupElement);
+                    AddSemanticRange(node.Bang, RazorSemanticTokensLegend.RazorTransition);
                 }
 
                 AddSemanticRange(node.Name, RazorSemanticTokensLegend.MarkupElement);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
                 AddSemanticRange(node.OpenAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
                 if (node.Bang != null)
                 {
-                    AddSemanticRange(node.Bang, RazorSemanticTokensLegend.MarkupElement);
+                    AddSemanticRange(node.Bang, RazorSemanticTokensLegend.RazorTransition);
                 }
 
                 if (node.ForwardSlash != null)
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
             AddSemanticRange(node.OpenAngle, RazorSemanticTokensLegend.MarkupTagDelimiter);
             if (node.Bang != null)
             {
-                AddSemanticRange(node.Bang, RazorSemanticTokensLegend.MarkupElement);
+                AddSemanticRange(node.Bang, RazorSemanticTokensLegend.RazorTransition);
             }
 
             if (ClassifyTagName((MarkupTagHelperElementSyntax)node.Parent))
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Semantic
 
             if (node.Bang != null)
             {
-                AddSemanticRange(node.Bang, RazorSemanticTokensLegend.MarkupElement);
+                AddSemanticRange(node.Bang, RazorSemanticTokensLegend.RazorTransition);
             }
 
             if (ClassifyTagName((MarkupTagHelperElementSyntax)node.Parent))

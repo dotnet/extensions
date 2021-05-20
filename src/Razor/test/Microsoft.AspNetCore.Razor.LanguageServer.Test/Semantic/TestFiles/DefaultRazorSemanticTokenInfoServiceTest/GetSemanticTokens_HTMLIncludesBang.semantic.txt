@@ -2,7 +2,7 @@
 0 0 1 73 0 //razorTransition
 0 1 12 76 0 //razorDirective
 1 0 1 80 0 //markupTagDelimiter
-0 1 1 81 0 //markupElement
+0 1 1 73 0 //razorTransition
 0 1 5 81 0 //markupElement
 0 5 1 80 0 //markupTagDelimiter
 0 1 1 80 0 //markupTagDelimiter
