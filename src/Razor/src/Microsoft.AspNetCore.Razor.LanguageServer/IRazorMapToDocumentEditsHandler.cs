@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    [Serial, Method(LanguageServerConstants.RazorMapToDocumentEditsEndpoint)]
+    [Parallel, Method(LanguageServerConstants.RazorMapToDocumentEditsEndpoint)]
     internal interface IRazorMapToDocumentEditsHandler : IJsonRpcRequestHandler<RazorMapToDocumentEditsParams, RazorMapToDocumentEditsResponse>
     {
     }

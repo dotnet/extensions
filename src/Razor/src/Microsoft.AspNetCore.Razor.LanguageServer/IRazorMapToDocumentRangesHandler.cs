@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    [Serial, Method(LanguageServerConstants.RazorMapToDocumentRangesEndpoint)]
+    [Parallel, Method(LanguageServerConstants.RazorMapToDocumentRangesEndpoint)]
     internal interface IRazorMapToDocumentRangesHandler : IJsonRpcRequestHandler<RazorMapToDocumentRangesParams, RazorMapToDocumentRangesResponse>
     {
     }
