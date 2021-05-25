@@ -68,6 +68,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var sourceText = codeDocument.GetSourceText();
             var range = originalRange;
+            if (!IsRangeWithinDocument(range, sourceText))
+            {
+                return false;
+            }
 
             var startIndex = range.Start.GetAbsoluteIndex(sourceText);
             if (!TryMapToProjectedDocumentPosition(codeDocument, startIndex, out var projectedStart, out var _))
@@ -272,6 +276,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var csharpSourceText = codeDocument.GetCSharpSourceText();
             var range = projectedRange;
+            if (!IsRangeWithinDocument(range, csharpSourceText))
+            {
+                return false;
+            }
+
             var startIndex = range.Start.GetAbsoluteIndex(csharpSourceText);
             if (!TryMapFromProjectedDocumentPosition(codeDocument, startIndex, out var hostDocumentStart, out _))
             {
@@ -364,6 +373,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     new Position(startLocation.LineIndex, startLocation.CharacterIndex),
                     new Position(endLocation.LineIndex, endLocation.CharacterIndex));
                 return convertedRange;
+            }
+        }
+
+        private static bool IsRangeWithinDocument(Range range, SourceText sourceText)
+        {
+            // This might happen when the document that ranges were created against was not the same as the document we're consulting.
+            var result = IsPositionWithinDocument(range.Start, sourceText) && IsPositionWithinDocument(range.End, sourceText);
+
+            Debug.Assert(result, $"Attempted to map a range {range} outside of the Source (line count {sourceText.Lines.Count}.) This could happen if the Roslyn and Razor LSP servers are not in sync.");
+
+            return result;
+
+            static bool IsPositionWithinDocument(Position position, SourceText sourceText)
+            {
+                return position.Line < sourceText.Lines.Count;
             }
         }
     }
