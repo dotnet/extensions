@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.TrySplitNamespaceAndType(tagHelper.Name, out var namespaceSpan, out var typeSpan);
             var namespaceName = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(namespaceSpan, tagHelper.Name);
-            var typeName = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(typeSpan, tagHelper.Name);
-            var lookupSymbolName = RemoveGenericContent(typeName);
+            StringSegment typeName = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.GetTextSpanContent(typeSpan, tagHelper.Name);
+            StringSegment lookupSymbolName = RemoveGenericContent(typeName);
 
             var projects = await Task.Factory.StartNew(
                 () => _projectSnapshotManager.Projects.ToArray(),
@@ -88,36 +88,36 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return null;
         }
 
-        private string RemoveGenericContent(string typeName)
+        private StringSegment RemoveGenericContent(StringSegment typeName)
         {
             var genericSeparatorStart = typeName.IndexOf('<');
             if (genericSeparatorStart > 0)
             {
-                var ungenericTypeName = typeName.Substring(0, genericSeparatorStart);
+                var ungenericTypeName = typeName.Subsegment(0, genericSeparatorStart);
                 return ungenericTypeName;
             }
 
             return typeName;
         }
 
-        private static bool IsPathCandidateForComponent(DocumentSnapshot documentSnapshot, string path)
+        private static bool IsPathCandidateForComponent(DocumentSnapshot documentSnapshot, StringSegment path)
         {
             if (documentSnapshot.FileKind != FileKinds.Component)
             {
                 return false;
             }
             var fileName = Path.GetFileNameWithoutExtension(documentSnapshot.FilePath);
-            return fileName.Equals(path, FilePathComparison.Instance);
+            return new StringSegment(fileName).Equals(path, FilePathComparison.Instance);
         }
 
-        private static bool ComponentNamespaceMatchesFullyQualifiedName(RazorCodeDocument razorCodeDocument, string namespaceName)
+        private static bool ComponentNamespaceMatchesFullyQualifiedName(RazorCodeDocument razorCodeDocument, StringSegment namespaceName)
         {
             var namespaceNode = (NamespaceDeclarationIntermediateNode)razorCodeDocument
                 .GetDocumentIntermediateNode()
                 .FindDescendantNodes<IntermediateNode>()
                 .First(n => n is NamespaceDeclarationIntermediateNode);
 
-            return namespaceNode.Content.Equals(namespaceName, StringComparison.Ordinal);
+            return new StringSegment(namespaceNode.Content).Equals(namespaceName, StringComparison.Ordinal);
         }
     }
 }
