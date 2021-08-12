@@ -200,11 +200,11 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.10">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>5709275be7fc71fa32fa12255a34db07cecead01</Sha>
+      <Sha>e1825b4928afa9455cc51e1de2b2e66c8be3018d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.10-servicing.21403.8">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.10-servicing.21412.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>5709275be7fc71fa32fa12255a34db07cecead01</Sha>
+      <Sha>e1825b4928afa9455cc51e1de2b2e66c8be3018d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0" Pinned="true">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -224,9 +224,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>5266aa9856457785b84739fda2616f21da7ee6b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.2">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>2f740adc1457e8a28c1c072993b66f515977eb51</Sha>
+      <Sha>e1825b4928afa9455cc51e1de2b2e66c8be3018d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.8.0-3.20416.3">
       <Uri>https://github.com/dotnet/roslyn</Uri>
