@@ -198,13 +198,13 @@
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
     -->
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.10">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.11">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e1825b4928afa9455cc51e1de2b2e66c8be3018d</Sha>
+      <Sha>acffbd7997f1c5be1cd432196eb13b4a3db493aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.10-servicing.21412.14">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.11-servicing.21458.14">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>e1825b4928afa9455cc51e1de2b2e66c8be3018d</Sha>
+      <Sha>acffbd7997f1c5be1cd432196eb13b4a3db493aa</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0" Pinned="true">
       <Uri>https://github.com/dotnet/corefx</Uri>
