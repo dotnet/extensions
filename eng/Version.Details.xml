@@ -200,11 +200,11 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="5.0.11">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>acffbd7997f1c5be1cd432196eb13b4a3db493aa</Sha>
+      <Sha>9c0dc875a160fa20fad0f6a3d5920a073a8d91de</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.11-servicing.21458.14">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="5.0.11-servicing.21463.11">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>acffbd7997f1c5be1cd432196eb13b4a3db493aa</Sha>
+      <Sha>9c0dc875a160fa20fad0f6a3d5920a073a8d91de</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0" Pinned="true">
       <Uri>https://github.com/dotnet/corefx</Uri>
