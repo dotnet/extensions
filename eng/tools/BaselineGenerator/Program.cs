@@ -216,7 +216,7 @@ namespace PackageBaselineGenerator
                     NewLineChars = "\n", // The file uses LF, not CRLF!
                 };
 
-                using (var stream = File.OpenWrite(documentPath))
+                using (var stream = File.Open(documentPath, FileMode.Create))
                 {
                     using (var writer = XmlWriter.Create(stream, settings))
                     {
