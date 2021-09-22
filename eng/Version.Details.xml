@@ -90,7 +90,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
       <Sha>3acd9b0cd16596bad450c82be08780875a73c05c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.20-servicing.21470.22">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.20-servicing.21471.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
       <Sha>0900090e30756addbd3f545d69db659deb06c3b2</Sha>
     </Dependency>
