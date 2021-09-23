@@ -212,17 +212,17 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21328.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.21471.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>5266aa9856457785b84739fda2616f21da7ee6b4</Sha>
+      <Sha>f2ebec887288367b18d3299cce38ae3365215555</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.21328.3">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.21471.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>5266aa9856457785b84739fda2616f21da7ee6b4</Sha>
+      <Sha>f2ebec887288367b18d3299cce38ae3365215555</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.21328.3">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.21471.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>5266aa9856457785b84739fda2616f21da7ee6b4</Sha>
+      <Sha>f2ebec887288367b18d3299cce38ae3365215555</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="5.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
