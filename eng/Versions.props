@@ -8,7 +8,7 @@
   <PropertyGroup Label="Version settings">
     <MajorVersion>3</MajorVersion>
     <MinorVersion>1</MinorVersion>
-    <PatchVersion>20</PatchVersion>
+    <PatchVersion>21</PatchVersion>
     <!-- This property should be 'false' between branding & code-merging, 'true' the rest of the time -->
     <ValidateBaseline>false</ValidateBaseline>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
