@@ -177,10 +177,10 @@ stages:
             artifactType: Container
             parallel: true
 
-      - job: Ubuntu_16_04
-        displayName: 'Ubuntu 16.04'
+      - job: Ubuntu_18_04
+        displayName: 'Ubuntu 18.04'
         pool:
-          vmImage: ubuntu-16.04
+          vmImage: ubuntu-18.04
         strategy:
           matrix:
             ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
