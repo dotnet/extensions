@@ -301,7 +301,7 @@ stages:
     displayName: 'Test: Linux Source Build'
     container: centos:7
     pool:
-      vmImage: 'ubuntu-16.04'
+      vmImage: 'ubuntu-18.04'
     variables:
       DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
