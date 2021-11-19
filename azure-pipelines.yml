@@ -46,7 +46,7 @@ stages:
       workspace:
         clean: all
       pool:
-        vmImage: vs2017-win2016
+        vmImage: windows-latest
       steps:
       - ${{ if ne(variables['System.TeamProject'], 'public') }}:
         - task: PowerShell@2
@@ -245,10 +245,10 @@ stages:
             artifactType: Container
             parallel: true
 
-      - job: OSX_10_14
+      - job: OSX_11
         displayName: 'OSX'
         pool:
-          vmImage: macOS-10.14
+          vmImage: macOS-11
         strategy:
           matrix:
             ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
