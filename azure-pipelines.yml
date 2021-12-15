@@ -46,7 +46,7 @@ stages:
       workspace:
         clean: all
       pool:
-        vmImage: vs2017-win2016
+        vmImage: windows-latest
       steps:
       - ${{ if ne(variables['System.TeamProject'], 'public') }}:
         - task: PowerShell@2
@@ -177,10 +177,10 @@ stages:
             artifactType: Container
             parallel: true
 
-      - job: Ubuntu_16_04
-        displayName: 'Ubuntu 16.04'
+      - job: Ubuntu_18_04
+        displayName: 'Ubuntu 18.04'
         pool:
-          vmImage: ubuntu-16.04
+          vmImage: ubuntu-18.04
         strategy:
           matrix:
             ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
@@ -238,10 +238,10 @@ stages:
             artifactType: Container
             parallel: true
 
-      - job: OSX_10_14
+      - job: OSX_11
         displayName: 'OSX'
         pool:
-          vmImage: macOS-10.14
+          vmImage: macOS-11
         strategy:
           matrix:
             ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
@@ -301,7 +301,7 @@ stages:
     displayName: 'Test: Linux Source Build'
     container: centos:7
     pool:
-      vmImage: 'ubuntu-16.04'
+      vmImage: 'ubuntu-18.04'
     variables:
       DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
