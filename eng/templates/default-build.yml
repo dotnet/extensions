@@ -45,11 +45,11 @@ jobs:
     ${{ if ne(parameters.poolName, '') }}:
       name: ${{ parameters.poolName }}
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'macOS')) }}:
-      vmImage: macOS-10.14
+      vmImage: macOS-10.15
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Linux')) }}:
       vmImage: ubuntu-18.04
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Windows')) }}:
-      vmImage: vs2017-win2016
+      vmImage: windows-latest
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
         # This override makes the specified vmImage irrelevant.
         name: NetCore1ESPool-Svc-Internal
