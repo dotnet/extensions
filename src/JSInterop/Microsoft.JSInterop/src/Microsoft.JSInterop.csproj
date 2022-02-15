@@ -12,6 +12,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Reference Include="System.Text.Json" />
+    <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
   <ItemGroup>
