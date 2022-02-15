@@ -4,7 +4,6 @@
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
     <SignAssembly>false</SignAssembly>
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +22,7 @@
     <Reference Include="Stashbox.Extensions.Dependencyinjection" />
     <Reference Include="Unity.Microsoft.DependencyInjection" />
     
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" AllowExplicitReference="true" />
   </ItemGroup>
 
   <ItemGroup>
