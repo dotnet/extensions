@@ -8,6 +8,7 @@
     <Reference Include="Microsoft.Extensions.Configuration"  />
     <Reference Include="Microsoft.Extensions.Configuration.FileExtensions"  />
     <Reference Include="System.Text.Json"  />
+    <Reference Include="System.Text.Encodings.Web"  />
     <Reference Include="System.Threading.Tasks.Extensions"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">

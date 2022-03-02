@@ -7,6 +7,7 @@
     <Compile Include="Microsoft.Extensions.Logging.EventSource.netstandard2.0.cs" />
     <Reference Include="Microsoft.Extensions.Logging"  />
     <Reference Include="System.Text.Json"  />
+    <Reference Include="System.Text.Encodings.Web"  />
     <Reference Include="System.Threading.Tasks.Extensions"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
