@@ -58,8 +58,8 @@
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftDotNetPlatformAbstractionsPackageVersion>3.1.6</MicrosoftDotNetPlatformAbstractionsPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.22</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.22-servicing.21571.3</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.23</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.23-servicing.22122.4</MicrosoftNETCoreAppInternalPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclAsyncInterfacesPackageVersion>1.1.1</MicrosoftBclAsyncInterfacesPackageVersion>
@@ -68,7 +68,7 @@
     <SystemComponentModelAnnotationsPackageVersion>4.7.0</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.7.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.7.0</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.7.4</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.7.5</SystemIOPipelinesPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.7.2</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.7.1</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.8.1</SystemReflectionMetadataPackageVersion>
