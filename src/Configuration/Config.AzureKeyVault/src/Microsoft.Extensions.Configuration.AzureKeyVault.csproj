@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Azure KeyVault configuration provider implementation for Microsoft.Extensions.Configuration.
-    
+
     This library has been replaced by the following new Azure SDK.
 
     https://www.nuget.org/packages/Azure.Extensions.AspNetCore.Configuration.Secrets
@@ -12,7 +12,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);azure;keyvault</PackageTags>
     <IsPackable>true</IsPackable>
-    <IsShipping>true</IsShipping>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
