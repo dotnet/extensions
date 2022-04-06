@@ -1,4 +1,4 @@
-﻿<Baseline Version="2.1.31">
+﻿<Baseline Version="2.1.33">
   <Package Id="Microsoft.Extensions.Caching.Abstractions" Version="2.1.23" />
   <Package Id="Microsoft.Extensions.Caching.Memory" Version="2.1.23" />
   <Package Id="Microsoft.Extensions.Caching.Redis" Version="2.1.2" />
