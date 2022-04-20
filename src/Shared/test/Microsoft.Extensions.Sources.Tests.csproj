@@ -27,6 +27,7 @@
   <ItemGroup>
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="System.Security.Cryptography.Cng" />
+    <Reference Include="System.Security.Cryptography.X509Certificates" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe" />
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
