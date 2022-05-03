@@ -17,6 +17,7 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" />
     <Reference Include="System.Security.Cryptography.Xml" />
+    <Reference Include="System.Security.Cryptography.X509Certificates" />
   </ItemGroup>
 
 </Project>
