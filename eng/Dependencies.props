@@ -31,6 +31,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="$(SystemRuntimeInteropServicesRuntimeInformationPackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
+    <LatestPackageReference Include="System.Security.Cryptography.X509Certificates" Version="$(SystemSecurityCryptographyX509CertificatesPackageVersion)" />
     <LatestPackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerPackageVersion)" />
     <LatestPackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
     <LatestPackageReference Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
