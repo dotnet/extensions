@@ -29,13 +29,3 @@ jobs:
       publish: true
       name: artifacts
       path: artifacts/
-
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: macOS
-    configuration: Release
-
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: Linux
-    configuration: Release
