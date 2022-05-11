@@ -84,15 +84,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.1.26">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
-      <Sha>2494499116fc9e14d47f05e431cd6cc6c546cfed</Sha>
+      <Sha>b423f8b322157a5b85f8131ac4a42e3e76fdaaa3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.1.25">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
       <Sha>9165b88e05fc37585aa1c3fc9585b5a7d751bb21</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.26-servicing.22260.2">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.26-servicing.22261.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
-      <Sha>2494499116fc9e14d47f05e431cd6cc6c546cfed</Sha>
+      <Sha>b423f8b322157a5b85f8131ac4a42e3e76fdaaa3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="3.1.9" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
