@@ -109,17 +109,17 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.22260.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.22314.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>65777bddfce6966941a4ade1b53efa5e5fc9c87d</Sha>
+      <Sha>fe57b3babcfc203dd61b7229b54d399b2e3f3c72</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.22260.3">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.22314.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>65777bddfce6966941a4ade1b53efa5e5fc9c87d</Sha>
+      <Sha>fe57b3babcfc203dd61b7229b54d399b2e3f3c72</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.22260.3">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.22314.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>65777bddfce6966941a4ade1b53efa5e5fc9c87d</Sha>
+      <Sha>fe57b3babcfc203dd61b7229b54d399b2e3f3c72</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.1-beta4-20127-10">
       <Uri>https://github.com/dotnet/roslyn</Uri>
