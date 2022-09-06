@@ -22,7 +22,7 @@
       Microsoft.Extensions.Configuration.AzureKeyVault;
     </PackagesInPatch>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.37' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.38' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
