@@ -73,10 +73,10 @@ stages:
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCore-Svc-Public
-            demands: ImageOverride -equals Build.Server.Amd64.VS2019.Open
+            demands: ImageOverride -equals 1es-windows-2019-open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCore1ESPool-Svc-Internal
-            demands: ImageOverride -equals Build.Server.Amd64.VS2019
+            demands: ImageOverride -equals 1es-windows-2019
         variables:
         # Only enable publishing in official builds.
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -167,10 +167,10 @@ stages:
             artifactType: Container
             parallel: true
 
-      - job: Ubuntu_18_04
-        displayName: 'Ubuntu 18.04'
+      - job: Ubuntu_20_04
+        displayName: 'Ubuntu 20.04'
         pool:
-          vmImage: ubuntu-18.04
+          vmImage: ubuntu-20.04
         variables:
         # Only enable publishing in official builds.
         - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -303,7 +303,7 @@ stages:
     displayName: 'Test: Linux Source Build'
     container: centos:7
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: ubuntu-20.04
     variables:
       DotNetCoreSdkDir: $(Agent.ToolsDirectory)/dotnet
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
