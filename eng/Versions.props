@@ -98,7 +98,7 @@
     <!-- Workaround https://github.com/dotnet/cli/issues/10528-->
     <MicrosoftNETCorePlatformsPackageVersion>5.0.4</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.22159.5</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>5.0.0-beta.22506.2</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetVersion>3.8.0-3.20416.3</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
