@@ -1,6 +1,15 @@
 #
-# See https://docs.microsoft.com/azure/devops/pipelines/yaml-schema for details
+# See https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/?view=azure-pipelines for details
 #
+
+# Keep compliance tooling e.g. CodeQL3000 up to date.
+schedules:
+- cron: 0 9 1,15 * *
+  displayName: "Run a build on the 1st and 15th of each month at 2:00 AM PDT"
+  branches:
+    include:
+    - release/2.1
+  always: true
 
 # Only run CI builds for these branches
 trigger:
@@ -9,6 +18,7 @@ trigger:
     - 'master'
     - 'release/*'
     - 'internal/release/*'
+
 # Run PR validation on all branches
 pr:
   branches:
