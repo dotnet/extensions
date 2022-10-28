@@ -44,10 +44,6 @@ jobs:
   pool:
     ${{ if ne(parameters.poolName, '') }}:
       name: ${{ parameters.poolName }}
-    ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'macOS')) }}:
-      vmImage: macOS-10.15
-    ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Linux')) }}:
-      vmImage: ubuntu-18.04
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Windows')) }}:
       vmImage: windows-2019
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
@@ -102,16 +98,6 @@ jobs:
         PB_RestoreSource: $(PB_RestoreSource)
       displayName: Run build.cmd
     - powershell: eng\scripts\KillProcesses.ps1
-      displayName: Kill processes
-      condition: always()
-  - ${{ if ne(parameters.agentOs, 'Windows') }}:
-    - script: ./build.sh -ci -p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
-      env:
-        PB_PackageVersionPropsUrl: $(PB_PackageVersionPropsUrl)
-        PB_AssetRootUrl: $(PB_AssetRootUrl)
-        PB_RestoreSource: $(PB_RestoreSource)
-      displayName: Run build.sh
-    - script: eng/scripts/KillProcesses.sh
       displayName: Kill processes
       condition: always()
   - task: PublishTestResults@2
