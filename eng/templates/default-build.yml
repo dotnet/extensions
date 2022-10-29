@@ -91,7 +91,7 @@ jobs:
         zipSources: false
         feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
   - ${{ if eq(parameters.agentOs, 'Windows') }}:
-    - script: .\build.cmd -ci /p:SignType=$(_SignType) /p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
+    - script: .\build.cmd -ci /p:SignType=$(_SignType) /p:Configuration=$(BuildConfiguration) /bl:build.binlog $(BuildScriptArgs)
       env:
         PB_PackageVersionPropsUrl: $(PB_PackageVersionPropsUrl)
         PB_AssetRootUrl: $(PB_AssetRootUrl)
@@ -100,9 +100,14 @@ jobs:
     - powershell: eng\scripts\KillProcesses.ps1
       displayName: Kill processes
       condition: always()
+    - powershell: Move-Item build.binlog artifacts/logs/
+      displayName: Move binary log into artifacts/logs/
+      condition: always()
+      continueOnError: true
   - task: PublishTestResults@2
     displayName: Publish test results
     condition: always()
+    continueOnError: true
     inputs:
       testRunTitle: $(AgentOsName)-$(BuildConfiguration)
       testRunner: vstest
@@ -111,9 +116,13 @@ jobs:
   - ${{ if eq(parameters.artifacts.publish, 'true') }}:
     - task: PublishBuildArtifacts@1
       displayName: Upload artifacts
-      condition: eq(variables['system.pullrequest.isfork'], false)
+      condition: always()
+      continueOnError: true
       inputs:
-        pathtoPublish: ${{ parameters.artifacts.path }}
+        ${{ if eq(variables['system.pullrequest.isfork'], false) }}:
+          pathtoPublish: ${{ parameters.artifacts.path }}
+        ${{ else }}:
+          pathtoPublish: ${{ format('{0}logs/', parameters.artifacts.path) }}
         ${{ if eq(parameters.artifacts.name, '') }}:
           artifactName: artifacts-$(AgentOsName)-$(BuildConfiguration)
         ${{ if ne(parameters.artifacts.name, '') }}:
@@ -124,6 +133,7 @@ jobs:
     - task: MicroBuildCleanup@1
       displayName: Cleanup MicroBuild tasks
       condition: always()
+      continueOnError: true
   - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
       - task: ComponentGovernanceComponentDetection@0
         continueOnError: true
