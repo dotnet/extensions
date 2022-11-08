@@ -2,7 +2,7 @@
   <PropertyGroup>
     <MajorVersion>2</MajorVersion>
     <MinorVersion>1</MinorVersion>
-    <PatchVersion>38</PatchVersion>
+    <PatchVersion>39</PatchVersion>
     <ValidateBaseline>false</ValidateBaseline>
 
     <PreReleaseLabel>servicing</PreReleaseLabel>
